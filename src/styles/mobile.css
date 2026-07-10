@@ -1,0 +1,80 @@
+@media (max-width: 768px) {
+  /* Main Container Padding Overrides */
+  div[style*="padding: 0px 56px"],
+  div[style*="padding: 0 56px"],
+  div[style*="padding: 24px 56px"],
+  div[style*="padding: 32px 56px"],
+  div[style*="padding: 40px 56px"],
+  div[style*="padding: 48px 56px"],
+  div[style*="padding: 0 56px 64px 56px"],
+  div[style*="padding: 0px 56px 64px"],
+  div[style*="padding: 24px 40px"],
+  div[style*="padding: 32px 40px"],
+  div[style*="padding: 40px"],
+  div[style*="padding: 48px"],
+  div[style*="padding: 56px"] {
+    padding: 16px !important;
+  }
+
+  /* Grid to Flex Column */
+  div[style*="grid-template-columns"],
+  div[style*="gridTemplateColumns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Header fixed height fixes */
+  div[style*="height: 140px"],
+  div[style*="height: 148px"],
+  div[style*="height: 160px"] {
+    height: auto !important;
+    min-height: 140px !important;
+    padding-bottom: 24px !important;
+    flex-direction: column !important;
+  }
+
+  /* Headers have a right side background image, hide it or adjust */
+  div[style*="position: absolute"][style*="right: 0px"][style*="width: 46%"],
+  div[style*="position: absolute"][style*="right: 0"][style*="width: 46%"] {
+    display: none !important;
+  }
+
+  /* Header text widths */
+  div[style*="flex: 0 0 62%"],
+  div[style*="flex: 0 0 55%"],
+  div[style*="flex: 0 0 50%"],
+  div[style*="max-width: 62%"],
+  div[style*="max-width: 55%"],
+  div[style*="max-width: 50%"] {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Make tables scrollable */
+  table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+  }
+
+  /* Sidebars / Filter columns */
+  div[style*="width: 260px"],
+  div[style*="width: 280px"],
+  div[style*="width: 300px"],
+  div[style*="width: 320px"] {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Stat cards flex rows to wrap */
+  div[style*="gap: 48px"] {
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+  }
+  div[style*="gap: 32px"] {
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+  }
+}
