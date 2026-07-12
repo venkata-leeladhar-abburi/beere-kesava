@@ -21,13 +21,7 @@ const WHOLESALE_CUSTOMERS = [
   { id: "WHL-006", name: "Kalavathi Exports",         city: "Surat",      terms: "Net 45", phone: "+91 99790 33445", address: "Ring Road Textile Market, Surat - 395002", gstCode: "24FFFFF6666F6Z6" },
 ];
 
-const AVAILABLE_LOOMS = [
-  { id: 1, weaverName: "Padma Veni",   weaverId: "WV-002", designCode: "BKB-045", sareeType: "Self Brocade" },
-  { id: 2, weaverName: "Ravi Kumar",   weaverId: "WV-001", designCode: "BKB-045", sareeType: "Self Brocade" },
-  { id: 3, weaverName: "Anand K.",     weaverId: "WV-005", designCode: "BKB-045", sareeType: "Self Brocade" },
-  { id: 4, weaverName: "Meena R.",     weaverId: "WV-012", designCode: "BKB-045", sareeType: "Self Brocade" },
-  { id: 5, weaverName: "Suresh Murti", weaverId: "WV-007", designCode: "BKB-031", sareeType: "Heavy Zari" },
-];
+
 
 
 function formatDateLabel(isoDate: string): string {
@@ -57,9 +51,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   const [priority, setPriority] = useState<"Normal" | "Urgent">("Normal");
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const [sareeType, setSareeType] = useState("");
-  const [design, setDesign] = useState("");
-  const [selectedLoomId, setSelectedLoomId] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
 
   const selectedCustomer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
 
@@ -77,21 +69,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
     }
   };
 
-  const handleLoomSelect = (idStr: string) => {
-    setSelectedLoomId(idStr);
-    const loom = AVAILABLE_LOOMS.find(l => String(l.id) === idStr);
-    if (loom) {
-      setSareeType(loom.sareeType);
-      setDesign(loom.designCode);
-      const loomNote = `Loom assigned: Loom ${loom.id} (${loom.weaverName})`;
-      if (!instructions.includes(loomNote)) {
-        setInstructions(prev => prev ? `${prev}\n${loomNote}` : loomNote);
-      }
-    } else {
-      setSareeType("");
-      setDesign("");
-    }
-  };
+
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -111,8 +89,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
       customerId: customer.id,
       due: formatDateLabel(deliveryDate),
       status: "on-track",
-      sareeType: sareeType || "",
-      design: design || "",
+      sareeType: "",
+      design: "",
       done: 0,
       total: parseInt(quantity, 10),
       instructions: instructions || undefined,
@@ -126,11 +104,12 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
       gstCode: gstCode || undefined,
       visitingCardUrl: visitingCard ? URL.createObjectURL(visitingCard) : undefined,
       visitingCardName: visitingCard ? visitingCard.name : undefined,
+      photoUrls: photos.map(p => URL.createObjectURL(p)),
     };
     onSubmit(order);
     // Reset
     setCustomerId(""); setAddress(""); setPhone(""); setVisitingCard(null); setGstCode("");
-    setSareeType(""); setDesign(""); setSelectedLoomId("");
+    setPhotos([]);
     setQuantity(""); setDeliveryDate(""); setEstimatedValue(""); setInstructions(""); setPriority("Normal"); setErrors({});
   };
 
@@ -282,24 +261,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </div>
                 )}
 
-                <div style={{ marginTop: 16 }}>
-                  <label style={labelStyle}>Select Production Loom (Auto-fills design & saree type)</label>
-                  <select
-                    value={selectedLoomId}
-                    onChange={e => handleLoomSelect(e.target.value)}
-                    style={selectStyle}
-                  >
-                    <option value="">— Select loom —</option>
-                    {AVAILABLE_LOOMS.map(l => (
-                      <option key={l.id} value={l.id}>Loom {l.id} · {l.weaverName} ({l.sareeType}, {l.designCode})</option>
-                    ))}
-                  </select>
-                </div>
-
                 <button
                   style={{ marginTop: 12, background: "none", border: "none", fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: 0, fontWeight: 600 }}
                   onClick={() => {
                     onClose();
+                    localStorage.setItem("bk_open_add_wholesale", "true");
                     onAddCustomerClick?.();
                   }}
                 >
@@ -362,26 +328,39 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
               <div>
                 <div style={sectionLabel}>2 · Order Details</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div>
-                    <label style={labelStyle}>Saree Type</label>
-                    <input
-                      type="text"
-                      value={sareeType}
-                      onChange={e => setSareeType(e.target.value)}
-                      placeholder="e.g. Self Brocade"
-                      style={inputStyle}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={labelStyle}>Design Code</label>
-                    <input
-                      type="text"
-                      value={design}
-                      onChange={e => setDesign(e.target.value)}
-                      placeholder="e.g. BKB-045"
-                      style={inputStyle}
-                    />
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={labelStyle}>Order Photos (Multiple allowed)</label>
+                    <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", background: T.warmIvory, display: "flex", flexDirection: "column", gap: 12 }}>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        id="bulk-order-photos-upload"
+                        style={{ display: "none" }}
+                        onChange={e => {
+                          const files = Array.from(e.target.files || []);
+                          setPhotos(prev => [...prev, ...files]);
+                        }}
+                      />
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                        {photos.map((file, idx) => (
+                          <div key={idx} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                            <img src={URL.createObjectURL(file)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <button
+                              type="button"
+                              onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
+                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", border: "none", color: "#FFF", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        <label htmlFor="bulk-order-photos-upload" style={{ width: 72, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: "rgba(110,15,45,0.02)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                          <span style={{ fontSize: 20, color: T.royalBurgundy, fontWeight: 300 }}>+</span>
+                          <span style={{ fontSize: 9, color: T.taupe, fontWeight: 600 }}>Add Photo</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
                   <div>

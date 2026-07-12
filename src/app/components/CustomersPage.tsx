@@ -42,7 +42,7 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
-const EASE = [0.22, 1, 0.36, 1];
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 // ── Animation Components ───────────────────────────────────────────────────────
 function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
@@ -219,6 +219,19 @@ export function CustomersPage() {
   const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
   const [retailView, setRetailView] = useState<"card"|"list"|"table">("card");
   const [showAddWholesale, setShowAddWholesale] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("bk_open_add_wholesale") === "true") {
+      localStorage.removeItem("bk_open_add_wholesale");
+      setShowAddWholesale(true);
+      setTimeout(() => {
+        const sect = document.getElementById("customers-wholesale-section");
+        if (sect) {
+          sect.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, []);
   const [modalWholesale, setModalWholesale] = useState<any>(null);
   const [modalRetail, setModalRetail] = useState<any>(null);
   const [viewingCard, setViewingCard] = useState<string | null>(null);
@@ -633,7 +646,7 @@ export function CustomersPage() {
       </div>
 
       {/* ── SECTION 4: WHOLESALE CUSTOMERS ────────────────────────────────── */}
-      <div style={{ padding: "0 56px 64px 56px" }}>
+      <div id="customers-wholesale-section" style={{ padding: "0 56px 64px 56px" }}>
         <SectionTitle
           title="Wholesale Customers"
           sub="These are the businesses that buy sarees in bulk. Manage their profiles, track their orders, and monitor outstanding payments."

@@ -358,12 +358,12 @@ function Donut({ pct = 72, size = 160 }: { pct?: number; size?: number }) {
           transition={{ duration: 1.8, delay: 0.35, ease: EASE }}
           transform={`rotate(-90 ${cx} ${cy})`}
         />
-        <text x={cx} y={cy - 4} textAnchor="middle"
-          fontFamily={F.display} fontWeight="400" fontSize="42" fill={T.luxuryBrown}
+        <text x={cx} y={cy - 6} textAnchor="middle" dominantBaseline="central"
+          fontFamily={F.display} fontWeight="700" fontSize="48" fill={T.royalBurgundy}
           style={{ fontVariantNumeric: "tabular-nums" }}>{pct}%</text>
-        <text x={cx} y={cy + 18} textAnchor="middle"
-          fontFamily={F.ui} fontWeight="400" fontSize="10.5" fill={T.taupe} letterSpacing="0.5">
-          Total Production
+        <text x={cx} y={cy + 20} textAnchor="middle" dominantBaseline="central"
+          fontFamily={F.ui} fontWeight="700" fontSize="9.5" fill={T.luxuryBrown} letterSpacing="1.2">
+          IN PROGRESS
         </text>
       </svg>
     </div>
@@ -1351,36 +1351,12 @@ function FeaturedProduct({ compact }: { compact?: boolean }) {
       <div style={{ padding: compact ? "20px 20px 0" : "32px 32px 0" }}>
         <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 18 : 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Featured Product</span>
       </div>
-      <div style={{ position: "relative", margin: "16px 0 0", flexShrink: 0, overflow: "hidden" }}>
-        <motion.img
-          src={imgSaree}
-          alt="Silk Saree"
-          whileHover={{ scale: 1.04 }}
-          transition={{ duration: 0.5 }}
-          style={{ width: "100%", height: compact ? 180 : 200, objectFit: "cover", display: "block" }}
-        />
-        {[{ side: "left", Icon: ChevronLeft }, { side: "right", Icon: ChevronRight }].map(({ side, Icon }) => (
-          <motion.div
-            key={side}
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.9 }}
-            style={{ position: "absolute", [side]: 14, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(255,253,249,0.92)", backdropFilter: "blur(8px)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-          >
-            <Icon size={14} color={T.luxuryBrown} />
-          </motion.div>
-        ))}
-      </div>
-      <div style={{ padding: compact ? "12px 20px 10px" : "14px 32px 12px" }}>
+      <div style={{ padding: compact ? "18px 20px 18px" : "28px 32px 28px", borderBottom: `1px solid ${T.borderDef}` }}>
         <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 16 : 18, color: T.luxuryBrown, lineHeight: 1.2 }}>
           Silk Saree – Design BKB-045
         </div>
-        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe, marginTop: 3, letterSpacing: "0.1px" }}>
+        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe, marginTop: 4, letterSpacing: "0.1px" }}>
           Cream · Gold Zari Border
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
-          <div style={{ width: 22, height: 5, borderRadius: 3, background: T.royalBurgundy }} />
-          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.12)" }} />
-          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.12)" }} />
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: `1px solid ${T.borderDef}`, marginTop: "auto" }}>

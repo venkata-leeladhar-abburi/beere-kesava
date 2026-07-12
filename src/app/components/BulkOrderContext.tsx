@@ -28,6 +28,7 @@ export interface BulkOrder {
   gstCode?: string;
   visitingCardUrl?: string;
   visitingCardName?: string;
+  photoUrls?: string[];
 }
 
 // ─── Initial Data (from ProductionPage BULK_ORDERS) ───────────────────────────

@@ -214,6 +214,7 @@ export interface BulkOrder {
   paymentStatus?: "pending" | "partial" | "paid";
   amountDue?: number;
   amountPaid?: number;
+  photoUrls?: string[];
 }
 export const BULK_ORDERS: BulkOrder[] = [
   { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-045", done: 76, total: 80              },
@@ -442,7 +443,7 @@ function BulkOrdersSection({ onNavigate }: { onNavigate?: (tab: string) => void 
         onClose={() => setShowCreate(false)}
         nextRef={nextOrderRef}
         onSubmit={(order) => { addBulkOrder(order); setSuccessRef(order.ref); setShowCreate(false); }}
-        onAddCustomerClick={() => onNavigate?.("AddUser")}
+        onAddCustomerClick={() => onNavigate?.("Customers")}
       />
     </div>
   );
@@ -1043,7 +1044,7 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {b.rows.map(row => (
-                <div key={row.serial} style={{ display: "flex", alignItems: "center", justify: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
+                <div key={row.serial} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
@@ -2352,6 +2353,20 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Special Instructions</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>{order.instructions}</div>
+        </div>
+      )}
+      {order.photoUrls && order.photoUrls.length > 0 && (
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Attached Photos</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, background: "rgba(110,15,45,0.04)", borderRadius: 12, padding: "14px", border: "1px solid rgba(110,15,45,0.10)" }}>
+            {order.photoUrls.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
+                <img src={url} alt={`Bulk order attachment ${i + 1}`} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}`, cursor: "pointer", transition: "transform 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+                  onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </div>
