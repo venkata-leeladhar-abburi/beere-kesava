@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck } from "lucide-react";
 import { C, F } from "./worker/tokens";
@@ -12,7 +13,7 @@ import {
 } from "./SectionNavigator";
 import { useResponsive } from "./useResponsive";
 
-type Tab = "home" | "qc" | "weavers" | "finishing";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "profile";
 
 const TABS: { id: Tab; Icon: React.ComponentType<{ size: number; color: string }>; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
@@ -26,6 +27,7 @@ const PAGE_TITLES: Record<Tab, string> = {
   qc:        "Quality Check",
   weavers:   "Weavers",
   finishing: "Finishing",
+  profile:   "My Profile",
 };
 
 interface WorkerPortalProps { onBack?: () => void }
@@ -143,8 +145,12 @@ function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; on
   );
 }
 
-function MobilePortal({ onBack }: WorkerPortalProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+interface MobilePortalProps extends WorkerPortalProps {
+  activeTab: Tab;
+  setActiveTab: (t: Tab) => void;
+}
+
+function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -283,11 +289,36 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
   const { w, isMobile } = useResponsive();
   const bp: "tablet" | "desktop" = w >= 1024 ? "desktop" : "tablet";
 
+  const { pathname } = useLocation();
+  const routerNavigate = useNavigate();
+
+  let activeTab: Tab = "home";
+  if (pathname.includes("/qc")) activeTab = "qc";
+  else if (pathname.includes("/weavers")) activeTab = "weavers";
+  else if (pathname.includes("/finishing")) activeTab = "finishing";
+  else if (pathname.includes("/profile")) activeTab = "profile";
+
+  const setActiveTab = (tab: Tab) => {
+    const routeMap: Record<Tab, string> = {
+      home: "/worker/home",
+      qc: "/worker/qc",
+      weavers: "/worker/weavers",
+      finishing: "/worker/finishing",
+      profile: "/worker/profile",
+    };
+    const path = routeMap[tab] || "/worker/home";
+    routerNavigate(path);
+  };
+
   return (
     <>
       <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
-      {isMobile ? <MobilePortal onBack={onBack} /> : <WorkerPortalDesktop onBack={onBack} bp={bp} />}
+      {isMobile ? (
+        <MobilePortal onBack={onBack} activeTab={activeTab} setActiveTab={setActiveTab} />
+      ) : (
+        <WorkerPortalDesktop onBack={onBack} bp={bp} activeTab={activeTab} setActiveTab={setActiveTab} />
+      )}
     </>
   );
 }

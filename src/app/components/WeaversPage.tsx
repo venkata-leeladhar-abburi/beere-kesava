@@ -1122,7 +1122,7 @@ const ACTIVITY_ICONS: Record<string, { PhIcon: React.ElementType; bg: string; co
   "🔄": { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.royalBurgundy },
 };
 
-function LeaderboardAndQC({ onActivities }: { onActivities: () => void }) {
+function LeaderboardAndQC({ onActivities, onNavigate }: { onActivities: () => void; onNavigate?: (tab: string) => void }) {
   const [reportOpen, setReportOpen] = useState(false);
   return (
     <div style={{ padding: "36px 48px 0" }}>
@@ -1203,11 +1203,18 @@ function LeaderboardAndQC({ onActivities }: { onActivities: () => void }) {
             {/* ── Right: QC Results ── */}
             <div style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 24 }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <CheckCircle size={20} color={T.green} weight="fill" />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <CheckCircle size={20} color={T.green} weight="fill" />
+                    </div>
+                    <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Quality Check Results</div>
                   </div>
-                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Quality Check Results</div>
+                  <span onClick={() => onNavigate?.("QcHistory")} style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}
+                    onMouseEnter={e => e.currentTarget.style.color = T.royalBurgundy}
+                    onMouseLeave={e => e.currentTarget.style.color = T.antiqueGold}>
+                    View Details →
+                  </span>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 28, paddingLeft: 48 }}>All sarees submitted for quality inspection this month</div>
 
@@ -1540,7 +1547,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void
       <WarpRequestsSection />
       <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} />
       <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
-      <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} />
+      <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} />
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
       <Footer />
 

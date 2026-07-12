@@ -17,7 +17,12 @@ import {
 type Tab = "home" | "qc" | "weavers" | "finishing" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
 
-interface WorkerPortalDesktopProps { onBack?: () => void; bp?: "tablet" | "desktop" }
+interface WorkerPortalDesktopProps {
+  onBack?: () => void;
+  bp?: "tablet" | "desktop";
+  activeTab: Tab;
+  setActiveTab: (t: Tab) => void;
+}
 
 // ─── Top Nav Tabs ───────────────────────────────────────────────────────────────
 type NavTab = "home" | "qc" | "weavers" | "finishing";
@@ -267,9 +272,8 @@ function DesktopProfile() {
 }
 
 // ─── Main Desktop Export ──────────────────────────────────────────────────────
-export function WorkerPortalDesktop({ onBack, bp = "desktop" }: WorkerPortalDesktopProps) {
+export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActiveTab }: WorkerPortalDesktopProps) {
   const isTablet = bp === "tablet";
-  const [activeTab, setActiveTab]   = useState<Tab>("home");
   const [weaversSub, setWeaversSub] = useState<WeaversSubPage>("menu");
 
   const handleNavigate = (tab: Tab, sub?: WeaversSubPage) => {

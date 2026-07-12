@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Bell, Home, ShoppingBag, Package, Users, BarChart2, Camera, Check, X,
@@ -2153,8 +2155,41 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const { isMobile, w } = useResponsive();
   const bp: "tablet" | "desktop" = w >= 1280 ? "desktop" : "tablet";
   const isTablet = bp === "tablet";
-  const [active, setActive] = useState<TabId>("home");
-  const [showReturn, setShowReturn] = useState(false);
+  const { pathname } = useLocation();
+  const routerNavigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    routerNavigate("/login");
+  };
+
+  let active: TabId = "home";
+  if (pathname.includes("/sale")) active = "sale";
+  else if (pathname.includes("/inventory")) active = "inventory";
+  else if (pathname.includes("/customers")) active = "customers";
+  else if (pathname.includes("/reports")) active = "reports";
+
+  const showReturn = pathname.includes("/return");
+
+  const setActive = (tab: TabId) => {
+    const routeMap: Record<TabId, string> = {
+      home: "/shop/home",
+      sale: "/shop/sale",
+      inventory: "/shop/inventory",
+      customers: "/shop/customers",
+      reports: "/shop/reports",
+    };
+    const path = routeMap[tab] || "/shop/home";
+    routerNavigate(path);
+  };
+  const setShowReturn = (val: boolean) => {
+    if (val) {
+      routerNavigate("/shop/return");
+    } else {
+      routerNavigate("/shop/home");
+    }
+  };
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -2264,7 +2299,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
             <nav className="shop-topnav-groups" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center", gap: 2, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
               <style>{`.shop-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
               {TABS.map(tab => (
-                <button key={tab.id} onClick={() => { setActive(tab.id); setShowReturn(false); }} style={{
+                <button key={tab.id} onClick={() => { setActive(tab.id); }} style={{
                   display: "flex", alignItems: "center", gap: 7, flexShrink: 0, padding: isTablet ? "0 12px" : "0 18px", height: 64, border: "none", background: "transparent", cursor: "pointer",
                   fontFamily: F.u, fontSize: 14, fontWeight: active === tab.id && !showReturn ? 600 : 400,
                   color: active === tab.id && !showReturn ? TEAL : C.muted,
@@ -2273,7 +2308,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                 }}
                 onMouseEnter={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = TEAL; }}
                 onMouseLeave={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = C.muted; }}>
-                  {React.cloneElement(tab.icon as React.ReactElement, { size: 16, color: active === tab.id && !showReturn ? TEAL : C.muted })}
+                  {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, color: active === tab.id && !showReturn ? TEAL : C.muted })}
                   {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
                 </button>
               ))}
@@ -2333,7 +2368,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                         onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                         <ChevronLeft size={15} color={C.muted} /> Switch Portal
                       </button>
-                      <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
+                      <button onClick={() => { setShowProfile(false); handleLogout(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
                         onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                         <LogOut size={15} color="#C0392B" /> Logout
@@ -3203,7 +3238,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                     <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
                       <ChevronLeft size={14} color={C.muted} /> Switch Portal
                     </button>
-                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
+                    <button onClick={() => { setShowProfile(false); handleLogout(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
                       <LogOut size={14} color="#C0392B" /> Logout
                     </button>
                   </div>
@@ -3274,7 +3309,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   {tab.id === "sale" && (
                     <span style={{ position: "absolute" as const, top: -3, right: -7, width: 7, height: 7, background: C.crim, borderRadius: "50%" }} />
                   )}
-                  {React.cloneElement(tab.icon as React.ReactElement, { color: isActive ? C.burg : C.muted })}
+                  {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
                   <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
                 </div>
               </button>

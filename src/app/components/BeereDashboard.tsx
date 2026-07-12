@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate, useParams, Outlet } from "react-router";
 import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../constants/imageData";
+import { useAuth } from "../../contexts/AuthContext";
 import { useResponsive } from "./useResponsive";
 import { MaterialsPage }  from "./MaterialsPage";
 import { WeaversPage }    from "./WeaversPage";
@@ -656,7 +658,7 @@ function findNavGroup(pageKey: string): NavGroup {
 }
 
 
-function TopNav({ active, set, onBack, sections }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[] }) {
+function TopNav({ active, set, onBack, onLogout, sections }: { active: string; set: (v: string) => void; onBack?: () => void; onLogout?: () => void; sections?: SectionNavItem[] }) {
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showNotif, setShowNotif] = React.useState(false);
@@ -943,7 +945,7 @@ function TopNav({ active, set, onBack, sections }: { active: string; set: (v: st
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <ChevronLeft size={15} color={T.taupe} /> Switch Portal
                   </button>
-                  <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
+                  <button onClick={() => { setShowProfile(false); onLogout?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <LogOut size={15} color="#C0392B" /> Logout
@@ -1808,7 +1810,7 @@ function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MOBILE — TOP NAV
 // ═══════════════════════════════════════════════════════════════════════════════
-function MobileTopNav({ onMenuOpen, onBack }: { onMenuOpen: () => void; onBack?: () => void }) {
+function MobileTopNav({ onMenuOpen, onBack, onLogout }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void }) {
   const [showProfile, setShowProfile] = React.useState(false);
   return (
     <motion.nav
@@ -1856,7 +1858,7 @@ function MobileTopNav({ onMenuOpen, onBack }: { onMenuOpen: () => void; onBack?:
               <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <ChevronLeft size={14} color={T.taupe} /> Switch Portal
               </button>
-              <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
+              <button onClick={() => { setShowProfile(false); onLogout?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
                 <LogOut size={14} color="#C0392B" /> Logout
               </button>
             </div>
@@ -2633,8 +2635,42 @@ const GLOBAL_STYLE = `
 
 export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [splashVisible, setSplashVisible] = useState(false);
-  const [nav, setNav]         = useState("Materials");
-  const [mobileTab, setMobileTab] = useState("Materials");
+  const { pathname } = useLocation();
+  const { tab } = useParams();
+  const routerNavigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    routerNavigate("/login");
+  };
+
+  // Map path to active tab
+  let nav = "Materials";
+  if (tab === "materials") nav = "Materials";
+  else if (tab === "weavers") nav = "Weavers";
+  else if (tab === "all-weavers") nav = "AllWeavers";
+  else if (tab === "all-stock") nav = "AllStock";
+  else if (tab === "production-history") nav = "ProductionHistory";
+  else if (tab === "production") nav = "Production";
+  else if (tab === "all-orders") nav = "AllOrders";
+  else if (tab === "qc-history") nav = "QcHistory";
+  else if (tab === "payments") nav = "Payments";
+  else if (tab === "reports") nav = "Reports";
+  else if (tab === "inventory") nav = "Inventory";
+  else if (tab === "customers") nav = "Customers";
+  else if (tab === "firms") nav = "Firms";
+  else if (tab === "notifications") nav = "Notifications";
+  else if (tab === "receive-stock") nav = "ReceiveStock";
+  else if (tab === "add-user") nav = "AddUser";
+  else if (tab === "external-purchases") nav = "ExternalPurchases";
+  else if (tab === "batches") nav = "Batches";
+  else if (tab === "designs") nav = "Designs";
+  else if (tab === "rates") nav = "Rates";
+  else if (tab === "issue-material") nav = "IssueMaterial";
+  else if (tab === "overview") nav = "Overview";
+
+  const mobileTab = nav;
   const [menuOpen, setMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -2648,18 +2684,40 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   }, [nav, mobileTab]);
 
   const navigate = (tab: string) => {
+    const routeMap: Record<string, string> = {
+      Overview: "/admin/overview",
+      Materials: "/admin/materials",
+      Weavers: "/admin/weavers",
+      AllWeavers: "/admin/all-weavers",
+      AllStock: "/admin/all-stock",
+      Production: "/admin/production",
+      AllOrders: "/admin/all-orders",
+      QcHistory: "/admin/qc-history",
+      Payments: "/admin/payments",
+      Reports: "/admin/reports",
+      Inventory: "/admin/inventory",
+      Customers: "/admin/customers",
+      Firms: "/admin/firms",
+      Notifications: "/admin/notifications",
+      ReceiveStock: "/admin/receive-stock",
+      AddUser: "/admin/add-user",
+      ExternalPurchases: "/admin/external-purchases",
+      Batches: "/admin/batches",
+      Designs: "/admin/designs",
+      Rates: "/admin/rates",
+      IssueMaterial: "/admin/issue-material",
+      ProductionHistory: "/admin/production-history",
+    };
+    const path = routeMap[tab] || "/admin/materials";
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    setNav(tab);
+    routerNavigate(path);
   };
-  const navigateMobile = (tab: string) => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    setMobileTab(tab);
-  };
+  const navigateMobile = navigate;
 
   const dashboardContent = isMobile ? (
     <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
-      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} />
+      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} />
       {PAGE_SECTIONS[mobileTab] && (
         <SectionNavigator sections={PAGE_SECTIONS[mobileTab]} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
@@ -2720,7 +2778,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} sections={PAGE_SECTIONS[nav]} />
+      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} />
       {nav === "Materials" ? (
         <MaterialsPage onNavigate={navigate} />
       ) : nav === "Weavers" ? (

@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Search, Bell, ChevronDown, ChevronRight, ChevronLeft, TrendingUp,
   Settings, ClipboardList, Menu,
   Edit2, Trash2, Plus, Eye, Shield, AlertTriangle,
   Facebook, Instagram, Youtube, Linkedin, ArrowRight,
-  Users, Layers, IndianRupee, CheckCircle2, Truck, Clock, Building2,
+  IndianRupee, CheckCircle2, Truck, Clock, Building2,
   LogOut, UserRound, Package, LayoutDashboard, Factory, Settings2,
+  Users, Layers,
 } from "lucide-react";
 import { useResponsive } from "./useResponsive";
 import { RatesPricingPage } from "./RatesPricingPage";
@@ -29,6 +31,10 @@ import { InventoryPage } from "./InventoryPage";
 import { QcHistoryPage } from "./QcHistoryPage";
 import { NotificationsPage } from "./NotificationsPage";
 import { WorkerGRN } from "./worker/WorkerGRN";
+import { AllWeaversPage } from "./AllWeaversPage";
+import { AllStockPage } from "./AllStockPage";
+import { AllOrdersPage } from "./AllOrdersPage";
+import { ProductionHistoryPage } from "./ProductionHistoryPage";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
@@ -51,37 +57,38 @@ function useIsMobile() {
 // DESIGN TOKENS (mirroring BeereDashboard)
 // ═══════════════════════════════════════════════════════════════════════════════
 const T = {
-  silkCream:      "#F7F2EA",
-  warmIvory:      "#FFFDF9",
-  royalBurgundy:  "#6E0F2D",
-  deepWine:       "#4A061B",
-  antiqueGold:    "#C89B47",
-  goldLight:      "#E7C983",
-  luxuryBrown:    "#3B2314",
-  ivoryCream:     "#F7F2EA",
-  pureWhite:      "#FFFDF9",
-  crimson:        "#C0392B",
-  mahogany:       "#4A061B",
-  gold:           "#C89B47",
-  deepBlack:      "#3B2314",
-  burgundy:       "#3D2030",
-  taupe:          "#8B7060",
-  warmCream:      "#F5E8D0",
-  green:          "#1E6640",
-  borderDef:      "rgba(110,15,45,0.10)",
-  borderMed:      "rgba(110,15,45,0.20)",
-  borderGold:     "rgba(200,155,71,0.22)",
-  bgSuccess:      "rgba(30,102,64,0.10)",
-  bgWarning:      "rgba(110,15,45,0.10)",
-  bgAlert:        "rgba(110,15,45,0.18)",
-  bgGold:         "rgba(200,155,71,0.15)",
-  saGold:         "#C4923A",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
+  royalBurgundy: "#6E0F2D",
+  darkBurgundy: "#3D0E1A",
+  deepWine: "#4A061B",
+  antiqueGold: "#C89B47",
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  ivoryCream: "#F7F2EA",
+  pureWhite: "#FFFDF9",
+  crimson: "#C0392B",
+  mahogany: "#4A061B",
+  gold: "#C89B47",
+  deepBlack: "#3B2314",
+  burgundy: "#3D2030",
+  taupe: "#8B7060",
+  warmCream: "#F5E8D0",
+  green: "#1E6640",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderMed: "rgba(110,15,45,0.20)",
+  borderGold: "rgba(200,155,71,0.22)",
+  bgSuccess: "rgba(30,102,64,0.10)",
+  bgWarning: "rgba(110,15,45,0.10)",
+  bgAlert: "rgba(110,15,45,0.18)",
+  bgGold: "rgba(200,155,71,0.15)",
+  saGold: "#C4923A",
 };
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 const NUM: React.CSSProperties = {
@@ -90,11 +97,11 @@ const NUM: React.CSSProperties = {
 };
 
 const G = {
-  hero   : "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
-  card   : "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-  gold   : "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
-  button : "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-  saGold : "linear-gradient(135deg, #C4923A 0%, #E8A84A 100%)",
+  hero: "linear-gradient(135deg, #4A061B 0%, #6E0F2D 45%, #C89B47 100%)",
+  card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
+  gold: "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
+  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+  saGold: "linear-gradient(135deg, #C4923A 0%, #E8A84A 100%)",
 };
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -169,28 +176,34 @@ function AnimatedNumber({ raw }: { raw: string }) {
 // SA METRICS DATA
 // ═══════════════════════════════════════════════════════════════════════════════
 const SA_METRICS = [
-  { ico: <Users size={22} color={T.warmCream} />,        label: "Active Weavers",   val: "9",     sub: "↑ 12% vs last month", hi: false },
-  { ico: <Layers size={22} color={T.warmCream} />,       label: "Sarees Produced",  val: "248",   sub: "↑ 14% vs last month", hi: false },
-  { ico: <IndianRupee size={22} color={T.warmCream} />,  label: "Pending Payments", val: "₹2.4L", sub: "2 overdue",           hi: true  },
-  { ico: <CheckCircle2 size={22} color={T.warmCream} />, label: "Ready for Sale",   val: "84",    sub: "Sarees",              hi: false },
-  { ico: <Truck size={22} color={T.warmCream} />,        label: "Dispatched",       val: "32",    sub: "Sarees this week",    hi: false },
-  { ico: <Clock size={22} color={T.warmCream} />,        label: "Pending Approvals",val: "3",     sub: "Require review",      hi: false, crimsonHi: true },
+  { ico: <Users size={22} color={T.warmCream} />, label: "Active Weavers", val: "9", sub: "↑ 12% vs last month", hi: false },
+  { ico: <Layers size={22} color={T.warmCream} />, label: "Sarees Produced", val: "248", sub: "↑ 14% vs last month", hi: false },
+  { ico: <IndianRupee size={22} color={T.warmCream} />, label: "Pending Payments", val: "₹2.4L", sub: "2 overdue", hi: true },
+  { ico: <CheckCircle2 size={22} color={T.warmCream} />, label: "Ready for Sale", val: "84", sub: "Sarees", hi: false },
+  { ico: <Truck size={22} color={T.warmCream} />, label: "Dispatched", val: "32", sub: "Sarees this week", hi: false },
+  { ico: <Clock size={22} color={T.warmCream} />, label: "Pending Approvals", val: "3", sub: "Require review", hi: false, crimsonHi: true },
 ];
 
 const WEAVERS = [
-  { name: "Padma Veni",   id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "In Progress" as const, ac: T.royalBurgundy, img: imgPadmaVeni   },
-  { name: "Ravi Kumar",   id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "In Progress" as const, ac: "#1E6640",        img: imgRaviKumar   },
-  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7,  pct: 35, status: "Pending QC"  as const, ac: "#374151",        img: imgSureshMurti },
-  { name: "Anand K.",     id: "WV-005", batch: "BATCH-083", sarees: 9,  pct: 72, status: "In Progress" as const, ac: T.antiqueGold,    img: imgAnandK      },
+  { name: "Padma Veni", id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "In Progress" as const, ac: T.royalBurgundy, img: imgPadmaVeni },
+  { name: "Ravi Kumar", id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "In Progress" as const, ac: "#1E6640", img: imgRaviKumar },
+  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7, pct: 35, status: "Pending QC" as const, ac: "#374151", img: imgSureshMurti },
+  { name: "Anand K.", id: "WV-005", batch: "BATCH-083", sarees: 9, pct: 72, status: "In Progress" as const, ac: T.antiqueGold, img: imgAnandK },
 ];
 
 const MATS = [
-  { name: "Warp",   sub: "Base Thread · Cotton/Silk",       stock: "142 kg", pct: 72, note: "248 sarees possible", alert: false, img: imgWarp,
-    cardBg: "#FFFDF5", accent: T.antiqueGold, accentLight: "rgba(200,155,71,0.10)", borderColor: "rgba(200,155,71,0.20)", tagBg: "rgba(200,155,71,0.10)", tagCol: "#8A6B1F" },
-  { name: "Resham", sub: "Silk Thread · Multiple Colors",   stock: "180 kg", pct: 85, note: "6 colors in stock",   alert: false, img: imgResham,
-    cardBg: "#F8F6F4", accent: "#9E9189", accentLight: "rgba(158,145,137,0.10)", borderColor: "rgba(158,145,137,0.22)", tagBg: "rgba(158,145,137,0.10)", tagCol: "#6B5F58" },
-  { name: "Jari",   sub: "Metallic Thread · Gold & Silver", stock: "90 kg",  pct: 30, note: "3 types available",   alert: true,  img: imgJari,
-    cardBg: "#FFFDF9", accent: T.royalBurgundy, accentLight: "rgba(110,15,45,0.06)", borderColor: "rgba(110,15,45,0.16)", tagBg: "rgba(110,15,45,0.07)", tagCol: T.royalBurgundy },
+  {
+    name: "Warp", sub: "Base Thread · Cotton/Silk", stock: "142 kg", pct: 72, note: "248 sarees possible", alert: false, img: imgWarp,
+    cardBg: "#FFFDF5", accent: T.antiqueGold, accentLight: "rgba(200,155,71,0.10)", borderColor: "rgba(200,155,71,0.20)", tagBg: "rgba(200,155,71,0.10)", tagCol: "#8A6B1F"
+  },
+  {
+    name: "Resham", sub: "Silk Thread · Multiple Colors", stock: "180 kg", pct: 85, note: "6 colors in stock", alert: false, img: imgResham,
+    cardBg: "#F8F6F4", accent: "#9E9189", accentLight: "rgba(158,145,137,0.10)", borderColor: "rgba(158,145,137,0.22)", tagBg: "rgba(158,145,137,0.10)", tagCol: "#6B5F58"
+  },
+  {
+    name: "Jari", sub: "Metallic Thread · Gold & Silver", stock: "90 kg", pct: 30, note: "3 types available", alert: true, img: imgJari,
+    cardBg: "#FFFDF9", accent: T.royalBurgundy, accentLight: "rgba(110,15,45,0.06)", borderColor: "rgba(110,15,45,0.16)", tagBg: "rgba(110,15,45,0.07)", tagCol: T.royalBurgundy
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -241,43 +254,55 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 // ═══════════════════════════════════════════════════════════════════════════════
 // SA TOP NAV — grouped (mirrors BeereDashboard's Admin TopNav, + gold accent)
 // ═══════════════════════════════════════════════════════════════════════════════
-type NavPage  = { key: string; label: string; sa?: boolean };
+type NavPage = { key: string; label: string; sa?: boolean };
 type NavGroup = { key: string; label: string; icon: React.ComponentType<{ size?: number; color?: string }>; pages: NavPage[] };
 
 const NAV_GROUPS: NavGroup[] = [
-  { key: "overview", label: "Overview", icon: LayoutDashboard, pages: [
+  {
+    key: "overview", label: "Overview", icon: LayoutDashboard, pages: [
       { key: "Overview", label: "Overview" },
-  ]},
-  { key: "production", label: "Production", icon: Factory, pages: [
+    ]
+  },
+  {
+    key: "production", label: "Production", icon: Factory, pages: [
       { key: "Production", label: "Production" },
-      { key: "Batches",    label: "Batches" },
-      { key: "Designs",    label: "Designs" },
-      { key: "QcHistory",  label: "QC History" },
-  ]},
-  { key: "materials", label: "Materials", icon: Package, pages: [
-      { key: "Materials",         label: "Materials" },
-      { key: "ReceiveStock",      label: "Receive Stock" },
-      { key: "IssueMaterial",     label: "Issue Material" },
+      { key: "Batches", label: "Batches" },
+      { key: "Designs", label: "Designs" },
+      { key: "QcHistory", label: "QC History" },
+    ]
+  },
+  {
+    key: "materials", label: "Materials", icon: Package, pages: [
+      { key: "Materials", label: "Materials" },
+      { key: "ReceiveStock", label: "Receive Stock" },
+      { key: "IssueMaterial", label: "Issue Material" },
       { key: "ExternalPurchases", label: "External Purchases" },
-  ]},
-  { key: "finance", label: "Finance", icon: IndianRupee, pages: [
+    ]
+  },
+  {
+    key: "finance", label: "Finance", icon: IndianRupee, pages: [
       { key: "Payments", label: "Payments" },
-      { key: "Firms",    label: "Firms" },
-      { key: "Reports",  label: "Reports" },
-  ]},
-  { key: "people", label: "People", icon: Users, pages: [
-      { key: "Weavers",   label: "Weavers" },
+      { key: "Firms", label: "Firms" },
+      { key: "Reports", label: "Reports" },
+    ]
+  },
+  {
+    key: "people", label: "People", icon: Users, pages: [
+      { key: "Weavers", label: "Weavers" },
       { key: "Customers", label: "Customers" },
-      { key: "AddUser",   label: "Add New User" },
-  ]},
-  { key: "operations", label: "Operations", icon: Settings2, pages: [
-      { key: "Inventory",     label: "Inventory" },
-      { key: "Rates",         label: "Rates & Pricing" },
+      { key: "AddUser", label: "Add New User" },
+    ]
+  },
+  {
+    key: "operations", label: "Operations", icon: Settings2, pages: [
+      { key: "Inventory", label: "Inventory" },
+      { key: "Rates", label: "Rates & Pricing" },
       { key: "Notifications", label: "Notifications" },
-      { key: "Approvals",     label: "Approvals",      sa: true },
-      { key: "AuditLog",      label: "Audit Log",      sa: true },
-      { key: "LabelSettings", label: "Label Settings",  sa: true },
-  ]},
+      { key: "Approvals", label: "Approvals", sa: true },
+      { key: "AuditLog", label: "Audit Log", sa: true },
+      { key: "LabelSettings", label: "Label Settings", sa: true },
+    ]
+  },
 ];
 
 function findNavGroup(pageKey: string): NavGroup {
@@ -319,24 +344,22 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: compact ? "0 20px" : "0 56px",
           gap: compact ? 12 : 0,
-          background: "rgba(255,253,249,0.94)",
-          backdropFilter: "blur(28px)",
-          WebkitBackdropFilter: "blur(28px)" as any,
-          borderBottom: `2px solid ${T.antiqueGold}`,
-          boxShadow: "0 4px 40px rgba(74,6,27,0.06)",
+          background: T.darkBurgundy,
+          borderBottom: `1px solid rgba(200,155,71,0.14)`,
+          boxShadow: "0 4px 40px rgba(0,0,0,0.28)",
         }}
       >
         {/* Logo + Brand */}
         <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}
           style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 14, flexShrink: 0, cursor: "pointer" }}
         >
-          <div style={{ width: compact ? 40 : 52, height: compact ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(110,15,45,0.18)", border: "1.5px solid rgba(200,155,71,0.30)" }}>
+          <div style={{ width: compact ? 40 : 52, height: compact ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.30)", border: `1.5px solid rgba(200,155,71,0.30)` }}>
             <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
           {!compact && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.luxuryBrown, letterSpacing: "0.3px", lineHeight: 1 }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: T.taupe, letterSpacing: "0.2px" }}>&amp; Brothers Silks</div>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.warmCream, letterSpacing: "0.3px", lineHeight: 1 }}>Beere Kesava</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: "rgba(245,232,208,0.75)", letterSpacing: "0.2px" }}>&amp; Brothers Silks</div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>Est. 1999</div>
             </div>
           )}
@@ -364,7 +387,7 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 + i * 0.05, ease: EASE }}
-                  whileHover={{ backgroundColor: "rgba(110,15,45,0.03)" }}
+                  whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
                   style={{
                     height: "100%", padding: compact ? "0 12px" : "0 20px", flexShrink: 0,
                     border: "none", backgroundColor: "rgba(0,0,0,0)", cursor: "pointer",
@@ -372,17 +395,17 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <Icon size={15} color={isActive ? T.royalBurgundy : T.taupe} />
+                    <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
                     <span style={{
                       fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5,
-                      color: isActive ? T.royalBurgundy : T.taupe,
+                      color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
                       whiteSpace: "nowrap", letterSpacing: "0.1px",
                       transition: "color 0.2s",
                     }}>{g.label}</span>
                     {hasDropdown && (
                       <ChevronDown
                         size={12}
-                        color={isActive ? T.royalBurgundy : T.taupe}
+                        color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
                         style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
                       />
                     )}
@@ -391,7 +414,7 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
                     <motion.div
                       layoutId="sa-group-nav-underline"
                       transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      style={{ height: 2, width: "100%", background: "#6B1A2A" }}
+                      style={{ height: 2, width: "100%", background: T.royalBurgundy }}
                     />
                   )}
                   {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
@@ -415,7 +438,7 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
             const alignRight = NAV_GROUPS.indexOf(g) >= NAV_GROUPS.length - 2;
             const left = rect ? (alignRight ? undefined : rect.left) : 0;
             const right = rect && alignRight ? window.innerWidth - rect.right : undefined;
-            const top  = rect ? rect.bottom - 8 : MAIN_NAV_H - 8;
+            const top = rect ? rect.bottom - 8 : MAIN_NAV_H - 8;
             return (
               <motion.div
                 key={`dd-${g.key}`}
@@ -472,27 +495,36 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
 
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
           {!compact && (
-          <motion.button whileHover={{ scale: 1.08, backgroundColor: "rgba(110,15,45,0.05)" }} whileTap={{ scale: 0.94 }}
-            style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.borderDef}`, backgroundColor: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          ><Search size={15} color={T.taupe} /></motion.button>
+            <motion.button
+              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
+              whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
+              whileTap={{ scale: 0.94 }}
+              style={{ width: 38, height: 38, borderRadius: 12, border: "1px solid rgba(245,232,208,0.14)", backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            ><Search size={15} color="rgba(245,232,208,0.75)" /></motion.button>
           )}
           <div style={{ position: "relative" }}>
-            <motion.button whileHover={{ scale: 1.08, backgroundColor: "rgba(110,15,45,0.05)" }} whileTap={{ scale: 0.94 }}
+            <motion.button
               onClick={() => set("Notifications")}
-              style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.borderDef}`, backgroundColor: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            ><Bell size={15} color={active === "Notifications" ? T.royalBurgundy : T.taupe} /></motion.button>
-            <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.royalBurgundy, border: `1.5px solid ${T.warmIvory}` }} />
+              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
+              whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
+              whileTap={{ scale: 0.94 }}
+              style={{ width: 38, height: 38, borderRadius: 12, border: "1px solid rgba(245,232,208,0.14)", backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            ><Bell size={15} color={active === "Notifications" ? T.antiqueGold : "rgba(245,232,208,0.75)"} /></motion.button>
+            <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}` }} />
           </div>
           {/* Gold SA avatar + profile dropdown */}
           <div style={{ position: "relative" }}>
-            <motion.div onClick={() => { setShowProfile(p => !p); setOpenGroup(null); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "6px 12px 6px 6px", borderRadius: 12, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, backgroundColor: showProfile ? "rgba(196,146,58,0.08)" : "rgba(196,146,58,0.04)" }}
+            <motion.div onClick={() => { setShowProfile(p => !p); setOpenGroup(null); }}
+              initial={{ backgroundColor: "rgba(245,232,208,0.04)" }}
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.10)" }}
+              whileTap={{ scale: 0.98 }}
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "6px 12px 6px 6px", borderRadius: 12, border: `1px solid ${showProfile ? T.antiqueGold : "rgba(245,232,208,0.14)"}`, backgroundColor: showProfile ? "rgba(245,232,208,0.10)" : "rgba(245,232,208,0.04)" }}
             >
               <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
                 <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
               </div>
-              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.luxuryBrown }}>Superadmin</span>}
-              <ChevronDown size={13} color={T.taupe} style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
+              <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
             </motion.div>
             {showProfile && (
               <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 250, overflow: "hidden" }}>
@@ -974,8 +1006,8 @@ function SAWeaverSection() {
               <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14 }}>
                 {[
                   { k: "Sarees this month", v: String(w.sarees), mono: false },
-                  { k: "Batch",             v: w.batch,          mono: true  },
-                  { k: "Completion",        v: `${w.pct}%`,      mono: false },
+                  { k: "Batch", v: w.batch, mono: true },
+                  { k: "Completion", v: `${w.pct}%`, mono: false },
                 ].map(r => (
                   <div key={r.k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe }}>{r.k}</span>
@@ -1067,7 +1099,38 @@ function SAOverviewPage({ setNav }: { setNav: (v: string) => void }) {
 // SUPERADMIN DASHBOARD (main export)
 // ═══════════════════════════════════════════════════════════════════════════════
 export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
-  const [nav, setNav] = useState("Materials");
+  const { pathname } = useLocation();
+  const { tab } = useParams();
+  const routerNavigate = useNavigate();
+
+  // Map path to active tab
+  let nav = "Materials";
+  if (tab === "materials") nav = "Materials";
+  else if (tab === "weavers") nav = "Weavers";
+  else if (tab === "all-weavers") nav = "AllWeavers";
+  else if (tab === "all-stock") nav = "AllStock";
+  else if (tab === "production-history") nav = "ProductionHistory";
+  else if (tab === "production") nav = "Production";
+  else if (tab === "all-orders") nav = "AllOrders";
+  else if (tab === "qc-history") nav = "QcHistory";
+  else if (tab === "payments") nav = "Payments";
+  else if (tab === "reports") nav = "Reports";
+  else if (tab === "inventory") nav = "Inventory";
+  else if (tab === "customers") nav = "Customers";
+  else if (tab === "firms") nav = "Firms";
+  else if (tab === "notifications") nav = "Notifications";
+  else if (tab === "receive-stock") nav = "ReceiveStock";
+  else if (tab === "add-user") nav = "AddUser";
+  else if (tab === "external-purchases") nav = "ExternalPurchases";
+  else if (tab === "batches") nav = "Batches";
+  else if (tab === "designs") nav = "Designs";
+  else if (tab === "rates") nav = "Rates";
+  else if (tab === "issue-material") nav = "IssueMaterial";
+  else if (tab === "approvals") nav = "Approvals";
+  else if (tab === "audit-log") nav = "AuditLog";
+  else if (tab === "label-settings") nav = "LabelSettings";
+  else if (tab === "overview") nav = "Overview";
+
   const [menuOpen, setMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -1080,29 +1143,66 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav]);
 
+  const navigate = (tab: string) => {
+    const routeMap: Record<string, string> = {
+      Overview: "/superadmin/overview",
+      Materials: "/superadmin/materials",
+      Weavers: "/superadmin/weavers",
+      AllWeavers: "/superadmin/all-weavers",
+      AllStock: "/superadmin/all-stock",
+      Production: "/superadmin/production",
+      AllOrders: "/superadmin/all-orders",
+      QcHistory: "/superadmin/qc-history",
+      Payments: "/superadmin/payments",
+      Reports: "/superadmin/reports",
+      Inventory: "/superadmin/inventory",
+      Customers: "/superadmin/customers",
+      Firms: "/superadmin/firms",
+      Notifications: "/superadmin/notifications",
+      ReceiveStock: "/superadmin/receive-stock",
+      AddUser: "/superadmin/add-user",
+      ExternalPurchases: "/superadmin/external-purchases",
+      Batches: "/superadmin/batches",
+      Designs: "/superadmin/designs",
+      Rates: "/superadmin/rates",
+      IssueMaterial: "/superadmin/issue-material",
+      ProductionHistory: "/superadmin/production-history",
+      Approvals: "/superadmin/approvals",
+      AuditLog: "/superadmin/audit-log",
+      LabelSettings: "/superadmin/label-settings",
+    };
+    const path = routeMap[tab] || "/superadmin/materials";
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    routerNavigate(path);
+  };
+
   function renderPage(navigate: (v: string) => void) {
     switch (nav) {
-      case "Materials":  return <MaterialsPage onNavigate={navigate} />;
-      case "Weavers":    return <WeaversPage />;
-      case "Production": return <ProductionPage superadmin />;
-      case "Payments":   return <PaymentsPage />;
-      case "Reports":    return <ReportsPage />;
-      case "Customers":  return <CustomersPage />;
-      case "Firms":      return <FirmsPage />;
-      case "Inventory":  return <InventoryPage />;
-      case "Batches":    return <BatchCreationPage />;
-      case "Designs":    return <DesignLibraryPage />;
-      case "Rates":      return <RatesPricingPage />;
-      case "Approvals":  return <ApprovalsPage />;
-      case "AuditLog":          return <AuditLogPage />;
-      case "AddUser":           return <AddUserPage />;
-      case "LabelSettings":     return <LabelSettingsPage />;
+      case "Materials": return <MaterialsPage onNavigate={navigate} />;
+      case "Weavers": return <WeaversPage onNavigate={navigate} />;
+      case "AllWeavers": return <AllWeaversPage />;
+      case "AllStock": return <AllStockPage onBack={() => navigate("Production")} />;
+      case "Production": return <ProductionPage superadmin onNavigate={navigate} />;
+      case "AllOrders": return <AllOrdersPage onBack={() => navigate("Production")} />;
+      case "ProductionHistory": return <ProductionHistoryPage />;
+      case "Payments": return <PaymentsPage />;
+      case "Reports": return <ReportsPage />;
+      case "Customers": return <CustomersPage />;
+      case "Firms": return <FirmsPage />;
+      case "Inventory": return <InventoryPage />;
+      case "Batches": return <BatchCreationPage />;
+      case "Designs": return <DesignLibraryPage />;
+      case "Rates": return <RatesPricingPage />;
+      case "Approvals": return <ApprovalsPage />;
+      case "AuditLog": return <AuditLogPage />;
+      case "AddUser": return <AddUserPage />;
+      case "LabelSettings": return <LabelSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
-      case "IssueMaterial":     return <IssueMaterialPage />;
-      case "ReceiveStock":      return <WorkerGRN />;
-      case "QcHistory":         return <QcHistoryPage onBack={() => navigate("Production")} />;
-      case "Notifications":     return <NotificationsPage />;
-      default:                  return <SAOverviewPage setNav={navigate} />;
+      case "IssueMaterial": return <IssueMaterialPage />;
+      case "ReceiveStock": return <WorkerGRN />;
+      case "QcHistory": return <QcHistoryPage onBack={() => navigate("Production")} />;
+      case "Notifications": return <NotificationsPage />;
+      default: return <SAOverviewPage setNav={navigate} />;
     }
   }
 
@@ -1110,18 +1210,35 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
 
   return (
     <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
-      <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
+      <style>{`
+        :root {
+          --foreground: #1F1209;
+          --card: #ffffff;
+          --card-foreground: #1F1209;
+          --popover: #ffffff;
+          --popover-foreground: #1F1209;
+          --primary-foreground: #ffffff;
+          --secondary: #f1f1f5;
+          --ring: rgb(139,112,96);
+          --tw-shadow: 0 0 rgba(0,0,0,0);
+          --tw-shadow-colored: 0 0 rgba(0,0,0,0);
+          --tw-ring-shadow: 0 0 rgba(0,0,0,0);
+          --tw-ring-color: rgba(139,112,96,0.5);
+        }
+        button { background-color: rgba(0,0,0,0); }
+        html, body { overflow-x: hidden; max-width: 100%; }
+      `}</style>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
       {isMobile ? (
         <>
-          <SAMobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={nav} setTab={setNav} />
+          <SAMobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={nav} setTab={navigate} />
           <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} />
           {sections && <SectionNavigator sections={sections} stickyTop={MOBILE_NAV_H} padding="0 18px" />}
-          {renderPage(setNav)}
+          {renderPage(navigate)}
         </>
       ) : (
         <>
-          <SATopNav active={nav} set={setNav} onBack={onBack} sections={sections} />
+          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} />
           <AnimatePresence mode="wait">
             <motion.div key={nav}
               initial={{ opacity: 0, y: 12 }}
@@ -1129,7 +1246,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.28, ease: EASE }}
             >
-              {renderPage(setNav)}
+              {renderPage(navigate)}
             </motion.div>
           </AnimatePresence>
         </>

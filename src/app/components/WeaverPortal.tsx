@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
 import { useResponsive } from "./useResponsive";
 import { useBatches, SareeRow } from "./BatchContext";
@@ -1826,8 +1827,7 @@ function NotificationsPage() {
 // ─── MOBILE SHELL ──────────────────────────────────────────────────────────
 type Tab5 = "batches" | "confirm" | "designs" | "warp" | "payments";
 
-function MobileWeaverPortal({ onBack }: { onBack?: () => void }) {
-  const [active, setActive] = useState<Tab5>("batches");
+function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void }) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -2376,9 +2376,8 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 
 // ─── DESKTOP SHELL ─────────────────────────────────────────────────────────
 
-function DesktopWeaverPortal({ onBack, bp = "desktop" }: { onBack?: () => void; bp?: "tablet" | "desktop" }) {
+function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { onBack?: () => void; bp?: "tablet" | "desktop"; active: Tab5; setActive: (t: Tab5) => void }) {
   const isTablet = bp === "tablet";
-  const [active, setActive] = useState<Tab5>("batches");
   const [showNotifs, setShowNotifs] = useState(false);
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -3215,12 +3214,33 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
   const { isMobile, w } = useResponsive();
   const bp: "tablet" | "desktop" = w >= 1024 ? "desktop" : "tablet";
 
+  const { pathname } = useLocation();
+  const routerNavigate = useNavigate();
+
+  let active: Tab5 = "batches";
+  if (pathname.includes("/confirm")) active = "confirm";
+  else if (pathname.includes("/designs")) active = "designs";
+  else if (pathname.includes("/warp")) active = "warp";
+  else if (pathname.includes("/payments")) active = "payments";
+
+  const setActive = (tab: Tab5) => {
+    const routeMap: Record<Tab5, string> = {
+      batches: "/weaver/batches",
+      confirm: "/weaver/confirm",
+      designs: "/weaver/designs",
+      warp: "/weaver/warp",
+      payments: "/weaver/payments",
+    };
+    const path = routeMap[tab] || "/weaver/batches";
+    routerNavigate(path);
+  };
+
   return (
     <>
       <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       {isMobile
-        ? <MobileWeaverPortal onBack={onBack} />
-        : <DesktopWeaverPortal onBack={onBack} bp={bp} />}
+        ? <MobileWeaverPortal onBack={onBack} active={active} setActive={setActive} />
+        : <DesktopWeaverPortal onBack={onBack} bp={bp} active={active} setActive={setActive} />}
     </>
   );
 }
