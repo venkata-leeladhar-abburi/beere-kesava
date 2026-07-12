@@ -7,89 +7,105 @@ import { motion } from "motion/react";
 // ═══════════════════════════════════════════════════════════════════════════════
 const T = {
   royalBurgundy: "#6E0F2D",
-  taupe:         "#8B7060",
-  borderDef:     "rgba(110,15,45,0.10)",
+  taupe: "#8B7060",
+  borderDef: "rgba(110,15,45,0.10)",
 };
 const F = {
   ui: "'Inter', sans-serif",
 };
 
 // Sticky-stack layout constants — shared across both dashboards (identical navbars).
-export const MAIN_NAV_H    = 90;
-export const SUB_NAV_H     = 66;
+export const MAIN_NAV_H = 90;
+export const SUB_NAV_H = 66;
 export const SECTION_NAV_H = 56;
-export const MOBILE_NAV_H  = 60;
+export const MOBILE_NAV_H = 60;
 
 // Worker portal — different nav-bar heights, reuses this same component/pattern.
 export const WORKER_MOBILE_HEADER_H = 56;
-export const WORKER_TOPNAV_H        = 72;
-export const WORKER_SECTION_NAV_H   = 52;
+export const WORKER_TOPNAV_H = 72;
+export const WORKER_SECTION_NAV_H = 52;
 
 // Shop Staff portal — different nav-bar heights, reuses this same component/pattern.
 export const SHOP_MOBILE_HEADER_H = 56;
-export const SHOP_SECTION_NAV_H   = 52;
+export const SHOP_SECTION_NAV_H = 52;
 
 export interface SectionNavItem { id: string; label: string; }
 
 export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
   Production: [
-    { id: "prod-bulk-orders",    label: "Bulk Orders" },
+    { id: "prod-bulk-orders", label: "Bulk Orders" },
     { id: "prod-active-batches", label: "Active Batches" },
-    { id: "prod-defective",      label: "Defective Sarees" },
-    { id: "prod-analytics",      label: "Analytics" },
-    { id: "prod-history",        label: "Production History" },
+    { id: "prod-defective", label: "Defective Sarees" },
+    { id: "prod-analytics", label: "Analytics" },
+    { id: "prod-history", label: "Production History" },
   ],
   Materials: [
-    { id: "mat-alerts",           label: "Stock Alerts" },
-    { id: "mat-po-tracker",       label: "Purchase Orders" },
-    { id: "mat-stock-overview",   label: "Current Stock" },
-    { id: "mat-issued",           label: "Issued to Weavers" },
+    { id: "mat-alerts", label: "Stock Alerts" },
+    { id: "mat-po-tracker", label: "Purchase Orders" },
+    { id: "mat-stock-overview", label: "Current Stock" },
+    { id: "mat-issued", label: "Issued to Weavers" },
     { id: "mat-purchase-history", label: "Purchase History" },
-    { id: "mat-recent",           label: "Recently Received" },
-    { id: "mat-movement",         label: "Movement History" },
+    { id: "mat-recent", label: "Recently Received" },
+    { id: "mat-movement", label: "Movement History" },
   ],
   Payments: [
-    { id: "pay-summary",        label: "Financial Summary" },
+    { id: "pay-summary", label: "Financial Summary" },
     { id: "pay-making-charges", label: "Making Charges" },
-    { id: "pay-wholesale",      label: "Wholesale Collections" },
-    { id: "pay-vendor",         label: "Vendor Payments" },
-    { id: "pay-analytics",      label: "Analytics" },
-    { id: "pay-history",        label: "Payment History" },
+    { id: "pay-wholesale", label: "Wholesale Collections" },
+    { id: "pay-vendor", label: "Vendor Payments" },
+    { id: "pay-analytics", label: "Analytics" },
+    { id: "pay-history", label: "Payment History" },
   ],
   Reports: [
-    { id: "rep-raw-materials",   label: "Raw Materials" },
-    { id: "rep-production",      label: "Production" },
+    { id: "rep-raw-materials", label: "Raw Materials" },
+    { id: "rep-production", label: "Production" },
     { id: "rep-weaver-payments", label: "Weaver Payments" },
-    { id: "rep-retail",          label: "Retail Sales" },
-    { id: "rep-wholesale",       label: "Wholesale Sales" },
-    { id: "rep-pnl",             label: "P&L" },
-    { id: "rep-customers",       label: "Customers" },
-    { id: "rep-overdue",         label: "Overdue & Alerts" },
+    { id: "rep-retail", label: "Retail Sales" },
+    { id: "rep-wholesale", label: "Wholesale Sales" },
+    { id: "rep-pnl", label: "P&L" },
+    { id: "rep-customers", label: "Customers" },
+    { id: "rep-overdue", label: "Overdue & Alerts" },
   ],
   Weavers: [
     { id: "weav-all-weavers", label: "All Weavers" },
     { id: "weav-performance", label: "Performance" },
-    { id: "weav-activities",  label: "Activities" },
+    { id: "weav-activities", label: "Activities" },
   ],
   WorkerQC: [
-    { id: "wqc-pending",     label: "Pending QC" },
+    { id: "wqc-pending", label: "Pending QC" },
     { id: "wqc-in-progress", label: "In Progress" },
-    { id: "wqc-completed",   label: "Completed Today" },
-    { id: "wqc-defective",   label: "Defective" },
+    { id: "wqc-completed", label: "Completed Today" },
+    { id: "wqc-defective", label: "Defective" },
   ],
   ShopSalesReport: [
-    { id: "shoprep-today-sales",     label: "Today's Sales" },
-    { id: "shoprep-monthly-totals",  label: "Monthly Totals" },
-    { id: "shoprep-top-customers",   label: "Top Customers" },
-    { id: "shoprep-by-design",       label: "Sales by Design" },
-    { id: "shoprep-returns",         label: "Returns" },
+    { id: "shoprep-today-sales", label: "Today's Sales" },
+    { id: "shoprep-monthly-totals", label: "Monthly Totals" },
+    { id: "shoprep-top-customers", label: "Top Customers" },
+    { id: "shoprep-by-design", label: "Sales by Design" },
+    { id: "shoprep-returns", label: "Returns" },
   ],
 };
 
 // Global CSS needed by SectionNavigator — render once per dashboard root.
 export const SECTION_NAV_GLOBAL_STYLE = `
-  .section-nav-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-  .section-nav-scroll::-webkit-scrollbar { display: none; }
+  .section-nav-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(110,15,45,0.32) transparent;
+  }
+  .section-nav-scroll::-webkit-scrollbar {
+    height: 4px;
+    display: block !important;
+  }
+  .section-nav-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .section-nav-scroll::-webkit-scrollbar-thumb {
+    background: rgba(110,15,45,0.32);
+    border-radius: 4px;
+  }
+  .section-nav-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(110,15,45,0.60);
+  }
 
   /* scroll-margin-top: sticky navbars height + 16px breathing room so the
      section heading always lands cleanly below the last sticky bar. */
@@ -98,7 +114,7 @@ export const SECTION_NAV_GLOBAL_STYLE = `
   }
   @media (min-width: 768px) {
     [id^="prod-"], [id^="mat-"], [id^="pay-"], [id^="rep-"], [id^="weav-"] {
-      scroll-margin-top: ${MAIN_NAV_H + SUB_NAV_H + SECTION_NAV_H + 16}px;
+      scroll-margin-top: ${MAIN_NAV_H + SUB_NAV_H + 16}px;
     }
   }
 
@@ -116,10 +132,28 @@ export const SECTION_NAV_GLOBAL_STYLE = `
   }
 `;
 
+// Find the element that's actually doing the scrolling for this page. In
+// this app that's sometimes `document.body` rather than the window/
+// documentElement (window.scrollY stays 0 while body.scrollTop moves), so
+// window.scrollTo() alone silently does nothing. Walk up from the target
+// looking for the nearest ancestor whose content overflows its box.
+const findScrollContainer = (el: HTMLElement): HTMLElement | null => {
+  let node: HTMLElement | null = el.parentElement;
+  while (node) {
+    if (node.scrollHeight > node.clientHeight + 1) {
+      const { overflowY } = getComputedStyle(node);
+      if (overflowY === "auto" || overflowY === "scroll" || node === document.body) return node;
+    }
+    node = node.parentElement;
+  }
+  return document.scrollingElement as HTMLElement | null;
+};
+
 export function SectionNavigator({
   sections, stickyTop = 0, height = SECTION_NAV_H,
   activeColor = T.royalBurgundy, mutedColor = T.taupe, borderColor = T.borderDef,
   fontFamily = F.ui, padding = "0 40px", layoutId = "section-nav-active-pill",
+  inline = false,
 }: {
   sections: SectionNavItem[];
   stickyTop?: number;
@@ -130,10 +164,43 @@ export function SectionNavigator({
   fontFamily?: string;
   padding?: string;
   layoutId?: string;
+  inline?: boolean;
 }) {
   const [active, setActive] = useState(sections[0]?.id ?? "");
   const pillRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const stripRef = useRef<HTMLDivElement | null>(null);
+
+  const horizontalScrollRafRef = useRef<number>(0);
+
+  const smoothScrollHorizontal = (container: HTMLElement, targetX: number) => {
+    if (horizontalScrollRafRef.current) cancelAnimationFrame(horizontalScrollRafRef.current);
+
+    const startX = container.scrollLeft;
+    const delta = targetX - startX;
+    if (Math.abs(delta) < 1) return;
+
+    const duration = 650; // ms: slow and smooth glide
+    let startTime = -1;
+    const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+
+    const step = (now: number) => {
+      if (startTime < 0) startTime = now;
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutQuart(progress);
+
+      container.scrollLeft = startX + delta * eased;
+
+      if (progress < 1) {
+        horizontalScrollRafRef.current = requestAnimationFrame(step);
+      } else {
+        container.scrollLeft = targetX;
+        horizontalScrollRafRef.current = 0;
+      }
+    };
+
+    horizontalScrollRafRef.current = requestAnimationFrame(step);
+  };
 
   // Keep the active pill scrolled into view within its own horizontal strip.
   // We deliberately do NOT use pill.scrollIntoView() here: that scrolls every
@@ -143,15 +210,29 @@ export function SectionNavigator({
   // a blank gap. Scrolling only this strip's own scrollLeft avoids touching
   // any ancestor.
   useEffect(() => {
-    const pill = pillRefs.current[active];
-    const strip = stripRef.current;
-    if (!pill || !strip) return;
-    const target = pill.offsetLeft + pill.offsetWidth / 2 - strip.clientWidth / 2;
-    strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
-  }, [active]);
+    const timer = setTimeout(() => {
+      const pill = pillRefs.current[active];
+      const strip = stripRef.current;
+      if (!pill || !strip) return;
+      const target = pill.offsetLeft + pill.offsetWidth / 2 - strip.clientWidth / 2;
+      smoothScrollHorizontal(strip, Math.max(0, target));
+    }, 60);
+
+    return () => clearTimeout(timer);
+  }, [active, sections.map(s => s.id).join("|")]);
+
+  const isTransitioningRef = useRef(true);
 
   useEffect(() => {
     setActive(sections[0]?.id ?? "");
+    pillRefs.current = {};
+    isTransitioningRef.current = true;
+    if (stripRef.current) {
+      stripRef.current.scrollLeft = 0;
+    }
+    const timer = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 400);
 
     let observer: IntersectionObserver | null = null;
     let rafId = 0;
@@ -173,15 +254,42 @@ export function SectionNavigator({
         // section is only marked active once its top edge has scrolled fully past
         // all sticky bars (otherwise the previous section remains "active" even
         // after the user has scrolled past its heading).
-        const stickyH = MOBILE_NAV_H + SECTION_NAV_H;
+        const isMobileOrTablet = window.innerWidth <= 1024;
+        const stickyH = inline
+          ? (isMobileOrTablet ? MOBILE_NAV_H : MAIN_NAV_H + SUB_NAV_H)
+          : (isMobileOrTablet ? MOBILE_NAV_H + SECTION_NAV_H : MAIN_NAV_H + SUB_NAV_H + SECTION_NAV_H);
         observer = new IntersectionObserver(
-          entries => {
-            // Pick the topmost intersecting entry — avoids a race when two
-            // sections straddle the intersection boundary at the same frame.
-            const visible = entries
-              .filter(e => e.isIntersecting)
-              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-            if (visible.length > 0) setActive(visible[0].target.id);
+          () => {
+            // Ignore observer callbacks during tab transition to prevent stale layout scroll positions from setting incorrect active tab
+            if (isTransitioningRef.current) {
+              setActive(sections[0]?.id ?? "");
+              return;
+            }
+
+            // If we are at the very top of the page, force the active section to be the first one.
+            const firstEl = document.getElementById(sections[0]?.id);
+            const container = firstEl ? findScrollContainer(firstEl) : null;
+            const scrollTop = container ? container.scrollTop : (window.scrollY || document.documentElement.scrollTop);
+            if (scrollTop < 80) {
+              setActive(sections[0]?.id ?? "");
+              return;
+            }
+
+            // Find the topmost intersecting section by querying all observed elements
+            const visible = sections
+              .map(s => document.getElementById(s.id))
+              .filter((el): el is HTMLElement => el !== null)
+              .map(el => {
+                const rect = el.getBoundingClientRect();
+                const isIntersecting = rect.bottom > stickyH && rect.top < window.innerHeight * 0.6;
+                return { id: el.id, top: rect.top, isIntersecting };
+              })
+              .filter(item => item.isIntersecting)
+              .sort((a, b) => a.top - b.top);
+
+            if (visible.length > 0) {
+              setActive(visible[0].id);
+            }
           },
           {
             rootMargin: `-${stickyH}px 0px -40% 0px`,
@@ -197,28 +305,15 @@ export function SectionNavigator({
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
       if (rafId) cancelAnimationFrame(rafId);
       if (observer) observer.disconnect();
+      if (horizontalScrollRafRef.current) cancelAnimationFrame(horizontalScrollRafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections.map(s => s.id).join("|")]);
+  }, [sections.map(s => s.id).join("|"), inline]);
 
-  // Find the element that's actually doing the scrolling for this page. In
-  // this app that's sometimes `document.body` rather than the window/
-  // documentElement (window.scrollY stays 0 while body.scrollTop moves), so
-  // window.scrollTo() alone silently does nothing. Walk up from the target
-  // looking for the nearest ancestor whose content overflows its box.
-  const findScrollContainer = (el: HTMLElement): HTMLElement | null => {
-    let node: HTMLElement | null = el.parentElement;
-    while (node) {
-      if (node.scrollHeight > node.clientHeight + 1) {
-        const { overflowY } = getComputedStyle(node);
-        if (overflowY === "auto" || overflowY === "scroll" || node === document.body) return node;
-      }
-      node = node.parentElement;
-    }
-    return document.scrollingElement as HTMLElement | null;
-  };
+
 
   // ─── Custom RAF smooth scroll ──────────────────────────────────────────────
   // Native browser scrollTo({ behavior:'smooth' }) is unreliable on mobile
@@ -232,23 +327,23 @@ export function SectionNavigator({
     // Cancel any in-flight scroll from a previous tap.
     if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
 
-    const startY    = container.scrollTop;
-    const delta     = targetY - startY;
+    const startY = container.scrollTop;
+    const delta = targetY - startY;
     if (Math.abs(delta) < 1) return;                 // already there
 
     // Shorter on desktop, longer on mobile/tablet for a luxurious glide feel.
     const isMobileOrTablet = window.innerWidth <= 1024;
-    const duration  = isMobileOrTablet ? 520 : 340;  // ms
-    let   startTime = -1;
+    const duration = isMobileOrTablet ? 520 : 340;  // ms
+    let startTime = -1;
 
     // Quartic ease-out: snappy start, velvety deceleration — feels great on touch.
     const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
     const step = (now: number) => {
       if (startTime < 0) startTime = now;
-      const elapsed  = now - startTime;
+      const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const eased    = easeOutQuart(progress);
+      const eased = easeOutQuart(progress);
 
       container.scrollTop = startY + delta * eased;
 
@@ -288,8 +383,8 @@ export function SectionNavigator({
     // with a comfortable gap rather than being flush against it.
     const isMobileOrTablet = window.innerWidth <= 1024;
     const stickyOffset = isMobileOrTablet
-      ? MOBILE_NAV_H + SECTION_NAV_H + 16          // 132 px
-      : MAIN_NAV_H + SUB_NAV_H + SECTION_NAV_H + 16; // 228 px
+      ? MOBILE_NAV_H + SECTION_NAV_H + 16
+      : (inline ? MAIN_NAV_H + SUB_NAV_H + 16 : MAIN_NAV_H + SUB_NAV_H + SECTION_NAV_H + 16);
 
     // Freeze the element's position BEFORE starting the animation.
     // FadeUp entrance animations (opacity/y transform) fire as soon as the
@@ -310,7 +405,11 @@ export function SectionNavigator({
 
   return (
     <div
-      style={{
+      style={inline ? {
+        display: "flex", alignItems: "center", gap: 16,
+        overflowX: "hidden",
+        flex: 1, minWidth: 0,
+      } : {
         position: "sticky", top: stickyTop, zIndex: 90,
         height,
         background: "#FFFFFF",
@@ -324,7 +423,7 @@ export function SectionNavigator({
       <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 11, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>
         Jump to
       </span>
-      <div ref={stripRef} className="section-nav-scroll" style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0 }}>
+      <div ref={stripRef} className="section-nav-scroll" style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0, flex: 1, paddingTop: 6, paddingBottom: 6 }}>
         {sections.map(s => {
           const isActive = active === s.id;
           return (

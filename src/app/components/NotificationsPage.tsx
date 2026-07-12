@@ -6,6 +6,7 @@ import {
   ArrowRight, Check, X,
   Inbox, AlertCircle, Zap, ChevronDown, ChevronUp,
 } from "lucide-react";
+const imgNotifHero = "https://images.unsplash.com/photo-1633613286991-611fe299c4be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 // ─── Design tokens (mirrors BeereDashboard) ────────────────────────────────
 const T = {
@@ -255,75 +256,83 @@ export function NotificationsPage() {
   return (
     <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
-      {/* ── HERO ── */}
-      <section style={{ background: G.card, padding: "56px 56px 0", position: "relative", overflow: "hidden", minHeight: 220 }}>
-        {/* Background texture */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)`, pointerEvents: "none" }} />
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)`, pointerEvents: "none" }} />
-        <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
-
-        <div style={{ position: "relative", zIndex: 2 }}>
-          {/* Eyebrow */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
-            style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-            <div style={{ width: 20, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
-              Admin · Notifications
-            </span>
-          </motion.div>
-
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-            <div>
-              <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
-                style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(32px, 3.5vw, 52px)", color: T.warmCream, margin: 0, lineHeight: 1.1, letterSpacing: "-0.5px" }}>
-                Notifications
-                {unread > 0 && (
-                  <span style={{ marginLeft: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.antiqueGold, color: T.deepWine, fontFamily: F.mono, fontWeight: 700, fontSize: 14, borderRadius: 999, padding: "4px 14px", verticalAlign: "middle", position: "relative", top: -4 }}>
-                    {unread} new
-                  </span>
-                )}
-              </motion.h1>
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.25 }}
-                style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "10px 0 0", letterSpacing: "0.05px" }}>
-                Live operational alerts, stock updates, payment reminders, and production activity.
-              </motion.p>
-            </div>
-
-            {/* Mark all read */}
+      {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
+      <header style={{ background: "#2C0913", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        {/* Left text content */}
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · NOTIFICATIONS</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
+            <h1 style={{ fontFamily: F.display, fontSize: 52, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+              Notifications
+            </h1>
             {unread > 0 && (
-              <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
-                onClick={markAllRead}
-                whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.18)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(200,155,71,0.09)", color: T.antiqueGold, fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer", letterSpacing: "0.1px" }}>
-                <Check size={15} /> Mark all read
-              </motion.button>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.antiqueGold, color: T.deepWine, fontFamily: F.mono, fontWeight: 700, fontSize: 14, borderRadius: 999, padding: "4px 14px" }}>
+                {unread} new
+              </span>
             )}
           </div>
+          <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 560, lineHeight: 1.6 }}>
+            Live operational alerts, stock updates, payment reminders, and production activity.
+          </p>
+          {unread > 0 && (
+            <button
+              onClick={markAllRead}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(200,155,71,0.09)", color: T.antiqueGold, fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer", letterSpacing: "0.1px" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(200,155,71,0.18)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(200,155,71,0.09)"; }}
+            >
+              <Check size={15} /> Mark all read
+            </button>
+          )}
+        </div>
+        {/* Right image with gradient */}
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: "linear-gradient(to right, #2C0913 0%, rgba(44,9,19,0.65) 38%, rgba(44,9,19,0.10) 100%)" }} />
+          <img src={imgNotifHero} alt="Notifications" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.70) saturate(0.80)" }} />
+        </div>
+      </header>
 
-          {/* Metrics row */}
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
-            style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
-            {[
-              { label: "Total",    val: DATA.length,                                        Icon: Bell,          hi: false },
-              { label: "Unread",   val: unread,                                             Icon: Inbox,         hi: unread > 0 },
-              { label: "Critical", val: countByPriority("critical"),                        Icon: AlertTriangle, hi: false, col: "#FCA5A5" },
-              { label: "Today",    val: DATA.filter(n => n.date === "Today").length,        Icon: Zap,           hi: false },
-              { label: "Resolved", val: readIds.size,                                       Icon: CheckCircle2,  hi: false, col: "#6EE7B7" },
-            ].map((m, i) => (
-              <div key={m.label} style={{ flex: 1, padding: "20px 22px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <m.Icon size={18} color={m.hi ? T.antiqueGold : (m.col || "rgba(245,232,208,0.70)")} />
+      {/* ── FLOATING STAT STRIP ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
+        style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      >
+        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+          {[
+            { label: "TOTAL",    val: DATA.length,                                    Icon: Bell,          hi: false, col: undefined },
+            { label: "UNREAD",   val: unread,                                         Icon: Inbox,         hi: unread > 0, col: undefined },
+            { label: "CRITICAL", val: countByPriority("critical"),                    Icon: AlertTriangle, hi: false, col: "#FCA5A5" },
+            { label: "TODAY",    val: DATA.filter(n => n.date === "Today").length,   Icon: Zap,           hi: false, col: undefined },
+            { label: "RESOLVED", val: readIds.size,                                   Icon: CheckCircle2,  hi: false, col: "#6EE7B7" },
+          ].map((m, i) => (
+            <motion.div
+              key={m.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 + i * 0.09, ease: EASE }}
+              whileHover={{ backgroundColor: m.hi ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
+              style={{
+                flex: 1, padding: "28px 22px",
+                backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+                borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none",
+                display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                  {m.label}
                 </div>
-                <div>
-                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.90)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 34, color: m.hi ? T.goldLight : (m.col || T.warmCream), lineHeight: 1, ...NUM }}>{m.val}</div>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: m.hi ? T.goldLight : (m.col || "#FFFDF9"), lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                  {m.val}
                 </div>
               </div>
-            ))}
-          </motion.div>
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+            </motion.div>
+          ))}
         </div>
-      </section>
+      </motion.div>
 
       {/* ── FILTER BAR ── */}
       <div style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, padding: "0 56px", position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
@@ -356,7 +365,7 @@ export function NotificationsPage() {
       </div>
 
       {/* ── CONTENT ── */}
-      <div style={{ padding: "40px 56px 80px", display: "flex", gap: 28, alignItems: "flex-start" }}>
+      <div style={{ padding: "80px 56px 80px", display: "flex", gap: 28, alignItems: "flex-start" }}>
 
         {/* Left — list */}
         <div style={{ flex: selected ? "0 0 520px" : 1, minWidth: 0 }}>

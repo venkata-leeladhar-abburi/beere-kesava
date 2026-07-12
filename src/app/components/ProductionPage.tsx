@@ -110,6 +110,7 @@ const HEADER_CHIPS = [
   { value: "24",  label: "Active Batches",                 gold: false },
   { value: "186", label: "Sarees In Progress",             gold: false },
   { value: "32",  label: "Sarees Ready for Quality Check", gold: false },
+  { value: "248", label: "Sarees Completed This Month",    gold: false },
   { value: "18",  label: "Sarees In Stock — Ready for Sale", gold: true  },
 ];
 function PageHeader() {
@@ -124,14 +125,6 @@ function PageHeader() {
         <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
           See all active batches, track saree production at every stage, manage quality check, assign finishing work, and monitor bulk order progress — all in one place.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {HEADER_CHIPS.map(c => (
-            <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: c.gold ? "rgba(200,155,71,0.20)" : "rgba(255,253,249,0.10)", border: `1px solid ${c.gold ? "rgba(200,155,71,0.45)" : "rgba(255,253,249,0.15)"}`, borderRadius: 99, padding: "8px 16px" }}>
-              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c.gold ? T.antiqueGold : "#FFFDF9" }}>{c.value}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 14, color: c.gold ? T.antiqueGold : "rgba(255,253,249,0.72)" }}>{c.label}</span>
-            </div>
-          ))}
-        </div>
       </div>
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
         <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
@@ -199,7 +192,29 @@ function StatsStrip() {
 // SECTION 3 — BULK ORDER PRODUCTION TRACKER
 // ══════════════════════════════════════════════════════════════════════════════
 type OrderStatus = "on-track" | "at-risk" | "overdue";
-export interface BulkOrder { customer: string; ref: string; due: string; status: OrderStatus; daysLeft?: number; overdueBy?: number; sareeType: string; design: string; done: number; total: number; shortage?: number }
+export interface BulkOrder {
+  customer: string;
+  ref: string;
+  due: string;
+  status: OrderStatus;
+  daysLeft?: number;
+  overdueBy?: number;
+  sareeType: string;
+  design: string;
+  done: number;
+  total: number;
+  shortage?: number;
+  instructions?: string;
+  linkedBatches?: string[];
+  createdDate?: string;
+  customerId?: string;
+  dispatchStatus?: "pending" | "dispatched" | "invoiced";
+  dispatchDate?: string;
+  invoiceId?: string;
+  paymentStatus?: "pending" | "partial" | "paid";
+  amountDue?: number;
+  amountPaid?: number;
+}
 export const BULK_ORDERS: BulkOrder[] = [
   { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-045", done: 76, total: 80              },
   { customer: "Padmavathi Textiles",    ref: "ORD-2026-038", due: "25 May 2026", status: "at-risk",  daysLeft: 2,  sareeType: "Heavy Zari · HZ-003",      design: "BKB-031", done: 42, total: 60, shortage: 18 },
@@ -787,7 +802,7 @@ function ContextBatchCard({ b, onNavigateBatches }: { b: BatchRecord; onNavigate
   );
 }
 
-function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => void } & CodeCallbacks) {
   const { batches, setPendingOpenBatchId } = useBatches();
   const contextBatches = batches.filter(b => b.status === "active" || b.status === "draft");
 

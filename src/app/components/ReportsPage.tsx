@@ -344,19 +344,9 @@ function ReportsHeader() {
           </div>
         </div>
         {/* Body */}
-        <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.65)", margin: "0 0 28px", maxWidth: 520, lineHeight: 1.70 }}>
+        <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.65)", margin: "0", maxWidth: 520, lineHeight: 1.70 }}>
           View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as PDF or Excel, and schedule automatic delivery.
         </p>
-        {/* Chips */}
-        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
-          {REPORTS_CHIPS.map(c => (
-            <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,253,249,0.08)", border: "1px solid rgba(200,155,71,0.22)", borderRadius: 12, padding: "10px 20px", backdropFilter: "blur(8px)" }}>
-              <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.goldLight }}>{c.value}</span>
-              <div style={{ width: 1, height: 18, background: "rgba(200,155,71,0.28)" }} />
-              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,253,249,0.65)", fontWeight: 500 }}>{c.label}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </header>
   );

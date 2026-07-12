@@ -4,6 +4,7 @@ import {
   AlertTriangle, Plus, Search, ChevronDown, LayoutGrid, LayoutList,
   AlignJustify, Eye, X, Facebook, Instagram, Youtube, Linkedin,
   MapPin, Calendar, Star, Phone, Mail, Camera, FileText, Download, Save, UserPlus, Layers3, PackageCheck, XOctagon, Check, Edit3, Bell, ClipboardList,
+  Smartphone, Landmark, Home, CreditCard, Activity
 } from "lucide-react";
 import {
   Package, CheckCircle, XCircle, Clock, WarningCircle,
@@ -17,39 +18,39 @@ import { useWeaverPayments } from "./WeaverPaymentsContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { useMaterialIssue } from "./MaterialIssueContext";
-const imgHeaderBg    = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo as imgBKBLogo } from "../constants/weaverImages";
 
 // ── Design Tokens ──────────────────────────────────────────────────────────
 const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
+  silkCream: "#F7F2EA",
+  warmIvory: "#FFFDF9",
   royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
-  darkBurgundy:  "#3D0E1A",
-  antiqueGold:   "#C89B47",
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
-  crimson:       "#C0392B",
-  green:         "#1E6640",
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
+  deepWine: "#4A061B",
+  darkBurgundy: "#3D0E1A",
+  antiqueGold: "#C89B47",
+  goldLight: "#E7C983",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: "#8B7060",
+  crimson: "#C0392B",
+  green: "#1E6640",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
 };
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // ── Types & helpers ────────────────────────────────────────────────────────
 type Status = "active" | "qc" | "idle";
 const STATUS_CFG: Record<Status, { strip: string; label: string; badge: string; color: string }> = {
-  active: { strip: T.green,       label: "🟢 Currently Weaving",                       badge: "rgba(30,102,64,0.10)",  color: T.green   },
-  qc:     { strip: T.antiqueGold, label: "🟡 Sarees Submitted — Quality Check Pending", badge: "rgba(200,155,71,0.12)", color: "#8B6018" },
-  idle:   { strip: T.taupe,       label: "⚪ No Active Batch",                           badge: "rgba(139,112,96,0.10)", color: T.taupe   },
+  active: { strip: T.green, label: "🟢 Currently Weaving", badge: "rgba(30,102,64,0.10)", color: T.green },
+  qc: { strip: T.antiqueGold, label: "🟡 Sarees Submitted — Quality Check Pending", badge: "rgba(200,155,71,0.12)", color: "#8B6018" },
+  idle: { strip: T.taupe, label: "⚪ No Active Batch", badge: "rgba(139,112,96,0.10)", color: T.taupe },
 };
 function qcColor(r: number) { return r > 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson; }
 
@@ -70,8 +71,8 @@ function Avatar({ photo, initials, bg, size = 44 }: { photo: string | null; init
       {photo
         ? <img src={photo} alt={initials} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         : <div style={{ width: "100%", height: "100%", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: F.display, fontSize: size * 0.4, color: "#FFFDF9" }}>{initials}</span>
-          </div>}
+          <span style={{ fontFamily: F.display, fontSize: size * 0.4, color: "#FFFDF9" }}>{initials}</span>
+        </div>}
     </div>
   );
 }
@@ -82,55 +83,55 @@ function SectionPill({ label }: { label: string }) {
 
 // ── Data ───────────────────────────────────────────────────────────────────
 const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "WV-001": { code: "SB-001", type: "Self Brocade",   rate: "₹450/saree" },
-  "WV-002": { code: "HZ-003", type: "Heavy Zari",     rate: "₹680/saree" },
-  "WV-007": { code: "SB-001", type: "Self Brocade",   rate: "₹450/saree" },
-  "WV-005": { code: "PS-002", type: "Plain Silk",     rate: "₹280/saree" },
-  "WV-012": { code: "HZ-003", type: "Heavy Zari",     rate: "₹680/saree" },
-  "WV-018": { code: "SB-001", type: "Self Brocade",   rate: "₹450/saree" },
+  "WV-001": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "WV-002": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "WV-007": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "WV-005": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
+  "WV-012": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "WV-018": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
   "WV-031": { code: "BS-004", type: "Bridal Special", rate: "₹820/saree" },
 };
 
 const WEAVERS = [
-  { id: "WV-001", name: "Ravi Kumar",   village: "Dharmavaram, AP",       photo: imgRaviKumar,   initials: "RK", bg: "#5A3E6B", status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: 2140,  looms: 3, batch: "BATCH-079", design: "BKB-042", mobile: "×××× 4521", totalPaid: "₹8,42,000",  lastActive: "Today"     },
-  { id: "WV-002", name: "Padma Veni",   village: "Pochampally, Telangana", photo: imgPadmaVeni,   initials: "PV", bg: "#9B6B8A", status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: 1840,  looms: 2, batch: "BATCH-086", design: "BKB-051", mobile: "×××× 8834", totalPaid: "₹6,90,000",  lastActive: "Today"     },
-  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP",        photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B", status: "qc"     as Status, thisMonth:  7, passRate: 98, totalEver:  980,  looms: 2, batch: "BATCH-081", design: "BKB-038", mobile: "×××× 9982", totalPaid: "₹3,64,000",  lastActive: "Yesterday" },
-  { id: "WV-005", name: "Anand K.",     village: "Pochampally, Telangana", photo: imgAnandK,      initials: "AK", bg: "#4A6B4A", status: "active" as Status, thisMonth:  9, passRate: 92, totalEver: 1560,  looms: 2, batch: "BATCH-083", design: "BKB-047", mobile: "×××× 7723", totalPaid: "₹5,84,000",  lastActive: "Today"     },
-  { id: "WV-012", name: "Meena R.",     village: "Siddipet, Telangana",    photo: null,           initials: "MR", bg: "#9B6B8A", status: "active" as Status, thisMonth:  6, passRate: 89, totalEver:  720,  looms: 1, batch: "BATCH-088", design: "BKB-033", mobile: "×××× 6614", totalPaid: "₹2,68,000",  lastActive: "Today"     },
-  { id: "WV-018", name: "Lakshmi D.",   village: "Dharmavaram, AP",        photo: null,           initials: "LD", bg: "#2D7D6B", status: "qc"     as Status, thisMonth: 11, passRate: 96, totalEver: 1320,  looms: 2, batch: "BATCH-080", design: "BKB-040", mobile: "×××× 3341", totalPaid: "₹4,92,000",  lastActive: "Yesterday" },
-  { id: "WV-024", name: "Venkat Rao",   village: "Venkatagiri, AP",        photo: null,           initials: "VR", bg: "#4A5E7A", status: "idle"   as Status, thisMonth:  0, passRate: 95, totalEver: 2480,  looms: 4, batch: null,          design: null,       mobile: "×××× 1122", totalPaid: "₹9,28,000",  lastActive: "3 days ago"},
-  { id: "WV-031", name: "Kamala B.",    village: "Pochampally, Telangana", photo: null,           initials: "KB", bg: "#7A2040", status: "active" as Status, thisMonth: 14, passRate: 99, totalEver: 3120,  looms: 3, batch: "BATCH-084", design: "BKB-055", mobile: "×××× 5589", totalPaid: "₹11,64,000", lastActive: "Today"     },
+  { id: "WV-001", name: "Ravi Kumar", village: "Dharmavaram, AP", photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B", status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: 2140, looms: 3, batch: "BATCH-079", design: "BKB-042", mobile: "×××× 4521", totalPaid: "₹8,42,000", lastActive: "Today" },
+  { id: "WV-002", name: "Padma Veni", village: "Pochampally, Telangana", photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A", status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: 1840, looms: 2, batch: "BATCH-086", design: "BKB-051", mobile: "×××× 8834", totalPaid: "₹6,90,000", lastActive: "Today" },
+  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP", photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B", status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: 980, looms: 2, batch: "BATCH-081", design: "BKB-040", mobile: "×××× 9982", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
+  { id: "WV-005", name: "Anand K.", village: "Pochampally, Telangana", photo: imgAnandK, initials: "AK", bg: "#4A6B4A", status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: 1560, looms: 2, batch: "BATCH-083", design: "BKB-047", mobile: "×××× 7723", totalPaid: "₹5,84,000", lastActive: "Today" },
+  { id: "WV-012", name: "Meena R.", village: "Siddipet, Telangana", photo: null, initials: "MR", bg: "#9B6B8A", status: "active" as Status, thisMonth: 6, passRate: 89, totalEver: 720, looms: 1, batch: "BATCH-088", design: "BKB-033", mobile: "×××× 6614", totalPaid: "₹2,68,000", lastActive: "Today" },
+  { id: "WV-018", name: "Lakshmi D.", village: "Dharmavaram, AP", photo: null, initials: "LD", bg: "#2D7D6B", status: "qc" as Status, thisMonth: 11, passRate: 96, totalEver: 1320, looms: 2, batch: "BATCH-080", design: "BKB-040", mobile: "×××× 3341", totalPaid: "₹4,92,000", lastActive: "Yesterday" },
+  { id: "WV-024", name: "Venkat Rao", village: "Venkatagiri, AP", photo: null, initials: "VR", bg: "#4A5E7A", status: "idle" as Status, thisMonth: 0, passRate: 95, totalEver: 2480, looms: 4, batch: null, design: null, mobile: "×××× 1122", totalPaid: "₹9,28,000", lastActive: "3 days ago" },
+  { id: "WV-031", name: "Kamala B.", village: "Pochampally, Telangana", photo: null, initials: "KB", bg: "#7A2040", status: "active" as Status, thisMonth: 14, passRate: 99, totalEver: 3120, looms: 3, batch: "BATCH-084", design: "BKB-055", mobile: "×××× 5589", totalPaid: "₹11,64,000", lastActive: "Today" },
 ];
 const TABLE_ROWS = [
-  { id: "WV-001", name: "Ravi Kumar",   village: "Dharmavaram, AP",  mobile: "×××× 4521", looms: 3, status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: "2,140", totalPaid: "₹8,42,000",  lastActive: "Today"     },
-  { id: "WV-002", name: "Padma Veni",   village: "Pochampally, TG",  mobile: "×××× 8834", looms: 2, status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: "1,840", totalPaid: "₹6,90,000",  lastActive: "Today"     },
-  { id: "WV-003", name: "Krishnamma",   village: "Venkatagiri, AP",  mobile: "×××× 2210", looms: 2, status: "idle"   as Status, thisMonth:  0, passRate: 96, totalEver: "2,640", totalPaid: "₹9,84,000",  lastActive: "3 days ago"},
-  { id: "WV-004", name: "Rajesh T.",    village: "Siddipet, TG",     mobile: "×××× 5567", looms: 1, status: "active" as Status, thisMonth:  5, passRate: 91, totalEver: "620",   totalPaid: "₹2,18,000",  lastActive: "Today"     },
-  { id: "WV-005", name: "Anand K.",     village: "Pochampally, TG",  mobile: "×××× 7723", looms: 2, status: "active" as Status, thisMonth:  9, passRate: 92, totalEver: "1,560", totalPaid: "₹5,84,000",  lastActive: "Today"     },
-  { id: "WV-006", name: "Saraswati M.", village: "Dharmavaram, AP",  mobile: "×××× 3341", looms: 3, status: "qc"     as Status, thisMonth: 11, passRate: 98, totalEver: "3,240", totalPaid: "₹12,40,000", lastActive: "Yesterday" },
-  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP",  mobile: "×××× 9982", looms: 2, status: "qc"     as Status, thisMonth:  7, passRate: 98, totalEver: "980",   totalPaid: "₹3,64,000",  lastActive: "Yesterday" },
-  { id: "WV-008", name: "Bhavani K.",   village: "Siddipet, TG",     mobile: "×××× 6614", looms: 1, status: "idle"   as Status, thisMonth:  0, passRate: 88, totalEver: "440",   totalPaid: "₹1,60,000",  lastActive: "5 days ago"},
+  { id: "WV-001", name: "Ravi Kumar", village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: "2,140", totalPaid: "₹8,42,000", lastActive: "Today" },
+  { id: "WV-002", name: "Padma Veni", village: "Pochampally, TG", mobile: "×××× 8834", looms: 2, status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: "1,840", totalPaid: "₹6,90,000", lastActive: "Today" },
+  { id: "WV-003", name: "Krishnamma", village: "Venkatagiri, AP", mobile: "×××× 2210", looms: 2, status: "idle" as Status, thisMonth: 0, passRate: 96, totalEver: "2,640", totalPaid: "₹9,84,000", lastActive: "3 days ago" },
+  { id: "WV-004", name: "Rajesh T.", village: "Siddipet, TG", mobile: "×××× 5567", looms: 1, status: "active" as Status, thisMonth: 5, passRate: 91, totalEver: "620", totalPaid: "₹2,18,000", lastActive: "Today" },
+  { id: "WV-005", name: "Anand K.", village: "Pochampally, TG", mobile: "×××× 7723", looms: 2, status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: "1,560", totalPaid: "₹5,84,000", lastActive: "Today" },
+  { id: "WV-006", name: "Saraswati M.", village: "Dharmavaram, AP", mobile: "×××× 3341", looms: 3, status: "qc" as Status, thisMonth: 11, passRate: 98, totalEver: "3,240", totalPaid: "₹12,40,000", lastActive: "Yesterday" },
+  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: "980", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
+  { id: "WV-008", name: "Bhavani K.", village: "Siddipet, TG", mobile: "×××× 6614", looms: 1, status: "idle" as Status, thisMonth: 0, passRate: 88, totalEver: "440", totalPaid: "₹1,60,000", lastActive: "5 days ago" },
 ];
 const LEADERBOARD = [
-  { rank: 1, name: "Padma Veni",   id: "WV-002", sarees: 18, rate: 97, photo: imgPadmaVeni,   initials: "PV", bg: "#9B6B8A" },
-  { rank: 2, name: "Kamala B.",    id: "WV-031", sarees: 14, rate: 99, photo: null,           initials: "KB", bg: "#7A2040" },
-  { rank: 3, name: "Ravi Kumar",   id: "WV-001", sarees: 12, rate: 94, photo: imgRaviKumar,   initials: "RK", bg: "#5A3E6B" },
-  { rank: 4, name: "Lakshmi D.",   id: "WV-018", sarees: 11, rate: 96, photo: null,           initials: "LD", bg: "#2D7D6B" },
-  { rank: 5, name: "Suresh Murti", id: "WV-007", sarees:  7, rate: 98, photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B" },
+  { rank: 1, name: "Padma Veni", id: "WV-002", sarees: 18, rate: 97, photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A" },
+  { rank: 2, name: "Kamala B.", id: "WV-031", sarees: 14, rate: 99, photo: null, initials: "KB", bg: "#7A2040" },
+  { rank: 3, name: "Ravi Kumar", id: "WV-001", sarees: 12, rate: 94, photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B" },
+  { rank: 4, name: "Lakshmi D.", id: "WV-018", sarees: 11, rate: 96, photo: null, initials: "LD", bg: "#2D7D6B" },
+  { rank: 5, name: "Suresh Murti", id: "WV-007", sarees: 7, rate: 98, photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B" },
 ];
 const QC_DATA = [
-  { name: "Passed",   value: 238, color: T.green   },
-  { name: "Rejected", value: 10,  color: T.crimson },
+  { name: "Passed", value: 238, color: T.green },
+  { name: "Rejected", value: 10, color: T.crimson },
 ];
 const ACTIVITIES = [
-  { icon: "📦", action: "New batch issued",        detail: "BATCH-089 given to Ravi Kumar (WV-001) — Extra sarees for Lakshmi Silks order",        time: "2 hours ago" },
-  { icon: "✅", action: "Quality check submitted",  detail: "Padma Veni (WV-002) submitted 18 sarees — 17 passed quality check",                    time: "Yesterday"   },
-  { icon: "⚠️", action: "Material request pending", detail: "Suresh Murti (WV-007) requested 4 kg Warp — awaiting approval from admin",             time: "Today"       },
-  { icon: "💰", action: "Payment processed",        detail: "Monthly making charges disbursed to 84 weavers — ₹4.2L total paid this month",         time: "2 days ago"  },
-  { icon: "🔄", action: "Batch completed",          detail: "Kamala B. (WV-031) completed BATCH-084 — 14 sarees woven, all passed quality check",   time: "3 days ago"  },
+  { icon: "📦", action: "New batch issued", detail: "BATCH-089 given to Ravi Kumar (WV-001) — Extra sarees for Lakshmi Silks order", time: "2 hours ago" },
+  { icon: "✅", action: "Quality check submitted", detail: "Padma Veni (WV-002) submitted 18 sarees — 17 passed quality check", time: "Yesterday" },
+  { icon: "⚠️", action: "Material request pending", detail: "Suresh Murti (WV-007) requested 4 kg Warp — awaiting approval from admin", time: "Today" },
+  { icon: "💰", action: "Payment processed", detail: "Monthly making charges disbursed to 84 weavers — ₹4.2L total paid this month", time: "2 days ago" },
+  { icon: "🔄", action: "Batch completed", detail: "Kamala B. (WV-031) completed BATCH-084 — 14 sarees woven, all passed quality check", time: "3 days ago" },
 ];
 const BATCH_HISTORY = [
-  { batch: "BATCH-072", design: "BKB-038", produced: 6, passed: 6, date: "15 Apr 2026" },
+  { batch: "BATCH-072", design: "BKB-040", produced: 6, passed: 6, date: "15 Apr 2026" },
   { batch: "BATCH-061", design: "BKB-022", produced: 5, passed: 4, date: "02 Apr 2026" },
   { batch: "BATCH-054", design: "BKB-045", produced: 7, passed: 7, date: "18 Mar 2026" },
   { batch: "BATCH-047", design: "BKB-031", produced: 6, passed: 5, date: "04 Mar 2026" },
@@ -141,10 +142,11 @@ const BATCH_HISTORY = [
 // SECTION 1 — PAGE HEADER
 // ══════════════════════════════════════════════════════════════════════════
 const HEADER_CHIPS = [
-  { value: "350", label: "Total Weavers",                         crimson: false },
-  { value: "84",  label: "Currently Working",                     crimson: false },
-  { value: "12",  label: "Submitted — Waiting for Quality Check", crimson: false },
-  { value: "3",   label: "Warp Requests Pending",                 crimson: true  },
+  { value: "9",     label: "Active Weavers",                      crimson: false },
+  { value: "248",   label: "Sarees Produced This Month",          crimson: false },
+  { value: "96%",   label: "Quality Check Pass Rate",             crimson: false },
+  { value: "3",     label: "Warp Requests Pending",               crimson: true  },
+  { value: "₹4.2L", label: "Total Paid to Weavers This Month",    crimson: false },
 ];
 function PageHeader() {
   return (
@@ -158,14 +160,6 @@ function PageHeader() {
         <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
           See all weavers, their current work, how they are performing, and manage their details. You can also approve material requests from here.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {HEADER_CHIPS.map(c => (
-            <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: c.crimson ? "rgba(192,57,43,0.22)" : "rgba(255,253,249,0.10)", border: `1px solid ${c.crimson ? "rgba(192,57,43,0.45)" : "rgba(255,253,249,0.15)"}`, borderRadius: 99, padding: "8px 16px" }}>
-              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c.crimson ? "#F5A7A0" : "#FFFDF9" }}>{c.value}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 14, color: c.crimson ? "#F5A7A0" : "rgba(255,253,249,0.72)" }}>{c.label}</span>
-            </div>
-          ))}
-        </div>
       </div>
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
         <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
@@ -179,11 +173,11 @@ function PageHeader() {
 // SECTION 2 — STATS STRIP
 // ══════════════════════════════════════════════════════════════════════════
 const STATS = [
-  { label: "TOTAL ACTIVE WEAVERS",       value: "350",   sub: "All currently working with the firm", gold: false, crimson: false },
-  { label: "SAREES PRODUCED THIS MONTH", value: "248",   sub: "↑ 14% more than last month",           gold: false, crimson: false },
-  { label: "QUALITY CHECK PASS RATE",    value: "96%",   sub: "Only 4% rejected this month",          gold: true,  crimson: false },
-  { label: "WARP REQUESTS PENDING",      value: "3",     sub: "⚠ Need approval today",                gold: false, crimson: true  },
-  { label: "TOTAL PAID TO WEAVERS",      value: "₹4.2L", sub: "This month's making charges",          gold: false, crimson: false },
+  { label: "TOTAL ACTIVE WEAVERS", value: "9", sub: "All currently working with the firm", gold: false, crimson: false },
+  { label: "SAREES PRODUCED THIS MONTH", value: "248", sub: "↑ 14% more than last month", gold: false, crimson: false },
+  { label: "QUALITY CHECK PASS RATE", value: "96%", sub: "Only 4% rejected this month", gold: true, crimson: false },
+  { label: "WARP REQUESTS PENDING", value: "3", sub: "⚠ Need approval today", gold: false, crimson: true },
+  { label: "TOTAL PAID TO WEAVERS", value: "₹4.2L", sub: "This month's making charges", gold: false, crimson: false },
 ];
 function StatsStrip() {
   return (
@@ -234,9 +228,9 @@ function StatsStrip() {
 // SECTION 3 — WARP REQUESTS
 // ══════════════════════════════════════════════════════════════════════════
 const WARP_REQUESTS = [
-  { name: "Ravi Kumar",   code: "WV-001", batch: "BATCH-089", photo: imgRaviKumar,   raised: "2 days ago", material: "3 kg Warp",                  reason: "Extra sarees for Lakshmi Silks order", done: 4, total: 8, pct: 50 },
-  { name: "Padma Veni",   code: "WV-002", batch: "BATCH-086", photo: imgPadmaVeni,   raised: "1 day ago",  material: "2 kg Warp + Resham Red 500g", reason: "Design change by admin",               done: 3, total: 5, pct: 60 },
-  { name: "Suresh Murti", code: "WV-007", batch: "BATCH-081", photo: imgSureshMurti, raised: "Today",      material: "4 kg Warp",                  reason: "More sarees for stock",                done: 2, total: 4, pct: 50 },
+  { name: "Ravi Kumar", code: "WV-001", batch: "BATCH-089", photo: imgRaviKumar, raised: "2 days ago", material: "3 kg Warp", reason: "Extra sarees for Lakshmi Silks order", done: 4, total: 8, pct: 50 },
+  { name: "Padma Veni", code: "WV-002", batch: "BATCH-086", photo: imgPadmaVeni, raised: "1 day ago", material: "2 kg Warp + Resham Red 500g", reason: "Design change by admin", done: 3, total: 5, pct: 60 },
+  { name: "Suresh Murti", code: "WV-007", batch: "BATCH-081", photo: imgSureshMurti, raised: "Today", material: "4 kg Warp", reason: "More sarees for stock", done: 2, total: 4, pct: 50 },
 ];
 
 function ActionDialog({ open, title, children, tone = "gold", onClose }: { open: boolean; title: string; children: React.ReactNode; tone?: "gold" | "green" | "red"; onClose: () => void }) {
@@ -417,9 +411,9 @@ function WarpRequestsSection() {
 // ══════════════════════════════════════════════════════════════════════════
 const FILTER_PILLS = ["All Weavers", "Currently Working", "Submitted — Waiting Quality Check", "Idle — No Active Batch"];
 const VIEW_OPTIONS = [
-  { key: "card",  label: "Cards", PhIcon: SquaresFour },
-  { key: "list",  label: "List",  PhIcon: PhList      },
-  { key: "table", label: "Table", PhIcon: PhTable      },
+  { key: "card", label: "Cards", PhIcon: SquaresFour },
+  { key: "list", label: "List", PhIcon: PhList },
+  { key: "table", label: "Table", PhIcon: PhTable },
 ];
 function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll }: {
   view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void;
@@ -451,8 +445,8 @@ function AllWeaversControls({ view, setView, filter, setFilter, search, setSearc
             whileTap={{ scale: 0.97 }}
             style={{ display: "flex", alignItems: "center", gap: 10, backgroundColor: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 14, padding: "14px 26px", fontFamily: F.ui, fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(110,15,45,0.28)" }}
           >
-            <UserPlus size={20} /> Add New Weaver
-          </motion.button></div>
+              <UserPlus size={20} /> Add New Weaver
+            </motion.button></div>
         </div>
 
         <p style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, margin: "0 0 22px", lineHeight: 1.6 }}>
@@ -522,100 +516,154 @@ function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof 
           return (
             <FadeUp key={w.id} delay={i * 0.05} style={{ height: "100%" }}>
               <motion.div
-                whileHover={{ y: -5, boxShadow: "0 24px 60px rgba(74,6,27,0.14)" }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}
+                whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(74,6,27,0.12)" }}
+                transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}
               >
-                {/* Status colour strip */}
-                <div style={{ height: 5, background: cfg.strip, flexShrink: 0 }} />
+                {/* Header Banner - Full Image Height 170px */}
+                <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+                  {w.photo ? (
+                    <motion.img
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.5 }}
+                      src={w.photo}
+                      alt={w.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                    </div>
+                  )}
 
-                {/* Avatar + identity */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 22px 18px" }}>
-                  <div style={{ width: 96, height: 96, borderRadius: "50%", overflow: "hidden", border: `3px solid ${T.antiqueGold}`, marginBottom: 14, flexShrink: 0 }}>
-                    {w.photo
-                      ? <img src={w.photo} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <div style={{ width: "100%", height: "100%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <span style={{ fontFamily: F.display, fontSize: 36, color: "#FFFDF9" }}>{w.initials}</span>
-                        </div>
-                    }
+                  {/* Dark gradient overlay for modern look */}
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
+
+                  {/* Floating ID badge in top left */}
+                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                    {w.id}
                   </div>
-                  <div style={{ fontFamily: F.display, fontSize: 22, color: T.luxuryBrown, fontWeight: 700, textAlign: "center", lineHeight: 1.2, marginBottom: 5 }}>{w.name}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.royalBurgundy, marginBottom: 5, letterSpacing: "0.4px" }}>{w.id}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                    <PhMapPin size={14} color={T.taupe} weight="fill" /> {w.village}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13.5, color: T.taupe, marginTop: 4 }}>
-                    <Phone size={13} color={T.taupe} /> {w.mobile}
+
+                  {/* Floating gentle status pill overlay at the bottom left of the image banner */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: 12,
+                    left: 12,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 8px"
+                  }}>
+                    {w.status === "active" ? (
+                      <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
+                    ) : w.status === "qc" ? (
+                      <Clock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
+                    ) : (
+                      <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
+                    )}
+                    <span style={{
+                      fontFamily: F.ui,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#FFFFFF",
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.5px",
+                      textShadow: "0 1px 4px rgba(0,0,0,0.6)"
+                    }}>
+                      {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                    </span>
                   </div>
                 </div>
 
-                {/* Status badge */}
-                <div style={{ textAlign: "center", padding: "0 22px 16px" }}>
-                  <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "7px 18px" }}>{cfg.label}</span>
-                </div>
-
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "0 22px" }} />
-
-                {/* Looms */}
-                <div style={{ padding: "16px 22px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Rows size={15} color={T.luxuryBrown} weight="fill" />
+                {/* Content Area */}
+                <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
+                  {/* Name and Batch beside it */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
+                    <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
+                      {w.name}
+                    </div>
+                    {w.batch && (
+                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                        {w.batch}
+                      </span>
+                    )}
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Looms:</span>
-                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{w.looms}</span>
-                </div>
 
-                {/* Batch chip */}
-                <div style={{ padding: "14px 22px 12px", display: "flex", flexDirection: "column", gap: 8, minHeight: 64 }}>
-                  {w.batch
-                    ? <>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-                          <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: T.warmCream, border: `1.5px solid ${T.borderGold}`, borderRadius: 7, padding: "5px 11px" }}>{w.batch}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>Design: {w.design}</div>
-                        </div>
-                        {WEAVER_RATES[w.id] && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe }}>Rate:</span>
-                            <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 500, color: "#7A5010", background: "rgba(196,146,58,0.12)", border: "1px solid rgba(196,146,58,0.28)", borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" as const }}>
-                              {WEAVER_RATES[w.id].code} · {WEAVER_RATES[w.id].type} · {WEAVER_RATES[w.id].rate}
-                            </span>
-                          </div>
-                        )}
-                      </>
-                    : <div style={{ fontFamily: F.ui, fontSize: 14.5, color: T.taupe, fontStyle: "italic" }}>No active batch</div>
-                  }
-                </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                      <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                      <span>{w.village}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                      <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                      <span>{w.mobile}</span>
+                    </div>
+                  </div>
 
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "0 22px" }} />
+                  <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
 
-                {/* Action buttons */}
-                <div style={{ display: "flex", gap: 8, padding: "12px 22px 22px", marginTop: "auto" }}>
-                  <motion.button
-                    onClick={() => onSelect(w)}
-                    whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "11px 6px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                  >
-                    <Eye size={16} /> View Details
-                  </motion.button>
-                  <motion.button
-                    onClick={() => onEdit(w)}
-                    whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.06)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 10, padding: "11px 6px", fontFamily: F.ui, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
-                  >
-                    <Edit3 size={15} /> Edit
-                  </motion.button>
-                  <motion.button
-                    onClick={() => onBatches(w)}
-                    whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "11px 6px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                  >
-                    <Layers3 size={16} /> Batches
-                  </motion.button>
+                  {/* Dual Column Stats (Looms & Rate/Charge) */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                    {/* Looms block */}
+                    <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
+                        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
+                      </div>
+                    </div>
+
+                    {/* Rate / Making Charge block */}
+                    <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>₹</span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Making Charge</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                          {WEAVER_RATES[w.id] ? WEAVER_RATES[w.id].rate.split("/")[0] : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Design type detail strip */}
+                  {WEAVER_RATES[w.id] && (
+                    <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown }}>{WEAVER_RATES[w.id].type}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{WEAVER_RATES[w.id].code}</span>
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
+                    <motion.button
+                      onClick={() => onSelect(w)}
+                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      <Eye size={14} /> Details
+                    </motion.button>
+                    <motion.button
+                      onClick={() => onEdit(w)}
+                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      <Edit3 size={13} /> Edit
+                    </motion.button>
+                    <motion.button
+                      onClick={() => onBatches(w)}
+                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      <Layers3 size={14} /> Batches
+                    </motion.button>
+                  </div>
                 </div>
               </motion.div>
             </FadeUp>
@@ -659,8 +707,8 @@ function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void
                 {w.photo
                   ? <img src={w.photo} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <div style={{ width: "100%", height: "100%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{w.initials}</span>
-                    </div>
+                    <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{w.initials}</span>
+                  </div>
                 }
               </div>
               <div>
@@ -710,7 +758,7 @@ function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void
     </div>
   );
 }
-const TABLE_COLS = ["Weaver Code","Full Name","Village / Area","Mobile","Looms","Status","Sarees This Month","QC Pass Rate","Total Sarees","Total Paid","Last Active","Action"];
+const TABLE_COLS = ["Weaver Code", "Full Name", "Village / Area", "Mobile", "Looms", "Status", "Sarees This Month", "QC Pass Rate", "Total Sarees", "Total Paid", "Last Active", "Action"];
 function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
@@ -789,8 +837,8 @@ function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; 
   return (
     <div style={{ padding: "24px 48px 0" }}>
       <FadeUp>
-        {view === "card"  && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
-        {view === "list"  && <WeaverListView onSelect={onSelect} />}
+        {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
+        {view === "list" && <WeaverListView onSelect={onSelect} />}
         {view === "table" && <WeaverTableView onSelect={id => { const w = WEAVERS.find(x => x.id === id); if (w) onSelect(w); }} />}
       </FadeUp>
     </div>
@@ -818,7 +866,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
         style={{ position: "fixed", inset: 0, background: "rgba(26,10,15,0.4)", backdropFilter: "blur(4px)", zIndex: 999 }} />
       <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
         style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 600, maxWidth: "100vw", background: T.silkCream, boxShadow: "-10px 0 40px rgba(0,0,0,0.1)", zIndex: 1000, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-        
+
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 32px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
           <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 18, color: T.luxuryBrown }}>Weaver Details</span>
           <motion.button onClick={onClose} whileHover={{ scale: 1.1, rotate: 90 }} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.taupe }}><X size={24} /></motion.button>
@@ -847,15 +895,15 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {[
-                { label: "First Name",         value: weaver.name.split(" ")[0] || "" },
-                { label: "Last Name",          value: weaver.name.split(" ").slice(1).join(" ") || "" },
-                { label: "Email ID",           value: "" },
-                { label: "Mobile Number",      value: weaver.mobile },
+                { label: "First Name", value: weaver.name.split(" ")[0] || "" },
+                { label: "Last Name", value: weaver.name.split(" ").slice(1).join(" ") || "" },
+                { label: "Email ID", value: "" },
+                { label: "Mobile Number", value: weaver.mobile },
                 { label: "Village / Location", value: weaver.village },
-                { label: "Number of Looms",    value: String(weaver.looms) },
+                { label: "Number of Looms", value: String(weaver.looms) },
                 { label: "Bank Account Number", value: "" },
-                { label: "IFSC Code",          value: "SBIN0001234" },
-                { label: "Bank Name",          value: "State Bank of India" },
+                { label: "IFSC Code", value: "SBIN0001234" },
+                { label: "Bank Name", value: "State Bank of India" },
               ].map(f => (
                 <div key={f.label}>
                   <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>{f.label}</label>
@@ -867,10 +915,16 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           </div>
         )}
 
-        <div style={{ padding: "0 32px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 32, background: "#FFFFFF" }}>
-          {[{ key: "overview", label: "Overview" }, { key: "batches", label: "Batch History" }, { key: "payments", label: "Payments" }, { key: "materials", label: "Materials Received" }].map(({ key, label }) => (
+        <div style={{ padding: "0 32px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
+          {[
+            { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
+            { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
+            { key: "payments", label: "Payments", icon: <FileText size={16} /> },
+            { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
+          ].map(({ key, label, icon }) => (
             <button key={key} onClick={() => setTab(key)}
-              style={{ padding: "16px 0", fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === key ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s" }}>
+              style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === key ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" }}>
+              {icon}
               {label}
             </button>
           ))}
@@ -883,19 +937,22 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                 <SectionPill label="Personal Details" />
                 <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
                   {[
-                    { icon: "📱", label: "Mobile Number", value: weaver.mobile },
-                    { icon: "🏦", label: "Bank Account", value: "State Bank of India — ×××× 8990" },
-                    { icon: "💳", label: "IFSC Code", value: "SBIN0001234" },
-                    { icon: "🏠", label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
+                    { icon: <Smartphone size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Mobile Number", value: weaver.mobile },
+                    { icon: <Landmark size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Bank Account", value: "State Bank of India — ×××× 8990" },
+                    { icon: <CreditCard size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "IFSC Code", value: "SBIN0001234" },
+                    { icon: <Home size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
                   ].map((r, i) => (
-                    <div key={r.label} style={{ display: "flex", justifyContent: "space-between", padding: "16px 20px", borderBottom: i < 3 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.taupe, fontFamily: F.ui, fontSize: 15 }}>{r.icon} {r.label}</div>
-                      <div style={{ fontFamily: weaver.id === "WV-001" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 15, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
+                    <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: i < 3 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, color: T.taupe, fontFamily: F.ui, fontSize: 14.5 }}>
+                        {r.icon}
+                        <span>{r.label}</span>
+                      </div>
+                      <div style={{ fontFamily: weaver.id === "WV-001" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14.5, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <SectionPill label="Current Batch Status" />
                 {weaver.batch ? (
@@ -1058,11 +1115,11 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
 // ══════════════════════════════════════════════════════════════════════════
 
 const ACTIVITY_ICONS: Record<string, { PhIcon: React.ElementType; bg: string; color: string }> = {
-  "📦": { PhIcon: Package,     bg: "rgba(200,155,71,0.10)", color: T.antiqueGold },
-  "✅": { PhIcon: CheckCircle, bg: "rgba(30,102,64,0.10)",  color: T.green       },
-  "⚠️": { PhIcon: WarningCircle, bg: "rgba(192,57,43,0.09)", color: T.crimson    },
-  "💰": { PhIcon: Medal,       bg: "rgba(110,15,45,0.07)",  color: T.royalBurgundy },
-  "🔄": { PhIcon: ChartBar,    bg: "rgba(110,15,45,0.07)",  color: T.royalBurgundy },
+  "📦": { PhIcon: Package, bg: "rgba(200,155,71,0.10)", color: T.antiqueGold },
+  "✅": { PhIcon: CheckCircle, bg: "rgba(30,102,64,0.10)", color: T.green },
+  "⚠️": { PhIcon: WarningCircle, bg: "rgba(192,57,43,0.09)", color: T.crimson },
+  "💰": { PhIcon: Medal, bg: "rgba(110,15,45,0.07)", color: T.royalBurgundy },
+  "🔄": { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.royalBurgundy },
 };
 
 function LeaderboardAndQC({ onActivities }: { onActivities: () => void }) {
@@ -1211,7 +1268,7 @@ function LeaderboardAndQC({ onActivities }: { onActivities: () => void }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {[
                   { label: "Pending Quality Checks", value: "12 sarees", color: T.antiqueGold, bg: "rgba(200,155,71,0.07)", border: "rgba(200,155,71,0.22)", PhIcon: Clock },
-                  { label: "Overall Defect Rate",    value: "4%",        color: T.crimson,    bg: "rgba(192,57,43,0.05)", border: "rgba(192,57,43,0.18)", PhIcon: WarningCircle },
+                  { label: "Overall Defect Rate", value: "4%", color: T.crimson, bg: "rgba(192,57,43,0.05)", border: "rgba(192,57,43,0.18)", PhIcon: WarningCircle },
                 ].map(s => (
                   <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 16, padding: "20px 22px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
@@ -1486,7 +1543,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void
       <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} />
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
       <Footer />
-      
+
       <AnimatePresence>
         {selectedWeaver && <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />}
         {batchDialog && <ActionDialog open={!!batchDialog} title={`${batchDialog.name} batch history`} onClose={() => setBatchDialog(null)}><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{BATCH_HISTORY.map(b => <div key={b.batch} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, border: `1px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui }}><span><b>{b.batch}</b> · {b.design}</span><span style={{ color: T.taupe }}>{b.produced} produced · {b.date}</span></div>)}</div></ActionDialog>}

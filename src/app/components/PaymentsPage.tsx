@@ -115,11 +115,12 @@ function AnimBar({ pct, color, height = 8, trackBg = "rgba(110,15,45,0.08)" }: {
 // SECTION 1 — PAGE HEADER
 // ══════════════════════════════════════════════════════════════════════════════
 const HEADER_CHIPS = [
-  { value: "₹4.2L",  label: "Paid to Weavers",        gold: false },
-  { value: "₹18.4L", label: "Outstanding Invoices",    gold: false },
-  { value: "▲ 3",    label: "Overdue Invoices",        gold: false },
-  { value: "₹8.6L",  label: "Vendor Payments",         gold: false },
-  { value: "₹19.8L", label: "Net Income This Month",   gold: true  },
+  { value: "₹4.2L",  label: "Paid to Weavers",         gold: false },
+  { value: "₹32.6L", label: "Collected from Customers", gold: false },
+  { value: "₹18.4L", label: "Outstanding Invoices",     gold: false },
+  { value: "▲ 3",    label: "Overdue Invoices",         gold: false },
+  { value: "₹8.6L",  label: "Vendor Payments",          gold: false },
+  { value: "₹19.8L", label: "Net Income This Month",    gold: true  },
 ];
 
 function PaymentsHeader() {
@@ -1206,20 +1207,69 @@ function WeaverMakingChargesSection() {
 // ══════════════════════════════════════════════════════════════════════════════
 type InvoiceStatus = "Paid" | "Partial" | "Pending" | "Overdue";
 
+interface InvoicePayment {
+  amount: number;
+  date: string;
+  utr: string;
+  method: string;
+  firmName?: string;
+}
+
 interface Invoice {
   id: string; customer: string; city: string;
   invoiceDate: string; dueDate: string;
   total: number; paid: number; status: InvoiceStatus;
   daysOverdue?: number;
+  payments?: InvoicePayment[];
 }
 
 const INVOICES: Invoice[] = [
-  { id: "INV-2026-041", customer: "Lakshmi Silks",          city: "Varanasi",   invoiceDate: "08 Apr 2026", dueDate: "28 Apr 2026", total: 900000,  paid: 900000,  status: "Paid"    },
-  { id: "INV-2026-038", customer: "Padmavathi Textiles",    city: "Surat",      invoiceDate: "05 Apr 2026", dueDate: "25 Apr 2026", total: 600000,  paid: 465000,  status: "Overdue", daysOverdue: 5 },
-  { id: "INV-2026-035", customer: "Vijaya Silk House",      city: "Mumbai",     invoiceDate: "10 Apr 2026", dueDate: "30 Apr 2026", total: 280000,  paid: 280000,  status: "Paid"    },
-  { id: "INV-2026-032", customer: "Narayana Silk Emporium", city: "Hyderabad",  invoiceDate: "01 Apr 2026", dueDate: "20 Apr 2026", total: 300000,  paid: 254400,  status: "Overdue", daysOverdue: 3 },
-  { id: "INV-2026-029", customer: "Meenakshi Silks",        city: "Chennai",    invoiceDate: "15 Apr 2026", dueDate: "05 May 2026", total: 840000,  paid: 420000,  status: "Partial" },
-  { id: "INV-2026-027", customer: "Kalavathi Exports",      city: "Bengaluru",  invoiceDate: "18 Apr 2026", dueDate: "02 May 2026", total: 660000,  paid: 614400,  status: "Overdue", daysOverdue: 2 },
+  {
+    id: "INV-2026-041", customer: "Lakshmi Silks", city: "Varanasi",
+    invoiceDate: "08 Apr 2026", dueDate: "28 Apr 2026", total: 900000, paid: 900000, status: "Paid",
+    payments: [
+      { amount: 500000, date: "10 May 2026", utr: "UTR20260510LS1", method: "Bank Transfer", firmName: "Surat Zari Works" },
+      { amount: 400000, date: "15 May 2026", utr: "UTR20260515LS2", method: "Bank Transfer", firmName: "Surat Zari Works" }
+    ]
+  },
+  {
+    id: "INV-2026-038", customer: "Padmavathi Textiles", city: "Surat",
+    invoiceDate: "05 Apr 2026", dueDate: "25 Apr 2026", total: 600000, paid: 465000, status: "Overdue", daysOverdue: 5,
+    payments: [
+      { amount: 300000, date: "15 Apr 2026", utr: "UTR20260415PM1", method: "Bank Transfer", firmName: "Kanchipuram Silks" },
+      { amount: 165000, date: "22 Apr 2026", utr: "UTR20260422PM2", method: "Bank Transfer", firmName: "Kanchipuram Silks" }
+    ]
+  },
+  {
+    id: "INV-2026-035", customer: "Vijaya Silk House", city: "Mumbai",
+    invoiceDate: "10 Apr 2026", dueDate: "30 Apr 2026", total: 280000, paid: 280000, status: "Paid",
+    payments: [
+      { amount: 280000, date: "15 May 2026", utr: "UTR20260515VSH", method: "Bank Transfer", firmName: "Sri Venkateswara Textiles" }
+    ]
+  },
+  {
+    id: "INV-2026-032", customer: "Narayana Silk Emporium", city: "Hyderabad",
+    invoiceDate: "01 Apr 2026", dueDate: "20 Apr 2026", total: 300000, paid: 254400, status: "Overdue", daysOverdue: 3,
+    payments: [
+      { amount: 150000, date: "12 Apr 2026", utr: "UTR20260412NS1", method: "Bank Transfer", firmName: "Lakshmi Silk Traders" },
+      { amount: 104400, date: "18 Apr 2026", utr: "UTR20260418NS2", method: "Bank Transfer", firmName: "Lakshmi Silk Traders" }
+    ]
+  },
+  {
+    id: "INV-2026-029", customer: "Meenakshi Silks", city: "Chennai",
+    invoiceDate: "15 Apr 2026", dueDate: "05 May 2026", total: 840000, paid: 420000, status: "Partial",
+    payments: [
+      { amount: 420000, date: "25 May 2026", utr: "UTR20260525MS", method: "Bank Transfer", firmName: "AK Traders" }
+    ]
+  },
+  {
+    id: "INV-2026-027", customer: "Kalavathi Exports", city: "Bengaluru",
+    invoiceDate: "18 Apr 2026", dueDate: "02 May 2026", total: 660000, paid: 614400, status: "Overdue", daysOverdue: 2,
+    payments: [
+      { amount: 350000, date: "20 Apr 2026", utr: "UTR20260420KE1", method: "Bank Transfer", firmName: "Surat Zari Works" },
+      { amount: 264400, date: "22 Apr 2026", utr: "UTR20260422KE2", method: "Bank Transfer", firmName: "Surat Zari Works" }
+    ]
+  },
 ];
 
 const INV_STATUS_CFG: Record<InvoiceStatus, { bg: string; color: string; label: string }> = {
@@ -1439,7 +1489,7 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
 }
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
-function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
+function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
   const { firms } = useFirms();
   const remaining = inv.total - inv.paid;
   const [amount, setAmount] = useState(String(remaining));
@@ -1457,7 +1507,7 @@ function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: (
     if (!amount || !utr || !firmId) return;
     setSaving(true);
     setTimeout(() => {
-      onSave(parseFloat(amount), firmId, utr);
+      onSave(parseFloat(amount), firmId, utr, date, method);
       setSaving(false);
     }, 500);
   };
@@ -1485,6 +1535,55 @@ function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: (
           <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
             <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{remaining.toLocaleString("en-IN")}</div>
+          </div>
+
+          {/* Previous Payments */}
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}>
+                <Receipt size={16} color={T.royalBurgundy} /> Previous Payments
+              </div>
+              <span style={{ fontSize: 11, fontFamily: F.ui, color: T.taupe, fontWeight: 600 }}>
+                {inv.payments?.length || 0} transaction{inv.payments?.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            {(!inv.payments || inv.payments.length === 0) ? (
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "16px 0", background: T.silkCream, borderRadius: 10 }}>
+                No previous payments recorded.
+              </div>
+            ) : (
+              <div className="section-nav-scroll" style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 180, overflowY: "auto", paddingRight: 4 }}>
+                {inv.payments.map((p, idx) => (
+                  <div key={idx} style={{
+                    display: "flex", flexDirection: "column", gap: 8,
+                    padding: "12px 14px", background: T.warmIvory,
+                    borderRadius: 10, border: "1px solid rgba(110,15,45,0.06)",
+                    borderLeft: `4px solid ${T.antiqueGold}`,
+                    boxShadow: "0 2px 6px rgba(74,6,27,0.01)"
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div>
+                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.royalBurgundy }}>
+                          ₹{p.amount.toLocaleString("en-IN")}
+                        </div>
+                        <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>
+                          {p.utr} · {p.method}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                        <span style={{ fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                          {p.firmName ?? "Beere Kesava & Brothers Silks"}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                          <CalendarClock size={11} /> {p.date}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
@@ -1530,7 +1629,7 @@ function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: (
 
 function WholesaleCollectionsSection() {
   const { bulkOrders } = useBulkOrders();
-  const { addIncomeEntry } = useFirms();
+  const { firms, addIncomeEntry } = useFirms();
   const [invoices, setInvoices] = useState<Invoice[]>(INVOICES);
   const [view, setView] = useState<"card" | "list" | "table">("card");
   const [search, setSearch] = useState("");
@@ -1550,12 +1649,28 @@ function WholesaleCollectionsSection() {
     return bulkOrders.find(o => o.ref.split("-").pop() === suffix);
   };
 
-  const handleSavePayment = (amount: number, firmId: string, utr: string) => {
+  const handleSavePayment = (amount: number, firmId: string, utr: string, date: string, method: string) => {
     if (!recordPayment) return;
-    setInvoices(prev => prev.map(i => i.id === recordPayment.id
-      ? { ...i, paid: Math.min(i.total, i.paid + amount), status: (i.paid + amount) >= i.total ? "Paid" : "Partial" }
-      : i));
-    addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date: new Date().toISOString().slice(0, 10), category: "Wholesale Sale" });
+    const firm = firms.find(f => f.id === firmId);
+    const firmName = firm ? firm.firmName : "Surat Zari Works";
+
+    setInvoices(prev => prev.map(i => {
+      if (i.id === recordPayment.id) {
+        const newPaid = Math.min(i.total, i.paid + amount);
+        const newPayments = [
+          ...(i.payments || []),
+          { amount, date, utr, method, firmName }
+        ];
+        return {
+          ...i,
+          paid: newPaid,
+          status: newPaid >= i.total ? "Paid" : "Partial",
+          payments: newPayments
+        };
+      }
+      return i;
+    }));
+    addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
     toast.success(`Payment of ₹${amount.toLocaleString("en-IN")} recorded for ${recordPayment.customer}`);
     setRecordPayment(null);
   };

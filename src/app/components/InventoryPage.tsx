@@ -1,13 +1,15 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+const imgInventoryHero = "https://images.unsplash.com/photo-1585914924626-15adac1e6402?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
   Search, Scan, CheckSquare, Square, Package, Truck, ShoppingBag, Users,
   ChevronDown, ChevronUp, X, CheckCircle2, AlertTriangle, Clock, FileText,
-  Upload, Eye, Send, Save, ArrowRight, Building2, Hash,
+  Upload, Eye, Send, Save, ArrowRight, Building2, Hash, Filter,
 } from "lucide-react";
-import { useFinishing, FinishingReturn } from "./FinishingContext";
+import { useFinishing, FinishingReturn, DispatchRecord } from "./FinishingContext";
 import { useFirms } from "./FirmsContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
+import { useBulkOrders } from "./BulkOrderContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 
@@ -72,7 +74,7 @@ function StatusBadge({ status }: { status: string }) {
     "Ready for Dispatch":   { bg: T.greenBg,   color: T.green,   border: "rgba(30,102,64,0.20)"  },
     "Dispatched":           { bg: "rgba(59,35,20,0.08)", color: T.luxuryBrown, border: "rgba(59,35,20,0.18)" },
     "Damaged — Review Needed": { bg: T.crimsonBg, color: T.crimson, border: "rgba(192,57,43,0.20)" },
-    "QC Passed — Pending Finishing Assignment": { bg: "rgba(200,155,71,0.14)", color: "#8B6018", border: "rgba(200,155,71,0.32)" },
+    "QC Passed":            { bg: "rgba(200,155,71,0.14)", color: "#8B6018", border: "rgba(200,155,71,0.32)" },
   };
   const s = cfg[status] ?? cfg["Ready for Dispatch"];
   return (
@@ -80,7 +82,7 @@ function StatusBadge({ status }: { status: string }) {
       {status === "Ready for Dispatch"      && <CheckCircle2 size={10} />}
       {status === "Dispatched"              && <Truck size={10} />}
       {status === "Damaged — Review Needed" && <AlertTriangle size={10} />}
-      {status === "QC Passed — Pending Finishing Assignment" && <Clock size={10} />}
+      {status === "QC Passed"               && <Clock size={10} />}
       {status}
     </span>
   );
@@ -676,63 +678,7 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose }: {
   );
 }
 
-// ── Damage records section ────────────────────────────────────────────────────
-function DamageRecords({ records }: { records: FinishingReturn[] }) {
-  const [open, setOpen] = useState(false);
-  const damaged = records.filter(r => r.condition === "damaged");
 
-  return (
-    <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "18px 24px", background: "none", border: "none", cursor: "pointer", textAlign: "left" as const }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <AlertTriangle size={18} color={T.crimson} />
-          <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Damage &amp; Shortage Records</span>
-          <span style={{ fontFamily: F.mono, fontSize: 11, background: T.crimsonBg, color: T.crimson, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 999, padding: "2px 9px", fontWeight: 700 }}>{damaged.length}</span>
-        </div>
-        {open ? <ChevronUp size={18} color={T.taupe} /> : <ChevronDown size={18} color={T.taupe} />}
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
-            <div style={{ borderTop: `1px solid ${T.borderDef}` }}>
-              {damaged.length === 0 ? (
-                <div style={{ padding: "32px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No damage records.</div>
-              ) : (
-                <>
-                  {/* Table header */}
-                  <div style={{ display: "grid", gridTemplateColumns: "120px 1fr 120px 100px 1fr 120px 90px", gap: 0, padding: "10px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-                    {["Saree ID", "Damage Type", "Severity", "Reported By", "Notes", "Date", ""].map((h, i) => (
-                      <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
-                    ))}
-                  </div>
-                  {damaged.map((r, i) => (
-                    <div key={r.id} style={{ display: "grid", gridTemplateColumns: "120px 1fr 120px 100px 1fr 120px 90px", gap: 0, padding: "13px 24px", borderBottom: i < damaged.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream, alignItems: "center" }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{r.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.damageType ?? "—"}</div>
-                      <div>
-                        {r.damageSeverity ? (
-                          <span style={{ background: r.damageSeverity === "Severe" ? T.crimsonBg : r.damageSeverity === "Moderate" ? "rgba(200,155,71,0.12)" : "rgba(30,102,64,0.08)", color: r.damageSeverity === "Severe" ? T.crimson : r.damageSeverity === "Moderate" ? "#8B6A1A" : T.green, border: `1px solid ${r.damageSeverity === "Severe" ? "rgba(192,57,43,0.20)" : r.damageSeverity === "Moderate" ? "rgba(200,155,71,0.22)" : "rgba(30,102,64,0.18)"}`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 11, fontWeight: 600 }}>{r.damageSeverity}</span>
-                        ) : "—"}
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{r.receivedBy.split(" (")[0]}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.damageNotes ?? "—"}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.receivedDate}</div>
-                      <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, cursor: "pointer" }}>
-                        <Eye size={11} /> View
-                      </button>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
@@ -746,9 +692,22 @@ function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
+export interface InventoryRecord {
+  id: string; // Saree ID
+  designCode: string;
+  sareeType: string;
+  weaverName: string;
+  date: string; // qcPassDate or receivedDate
+  status: "QC Passed" | "Ready for Dispatch" | "Dispatched" | "Damaged — Review Needed";
+  rawType: "readySaree" | "return";
+  originalId: string; // readySaree id or return id
+  bulkOrderRef?: string;
+}
+
 export function InventoryPage() {
   const { returns, dispatches, dispatchSarees, readySarees } = useFinishing();
   const { getDesign } = useDesignLibrary();
+  const { bulkOrders } = useBulkOrders();
 
   // ── Clickable code modals ───────────────────────────────────────────────────
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -756,19 +715,70 @@ export function InventoryPage() {
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
-  // ── Selection ──────────────────────────────────────────────────────────────
-  const [selected, setSelected]     = useState<Set<string>>(new Set());
-  const [filter,   setFilter]       = useState<"all" | "ready" | "dispatched" | "damaged">("all");
-  const [searchQ,  setSearchQ]      = useState("");
-  const [modal,    setModal]        = useState<"shop" | "wholesale" | null>(null);
-  const [toast,    setToast]        = useState("");
-  const [scanMsg,  setScanMsg]      = useState("");
+  // ── Selection & Filter States ──────────────────────────────────────────────
+  const [selected, setSelected]               = useState<Set<string>>(new Set());
+  const [filter,   setFilter]                 = useState<"all" | "pending" | "ready" | "dispatched" | "damaged">("all");
+  const [searchQ,  setSearchQ]                = useState("");
+  const [selectedBulkOrder, setSelectedBulkOrder] = useState<string>("all");
+  const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [modal,    setModal]                  = useState<"shop" | "wholesale" | null>(null);
+  const [toast,    setToast]                  = useState("");
+  const [scanMsg,  setScanMsg]                = useState("");
+
+  // ── Unified Records ────────────────────────────────────────────────────────
+  const allRecords = useMemo(() => {
+    const list: InventoryRecord[] = [];
+    
+    // 1. Ready sarees (QC Passed — pending finishing)
+    readySarees.forEach(s => {
+      const boRef = (s as any).bulkOrderRef || bulkOrders.find(bo =>
+        bo.design === s.designCode &&
+        (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
+         s.sareeType.toLowerCase().includes(bo.sareeType.split(" \u00b7 ")[0].toLowerCase()))
+      )?.ref;
+      list.push({
+        id: s.id,
+        designCode: s.designCode,
+        sareeType: s.sareeType,
+        weaverName: s.weaverName,
+        date: s.qcPassDate,
+        status: "QC Passed",
+        rawType: "readySaree",
+        originalId: s.id,
+        bulkOrderRef: boRef
+      });
+    });
+
+    // 2. Returns (Ready for Dispatch, Dispatched, Damaged)
+    returns.forEach(r => {
+      const boRef = bulkOrders.find(bo =>
+        bo.design === r.designCode &&
+        (bo.sareeType.toLowerCase().includes(r.sareeType.toLowerCase()) ||
+         r.sareeType.toLowerCase().includes(bo.sareeType.split(" \u00b7 ")[0].toLowerCase()))
+      )?.ref;
+      list.push({
+        id: r.sareeId,
+        designCode: r.designCode,
+        sareeType: r.sareeType,
+        weaverName: r.weaverName,
+        date: r.receivedDate,
+        status: r.inventoryStatus === "Damaged \u2014 Review Needed" ? "Damaged \u2014 Review Needed" : r.inventoryStatus,
+        rawType: "return",
+        originalId: r.id,
+        bulkOrderRef: boRef
+      });
+    });
+
+    return list;
+  }, [readySarees, returns, bulkOrders]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
-  const total      = returns.length;
-  const ready      = returns.filter(r => r.inventoryStatus === "Ready for Dispatch").length;
-  const dispatched = returns.filter(r => r.inventoryStatus === "Dispatched").length;
-  const damaged    = returns.filter(r => r.inventoryStatus === "Damaged — Review Needed").length;
+  const total        = allRecords.length;
+  const pendingCount = allRecords.filter(r => r.status === "QC Passed").length;
+  const ready        = allRecords.filter(r => r.status === "Ready for Dispatch").length;
+  const dispatched   = allRecords.filter(r => r.status === "Dispatched").length;
+  const damaged      = allRecords.filter(r => r.status === "Damaged — Review Needed").length;
 
   // Dispatched this month
   const thisMonth  = dispatches.filter(d => {
@@ -776,38 +786,61 @@ export function InventoryPage() {
   }).reduce((acc, d) => acc + d.sareeIds.length, 0);
 
   // ── Filtered rows ──────────────────────────────────────────────────────────
-  const filtered = useMemo(() => returns.filter(r => {
+  const filtered = useMemo(() => allRecords.filter(r => {
     const q = searchQ.toLowerCase();
-    const matchSearch = !q || r.sareeId.toLowerCase().includes(q) || r.designCode.toLowerCase().includes(q) || r.sareeType.toLowerCase().includes(q);
+    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.designCode.toLowerCase().includes(q) || r.sareeType.toLowerCase().includes(q);
     const matchFilter = filter === "all" ? true
-      : filter === "ready"      ? r.inventoryStatus === "Ready for Dispatch"
-      : filter === "dispatched" ? r.inventoryStatus === "Dispatched"
-      : r.inventoryStatus === "Damaged — Review Needed";
-    return matchSearch && matchFilter;
-  }), [returns, filter, searchQ]);
+      : filter === "pending"    ? r.status === "QC Passed"
+      : filter === "ready"      ? r.status === "Ready for Dispatch"
+      : filter === "dispatched" ? r.status === "Dispatched"
+      : r.status === "Damaged \u2014 Review Needed";
+    const matchBulkOrder = selectedBulkOrder === "all" || r.bulkOrderRef === selectedBulkOrder;
+    return matchSearch && matchFilter && matchBulkOrder;
+  }), [allRecords, filter, searchQ, selectedBulkOrder]);
 
-  const selectedRows = returns.filter(r => selected.has(r.id));
-  const dispatchableSelected = selectedRows.filter(r => r.inventoryStatus === "Ready for Dispatch");
+  // ── Selection helpers ──────────────────────────────────────────────────────
+  const dispatchableSelected = useMemo(() => {
+    return returns.filter(r => selected.has(r.sareeId) && r.inventoryStatus === "Ready for Dispatch");
+  }, [returns, selected]);
 
-  const toggleRow = (id: string) => setSelected(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-  const toggleAll = () => {
-    if (selected.size === filtered.length) setSelected(new Set());
-    else setSelected(new Set(filtered.map(r => r.id)));
+  const toggleRow = (id: string, isCheckable: boolean) => {
+    if (!isCheckable) return;
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
-  const allChecked = filtered.length > 0 && selected.size === filtered.length;
+
+  const checkableFiltered = useMemo(() => filtered.filter(r => r.status === "Ready for Dispatch"), [filtered]);
+  const checkableSelected = useMemo(() => checkableFiltered.filter(r => selected.has(r.id)), [checkableFiltered, selected]);
+  
+  const toggleAll = () => {
+    if (checkableSelected.length === checkableFiltered.length && checkableFiltered.length > 0) {
+      setSelected(prev => {
+        const next = new Set(prev);
+        checkableFiltered.forEach(r => next.delete(r.id));
+        return next;
+      });
+    } else {
+      setSelected(prev => {
+        const next = new Set(prev);
+        checkableFiltered.forEach(r => next.add(r.id));
+        return next;
+      });
+    }
+  };
+
+  const allChecked = checkableFiltered.length > 0 && checkableSelected.length === checkableFiltered.length;
 
   // Simulated barcode scan
   const handleScan = useCallback(() => {
-    const unselected = returns.filter(r => !selected.has(r.id) && r.inventoryStatus === "Ready for Dispatch");
+    const unselected = returns.filter(r => !selected.has(r.sareeId) && r.inventoryStatus === "Ready for Dispatch");
     if (!unselected.length) { setScanMsg("No more sarees to scan."); setTimeout(() => setScanMsg(""), 2000); return; }
     setScanMsg("Scanning…");
     setTimeout(() => {
       const r = unselected[Math.floor(Math.random() * unselected.length)];
-      setSelected(prev => { const next = new Set(prev); next.add(r.id); return next; });
+      setSelected(prev => { const next = new Set(prev); next.add(r.sareeId); return next; });
       setScanMsg(`Scanned: ${r.sareeId}`);
       setTimeout(() => setScanMsg(""), 2500);
     }, 800);
@@ -837,107 +870,207 @@ export function InventoryPage() {
   };
 
   const FILTER_PILLS: { key: typeof filter; label: string; count: number }[] = [
-    { key: "all",        label: "All Sarees",         count: total     },
-    { key: "ready",      label: "Ready for Dispatch",  count: ready     },
-    { key: "dispatched", label: "Dispatched",           count: dispatched },
-    { key: "damaged",    label: "Damaged",              count: damaged   },
+    { key: "all",        label: "All Sarees",        count: total        },
+    { key: "pending",    label: "QC Passed",         count: pendingCount },
+    { key: "ready",      label: "Ready to Dispatch", count: ready        },
+    { key: "dispatched", label: "Dispatched",         count: dispatched   },
+    { key: "damaged",    label: "Damaged",            count: damaged      },
   ];
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
-      <div style={{ background: `linear-gradient(135deg, #3D0E1A 0%, #6E0F2D 55%, #8B1A30 100%)`, position: "relative", overflow: "hidden", minHeight: 200, display: "flex", alignItems: "stretch" }}>
-        <div style={{ flex: 1, padding: "44px 56px 48px", zIndex: 10, position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-            <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · ADMIN · INVENTORY</span>
+      <header style={{ background: "#3D0E1A", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        {/* Left text content */}
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · INVENTORY MANAGEMENT</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
+            <h1 style={{ fontFamily: F.display, fontSize: 52, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Finished Goods</h1>
+            <span style={{ fontFamily: F.display, fontSize: 32, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Dispatch</span>
           </div>
-          <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>Finished Goods</h1>
-          <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 16, lineHeight: 1.2 }}>Inventory &amp; Dispatch</div>
-          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, margin: 0, lineHeight: 1.65 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 560, lineHeight: 1.6 }}>
             Track all finished sarees received from quality check and dispatch them to shop or wholesale customers.
           </p>
         </div>
-        {/* Stats chips */}
-        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 10, marginRight: 56, alignItems: "flex-end", justifyContent: "center", zIndex: 10, position: "relative" }}>
+        {/* Right image with gradient */}
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #3D0E1A 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
+          <img src={imgInventoryHero} alt="Silk saree inventory" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+        </div>
+      </header>
+
+      {/* ── FLOATING STAT STRIP ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      >
+        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
-            { label: `${total} Total in Inventory`,         dot: T.antiqueGold   },
-            { label: `${ready} Ready for Dispatch`,          dot: "#4CAF82"       },
-            { label: `${thisMonth} Dispatched This Month`,   dot: "#B0C4DE"       },
-            { label: `${damaged} Damaged — Needs Review`,    dot: T.crimson       },
-          ].map((chip, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: chip.dot, flexShrink: 0 }} />
-              {chip.label}
-            </div>
+            { val: total,        label: "TOTAL IN INVENTORY",     sub: "All finished sarees",          hi: false, crimson: false, goldVal: false, Icon: Package },
+            { val: pendingCount, label: "PENDING FINISHING",      sub: "QC passed, needs finishing",   hi: false, crimson: false, goldVal: false, Icon: Clock },
+            { val: ready,        label: "READY FOR DISPATCH",     sub: "Cleared, awaiting dispatch",   hi: true,  crimson: false, goldVal: true,  Icon: CheckCircle2 },
+            { val: thisMonth,    label: "DISPATCHED THIS MONTH",  sub: "To shop + wholesale",          hi: false, crimson: false, goldVal: false, Icon: Truck },
+            { val: damaged,      label: "DAMAGED — NEEDS REVIEW", sub: "Reported during verification", hi: false, crimson: true,  goldVal: false, Icon: AlertTriangle },
+          ].map((m, i) => (
+            <motion.div
+              key={m.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
+              whileHover={{ backgroundColor: m.hi ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
+              style={{
+                flex: 1, padding: "28px 22px",
+                backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+                borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none",
+                display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                  {m.label}
+                </div>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                  {m.val}
+                </div>
+                <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
+                  {m.sub}
+                </div>
+              </div>
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+            </motion.div>
           ))}
         </div>
-        {[300, 440, 580].map((sz, i) => (
-          <div key={i} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
-        ))}
-      </div>
-
-      {/* ── STAT STRIP ────────────────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: `1px solid ${T.borderDef}`, background: "#fff" }}>
-        {[
-          { val: total,      label: "Total in Inventory",       sub: "All finished sarees",           color: T.royalBurgundy, bg: "rgba(110,15,45,0.06)" },
-          { val: ready,      label: "Ready for Dispatch",        sub: "Cleared, awaiting dispatch",    color: T.green,         bg: T.greenBg              },
-          { val: thisMonth,  label: "Dispatched This Month",     sub: "To shop + wholesale",           color: T.luxuryBrown,   bg: "rgba(59,35,20,0.06)"  },
-          { val: damaged,    label: "Damaged — Needs Review",    sub: "Reported during verification",  color: T.crimson,       bg: T.crimsonBg            },
-        ].map((s, i) => (
-          <div key={i} style={{ padding: "22px 28px", borderRight: i < 3 ? `1px solid ${T.borderDef}` : "none", display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {i === 0 && <Package size={22} color={s.color} />}
-              {i === 1 && <CheckCircle2 size={22} color={s.color} />}
-              {i === 2 && <Truck size={22} color={s.color} />}
-              {i === 3 && <AlertTriangle size={22} color={s.color} />}
-            </div>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: s.color, lineHeight: 1.1, letterSpacing: "-0.5px" }}>{s.val}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginTop: 2 }}>{s.label}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sub}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      </motion.div>
 
       {/* ── BODY ──────────────────────────────────────────────────────────── */}
-      <div style={{ padding: "36px 56px 80px", maxWidth: 1500, margin: "0 auto" }}>
+      <div style={{ padding: "96px 56px 80px", maxWidth: 1500, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 300px", gap: 28, alignItems: "start" }}>
 
           {/* ── MAIN TABLE SECTION ──────────────────────────────────────── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* Toolbar */}
-            <div style={{ ...card, padding: "20px 24px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+            <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Main row: Scan | Search | Pills | Filter▾ */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+
                 {/* Scan */}
                 <button onClick={handleScan}
-                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 16px", height: 40, background: T.deepWine, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 14px", height: 38, background: T.deepWine, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" as const }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = T.royalBurgundy; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = T.deepWine; }}>
-                  <Scan size={15} color="#FFF" /> Scan Barcode
+                  <Scan size={14} color="#FFF" /> Scan
                 </button>
 
-                {/* Search */}
-                <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-                  <Search size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input value={searchQ} onChange={e => { setSearchQ(e.target.value); }} placeholder="Search by Saree ID, Design, Type…"
-                    style={{ ...inp, paddingLeft: 36, height: 40, fontSize: 13 }}
+                {/* Search — grows to fill space */}
+                <div style={{ position: "relative", flex: "1 1 160px", minWidth: 0 }}>
+                  <Search size={13} color={T.taupe} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                  <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search by Saree ID, Design, Type…"
+                    style={{ ...inp, paddingLeft: 34, height: 38, fontSize: 13, width: "100%" }}
                     onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
                     onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
                 </div>
 
-                {/* Filter pills */}
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                  {FILTER_PILLS.map(p => (
-                    <button key={p.key} onClick={() => setFilter(p.key)}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", height: 34, border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`, borderRadius: 999, background: filter === p.key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: filter === p.key ? 600 : 400, color: filter === p.key ? T.royalBurgundy : T.taupe, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const }}>
-                      {p.label}
-                      <span style={{ fontFamily: F.mono, fontSize: 10, background: filter === p.key ? "rgba(110,15,45,0.10)" : "rgba(139,112,96,0.10)", color: filter === p.key ? T.royalBurgundy : T.taupe, borderRadius: 999, padding: "1px 6px" }}>{p.count}</span>
-                    </button>
-                  ))}
+                {/* Status pills — inline beside search */}
+                {FILTER_PILLS.map(p => (
+                  <button key={p.key} onClick={() => setFilter(p.key)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "0 10px", height: 38, flexShrink: 0,
+                      border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`,
+                      borderRadius: 999,
+                      background: filter === p.key ? "rgba(110,15,45,0.07)" : "#FFF",
+                      fontFamily: F.ui, fontSize: 12,
+                      fontWeight: filter === p.key ? 700 : 400,
+                      color: filter === p.key ? T.royalBurgundy : T.taupe,
+                      cursor: "pointer", transition: "all 0.13s", whiteSpace: "nowrap" as const
+                    }}>
+                    {p.label}
+                    <span style={{
+                      fontFamily: F.mono, fontSize: 10,
+                      background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)",
+                      color: filter === p.key ? T.royalBurgundy : T.taupe,
+                      borderRadius: 999, padding: "1px 5px"
+                    }}>{p.count}</span>
+                  </button>
+                ))}
+
+                {/* Filter button — bulk order popover */}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <button
+                    onClick={() => setShowFilterPanel(v => !v)}
+                    title="More filters (Bulk Order)"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 5, height: 38, padding: "0 12px",
+                      border: `1px solid ${selectedBulkOrder !== "all" ? T.royalBurgundy : T.borderDef}`,
+                      borderRadius: 10,
+                      background: selectedBulkOrder !== "all" ? "rgba(110,15,45,0.07)" : "#FFF",
+                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                      color: selectedBulkOrder !== "all" ? T.royalBurgundy : T.taupe,
+                      cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const
+                    }}>
+                    <Filter size={14} />
+                    {selectedBulkOrder !== "all" && (
+                      <span style={{ background: T.royalBurgundy, color: "#FFF", borderRadius: 999, fontFamily: F.mono, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>1</span>
+                    )}
+                    <ChevronDown size={12} style={{ transition: "transform 0.2s", transform: showFilterPanel ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  </button>
+
+                  {/* Filter popover */}
+                  {showFilterPanel && (
+                    <div style={{
+                      position: "absolute", top: 44, right: 0, zIndex: 200,
+                      background: "#FFFDF9", border: `1px solid ${T.borderDef}`,
+                      borderRadius: 14, boxShadow: "0 8px 32px rgba(61,14,26,0.14)",
+                      padding: "16px 18px", minWidth: 300, display: "flex", flexDirection: "column", gap: 14
+                    }}>
+
+                      {/* Status section (mirror of inline pills) */}
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 8 }}>Status</div>
+                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+                          {FILTER_PILLS.map(p => (
+                            <button key={p.key} onClick={() => setFilter(p.key)}
+                              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", height: 30, border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`, borderRadius: 999, background: filter === p.key ? "rgba(110,15,45,0.07)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: filter === p.key ? 600 : 400, color: filter === p.key ? T.royalBurgundy : T.taupe, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" as const }}>
+                              {p.label}
+                              <span style={{ fontFamily: F.mono, fontSize: 10, background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)", color: filter === p.key ? T.royalBurgundy : T.taupe, borderRadius: 999, padding: "1px 5px" }}>{p.count}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Bulk Order section */}
+                      <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 12 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 8 }}>Bulk Order</div>
+                        <select
+                          value={selectedBulkOrder}
+                          onChange={e => setSelectedBulkOrder(e.target.value)}
+                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
+                          <option value="all">All Bulk Orders</option>
+                          {bulkOrders.map(bo => (
+                            <option key={bo.ref} value={bo.ref}>{bo.ref} — {bo.customer}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Clear + Done */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${T.borderDef}`, paddingTop: 10 }}>
+                        <button
+                          onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); }}
+                          style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                          Clear all
+                        </button>
+                        <button
+                          onClick={() => setShowFilterPanel(false)}
+                          style={{ height: 30, padding: "0 14px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "#FFF", cursor: "pointer" }}>
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -973,47 +1106,14 @@ export function InventoryPage() {
               )}
             </AnimatePresence>
 
-            {/* QC Passed — Pending Finishing Assignment (appears above Ready for Dispatch) */}
-            {readySarees.length > 0 && (
-              <div style={{ ...card, borderRadius: 16, overflow: "hidden", marginBottom: 18 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "130px 110px 130px 130px 100px 1fr", gap: 0, padding: "11px 20px", background: "rgba(200,155,71,0.08)", borderBottom: `1px solid ${T.borderDef}` }}>
-                  {["Saree ID", "Design", "Type", "Weaver", "QC Date", "Status"].map((h, i) => (
-                    <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: "#8B6018", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
-                  ))}
-                </div>
-                {readySarees.map((s, i) => (
-                  <div key={s.id}
-                    style={{ display: "grid", gridTemplateColumns: "130px 110px 130px 130px 100px 1fr", gap: 0, padding: "13px 20px", borderBottom: i < readySarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}
-                  >
-                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.id}</div>
-                    <div
-                      onClick={() => setOpenDesignCode(s.designCode)}
-                      style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, cursor: "pointer", width: "fit-content" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-                    >{s.designCode}</div>
-                    <div
-                      onClick={() => { if (s.sareeTypeCode) setOpenSareeTypeCode(s.sareeTypeCode); }}
-                      style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: s.sareeTypeCode ? "pointer" : "default", width: "fit-content" }}
-                      onMouseEnter={e => { if (s.sareeTypeCode) (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"; }}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-                    >{s.sareeType}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{s.weaverName}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.qcPassDate}</div>
-                    <div><StatusBadge status="QC Passed — Pending Finishing Assignment" /></div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* Table */}
             <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
               {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 80px 110px 190px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 90px 110px 220px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 <div onClick={toggleAll} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
                   {allChecked ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />}
                 </div>
-                {["Saree ID", "Design", "Type", "Weaver", "Rcvd Date", "Finishing", "Dispatch Status", ""].map((h, i) => (
+                {["Saree ID", "Design", "Type", "Weaver", "Date", "Status", ""].map((h, i) => (
                   <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
                 ))}
               </div>
@@ -1022,17 +1122,22 @@ export function InventoryPage() {
                 <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No sarees match your filters.</div>
               ) : filtered.map((r, i) => {
                 const sel = selected.has(r.id);
+                const isCheckable = r.status === "Ready for Dispatch";
                 return (
                   <div key={r.id}
-                    style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 80px 110px 190px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: "pointer", transition: "background 0.12s" }}
-                    onClick={() => toggleRow(r.id)}
-                    onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.02)"; }}
-                    onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#FFF" : T.warmIvory; }}
+                    style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 90px 110px 220px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
+                    onClick={() => toggleRow(r.id, isCheckable)}
+                    onMouseEnter={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.02)"; }}
+                    onMouseLeave={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#FFF" : T.warmIvory; }}
                   >
-                    <div onClick={e => { e.stopPropagation(); toggleRow(r.id); }} style={{ display: "flex", alignItems: "center" }}>
-                      {sel ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />}
+                    <div onClick={e => { e.stopPropagation(); toggleRow(r.id, isCheckable); }} style={{ display: "flex", alignItems: "center" }}>
+                      {isCheckable ? (
+                        sel ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />
+                      ) : (
+                        <Square size={15} color={T.taupe} style={{ opacity: 0.2, cursor: "not-allowed" }} />
+                      )}
                     </div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{r.sareeId}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{r.id}</div>
                     <div
                       onClick={e => { e.stopPropagation(); setOpenDesignCode(r.designCode); }}
                       style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, cursor: "pointer", width: "fit-content" }}
@@ -1050,10 +1155,15 @@ export function InventoryPage() {
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
                     >{r.sareeType}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{r.weaverName.split(" ")[0]}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.receivedDate}</div>
-                    <div><StatusBadge status={r.inventoryStatus} /></div>
+                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.date}</div>
+                    <div><StatusBadge status={r.status} /></div>
                     <div onClick={e => e.stopPropagation()}>
-                      <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, cursor: "pointer" }}>
+                      <button
+                        onClick={() => setViewingItem(r)}
+                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, cursor: "pointer" }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.06)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                      >
                         <Eye size={11} /> View
                       </button>
                     </div>
@@ -1061,9 +1171,6 @@ export function InventoryPage() {
                 );
               })}
             </div>
-
-            {/* Damage records */}
-            <DamageRecords records={returns} />
           </div>
 
           {/* ── QUICK ACTIONS SIDEBAR ───────────────────────────────────── */}
@@ -1099,9 +1206,10 @@ export function InventoryPage() {
             <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 16 }}>Category Split</div>
               {[
-                { label: "Retail (Shop)", val: Math.max(1, dispatched - 1), total: Math.max(1, total), color: T.royalBurgundy },
-                { label: "Wholesale",     val: Math.min(1, dispatched),      total: Math.max(1, total), color: T.antiqueGold  },
-                { label: "Pending",       val: ready,                        total: Math.max(1, total), color: T.green        },
+                { label: "Pending Finishing",  val: pendingCount, total: Math.max(1, total), color: T.antiqueGold },
+                { label: "Ready for Dispatch",  val: ready,        total: Math.max(1, total), color: T.green },
+                { label: "Dispatched",          val: dispatched,   total: Math.max(1, total), color: T.royalBurgundy },
+                { label: "Damaged / Review",    val: damaged,      total: Math.max(1, total), color: T.crimson },
               ].map(b => {
                 const pct = Math.round((b.val / b.total) * 100);
                 return (
@@ -1116,24 +1224,6 @@ export function InventoryPage() {
                   </div>
                 );
               })}
-            </div>
-
-            {/* Recent dispatches */}
-            <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 14 }}>Recent Dispatches</div>
-              {dispatches.length === 0 ? (
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textAlign: "center" as const, padding: "12px 0" }}>No dispatches yet.</div>
-              ) : dispatches.slice(0, 4).map((d, i) => (
-                <div key={d.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: i < Math.min(dispatches.length, 4) - 1 ? `1px solid ${T.borderDef}` : "none" }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: d.type === "shop" ? "rgba(110,15,45,0.08)" : T.bgGold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {d.type === "shop" ? <ShoppingBag size={13} color={T.royalBurgundy} /> : <Users size={13} color={T.antiqueGold} />}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: T.royalBurgundy }}>{d.lrNumber}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{d.sareeIds.length} sarees · {d.dispatchDate}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -1162,9 +1252,162 @@ export function InventoryPage() {
         {toast && <Toast key="toast" msg={toast} onDone={() => setToast("")} />}
       </AnimatePresence>
       <AnimatePresence>
+        {viewingItem && (
+          <InventoryDetailModal
+            item={viewingItem}
+            dispatches={dispatches}
+            returns={returns}
+            onClose={() => setViewingItem(null)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
         {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Inventory Detail Modal ────────────────────────────────────────────────────
+const INV_EASE = [0.25, 0.1, 0.25, 1] as const;
+function InventoryDetailModal({
+  item, dispatches, returns, onClose
+}: {
+  item: InventoryRecord;
+  dispatches: DispatchRecord[];
+  returns: FinishingReturn[];
+  onClose: () => void;
+}) {
+  const disp = dispatches.find(d => d.sareeIds.includes(item.id));
+  const ret  = returns.find(r => r.sareeId === item.id);
+
+  const infoCell = (label: string, value: React.ReactNode) => (
+    <div>
+      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{value}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Backdrop */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(61,14,26,0.55)', backdropFilter: 'blur(5px)' }} onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 10 }}
+        transition={{ duration: 0.25, ease: INV_EASE }}
+        style={{ position: 'relative', width: 520, maxHeight: '88vh', display: 'flex', flexDirection: 'column', background: '#FFFDF9', borderRadius: 20, boxShadow: '0 32px 80px rgba(61,14,26,0.28)', overflow: 'hidden', border: `1px solid ${T.borderDef}` }}
+      >
+        {/* Header */}
+        <div style={{ background: T.deepWine, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Package size={18} color={T.antiqueGold} />
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: '#FFF' }}>Saree Record</span>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <X size={15} color="#FFF" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: 24, overflowY: 'auto' as const, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* ID Card */}
+          <div style={{ textAlign: 'center' as const, padding: '16px 20px', background: 'rgba(110,15,45,0.04)', borderRadius: 14, border: `1px solid rgba(110,15,45,0.08)` }}>
+            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, letterSpacing: '2px', textTransform: 'uppercase' as const }}>Saree Barcode ID</div>
+            <div style={{ fontFamily: F.mono, fontSize: 26, fontWeight: 700, color: T.royalBurgundy, marginTop: 4, letterSpacing: '1px' }}>{item.id}</div>
+            <div style={{ marginTop: 10 }}><StatusBadge status={item.status} /></div>
+            {item.bulkOrderRef && (
+              <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(200,155,71,0.10)', border: '1px solid rgba(200,155,71,0.25)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: '#7A5310' }}>
+                <Hash size={10} /> {item.bulkOrderRef}
+              </div>
+            )}
+          </div>
+
+          {/* Core info */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            {infoCell('Design Code', <span style={{ fontFamily: F.mono }}>{item.designCode}</span>)}
+            {infoCell('Saree Type', item.sareeType)}
+            {infoCell('Weaver', item.weaverName)}
+            {infoCell(item.rawType === 'readySaree' ? 'QC Passed Date' : 'Received Date', <span style={{ fontFamily: F.mono }}>{item.date}</span>)}
+          </div>
+
+          {/* Dispatched */}
+          {item.status === 'Dispatched' && disp && (
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Truck size={14} /> Dispatch &amp; Logistics
+              </div>
+              <div style={{ background: 'rgba(30,102,64,0.03)', border: '1px solid rgba(30,102,64,0.10)', borderRadius: 12, padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {infoCell('Dispatch Date', <span style={{ fontFamily: F.mono }}>{disp.dispatchDate}</span>)}
+                {infoCell('Type', <span style={{ textTransform: 'capitalize' as const }}>{disp.type}</span>)}
+                {infoCell('LR Number', <span style={{ fontFamily: F.mono }}>{disp.lrNumber}</span>)}
+                {infoCell('Transport Co.', disp.transportCompany)}
+                {infoCell('Vehicle No.', <span style={{ fontFamily: F.mono }}>{disp.vehicleNumber}</span>)}
+                {disp.driverName ? infoCell('Driver', disp.driverName) : <div />}
+                {disp.type === 'wholesale' && disp.customerName && (
+                  <div style={{ gridColumn: '1 / -1', borderTop: `1px solid ${T.borderDef}`, paddingTop: 10, marginTop: 2 }}>
+                    {infoCell('Customer', <span style={{ color: T.royalBurgundy, fontWeight: 700 }}>{disp.customerName}</span>)}
+                    {disp.invoiceNumber && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 4 }}>Invoice: {disp.invoiceNumber}</div>}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Damaged */}
+          {item.status === 'Damaged — Review Needed' && ret && (
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AlertTriangle size={14} /> Damage Report
+              </div>
+              <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 12, padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {infoCell('Damage Type', ret.damageType || 'Unspecified')}
+                {infoCell('Severity', <span style={{ color: ret.damageSeverity === 'Severe' ? T.crimson : ret.damageSeverity === 'Moderate' ? '#C07A18' : T.luxuryBrown }}>{ret.damageSeverity || 'Unspecified'}</span>)}
+                {infoCell('Reported By', ret.receivedBy)}
+                {infoCell('Date', <span style={{ fontFamily: F.mono }}>{ret.receivedDate}</span>)}
+                {ret.damageNotes && (
+                  <div style={{ gridColumn: '1 / -1', borderTop: 'rgba(192,57,43,0.10) solid 1px', paddingTop: 10, marginTop: 2 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Notes</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontStyle: 'italic' }}>“{ret.damageNotes}”</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* QC Passed */}
+          {item.status === 'QC Passed' && (
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
+              <div style={{ background: 'rgba(200,155,71,0.06)', border: '1px solid rgba(200,155,71,0.18)', borderRadius: 12, padding: 16, textAlign: 'center' as const }}>
+                <Clock size={22} color="#A07020" style={{ marginBottom: 8 }} />
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: '#8B6018' }}>Awaiting Finishing Assignment</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6, lineHeight: 1.6 }}>This saree has passed QC and is in ready stock. It needs to be assigned to a finishing staff member before it can be dispatched.</div>
+              </div>
+            </div>
+          )}
+
+          {/* Ready for Dispatch */}
+          {item.status === 'Ready for Dispatch' && (
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
+              <div style={{ background: 'rgba(30,102,64,0.04)', border: '1px solid rgba(30,102,64,0.12)', borderRadius: 12, padding: 16, textAlign: 'center' as const }}>
+                <CheckCircle2 size={22} color={T.green} style={{ marginBottom: 8 }} />
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>Ready for Dispatch</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6, lineHeight: 1.6 }}>Finishing complete. Select this saree in the inventory table and use the Dispatch buttons to send it to the shop or a wholesale customer.</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: `1px solid ${T.borderDef}`, background: 'rgba(110,15,45,0.02)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+          <button onClick={onClose} style={{ height: 38, padding: '0 22px', background: T.royalBurgundy, border: 'none', borderRadius: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: '#FFF', cursor: 'pointer' }}>
+            Close
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

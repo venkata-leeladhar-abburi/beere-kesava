@@ -24,7 +24,7 @@ import { InventoryPage } from "./InventoryPage";
 import { WorkerGRN } from "./worker/WorkerGRN";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
-  MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H,
+  MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
 } from "./SectionNavigator";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
@@ -452,7 +452,7 @@ function useIsMobile() {
 // SHARED DATA
 // ═══════════════════════════════════════════════════════════════════════════════
 const METRICS = [
-  { ico: <IcoResourceMgmt sz={22} col={T.warmCream} />, label: "Active Weavers",   val: "84",    sub: "↑ 12% vs last month", hi: false },
+  { ico: <IcoResourceMgmt sz={22} col={T.warmCream} />, label: "Active Weavers",   val: "9",     sub: "↑ 12% vs last month", hi: false },
   { ico: <IcoFabricRoll   sz={22} col={T.warmCream} />, label: "Sarees Produced",  val: "248",   sub: "↑ 14% vs last month", hi: false },
   { ico: <IcoInvoice      sz={22} col={T.warmCream} />, label: "Pending Payments", val: "₹2.4L", sub: "2 overdue",           hi: true  },
   { ico: <IcoQualityCheck sz={22} col={T.warmCream} />, label: "Ready for Sale",   val: "84",    sub: "Sarees",              hi: false },
@@ -460,10 +460,10 @@ const METRICS = [
 ];
 
 const WEAVERS = [
-  { name: "Padma Veni",   id: "WV002", batch: "BATCH-086", sarees: 18, pct: 85, status: "In Progress" as const, ac: T.royalBurgundy, img: imgPadmaVeni   },
-  { name: "Ravi Kumar",   id: "WV001", batch: "BATCH-089", sarees: 12, pct: 68, status: "In Progress" as const, ac: "#1E6640",        img: imgRaviKumar   },
-  { name: "Suresh Murti", id: "WV003", batch: "BATCH-081", sarees: 7,  pct: 35, status: "Pending QC"  as const, ac: "#374151",        img: imgSureshMurti },
-  { name: "Anand K.",     id: "WV005", batch: "BATCH-083", sarees: 9,  pct: 72, status: "In Progress" as const, ac: T.antiqueGold,    img: imgAnandK      },
+  { name: "Padma Veni",   id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "In Progress" as const, ac: T.royalBurgundy, img: imgPadmaVeni   },
+  { name: "Ravi Kumar",   id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "In Progress" as const, ac: "#1E6640",        img: imgRaviKumar   },
+  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7,  pct: 35, status: "Pending QC"  as const, ac: "#374151",        img: imgSureshMurti },
+  { name: "Anand K.",     id: "WV-005", batch: "BATCH-083", sarees: 9,  pct: 72, status: "In Progress" as const, ac: T.antiqueGold,    img: imgAnandK      },
 ];
 
 const MATS = [
@@ -656,7 +656,7 @@ function findNavGroup(pageKey: string): NavGroup {
 }
 
 
-function TopNav({ active, set, onBack }: { active: string; set: (v: string) => void; onBack?: () => void }) {
+function TopNav({ active, set, onBack, sections }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[] }) {
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showNotif, setShowNotif] = React.useState(false);
@@ -960,13 +960,13 @@ function TopNav({ active, set, onBack }: { active: string; set: (v: string) => v
         <div
           style={{
             height: SUB_NAV_H,
-            display: "flex", alignItems: "center",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24,
             padding: compact ? "0 20px" : "0 56px",
             background: T.warmIvory,
             borderBottom: `1px solid ${T.borderDef}`,
           }}
         >
-          <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 6, overflowX: "auto", maxWidth: "100%" } as React.CSSProperties}>
+          <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 6, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
             {activeGroup.pages.map(p => {
               const isActive = active === p.key;
               return (
@@ -998,6 +998,13 @@ function TopNav({ active, set, onBack }: { active: string; set: (v: string) => v
               );
             })}
           </div>
+
+          {sections && (
+            <>
+              <div style={{ width: 1, height: 28, background: T.borderDef, flexShrink: 0 }} />
+              <SectionNavigator inline sections={sections} />
+            </>
+          )}
         </div>
       )}
     </motion.div>
@@ -2626,12 +2633,20 @@ const GLOBAL_STYLE = `
 
 export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [splashVisible, setSplashVisible] = useState(false);
-  const [nav, setNav]         = useState("Overview");
-  const [mobileTab, setMobileTab] = useState("Overview");
+  const [nav, setNav]         = useState("Materials");
+  const [mobileTab, setMobileTab] = useState("Materials");
   const [menuOpen, setMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   // Always scroll to top when navigating between pages
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    document.body.scrollTop = 0;
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+    }
+  }, [nav, mobileTab]);
+
   const navigate = (tab: string) => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     setNav(tab);
@@ -2705,10 +2720,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} />
-      {PAGE_SECTIONS[nav] && (
-        <SectionNavigator sections={PAGE_SECTIONS[nav]} stickyTop={MAIN_NAV_H + SUB_NAV_H} />
-      )}
+      <TopNav active={nav} set={navigate} onBack={onBack} sections={PAGE_SECTIONS[nav]} />
       {nav === "Materials" ? (
         <MaterialsPage onNavigate={navigate} />
       ) : nav === "Weavers" ? (
