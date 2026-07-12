@@ -1372,6 +1372,143 @@ const PO_STATUS_CFG = {
 
 type POFilter = "all" | "pending" | "approved" | "received" | "rejected";
 
+// ── PO Vendor Detail Panel ────────────────────────────────────────────────────
+function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null; onClose: () => void }) {
+  if (!po) return null;
+  const cfg = PO_STATUS_CFG[po.status];
+  const MT: Record<string, { col: string; bg: string }> = {
+    Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"  },
+    Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)" },
+    Jari:   { col: T.luxuryBrown,   bg: "rgba(59,35,20,0.09)"   },
+  };
+  return (
+    <AnimatePresence>
+      <motion.div
+        key="po-overlay"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, zIndex: 1800, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "flex-end" }}
+      >
+        <motion.div
+          key="po-panel"
+          initial={{ x: 360, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 360, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 320, damping: 32 }}
+          onClick={e => e.stopPropagation()}
+          style={{ width: 430, maxWidth: "95vw", height: "100vh", background: "#FFFDF9", display: "flex", flexDirection: "column", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto" }}
+        >
+          {/* Header */}
+          <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 24px 20px", flexShrink: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+              <div>
+                <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 4 }}>Purchase Order</div>
+                <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
+              </div>
+              <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.10)", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X size={16} />
+              </button>
+            </div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 8, padding: "5px 12px" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.92)" }}>{cfg.label}</span>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
+
+            {/* Vendor Card */}
+            <div style={{ background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ background: "rgba(110,15,45,0.04)", padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
+                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Vendor Details</div>
+              </div>
+              <div style={{ padding: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 46, height: 46, borderRadius: 12, background: `linear-gradient(135deg, ${T.darkBurgundy}, ${T.royalBurgundy})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(110,15,45,0.25)" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 800, color: "#FFF" }}>{po.vendor.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown }}>{po.vendor}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>📍 {po.vendorCity}</div>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {[
+                    { label: "Contact",       val: po.vendorContact || "—" },
+                    { label: "Purchasing Firm", val: po.firmName || "—" },
+                    { label: "Submitted",     val: new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) },
+                    { label: "Delivery By",   val: po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—" },
+                  ].map(r => (
+                    <div key={r.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 4 }}>{r.label}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Materials */}
+            <div style={{ background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ background: "rgba(110,15,45,0.04)", padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
+                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Materials Ordered</div>
+              </div>
+              <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                {po.materials.map((m, mi) => {
+                  const mt = MT[m.materialType] || MT.Warp;
+                  return (
+                    <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: T.silkCream, borderRadius: 10 }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase" as const, color: mt.col, background: mt.bg, padding: "3px 9px", borderRadius: 6, flexShrink: 0, marginTop: 1 }}>{m.materialType}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{m.subtype || m.description || "—"}</div>
+                        {m.description && m.subtype && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{m.description}</div>}
+                      </div>
+                      <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</div>
+                        {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 1 }}>₹{m.pricePerUnit.toLocaleString("en-IN")}/{m.unit}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Total */}
+            <div style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", border: `1.5px solid ${T.borderGold}`, borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe }}>Total Order Value</span>
+                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 800, color: "#8B6018" }}>₹{po.totalValue.toLocaleString("en-IN")}</span>
+              </div>
+              {po.urgency === "Urgent" && (
+                <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(192,57,43,0.10)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 6, padding: "4px 10px" }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>🚨 Urgent Priority</span>
+                </div>
+              )}
+            </div>
+
+            {/* Notes */}
+            {(po.notesVendor || po.notesAdmin) && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {po.notesVendor && (
+                  <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px" }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Note to Vendor</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.55, fontStyle: "italic" }}>"{po.notesVendor}"</div>
+                  </div>
+                )}
+                {po.notesAdmin && (
+                  <div style={{ background: "rgba(200,155,71,0.05)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 14px" }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Admin Note</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.55 }}>{po.notesAdmin}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function POTrackerSection({
   onCreatePO,
   onViewPO,
@@ -1384,6 +1521,7 @@ function POTrackerSection({
   const [filter, setFilter] = useState<POFilter>("all");
   const [invoiceAmounts, setInvoiceAmounts] = useState<Record<string, string>>({});
   const [invoiceDrafts, setInvoiceDrafts] = useState<Record<string, string>>({});
+  const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
     Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },
     Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)"  },
@@ -1409,6 +1547,7 @@ function POTrackerSection({
   ];
 
   return (
+    <>
     <FadeUp id="mat-po-tracker" style={{ padding: `32px ${px}px 0` }}>
       {/* Section header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -1464,6 +1603,7 @@ function POTrackerSection({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                onClick={() => setSelectedPO(po)}
                 style={{
                   background: "#FFFFFF",
                   borderRadius: 20,
@@ -1474,6 +1614,7 @@ function POTrackerSection({
                   flexDirection: "column",
                   height: "100%",
                   position: "relative",
+                  cursor: "pointer",
                   transition: "transform 0.25s, box-shadow 0.25s",
                 }}
                 whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
@@ -1511,22 +1652,35 @@ function POTrackerSection({
                   {/* Materials Grid */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
                     <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
-                    {po.materials.map((m, mi) => {
-                      const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
-                      return (
-                        <div key={mi} style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.04)` : "none", paddingBottom: mi < po.materials.length - 1 ? 6 : 0, paddingTop: mi > 0 ? 2 : 0 }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center" }}>
-                            {m.materialType}
-                          </span>
-                          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {m.description || "—"}
-                          </span>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0 }}>
-                            {m.quantity} {m.unit}
-                          </span>
-                        </div>
-                      );
-                    })}
+                      {po.materials.map((m, mi) => {
+                        const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+                        return (
+                          <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 10, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 8 : 0, paddingTop: mi > 0 ? 4 : 0 }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
+                              {m.materialType}
+                            </span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              {(m.subtype || m.description) ? (
+                                <>
+                                  <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                                    {m.subtype || m.description}
+                                  </div>
+                                  {m.description && m.subtype && (
+                                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
+                                      {m.description}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>—</div>
+                              )}
+                            </div>
+                            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1 }}>
+                              {m.quantity} {m.unit}
+                            </span>
+                          </div>
+                        );
+                      })}
                   </div>
 
                   {/* Metadata Row: Delivery Deadline & Notes */}
@@ -1646,6 +1800,8 @@ function POTrackerSection({
         </div>
       )}
     </FadeUp>
+    <POVendorDetailModal po={selectedPO} onClose={() => setSelectedPO(null)} />
+    </>
   );
 }
 

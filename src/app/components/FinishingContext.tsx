@@ -73,6 +73,7 @@ export interface DispatchRecord {
   firmName?: string;
   paymentDueDate?: string;
   invoiceNotes?: string;
+  bulkOrderRef?: string;
 }
 
 interface FinishingContextValue {

@@ -10,6 +10,7 @@ import { useFinishing, FinishingReturn, DispatchRecord } from "./FinishingContex
 import { useFirms } from "./FirmsContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { useBulkOrders } from "./BulkOrderContext";
+import { useBatches } from "./BatchContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 
@@ -61,11 +62,12 @@ const inp: React.CSSProperties = {
 
 // ── Wholesale customers (static — extend from CustomersPage) ─────────────────
 const WHOLESALE_CUSTOMERS = [
-  { id: "WC-001", name: "Lakshmi Silk Traders",   phone: "9811223344", city: "Bengaluru"  },
-  { id: "WC-002", name: "Kanchipuram Silks",       phone: "9123456789", city: "Kanchipuram"},
-  { id: "WC-003", name: "Sri Venkateswara Textiles",phone:"9988776655", city: "Ongole"     },
-  { id: "WC-004", name: "AK Traders",              phone: "9700112233", city: "Hyderabad"  },
-  { id: "WC-005", name: "Surat Zari Works",        phone: "9876543210", city: "Surat"      },
+  { id: "WHL-001", name: "Lakshmi Silks",             city: "Hyderabad",  terms: "Net 30", phone: "+91 98450 11223", address: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081", gstCode: "36AAAAA1111A1Z1" },
+  { id: "WHL-002", name: "Narayana Silk Emporium",    city: "Vijayawada", terms: "Net 45", phone: "+91 99123 44556", address: "40-1-5, MG Road, Vijayawada - 520010", gstCode: "37BBBBB2222B2Z2" },
+  { id: "WHL-003", name: "Padmavathi Textiles",       city: "Chennai",    terms: "Net 30", phone: "+91 94440 99887", address: "82, Pondy Bazaar, T. Nagar, Chennai - 600017", gstCode: "33CCCCC3333C3Z3" },
+  { id: "WHL-004", name: "Vijaya Silk House",         city: "Bangalore",  terms: "Net 60", phone: "+91 98800 55667", address: "144, Commercial Street, Bangalore - 560001", gstCode: "29DDDDD4444D4Z4" },
+  { id: "WHL-005", name: "Meenakshi Silks",           city: "Coimbatore", terms: "Net 30", phone: "+91 94250 88776", address: "12, Cross Cut Road, Gandhipuram, Coimbatore - 641012", gstCode: "33EEEEE5555E5Z5" },
+  { id: "WHL-006", name: "Kalavathi Exports",         city: "Surat",      terms: "Net 45", phone: "+91 99790 33445", address: "Ring Road Textile Market, Surat - 395002", gstCode: "24FFFFF6666F6Z6" },
 ];
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -184,7 +186,7 @@ interface InvoiceData {
 }
 
 function InvoiceGenerator({
-  sarees, customer, transport, data, onChange, onSend, onDraft, onCancel,
+  sarees, customer, transport, data, onChange, onSend, onDraft, onCancel, bulkOrderRef,
 }: {
   sarees: FinishingReturn[];
   customer: typeof WHOLESALE_CUSTOMERS[0] | null;
@@ -194,8 +196,12 @@ function InvoiceGenerator({
   onSend: () => void;
   onDraft: () => void;
   onCancel: () => void;
+  bulkOrderRef?: string;
 }) {
   const { firms } = useFirms();
+  const { bulkOrders } = useBulkOrders();
+  const { batches } = useBatches();
+  const linkedOrder = bulkOrders.find(o => o.ref === bulkOrderRef);
   const set = (k: keyof InvoiceData) => (v: string | boolean) => onChange({ ...data, [k]: v });
 
   const qty          = sarees.length;
@@ -207,6 +213,12 @@ function InvoiceGenerator({
 
   const todayStr = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
+  const sareeIds = sarees.map(s => s.sareeId || s.id);
+  const detectedBatches = Array.from(new Set(
+    sareeIds.map(id => batches.find(b => b.rows.some(row => row.sareeId === id))?.batchId).filter(Boolean)
+  ));
+  const batchStr = detectedBatches.length > 0 ? detectedBatches.join(", ") : "—";
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
       {/* Left — form */}
@@ -215,15 +227,17 @@ function InvoiceGenerator({
           <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Auto-filled (read-only)</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              ["Customer",   customer?.name ?? "—"],
-              ["Dispatch Date", transport.dispatchDate],
-              ["LR Number",  transport.lrNumber],
-              ["Transport",  transport.transportCompany],
-              ["Sarees",     sarees.map(s => s.sareeId).join(", ")],
+              ["Customer",     customer?.name ?? "—"],
+              ["Bulk Order",   bulkOrderRef || "—"],
+              ["Batch(es)",    batchStr],
+              ["Dispatch Date",transport.dispatchDate],
+              ["LR Number",   transport.lrNumber],
+              ["Transport",   transport.transportCompany],
+              ["Sarees",      sarees.map(s => s.sareeId).join(", ")],
             ].map(([k, v]) => (
-              <div key={k} style={{ display: "flex", gap: 8 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, minWidth: 100 }}>{k}</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, flex: 1, wordBreak: "break-all" as const }}>{v}</span>
+              <div key={k} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, minWidth: 110, flexShrink: 0 }}>{k}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 11, color: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? T.royalBurgundy : T.luxuryBrown, flex: 1, wordBreak: "break-all" as const, fontWeight: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? 700 : 400 }}>{v}</span>
               </div>
             ))}
           </div>
@@ -318,12 +332,34 @@ function InvoiceGenerator({
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || "INV-XXXX"}</div>
               <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
+              {bulkOrderRef && (
+                <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
+                    <ShoppingBag size={10} color={T.royalBurgundy} />
+                    <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
+                  </div>
+                  {linkedOrder && (
+                    <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 1, textTransform: "capitalize" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                      {linkedOrder.sareeType.split(" · ")[0]} · {linkedOrder.design}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div style={{ textAlign: "right" as const }}>
+            <div style={{ textAlign: "right" as const, maxWidth: "55%" }}>
               <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Bill To</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginTop: 3 }}>{customer?.name ?? "—"}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{customer?.city}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{customer?.phone}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{customer?.name ?? "—"}</div>
+              {customer?.address ? (
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{customer.address}</div>
+              ) : (
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>{customer?.city}</div>
+              )}
+              {customer?.phone && (
+                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{customer.phone}</div>
+              )}
+              {customer?.gstCode && (
+                <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {customer.gstCode}</div>
+              )}
             </div>
           </div>
 
@@ -334,17 +370,26 @@ function InvoiceGenerator({
                 <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i > 0 ? "right" as const : "left" as const }}>{h}</div>
               ))}
             </div>
-            {sarees.slice(0, 4).map((s, i) => (
-              <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 60px 80px 90px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-                <div>
-                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{s.sareeId}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
+            {sarees.slice(0, 4).map((s, i) => {
+              const sId = s.sareeId || s.id;
+              const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
+              return (
+                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 60px 80px 90px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
+                      {sareeBatch && (
+                        <span style={{ fontFamily: F.mono, fontSize: 9, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
+                  </div>
+                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>1</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
                 </div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>1</div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
-              </div>
-            ))}
+              );
+            })}
             {sarees.length > 4 && (
               <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
             )}
@@ -374,6 +419,18 @@ function InvoiceGenerator({
           {/* Dispatch details */}
           <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
+            {bulkOrderRef && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Bulk Order: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
+              </div>
+            )}
+            {detectedBatches.length > 0 && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(200,155,71,0.06)", border: `1px solid rgba(200,155,71,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Production Batch: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{batchStr}</span>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
               {[
                 ["LR Number", transport.lrNumber || "—"],
@@ -533,15 +590,19 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
 }
 
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
-function DispatchWholesaleModal({ sarees, onConfirm, onClose }: {
+function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
   sarees: FinishingReturn[];
-  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string) => void;
+  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string) => void;
   onClose: () => void;
+  initialBulkOrderRef?: string;
+  initialCustomerId?: string;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(1);
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(initialCustomerId || "");
   const [customerSearch, setCustomerSearch] = useState("");
+  const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
+  const { bulkOrders } = useBulkOrders();
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "", expectedDelivery: "", specialInstructions: "" });
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, pricePerSaree: "", applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
@@ -610,12 +671,61 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose }: {
                   </button>
                 ))}
               </div>
+
+              {/* Bulk Order linkage */}
+              <div style={{ marginTop: 18 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
+                <div style={{ position: "relative" }}>
+                  <select
+                    value={bulkOrderRef}
+                    onChange={e => setBulkOrderRef(e.target.value)}
+                    style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}
+                  >
+                    <option value="">— Not linked to a bulk order —</option>
+                    {bulkOrders.map(o => (
+                      <option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                </div>
+                {bulkOrderRef && (() => {
+                  const linked = bulkOrders.find(o => o.ref === bulkOrderRef);
+                  return linked ? (
+                    <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 10 }}>
+                      <ShoppingBag size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
+                      </div>
+                      <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
             </div>
           )}
 
           {/* Step 2 — Sarees */}
           {step === 2 && (
             <div>
+              {/* Linked bulk order banner */}
+              {bulkOrderRef && (() => {
+                const linked = bulkOrders.find(o => o.ref === bulkOrderRef);
+                return linked ? (
+                  <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(110,15,45,0.05)", border: `1.5px solid rgba(110,15,45,0.16)`, borderRadius: 12 }}>
+                    <ShoppingBag size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
+                    </div>
+                    <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} will be dispatched to {selectedCustomer?.name}.</div>
               <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
                 {sarees.map((s, i) => (
@@ -652,7 +762,8 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose }: {
               transport={transport}
               data={inv}
               onChange={setInv}
-              onSend={() => onConfirm(transport, inv, customerId)}
+              bulkOrderRef={bulkOrderRef || undefined}
+              onSend={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined)}
               onDraft={() => onClose()}
               onCancel={onClose}
             />
@@ -702,6 +813,7 @@ export interface InventoryRecord {
   rawType: "readySaree" | "return";
   originalId: string; // readySaree id or return id
   bulkOrderRef?: string;
+  batchId?: string;
 }
 
 export const getLoomForRecord = (id: string, weaverName: string): string => {
@@ -723,7 +835,8 @@ export const getLoomForRecord = (id: string, weaverName: string): string => {
 export function InventoryPage() {
   const { returns, dispatches, dispatchSarees, readySarees } = useFinishing();
   const { getDesign } = useDesignLibrary();
-  const { bulkOrders } = useBulkOrders();
+  const { bulkOrders, markDispatched } = useBulkOrders();
+  const { batches } = useBatches();
 
   // ── Clickable code modals ───────────────────────────────────────────────────
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -738,6 +851,7 @@ export function InventoryPage() {
   const [selectedBulkOrder, setSelectedBulkOrder] = useState<string>("all");
   const [selectedLoom, setSelectedLoom]       = useState<string>("all");
   const [selectedWeaver, setSelectedWeaver]   = useState<string>("all");
+  const [selectedBatch, setSelectedBatch]     = useState<string>("all");
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | null>(null);
@@ -755,6 +869,7 @@ export function InventoryPage() {
         (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
          s.sareeType.toLowerCase().includes(bo.sareeType.split(" \u00b7 ")[0].toLowerCase()))
       )?.ref;
+      const bId = batches.find(b => b.rows.some(row => row.sareeId === s.id))?.batchId;
       list.push({
         id: s.id,
         designCode: s.designCode,
@@ -764,7 +879,8 @@ export function InventoryPage() {
         status: "QC Passed",
         rawType: "readySaree",
         originalId: s.id,
-        bulkOrderRef: boRef
+        bulkOrderRef: boRef,
+        batchId: bId
       });
     });
 
@@ -775,6 +891,7 @@ export function InventoryPage() {
         (bo.sareeType.toLowerCase().includes(r.sareeType.toLowerCase()) ||
          r.sareeType.toLowerCase().includes(bo.sareeType.split(" \u00b7 ")[0].toLowerCase()))
       )?.ref;
+      const bId = batches.find(b => b.rows.some(row => row.sareeId === r.sareeId))?.batchId;
       list.push({
         id: r.sareeId,
         designCode: r.designCode,
@@ -784,12 +901,13 @@ export function InventoryPage() {
         status: r.inventoryStatus === "Damaged \u2014 Review Needed" ? "Damaged \u2014 Review Needed" : r.inventoryStatus,
         rawType: "return",
         originalId: r.id,
-        bulkOrderRef: boRef
+        bulkOrderRef: boRef,
+        batchId: bId
       });
     });
 
     return list;
-  }, [readySarees, returns, bulkOrders]);
+  }, [readySarees, returns, bulkOrders, batches]);
 
   const uniqueWeavers = useMemo(() => {
     const set = new Set<string>();
@@ -804,6 +922,14 @@ export function InventoryPage() {
     allRecords.forEach(r => {
       const loom = getLoomForRecord(r.id, r.weaverName);
       if (loom && loom !== "Unknown") set.add(loom);
+    });
+    return Array.from(set).sort();
+  }, [allRecords]);
+
+  const uniqueBatches = useMemo(() => {
+    const set = new Set<string>();
+    allRecords.forEach(r => {
+      if (r.batchId) set.add(r.batchId);
     });
     return Array.from(set).sort();
   }, [allRecords]);
@@ -833,8 +959,9 @@ export function InventoryPage() {
     const recordLoom = getLoomForRecord(r.id, r.weaverName);
     const matchLoom = selectedLoom === "all" || recordLoom === selectedLoom;
     const matchWeaver = selectedWeaver === "all" || r.weaverName === selectedWeaver;
-    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver;
-  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver]);
+    const matchBatch = selectedBatch === "all" || r.batchId === selectedBatch;
+    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver && matchBatch;
+  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver, selectedBatch]);
 
   // ── Selection helpers ──────────────────────────────────────────────────────
   const dispatchableSelected = useMemo(() => {
@@ -892,7 +1019,7 @@ export function InventoryPage() {
     setToast(`${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`);
   };
 
-  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string) => {
+  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
     const sareeIds = dispatchableSelected.map(r => r.sareeId);
     const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
     dispatchSarees(sareeIds, {
@@ -901,7 +1028,11 @@ export function InventoryPage() {
       expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
       invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate, pricePerSaree: parseFloat(inv.pricePerSaree) || 0,
       gstPct: parseFloat(inv.gstPct) || 0, firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
+      bulkOrderRef,
     });
+    if (bulkOrderRef) {
+      markDispatched(bulkOrderRef, inv.invoiceNumber);
+    }
     setModal(null);
     setSelected(new Set());
     setToast(`Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
@@ -1043,17 +1174,17 @@ export function InventoryPage() {
                     title="More filters (Bulk Order, Loom, Weaver)"
                     style={{
                       display: "flex", alignItems: "center", gap: 5, height: 38, padding: "0 12px",
-                      border: `1px solid ${(selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? T.royalBurgundy : T.borderDef}`,
+                      border: `1px solid ${(selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? T.royalBurgundy : T.borderDef}`,
                       borderRadius: 10,
-                      background: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? "rgba(110,15,45,0.07)" : "#FFF",
+                      background: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? "rgba(110,15,45,0.07)" : "#FFF",
                       fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                      color: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? T.royalBurgundy : T.taupe,
+                      color: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? T.royalBurgundy : T.taupe,
                       cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const
                     }}>
                     <Filter size={14} />
-                    {((selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0)) > 0 && (
+                    {((selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0) + (selectedBatch !== "all" ? 1 : 0)) > 0 && (
                       <span style={{ background: T.royalBurgundy, color: "#FFF", borderRadius: 999, fontFamily: F.mono, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>
-                        {(selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0)}
+                        {(selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0) + (selectedBatch !== "all" ? 1 : 0)}
                       </span>
                     )}
                     <ChevronDown size={12} style={{ transition: "transform 0.2s", transform: showFilterPanel ? "rotate(180deg)" : "rotate(0deg)" }} />
@@ -1135,7 +1266,7 @@ export function InventoryPage() {
                             </select>
                           </div>
 
-                          {/* Weaver Section */}
+                           {/* Weaver Section */}
                           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                             <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Weaver</div>
                             <select
@@ -1149,10 +1280,24 @@ export function InventoryPage() {
                             </select>
                           </div>
 
+                          {/* Batch Number Section */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Batch Number</div>
+                            <select
+                              value={selectedBatch}
+                              onChange={e => setSelectedBatch(e.target.value)}
+                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
+                              <option value="all">All Batches</option>
+                              {uniqueBatches.map(b => (
+                                <option key={b} value={b}>{b}</option>
+                              ))}
+                            </select>
+                          </div>
+
                           {/* Clear + Done */}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, marginTop: 8 }}>
                             <button
-                              onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); setSelectedLoom("all"); setSelectedWeaver("all"); }}
+                              onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); setSelectedLoom("all"); setSelectedWeaver("all"); setSelectedBatch("all"); }}
                               style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                               Reset All Filters
                             </button>
@@ -1339,14 +1484,26 @@ export function InventoryPage() {
             onClose={() => setModal(null)}
           />
         )}
-        {modal === "wholesale" && dispatchableSelected.length > 0 && (
-          <DispatchWholesaleModal
-            key="wholesale-modal"
-            sarees={dispatchableSelected}
-            onConfirm={handleWholesaleConfirm}
-            onClose={() => setModal(null)}
-          />
-        )}
+        {modal === "wholesale" && dispatchableSelected.length > 0 && (() => {
+          // Auto-detect bulk order from selected sarees
+          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.sareeId === r.id));
+          const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
+          const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
+          // Map bulk order customerId to WHOLESALE_CUSTOMERS
+          const detectedCustomerId = detectedOrder?.customerId
+            ? WHOLESALE_CUSTOMERS.find(c => c.id === detectedOrder.customerId)?.id
+            : undefined;
+          return (
+            <DispatchWholesaleModal
+              key="wholesale-modal"
+              sarees={dispatchableSelected}
+              initialBulkOrderRef={detectedRef}
+              initialCustomerId={detectedCustomerId}
+              onConfirm={handleWholesaleConfirm}
+              onClose={() => setModal(null)}
+            />
+          );
+        })()}
       </AnimatePresence>
       <AnimatePresence>
         {toast && <Toast key="toast" msg={toast} onDone={() => setToast("")} />}

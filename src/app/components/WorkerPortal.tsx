@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck } from "lucide-react";
 import { C, F } from "./worker/tokens";
@@ -113,6 +114,8 @@ function MobileProfile() {
 }
 
 function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; onProfile: () => void; onBack?: () => void }) {
+  const { selectRole } = useAuth();
+  const navigate = useNavigate();
   return (
     <motion.div initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
       style={{ position: "fixed", top: 0, left: 0, width: 260, height: "100vh", background: C.dark, zIndex: 200, display: "flex", flexDirection: "column", boxShadow: "4px 0 24px rgba(0,0,0,0.30)" }}>
@@ -136,9 +139,23 @@ function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; on
       <div style={{ flex: 1 }} />
       {onBack && (
         <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <button onClick={() => { onBack(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)" }}>
-            Switch Portal
-          </button>
+          {localStorage.getItem("bk_original_admin_role") ? (
+            <button onClick={() => {
+              onClose();
+              const origAdminRole = localStorage.getItem("bk_original_admin_role");
+              if (origAdminRole) {
+                localStorage.removeItem("bk_original_admin_role");
+                selectRole(origAdminRole as any);
+                navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+              }
+            }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)" }}>
+              My Portal
+            </button>
+          ) : (
+            <button onClick={() => { onBack(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)" }}>
+              Switch Portal
+            </button>
+          )}
         </div>
       )}
     </motion.div>

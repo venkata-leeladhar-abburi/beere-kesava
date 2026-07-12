@@ -2225,7 +2225,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const isTablet = bp === "tablet";
   const { pathname } = useLocation();
   const routerNavigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, selectRole } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -2476,11 +2476,27 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                         <UserRound size={15} color={C.muted} /> View Profile
                       </button>
                       <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
-                      <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                        <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                      </button>
+                      {localStorage.getItem("bk_original_admin_role") ? (
+                        <button onClick={() => {
+                          setShowProfile(false);
+                          const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                          if (origAdminRole) {
+                            localStorage.removeItem("bk_original_admin_role");
+                            selectRole(origAdminRole as any);
+                            routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                          }
+                        }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                          <ChevronLeft size={15} color={C.muted} /> My Portal
+                        </button>
+                      ) : (
+                        <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                          <ChevronLeft size={15} color={C.muted} /> Switch Portal
+                        </button>
+                      )}
                       <button onClick={() => { setShowProfile(false); handleLogout(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
                         onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "none")}>
@@ -3383,9 +3399,23 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                     <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
                       <UserRound size={14} color={C.muted} /> View Profile
                     </button>
-                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
-                      <ChevronLeft size={14} color={C.muted} /> Switch Portal
-                    </button>
+                    {localStorage.getItem("bk_original_admin_role") ? (
+                      <button onClick={() => {
+                        setShowProfile(false);
+                        const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                        if (origAdminRole) {
+                          localStorage.removeItem("bk_original_admin_role");
+                          selectRole(origAdminRole as any);
+                          routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                        }
+                      }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                        <ChevronLeft size={14} color={C.muted} /> My Portal
+                      </button>
+                    ) : (
+                      <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                        <ChevronLeft size={14} color={C.muted} /> Switch Portal
+                      </button>
+                    )}
                     <button onClick={() => { setShowProfile(false); handleLogout(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
                       <LogOut size={14} color="#C0392B" /> Logout
                     </button>

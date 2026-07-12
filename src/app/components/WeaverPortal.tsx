@@ -7,6 +7,7 @@ import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { useMaterialIssue, MaterialIssueRecord } from "./MaterialIssueContext";
 import { useWeaverPayments } from "./WeaverPaymentsContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -1828,6 +1829,8 @@ function NotificationsPage() {
 type Tab5 = "batches" | "confirm" | "designs" | "warp" | "payments";
 
 function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void }) {
+  const { selectRole } = useAuth();
+  const navigate = useNavigate();
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -1876,9 +1879,23 @@ function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void
                   <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
                     <UserRound size={14} color={C.muted} /> View Profile
                   </button>
-                  <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
-                    <ChevronLeft size={14} color={C.muted} /> Switch Portal
-                  </button>
+                  {localStorage.getItem("bk_original_admin_role") ? (
+                    <button onClick={() => {
+                      setShowProfile(false);
+                      const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                      if (origAdminRole) {
+                        localStorage.removeItem("bk_original_admin_role");
+                        selectRole(origAdminRole as any);
+                        navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                      }
+                    }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                      <ChevronLeft size={14} color={C.muted} /> My Portal
+                    </button>
+                  ) : (
+                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                      <ChevronLeft size={14} color={C.muted} /> Switch Portal
+                    </button>
+                  )}
                   <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
                     <LogOut size={14} color="#C0392B" /> Logout
                   </button>
@@ -1929,7 +1946,7 @@ function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void
                       {tab.badge}
                     </span>
                   )}
-                  {React.cloneElement(tab.icon as React.ReactElement, { color: isActive ? C.burg : C.muted })}
+                  {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
                   <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
                 </div>
               </button>
@@ -2377,6 +2394,8 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 // ─── DESKTOP SHELL ─────────────────────────────────────────────────────────
 
 function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { onBack?: () => void; bp?: "tablet" | "desktop"; active: Tab5; setActive: (t: Tab5) => void }) {
+  const { selectRole } = useAuth();
+  const navigate = useNavigate();
   const isTablet = bp === "tablet";
   const [showNotifs, setShowNotifs] = useState(false);
   const [search, setSearch] = useState("");
@@ -2473,7 +2492,7 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { on
               }}
               onMouseEnter={e => { if (!(active === tab.id && !showNotifs)) e.currentTarget.style.color = C.text; }}
               onMouseLeave={e => { if (!(active === tab.id && !showNotifs)) e.currentTarget.style.color = C.muted; }}>
-                {React.cloneElement(tab.icon as React.ReactElement, { color: active === tab.id && !showNotifs ? C.burg : C.muted })}
+                {React.cloneElement(tab.icon as React.ReactElement<any>, { color: active === tab.id && !showNotifs ? C.burg : C.muted })}
                 {tab.label}
               </button>
             ))}
@@ -2516,11 +2535,27 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { on
                       <UserRound size={15} color={C.muted} /> View Profile
                     </button>
                     <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
-                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                      <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                    </button>
+                    {localStorage.getItem("bk_original_admin_role") ? (
+                      <button onClick={() => {
+                        setShowProfile(false);
+                        const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                        if (origAdminRole) {
+                          localStorage.removeItem("bk_original_admin_role");
+                          selectRole(origAdminRole as any);
+                          navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                        }
+                      }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                        <ChevronLeft size={15} color={C.muted} /> My Portal
+                      </button>
+                    ) : (
+                      <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                        <ChevronLeft size={15} color={C.muted} /> Switch Portal
+                      </button>
+                    )}
                     <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "none")}>

@@ -36,7 +36,7 @@ import {
   Facebook, Instagram, Youtube, Linkedin, Menu,
   LogOut, UserRound, AlertTriangle, CheckCircle2, AlertCircle,
   Package, LayoutDashboard, Factory, IndianRupee, Users, Settings2,
-  Activity, MapPin, Phone, Eye, Edit3, Layers3,
+  Activity, MapPin, Phone, Eye, Edit3, Layers3, ShoppingCart, Layers,
 } from "lucide-react";
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../constants/weaverImages";
@@ -667,6 +667,8 @@ function findNavGroup(pageKey: string): NavGroup {
 
 
 function TopNav({ active, set, onBack, onLogout, sections }: { active: string; set: (v: string) => void; onBack?: () => void; onLogout?: () => void; sections?: SectionNavItem[] }) {
+  const navigate = useNavigate();
+  const { selectRole } = useAuth();
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showNotif, setShowNotif] = React.useState(false);
@@ -947,6 +949,31 @@ function TopNav({ active, set, onBack, onLogout, sections }: { active: string; s
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <UserRound size={15} color={T.taupe} /> View Profile
                   </button>
+                  <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+                  
+                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
+                  <button onClick={() => { 
+                    setShowProfile(false); 
+                    localStorage.setItem("bk_original_admin_role", "admin");
+                    selectRole("shop");
+                    navigate("/shop"); 
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
+                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                    <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
+                  </button>
+                  <button onClick={() => { 
+                    setShowProfile(false); 
+                    localStorage.setItem("bk_original_admin_role", "admin");
+                    selectRole("worker");
+                    navigate("/worker"); 
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
+                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                    <Package size={14} color={T.taupe} /> Worker Staff Portal
+                  </button>
+
+
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
                   <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
@@ -1920,6 +1947,8 @@ function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 // MOBILE — TOP NAV
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobileTopNav({ onMenuOpen, onBack, onLogout }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void }) {
+  const navigate = useNavigate();
+  const { selectRole } = useAuth();
   const [showProfile, setShowProfile] = React.useState(false);
   return (
     <motion.nav
@@ -1964,6 +1993,28 @@ function MobileTopNav({ onMenuOpen, onBack, onLogout }: { onMenuOpen: () => void
               <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <UserRound size={14} color={T.taupe} /> View Profile
               </button>
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
+              
+              <div style={{ padding: "4px 16px 2px", fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
+              <button onClick={() => { 
+                setShowProfile(false); 
+                localStorage.setItem("bk_original_admin_role", "admin");
+                selectRole("shop");
+                navigate("/shop"); 
+              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, textAlign: "left" as const }}>
+                <ShoppingCart size={13} color={T.taupe} /> Shop Staff Portal
+              </button>
+              <button onClick={() => { 
+                setShowProfile(false); 
+                localStorage.setItem("bk_original_admin_role", "admin");
+                selectRole("worker");
+                navigate("/worker"); 
+              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, textAlign: "left" as const }}>
+                <Package size={13} color={T.taupe} /> Worker Staff Portal
+              </button>
+
+
+              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
               <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <ChevronLeft size={14} color={T.taupe} /> Switch Portal
               </button>

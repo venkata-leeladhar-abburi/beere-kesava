@@ -238,13 +238,46 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 </div>
 
                 {selectedCustomer && (
-                  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.05)", borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "#FFF" }}>{selectedCustomer.id}</span>
+                  <div style={{ marginTop: 14, background: "linear-gradient(135deg, rgba(110,15,45,0.04) 0%, rgba(110,15,45,0.02) 100%)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 14, overflow: "hidden" }}>
+                    {/* Customer header */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.09)`, background: "rgba(110,15,45,0.06)" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(110,15,45,0.25)" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 800, color: "#FFF" }}>{selectedCustomer.name.charAt(0)}</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, lineHeight: 1.2 }}>{selectedCustomer.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{selectedCustomer.id}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {selectedCustomer.city}</span>
+                        </div>
+                      </div>
+                      <div style={{ background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 10px", flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{selectedCustomer.terms}</span>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{selectedCustomer.name}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{selectedCustomer.city} · {selectedCustomer.terms}</div>
+                    {/* Detail grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+                      <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)`, borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.phone}</div>
+                      </div>
+                      <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Payment Terms</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.terms}</div>
+                      </div>
+                      <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)` }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>GST Number</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{selectedCustomer.gstCode}</div>
+                      </div>
+                      <div style={{ padding: "12px 16px" }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>City</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.city}</div>
+                      </div>
+                    </div>
+                    {/* Address */}
+                    <div style={{ padding: "12px 16px", borderTop: `1px solid rgba(110,15,45,0.07)`, background: "rgba(247,242,234,0.5)" }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Address</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>{selectedCustomer.address}</div>
                     </div>
                   </div>
                 )}

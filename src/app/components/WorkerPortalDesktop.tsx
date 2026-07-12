@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import {
   User, Bell, ChevronDown, LogOut,
@@ -43,6 +45,8 @@ function WorkerTopNav({ active, onSelect, onBack, bp }: {
   onBack?: () => void;
   bp: "tablet" | "desktop";
 }) {
+  const { selectRole } = useAuth();
+  const navigate = useNavigate();
   const [showNotif,   setShowNotif]   = useState(false);
   const [showUser,    setShowUser]    = useState(false);
   const isTablet = bp === "tablet";
@@ -173,11 +177,27 @@ function WorkerTopNav({ active, onSelect, onBack, bp }: {
                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
                 <User size={14} color={C.muted} /> My Profile
               </button>
-              <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: `1px solid rgba(110,15,45,0.08)`, cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "left" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
-                onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                <LogOut size={14} color={C.muted} /> Switch Portal
-              </button>
+               {localStorage.getItem("bk_original_admin_role") ? (
+                <button onClick={() => {
+                  closeAll();
+                  const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                  if (origAdminRole) {
+                    localStorage.removeItem("bk_original_admin_role");
+                    selectRole(origAdminRole as any);
+                    navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                  }
+                }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: `1px solid rgba(110,15,45,0.08)`, cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "left" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                  <LogOut size={14} color={C.muted} /> My Portal
+                </button>
+              ) : (
+                <button onClick={() => { closeAll(); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: `1px solid rgba(110,15,45,0.08)`, cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "left" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                  <LogOut size={14} color={C.muted} /> Switch Portal
+                </button>
+              )}
             </div>
           )}
         </div>
