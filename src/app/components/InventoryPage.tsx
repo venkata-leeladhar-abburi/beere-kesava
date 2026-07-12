@@ -704,6 +704,22 @@ export interface InventoryRecord {
   bulkOrderRef?: string;
 }
 
+export const getLoomForRecord = (id: string, weaverName: string): string => {
+  const match = id.match(/-L(\d+)-/);
+  if (match) return `L${match[1]}`;
+  
+  // Fallbacks based on weaverName
+  const name = weaverName?.toLowerCase() || "";
+  if (name.includes("padma") || name.includes("kamala")) return "L1";
+  if (name.includes("ravi") || name.includes("suresh")) return "L2";
+  if (name.includes("lakshmi") || name.includes("anand") || name.includes("venkat") || name.includes("loom 3")) return "L3";
+  if (name.includes("meena") || name.includes("loom 4")) return "L4";
+  if (name.includes("loom 1")) return "L1";
+  if (name.includes("loom 2")) return "L2";
+  
+  return "Unknown";
+};
+
 export function InventoryPage() {
   const { returns, dispatches, dispatchSarees, readySarees } = useFinishing();
   const { getDesign } = useDesignLibrary();
@@ -720,6 +736,8 @@ export function InventoryPage() {
   const [filter,   setFilter]                 = useState<"all" | "pending" | "ready" | "dispatched" | "damaged">("all");
   const [searchQ,  setSearchQ]                = useState("");
   const [selectedBulkOrder, setSelectedBulkOrder] = useState<string>("all");
+  const [selectedLoom, setSelectedLoom]       = useState<string>("all");
+  const [selectedWeaver, setSelectedWeaver]   = useState<string>("all");
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | null>(null);
@@ -773,6 +791,23 @@ export function InventoryPage() {
     return list;
   }, [readySarees, returns, bulkOrders]);
 
+  const uniqueWeavers = useMemo(() => {
+    const set = new Set<string>();
+    allRecords.forEach(r => {
+      if (r.weaverName) set.add(r.weaverName);
+    });
+    return Array.from(set).sort();
+  }, [allRecords]);
+
+  const uniqueLooms = useMemo(() => {
+    const set = new Set<string>();
+    allRecords.forEach(r => {
+      const loom = getLoomForRecord(r.id, r.weaverName);
+      if (loom && loom !== "Unknown") set.add(loom);
+    });
+    return Array.from(set).sort();
+  }, [allRecords]);
+
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;
   const pendingCount = allRecords.filter(r => r.status === "QC Passed").length;
@@ -795,8 +830,11 @@ export function InventoryPage() {
       : filter === "dispatched" ? r.status === "Dispatched"
       : r.status === "Damaged \u2014 Review Needed";
     const matchBulkOrder = selectedBulkOrder === "all" || r.bulkOrderRef === selectedBulkOrder;
-    return matchSearch && matchFilter && matchBulkOrder;
-  }), [allRecords, filter, searchQ, selectedBulkOrder]);
+    const recordLoom = getLoomForRecord(r.id, r.weaverName);
+    const matchLoom = selectedLoom === "all" || recordLoom === selectedLoom;
+    const matchWeaver = selectedWeaver === "all" || r.weaverName === selectedWeaver;
+    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver;
+  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver]);
 
   // ── Selection helpers ──────────────────────────────────────────────────────
   const dispatchableSelected = useMemo(() => {
@@ -1002,75 +1040,132 @@ export function InventoryPage() {
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button
                     onClick={() => setShowFilterPanel(v => !v)}
-                    title="More filters (Bulk Order)"
+                    title="More filters (Bulk Order, Loom, Weaver)"
                     style={{
                       display: "flex", alignItems: "center", gap: 5, height: 38, padding: "0 12px",
-                      border: `1px solid ${selectedBulkOrder !== "all" ? T.royalBurgundy : T.borderDef}`,
+                      border: `1px solid ${(selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? T.royalBurgundy : T.borderDef}`,
                       borderRadius: 10,
-                      background: selectedBulkOrder !== "all" ? "rgba(110,15,45,0.07)" : "#FFF",
+                      background: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? "rgba(110,15,45,0.07)" : "#FFF",
                       fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                      color: selectedBulkOrder !== "all" ? T.royalBurgundy : T.taupe,
+                      color: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all") ? T.royalBurgundy : T.taupe,
                       cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const
                     }}>
                     <Filter size={14} />
-                    {selectedBulkOrder !== "all" && (
-                      <span style={{ background: T.royalBurgundy, color: "#FFF", borderRadius: 999, fontFamily: F.mono, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>1</span>
+                    {((selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0)) > 0 && (
+                      <span style={{ background: T.royalBurgundy, color: "#FFF", borderRadius: 999, fontFamily: F.mono, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>
+                        {(selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0)}
+                      </span>
                     )}
                     <ChevronDown size={12} style={{ transition: "transform 0.2s", transform: showFilterPanel ? "rotate(180deg)" : "rotate(0deg)" }} />
                   </button>
 
-                  {/* Filter popover */}
-                  {showFilterPanel && (
-                    <div style={{
-                      position: "absolute", top: 44, right: 0, zIndex: 200,
-                      background: "#FFFDF9", border: `1px solid ${T.borderDef}`,
-                      borderRadius: 14, boxShadow: "0 8px 32px rgba(61,14,26,0.14)",
-                      padding: "16px 18px", minWidth: 300, display: "flex", flexDirection: "column", gap: 14
-                    }}>
-
-                      {/* Status section (mirror of inline pills) */}
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 8 }}>Status</div>
-                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-                          {FILTER_PILLS.map(p => (
-                            <button key={p.key} onClick={() => setFilter(p.key)}
-                              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", height: 30, border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`, borderRadius: 999, background: filter === p.key ? "rgba(110,15,45,0.07)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: filter === p.key ? 600 : 400, color: filter === p.key ? T.royalBurgundy : T.taupe, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" as const }}>
-                              {p.label}
-                              <span style={{ fontFamily: F.mono, fontSize: 10, background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)", color: filter === p.key ? T.royalBurgundy : T.taupe, borderRadius: 999, padding: "1px 5px" }}>{p.count}</span>
+                  {/* Filter Popover modal (centered in the middle, large size) */}
+                  <AnimatePresence>
+                    {showFilterPanel && (
+                      <div
+                        style={{
+                          position: "fixed", inset: 0, zIndex: 9999,
+                          background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)",
+                          display: "flex", alignItems: "center", justifyContent: "center"
+                        }}
+                        onClick={() => setShowFilterPanel(false)}
+                      >
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                          onClick={e => e.stopPropagation()}
+                          style={{
+                            background: "#FFFDF9", border: `1px solid ${T.borderDef}`,
+                            borderRadius: 24, boxShadow: "0 24px 70px rgba(61,14,26,0.30)",
+                            padding: "32px 36px", width: "480px", maxWidth: "90%", display: "flex", flexDirection: "column", gap: 20
+                          }}
+                        >
+                          {/* Modal Header */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${T.borderDef}`, paddingBottom: 16 }}>
+                            <div>
+                              <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.royalBurgundy }}>Advanced Filters</div>
+                              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 4 }}>Filter sarees by status, batch order, loom, or weaver</div>
+                            </div>
+                            <button onClick={() => setShowFilterPanel(false)} style={{ background: "rgba(110,15,45,0.06)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                              <X size={16} color={T.royalBurgundy} />
                             </button>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
 
-                      {/* Bulk Order section */}
-                      <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 12 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 8 }}>Bulk Order</div>
-                        <select
-                          value={selectedBulkOrder}
-                          onChange={e => setSelectedBulkOrder(e.target.value)}
-                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
-                          <option value="all">All Bulk Orders</option>
-                          {bulkOrders.map(bo => (
-                            <option key={bo.ref} value={bo.ref}>{bo.ref} — {bo.customer}</option>
-                          ))}
-                        </select>
-                      </div>
+                          {/* Status section */}
+                          <div>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 10 }}>Filter by Status</div>
+                            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
+                              {FILTER_PILLS.map(p => (
+                                <button key={p.key} onClick={() => setFilter(p.key)}
+                                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", height: 34, border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`, borderRadius: 999, background: filter === p.key ? "rgba(110,15,45,0.07)" : "transparent", fontFamily: F.ui, fontSize: 12.5, fontWeight: filter === p.key ? 600 : 400, color: filter === p.key ? T.royalBurgundy : T.taupe, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" as const }}>
+                                  {p.label}
+                                  <span style={{ fontFamily: F.mono, fontSize: 10, background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)", color: filter === p.key ? T.royalBurgundy : T.taupe, borderRadius: 999, padding: "1px 6px" }}>{p.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
-                      {/* Clear + Done */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${T.borderDef}`, paddingTop: 10 }}>
-                        <button
-                          onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); }}
-                          style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                          Clear all
-                        </button>
-                        <button
-                          onClick={() => setShowFilterPanel(false)}
-                          style={{ height: 30, padding: "0 14px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "#FFF", cursor: "pointer" }}>
-                          Done
-                        </button>
+                          {/* Bulk Order section */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Bulk Production Order</div>
+                            <select
+                              value={selectedBulkOrder}
+                              onChange={e => setSelectedBulkOrder(e.target.value)}
+                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
+                              <option value="all">All Bulk Orders</option>
+                              {bulkOrders.map(bo => (
+                                <option key={bo.ref} value={bo.ref}>{bo.ref} — {bo.customer}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Loom Section */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Loom Number</div>
+                            <select
+                              value={selectedLoom}
+                              onChange={e => setSelectedLoom(e.target.value)}
+                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
+                              <option value="all">All Looms</option>
+                              {uniqueLooms.map(l => (
+                                <option key={l} value={l}>Loom {l}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Weaver Section */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Weaver</div>
+                            <select
+                              value={selectedWeaver}
+                              onChange={e => setSelectedWeaver(e.target.value)}
+                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
+                              <option value="all">All Weavers</option>
+                              {uniqueWeavers.map(w => (
+                                <option key={w} value={w}>{w}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Clear + Done */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, marginTop: 8 }}>
+                            <button
+                              onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); setSelectedLoom("all"); setSelectedWeaver("all"); }}
+                              style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                              Reset All Filters
+                            </button>
+                            <button
+                              onClick={() => setShowFilterPanel(false)}
+                              style={{ height: 44, padding: "0 28px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
+                              Apply Filters
+                            </button>
+                          </div>
+                        </motion.div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
@@ -1154,7 +1249,12 @@ export function InventoryPage() {
                       onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
                     >{r.sareeType}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{r.weaverName.split(" ")[0]}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                      {r.weaverName.split(" ")[0]}
+                      <div style={{ fontSize: 9.5, color: T.antiqueGold, fontWeight: 600, marginTop: 2 }}>
+                        {getLoomForRecord(r.id, r.weaverName)}
+                      </div>
+                    </div>
                     <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.date}</div>
                     <div><StatusBadge status={r.status} /></div>
                     <div onClick={e => e.stopPropagation()}>

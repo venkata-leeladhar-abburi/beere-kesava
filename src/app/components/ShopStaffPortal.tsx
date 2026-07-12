@@ -976,23 +976,57 @@ function ShopInventory() {
   const { isMobile } = useResponsive();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All Sarees");
+  const [loomFilter, setLoomFilter] = useState<string[]>([]);
+  const [weaverFilter, setWeaverFilter] = useState<string[]>([]);
 
   const inventory = [
-    { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null },
-    { id: "RAVI-L2-008",  src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "Received 09 Jun", status: "available", supplier: null },
-    { id: "BKB-L3-002",   src: "factory", design: "BKB-022", name: "Cream Plain Silk",  color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500",  received: "Received 08 Jun", status: "available", supplier: null },
-    { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks",      color: "#C9A86C", sareeColor: "Gold",  type: "Checks",      price: "₹6,200",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks" },
-    { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design",    color: "#D4A5C5", sareeColor: "Pink",  type: "Floral",      price: "₹7,800",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks" },
-    { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500",  received: "Received 07 Jun", status: "reserved", supplier: null },
+    { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null, loom: "L1", weaver: "Padma Veni" },
+    { id: "RAVI-L2-008",  src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "Received 09 Jun", status: "available", supplier: null, loom: "L2", weaver: "Ravi Kumar" },
+    { id: "BKB-L3-002",   src: "factory", design: "BKB-022", name: "Cream Plain Silk",  color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500",  received: "Received 08 Jun", status: "available", supplier: null, loom: "L3", weaver: "Lakshmi Devi" },
+    { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks",      color: "#C9A86C", sareeColor: "Gold",  type: "Checks",      price: "₹6,200",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
+    { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design",    color: "#D4A5C5", sareeColor: "Pink",  type: "Floral",      price: "₹7,800",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
+    { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500",  received: "Received 07 Jun", status: "reserved", supplier: null, loom: "L1", weaver: "Padma Veni" },
   ];
+
+  const looms = Array.from(new Set(inventory.map(s => s.loom).filter(Boolean))) as string[];
+  const weavers = Array.from(new Set(inventory.map(s => s.weaver).filter(Boolean))) as string[];
+
+  const toggleLoomFilter = (l: string) => {
+    if (l === "All Looms") {
+      setLoomFilter([]);
+    } else {
+      setLoomFilter(prev =>
+        prev.includes(l) ? prev.filter(item => item !== l) : [...prev, l]
+      );
+    }
+  };
+
+  const toggleWeaverFilter = (w: string) => {
+    if (w === "All Weavers") {
+      setWeaverFilter([]);
+    } else {
+      setWeaverFilter(prev =>
+        prev.includes(w) ? prev.filter(item => item !== w) : [...prev, w]
+      );
+    }
+  };
 
   const filters = ["All Sarees", "From Factory", "External Purchase", "Available", "Reserved"];
   const filtered = inventory.filter(s => {
     const q = search.toLowerCase();
-    const matchSearch = !q || s.id.toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+    const matchSearch = !q || s.id.toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || (s.weaver && s.weaver.toLowerCase().includes(q)) || (s.loom && s.loom.toLowerCase().includes(q));
     const matchFilter = filter === "All Sarees" || (filter === "From Factory" && s.src === "factory") || (filter === "External Purchase" && s.src === "external") || (filter === "Available" && s.status === "available") || (filter === "Reserved" && s.status === "reserved");
-    return matchSearch && matchFilter;
+    const matchLoom = loomFilter.length === 0 || (s.loom && loomFilter.includes(s.loom));
+    const matchWeaver = weaverFilter.length === 0 || (s.weaver && weaverFilter.includes(s.weaver));
+    return matchSearch && matchFilter && matchLoom && matchWeaver;
   });
+
+  const dropStyle: React.CSSProperties = {
+    height: 42, padding: "0 14px", borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.inp,
+    fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, cursor: "pointer", outline: "none",
+    appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B7060' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 32,
+  };
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -1028,12 +1062,40 @@ function ShopInventory() {
       <Card style={{ margin: "16px 20px", padding: "16px" }}>
         <div style={{ position: "relative" as const, marginBottom: 14 }}>
           <Search size={18} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, or color" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
         </div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4, marginBottom: 12 }}>
           {filters.map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${filter === f ? C.burg : C.bdr}`, background: filter === f ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: filter === f ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>{f}</button>
           ))}
+        </div>
+        {/* Loom selection pills */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Loom</div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
+            {["All Looms", ...looms].map(l => {
+              const isSel = l === "All Looms" ? loomFilter.length === 0 : loomFilter.includes(l);
+              return (
+                <button key={l} onClick={() => toggleLoomFilter(l)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                  {l === "All Looms" ? "All Looms" : `Loom ${l}`}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {/* Weaver selection pills */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Weaver</div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
+            {["All Weavers", ...weavers].map(w => {
+              const isSel = w === "All Weavers" ? weaverFilter.length === 0 : weaverFilter.includes(w);
+              return (
+                <button key={w} onClick={() => toggleWeaverFilter(w)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                  {w}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>Showing {filtered.length} sarees · {filtered.filter(s => s.status === "available").length} available · {filtered.filter(s => s.status === "reserved").length} reserved</div>
       </Card>
@@ -1051,6 +1113,12 @@ function ShopInventory() {
             </div>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 17, color: C.text, marginBottom: 3 }}>{s.name}</div>
             <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted, marginBottom: 8, lineHeight: 1.4 }}>{s.design !== "External" && `${s.design} · `}{s.sareeColor} · {s.type}</div>
+            {s.weaver && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" as const }}>
+                <Chip label={`🧵 ${s.weaver}`} color={C.burg} bg="rgba(107,26,42,0.08)" />
+                {s.loom && <Chip label={`Loom ${s.loom}`} color={TEAL} bg="rgba(15,118,110,0.10)" />}
+              </div>
+            )}
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, lineHeight: 1.4 }}>{s.received} {s.src === "factory" ? "· From factory dispatch" : "· External purchase"}</div>
             {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(196,146,58,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
@@ -2194,6 +2262,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
 
+  // Desktop Inventory states
+  const [deskInvSearch, setDeskInvSearch] = useState("");
+  const [deskInvFilter, setDeskInvFilter] = useState("All Sarees");
+  const [deskInvLoomFilter, setDeskInvLoomFilter] = useState<string[]>([]);
+  const [deskInvWeaverFilter, setDeskInvWeaverFilter] = useState<string[]>([]);
+
   // Dialog states
   const [showInvLowStockDialog, setShowInvLowStockDialog] = useState(false);
   const [invLowStockMsg, setInvLowStockMsg] = useState("");
@@ -2255,13 +2329,52 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     ];
 
     const inventory = [
-      { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "10 Jun", status: "available", supplier: null as string | null },
-      { id: "RAVI-L2-008", src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "09 Jun", status: "available", supplier: null as string | null },
-      { id: "BKB-L3-002", src: "factory", design: "BKB-022", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "08 Jun", status: "available", supplier: null as string | null },
-      { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks", color: "#C9A86C", sareeColor: "Gold", type: "Checks", price: "₹6,200", received: "05 Jun", status: "available", supplier: "Ravi Silks" },
-      { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design", color: "#D4A5C5", sareeColor: "Pink", type: "Floral", price: "₹7,800", received: "05 Jun", status: "available", supplier: "Ravi Silks" },
-      { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "07 Jun", status: "reserved", supplier: null as string | null },
+      { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "10 Jun", status: "available", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
+      { id: "RAVI-L2-008", src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "09 Jun", status: "available", supplier: null as string | null, loom: "L2", weaver: "Ravi Kumar" },
+      { id: "BKB-L3-002", src: "factory", design: "BKB-022", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "08 Jun", status: "available", supplier: null as string | null, loom: "L3", weaver: "Lakshmi Devi" },
+      { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks", color: "#C9A86C", sareeColor: "Gold", type: "Checks", price: "₹6,200", received: "05 Jun", status: "available", supplier: "Ravi Silks", loom: null as string | null, weaver: null as string | null },
+      { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design", color: "#D4A5C5", sareeColor: "Pink", type: "Floral", price: "₹7,800", received: "05 Jun", status: "available", supplier: "Ravi Silks", loom: null as string | null, weaver: null as string | null },
+      { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "07 Jun", status: "reserved", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
     ];
+
+    const looms = Array.from(new Set(inventory.map(s => s.loom).filter(Boolean))) as string[];
+    const weavers = Array.from(new Set(inventory.map(s => s.weaver).filter(Boolean))) as string[];
+
+    const toggleDeskLoomFilter = (l: string) => {
+      if (l === "All Looms") {
+        setDeskInvLoomFilter([]);
+      } else {
+        setDeskInvLoomFilter(prev =>
+          prev.includes(l) ? prev.filter(item => item !== l) : [...prev, l]
+        );
+      }
+    };
+
+    const toggleDeskWeaverFilter = (w: string) => {
+      if (w === "All Weavers") {
+        setDeskInvWeaverFilter([]);
+      } else {
+        setDeskInvWeaverFilter(prev =>
+          prev.includes(w) ? prev.filter(item => item !== w) : [...prev, w]
+        );
+      }
+    };
+
+    const filteredInventory = inventory.filter(s => {
+      const q = deskInvSearch.toLowerCase();
+      const matchSearch = !q || s.id.toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || (s.weaver && s.weaver.toLowerCase().includes(q)) || (s.loom && s.loom.toLowerCase().includes(q));
+      const matchFilter = deskInvFilter === "All Sarees" || (deskInvFilter === "From Factory" && s.src === "factory") || (deskInvFilter === "External" && s.src === "external") || (deskInvFilter === "Available" && s.status === "available") || (deskInvFilter === "Reserved" && s.status === "reserved");
+      const matchLoom = deskInvLoomFilter.length === 0 || (s.loom && deskInvLoomFilter.includes(s.loom));
+      const matchWeaver = deskInvWeaverFilter.length === 0 || (s.weaver && deskInvWeaverFilter.includes(s.weaver));
+      return matchSearch && matchFilter && matchLoom && matchWeaver;
+    });
+
+    const dropStyle: React.CSSProperties = {
+      height: 38, padding: "0 12px", borderRadius: 8, border: `1px solid ${C.bdr}`, background: "#FFF",
+      fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, cursor: "pointer", outline: "none",
+      appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B7060' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", paddingRight: 28,
+    };
 
     const customers = [
       { name: "Smt. Annapurna Devi", phone: "×××× 7823", purchases: 18, total: "₹1,84,000", last: "3 days ago", regular: true, initials: "AD" },
@@ -2601,14 +2714,46 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                 />
                 <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
                   {/* Search + filter */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-                    <div style={{ flex: 1, position: "relative" as const }}>
-                      <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-                      <input placeholder="Search by Saree ID, design code, or color..." style={{ width: "100%", height: 48, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
+                  <div style={{ display: "flex", flexDirection: "column" as const, gap: 16, marginBottom: 28 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ flex: 1, position: "relative" as const }}>
+                        <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
+                        <input value={deskInvSearch} onChange={e => setDeskInvSearch(e.target.value)} placeholder="Search by Saree ID, design code, color, weaver or loom..." style={{ width: "100%", height: 48, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
+                      </div>
+                      {["All Sarees", "From Factory", "External", "Available", "Reserved"].map(f => (
+                        <button key={f} onClick={() => setDeskInvFilter(f)} style={{ padding: "10px 18px", borderRadius: 999, border: `1px solid ${deskInvFilter === f ? C.burg : C.bdr}`, background: deskInvFilter === f ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: deskInvFilter === f ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: deskInvFilter === f ? 600 : 400, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", transition: "all 0.15s" }}>{f}</button>
+                      ))}
                     </div>
-                    {["All Sarees", "From Factory", "External", "Available", "Reserved"].map(f => (
-                      <button key={f} style={{ padding: "10px 18px", borderRadius: 999, border: `1px solid ${C.bdr}`, background: f === "All Sarees" ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: f === "All Sarees" ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: f === "All Sarees" ? 600 : 400 }}>{f}</button>
-                    ))}
+                    {/* Loom + Weaver filters as button pills */}
+                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+                        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted, minWidth: 60 }}>Loom:</span>
+                        {["All Looms", ...looms].map(l => {
+                          const isSel = l === "All Looms" ? deskInvLoomFilter.length === 0 : deskInvLoomFilter.includes(l);
+                          return (
+                            <button key={l} onClick={() => toggleDeskLoomFilter(l)} style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "#FFF", fontFamily: F.u, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: isSel ? 600 : 400, transition: "all 0.15s" }}>
+                              {l === "All Looms" ? "All Looms" : `Loom ${l}`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+                        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted, minWidth: 60 }}>Weaver:</span>
+                        {["All Weavers", ...weavers].map(w => {
+                          const isSel = w === "All Weavers" ? deskInvWeaverFilter.length === 0 : deskInvWeaverFilter.includes(w);
+                          return (
+                            <button key={w} onClick={() => toggleDeskWeaverFilter(w)} style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "#FFF", fontFamily: F.u, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: isSel ? 600 : 400, transition: "all 0.15s" }}>
+                              {w}
+                            </button>
+                          );
+                        })}
+                        {(deskInvSearch || deskInvFilter !== "All Sarees" || deskInvLoomFilter.length > 0 || deskInvWeaverFilter.length > 0) && (
+                          <button onClick={() => { setDeskInvSearch(""); setDeskInvFilter("All Sarees"); setDeskInvLoomFilter([]); setDeskInvWeaverFilter([]); }} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 999, border: `1px solid rgba(192,57,43,0.3)`, background: "rgba(192,57,43,0.05)", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, cursor: "pointer" }}>
+                            ✕ Clear Filters
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 300px", gap: isTablet ? 24 : 32, alignItems: "start" }}>
@@ -2620,16 +2765,19 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                             <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                           ))}
                         </div>
-                        {inventory.map((s, i) => (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 120px 100px 120px 100px", padding: "20px 24px", borderBottom: i < inventory.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                        {filteredInventory.map((s, i) => (
+                          <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 120px 100px 120px 100px", padding: "20px 24px", borderBottom: i < filteredInventory.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, flexShrink: 0 }} />
                               <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{s.id}</span>
                             </div>
                             <div>
                               <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 3 }}>{s.name}</div>
-                              {s.design !== "External" && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.design}</div>}
-                              {s.supplier && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Supplier: {s.supplier}</div>}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+                                {s.design !== "External" && <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.design}</span>}
+                                {s.weaver && <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, background: "rgba(107,26,42,0.06)", padding: "2px 8px", borderRadius: 4 }}>🧵 {s.weaver} (Loom {s.loom})</span>}
+                                {s.supplier && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Supplier: {s.supplier}</div>}
+                              </div>
                             </div>
                             <div>
                               <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{s.sareeColor}</div>
@@ -2649,7 +2797,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           </div>
                         ))}
                       </div>
-                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 14 }}>Showing {inventory.length} sarees · {inventory.filter(s => s.status === "available").length} available · {inventory.filter(s => s.status === "reserved").length} reserved</div>
+                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 14 }}>Showing {filteredInventory.length} sarees · {filteredInventory.filter(s => s.status === "available").length} available · {filteredInventory.filter(s => s.status === "reserved").length} reserved</div>
                     </div>
 
                     {/* Sidebar */}
