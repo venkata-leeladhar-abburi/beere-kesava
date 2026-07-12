@@ -276,6 +276,8 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
     vendor: "",
     receivedDate: "",
     quantity: "",
+    quantityGm: "",
+    jariUnit: "Reels" as "Reels" | "Buns",
     pricePerKg: "",
     notes: "",
   });
@@ -286,7 +288,7 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
   const handleSubmit = () => {
     if (!form.details || !form.vendor || !form.receivedDate || !form.quantity) return;
     setSubmitted(true);
-    setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", pricePerKg: "", notes: "" }); }, 1800);
+    setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", pricePerKg: "", notes: "" }); }, 1800);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -353,8 +355,49 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
                 <input type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Quantity Received (kg) *</label>
-                <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="e.g. 50" style={inputStyle} />
+                <label style={labelStyle}>
+                  {form.materialType === "Jari" ? `Quantity (${form.jariUnit}) *` : "Quantity Received *"}
+                </label>
+                {form.materialType === "Jari" ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                      {(["Reels", "Buns"] as const).map(u => (
+                        <button key={u} onClick={() => set("jariUnit", u)} style={{
+                          flex: 1, padding: "8px 0", borderRadius: 9, cursor: "pointer",
+                          fontFamily: F.ui, fontSize: 13, fontWeight: 700,
+                          background: form.jariUnit === u ? T.royalBurgundy : T.warmIvory,
+                          color: form.jariUnit === u ? "#FFFDF9" : T.taupe,
+                          border: form.jariUnit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
+                        }}>{u}</button>
+                      ))}
+                    </div>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 52 }} />
+                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.jariUnit}</span>
+                    </div>
+                    {form.quantity && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold }}>
+                        = {form.jariUnit === "Reels" ? `${Math.round(parseFloat(form.quantity) / 4)} Buns` : `${Math.round(parseFloat(form.quantity) * 4)} Reels`} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 36 }} />
+                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+                    </div>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" value={form.quantityGm} onChange={e => set("quantityGm", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 36 }} />
+                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe }}>g</span>
+                    </div>
+                    {(form.quantity || form.quantityGm) && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
+                        = {((parseFloat(form.quantity || "0") * 1000) + parseFloat(form.quantityGm || "0")).toFixed(0)} g total
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1423,140 +1466,179 @@ function POTrackerSection({
                 transition={{ duration: 0.3 }}
                 style={{
                   background: "#FFFFFF",
-                  borderRadius: 12,
-                  border: `1px solid ${T.borderDef}`,
-                  borderLeft: `4px solid ${cfg.border}`,
-                  boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
-                  padding: "18px 20px",
+                  borderRadius: 20,
+                  border: `1.5px solid ${T.borderDef}`,
+                  boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  position: "relative",
+                  transition: "transform 0.25s, box-shadow 0.25s",
                 }}
+                whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
               >
-                {/* Top row */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "3px 9px", borderRadius: 6 }}>
-                    {po.poNumber}
-                  </span>
-                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, background: "#F7F2EA", padding: "3px 9px", borderRadius: 6 }}>
-                    {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                  </span>
-                </div>
+                {/* Status-colored banner highlight */}
+                <div style={{ height: 6, background: cfg.border, width: "100%" }} />
 
-                {/* Vendor */}
-                <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 2 }}>{po.vendor}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginBottom: 6 }}>{po.vendorCity}</div>
-                {po.firmName && (
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 600, marginBottom: 10 }}>{po.firmName}</div>
-                )}
-
-                {/* Materials list */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-                  {po.materials.map((m, mi) => {
-                    const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
-                    return (
-                      <div key={mi} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px" }}>{m.materialType}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flex: 1, minWidth: 0 }}>{m.description || "—"}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown, fontWeight: 600 }}>{m.quantity} {m.unit}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Delivery date + notes */}
-                {po.deliveryDate && (
-                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 6 }}>
-                    Delivery: {new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+                  {/* Top row: PO number + Date */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
+                      {po.poNumber}
+                    </span>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+                      {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                    </span>
                   </div>
-                )}
-                {po.notesVendor && (
-                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontStyle: "italic", marginBottom: 10 }}>{po.notesVendor}</div>
-                )}
 
-                {/* Invoice Amount — collapsible add-price section */}
-                <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 9, padding: "10px 12px", marginBottom: 12 }}>
-                  {invoiceAmounts[po.id] ? (
-                    <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.antiqueGold }}>
-                      Invoice Amount: ₹{parseFloat(invoiceAmounts[po.id]).toLocaleString("en-IN")}
+                  {/* Vendor Details */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 4 }}>
+                      {po.vendor}
                     </div>
-                  ) : (
-                    <>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, marginBottom: 6 }}>Invoice Amount (₹)</div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <input
-                          type="number"
-                          value={invoiceDrafts[po.id] || ""}
-                          onChange={e => setInvoiceDrafts(prev => ({ ...prev, [po.id]: e.target.value }))}
-                          placeholder="Enter total invoice amount"
-                          style={{ flex: 1, fontFamily: F.ui, fontSize: 12, padding: "6px 8px", borderRadius: 6, border: `1px solid ${T.borderGold}`, outline: "none" }}
-                        />
-                        <button
-                          onClick={() => invoiceDrafts[po.id] && setInvoiceAmounts(prev => ({ ...prev, [po.id]: invoiceDrafts[po.id] }))}
-                          style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", background: T.antiqueGold, border: "none", borderRadius: 6, padding: "0 12px", cursor: "pointer" }}
-                        >
-                          Save
-                        </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                      <span>{po.vendorCity}</span>
+                      {po.firmName && (
+                        <>
+                          <span style={{ color: T.borderDef }}>•</span>
+                          <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{po.firmName}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Materials Grid */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+                    {po.materials.map((m, mi) => {
+                      const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+                      return (
+                        <div key={mi} style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.04)` : "none", paddingBottom: mi < po.materials.length - 1 ? 6 : 0, paddingTop: mi > 0 ? 2 : 0 }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center" }}>
+                            {m.materialType}
+                          </span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {m.description || "—"}
+                          </span>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0 }}>
+                            {m.quantity} {m.unit}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Metadata Row: Delivery Deadline & Notes */}
+                  {(po.deliveryDate || po.notesVendor) && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18, paddingLeft: 2 }}>
+                      {po.deliveryDate && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
+                          <span style={{ color: T.taupe }}>Deadline:</span>
+                          <span style={{ fontWeight: 600, color: T.royalBurgundy }}>
+                            {new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                          </span>
+                        </div>
+                      )}
+                      {po.notesVendor && (
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic", lineHeight: 1.4 }}>
+                          "{po.notesVendor}"
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Collapsible Invoice Amount */}
+                  <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18, marginTop: "auto" }}>
+                    {invoiceAmounts[po.id] ? (
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Invoice Value</span>
+                        <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
+                          ₹{parseFloat(invoiceAmounts[po.id]).toLocaleString("en-IN")}
+                        </span>
                       </div>
-                    </>
-                  )}
-                </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>Record Invoice Amount</span>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <input
+                            type="number"
+                            value={invoiceDrafts[po.id] || ""}
+                            onChange={e => setInvoiceDrafts(prev => ({ ...prev, [po.id]: e.target.value }))}
+                            placeholder="Amount in ₹"
+                            style={{ flex: 1, height: 34, fontFamily: F.ui, fontSize: 12, padding: "0 10px", borderRadius: 8, border: `1.5px solid ${T.borderGold}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" }}
+                          />
+                          <button
+                            onClick={() => invoiceDrafts[po.id] && setInvoiceAmounts(prev => ({ ...prev, [po.id]: invoiceDrafts[po.id] }))}
+                            style={{ height: 34, padding: "0 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", background: T.antiqueGold, border: "none", borderRadius: 8, cursor: "pointer" }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                {/* Status badge */}
-                <div style={{ background: cfg.badgeBg, borderRadius: 7, padding: "6px 10px", marginBottom: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: cfg.badgeColor }}>
-                  {cfg.badge}
-                </div>
+                  {/* Status Badge */}
+                  <div style={{ background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", marginBottom: 18, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
+                    {cfg.badge}
+                  </div>
 
-                {/* Action buttons */}
-                <div style={{ display: "flex", gap: 8 }}>
-                  {po.status === "approved" && (
+                  {/* Action buttons */}
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {po.status === "approved" && (
+                      <motion.button
+                        onClick={() => toast.info("Navigate to GRN page to receive against this PO")}
+                        whileHover={{ scale: 1.02, backgroundColor: "#154d30" }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{
+                          flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
+                          fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                          background: T.green, color: "#FFFFFF", border: "none",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        }}
+                      >
+                        📦 Receive Materials
+                      </motion.button>
+                    )}
+                    {po.status === "received" && po.grnId && (
+                      <div style={{ flex: 1.8, height: 38, borderRadius: 10, background: "rgba(30,102,64,0.06)", border: `1.5px solid rgba(30,102,64,0.18)`, fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        ✓ {po.grnId} Created
+                      </div>
+                    )}
+                    {po.status === "rejected" && (
+                      <motion.button
+                        onClick={onCreatePO}
+                        whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{
+                          flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
+                          fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                          background: "transparent", color: T.royalBurgundy,
+                          border: `1.5px solid rgba(110,15,45,0.22)`,
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        }}
+                      >
+                        📋 Recreate PO
+                      </motion.button>
+                    )}
                     <motion.button
-                      onClick={() => toast.info("Navigate to GRN page to receive against this PO")}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onViewPO(po)}
+                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
+                      whileTap={{ scale: 0.98 }}
                       style={{
-                        flex: 1, padding: "9px 0", borderRadius: 8, cursor: "pointer",
-                        fontFamily: F.ui, fontWeight: 600, fontSize: 12.5,
-                        background: T.green, color: "#FFFFFF", border: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        flex: po.status === "pending" ? 1 : 0.8,
+                        height: 38, borderRadius: 10, cursor: "pointer",
+                        fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                        background: "rgba(110,15,45,0.04)", color: T.royalBurgundy,
+                        border: `1.5px solid rgba(110,15,45,0.16)`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
                       }}
                     >
-                      📦 Receive Against This PO
+                      📄 View PO
                     </motion.button>
-                  )}
-                  {po.status === "received" && po.grnId && (
-                    <div style={{ flex: 1, padding: "8px 12px", borderRadius: 8, background: "rgba(30,102,64,0.08)", border: `1px solid rgba(30,102,64,0.20)`, fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 600, textAlign: "center" }}>
-                      {po.grnId} Created ✓
-                    </div>
-                  )}
-                  {po.status === "rejected" && (
-                    <motion.button
-                      onClick={onCreatePO}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{
-                        flex: 1, padding: "9px 0", borderRadius: 8, cursor: "pointer",
-                        fontFamily: F.ui, fontWeight: 600, fontSize: 12.5,
-                        background: "transparent", color: T.royalBurgundy,
-                        border: `1.5px solid rgba(110,15,45,0.22)`,
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                      }}
-                    >
-                      📋 Create New PO
-                    </motion.button>
-                  )}
-                  <motion.button
-                    onClick={() => onViewPO(po)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      flex: po.status === "pending" ? 1 : 0,
-                      minWidth: 80,
-                      padding: "9px 12px", borderRadius: 8, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 500, fontSize: 12,
-                      background: "rgba(110,15,45,0.06)", color: T.royalBurgundy,
-                      border: `1px solid rgba(110,15,45,0.16)`,
-                    }}
-                  >
-                    📄 View
-                  </motion.button>
+                  </div>
                 </div>
               </motion.div>
             );
@@ -2358,62 +2440,90 @@ function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurchases: 
       </p>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: isMobile ? 16 : 22, alignItems: "stretch" }}>
         {RECENT_DATA.map((r, i) => {
-          const mt = MAT_TAG[r.type];
-          return (
-            <FadeUp key={r.po} delay={i * 0.09} style={{ height: "100%" }}>
-              <motion.div
-                initial={{ boxShadow: "0px 4px 18px rgba(74,6,27,0.07)" }}
-                animate={{ boxShadow: "0px 4px 18px rgba(74,6,27,0.07)" }}
-                whileHover={{ y: -5, boxShadow: "0px 22px 56px rgba(74,6,27,0.14)" }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column", height: "100%" }}
-              >
-                <div style={{ height: 6, background: mt.col, flexShrink: 0 }} />
-                <div style={{ padding: "22px 22px 0", display: "flex", flexDirection: "column", flex: 1 }}>
-                  <div style={{ marginBottom: 18 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: mt.col, background: mt.bg, padding: "5px 14px", borderRadius: 8, letterSpacing: "2px", textTransform: "uppercase" }}>{r.type}</span>
-                  </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 5 }}>Received on</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.luxuryBrown, lineHeight: 1.1, marginBottom: 18 }}>{r.date}</div>
-                  <div style={{ height: 1, background: "rgba(110,15,45,0.08)", marginBottom: 18 }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
-                    <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>From vendor</div>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15.5, color: T.luxuryBrown, lineHeight: 1.35 }}>{r.vendor}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{r.vendorCity}</div>
+              const mt = MAT_TAG[r.type];
+              const typeGrad = r.type === "Warp"
+                ? "linear-gradient(135deg, #6E0F2D 0%, #A0334F 100%)"
+                : r.type === "Resham"
+                ? "linear-gradient(135deg, #7A5010 0%, #C89B47 100%)"
+                : "linear-gradient(135deg, #1E5E40 0%, #2E9E6A 100%)";
+              const typeAccent = r.type === "Warp" ? T.royalBurgundy : r.type === "Resham" ? T.antiqueGold : T.green;
+              const typeLight = r.type === "Warp" ? "rgba(110,15,45,0.07)" : r.type === "Resham" ? "rgba(200,155,71,0.10)" : "rgba(30,102,64,0.07)";
+              const initials = r.vendor.split(" ").slice(0,2).map((w: string) => w[0]).join("").toUpperCase();
+              return (
+                <FadeUp key={r.po} delay={i * 0.09} style={{ height: "100%" }}>
+                  <motion.div
+                    whileHover={{ y: -6, boxShadow: "0px 28px 64px rgba(74,6,27,0.18)" }}
+                    transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                    style={{ background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column", height: "100%", boxShadow: "0px 4px 20px rgba(74,6,27,0.08)" }}
+                  >
+                    {/* Gradient header strip with type pill + date */}
+                    <div style={{ background: typeGrad, padding: "18px 20px 20px", position: "relative", overflow: "hidden" }}>
+                      {/* Subtle radial glow */}
+                      <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.10)", pointerEvents: "none" }} />
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.90)", background: "rgba(255,255,255,0.18)", padding: "4px 12px", borderRadius: 6, letterSpacing: "2px", textTransform: "uppercase" as const }}>{r.type}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 10.5, color: "rgba(255,255,255,0.70)", letterSpacing: "0.5px" }}>#{r.po.split("-").slice(-1)[0]}</span>
+                      </div>
+                      {/* Big quantity display */}
+                      <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 34, color: "#FFFFFF", lineHeight: 1, marginBottom: 4, letterSpacing: "-0.5px" }}>{r.quantity}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", fontWeight: 500 }}>{r.description}</div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>Purchasing Firm</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>{r.firmName}</div>
+
+                    {/* Body */}
+                    <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", flex: 1, gap: 14 }}>
+                      {/* Date chip */}
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: typeLight, borderRadius: 8, padding: "5px 10px", alignSelf: "flex-start" }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: typeAccent }} />
+                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: typeAccent }}>{r.date}</span>
+                      </div>
+
+                      {/* Vendor row with avatar */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: typeGrad, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(74,6,27,0.15)" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>{initials}</span>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.vendor}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{r.vendorCity}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ height: 1, background: "rgba(110,15,45,0.08)" }} />
+
+                      {/* Firm + PO */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>Firm</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: typeAccent, textAlign: "right" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.firmName}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>PO Ref</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 5 }}>{r.po}</span>
+                        </div>
+                      </div>
+
+                      {/* Entry complete badge */}
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "7px 12px", alignSelf: "flex-start" }}>
+                        <CheckCircle2 size={13} color={T.green} />
+                        <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green }}>Entry Complete</span>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>Material received</div>
-                      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.55 }}>{r.description} · {r.quantity}</div>
+
+                    {/* Action buttons */}
+                    <div style={{ padding: "0 20px 20px", display: "flex", gap: 8, marginTop: "auto" }}>
+                      <motion.button onClick={() => setViewItem(r)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.14 }}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: typeLight, color: typeAccent, border: `1.5px solid ${typeAccent}30`, borderRadius: 12, padding: "11px 10px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                        <Eye size={15} strokeWidth={2.2} /> View
+                      </motion.button>
+                      <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.14 }}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: typeGrad, color: "#FFF", border: "none", borderRadius: 12, padding: "11px 10px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                        <Printer size={15} strokeWidth={2.2} /> Print
+                      </motion.button>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>Purchase order</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{r.po}</div>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: 20, marginBottom: 20 }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(30,102,64,0.09)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 10, padding: "7px 14px" }}>
-                      <span style={{ fontSize: 14 }}>✓</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>Entry Complete</span>
-                    </span>
-                  </div>
-                </div>
-                <div style={{ padding: "0 22px 22px", display: "flex", gap: 10, marginTop: "auto" }}>
-                  <motion.button onClick={() => setViewItem(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.16 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "13px 10px", fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
-                    <Eye size={18} strokeWidth={2} /> View
-                  </motion.button>
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.16 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "13px 10px", fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
-                    <Printer size={18} strokeWidth={2} /> Print
-                  </motion.button>
-                </div>
-              </motion.div>
-            </FadeUp>
-          );
-        })}
+                  </motion.div>
+                </FadeUp>
+              );
+            })}
       </div>
       <RecentReceivedDetailModal item={viewItem} onClose={() => setViewItem(null)} />
     </section>

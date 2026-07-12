@@ -324,6 +324,40 @@ function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => void; onSe
   );
 }
 
+// ── Loom Picker ──────────────────────────────────────────────────────────────
+function LoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (loomNum: number) => void }) {
+  const [sel, setSel] = useState<number | null>(null);
+  const LOOMS = [1, 2, 3, 4, 5, 6];
+  return (
+    <PickerShell title="Assign Loom Number" onClose={onClose} width={400}>
+      <div style={{ padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        {LOOMS.map(loom => (
+          <button key={loom} onClick={() => setSel(loom)}
+            style={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "16px 12px",
+              border: `2px solid ${sel === loom ? T.royalBurgundy : T.borderDef}`, borderRadius: 12,
+              background: sel === loom ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer"
+            }}>
+            <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
+              L{loom}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500 }}>
+              Loom {loom}
+            </div>
+          </button>
+        ))}
+      </div>
+      <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
+        <motion.button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} whileHover={sel !== null ? { scale: 1.02 } : undefined}
+          style={{ flex: 2, height: 46, background: sel !== null ? T.royalBurgundy : T.taupe, opacity: sel !== null ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel !== null ? "pointer" : "not-allowed" }}>
+          Assign Loom
+        </motion.button>
+        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+      </div>
+    </PickerShell>
+  );
+}
+
 // ── Generic picker shell ──────────────────────────────────────────────────────
 function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   return (
@@ -345,7 +379,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
-type ActivePicker = "weaver" | "bulkorder" | "design" | "saretype" | null;
+type ActivePicker = "weaver" | "bulkorder" | "loom" | "saretype" | null;
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
@@ -375,6 +409,9 @@ export function BatchCreationPage() {
   // ── Card view modals
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
+  const [viewWeaver, setViewWeaver] = useState<typeof WEAVERS[0] | null>(null);
+  const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
+  const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
 
   // ── Saved feedback
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -436,9 +473,13 @@ export function BatchCreationPage() {
     setPicker(null);
   }
 
-  // ── Apply design code
-  function applyDesignCode(code: string) {
-    setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, designCode: code } : r));
+  // ── Apply loom number
+  function applyLoom(loom: number) {
+    setRows(prev => prev.map(r => {
+      if (!selected.has(r.serial)) return r;
+      const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loom, r.serial) : r.sareeId;
+      return { ...r, weaverLoom: loom, sareeId: newSareeId };
+    }));
     setPicker(null);
   }
 
@@ -644,7 +685,7 @@ export function BatchCreationPage() {
                     {([
                       { key: "weaver",    icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
                       { key: "bulkorder", icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
-                      { key: "design",    icon: <Hash size={14} weight="bold" />,        label: "Assign Design Code" },
+                      { key: "loom",      icon: <Hash size={14} weight="bold" />,        label: "Assign Loom Number" },
                       { key: "saretype",  icon: <Tag size={14} weight="bold" />,         label: "Assign Saree Type" },
                     ] as const).map(a => (
                       <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
@@ -671,7 +712,7 @@ export function BatchCreationPage() {
                           {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                         </button>
                       </th>
-                      {["#", "Saree ID", "Weaver", "Design Code", "Saree Type", "Bulk Order", ""].map(h => (
+                      {["#", "Saree ID", "Weaver", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
                         <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
@@ -689,27 +730,33 @@ export function BatchCreationPage() {
                             </button>
                           </td>
                           <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
-                          <td style={{ ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, minWidth: 120 }}>
+                          <td style={{ ...td, minWidth: 120 }}>
                             {row.sareeId ? (
-                              <span style={{ background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 8px" }}>{row.sareeId}</span>
+                              <button onClick={() => setViewSareeRow(row)}
+                                style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                {row.sareeId}
+                              </button>
                             ) : (
                               <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>— assign weaver</span>
                             )}
                           </td>
                           <td style={{ ...td, minWidth: 140 }}>
                             {row.weaverName ? (
-                              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                              <button onClick={() => {
+                                const w = WEAVERS.find(x => x.id === row.weaverId);
+                                if (w) setViewWeaver(w);
+                              }}
+                                style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
                                 <Pip initials={row.weaverInitials!} bg={WEAVERS.find(w => w.id === row.weaverId)?.bg || T.taupe} size={22} />
-                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{row.weaverName}</span>
-                              </div>
+                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", decorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
+                              </button>
                             ) : <EmptyCell />}
                           </td>
-                          <td style={{ ...td, minWidth: 110 }}>
-                            {row.designCode ? (
-                              <button onClick={() => openDesignCard(row.designCode!)}
-                                style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                {row.designCode}
-                              </button>
+                          <td style={{ ...td, minWidth: 90 }}>
+                            {row.weaverLoom ? (
+                              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}>
+                                Loom {row.weaverLoom}
+                              </span>
                             ) : <EmptyCell />}
                           </td>
                           <td style={{ ...td, minWidth: 110 }}>
@@ -722,9 +769,13 @@ export function BatchCreationPage() {
                           </td>
                           <td style={{ ...td, minWidth: 140 }}>
                             {row.bulkOrderLabel ? (
-                              <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                              <button onClick={() => {
+                                const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
+                                if (bo) setViewBulkOrder(bo);
+                              }}
+                                style={{ border: "none", background: "none", cursor: "pointer", padding: 0, fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600, textDecoration: "underline", decorationColor: "rgba(110,15,45,0.2)" }}>
                                 {row.bulkOrderLabel}
-                              </span>
+                              </button>
                             ) : <EmptyCell />}
                           </td>
                           <td style={{ ...td, width: 24 }}>
@@ -833,12 +884,119 @@ export function BatchCreationPage() {
       <AnimatePresence>
         {picker === "weaver"    && <WeaverPickerModal    key="wp" onClose={() => setPicker(null)} onSelect={applyWeaver} />}
         {picker === "bulkorder" && <BulkOrderPickerModal key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
-        {picker === "design"    && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesignCode} />}
+        {picker === "loom"      && <LoomPickerModal      key="lp" onClose={() => setPicker(null)} onSelect={applyLoom} />}
         {picker === "saretype"  && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
         {viewDesign    && <DesignCodeCard  key="dc" design={viewDesign}    onClose={() => setViewDesign(null)} />}
         {viewSareeType && <SareeTypeCard   key="sc" sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
+        {viewWeaver    && <WeaverDetailsModal key="wv" weaver={viewWeaver} onClose={() => setViewWeaver(null)} />}
+        {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
+        {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
       </AnimatePresence>
     </div>
+  );
+}
+
+
+// ── Detail Modals ────────────────────────────────────────────────────────────
+function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; onClose: () => void }) {
+  return (
+    <PickerShell title="Weaver Details" onClose={onClose} width={400}>
+      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Pip initials={weaver.initials} bg={weaver.bg} size={48} />
+          <div>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{weaver.name}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>ID: {weaver.id}</div>
+          </div>
+        </div>
+        <div style={{ height: 1, background: T.borderDef }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Default Loom</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>Loom {weaver.loom}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Experience</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>Master Weaver</div>
+          </div>
+        </div>
+      </div>
+    </PickerShell>
+  );
+}
+
+function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose: () => void }) {
+  return (
+    <PickerShell title="Bulk Order Details" onClose={onClose} width={450}>
+      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
+            {order.ref}
+          </span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: order.status === "completed" ? T.green : T.amber }}>
+            {order.status}
+          </span>
+        </div>
+        <div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{order.customer}</div>
+        </div>
+        <div style={{ height: 1, background: T.borderDef }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Saree Type</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{order.sareeType}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Design Code</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{order.design}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Progress</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{order.done} / {order.total} sarees produced</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Payment Status</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, marginTop: 2, textTransform: "capitalize" }}>{order.paymentStatus}</div>
+          </div>
+        </div>
+      </div>
+    </PickerShell>
+  );
+}
+
+function SareeDetailsModal({ row, onClose }: { row: SareeRow; onClose: () => void }) {
+  return (
+    <PickerShell title="Saree Item Details" onClose={onClose} width={450}>
+      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
+            {row.sareeId || "UNASSIGNED"}
+          </span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>
+            Serial #{row.serial}
+          </span>
+        </div>
+        <div style={{ height: 1, background: T.borderDef }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Weaver Name</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverName || "Not assigned"}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loom Assigned</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverLoom ? `Loom ${row.weaverLoom}` : "Not assigned"}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Saree Type</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.sareeTypeName || "Not assigned"} ({row.sareeTypeCode || "N/A"})</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Bulk Order Link</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.royalBurgundy }}>{row.bulkOrderLabel || "General Stock"}</span>
+          </div>
+        </div>
+      </div>
+    </PickerShell>
   );
 }
 

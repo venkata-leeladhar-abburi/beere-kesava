@@ -201,6 +201,9 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
   const [jariType, setJariType] = useState("Polyester");
   const [jariGrade, setJariGrade] = useState("2G");
   const [warpQty, setWarpQty] = useState("");
+  const [warpQtyGm, setWarpQtyGm] = useState("");
+  const [reshamQtyKg, setReshamQtyKg] = useState("");
+  const [reshamQtyGm, setReshamQtyGm] = useState("");
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [signed, setSigned] = useState(false);
   const [remoteSent, setRemoteSent] = useState(false);
@@ -323,35 +326,60 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
         {/* Step 3 — Materials */}
         <SectionLabel step={3} title="Materials Being Given" />
 
-        {/* Warp + Resham side by side (matches Receive Stock layout) */}
+        {/* Warp + Resham side by side */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px 10px" }}>
-          {/* Warp */}
+          {/* Warp — kg + grams */}
           <div style={{ ...card, padding: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
               <Layers size={13} color={C.burg} />
               <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>Warp</span>
             </div>
-            <button style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, width: "100%", height: 34, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, cursor: "pointer", marginBottom: 8 }}>
-              <QrCode size={12} /> Scan Barcode
-            </button>
-            <div style={{ position: "relative" }}>
-              <input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
-                style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 32, height: 40 }} />
-              <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, color: C.muted }}>kg</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ position: "relative" }}>
+                <input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
+                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.burg }}>kg</span>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input type="number" value={warpQtyGm} onChange={e => setWarpQtyGm(e.target.value)} placeholder="0"
+                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted }}>g</span>
+              </div>
+              {(warpQty || warpQtyGm) && (
+                <div style={{ fontFamily: F.u, fontSize: 10, color: C.burg, fontWeight: 600 }}>
+                  = {((parseFloat(warpQty || "0") * 1000) + parseFloat(warpQtyGm || "0")).toFixed(0)} g total
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Resham with IssueColors */}
+          {/* Resham — kg + grams */}
           <div style={{ ...card, padding: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
               <Scissors size={13} color={C.burg} />
               <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>Resham</span>
             </div>
-            <IssueColors label="Resham" compact />
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ position: "relative" }}>
+                <input type="number" value={reshamQtyKg} onChange={e => setReshamQtyKg(e.target.value)} placeholder="0"
+                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#7A5E1C" }}>kg</span>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input type="number" value={reshamQtyGm} onChange={e => setReshamQtyGm(e.target.value)} placeholder="0"
+                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted }}>g</span>
+              </div>
+              {(reshamQtyKg || reshamQtyGm) && (
+                <div style={{ fontFamily: F.u, fontSize: 10, color: "#7A5E1C", fontWeight: 600 }}>
+                  = {((parseFloat(reshamQtyKg || "0") * 1000) + parseFloat(reshamQtyGm || "0")).toFixed(0)} g total
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Jari — full width with expanded controls */}
+        {/* Jari — full width with unit toggle + Reels/Buns quantity */}
         <div style={{ ...card, margin: "0 16px 10px", padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
             <Sparkles size={14} color={C.gold} />
@@ -371,20 +399,6 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
             <div>
-              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Unit</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {(["Reels", "Buns"] as const).map(u => (
-                  <button key={u} onClick={() => setJariUnit(u)}
-                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariUnit === u ? C.burg : C.bdr}`, background: jariUnit === u ? C.burg : "#FFF", color: jariUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
-                    {u}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-            <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Grade</div>
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {["1G", "2G", "3G", "4G"].map(g => (
@@ -395,22 +409,35 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Unit selector + Quantity */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Unit</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {(["Reels", "Buns"] as const).map(u => (
+                  <button key={u} onClick={() => setJariUnit(u)}
+                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariUnit === u ? C.burg : C.bdr}`, background: jariUnit === u ? C.burg : "#FFF", color: jariUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Qty ({jariUnit})</div>
               <div style={{ position: "relative" }}>
                 <input type="number" value={jariQty} onChange={e => setJariQty(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, height: 44 }} />
+                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 42, height: 44 }} />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: C.gold }}>{jariUnit}</span>
               </div>
-              {jariQty && <div style={{ marginTop: 4, fontFamily: F.m, fontSize: 10, color: C.gold }}>= {jariUnit === "Reels" ? `${Math.round(parseFloat(jariQty) / 4)} Buns` : `${Math.round(parseFloat(jariQty) * 4)} Reels`}</div>}
+              {jariQty && (
+                <div style={{ marginTop: 4, fontFamily: F.u, fontSize: 10, color: C.gold }}>
+                  = {jariUnit === "Reels" ? `${Math.round(parseFloat(jariQty) / 4)} Buns` : `${Math.round(parseFloat(jariQty) * 4)} Reels`}
+                  <span style={{ color: C.muted }}> (1 Bun = 4 Reels)</span>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 7 }}>Color</div>
-          <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-            {[{ name: "Gold", hex: "#C4923A" }, { name: "Silver", hex: "#9E9E9E" }, { name: "Copper", hex: "#B87333" }, { name: "Pink", hex: "#E91E8C" }, { name: "Blue", hex: "#1565C0" }, { name: "Green", hex: "#1E6640" }].map(cl => (
-              <button key={cl.name} title={cl.name}
-                style={{ width: 26, height: 26, borderRadius: "50%", background: cl.hex, border: "3px solid transparent", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
-            ))}
           </div>
         </div>
 

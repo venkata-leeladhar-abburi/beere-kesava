@@ -246,9 +246,10 @@ export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o
 
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: "0 20px 48px rgba(74,6,27,0.13)" }}
+      onClick={() => onView?.(o)}
+      whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}
+      style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", cursor: "pointer" }}
     >
       {/* Status colour strip */}
       <div style={{ height: 5, background: cfg.strip, flexShrink: 0 }} />
@@ -347,7 +348,7 @@ export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 10, padding: "16px 22px 22px" }}>
         <motion.button
-          onClick={() => onView?.(o)}
+          onClick={(e) => { e.stopPropagation(); onView?.(o); }}
           whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
           whileTap={{ scale: 0.97 }}
           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
@@ -355,7 +356,7 @@ export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o
           <PhEye size={18} weight="regular" /> View Order
         </motion.button>
         <motion.button
-          onClick={() => onSlip?.(o)}
+          onClick={(e) => { e.stopPropagation(); onSlip?.(o); }}
           whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
           whileTap={{ scale: 0.97 }}
           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
@@ -441,6 +442,7 @@ function BulkOrdersSection({ onNavigate }: { onNavigate?: (tab: string) => void 
         onClose={() => setShowCreate(false)}
         nextRef={nextOrderRef}
         onSubmit={(order) => { addBulkOrder(order); setSuccessRef(order.ref); setShowCreate(false); }}
+        onAddCustomerClick={() => onNavigate?.("AddUser")}
       />
     </div>
   );
@@ -481,7 +483,6 @@ const BATCHES: Batch[] = [
   { id: "BATCH-093", stage: "finishing", sareeCode: "BS-004", sareeTypeName: "Bridal Special", rate: 1200, design: "BKB-019", designName: "Red Bridal Zari",       weavers: [{ name: "Lakshmi D.",   id: "WV-018", initials: "LD", bg: "#C4923A"       }], materials: "Warp: 5 kg · Resham: Red 800g, Gold 400g · Jari: SF-4G-Gold 350g",        started: "08 May 2026", expected: "18 May 2026",                       done: 5, total: 5, qcPassed: 5, finishingDone: 3 },
 ];
 
-// ── Batch Card (Card View) ────────────────────────────────────────────────────
 function BatchCard({ b, expandedId, setExpandedId, onView, onSlip }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void }) {
   const cfg = STAGE_CFG[b.stage];
   const pct = Math.round((b.done / b.total) * 100);
@@ -496,107 +497,176 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip }: { b: Batch;
   }));
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.06)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
-      <div style={{ width: 5, height: "100%", background: cfg.border, position: "absolute", left: 0, top: 0, bottom: 0 }} />
-      <div style={{ borderLeft: `5px solid ${cfg.border}`, display: "flex", flexDirection: "column", height: "100%" }}>
+    <motion.div
+      onClick={() => onView?.(b)}
+      whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
+      transition={{ type: "spring", stiffness: 240, damping: 22 }}
+      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.05)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", position: "relative", cursor: "pointer" }}
+    >
+      <div style={{ width: 6, height: "100%", background: cfg.border, position: "absolute", left: 0, top: 0, bottom: 0 }} />
+      <div style={{ paddingLeft: 6, display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 20px 14px" }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, marginBottom: 8, letterSpacing: "0.2px" }}>{b.id}</div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "5px 12px", whiteSpace: "nowrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "6px 14px", border: `1px solid ${cfg.border}22`, boxShadow: `0 2px 10px ${cfg.badgeBg}` }}>
+              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor, boxShadow: `0 0 6px ${cfg.badgeColor}` }} />
               {cfg.label}
             </span>
           </div>
-          <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "6px 12px", fontFamily: F.mono, fontSize: 11, color: T.taupe, flexShrink: 0, marginLeft: 12, textAlign: "right" }}>
+          <div style={{ background: "linear-gradient(135deg, #F5E8D0 0%, #FFFDF9 100%)", border: `1.5px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 14px", display: "flex", flexDirection: "column", alignItems: "flex-end", boxShadow: "0 4px 12px rgba(200,155,71,0.06)", flexShrink: 0, marginLeft: 12, textAlign: "right" }}>
             <div style={{ color: T.royalBurgundy, fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{b.sareeCode}</div>
-            <div>{b.sareeTypeName} · ₹{b.rate}</div>
+            <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: T.taupe }}>{b.sareeTypeName} · ₹{b.rate}</div>
           </div>
         </div>
         {/* Body */}
         <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>
-            <Palette size={16} weight="regular" color={T.taupe} /> Design: <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}</span> · {b.designName}
+          {/* Design block */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 14px" }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Palette size={16} color={T.royalBurgundy} weight="fill" />
+            </div>
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 2 }}>Design Code</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+                <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{b.design}</span> · {b.designName}
+              </div>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-            <PhUsers size={16} weight="regular" color={T.taupe} />
-            <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Weavers:</span>
-            {b.weavers.map(w => <Pip key={w.id} initials={w.initials} bg={w.bg} size={26} />)}
-            <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{b.weavers.map(w => `${w.name} (${w.id})`).join(" + ")}</span>
+
+          {/* Assigned Weavers */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 0" }}>
+            <div style={{ display: "flex", position: "relative", paddingRight: b.weavers.length > 1 ? 16 : 0 }}>
+              {b.weavers.map((w, index) => (
+                <div
+                  key={w.id}
+                  style={{
+                    marginLeft: index > 0 ? -12 : 0,
+                    zIndex: 10 - index,
+                    position: "relative",
+                    transition: "transform 0.25s ease",
+                  }}
+                >
+                  <Pip initials={w.initials} bg={w.bg} size={32} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Weavers</span>
+              <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
+                {b.weavers.map(w => w.name).join(" + ")}
+              </span>
+            </div>
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe, lineHeight: 1.6, marginTop: 4, display: "flex", alignItems: "flex-start", gap: 6 }}>
-            <Package size={16} weight="regular" style={{ flexShrink: 0, marginTop: 2 }} /> <span>Materials: {b.materials}</span>
+
+          {/* Materials & Dates block */}
+          <div style={{ background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* Materials */}
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <Package size={17} color={T.royalBurgundy} weight="fill" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+                <strong style={{ color: T.taupe, fontWeight: 600 }}>Materials: </strong>
+                {b.materials}
+              </div>
+            </div>
+            <div style={{ height: 1, background: "rgba(110,15,45,0.05)" }} />
+            {/* Dates */}
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <CalendarBlank size={17} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
+              <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+                {b.submitted ? (
+                  <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Submitted <strong style={{ fontFamily: F.mono }}>{b.submitted}</strong></span>
+                ) : (
+                  <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Expected <strong style={{ fontFamily: F.mono }}>{b.expected}</strong></span>
+                )}
+              </div>
+            </div>
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe, display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-            <CalendarBlank size={16} weight="regular" /> 
-            <span>{b.submitted ? `Started: ${b.started} · Submitted: ${b.submitted}` : `Started: ${b.started} · Expected: ${b.expected}`}</span>
-          </div>
+
           {/* Progress */}
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 8 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>Sarees completed: {b.done} of {b.total}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe }}>{pct}% complete</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: T.luxuryBrown }}>{b.done}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>/ {b.total} Sarees Completed</span>
+              </div>
+              <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: T.antiqueGold }}>{pct}%</span>
             </div>
-            <div style={{ height: 10, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 8 }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})`, borderRadius: 99 }} />
+            
+            {/* Progress track */}
+            <div style={{ height: 10, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden", position: "relative", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.06)" }}>
+              <motion.div
+                initial={{ width: 0 }}
+                whileInView={{ width: `${pct}%` }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.1, ease: EASE }}
+                style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold} 0%, ${T.goldLight} 100%)`, borderRadius: 99, boxShadow: "0 1px 4px rgba(200,155,71,0.25)" }}
+              />
             </div>
-            {b.finishingDone !== undefined && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Finishing: {b.finishingDone} of {b.total} done</div>
+
+            {/* Auxiliary progress details */}
+            {(b.finishingDone !== undefined || b.qcPassed !== undefined || b.late) && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                {b.finishingDone !== undefined && (
+                  <div style={{ background: "rgba(30,102,64,0.05)", border: `1px solid rgba(30,102,64,0.15)`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.green, fontWeight: 600 }}>
+                    ✨ Finishing: {b.finishingDone} of {b.total}
+                  </div>
+                )}
+                {b.qcPassed !== undefined && (
+                  <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.royalBurgundy, fontWeight: 600 }}>
+                    ✓ QC Passed: {b.qcPassed} {b.done - b.qcPassed > 0 && `(Rejected: ${b.done - b.qcPassed})`}
+                  </div>
+                )}
+                {b.late && (
+                  <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    <WarningCircle size={13} weight="fill" /> Running {b.late}d late
+                  </div>
+                )}
+              </div>
             )}
-            {b.qcPassed !== undefined && b.qcPassed < b.done && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>QC passed: {b.qcPassed} · Rejected: {b.done - b.qcPassed}</div>
-            )}
-            {b.late && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}><WarningCircle size={15} weight="fill" /> Running {b.late} days late</div>}
           </div>
-          {/* Making charge */}
-          <div style={{ fontFamily: F.ui, fontSize: 14.5, color: T.antiqueGold, fontWeight: 600, marginTop: "auto", paddingTop: 10 }}>
-            💰 Estimated Making Charges: ₹{est.toLocaleString("en-IN")}
+
+          {/* Making charge banner */}
+          <div style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", border: `1px solid rgba(200,155,71,0.16)`, borderRadius: 12, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Est. Making Charges</span>
+            <span style={{ fontFamily: F.display, fontSize: 16.5, fontWeight: 800, color: "#8B6018" }}>₹{est.toLocaleString("en-IN")}</span>
           </div>
           
           {/* Expand sarees */}
-          <button onClick={() => setExpandedId(isExpanded ? null : b.id)}
+          <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : b.id); }}
             style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, textAlign: "left", padding: "8px 0 4px", display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
             <PhCaretRight size={14} weight="bold" style={{ transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
             {isExpanded ? "Hide Individual Sarees" : "Show Individual Sarees"}
           </button>
           
           {isExpanded && (
-            <div style={{ background: T.warmIvory, borderRadius: 12, overflow: "hidden", border: `1px solid ${T.borderDef}`, marginTop: 6 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ background: T.warmCream }}>
-                    {["Saree ID", "Weight", "QC Status", "Notes"].map(h => (
-                      <th key={h} style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "10px 14px", fontWeight: 600 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sarees.map((s, i) => (
-                    <tr key={s.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}>
-                      <td style={{ padding: "8px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{s.id}</td>
-                      <td style={{ padding: "8px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{s.weight}</td>
-                      <td style={{ padding: "8px 14px" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: s.qc === "Passed" ? T.green : s.qc === "Rejected" ? T.crimson : T.taupe }}>{s.qc}</span>
-                      </td>
-                      <td style={{ padding: "8px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{s.notes}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+              {sarees.map((s, index) => (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px" }}>
+                  <div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Weight: {s.weight} {s.notes !== "—" && `· Note: ${s.notes}`}</div>
+                  </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", color: s.qc === "Passed" ? T.green : s.qc === "Rejected" ? T.crimson : T.taupe, background: s.qc === "Passed" ? "rgba(30,102,64,0.08)" : s.qc === "Rejected" ? "rgba(192,57,43,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 10px" }}>
+                    {s.qc}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </div>
         
         {/* Bottom buttons */}
         <div style={{ display: "flex", gap: 12, padding: "0 20px 20px" }}>
-          <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <motion.button onClick={(e) => { e.stopPropagation(); onView?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             <PhEye size={16} /> View Details
           </motion.button>
-          <motion.button onClick={() => onSlip?.(b)} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <motion.button onClick={(e) => { e.stopPropagation(); onSlip?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             <Palette size={16} /> Color Slip
           </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -726,54 +796,103 @@ function bulkOrderBreakdown(rows: SareeRow[]): { label: string; count: number }[
   return Object.entries(map).map(([label, count]) => ({ label, count }));
 }
 
-function ContextBatchCard({ b, onNavigateBatches }: { b: BatchRecord; onNavigateBatches?: (batchId: string) => void }) {
+function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRecord; onNavigateBatches?: (batchId: string) => void; onClick?: () => void }) {
   const completeCount = b.rows.filter(rowComplete).length;
   const pct = b.totalCount > 0 ? Math.round((completeCount / b.totalCount) * 100) : 0;
   const weavers = weaverBreakdown(b.rows);
   const orders = bulkOrderBreakdown(b.rows);
   const hasDueDate = !!b.dueDate;
 
+  const { getDesign } = useDesignLibrary();
+  const firstRow = b.rows[0];
+  const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
+  const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
+
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.06)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", borderLeft: `5px solid ${b.status === "active" ? T.green : T.antiqueGold}` }}>
-      <div style={{ padding: "18px 20px 14px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+    <motion.div
+      onClick={onClick}
+      whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
+      transition={{ type: "spring", stiffness: 240, damping: 22 }}
+      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.05)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", position: "relative", cursor: "pointer" }}
+    >
+      {/* Top stage accent line */}
+      <div style={{ width: "100%", height: 5, background: b.status === "active" ? T.green : T.antiqueGold, flexShrink: 0 }} />
+
+      {/* Image Banner */}
+      <div style={{ height: 160, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+        <motion.img
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.5 }}
+          src={designImage}
+          alt={b.batchId}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+        {/* Shadow Overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
+
+        {/* Floating ID badge in top left */}
+        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 700, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+          {b.batchId}
+        </div>
+
+        {/* Floating status badge in top right */}
+        <div style={{ position: "absolute", top: 12, right: 12 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 10, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "rgba(30,102,64,0.85)" : "rgba(200,155,71,0.92)", backdropFilter: "blur(4px)", borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: b.status === "active" ? "#2ECC71" : T.royalBurgundy }} />
+            {b.status === "active" ? "Active" : "Draft"}
+          </span>
+        </div>
+
+        {/* Floating Count & Due date overlay at bottom */}
+        <div style={{ position: "absolute", bottom: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, marginBottom: 6 }}>{b.batchId}</div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: b.status === "active" ? T.green : "#8B6018", background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)", borderRadius: 99, padding: "5px 12px" }}>
-              {b.status === "active" ? "Active — Weaving in Progress" : "Draft — Incomplete"}
-            </span>
+            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Quantity</div>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: "#FFFFFF" }}>{b.totalCount} Sarees</div>
           </div>
           {hasDueDate && (
-            <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "6px 12px", fontFamily: F.mono, fontSize: 11, color: T.taupe, flexShrink: 0 }}>
-              <div style={{ color: T.royalBurgundy, fontWeight: 700, fontSize: 12 }}>{b.totalCount} sarees</div>
-              <div>Due: {b.dueDate}</div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
+              <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight }}>{b.dueDate}</div>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Weaver breakdown */}
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 5, display: "flex", alignItems: "center", gap: 5 }}>
-            <PhUsers size={14} weight="regular" /> Weavers
+      {/* Card Body */}
+      <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+        {/* Design Name Bar */}
+        {firstRow && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "8px 12px" }}>
+            <Palette size={14} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {firstRow.sareeTypeName} · <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{firstRow.designCode}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Weavers Breakdown */}
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+            Assigned Weavers
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {weavers.map(w => (
-              <span key={w.name} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.10)" : "rgba(110,15,45,0.07)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.20)" : T.borderDef}`, borderRadius: 6, padding: "3px 9px" }}>
+              <span key={w.name} style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "4px 8px" }}>
                 {w.count} × {w.name}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Bulk order breakdown */}
+        {/* Linked Orders Breakdown */}
         {orders.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 5, display: "flex", alignItems: "center", gap: 5 }}>
-              <ShoppingBag size={14} weight="regular" /> Linked Orders
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+              Linked Orders
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {orders.map(o => (
-                <span key={o.label} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.10)" : "rgba(30,102,64,0.07)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.20)" : "rgba(30,102,64,0.20)"}`, borderRadius: 6, padding: "3px 9px" }}>
+                <span key={o.label} style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.06)" : "rgba(30,102,64,0.05)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.15)" : "rgba(30,102,64,0.15)"}`, borderRadius: 8, padding: "4px 8px" }}>
                   {o.count} × {o.label}
                 </span>
               ))}
@@ -781,24 +900,190 @@ function ContextBatchCard({ b, onNavigateBatches }: { b: BatchRecord; onNavigate
           </div>
         )}
 
+        <div style={{ height: 1, background: "rgba(110,15,45,0.05)", margin: "4px 0" }} />
+
         {/* Progress */}
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Rows complete: {completeCount} of {b.totalCount}</span>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{pct}%</span>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Rows complete: {completeCount} of {b.totalCount}</span>
+            <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 800, color: pct === 100 ? T.green : T.antiqueGold }}>{pct}%</span>
           </div>
-          <div style={{ height: 10, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? `linear-gradient(90deg,${T.green},#4ade80)` : `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})`, borderRadius: 99 }} />
+          <div style={{ height: 8, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.05)" }}>
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: `${pct}%` }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.0, ease: EASE }}
+              style={{ height: "100%", background: pct === 100 ? `linear-gradient(90deg, ${T.green} 0%, #4ade80 100%)` : `linear-gradient(90deg, ${T.antiqueGold} 0%, ${T.goldLight} 100%)`, borderRadius: 99 }}
+            />
           </div>
         </div>
+
+        {/* Action Button */}
+        <div style={{ marginTop: "auto", paddingTop: 8 }}>
+          <motion.button
+            onClick={(e) => { e.stopPropagation(); onNavigateBatches?.(b.batchId); }}
+            whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+            whileTap={{ scale: 0.98 }}
+            style={{ width: "100%", height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.16)`, borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+          >
+            <ArrowRight size={14} weight="bold" /> Open in Batch Creation
+          </motion.button>
+        </div>
       </div>
-      <div style={{ marginTop: "auto", padding: "0 20px 18px" }}>
-        <button onClick={() => onNavigateBatches?.(b.batchId)}
-          style={{ width: "100%", height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-          <ArrowRight size={14} weight="bold" /> Open in Batch Creation
-        </button>
-      </div>
-    </div>
+    </motion.div>
+  );
+}
+
+export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: BatchRecord; onClose: () => void; onOpenCreation: () => void }) {
+  const completeCount = b.rows.filter(rowComplete).length;
+  const pct = b.totalCount > 0 ? Math.round((completeCount / b.totalCount) * 100) : 0;
+  const weavers = weaverBreakdown(b.rows);
+  const orders = bulkOrderBreakdown(b.rows);
+
+  const { getDesign } = useDesignLibrary();
+  const firstRow = b.rows[0];
+  const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
+  const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1400, background: "rgba(26,10,15,0.45)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <motion.div initial={{ y: 18, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 18, scale: 0.96 }} onClick={e => e.stopPropagation()} style={{ width: 640, maxWidth: "100%", background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.25)", overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "90vh" }}>
+        
+        {/* Banner with design image */}
+        <div style={{ height: 180, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+          <img src={designImage} alt="Design image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%)" }} />
+          
+          {/* Header text floating */}
+          <div style={{ position: "absolute", bottom: 16, left: 24, right: 24, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px", marginBottom: 4 }}>{b.batchId}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: "#FFFFFF" }}>
+                {firstRow ? firstRow.sareeTypeName : "Batch"} Production
+              </div>
+            </div>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "#2ECC71" : T.antiqueGold, borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              {b.status === "active" ? "Active" : "Draft"}
+            </span>
+          </div>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 34, height: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(26,10,15,0.45)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 600 }}>×</button>
+        </div>
+
+        {/* Scrollable details content */}
+        <div style={{ padding: 24, overflowY: "auto", display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
+          {/* Progress bar info */}
+          <div style={{ background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "16px 20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Production progress</span>
+              <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: pct === 100 ? T.green : T.antiqueGold }}>
+                {completeCount} / {b.totalCount} ({pct}%) Complete
+              </span>
+            </div>
+            <div style={{ height: 10, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? `linear-gradient(90deg, ${T.green} 0%, #4ade80 100%)` : `linear-gradient(90deg, ${T.antiqueGold} 0%, ${T.goldLight} 100%)`, borderRadius: 99 }} />
+            </div>
+          </div>
+
+          {/* Details metadata grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Design Code</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+                <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{firstRow?.designCode || "N/A"}</span>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
+              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+                {b.dueDate || "Not Set"}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+
+          {/* Weavers & Orders summary */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
+                Assigned Weavers
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {weavers.map(w => (
+                  <span key={w.name} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "5px 10px" }}>
+                    {w.count} × {w.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {orders.length > 0 && (
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
+                  Linked Orders
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {orders.map(o => (
+                    <span key={o.label} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.06)" : "rgba(30,102,64,0.05)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.15)" : "rgba(30,102,64,0.15)"}`, borderRadius: 8, padding: "5px 10px" }}>
+                      {o.count} × {o.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+
+          {/* Individual Sarees List */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>
+              Saree Row Allocations ({b.rows.length})
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {b.rows.map(row => (
+                <div key={row.serial} style={{ display: "flex", alignItems: "center", justify: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
+                        Saree {row.serial}
+                      </span>
+                      {row.sareeId && (
+                        <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>
+                          ({row.sareeId})
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, marginTop: 4 }}>
+                      Loom {row.weaverLoom} · {row.weaverName || "Unassigned"}
+                    </div>
+                    {row.bulkOrderLabel && (
+                      <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.green, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                        <span>↳ Order: {row.bulkOrderLabel}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: row.qcPassed ? T.green : T.taupe, background: row.qcPassed ? "rgba(30,102,64,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 8px" }}>
+                    {row.qcPassed ? "QC Passed" : "In Progress"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div style={{ padding: "18px 24px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 12, background: T.warmIvory }}>
+          <motion.button onClick={onClose} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} style={{ flex: 1, height: 44, background: "#FFFFFF", color: T.taupe, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            Close Details
+          </motion.button>
+          <motion.button onClick={onOpenCreation} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} style={{ flex: 1.5, height: 44, background: T.royalBurgundy, color: "#FFFFFF", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <ArrowRight size={16} weight="bold" /> Open in Batch Creation
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -813,6 +1098,7 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Most Recent First");
   const [batchDialog, setBatchDialog] = useState<{ mode: "view" | "slip"; batch?: Batch } | null>(null);
+  const [selectedContextBatch, setSelectedContextBatch] = useState<BatchRecord | null>(null);
 
   const visible = BATCHES.filter(b => {
     if (filter && b.stage !== filter) return false;
@@ -888,7 +1174,7 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
               {contextBatches.map(b => (
-                <ContextBatchCard key={b.batchId} b={b} onNavigateBatches={(batchId) => { setPendingOpenBatchId(batchId); onNavigate?.("Batches"); }} />
+                <ContextBatchCard key={b.batchId} b={b} onClick={() => setSelectedContextBatch(b)} onNavigateBatches={(batchId) => { setPendingOpenBatchId(batchId); onNavigate?.("Batches"); }} />
               ))}
             </div>
           </div>
@@ -1448,39 +1734,8 @@ function ProductionAnalyticsSection() {
           </div>
         </div>
 
-        {/* ── Row 2 — 2 equal cards ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "stretch" }}>
-
-          {/* Card 4 — Design-Wise Donut */}
-          <div style={{ ...CARD_STYLE }}>
-            <ChartCardHeader
-              icon={<Palette size={22} color={T.royalBurgundy} weight="duotone" />}
-              title="Which Designs Are Being Produced Most"
-              sub="Share of current production by design code"
-            />
-
-            <div style={{ display: "flex", alignItems: "center", gap: 28, flex: 1 }}>
-              <div style={{ flexShrink: 0 }}>
-                <PieChart width={170} height={170}>
-                  <Pie data={DESIGN_DONUT} cx={85} cy={85} innerRadius={48} outerRadius={76} dataKey="value" paddingAngle={3} startAngle={90} endAngle={-270}>
-                    {DESIGN_DONUT.map(d => <Cell key={`design-${d.name}`} fill={d.color} />)}
-                  </Pie>
-                </PieChart>
-              </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-                {DESIGN_DONUT.map(d => (
-                  <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10, background: `${d.color}0D`, borderRadius: 9, padding: "8px 12px" }}>
-                    <div style={{ width: 11, height: 11, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.name}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.label}</div>
-                    </div>
-                    <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: d.color, flexShrink: 0 }}>{d.value}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* ── Row 2 — Bulk Order Progress ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, alignItems: "stretch" }}>
 
           {/* Card 5 — Bulk Order Progress Bars */}
           <div style={{ ...CARD_STYLE }}>

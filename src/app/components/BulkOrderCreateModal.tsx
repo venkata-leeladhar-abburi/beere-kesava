@@ -13,12 +13,20 @@ const T = {
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 
 const WHOLESALE_CUSTOMERS = [
-  { id: "WHL-001", name: "Lakshmi Silks",             city: "Hyderabad",  terms: "Net 30" },
-  { id: "WHL-002", name: "Narayana Silk Emporium",    city: "Vijayawada", terms: "Net 45" },
-  { id: "WHL-003", name: "Padmavathi Textiles",       city: "Chennai",    terms: "Net 30" },
-  { id: "WHL-004", name: "Vijaya Silk House",         city: "Bangalore",  terms: "Net 60" },
-  { id: "WHL-005", name: "Meenakshi Silks",           city: "Coimbatore", terms: "Net 30" },
-  { id: "WHL-006", name: "Kalavathi Exports",         city: "Surat",      terms: "Net 45" },
+  { id: "WHL-001", name: "Lakshmi Silks",             city: "Hyderabad",  terms: "Net 30", phone: "+91 98450 11223", address: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081", gstCode: "36AAAAA1111A1Z1" },
+  { id: "WHL-002", name: "Narayana Silk Emporium",    city: "Vijayawada", terms: "Net 45", phone: "+91 99123 44556", address: "40-1-5, MG Road, Vijayawada - 520010", gstCode: "37BBBBB2222B2Z2" },
+  { id: "WHL-003", name: "Padmavathi Textiles",       city: "Chennai",    terms: "Net 30", phone: "+91 94440 99887", address: "82, Pondy Bazaar, T. Nagar, Chennai - 600017", gstCode: "33CCCCC3333C3Z3" },
+  { id: "WHL-004", name: "Vijaya Silk House",         city: "Bangalore",  terms: "Net 60", phone: "+91 98800 55667", address: "144, Commercial Street, Bangalore - 560001", gstCode: "29DDDDD4444D4Z4" },
+  { id: "WHL-005", name: "Meenakshi Silks",           city: "Coimbatore", terms: "Net 30", phone: "+91 94250 88776", address: "12, Cross Cut Road, Gandhipuram, Coimbatore - 641012", gstCode: "33EEEEE5555E5Z5" },
+  { id: "WHL-006", name: "Kalavathi Exports",         city: "Surat",      terms: "Net 45", phone: "+91 99790 33445", address: "Ring Road Textile Market, Surat - 395002", gstCode: "24FFFFF6666F6Z6" },
+];
+
+const AVAILABLE_LOOMS = [
+  { id: 1, weaverName: "Padma Veni",   weaverId: "WV-002", designCode: "BKB-045", sareeType: "Self Brocade" },
+  { id: 2, weaverName: "Ravi Kumar",   weaverId: "WV-001", designCode: "BKB-045", sareeType: "Self Brocade" },
+  { id: 3, weaverName: "Anand K.",     weaverId: "WV-005", designCode: "BKB-045", sareeType: "Self Brocade" },
+  { id: 4, weaverName: "Meena R.",     weaverId: "WV-012", designCode: "BKB-045", sareeType: "Self Brocade" },
+  { id: 5, weaverName: "Suresh Murti", weaverId: "WV-007", designCode: "BKB-031", sareeType: "Heavy Zari" },
 ];
 
 
@@ -33,9 +41,10 @@ interface Props {
   onClose: () => void;
   onSubmit: (order: BulkOrder) => void;
   nextRef: string;
+  onAddCustomerClick?: () => void;
 }
 
-export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props) {
+export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCustomerClick }: Props) {
   const [customerId, setCustomerId] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -47,8 +56,42 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
   const [instructions, setInstructions] = useState("");
   const [priority, setPriority] = useState<"Normal" | "Urgent">("Normal");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const [sareeType, setSareeType] = useState("");
+  const [design, setDesign] = useState("");
+  const [selectedLoomId, setSelectedLoomId] = useState("");
 
   const selectedCustomer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+
+  const handleCustomerSelect = (id: string) => {
+    setCustomerId(id);
+    const selected = WHOLESALE_CUSTOMERS.find(c => c.id === id);
+    if (selected) {
+      setAddress(selected.address || "");
+      setPhone(selected.phone || "");
+      setGstCode(selected.gstCode || "");
+    } else {
+      setAddress("");
+      setPhone("");
+      setGstCode("");
+    }
+  };
+
+  const handleLoomSelect = (idStr: string) => {
+    setSelectedLoomId(idStr);
+    const loom = AVAILABLE_LOOMS.find(l => String(l.id) === idStr);
+    if (loom) {
+      setSareeType(loom.sareeType);
+      setDesign(loom.designCode);
+      const loomNote = `Loom assigned: Loom ${loom.id} (${loom.weaverName})`;
+      if (!instructions.includes(loomNote)) {
+        setInstructions(prev => prev ? `${prev}\n${loomNote}` : loomNote);
+      }
+    } else {
+      setSareeType("");
+      setDesign("");
+    }
+  };
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -68,8 +111,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
       customerId: customer.id,
       due: formatDateLabel(deliveryDate),
       status: "on-track",
-      sareeType: "",
-      design: "",
+      sareeType: sareeType || "",
+      design: design || "",
       done: 0,
       total: parseInt(quantity, 10),
       instructions: instructions || undefined,
@@ -87,6 +130,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
     onSubmit(order);
     // Reset
     setCustomerId(""); setAddress(""); setPhone(""); setVisitingCard(null); setGstCode("");
+    setSareeType(""); setDesign(""); setSelectedLoomId("");
     setQuantity(""); setDeliveryDate(""); setEstimatedValue(""); setInstructions(""); setPriority("Normal"); setErrors({});
   };
 
@@ -182,7 +226,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
                   <label style={labelStyle}>Select Wholesale Customer</label>
                   <select
                     value={customerId}
-                    onChange={e => setCustomerId(e.target.value)}
+                    onChange={e => handleCustomerSelect(e.target.value)}
                     style={{ ...selectStyle, borderColor: errors.customerId ? T.crimson : T.borderDef }}
                   >
                     <option value="">— Select customer —</option>
@@ -205,9 +249,26 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
                   </div>
                 )}
 
+                <div style={{ marginTop: 16 }}>
+                  <label style={labelStyle}>Select Production Loom (Auto-fills design & saree type)</label>
+                  <select
+                    value={selectedLoomId}
+                    onChange={e => handleLoomSelect(e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="">— Select loom —</option>
+                    {AVAILABLE_LOOMS.map(l => (
+                      <option key={l.id} value={l.id}>Loom {l.id} · {l.weaverName} ({l.sareeType}, {l.designCode})</option>
+                    ))}
+                  </select>
+                </div>
+
                 <button
-                  style={{ marginTop: 10, background: "none", border: "none", fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: 0, fontWeight: 600 }}
-                  onClick={() => {}}
+                  style={{ marginTop: 12, background: "none", border: "none", fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: 0, fontWeight: 600 }}
+                  onClick={() => {
+                    onClose();
+                    onAddCustomerClick?.();
+                  }}
                 >
                   ➕ Add New Customer
                 </button>
@@ -268,6 +329,28 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef }: Props
               <div>
                 <div style={sectionLabel}>2 · Order Details</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={labelStyle}>Saree Type</label>
+                    <input
+                      type="text"
+                      value={sareeType}
+                      onChange={e => setSareeType(e.target.value)}
+                      placeholder="e.g. Self Brocade"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Design Code</label>
+                    <input
+                      type="text"
+                      value={design}
+                      onChange={e => setDesign(e.target.value)}
+                      placeholder="e.g. BKB-045"
+                      style={inputStyle}
+                    />
+                  </div>
+
                   <div>
                     <label style={labelStyle}>Quantity (sarees)</label>
                     <input

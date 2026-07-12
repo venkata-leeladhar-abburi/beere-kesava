@@ -38,20 +38,21 @@ const VENDORS = [
 ];
 
 // ─── Empty material row ───────────────────────────────────────────────────────
-function emptyItem(): POItem & { _key: number } {
+function emptyItem(): POItem & { _key: number; quantityGm: number } {
   return {
     _key: Date.now() + Math.random(),
     materialType: "Warp",
     subtype: "",
     description: "",
     quantity: 0,
+    quantityGm: 0,
     unit: "kg",
     pricePerUnit: 0,
     subtotal: 0,
   };
 }
 
-type ExtItem = POItem & { _key: number };
+type ExtItem = POItem & { _key: number; quantityGm: number };
 
 // ─── PO Document Preview ──────────────────────────────────────────────────────
 function PODocPreview({
@@ -267,25 +268,65 @@ function MaterialRow({
 
         {/* Quantity */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Quantity *</label>
-          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-            <input
-              type="number"
-              min={0}
-              value={item.quantity || ""}
-              onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
-              style={{ ...inputStyle, flex: 1 }}
-              placeholder="0"
-            />
-            {item.materialType === "Jari" ? (
-              <select value={item.unit} onChange={e => set("unit", e.target.value)} style={{ ...selectStyle, width: 70, flexShrink: 0 }}>
-                <option>Buns</option>
-                <option>Reels</option>
-              </select>
-            ) : (
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0 }}>kg</span>
-            )}
-          </div>
+          <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
+            Quantity * {item.materialType !== "Jari" ? "(kg + g)" : ""}
+          </label>
+          {item.materialType === "Jari" ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", gap: 5, marginBottom: 2 }}>
+                {["Buns", "Reels"].map(u => (
+                  <button key={u} onClick={() => set("unit", u)} style={{
+                    flex: 1, padding: "7px 4px", borderRadius: 7, cursor: "pointer",
+                    fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                    background: item.unit === u ? T.royalBurgundy : T.warmIvory,
+                    color: item.unit === u ? "#FFFDF9" : T.taupe,
+                    border: item.unit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
+                  }}>{u}</button>
+                ))}
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number" min={0}
+                  value={item.quantity || ""}
+                  onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
+                  style={{ ...inputStyle, paddingRight: 44 }} placeholder="0"
+                />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
+              </div>
+              {item.quantity > 0 && (
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold }}>
+                  = {item.unit === "Reels" ? `${Math.round(item.quantity / 4)} Buns` : `${Math.round(item.quantity * 4)} Reels`}
+                  <span style={{ color: T.taupe }}> (1 Bun = 4 Reels)</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number" min={0}
+                  value={item.quantity || ""}
+                  onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
+                  style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
+                />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number" min={0}
+                  value={item.quantityGm || ""}
+                  onChange={e => set("quantityGm", parseFloat(e.target.value) || 0)}
+                  style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
+                />
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.taupe }}>g</span>
+              </div>
+              {(item.quantity > 0 || item.quantityGm > 0) && (
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>
+                  = {((item.quantity * 1000) + (item.quantityGm || 0)).toFixed(0)} g total
+                </div>
+              )}
+            </div>
+          )}
           {errors[`mat-${item._key}-qty`] && <div style={{ color: T.crimson, fontSize: 11, marginTop: 3 }}>{errors[`mat-${item._key}-qty`]}</div>}
         </div>
       </div>

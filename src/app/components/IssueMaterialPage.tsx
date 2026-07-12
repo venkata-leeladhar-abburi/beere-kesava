@@ -82,6 +82,7 @@ interface MaterialRowState {
   warpSubtype: "Resham Warp" | "Jari Warp";
   description: string;
   quantity: string;
+  quantityGm: string;
   jariType: "Polyester" | "Silk Fast";
   jariGrade: "1G" | "2G" | "3G" | "4G" | "5G";
   jariColor: string;
@@ -96,6 +97,7 @@ function emptyRow(): MaterialRowState {
     warpSubtype: "Resham Warp",
     description: "",
     quantity: "",
+    quantityGm: "",
     jariType: "Polyester",
     jariGrade: "2G",
     jariColor: "Gold",
@@ -225,89 +227,95 @@ function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRemove }: 
         </button>
       )}
 
+      {/* Material Type */}
       <div style={{ marginBottom: 16 }}>
         <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</label>
-        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as any, grnBatchId: "" })} />
+        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as any, grnBatchId: "", description: "", quantity: "" })} />
       </div>
 
-      {row.materialType === "Warp" && (
-        <>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Warp Subtype</label>
-            <PillTab options={["Resham Warp", "Jari Warp"]} value={row.warpSubtype} onChange={v => patch({ warpSubtype: v as any })} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 14 }}>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Description (Optional)</label>
-              <input value={row.description} onChange={e => patch({ description: e.target.value })} placeholder="e.g. Cotton/Silk blend"
-                style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }} />
-            </div>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Quantity (kg)</label>
-              <input type="number" value={row.quantity} onChange={e => patch({ quantity: e.target.value })} placeholder="0"
-                style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }} />
-            </div>
-          </div>
-        </>
-      )}
-
-      {row.materialType === "Resham" && (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 14 }}>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Description</label>
-              <input value={row.description} onChange={e => patch({ description: e.target.value })} placeholder="e.g. Red Resham"
-                style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }} />
-            </div>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Quantity (kg)</label>
-              <input type="number" value={row.quantity} onChange={e => patch({ quantity: e.target.value })} placeholder="0"
-                style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }} />
-            </div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Color</label>
-            <ColorSwatchPicker colors={RESHAM_COLORS} value={row.jariColor} onChange={v => patch({ jariColor: v })} />
-          </div>
-        </>
-      )}
-
-      {row.materialType === "Jari" && (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Type</label>
-              <PillTab options={["Polyester", "Silk Fast"]} value={row.jariType} onChange={v => patch({ jariType: v as any })} />
-            </div>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Grade</label>
-              <PillTab options={["1G", "2G", "3G", "4G", "5G"]} value={row.jariGrade} onChange={v => patch({ jariGrade: v as any })} />
-            </div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Color</label>
-            <ColorSwatchPicker colors={JARI_COLORS} value={row.jariColor} onChange={v => patch({ jariColor: v })} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 6 }}>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Unit</label>
-              <PillTab options={["Reels", "Buns"]} value={row.jariUnit} onChange={v => patch({ jariUnit: v as any })} />
-            </div>
-            <div>
-              <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Quantity</label>
-              <input type="number" value={row.quantity} onChange={e => patch({ quantity: e.target.value })} placeholder="0"
-                style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }} />
-            </div>
-          </div>
-          {row.quantity && (
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginBottom: 14 }}>
-              = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+      {/* Description + Quantity */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 16 }}>
+        <div>
+          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
+            Description
+          </label>
+          <input
+            value={row.description}
+            onChange={e => patch({ description: e.target.value })}
+            placeholder={
+              row.materialType === "Warp"   ? "e.g. Cotton/Silk blend warp" :
+              row.materialType === "Resham" ? "e.g. Red Resham" :
+                                             "e.g. Polyester Gold Jari"
+            }
+            style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }}
+          />
+        </div>
+        <div>
+          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
+            Quantity {row.materialType === "Jari" ? "(Reels / Buns)" : "(kg + g)"}
+          </label>
+          {row.materialType === "Jari" ? (
+            <>
+              <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                {["Reels", "Buns"].map(u => (
+                  <button key={u} onClick={() => patch({ jariUnit: u as any })} style={{
+                    flex: 1, padding: "8px 4px", borderRadius: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600,
+                    border: `1.5px solid ${row.jariUnit === u ? T.royalBurgundy : T.borderDef}`,
+                    background: row.jariUnit === u ? T.royalBurgundy : "#FFF",
+                    color: row.jariUnit === u ? "#FFF" : T.luxuryBrown,
+                  }}>{u}</button>
+                ))}
+              </div>
+              <div style={{ position: "relative" as const }}>
+                <input
+                  type="number"
+                  value={row.quantity}
+                  onChange={e => patch({ quantity: e.target.value })}
+                  placeholder="0"
+                  style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 52px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
+                />
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
+              </div>
+              {row.quantity && (
+                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, marginTop: 4 }}>
+                  = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+              <div style={{ position: "relative" as const }}>
+                <input
+                  type="number"
+                  value={row.quantity}
+                  onChange={e => patch({ quantity: e.target.value })}
+                  placeholder="0"
+                  style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
+                />
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+              </div>
+              <div style={{ position: "relative" as const }}>
+                <input
+                  type="number"
+                  value={row.quantityGm}
+                  onChange={e => patch({ quantityGm: e.target.value })}
+                  placeholder="0"
+                  style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
+                />
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe }}>g</span>
+              </div>
+              {(row.quantity || row.quantityGm) && (
+                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>
+                  = {((parseFloat(row.quantity || "0") * 1000) + parseFloat(row.quantityGm || "0")).toFixed(0)} g total
+                </div>
+              )}
             </div>
           )}
-        </>
-      )}
+        </div>
+      </div>
 
-      <div style={{ marginTop: 4 }}>
+      {/* GRN Batch Selector */}
+      <div>
         <GrnBatchSelector grnBatches={grnBatches} materialType={row.materialType} value={row.grnBatchId} onChange={v => patch({ grnBatchId: v })} />
         {overAvailable && (
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.14)", border: `1px solid ${T.antiqueGold}`, borderRadius: 8, padding: "8px 12px" }}>

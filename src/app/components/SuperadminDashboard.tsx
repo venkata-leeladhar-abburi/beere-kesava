@@ -9,7 +9,9 @@ import {
   IndianRupee, CheckCircle2, Truck, Clock, Building2,
   LogOut, UserRound, Package, LayoutDashboard, Factory, Settings2,
   Users, Layers,
+  Activity, MapPin, Phone, Edit3, Layers3,
 } from "lucide-react";
+import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import { useResponsive } from "./useResponsive";
 import { RatesPricingPage } from "./RatesPricingPage";
 import { DesignLibraryPage } from "./DesignLibraryPage";
@@ -185,11 +187,18 @@ const SA_METRICS = [
 ];
 
 const WEAVERS = [
-  { name: "Padma Veni", id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "In Progress" as const, ac: T.royalBurgundy, img: imgPadmaVeni },
-  { name: "Ravi Kumar", id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "In Progress" as const, ac: "#1E6640", img: imgRaviKumar },
-  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7, pct: 35, status: "Pending QC" as const, ac: "#374151", img: imgSureshMurti },
-  { name: "Anand K.", id: "WV-005", batch: "BATCH-083", sarees: 9, pct: 72, status: "In Progress" as const, ac: T.antiqueGold, img: imgAnandK },
+  { name: "Padma Veni",   id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "active", ac: T.royalBurgundy, img: imgPadmaVeni, village: "Pochampally, Telangana", mobile: "×××× 8834", looms: 2, initials: "PV", bg: "#9B6B8A" },
+  { name: "Ravi Kumar",   id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "active", ac: "#1E6640",        img: imgRaviKumar, village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, initials: "RK", bg: "#5A3E6B" },
+  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7,  pct: 35, status: "qc",     ac: "#374151",        img: imgSureshMurti, village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, initials: "SM", bg: "#2D6B6B" },
+  { name: "Anand K.",     id: "WV-005", batch: "BATCH-083", sarees: 9,  pct: 72, status: "active", ac: T.antiqueGold,    img: imgAnandK, village: "Pochampally, Telangana", mobile: "×××× 7723", looms: 2, initials: "AK", bg: "#4A6B4A" },
 ];
+
+const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
+  "WV-001": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "WV-002": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "WV-007": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "WV-005": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
+};
 
 const MATS = [
   {
@@ -209,7 +218,7 @@ const MATS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHARED ATOMS
 // ═══════════════════════════════════════════════════════════════════════════════
-function SectionHeader({ title, actionText = "View All →", small }: { title: string; actionText?: string; small?: boolean }) {
+function SectionHeader({ title, actionText = "View All →", small, onAction }: { title: string; actionText?: string; small?: boolean; onAction?: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   return (
@@ -230,7 +239,7 @@ function SectionHeader({ title, actionText = "View All →", small }: { title: s
           {title}
         </span>
       </div>
-      <motion.span whileHover={{ x: 3, opacity: 1 }} transition={{ duration: 0.2 }}
+      <motion.span onClick={onAction} whileHover={{ x: 3, opacity: 1 }} transition={{ duration: 0.2 }}
         style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "#C4923A", cursor: "pointer", letterSpacing: "0.1px" }}
       >{actionText}</motion.span>
     </motion.div>
@@ -268,7 +277,6 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Production", label: "Production" },
       { key: "Batches", label: "Batches" },
       { key: "Designs", label: "Designs" },
-      { key: "QcHistory", label: "QC History" },
     ]
   },
   {
@@ -970,59 +978,178 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SA OVERVIEW — WEAVERS SECTION (simplified)
 // ═══════════════════════════════════════════════════════════════════════════════
-function SAWeaverSection() {
+function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
   return (
     <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
-      <SectionHeader title="Active Weavers" actionText="View All Weavers →" />
+      <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
         {WEAVERS.map((w, i) => (
-          <motion.div key={w.id}
+          <motion.div
+            key={w.id}
+            onClick={() => onNavigate("Weavers")}
             initial={{ opacity: 0, y: 44, scale: 0.90, filter: "blur(7px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-60px" }}
             whileHover={{ y: -9, scale: 1.012, boxShadow: "0px 32px 80px rgba(74,6,27,0.18)" }}
             transition={{ type: "spring", stiffness: 240, damping: 22, delay: i * 0.12, opacity: { duration: 0.45 }, filter: { duration: 0.5 } }}
-            style={{ flex: 1, background: T.warmIvory, borderRadius: 28, border: `1px solid ${T.borderDef}`, boxShadow: "0px 10px 40px rgba(74,6,27,0.06)", overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
+            style={{ flex: 1, background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
           >
-            <div style={{ height: 160, flexShrink: 0, overflow: "hidden", position: "relative" }}>
-              <motion.div whileHover={{ scale: 1.06 }} transition={{ duration: 0.5 }} style={{ width: "100%", height: "100%" }}>
-                <ImageWithFallback src={w.img} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
-              </motion.div>
-              <div style={{ position: "absolute", top: 12, right: 12, display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 999, background: "rgba(255,253,249,0.92)", backdropFilter: "blur(8px)", border: `1px solid ${T.borderDef}` }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: w.status === "In Progress" ? w.ac : T.taupe }} />
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 10.5, color: T.luxuryBrown, letterSpacing: "0.1px" }}>{w.status}</span>
+            {/* Header Banner - Full Image Height 170px */}
+            <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+              {w.img ? (
+                <motion.img
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.5 }}
+                  src={w.img}
+                  alt={w.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                </div>
+              )}
+
+              {/* Dark gradient overlay for modern look */}
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
+
+              {/* Floating ID badge in top left */}
+              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                {w.id}
+              </div>
+
+              {/* Floating gentle status pill overlay at the bottom left of the image banner */}
+              <div style={{
+                position: "absolute",
+                bottom: 12,
+                left: 12,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 8px"
+              }}>
+                {w.status === "active" ? (
+                  <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
+                ) : w.status === "qc" ? (
+                  <PhClock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
+                ) : (
+                  <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
+                )}
+                <span style={{
+                  fontFamily: F.ui,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#FFFFFF",
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.5px",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.6)"
+                }}>
+                  {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                </span>
               </div>
             </div>
-            <div style={{ padding: "14px 20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: w.ac, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 12px ${w.ac}44` }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 13, color: T.warmCream }}>{w.name.split(" ").map((x: string) => x[0]).join("").slice(0, 2)}</span>
+
+            {/* Content Area */}
+            <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
+              {/* Name and Batch beside it */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
+                <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
+                  {w.name}
                 </div>
-                <div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.luxuryBrown, lineHeight: 1.2, letterSpacing: "0.1px" }}>{w.name}</div>
-                  <div style={{ fontFamily: F.mono, fontWeight: 400, fontSize: 10, color: T.taupe, letterSpacing: "0.8px" }}>{w.id}</div>
+                {w.batch && (
+                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                    {w.batch}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                  <span>{w.village}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                  <span>{w.mobile}</span>
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14 }}>
-                {[
-                  { k: "Sarees this month", v: String(w.sarees), mono: false },
-                  { k: "Batch", v: w.batch, mono: true },
-                  { k: "Completion", v: `${w.pct}%`, mono: false },
-                ].map(r => (
-                  <div key={r.k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe }}>{r.k}</span>
-                    <span style={{ fontFamily: r.mono ? F.mono : F.ui, fontWeight: r.mono ? 500 : 600, fontSize: 11.5, color: r.mono ? T.royalBurgundy : T.luxuryBrown, letterSpacing: r.mono ? "0.8px" : "0.05px", ...NUM }}>{r.v}</span>
+
+              <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
+
+              {/* Dual Column Stats (Looms & Rate/Charge) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                {/* Looms block */}
+                <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Rows size={14} color={T.royalBurgundy} weight="fill" />
                   </div>
-                ))}
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
+                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
+                  </div>
+                </div>
+
+                {/* Rate / Making Charge block */}
+                <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>₹</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Making Charge</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                      {WEAVER_RATES[w.id] ? WEAVER_RATES[w.id].rate.split("/")[0] : "—"}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <AnimatedBar pct={w.pct} color={`linear-gradient(to right, ${w.ac}, ${w.ac}BB)`} height={4} />
+
+              {/* Design type detail strip */}
+              {WEAVER_RATES[w.id] && (
+                <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown }}>{WEAVER_RATES[w.id].type}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{WEAVER_RATES[w.id].code}</span>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                >
+                  <Eye size={14} /> Details
+                </motion.button>
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                >
+                  <Edit3 size={13} /> Edit
+                </motion.button>
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                >
+                  <Layers3 size={14} /> Batches
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         ))}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <motion.div whileHover={{ scale: 1.12, boxShadow: "0px 10px 30px rgba(74,6,27,0.16)" }} whileTap={{ scale: 0.93 }}
+          <motion.div
+            onClick={() => onNavigate("AllWeavers")}
+            whileHover={{ scale: 1.12, boxShadow: "0px 10px 30px rgba(74,6,27,0.16)" }}
+            whileTap={{ scale: 0.93 }}
             style={{ width: 44, height: 44, borderRadius: "50%", background: T.warmIvory, border: `1.5px solid ${T.borderGold}`, boxShadow: "0px 6px 20px rgba(74,6,27,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-          ><ChevronRight size={18} color={T.royalBurgundy} /></motion.div>
+          >
+            <ChevronRight size={18} color={T.royalBurgundy} />
+          </motion.div>
         </div>
       </div>
     </section>
@@ -1088,7 +1215,7 @@ function SAOverviewPage({ setNav }: { setNav: (v: string) => void }) {
       <div style={{ background: T.silkCream, paddingTop: 36 }}>
         <SAQuickActions setNav={setNav} />
       </div>
-      <SAWeaverSection />
+      <SAWeaverSection onNavigate={setNav} />
       <SARawMaterial />
     </div>
   );
