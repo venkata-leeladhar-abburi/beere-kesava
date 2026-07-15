@@ -1205,9 +1205,9 @@ function WeaverMakingChargesSection() {
 // ══════════════════════════════════════════════════════════════════════════════
 // SECTION C — WHOLESALE CUSTOMER COLLECTIONS
 // ══════════════════════════════════════════════════════════════════════════════
-type InvoiceStatus = "Paid" | "Partial" | "Pending" | "Overdue";
+export type InvoiceStatus = "Paid" | "Partial" | "Pending" | "Overdue";
 
-interface InvoicePayment {
+export interface InvoicePayment {
   amount: number;
   date: string;
   utr: string;
@@ -1215,7 +1215,7 @@ interface InvoicePayment {
   firmName?: string;
 }
 
-interface Invoice {
+export interface Invoice {
   id: string; customer: string; city: string;
   invoiceDate: string; dueDate: string;
   total: number; paid: number; status: InvoiceStatus;
@@ -1223,7 +1223,7 @@ interface Invoice {
   payments?: InvoicePayment[];
 }
 
-const INVOICES: Invoice[] = [
+export const INVOICES: Invoice[] = [
   {
     id: "INV-2026-041", customer: "Lakshmi Silks", city: "Varanasi",
     invoiceDate: "08 Apr 2026", dueDate: "28 Apr 2026", total: 900000, paid: 900000, status: "Paid",

@@ -4,9 +4,11 @@ import {
   Hash, ImageSquare, Swatches, Stack, Graph, CheckCircle,
   Eye as PhEye, UploadSimple, Plus as PhPlus, FloppyDisk,
   MagnifyingGlass, WarningCircle, Package, X as PhX,
+  PaperPlaneTilt, CalendarCheck, User, Buildings, FileText, SlidersHorizontal,
 } from "@phosphor-icons/react";
 
 import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
+import { useBatches } from "./BatchContext";
 
 // ─── Design tokens (match app-wide palette) ──────────────────────────────────
 const T = {
@@ -275,7 +277,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
 }
 
 // ─── Design card (grid item) ──────────────────────────────────────────────────
-function DesignCard({ d, onView, onSlip }: { d: DesignEntry; onView: (d: DesignEntry) => void; onSlip: (d: DesignEntry) => void }) {
+function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; onView: (d: DesignEntry) => void; onSlip: (d: DesignEntry) => void; onDispatch: (code: string) => void }) {
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.07)", display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Photo / placeholder */}
@@ -368,12 +370,10 @@ function DesignCard({ d, onView, onSlip }: { d: DesignEntry; onView: (d: DesignE
             {d.hasColorSlip ? "Update Slip" : "Upload Slip"}
           </motion.button>
         </div>
-        {!d.hasGraph && (
-          <motion.button whileHover={{ scale: 1.02, backgroundColor: "#6B4A10" }} whileTap={{ scale: 0.97 }}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#8B6018", color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <Graph size={15} color="#FFFDF9" weight="duotone" /> Upload Design Graph
-          </motion.button>
-        )}
+        <motion.button onClick={() => onDispatch(d.code)} whileHover={{ scale: 1.02, backgroundColor: T.darkBurgundy }} whileTap={{ scale: 0.97 }}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <PaperPlaneTilt size={15} color="#FFFDF9" weight="fill" /> Dispatch Design
+        </motion.button>
       </div>
     </div>
   );
@@ -532,13 +532,153 @@ function SlipModal({ design, onClose, onSave }: { design: DesignEntry; onClose: 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
+const WEAVERS_LIST = [
+  { id: "WV-002", name: "Padma Veni", initials: "PV", loom: 2 },
+  { id: "WV-001", name: "Ravi Kumar", initials: "RK", loom: 3 },
+  { id: "WV-007", name: "Suresh Murti", initials: "SM", loom: 1 },
+];
+
+interface DispatchRecord {
+  id: string;
+  designCode: string;
+  designName: string;
+  recipientType: "weaver" | "loom";
+  recipientName: string;
+  batches: string[];
+  instructions: string;
+  hasColorSlip: boolean;
+  hasGraph: boolean;
+  sentAt: string;
+}
+
+const INITIAL_DISPATCHES: DispatchRecord[] = [
+  {
+    id: "DISP-001",
+    designCode: "BKB-045",
+    designName: "Self Brocade",
+    recipientType: "weaver",
+    recipientName: "Padma Veni",
+    batches: ["BATCH-086"],
+    instructions: "Maintain light warp tension in the borders. Ensure Resham thread transition is smooth in pallu section.",
+    hasColorSlip: true,
+    hasGraph: true,
+    sentAt: "15 Jul 2026, 09:30 AM",
+  },
+  {
+    id: "DISP-002",
+    designCode: "BKB-031",
+    designName: "Heavy Zari",
+    recipientType: "loom",
+    recipientName: "Loom 3",
+    batches: ["BATCH-OWN"],
+    instructions: "Run at standard speed. Check for any zari threads snapping before finalizing the border weave.",
+    hasColorSlip: true,
+    hasGraph: false,
+    sentAt: "14 Jul 2026, 04:15 PM",
+  }
+];
+
 export function DesignLibraryPage() {
   const { designs, addDesign, updateDesign } = useDesignLibrary();
+  const { batches } = useBatches();
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState("All Designs");
   const [showAdd, setShowAdd] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [slipDesign, setSlipDesign] = useState<DesignEntry | null>(null);
+
+  const [activeTab, setActiveTab] = useState<"library" | "dispatches">("library");
+  
+  // Dispatch form states
+  const [dispDesignCode, setDispDesignCode] = useState(designs[0]?.code || "");
+  const [dispRecipientType, setDispRecipientType] = useState<"weaver" | "loom">("weaver");
+  const [dispWeaverId, setDispWeaverId] = useState(WEAVERS_LIST[0].id);
+  const [dispLoomNum, setDispLoomNum] = useState<number>(1);
+  const [dispInstructions, setDispInstructions] = useState("");
+  const [dispBatches, setDispBatches] = useState<string[]>([]);
+  const [dispAttachSlip, setDispAttachSlip] = useState(false);
+  const [dispAttachGraph, setDispAttachGraph] = useState(false);
+  
+  // Custom file upload previews (mock states)
+  const [uploadedSlip, setUploadedSlip] = useState<string | null>(null);
+  const [uploadedGraph, setUploadedGraph] = useState<string | null>(null);
+
+  // Dispatch history state
+  const [dispatchHistory, setDispatchHistory] = useState<DispatchRecord[]>(INITIAL_DISPATCHES);
+  const [dispatchSavedMsg, setDispatchSavedMsg] = useState<string | null>(null);
+
+  // Filters / Search for dispatches history log
+  const [historySearch, setHistorySearch] = useState("");
+
+  useEffect(() => {
+    if (designs.length > 0 && !dispDesignCode) {
+      setDispDesignCode(designs[0].code);
+    }
+  }, [designs]);
+
+  // Pre-fill form when clicking dispatch on card
+  const handleDispatchClick = (code: string) => {
+    const d = designs.find(x => x.code === code);
+    setDispDesignCode(code);
+    if (d) {
+      setDispAttachSlip(d.hasColorSlip);
+      setDispAttachGraph(d.hasGraph);
+    }
+    setActiveTab("dispatches");
+  };
+
+  const selectedWeaver = WEAVERS_LIST.find(w => w.id === dispWeaverId);
+
+  // Filter batches based on weaver/loom rows
+  const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
+  const filteredBatches = activeBatches.filter(b => {
+    if (dispRecipientType === "weaver") {
+      return b.rows.some(r => r.weaverId === dispWeaverId);
+    } else {
+      return b.rows.some(r => r.weaverLoom === dispLoomNum);
+    }
+  });
+
+  const batchListToDisplay = filteredBatches.length > 0 ? filteredBatches : activeBatches;
+
+  const toggleDispBatch = (id: string) => {
+    setDispBatches(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleSendDispatch = () => {
+    const d = designs.find(x => x.code === dispDesignCode);
+    const rName = dispRecipientType === "weaver" ? (selectedWeaver?.name || "Weaver") : `Loom ${dispLoomNum}`;
+    
+    const newRecord: DispatchRecord = {
+      id: `DISP-${String(dispatchHistory.length + 1).padStart(3, "0")}`,
+      designCode: dispDesignCode,
+      designName: d?.name || "Unnamed Design",
+      recipientType: dispRecipientType,
+      recipientName: rName,
+      batches: dispBatches,
+      instructions: dispInstructions,
+      hasColorSlip: dispAttachSlip,
+      hasGraph: dispAttachGraph,
+      sentAt: new Date().toLocaleString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      })
+    };
+
+    setDispatchHistory([newRecord, ...dispatchHistory]);
+    setDispatchSavedMsg(`Design ${dispDesignCode} successfully dispatched to ${rName}!`);
+    setTimeout(() => setDispatchSavedMsg(null), 4000);
+
+    // Reset form fields
+    setDispInstructions("");
+    setDispBatches([]);
+    setUploadedSlip(null);
+    setUploadedGraph(null);
+  };
 
   const visible = designs.filter(d => {
     if (filter === "Currently in Production" && d.batches === 0) return false;
@@ -610,64 +750,308 @@ export function DesignLibraryPage() {
         </div>
       </div>
 
+      {/* ── Tabs Selector ── */}
+      <div style={{ padding: "32px 56px 0" }}>
+        <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 12, padding: 4, width: "fit-content", border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
+          <button onClick={() => setActiveTab("library")}
+            style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: activeTab === "library" ? T.royalBurgundy : "transparent", color: activeTab === "library" ? "#fff" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
+            Design Library Registry
+          </button>
+          <button onClick={() => setActiveTab("dispatches")}
+            style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: activeTab === "dispatches" ? T.royalBurgundy : "transparent", color: activeTab === "dispatches" ? "#fff" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
+            Weaver Dispatcher &amp; History ({dispatchHistory.length})
+          </button>
+        </div>
+      </div>
+
       {/* ── Main content ── */}
-      <div style={{ padding: "64px 56px 48px" }}>
-        <FadeUp>
-          {/* Section header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ padding: "32px 56px 48px" }}>
+        {activeTab === "library" ? (
+          <FadeUp>
+            {/* Section header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.22)" }}>
+                  <Swatches size={26} color="#FFFDF9" weight="duotone" />
+                </div>
+                <div>
+                  <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>All Design Codes</h2>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2, letterSpacing: "0.4px" }}>MASTER DESIGN REGISTRY</div>
+                </div>
+              </div>
+              <motion.button onClick={() => setShowAdd(true)}
+                initial={{ backgroundColor: T.green }} animate={{ backgroundColor: T.green }}
+                whileHover={{ scale: 1.02, backgroundColor: "#145230" }} whileTap={{ scale: 0.97 }}
+                style={{ display: "flex", alignItems: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0, boxShadow: "0 4px 12px rgba(30,102,64,0.20)" }}>
+                <PhPlus size={16} weight="bold" /> Add New Design Code
+              </motion.button>
+            </div>
+            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 22px 62px", lineHeight: 1.6 }}>
+              All designs used for production. Each design has a unique code, an optional color slip photo and design graph, and optional weaver instructions.
+            </p>
+
+            {/* Search + filters */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 22, boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ position: "relative", flex: "1 1 280px" }}>
+                  <MagnifyingGlass size={18} weight="bold" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by design code, name, or weaver…" style={{ ...fieldStyle, paddingLeft: 44 }} />
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {DESIGN_FILTERS.map(f => (
+                    <motion.button key={f} onClick={() => setFilter(f)} whileHover={{ scale: 1.02 }}
+                      style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 99, cursor: "pointer", background: filter === f ? T.royalBurgundy : "transparent", color: filter === f ? "#FFFDF9" : T.taupe, border: filter === f ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}>
+                      {f}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Cards grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+              {visible.map((d, i) => (
+                <FadeUp key={d.code} delay={i * 0.05} style={{ height: "100%" }}>
+                  <DesignCard d={d} onView={setViewDesign} onSlip={setSlipDesign} onDispatch={handleDispatchClick} />
+                </FadeUp>
+              ))}
+              {visible.length === 0 && (
+                <div style={{ gridColumn: "1 / -1", background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
+                  <Swatches size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12, display: "block", margin: "0 auto 12px" }} />
+                  <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No designs match your filter or search.</div>
+                </div>
+              )}
+            </div>
+          </FadeUp>
+        ) : (
+          <FadeUp>
+            {/* Section Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.22)" }}>
-                <Swatches size={26} color="#FFFDF9" weight="duotone" />
+                <PaperPlaneTilt size={24} color="#FFFDF9" weight="bold" />
               </div>
               <div>
-                <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>All Design Codes</h2>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2, letterSpacing: "0.4px" }}>MASTER DESIGN REGISTRY</div>
+                <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>Weaver Dispatch Control</h2>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2, letterSpacing: "0.4px" }}>DISPATCH PRODUCTION DESIGN SLIPS</div>
               </div>
             </div>
-            <motion.button onClick={() => setShowAdd(true)}
-              initial={{ backgroundColor: T.green }} animate={{ backgroundColor: T.green }}
-              whileHover={{ scale: 1.02, backgroundColor: "#145230" }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0, boxShadow: "0 4px 12px rgba(30,102,64,0.20)" }}>
-              <PhPlus size={16} weight="bold" /> Add New Design Code
-            </motion.button>
-          </div>
-          <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 22px 62px", lineHeight: 1.6 }}>
-            All designs used for production. Each design has a unique code, an optional color slip photo and design graph, and optional weaver instructions.
-          </p>
 
-          {/* Search + filters */}
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 22, boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <div style={{ position: "relative", flex: "1 1 280px" }}>
-                <MagnifyingGlass size={18} weight="bold" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by design code, name, or weaver…" style={{ ...fieldStyle, paddingLeft: 44 }} />
+            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.8fr", gap: 32, alignItems: "start" }}>
+              {/* Form Side */}
+              <div>
+                <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
+                  <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+                    <SlidersHorizontal size={20} color={T.royalBurgundy} weight="bold" /> Dispatch Settings
+                  </h3>
+                  
+                  {dispatchSavedMsg && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                      style={{ background: "rgba(30,102,64,0.08)", border: `1.5px solid ${T.green}`, borderRadius: 10, padding: "12px 16px", color: T.green, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, marginBottom: 16 }}>
+                      ✓ {dispatchSavedMsg}
+                    </motion.div>
+                  )}
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {/* Design Selection */}
+                    <div>
+                      <label style={labelStyle}>Select Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
+                      <select value={dispDesignCode} onChange={e => {
+                        const d = designs.find(x => x.code === e.target.value);
+                        setDispDesignCode(e.target.value);
+                        if (d) {
+                          setDispAttachSlip(d.hasColorSlip);
+                          setDispAttachGraph(d.hasGraph);
+                        }
+                      }} style={{ ...fieldStyle, cursor: "pointer" }}>
+                        {designs.map(d => <option key={d.code} value={d.code}>{d.code} · {d.name || "Unnamed Design"}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Recipient Type Toggle */}
+                    <div>
+                      <label style={labelStyle}>Recipient Type</label>
+                      <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}`, width: "fit-content" }}>
+                        <button type="button" onClick={() => setDispRecipientType("weaver")}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "weaver" ? "#FFFFFF" : "transparent", color: dispRecipientType === "weaver" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "weaver" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
+                          <User size={14} weight="bold" /> Weaver
+                        </button>
+                        <button type="button" onClick={() => setDispRecipientType("loom")}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "loom" ? "#FFFFFF" : "transparent", color: dispRecipientType === "loom" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "loom" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
+                          <Buildings size={14} weight="bold" /> Factory Loom
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Recipient Dropdown */}
+                    {dispRecipientType === "weaver" ? (
+                      <div>
+                        <label style={labelStyle}>Assign Weaver</label>
+                        <select value={dispWeaverId} onChange={e => setDispWeaverId(e.target.value)} style={{ ...fieldStyle, cursor: "pointer" }}>
+                          {WEAVERS_LIST.map(w => <option key={w.id} value={w.id}>{w.name} ({w.initials} · Loom {w.loom})</option>)}
+                        </select>
+                      </div>
+                    ) : (
+                      <div>
+                        <label style={labelStyle}>Assign Loom Number</label>
+                        <select value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
+                          {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>Loom {n}</option>)}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Dynamic Batch Checklist */}
+                    <div>
+                      <label style={labelStyle}>
+                        Select Batches
+                        <span style={{ fontWeight: 400, color: T.taupe, marginLeft: 4 }}>
+                          ({filteredBatches.length > 0 ? "associated with selected recipient" : "fallback list of active batches"})
+                        </span>
+                      </label>
+                      <div style={{ maxHeight: 130, overflowY: "auto", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, padding: "8px 12px", background: T.warmIvory, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {batchListToDisplay.map(b => (
+                          <label key={b.batchId} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}>
+                            <input type="checkbox" checked={dispBatches.includes(b.batchId)} onChange={() => toggleDispBatch(b.batchId)} style={{ cursor: "pointer" }} />
+                            <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                            <span style={{ color: T.taupe }}>({b.totalCount} sarees · Due: {b.dueDate || "—"})</span>
+                          </label>
+                        ))}
+                        {batchListToDisplay.length === 0 && (
+                          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "10px 0" }}>
+                            No active batches found in system.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Instruction field */}
+                    <div>
+                      <label style={labelStyle}>Description / Dispatch Instructions <span style={{ color: T.royalBurgundy }}>*</span></label>
+                      <textarea value={dispInstructions} onChange={e => setDispInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…"
+                        style={{ width: "100%", padding: "12px 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", resize: "none", lineHeight: 1.6, boxSizing: "border-box" }} />
+                    </div>
+
+                    {/* Attachments checklist */}
+                    <div>
+                      <label style={labelStyle}>Attachments</label>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 8 }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer", background: T.warmCream, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                          <input type="checkbox" checked={dispAttachSlip} onChange={e => setDispAttachSlip(e.target.checked)} style={{ cursor: "pointer" }} />
+                          <ImageSquare size={16} color={T.royalBurgundy} weight="bold" /> Color Slip
+                        </label>
+                        <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer", background: T.warmCream, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                          <input type="checkbox" checked={dispAttachGraph} onChange={e => setDispAttachGraph(e.target.checked)} style={{ cursor: "pointer" }} />
+                          <Graph size={16} color={T.royalBurgundy} weight="bold" /> Design Graph
+                        </label>
+                      </div>
+
+                      {/* Attachment file upload zones if not present on selected design */}
+                      {dispAttachSlip && !designs.find(d => d.code === dispDesignCode)?.hasColorSlip && (
+                        <div style={{ marginBottom: 10 }}>
+                          <UploadZone label="Upload Custom Color Slip" hint="No slip in design library, upload custom slip image" icon={ImageSquare} preview={uploadedSlip} onFile={setUploadedSlip} />
+                        </div>
+                      )}
+                      {dispAttachGraph && !designs.find(d => d.code === dispDesignCode)?.hasGraph && (
+                        <div>
+                          <UploadZone label="Upload Custom Design Graph" hint="No graph in design library, upload custom graph image" icon={Graph} preview={uploadedGraph} onFile={setUploadedGraph} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Submit button */}
+                    <motion.button onClick={handleSendDispatch} disabled={!dispDesignCode || !dispInstructions.trim()}
+                      whileHover={dispDesignCode && dispInstructions.trim() ? { scale: 1.02, backgroundColor: T.darkBurgundy } : undefined} whileTap={dispDesignCode && dispInstructions.trim() ? { scale: 0.97 } : undefined}
+                      style={{ width: "100%", height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: dispDesignCode && dispInstructions.trim() ? T.royalBurgundy : T.taupe, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: dispDesignCode && dispInstructions.trim() ? "pointer" : "not-allowed", opacity: dispDesignCode && dispInstructions.trim() ? 1 : 0.55, marginTop: 8 }}>
+                      <PaperPlaneTilt size={17} color="#fff" weight="fill" /> Dispatch Instructions
+                    </motion.button>
+                  </div>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {DESIGN_FILTERS.map(f => (
-                  <motion.button key={f} onClick={() => setFilter(f)} whileHover={{ scale: 1.02 }}
-                    style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 99, cursor: "pointer", background: filter === f ? T.royalBurgundy : "transparent", color: filter === f ? "#FFFDF9" : T.taupe, border: filter === f ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}>
-                    {f}
-                  </motion.button>
-                ))}
+
+              {/* History Side */}
+              <div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {/* Search bar */}
+                  <div style={{ position: "relative" }}>
+                    <MagnifyingGlass size={18} weight="bold" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
+                    <input value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" style={{ ...fieldStyle, paddingLeft: 44 }} />
+                  </div>
+
+                  <h3 style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                    <FileText size={18} color={T.royalBurgundy} /> Sent History Log
+                  </h3>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100vh - 360px)", overflowY: "auto", paddingRight: 4 }}>
+                    {dispatchHistory.filter(h => {
+                      if (!historySearch) return true;
+                      const q = historySearch.toLowerCase();
+                      return h.designCode.toLowerCase().includes(q) || h.recipientName.toLowerCase().includes(q) || h.instructions.toLowerCase().includes(q) || h.designName.toLowerCase().includes(q);
+                    }).map(h => (
+                      <div key={h.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${h.recipientType === "weaver" ? T.royalBurgundy : T.antiqueGold}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "2px 7px" }}>{h.designCode}</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{h.designName}</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                              <CalendarCheck size={12} /> Sent on {h.sentAt}
+                            </div>
+                          </div>
+                          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                            {h.recipientType === "weaver" ? <User size={11} weight="bold" /> : <Buildings size={11} weight="bold" />}
+                            {h.recipientName}
+                          </span>
+                        </div>
+
+                        {h.batches.length > 0 ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontWeight: 600 }}>Linked Batches:</span>
+                            {h.batches.map(b => (
+                              <span key={b} style={{ fontFamily: F.mono, fontSize: 10.5, color: T.luxuryBrown, background: T.warmCream, border: `1px solid ${T.borderDef}`, borderRadius: 5, padding: "2px 6px" }}>
+                                {b}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontStyle: "italic" }}>
+                            No specific batch linked.
+                          </div>
+                        )}
+
+                        <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                          <strong>Instructions:</strong> {h.instructions}
+                        </div>
+
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          {h.hasColorSlip && (
+                            <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(30,102,64,0.08)", color: T.green, borderRadius: 6, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              Color Slip Attached
+                            </span>
+                          )}
+                          {h.hasGraph && (
+                            <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(30,102,64,0.08)", color: T.green, borderRadius: 6, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              Design Graph Attached
+                            </span>
+                          )}
+                          {!h.hasColorSlip && !h.hasGraph && (
+                            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>
+                              No files attached
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {dispatchHistory.length === 0 && (
+                      <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches recorded yet. Use the control center to send design specs.</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Cards grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-            {visible.map((d, i) => (
-              <FadeUp key={d.code} delay={i * 0.05} style={{ height: "100%" }}>
-                <DesignCard d={d} onView={setViewDesign} onSlip={setSlipDesign} />
-              </FadeUp>
-            ))}
-            {visible.length === 0 && (
-              <div style={{ gridColumn: "1 / -1", background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
-                <Swatches size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12, display: "block", margin: "0 auto 12px" }} />
-                <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No designs match your filter or search.</div>
-              </div>
-            )}
-          </div>
-        </FadeUp>
+          </FadeUp>
+        )}
       </div>
 
       {/* Footer */}

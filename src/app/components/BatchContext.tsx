@@ -126,7 +126,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     setBatches(prev => {
       const exists = prev.find(b => b.batchId === batch.batchId);
       if (exists) return prev.map(b => b.batchId === batch.batchId ? { ...batch, updatedAt: new Date().toISOString() } : b);
-      return [{ ...batch, status: "draft", updatedAt: new Date().toISOString() }, ...prev];
+      return [{ ...batch, status: batch.status || "draft", updatedAt: new Date().toISOString() }, ...prev];
     });
   }, []);
 

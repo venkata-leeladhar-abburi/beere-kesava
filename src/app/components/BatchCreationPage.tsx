@@ -4,7 +4,7 @@ import {
   FloppyDisk, CheckCircle,
   Hash, Users, Tag, ShoppingBag, Trash,
   WarningCircle, CheckSquare, Square, ArrowRight,
-  MagnifyingGlass, Stack, Package,
+  MagnifyingGlass, Stack, Package, Graph,
 } from "@phosphor-icons/react";
 import { useBatches, SareeRow, BatchRecord, generateSareeId } from "./BatchContext";
 import { useBulkOrders } from "./BulkOrderContext";
@@ -379,7 +379,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
-type ActivePicker = "weaver" | "bulkorder" | "loom" | "saretype" | null;
+type ActivePicker = "weaver" | "bulkorder" | "loom" | "saretype" | "design" | null;
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
@@ -467,9 +467,40 @@ export function BatchCreationPage() {
     setPicker(null);
   }
 
+  const { bulkOrders } = useBulkOrders();
+
   // ── Apply bulk order
   function applyBulkOrder(ref: string | null, label: string) {
-    setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, bulkOrderRef: ref, bulkOrderLabel: label } : r));
+    const order = bulkOrders.find(o => o.ref === ref);
+    let sareeTypeCode = null;
+    let sareeTypeName = null;
+    let designCode = null;
+    if (order) {
+      const match = order.sareeType.match(/(.*)\s+·\s+(.*)/) || order.sareeType.match(/(.*)·(.*)/);
+      if (match) {
+        sareeTypeName = match[1].trim();
+        sareeTypeCode = match[2].trim();
+      } else {
+        sareeTypeName = order.sareeType;
+      }
+      designCode = order.design;
+    }
+
+    setRows(prev => prev.map(r => {
+      if (!selected.has(r.serial)) return r;
+      return {
+        ...r,
+        bulkOrderRef: ref,
+        bulkOrderLabel: label,
+        ...(order ? { sareeTypeCode, sareeTypeName, designCode } : {})
+      };
+    }));
+    setPicker(null);
+  }
+
+  // ── Apply design code
+  function applyDesign(code: string) {
+    setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, designCode: code } : r));
     setPicker(null);
   }
 
@@ -525,7 +556,17 @@ export function BatchCreationPage() {
     saveDraft(record);
     finalizeBatch(batchId);
     setSavedMsg(`Batch ${batchId} finalized and active!`);
-    setTimeout(() => setSavedMsg(null), 4000);
+    
+    // Clear and reset the form state so the user can create the next batch
+    setTimeout(() => {
+      setSavedMsg(null);
+      setRows([]);
+      setTotalCount("");
+      setDueDate("");
+      setGenerated(false);
+      setSelected(new Set());
+      setEditingBatchId(null);
+    }, 2000);
   }
 
   // ── Open a draft for editing
@@ -686,6 +727,7 @@ export function BatchCreationPage() {
                       { key: "weaver",    icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
                       { key: "bulkorder", icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
                       { key: "loom",      icon: <Hash size={14} weight="bold" />,        label: "Assign Loom Number" },
+                      { key: "design",    icon: <Graph size={14} weight="bold" />,       label: "Assign Design Code" },
                       { key: "saretype",  icon: <Tag size={14} weight="bold" />,         label: "Assign Saree Type" },
                     ] as const).map(a => (
                       <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
@@ -712,7 +754,7 @@ export function BatchCreationPage() {
                           {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                         </button>
                       </th>
-                      {["#", "Saree ID", "Weaver", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
+                      {["#", "Saree ID", "Weaver", "Loom No.", "Design Code", "Saree Type", "Bulk Order", ""].map(h => (
                         <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
@@ -748,7 +790,7 @@ export function BatchCreationPage() {
                               }}
                                 style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
                                 <Pip initials={row.weaverInitials!} bg={WEAVERS.find(w => w.id === row.weaverId)?.bg || T.taupe} size={22} />
-                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", decorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
                               </button>
                             ) : <EmptyCell />}
                           </td>
@@ -757,6 +799,14 @@ export function BatchCreationPage() {
                               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}>
                                 Loom {row.weaverLoom}
                               </span>
+                            ) : <EmptyCell />}
+                          </td>
+                          <td style={{ ...td, minWidth: 110 }}>
+                            {row.designCode ? (
+                              <button onClick={() => openDesignCard(row.designCode!)}
+                                style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                {row.designCode}
+                              </button>
                             ) : <EmptyCell />}
                           </td>
                           <td style={{ ...td, minWidth: 110 }}>
@@ -773,7 +823,7 @@ export function BatchCreationPage() {
                                 const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
                                 if (bo) setViewBulkOrder(bo);
                               }}
-                                style={{ border: "none", background: "none", cursor: "pointer", padding: 0, fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600, textDecoration: "underline", decorationColor: "rgba(110,15,45,0.2)" }}>
+                                style={{ border: "none", background: "none", cursor: "pointer", padding: 0, fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>
                                 {row.bulkOrderLabel}
                               </button>
                             ) : <EmptyCell />}
@@ -885,6 +935,7 @@ export function BatchCreationPage() {
         {picker === "weaver"    && <WeaverPickerModal    key="wp" onClose={() => setPicker(null)} onSelect={applyWeaver} />}
         {picker === "bulkorder" && <BulkOrderPickerModal key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
         {picker === "loom"      && <LoomPickerModal      key="lp" onClose={() => setPicker(null)} onSelect={applyLoom} />}
+        {picker === "design"    && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
         {picker === "saretype"  && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
         {viewDesign    && <DesignCodeCard  key="dc" design={viewDesign}    onClose={() => setViewDesign(null)} />}
         {viewSareeType && <SareeTypeCard   key="sc" sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}

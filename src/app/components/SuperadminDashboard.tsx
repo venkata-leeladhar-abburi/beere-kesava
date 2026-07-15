@@ -1362,7 +1362,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "AllWeavers": return <AllWeaversPage />;
       case "AllStock": return <AllStockPage onBack={() => navigate("Production")} />;
       case "Production": return <ProductionPage superadmin onNavigate={navigate} />;
-      case "AllOrders": return <AllOrdersPage onBack={() => navigate("Production")} />;
+      case "AllOrders": return <AllOrdersPage superadmin={true} onBack={() => navigate("Production")} />;
       case "ProductionHistory": return <ProductionHistoryPage />;
       case "Payments": return <PaymentsPage />;
       case "Reports": return <ReportsPage />;

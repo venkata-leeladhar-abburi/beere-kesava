@@ -19,7 +19,7 @@ const T = {
 };
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 
-export function AllOrdersPage({ onBack }: { onBack?: () => void }) {
+export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => void; superadmin?: boolean }) {
   const { bulkOrders } = useBulkOrders();
   const [dialog, setDialog] = useState<{ mode: "view" | "slip"; order: BulkOrder } | null>(null);
   
@@ -193,7 +193,7 @@ export function AllOrdersPage({ onBack }: { onBack?: () => void }) {
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: i * 0.04 }}
               >
-                <BulkOrderCard o={o} onView={(order) => setDialog({ mode: "view", order })} onSlip={(order) => setDialog({ mode: "slip", order })} />
+                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => setDialog({ mode: "view", order })} onSlip={(order) => setDialog({ mode: "slip", order })} />
               </motion.div>
             ))}
           </div>

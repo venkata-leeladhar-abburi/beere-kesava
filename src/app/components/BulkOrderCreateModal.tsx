@@ -272,56 +272,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   ➕ Add New Customer
                 </button>
 
-                {/* Optional contact fields */}
-                <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Address <span style={{ fontWeight: 400, color: T.taupe }}>(Optional)</span></label>
-                    <textarea
-                      value={address}
-                      onChange={e => setAddress(e.target.value)}
-                      placeholder="Shop / warehouse address..."
-                      style={{ ...inputStyle, height: 72, resize: "vertical", paddingTop: 10, paddingBottom: 10 } as React.CSSProperties}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Phone Number <span style={{ fontWeight: 400, color: T.taupe }}>(Optional)</span></label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      placeholder="e.g. +91 98765 43210"
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>GST Code <span style={{ fontWeight: 400, color: T.taupe }}>(Optional)</span></label>
-                    <input
-                      type="text"
-                      value={gstCode}
-                      onChange={e => setGstCode(e.target.value)}
-                      placeholder="e.g. 29ABCDE1234F1Z5"
-                      style={{ ...inputStyle, fontFamily: F.mono, fontSize: 13 }}
-                    />
-                  </div>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Visiting Card <span style={{ fontWeight: 400, color: T.taupe }}>(Optional)</span></label>
-                    <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 10, padding: "14px 16px", background: T.warmIvory, display: "flex", alignItems: "center", gap: 14 }}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        id="visiting-card-upload"
-                        style={{ display: "none" }}
-                        onChange={e => setVisitingCard(e.target.files?.[0] ?? null)}
-                      />
-                      <label htmlFor="visiting-card-upload" style={{ height: 36, padding: "0 16px", background: T.royalBurgundy, color: "#fff", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center" }}>
-                        Choose File
-                      </label>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, color: visitingCard ? T.luxuryBrown : T.taupe }}>
-                        {visitingCard ? visitingCard.name : "No file chosen"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+
               </div>
 
               {/* Section 2 — Order Details */}

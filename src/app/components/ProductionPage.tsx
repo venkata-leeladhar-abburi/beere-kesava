@@ -3,7 +3,7 @@ import { motion, useInView, AnimatePresence } from "motion/react";
 import {
   Eye, Plus, Search, ChevronDown, LayoutGrid, LayoutList, AlignJustify,
   ChevronRight, Facebook, Instagram, Youtube, Linkedin, Phone, Mail,
-  Download, UploadCloud, Calendar, Users,
+  Download, UploadCloud, Calendar, Users, Receipt, CalendarClock,
   Shield,
 } from "lucide-react";
 import {
@@ -24,6 +24,7 @@ import { useBulkOrders } from "./BulkOrderContext";
 import { BulkOrderCreateModal } from "./BulkOrderCreateModal";
 import { useBatches, BatchRecord, SareeRow } from "./BatchContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
+import { INVOICES } from "./PaymentsPage";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 const imgSaree    = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
@@ -215,14 +216,15 @@ export interface BulkOrder {
   amountDue?: number;
   amountPaid?: number;
   photoUrls?: string[];
+  talliedBy?: string;
 }
 export const BULK_ORDERS: BulkOrder[] = [
-  { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-045", done: 76, total: 80              },
-  { customer: "Padmavathi Textiles",    ref: "ORD-2026-038", due: "25 May 2026", status: "at-risk",  daysLeft: 2,  sareeType: "Heavy Zari · HZ-003",      design: "BKB-031", done: 42, total: 60, shortage: 18 },
-  { customer: "Vijaya Silk House",      ref: "ORD-2026-035", due: "30 May 2026", status: "on-track",              sareeType: "Plain Silk · PS-002",       design: "BKB-022", done: 28, total: 30              },
-  { customer: "Narayana Silk Emporium", ref: "ORD-2026-032", due: "20 May 2026", status: "overdue",  overdueBy: 3, sareeType: "Bridal Special · BS-004",   design: "BKB-019", done: 18, total: 25, shortage: 7  },
-  { customer: "Meenakshi Silks",        ref: "ORD-2026-029", due: "05 Jun 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-038", done: 15, total: 40              },
-  { customer: "Kalavathi Exports",      ref: "ORD-2026-027", due: "02 Jun 2026", status: "on-track",              sareeType: "Heavy Zari · HZ-003",      design: "BKB-045", done: 8,  total: 35              },
+  { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-045", done: 76, total: 80,              paymentStatus: "partial", amountDue: 250000, amountPaid: 150000 },
+  { customer: "Padmavathi Textiles",    ref: "ORD-2026-038", due: "25 May 2026", status: "at-risk",  daysLeft: 2,  sareeType: "Heavy Zari · HZ-003",      design: "BKB-031", done: 42, total: 60, shortage: 18, paymentStatus: "pending", amountDue: 180000, amountPaid: 0 },
+  { customer: "Vijaya Silk House",      ref: "ORD-2026-035", due: "30 May 2026", status: "on-track",              sareeType: "Plain Silk · PS-002",       design: "BKB-022", done: 28, total: 30,              paymentStatus: "paid",    amountDue: 90000,  amountPaid: 90000 },
+  { customer: "Narayana Silk Emporium", ref: "ORD-2026-032", due: "20 May 2026", status: "overdue",  overdueBy: 3, sareeType: "Bridal Special · BS-004",   design: "BKB-019", done: 18, total: 25, shortage: 7,  paymentStatus: "partial", amountDue: 350000, amountPaid: 200000 },
+  { customer: "Meenakshi Silks",        ref: "ORD-2026-029", due: "05 Jun 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-038", done: 15, total: 40,              paymentStatus: "pending", amountDue: 120000, amountPaid: 0 },
+  { customer: "Kalavathi Exports",      ref: "ORD-2026-027", due: "02 Jun 2026", status: "on-track",              sareeType: "Heavy Zari · HZ-003",      design: "BKB-045", done: 8,  total: 35,              paymentStatus: "partial", amountDue: 450000, amountPaid: 100000 },
 ];
 const ORDER_CFG: Record<OrderStatus, {
   strip: string; badgeBg: string; badgeColor: string;
@@ -239,11 +241,19 @@ const STATUS_LABELS: Record<OrderStatus, (o: BulkOrder) => string> = {
   "overdue":  o => `Past Deadline — ${o.overdueBy} day${o.overdueBy === 1 ? "" : "s"} overdue`,
 };
 
-export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void }) {
+export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
   const pct = o.total > 0 ? Math.round((o.done / o.total) * 100) : 0;
   const remaining = o.total - o.done;
   const PhStatusIcon = cfg.PhIcon as React.ElementType;
+  const [tallied, setTallied] = useState(!!o.talliedBy);
+  const [talliedBy, setTalliedBy] = useState(o.talliedBy);
+
+  const handleTally = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTallied(true);
+    setTalliedBy("Admin User");
+  };
 
   return (
     <motion.div
@@ -341,6 +351,14 @@ export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o
           </div>
         )}
 
+        {/* Tally Badge for Super Admin */}
+        {superadmin && tallied && (
+          <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
+            <CheckCircle size={16} color={T.green} weight="fill" />
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.green }}>Tallied by {talliedBy}</span>
+          </div>
+        )}
+
       </div>
 
       {/* Divider */}
@@ -364,12 +382,22 @@ export function BulkOrderCard({ o, onView, onSlip }: { o: BulkOrder; onView?: (o
         >
           <CurrencyInr size={18} weight="regular" /> Payment
         </motion.button>
+        {!superadmin && !tallied && (
+          <motion.button
+            onClick={handleTally}
+            whileHover={{ scale: 1.02, background: "rgba(30,102,64,0.10)" }}
+            whileTap={{ scale: 0.97 }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(30,102,64,0.05)", color: T.green, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          >
+            <CheckCircle size={18} weight="regular" /> Tally
+          </motion.button>
+        )}
       </div>
     </motion.div>
   );
 }
 
-function BulkOrdersSection({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+function BulkOrdersSection({ onNavigate, superadmin = false }: { onNavigate?: (tab: string) => void; superadmin?: boolean }) {
   const [dialog, setDialog] = useState<{ mode: "view" | "slip"; order: BulkOrder } | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
@@ -430,7 +458,7 @@ function BulkOrdersSection({ onNavigate }: { onNavigate?: (tab: string) => void 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, padding: "20px 28px 28px", alignItems: "stretch" }}>
             {bulkOrders.map((o, i) => (
               <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
-                <BulkOrderCard o={o} onView={(order) => setDialog({ mode: "view", order })} onSlip={(order) => setDialog({ mode: "slip", order })} />
+                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => setDialog({ mode: "view", order })} onSlip={(order) => setDialog({ mode: "slip", order })} />
               </FadeUp>
             ))}
           </div>
@@ -472,6 +500,7 @@ interface Batch {
   design: string; designName: string; weavers: WeaverRef[];
   materials: string; started: string; expected?: string; submitted?: string;
   done: number; total: number; late?: number; qcPassed?: number; finishingDone?: number;
+  isLive?: boolean;
 }
 const BATCHES: Batch[] = [
   { id: "BATCH-089", stage: "weaving",   sareeCode: "SB-001", sareeTypeName: "Self Brocade",   rate: 450,  design: "BKB-045", designName: "Cream Zari Border",    weavers: [{ name: "Ravi Kumar",   id: "WV-001", initials: "RK", bg: T.royalBurgundy }], materials: "Warp: 6 kg · Resham: Red 800g, Gold 400g · Jari: PLY-2G-Gold 250g",         started: "20 May 2026", expected: "28 May 2026",                       done: 4, total: 8                      },
@@ -484,7 +513,7 @@ const BATCHES: Batch[] = [
   { id: "BATCH-093", stage: "finishing", sareeCode: "BS-004", sareeTypeName: "Bridal Special", rate: 1200, design: "BKB-019", designName: "Red Bridal Zari",       weavers: [{ name: "Lakshmi D.",   id: "WV-018", initials: "LD", bg: "#C4923A"       }], materials: "Warp: 5 kg · Resham: Red 800g, Gold 400g · Jari: SF-4G-Gold 350g",        started: "08 May 2026", expected: "18 May 2026",                       done: 5, total: 5, qcPassed: 5, finishingDone: 3 },
 ];
 
-function BatchCard({ b, expandedId, setExpandedId, onView, onSlip }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void }) {
+function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const cfg = STAGE_CFG[b.stage];
   const pct = Math.round((b.done / b.total) * 100);
   const est = b.total * b.rate;
@@ -658,13 +687,18 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip }: { b: Batch;
         </div>
         
         {/* Bottom buttons */}
-        <div style={{ display: "flex", gap: 12, padding: "0 20px 20px" }}>
+        <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
           <motion.button onClick={(e) => { e.stopPropagation(); onView?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <PhEye size={16} /> View Details
+            <PhEye size={16} /> Details
           </motion.button>
           <motion.button onClick={(e) => { e.stopPropagation(); onSlip?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <Palette size={16} /> Color Slip
+            <Palette size={16} /> Slip
           </motion.button>
+          {b.isLive && onEdit && (
+            <motion.button onClick={(e) => { e.stopPropagation(); onEdit(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              <PencilSimple size={16} /> Edit
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
@@ -672,13 +706,13 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip }: { b: Batch;
 }
 
 // ── Batch Card Grid ───────────────────────────────────────────────────────────
-function BatchCardGrid({ batches, onView, onSlip }: { batches: Batch[]; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void }) {
+function BatchCardGrid({ batches, onView, onSlip, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
       {batches.map((b, i) => (
         <FadeUp key={b.id} delay={i * 0.04} style={{ height: "100%" }}>
-          <BatchCard b={b} expandedId={expandedId} setExpandedId={setExpandedId} onView={onView} onSlip={onSlip} />
+          <BatchCard b={b} expandedId={expandedId} setExpandedId={setExpandedId} onView={onView} onSlip={onSlip} onEdit={onEdit} />
         </FadeUp>
       ))}
     </div>
@@ -686,7 +720,7 @@ function BatchCardGrid({ batches, onView, onSlip }: { batches: Batch[]; onView?:
 }
 
 // ── Batch List View ───────────────────────────────────────────────────────────
-function BatchListView({ batches }: { batches: Batch[] }) {
+function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const cols = ["Batch Number", "Stage", "Weavers", "Design", "Saree Type", "Progress", "Started", "Expected End", "Making Charges", "Action"];
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
@@ -713,7 +747,18 @@ function BatchListView({ batches }: { batches: Batch[] }) {
             <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{b.started}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12.5, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} weight="fill" /> {b.late}d late</div>}</div>
             <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
-            <div><motion.button whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><PhEye size={14} weight="bold" /> View</motion.button></div>
+            <div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  <PhEye size={14} weight="bold" /> View
+                </motion.button>
+                {b.isLive && onEdit && (
+                  <motion.button onClick={() => onEdit(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    <PencilSimple size={14} /> Edit
+                  </motion.button>
+                )}
+              </div>
+            </div>
           </div>
         );
       })}
@@ -722,7 +767,7 @@ function BatchListView({ batches }: { batches: Batch[] }) {
 }
 
 // ── Batch Table View ──────────────────────────────────────────────────────────
-function BatchTableView({ batches }: { batches: Batch[] }) {
+function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const headers = ["Batch No.", "Stage", "Weaver(s)", "Design Code", "Saree Type", "Materials Given", "Started", "Expected End", "Target", "Done", "QC Passed", "Rate/Saree", "Est. Charges", "Action"];
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
@@ -756,7 +801,18 @@ function BatchTableView({ batches }: { batches: Batch[] }) {
                   <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 17, color: T.green, textAlign: "center" }}>{b.qcPassed ?? "—"}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{b.rate}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</td>
-                  <td style={{ padding: "14px 16px" }}><motion.button whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><PhEye size={14} weight="bold" /> View</motion.button></td>
+                  <td style={{ padding: "14px 16px" }}>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        <PhEye size={14} weight="bold" /> View
+                      </motion.button>
+                      {b.isLive && onEdit && (
+                        <motion.button onClick={() => onEdit(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                          <PencilSimple size={14} /> Edit
+                        </motion.button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               );
             })}
@@ -1099,16 +1155,107 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Most Recent First");
   const [batchDialog, setBatchDialog] = useState<{ mode: "view" | "slip"; batch?: Batch } | null>(null);
-  const [selectedContextBatch, setSelectedContextBatch] = useState<BatchRecord | null>(null);
 
-  const visible = BATCHES.filter(b => {
+  // Map BatchRecord from context to Batch type
+  const mappedContextBatches: Batch[] = contextBatches.map(br => {
+    const completeCount = br.rows.filter(rowComplete).length;
+    const qcPassedCount = br.rows.filter(r => r.qcPassed).length;
+    
+    // Determine stage
+    let stage: BatchStage = "weaving";
+    if (br.status === "completed") {
+      stage = "finishing";
+    } else if (qcPassedCount > 0 && qcPassedCount === br.totalCount) {
+      stage = "qc-passed";
+    } else if (completeCount === br.totalCount) {
+      stage = "submitted";
+    }
+
+    // Aggregate weavers
+    const weaversMap: Record<string, WeaverRef> = {};
+    br.rows.forEach(r => {
+      if (r.weaverId && r.weaverName) {
+        weaversMap[r.weaverId] = {
+          id: r.weaverId,
+          name: r.weaverName,
+          initials: r.weaverInitials || r.weaverName.split(" ").map(n => n[0]).join("").toUpperCase(),
+          bg: T.royalBurgundy
+        };
+      }
+    });
+    let weavers = Object.values(weaversMap);
+    if (weavers.length === 0) {
+      weavers = [{ id: "WV-UNASSIGNED", name: "Unassigned Loom", initials: "??", bg: T.taupe }];
+    }
+
+    // Get saree info from rows
+    const firstRowWithSaree = br.rows.find(r => r.sareeTypeCode);
+    const sareeCode = firstRowWithSaree?.sareeTypeCode || "SB-001";
+    const sareeTypeName = firstRowWithSaree?.sareeTypeName || "Self Brocade";
+    const design = firstRowWithSaree?.designCode || "BKB-045";
+    
+    // Simple date formatting
+    const formatDate = (dateStr: string) => {
+      try {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      } catch (e) {
+        return "25 May 2026";
+      }
+    };
+
+    return {
+      id: br.batchId,
+      stage,
+      sareeCode,
+      sareeTypeName,
+      rate: 450, // default rate
+      design,
+      designName: "Production Design",
+      weavers,
+      materials: "Warp: 6 kg · Resham: Red 800g · Jari: Gold 250g",
+      started: formatDate(br.createdAt),
+      expected: formatDate(br.dueDate),
+      submitted: stage === "submitted" || stage === "qc-passed" || stage === "finishing" ? formatDate(br.updatedAt) : undefined,
+      done: completeCount,
+      total: br.totalCount,
+      qcPassed: qcPassedCount > 0 ? qcPassedCount : undefined,
+      isLive: true
+    };
+  });
+
+  // Combine with BATCHES, filtering duplicates by ID
+  const combined: Batch[] = [...mappedContextBatches];
+  BATCHES.forEach(b => {
+    if (!combined.some(c => c.id === b.id)) {
+      combined.push(b);
+    }
+  });
+
+  const visible = combined.filter(b => {
     if (filter && b.stage !== filter) return false;
+
+    // Period filter
+    if (period === "Active Batches" && (b.stage === "qc-passed" || b.stage === "finishing") && !filter) return false;
+
     if (search) {
       const q = search.toLowerCase();
       return b.id.toLowerCase().includes(q) || b.weavers.some(w => w.name.toLowerCase().includes(q)) || b.design.toLowerCase().includes(q);
     }
     return true;
-  }).sort((a, b) => sortBy === "Most Complete" ? (b.done / b.total) - (a.done / a.total) : sortBy === "Least Complete" ? (a.done / a.total) - (b.done / b.total) : a.id.localeCompare(b.id));
+  }).sort((a, b) => {
+    if (sortBy === "Most Complete") {
+      return (b.done / b.total) - (a.done / a.total);
+    } else if (sortBy === "Least Complete") {
+      return (a.done / a.total) - (b.done / b.total);
+    }
+    return a.id.localeCompare(b.id);
+  });
+
+  const handleEditBatch = (b: Batch) => {
+    setPendingOpenBatchId(b.id);
+    onNavigate?.("Batches");
+  };
 
   return (
     <div id="prod-active-batches" style={{ padding: "40px 48px 0" }}>
@@ -1167,21 +1314,53 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
           </div>
         </div>
 
-        {/* Context batches — from BatchCreationPage */}
-        {contextBatches.length > 0 && (
-          <div style={{ marginBottom: 28 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>
-              From Batch Creation — {contextBatches.length} batch{contextBatches.length !== 1 ? "es" : ""}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
-              {contextBatches.map(b => (
-                <ContextBatchCard key={b.batchId} b={b} onClick={() => setSelectedContextBatch(b)} onNavigateBatches={(batchId) => { setPendingOpenBatchId(batchId); onNavigate?.("Batches"); }} />
-              ))}
-            </div>
+        {/* Unified batches grid / list / table */}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>
+            Production Batches — {visible.length} batch{visible.length !== 1 ? "es" : ""}
           </div>
-        )}
+          {visible.length === 0 ? (
+            <div style={{ padding: "40px", textAlign: "center", background: "#FFFFFF", borderRadius: 16, border: `1px dashed ${T.borderDef}`, color: T.taupe, fontFamily: F.ui }}>
+              No batches found matching the current filters.
+            </div>
+          ) : (
+            view === "card" ? <BatchCardGrid batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
+            view === "list" ? <BatchListView batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onEdit={handleEditBatch} /> :
+            <BatchTableView batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onEdit={handleEditBatch} />
+          )}
+        </div>
       </FadeUp>
-      <AnimatePresence>{batchDialog && <ProductionDialog open={!!batchDialog} title={batchDialog.mode === "view" ? "Batch details" : "Color slip"} onClose={() => setBatchDialog(null)}><div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.65 }}><b>{batchDialog.batch?.id}</b><br />{batchDialog.mode === "view" ? `Design ${batchDialog.batch?.design} · ${batchDialog.batch?.done} of ${batchDialog.batch?.total} sarees complete.` : `Color slip for ${batchDialog.batch?.design}: maroon body, antique-gold border, pallu accent recorded for loom handoff.`}</div></ProductionDialog>}</AnimatePresence>
+      <AnimatePresence>
+        {batchDialog && (
+          batchDialog.mode === "view" && batchDialog.batch?.isLive ? (
+            (() => {
+              const liveRecord = batches.find(br => br.batchId === batchDialog.batch?.id);
+              if (!liveRecord) return null;
+              return (
+                <ContextBatchDetailsDialog
+                  b={liveRecord}
+                  onClose={() => setBatchDialog(null)}
+                  onOpenCreation={() => {
+                    setPendingOpenBatchId(liveRecord.batchId);
+                    onNavigate?.("Batches");
+                    setBatchDialog(null);
+                  }}
+                />
+              );
+            })()
+          ) : (
+            <ProductionDialog open={!!batchDialog} title={batchDialog.mode === "view" ? "Batch details" : "Color slip"} onClose={() => setBatchDialog(null)}>
+              <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.65 }}>
+                <b>{batchDialog.batch?.id}</b><br />
+                {batchDialog.mode === "view" 
+                  ? `Design ${batchDialog.batch?.design} · ${batchDialog.batch?.done} of ${batchDialog.batch?.total} sarees complete.` 
+                  : `Color slip for ${batchDialog.batch?.design}: maroon body, antique-gold border, pallu accent recorded for loom handoff.`
+                }
+              </div>
+            </ProductionDialog>
+          )
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -2252,7 +2431,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
       <PageHeader />
       <StatsStrip />
       <div style={{ background: T.silkCream, paddingBottom: 0 }}>
-        <BulkOrdersSection onNavigate={onNavigate} />
+        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} />
         <ActiveBatchesSection onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <ProductionAnalyticsSection />
@@ -2283,11 +2462,34 @@ export function ProductionDialog({ open, title, children, onClose }: { open: boo
 }
 
 export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "view" | "slip" }) {
-  const amountDue = order.amountDue ?? 0;
-  const amountPaid = order.amountPaid ?? 0;
+  // Find match from PaymentsPage INVOICES
+  const refMatch = order.ref.match(/ORD-\d{4}-(\d+)/) || order.ref.match(/ORD-(.*)/);
+  const refNum = refMatch ? refMatch[1] : "";
+  const matchedInvoice = INVOICES.find(inv => {
+    const invMatch = inv.id.match(/INV-\d{4}-(\d+)/) || inv.id.match(/INV-(.*)/);
+    const invNum = invMatch ? invMatch[1] : "";
+    return invNum && invNum === refNum;
+  }) || INVOICES.find(inv => inv.customer.toLowerCase() === order.customer.toLowerCase());
+
+  const amountDue = matchedInvoice ? matchedInvoice.total : (order.amountDue ?? 0);
+  const amountPaid = matchedInvoice ? matchedInvoice.paid : (order.amountPaid ?? 0);
   const balance = amountDue - amountPaid;
 
+  const [activeTab, setActiveTab] = useState<"invoices" | "payments">("invoices");
+
   if (mode === "slip") {
+    const invoices = matchedInvoice ? [
+      { id: matchedInvoice.id, date: matchedInvoice.invoiceDate, amount: matchedInvoice.total, status: matchedInvoice.status.toLowerCase() }
+    ] : [
+      { id: `INV-${refNum || "2026-101"}`, date: "20 May 2026", amount: amountDue, status: amountPaid === amountDue ? "paid" : amountPaid > 0 ? "partial" : "pending" }
+    ].filter(i => i.amount > 0);
+
+    const payments = matchedInvoice ? (matchedInvoice.payments || []) : (
+      amountPaid > 0 ? [
+        { amount: amountPaid, utr: "UTR202604229988", method: "RTGS", date: "16 May 2026", firmName: "Beere Kesava & Brothers Silks" }
+      ] : []
+    );
+
     return (
       <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
@@ -2298,11 +2500,16 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 4 }}>Customer</div>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700 }}>{order.customer}</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+
+        <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center", marginBottom: 8 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
+          <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {[
             { label: "Est. Value", val: amountDue > 0 ? `₹${amountDue.toLocaleString("en-IN")}` : "—" },
             { label: "Amount Paid", val: amountPaid > 0 ? `₹${amountPaid.toLocaleString("en-IN")}` : "₹0" },
-            { label: "Balance Due", val: balance > 0 ? `₹${balance.toLocaleString("en-IN")}` : "Settled" },
           ].map(({ label, val }) => (
             <div key={label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
               <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>{label}</div>
@@ -2310,10 +2517,108 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
             </div>
           ))}
         </div>
-        <div style={{ padding: "12px 14px", background: order.paymentStatus === "paid" ? "rgba(30,102,64,0.08)" : "rgba(200,155,71,0.08)", borderRadius: 10, border: `1px solid ${order.paymentStatus === "paid" ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.22)"}` }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: order.paymentStatus === "paid" ? "#1E6640" : "#8B6018" }}>
-            Payment Status: {order.paymentStatus === "paid" ? "Paid in Full" : order.paymentStatus === "partial" ? "Partially Paid" : "Pending"}
-          </span>
+
+        {/* Tab Toggle Buttons */}
+        <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}` }}>
+          <button
+            onClick={() => setActiveTab("invoices")}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: "none",
+              borderRadius: 8,
+              fontFamily: F.ui,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              background: activeTab === "invoices" ? "#FFFFFF" : "transparent",
+              color: activeTab === "invoices" ? T.royalBurgundy : T.taupe,
+              boxShadow: activeTab === "invoices" ? "0 4px 12px rgba(110,15,45,0.08)" : "none",
+              transition: "all 0.2s"
+            }}
+          >
+            Invoices ({invoices.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("payments")}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: "none",
+              borderRadius: 8,
+              fontFamily: F.ui,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              background: activeTab === "payments" ? "#FFFFFF" : "transparent",
+              color: activeTab === "payments" ? T.royalBurgundy : T.taupe,
+              boxShadow: activeTab === "payments" ? "0 4px 12px rgba(110,15,45,0.08)" : "none",
+              transition: "all 0.2s"
+            }}
+          >
+            Payment History ({payments.length})
+          </button>
+        </div>
+
+        {/* Dynamic History Content Box */}
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
+          {activeTab === "invoices" ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}>
+                  <FileText size={16} color={T.royalBurgundy} /> Invoices
+                </div>
+              </div>
+              {invoices.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "16px 0", background: T.silkCream, borderRadius: 10 }}>No invoices generated yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 160, overflowY: "auto", paddingRight: 4 }}>
+                  {invoices.map((inv, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: T.warmIvory, borderRadius: 10, border: "1px solid rgba(110,15,45,0.06)", borderLeft: `4px solid ${inv.status === "paid" ? T.green : T.antiqueGold}` }}>
+                      <div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inv.id}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{inv.date}</div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.amount.toLocaleString("en-IN")}</div>
+                        <span style={{ display: "inline-block", fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: inv.status === "paid" ? "rgba(30,102,64,0.11)" : "rgba(200,155,71,0.11)", color: inv.status === "paid" ? T.green : T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", marginTop: 4 }}>{inv.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}>
+                  <Receipt size={16} color={T.royalBurgundy} /> Previous Payments
+                </div>
+              </div>
+              {payments.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "16px 0", background: T.silkCream, borderRadius: 10 }}>No previous payments recorded.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 160, overflowY: "auto", paddingRight: 4 }}>
+                  {payments.map((p, idx) => (
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 14px", background: T.warmIvory, borderRadius: 10, border: "1px solid rgba(110,15,45,0.06)", borderLeft: `4px solid ${T.antiqueGold}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.royalBurgundy }}>₹{p.amount.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>{p.utr} · {p.method}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                          <span style={{ fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>{p.firmName || "Beere Kesava & Brothers Silks"}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                            <CalendarClock size={11} /> {p.date}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     );
