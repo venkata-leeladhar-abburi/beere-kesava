@@ -1146,7 +1146,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
         <button
           onClick={() => setActiveAction(activeAction === "assign" ? null : "assign")}
           style={{
-            padding: "16px 12px", border: "none", borderRadius: 16, cursor: "pointer",
+            padding: "16px 12px", borderRadius: 16, cursor: "pointer",
             background: activeAction === "assign"
               ? `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`
               : "#FFF",
@@ -1169,7 +1169,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
         <button
           onClick={() => setActiveAction(activeAction === "receive" ? null : "receive")}
           style={{
-            padding: "16px 12px", border: "none", borderRadius: 16, cursor: "pointer",
+            padding: "16px 12px", borderRadius: 16, cursor: "pointer",
             background: activeAction === "receive"
               ? "linear-gradient(135deg, #1E5A3A 0%, #1E6640 100%)"
               : "#FFF",

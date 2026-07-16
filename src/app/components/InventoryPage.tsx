@@ -519,7 +519,7 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
                     <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.designCode} · {s.sareeType}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
                     </div>
                     <StatusBadge status={s.inventoryStatus} />
                   </div>
@@ -733,7 +733,7 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
                     <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.designCode} · {s.sareeType}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
                     </div>
                     <StatusBadge status={s.inventoryStatus} />
                   </div>

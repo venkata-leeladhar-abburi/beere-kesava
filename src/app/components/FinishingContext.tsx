@@ -36,6 +36,7 @@ export interface FinishingReturn {
   assignmentId: string;
   sareeId: string;
   designCode: string;
+  sareeTypeCode?: string;
   sareeType: string;
   weaverName: string;
   condition: "perfect" | "damaged";
@@ -92,6 +93,7 @@ interface FinishingContextValue {
     damageType?: string;
     damageSeverity?: "Minor" | "Moderate" | "Severe";
     damageNotes?: string;
+    damagePhotoUrl?: string;
     receivedBy: string;
     receivedDate: string;
   }) => void;
@@ -101,30 +103,27 @@ interface FinishingContextValue {
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
 const SEED_READY: ReadySaree[] = [
-  { id: "PADMA-L1-007", designCode: "BKB-045",  sareeType: "Self Brocade",     weaverName: "Padma Veni",   qcPassDate: "28 Jun 2026", status: "qc-passed-pending-finishing" },
-  { id: "RAVI-L2-011",  designCode: "BKB-031",  sareeType: "Heavy Zari",       weaverName: "Ravi Kumar",   qcPassDate: "27 Jun 2026", status: "qc-passed-pending-finishing" },
-  { id: "BKB-L3-005",   designCode: "BKB-022",  sareeType: "Kanjivaram",       weaverName: "Loom 3",       qcPassDate: "26 Jun 2026", status: "qc-passed-pending-finishing" },
-  { id: "SURESH-L2-004",designCode: "BKB-038",  sareeType: "Gadwal Cotton",    weaverName: "Suresh Murti", qcPassDate: "26 Jun 2026", status: "qc-passed-pending-finishing" },
-  { id: "BKB-L1-009",   designCode: "BKB-019",  sareeType: "Mysore Crepe",     weaverName: "Loom 1",       qcPassDate: "25 Jun 2026", status: "qc-passed-pending-finishing" },
-  { id: "PADMA-L1-008", designCode: "BKB-052",  sareeType: "Pochampally Ikat", weaverName: "Padma Veni",   qcPassDate: "24 Jun 2026", status: "qc-passed-pending-finishing" },
+  { id: "RAVI-L2-009",  designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeType: "Heavy Zari",   weaverName: "Ravi Kumar", qcPassDate: "23 Jun 2026", status: "qc-passed-pending-finishing" },
+  { id: "PADMA-L1-006", designCode: "BKB-045", sareeTypeCode: "SB-001", sareeType: "Self Brocade", weaverName: "Padma Veni", qcPassDate: "22 Jun 2026", status: "qc-passed-pending-finishing" },
+  { id: "BKB-L3-003",   designCode: "BKB-022", sareeTypeCode: "PS-002", sareeType: "Kanjivaram",   weaverName: "Loom 3",     qcPassDate: "21 Jun 2026", status: "qc-passed-pending-finishing" },
 ];
 
 const SEED_ASSIGNMENTS: FinishingAssignment[] = [
-  { id: "FA-001", sareeId: "RAVI-L2-008",  designCode: "BKB-031", sareeType: "Heavy Zari",   weaverName: "Ravi Kumar", qcPassDate: "20 Jun 2026", finishingStaffId: "fs-seed-001", finishingStaffName: "Anand Kumar", assignedDate: "22 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
-  { id: "FA-002", sareeId: "PADMA-L1-005", designCode: "BKB-045", sareeType: "Self Brocade", weaverName: "Padma Veni", qcPassDate: "18 Jun 2026", finishingStaffId: "fs-seed-002", finishingStaffName: "Renu Devi",   assignedDate: "20 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
-  { id: "FA-003", sareeId: "BKB-L3-002",   designCode: "BKB-022", sareeType: "Kanjivaram",   weaverName: "Loom 3",     qcPassDate: "17 Jun 2026", finishingStaffId: "fs-seed-003", finishingStaffName: "Suresh Nair", assignedDate: "19 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
+  { id: "FA-001", sareeId: "RAVI-L2-008",  designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeType: "Heavy Zari",   weaverName: "Ravi Kumar", qcPassDate: "20 Jun 2026", finishingStaffId: "fs-seed-001", finishingStaffName: "Anand Kumar", assignedDate: "22 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
+  { id: "FA-002", sareeId: "PADMA-L1-005", designCode: "BKB-045", sareeTypeCode: "SB-001", sareeType: "Self Brocade", weaverName: "Padma Veni", qcPassDate: "18 Jun 2026", finishingStaffId: "fs-seed-002", finishingStaffName: "Renu Devi",   assignedDate: "20 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
+  { id: "FA-003", sareeId: "BKB-L3-002",   designCode: "BKB-022", sareeTypeCode: "PS-002", sareeType: "Kanjivaram",   weaverName: "Loom 3",     qcPassDate: "17 Jun 2026", finishingStaffId: "fs-seed-003", finishingStaffName: "Suresh Nair", assignedDate: "19 Jun 2026", assignedBy: "Ravi Kumar (WK-042)", status: "awaiting-return" },
 ];
 
 // Seed a few already-returned sarees so the inventory page has data to show
 const SEED_RETURNS: FinishingReturn[] = [
-  { id: "FR-seed-001", assignmentId: "FA-SEED-A", sareeId: "BKB-INV-001", designCode: "BKB-045", sareeType: "Self Brocade",     weaverName: "Padma Veni",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "25 Jun 2026", inventoryStatus: "Ready for Dispatch" },
-  { id: "FR-seed-002", assignmentId: "FA-SEED-B", sareeId: "BKB-INV-002", designCode: "BKB-031", sareeType: "Heavy Zari",       weaverName: "Ravi Kumar",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "24 Jun 2026", inventoryStatus: "Ready for Dispatch" },
-  { id: "FR-seed-003", assignmentId: "FA-SEED-C", sareeId: "BKB-INV-003", designCode: "BKB-022", sareeType: "Kanjivaram",       weaverName: "Loom 3",       condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "23 Jun 2026", inventoryStatus: "Ready for Dispatch" },
-  { id: "FR-seed-004", assignmentId: "FA-SEED-D", sareeId: "BKB-INV-004", designCode: "BKB-038", sareeType: "Gadwal Cotton",    weaverName: "Suresh Murti", condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "22 Jun 2026", inventoryStatus: "Ready for Dispatch" },
-  { id: "FR-seed-005", assignmentId: "FA-SEED-E", sareeId: "BKB-INV-005", designCode: "BKB-019", sareeType: "Mysore Crepe",     weaverName: "Loom 1",       condition: "damaged", damageType: "Thread Break", damageSeverity: "Minor",    damageNotes: "Small thread break near border", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "21 Jun 2026", inventoryStatus: "Damaged — Review Needed" },
-  { id: "FR-seed-006", assignmentId: "FA-SEED-F", sareeId: "BKB-INV-006", designCode: "BKB-052", sareeType: "Pochampally Ikat", weaverName: "Padma Veni",   condition: "damaged", damageType: "Stain",        damageSeverity: "Moderate", damageNotes: "Oil stain on pallu",             receivedBy: "Ravi Kumar (WK-042)", receivedDate: "20 Jun 2026", inventoryStatus: "Damaged — Review Needed" },
-  { id: "FR-seed-007", assignmentId: "FA-SEED-G", sareeId: "BKB-INV-007", designCode: "BKB-031", sareeType: "Heavy Zari",       weaverName: "Ravi Kumar",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "18 Jun 2026", inventoryStatus: "Dispatched", dispatchId: "DISP-seed-001" },
-  { id: "FR-seed-008", assignmentId: "FA-SEED-H", sareeId: "BKB-INV-008", designCode: "BKB-045", sareeType: "Self Brocade",     weaverName: "Padma Veni",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "17 Jun 2026", inventoryStatus: "Dispatched", dispatchId: "DISP-seed-001" },
+  { id: "FR-seed-001", assignmentId: "FA-SEED-A", sareeId: "BKB-INV-001", designCode: "BKB-045", sareeTypeCode: "SB-001", sareeType: "Self Brocade",     weaverName: "Padma Veni",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "25 Jun 2026", inventoryStatus: "Ready for Dispatch" },
+  { id: "FR-seed-002", assignmentId: "FA-SEED-B", sareeId: "BKB-INV-002", designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeType: "Heavy Zari",       weaverName: "Ravi Kumar",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "24 Jun 2026", inventoryStatus: "Ready for Dispatch" },
+  { id: "FR-seed-003", assignmentId: "FA-SEED-C", sareeId: "BKB-INV-003", designCode: "BKB-022", sareeTypeCode: "PS-002", sareeType: "Kanjivaram",       weaverName: "Loom 3",       condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "23 Jun 2026", inventoryStatus: "Ready for Dispatch" },
+  { id: "FR-seed-004", assignmentId: "FA-SEED-D", sareeId: "BKB-INV-004", designCode: "BKB-038", sareeTypeCode: "HZ-003", sareeType: "Gadwal Cotton",    weaverName: "Suresh Murti", condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "22 Jun 2026", inventoryStatus: "Ready for Dispatch" },
+  { id: "FR-seed-005", assignmentId: "FA-SEED-E", sareeId: "BKB-INV-005", designCode: "BKB-019", sareeTypeCode: "PS-002", sareeType: "Mysore Crepe",     weaverName: "Loom 1",       condition: "damaged", damageType: "Thread Break", damageSeverity: "Minor",    damageNotes: "Small thread break near border", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "21 Jun 2026", inventoryStatus: "Damaged — Review Needed" },
+  { id: "FR-seed-006", assignmentId: "FA-SEED-F", sareeId: "BKB-INV-006", designCode: "BKB-052", sareeTypeCode: "BS-004", sareeType: "Pochampally Ikat", weaverName: "Padma Veni",   condition: "damaged", damageType: "Stain",        damageSeverity: "Moderate", damageNotes: "Oil stain on pallu",             receivedBy: "Ravi Kumar (WK-042)", receivedDate: "20 Jun 2026", inventoryStatus: "Damaged — Review Needed" },
+  { id: "FR-seed-007", assignmentId: "FA-SEED-G", sareeId: "BKB-INV-007", designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeType: "Heavy Zari",       weaverName: "Ravi Kumar",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "18 Jun 2026", inventoryStatus: "Dispatched", dispatchId: "DISP-seed-001" },
+  { id: "FR-seed-008", assignmentId: "FA-SEED-H", sareeId: "BKB-INV-008", designCode: "BKB-045", sareeTypeCode: "SB-001", sareeType: "Self Brocade",     weaverName: "Padma Veni",   condition: "perfect", receivedBy: "Ravi Kumar (WK-042)", receivedDate: "17 Jun 2026", inventoryStatus: "Dispatched", dispatchId: "DISP-seed-001" },
 ];
 
 const SEED_DISPATCHES: DispatchRecord[] = [
@@ -152,6 +151,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       id: `FA-${Date.now()}-${i}`,
       sareeId: s.id,
       designCode: s.designCode,
+      sareeTypeCode: s.sareeTypeCode,
       sareeType: s.sareeType,
       weaverName: s.weaverName,
       qcPassDate: s.qcPassDate,
@@ -188,6 +188,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       assignmentId: params.assignmentId,
       sareeId: params.sareeId,
       designCode: assignment?.designCode ?? "—",
+      sareeTypeCode: assignment?.sareeTypeCode,
       sareeType: assignment?.sareeType ?? "—",
       weaverName: assignment?.weaverName ?? "—",
       condition: params.condition,

@@ -10,7 +10,7 @@ import {
   IndianRupee, CheckCircle2, Truck, Clock, Building2,
   LogOut, UserRound, Package, LayoutDashboard, Factory, Settings2,
   Users, Layers, ShoppingCart,
-  Activity, MapPin, Phone, Edit3, Layers3,
+  Activity, MapPin, Phone, Edit3, Layers3, X,
 } from "lucide-react";
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import { useResponsive } from "./useResponsive";
@@ -319,7 +319,7 @@ function findNavGroup(pageKey: string): NavGroup {
   return direct ?? NAV_GROUPS[0];
 }
 
-function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[] }) {
+function SATopNav({ active, set, onBack, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void }) {
   const navigate = useNavigate();
   const { selectRole } = useAuth();
   const { w } = useResponsive();
@@ -549,7 +549,7 @@ function SATopNav({ active, set, onBack, sections }: { active: string; set: (v: 
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, textAlign: "left" as const }}
+                  <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <UserRound size={15} color={T.taupe} /> View Profile
@@ -776,7 +776,7 @@ function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   );
 }
 
-function SAMobileTopNav({ onMenuOpen, onBack }: { onMenuOpen: () => void; onBack?: () => void }) {
+function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: () => void; onBack?: () => void; onProfile?: () => void }) {
   const navigate = useNavigate();
   const { selectRole } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
@@ -814,7 +814,7 @@ function SAMobileTopNav({ onMenuOpen, onBack }: { onMenuOpen: () => void; onBack
               <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
             </div>
             <div style={{ padding: "6px 0" }}>
-              <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
+              <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <UserRound size={14} color={T.taupe} /> View Profile
               </button>
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
@@ -1311,6 +1311,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "overview") nav = "Overview";
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const isMobile = useIsMobile();
 
   // Always scroll to top when navigating between pages
@@ -1411,13 +1412,13 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       {isMobile ? (
         <>
           <SAMobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={nav} setTab={navigate} />
-          <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} />
+          <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onProfile={() => setShowProfileModal(true)} />
           {sections && <SectionNavigator sections={sections} stickyTop={MOBILE_NAV_H} padding="0 18px" />}
           {renderPage(navigate)}
         </>
       ) : (
         <>
-          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} />
+          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} onProfile={() => setShowProfileModal(true)} />
           <AnimatePresence mode="wait">
             <motion.div key={nav}
               initial={{ opacity: 0, y: 12 }}
@@ -1430,6 +1431,72 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
           </AnimatePresence>
         </>
       )}
+      <AnimatePresence>
+        {showProfileModal && (
+          <UserProfileModal onClose={() => setShowProfileModal(false)} role="superadmin" />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function UserProfileModal({ onClose, role }: { onClose: () => void; role: "admin" | "superadmin" | "shop" | "weaver" }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", padding: 20 }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: `1px solid rgba(139,26,46,0.12)`, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
+        {/* Banner */}
+        <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "rgba(255,255,255,0.12)", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <X size={16} color="#FFF" />
+          </button>
+          
+          <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
+              {role === "admin" ? "AD" : role === "superadmin" ? "SA" : role === "shop" ? "SR" : "RK"}
+            </span>
+          </div>
+
+          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
+            {role === "admin" ? "Ravi Shankar" : role === "superadmin" ? "Venkata Leeladhar Abburi" : role === "shop" ? "K. S. Rama Rao" : "Ravi Kumar"}
+          </div>
+          
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
+            {role === "admin" ? "ADM-001" : role === "superadmin" ? "SADM-001" : role === "shop" ? "SHP-012" : "WV-001 / WVR-014"}
+          </div>
+
+          <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#C4923A" }}>
+              {role === "admin" ? "Store Administrator" : role === "superadmin" ? "Super Administrator" : role === "shop" ? "Shop Showroom Manager" : "Master Handloom Weaver"}
+            </span>
+          </div>
+        </div>
+
+        {/* Details List */}
+        <div style={{ padding: "24px 24px" }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#8B7060", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {[
+              { label: "Email Address", value: role === "admin" ? "admin@beerekesava.com" : role === "superadmin" ? "leeladhar@beerekesava.com" : role === "shop" ? "ramarao.k@beerekesava.com" : "ravikumar.wvr@gmail.com" },
+              { label: "Phone Number", value: role === "admin" ? "+91 94405 88991" : role === "superadmin" ? "+91 98480 22338" : role === "shop" ? "+91 80081 23456" : "+91 99088 77665" },
+              { label: "Factory/Office", value: role === "shop" ? "Bangalore Silk Showroom" : "Dharmavaram Factory Outlet, AP" },
+              { label: "Joined Date", value: role === "admin" ? "January 2019" : role === "superadmin" ? "June 2012" : role === "shop" ? "August 2021" : "March 2018" },
+              ...(role === "weaver" ? [{ label: "Loom Assignment", value: "Loom 2 & Loom 5 (Active)" }] : [])
+            ].map(item => (
+              <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#8B7060" }}>{item.label}</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 24, textAlign: "center" as const }}>
+            <button onClick={onClose} style={{ background: "#6B1A2A", color: "#FFF", border: "none", borderRadius: 999, padding: "10px 24px", fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 14px rgba(107,26,42,0.2)" }}>
+              Close Profile
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

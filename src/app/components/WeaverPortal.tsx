@@ -54,7 +54,8 @@ const SAREE_TYPE_RATES: Record<string, { type: string; description: string; char
 function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose: () => void }) {
   const { getDesign } = useDesignLibrary();
   const d = getDesign(designCode);
-  const BG = "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800";
+  const BG = d?.colorSlipPhoto || "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800";
+  const [showGraphModal, setShowGraphModal] = useState(false);
 
   return (
     <motion.div
@@ -104,12 +105,19 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
           </div>
         )}
 
+        {d?.designGraph && (
+          <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>DESIGN GRAPH DRAWING</div>
+            <img src={d.designGraph} alt="Design Graph Drawing" style={{ width: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 8, cursor: "pointer", border: `1px solid ${C.bdr}` }} onClick={() => setShowGraphModal(true)} />
+          </div>
+        )}
+
         <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1, background: d?.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ flex: 1, background: d?.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7, cursor: d?.designGraph ? "pointer" : "default" }} onClick={() => d?.designGraph && setShowGraphModal(true)}>
             <Layers size={13} color={d?.hasGraph ? C.green : C.muted} />
             <div>
               <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>DESIGN GRAPH</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: d?.hasGraph ? C.green : C.muted, fontWeight: 600 }}>{d?.hasGraph ? "Uploaded ✓" : "Not uploaded"}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: d?.hasGraph ? C.green : C.muted, fontWeight: 600 }}>{d?.hasGraph ? "View Graph ✓" : "Not uploaded"}</div>
             </div>
           </div>
           <div style={{ flex: 1, background: d?.hasColorSlip ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasColorSlip ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7 }}>
@@ -121,6 +129,21 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
           </div>
         </div>
       </div>
+
+      {/* Graph Modal overlay if clicked */}
+      <AnimatePresence>
+        {showGraphModal && d?.designGraph && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowGraphModal(false)}>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }} onClick={e => e.stopPropagation()}>
+              <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+                <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
+                <button onClick={() => setShowGraphModal(false)} style={{ background: C.burg, border: "none", color: "#FFF", fontFamily: F.u, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close Reference</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -360,11 +383,97 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
   );
 }
 
+function WeaverDesignCard({ d }: { d: DesignEntry }) {
+  const [showGraphModal, setShowGraphModal] = useState(false);
+
+  return (
+    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(107,26,42,0.06)", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Banner Photo */}
+      {d.colorSlipPhoto ? (
+        <div style={{ height: 160, overflow: "hidden", position: "relative", flexShrink: 0 }}>
+          <img src={d.colorSlipPhoto} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(26,10,15,0.50) 100%)" }} />
+          <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: C.dark, borderRadius: 8, padding: "5px 10px", border: `1px solid rgba(255,255,255,0.15)` }}>
+            <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: "0.4px" }}>{d.code}</span>
+          </div>
+        </div>
+      ) : (
+        <div style={{ height: 160, background: `linear-gradient(135deg, #FFFDF9 0%, ${C.cream} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, flexShrink: 0, position: "relative" }}>
+          <Palette size={32} color={C.muted} />
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, fontWeight: 500 }}>Color Slip Not Uploaded</span>
+          <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(139,112,96,0.14)", borderRadius: 8, padding: "5px 10px" }}>
+            <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{d.code}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Card Content */}
+      <div style={{ padding: "18px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{d.name || d.code}</div>
+          {d.typeCode && (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,146,58,0.10)", border: `1px solid rgba(196,146,58,0.25)`, borderRadius: 8, padding: "4px 8px", marginTop: 4 }}>
+              <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.gold, fontWeight: 700 }}>{d.typeCode}</span>
+              <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>· {d.typeName}</span>
+            </div>
+          )}
+        </div>
+
+        {d.desc && (
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, background: "#FAFAF8", padding: "10px 12px", borderRadius: 10, border: `1px solid ${C.bdr}` }}>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>Description</div>
+            <div>{d.desc}</div>
+          </div>
+        )}
+
+        {d.notesForWeaver && (
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, background: "rgba(196,146,58,0.08)", padding: "10px 12px", borderRadius: 10, border: `1px solid rgba(196,146,58,0.20)` }}>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>Weaving Instructions / Notes</div>
+            <div style={{ fontWeight: 500 }}>{d.notesForWeaver}</div>
+          </div>
+        )}
+
+        {/* Status badges */}
+        <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+          <div style={{ flex: 1, background: d.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 7, cursor: d.designGraph ? "pointer" : "default" }} onClick={() => d.designGraph && setShowGraphModal(true)}>
+            <Layers size={14} color={d.hasGraph ? C.green : C.muted} />
+            <div>
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>Graph Drawing</div>
+              <div style={{ fontFamily: F.u, fontSize: 11, color: d.hasGraph ? C.green : C.muted, fontWeight: 600 }}>{d.hasGraph ? "View Graph ✓" : "No Graph"}</div>
+            </div>
+          </div>
+          <div style={{ flex: 1, background: d.hasColorSlip ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d.hasColorSlip ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 7 }}>
+            <Palette size={14} color={d.hasColorSlip ? C.green : C.muted} />
+            <div>
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>Color Slip</div>
+              <div style={{ fontFamily: F.u, fontSize: 11, color: d.hasColorSlip ? C.green : C.muted, fontWeight: 600 }}>{d.hasColorSlip ? "Uploaded ✓" : "Missing"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Graph Modal overlay if clicked */}
+      <AnimatePresence>
+        {showGraphModal && d.designGraph && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowGraphModal(false)}>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }} onClick={e => e.stopPropagation()}>
+              <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+                <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
+                <button onClick={() => setShowGraphModal(false)} style={{ background: C.burg, border: "none", color: "#FFF", fontFamily: F.u, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close Reference</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Design Library Strip — only designs assigned to this weaver's active batches ──
 function DesignLibrarySection() {
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
-  const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
   const myDesignCodes = Array.from(new Set(
     batches
@@ -377,12 +486,21 @@ function DesignLibrarySection() {
 
   return (
     <>
-      <SectionTitle title="Design Library" />
-      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, margin: "-4px 20px 12px" }}>Design instructions assigned to your active batches. Tap a design to view full details.</div>
-      <DesignCodeTileGrid codes={myDesignCodes} onOpen={code => { const d = getDesign(code); if (d) setViewDesign(d); }} />
-      <AnimatePresence>
-        {viewDesign && <DesignCodeCard design={viewDesign} onClose={() => setViewDesign(null)} />}
-      </AnimatePresence>
+      <SectionTitle title="Design Reference Sheets" />
+      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "-4px 20px 20px" }}>Detailed design specifications, color slip photos, and instructions for your active work.</div>
+      {myDesignCodes.length === 0 ? (
+        <div style={{ margin: "0 20px", padding: "30px 20px", textAlign: "center" as const, background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}` }}>
+          <Palette size={28} color={C.muted} style={{ margin: "0 auto 8px" }} />
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No design specifications assigned currently.</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20, padding: "0 20px" }}>
+          {myDesignCodes.map(code => {
+            const d = getDesign(code);
+            return d ? <WeaverDesignCard key={code} d={d} /> : null;
+          })}
+        </div>
+      )}
     </>
   );
 }
@@ -392,6 +510,7 @@ type MyBatchEntry = { batchId: string; status: string; dueDate: string; rows: Sa
 
 // Active batch card with inline design/type expand (no modal)
 function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
+  const { getDesign } = useDesignLibrary();
   const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const [expandedType, setExpandedType] = useState<string | null>(null);
 
@@ -445,13 +564,20 @@ function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           <div style={{ marginBottom: 6 }}>
             <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW DESIGN DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-              {designCodes.map(dc => (
-                <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 5, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 12px", cursor: "pointer" }}>
-                  <Palette size={11} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                  <span style={{ fontFamily: F.m, fontSize: 12, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
-                </button>
-              ))}
+              {designCodes.map(dc => {
+                const d = getDesign(dc);
+                return (
+                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "4px 10px", cursor: "pointer" }}>
+                    {d?.colorSlipPhoto ? (
+                      <img src={d.colorSlipPhoto} alt={dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
+                    ) : (
+                      <Palette size={11} color={expandedDesign === dc ? "#FFF" : C.burg} />
+                    )}
+                    <span style={{ fontFamily: F.m, fontSize: 12, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
+                  </button>
+                );
+              })}
             </div>
             <AnimatePresence>
               {expandedDesign && designCodes.includes(expandedDesign) && (
@@ -621,6 +747,23 @@ function MyBatchesPage() {
 
   const totalMyActive = myActiveBatches.length;
 
+  const myDefectiveSarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === CURRENT_WEAVER_ID && r.qcPassed === false)
+        .map(r => ({
+          sareeId: r.sareeId,
+          batchId: b.batchId,
+          designCode: r.designCode,
+          sareeTypeCode: r.sareeTypeCode,
+          sareeTypeName: r.sareeTypeName,
+          date: "10 Jun 2026",
+          defect: "Thread Break",
+          deduction: 450,
+        }))
+    );
+  }, [batches]);
+
   // Quick filter — narrows which of the two sections below are shown, and which batches within them
   const showActiveSection = quickFilter === "all" || quickFilter === "active" || quickFilter === "qc-pending" || quickFilter === "draft";
   const showCompletedSection = quickFilter === "all" || quickFilter === "completed";
@@ -636,8 +779,26 @@ function MyBatchesPage() {
       <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
       <BatchQuickFilterPills value={quickFilter} onChange={setQuickFilter} />
 
+      {/* Defective Saree Warning Alerts */}
+      {myDefectiveSarees.map(ds => (
+        <div key={ds.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(192,57,43,0.06)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "16px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <AlertTriangle size={18} color={C.crim} />
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14.5, color: C.crim }}>QC Failed — Defective Saree Alert</span>
+          </div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
+            Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong>₹{ds.deduction}</strong> has been registered.
+          </div>
+          <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 11.5, color: C.muted }}>
+            <span>QC Date: {ds.date}</span>
+            <span>•</span>
+            <span style={{ fontStyle: "italic" }}>Defect photo sent via WhatsApp</span>
+          </div>
+        </div>
+      ))}
+
       {/* Weaver Identity */}
-      <div style={{ background: C.dark, padding: "4px 20px 18px", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: myDefectiveSarees.length > 0 ? 16 : 0 }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 19, color: "#FFF" }}>RK</span>
         </div>
@@ -751,12 +912,44 @@ function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } =
   const [confirmedRecord, setConfirmedRecord] = useState<MaterialIssueRecord | null>(null);
   const [requestSent, setRequestSent] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyTab, setHistoryTab] = useState<"materials" | "batches" | "sarees">("materials");
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
   const weaverRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
   const pendingRecords = weaverRecords.filter(r => r.status === "pending-signature");
   const signedRecords = weaverRecords.filter(r => r.status === "signed");
   const pending = pendingRecords[0] ?? null;
+
+  const mySarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === CURRENT_WEAVER_ID)
+        .map(r => ({
+          batchId: b.batchId,
+          sareeId: r.sareeId || "Pending Setup",
+          designCode: r.designCode || "—",
+          sareeTypeCode: r.sareeTypeCode || "—",
+          sareeTypeName: r.sareeTypeName || "—",
+          loom: r.weaverLoom || "—",
+          qcPassed: r.qcPassed
+        }))
+    );
+  }, [batches]);
+
+  const myWeavingBatches = useMemo(() => {
+    return batches
+      .map(b => {
+        const rows = b.rows.filter(r => r.weaverId === CURRENT_WEAVER_ID);
+        return {
+          batchId: b.batchId,
+          status: b.status,
+          dueDate: b.dueDate,
+          rowsCount: rows.length,
+          passedCount: rows.filter(r => r.qcPassed === true).length
+        };
+      })
+      .filter(b => b.rowsCount > 0);
+  }, [batches]);
 
   const myDesignCodes = Array.from(new Set(
     batches
@@ -957,57 +1150,183 @@ function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } =
         </div>
       )}
 
-      {/* Past Material Receipts */}
-      <div style={{ marginTop: 20 }}>
+      {/* Complete Reference History */}
+      <div style={{ marginTop: 28 }}>
         <button onClick={() => setHistoryOpen(v => !v)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <SectionTitle title="Past Material Receipts" />
+          <SectionTitle title="Complete Reference History" />
           <ChevronRight size={18} color={C.muted} style={{ transform: historyOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
         </button>
         <AnimatePresence>
           {historyOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-              {signedRecords.length === 0 ? (
-                <div style={{ margin: "0 20px 16px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No confirmed material receipts yet.</div>
-                </div>
-              ) : isMobile ? (
-                signedRecords.map(r => (
-                  <div key={r.id} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{r.id}</span>
-                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                    </div>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8, lineHeight: 1.5 }}>
-                      {r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}
-                    </div>
-                    {r.signatureTimestamp && (
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
-                        <Check size={12} /> Confirmed by you on {new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                      </div>
-                    )}
+              
+              {/* History Tabs Switcher */}
+              <div style={{ display: "flex", gap: 10, padding: "10px 20px 16px 20px", borderBottom: `1px solid ${C.bdr}` }}>
+                {[
+                  { id: "materials", label: "Material Receipts" },
+                  { id: "batches", label: "Weaving Batches" },
+                  { id: "sarees", label: "Saree Work Log" }
+                ].map(t => (
+                  <button key={t.id} onClick={() => setHistoryTab(t.id as any)} style={{
+                    padding: "8px 16px", borderRadius: 999, border: `1px solid ${historyTab === t.id ? C.burg : C.bdr}`,
+                    background: historyTab === t.id ? C.burg : "transparent",
+                    color: historyTab === t.id ? "#FFF" : C.muted,
+                    fontFamily: F.u, fontWeight: 600, fontSize: 12.5, cursor: "pointer"
+                  }}>{t.label}</button>
+                ))}
+              </div>
+
+              {/* TAB 1: Material Receipts */}
+              {historyTab === "materials" && (
+                signedRecords.length === 0 ? (
+                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No confirmed material receipts yet.</div>
                   </div>
-                ))
-              ) : (
-                <div style={{ margin: "0 20px 16px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                  <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                      {["Date", "Materials", "MIR ID", "Status"].map(h => (
-                        <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
+                ) : isMobile ? (
+                  <div style={{ marginTop: 12 }}>
+                    {signedRecords.map(r => (
+                      <div key={r.id} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{r.id}</span>
+                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8, lineHeight: 1.5 }}>
+                          {r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}
+                        </div>
+                        {r.signatureTimestamp && (
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
+                            <Check size={12} /> Confirmed by you on {new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
+                    <div style={{ minWidth: isTablet ? 560 : undefined }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
+                        {["Date", "Materials", "MIR ID", "Status"].map(h => (
+                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
+                        ))}
+                      </div>
+                      {signedRecords.map(r => (
+                        <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</div>
+                          <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
+                            <Check size={12} /> Confirmed
+                          </div>
+                        </div>
                       ))}
                     </div>
-                    {signedRecords.map(r => (
-                      <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</div>
-                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
-                          <Check size={12} /> Confirmed
+                  </div>
+                )
+              )}
+
+              {/* TAB 2: Weaving Batches */}
+              {historyTab === "batches" && (
+                myWeavingBatches.length === 0 ? (
+                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No weaving batches assigned yet.</div>
+                  </div>
+                ) : isMobile ? (
+                  <div style={{ marginTop: 12 }}>
+                    {myWeavingBatches.map(b => (
+                      <div key={b.batchId} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{b.batchId}</span>
+                          <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
+                            {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
+                          </span>
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8 }}>
+                          Progress: <strong>{b.passedCount}</strong> of <strong>{b.rowsCount}</strong> sarees passed QC
+                        </div>
+                        {b.dueDate && (
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+                            Due Date: {b.dueDate}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
+                    <div style={{ minWidth: isTablet ? 560 : undefined }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
+                        {["Batch ID", "Status", "Progress", "Due Date"].map(h => (
+                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
+                        ))}
+                      </div>
+                      {myWeavingBatches.map(b => (
+                        <div key={b.batchId} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
+                            {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
+                          </div>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+                            {b.passedCount} / {b.rowsCount} wove & passed
+                          </div>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{b.dueDate || "—"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+
+              {/* TAB 3: Saree Work Log */}
+              {historyTab === "sarees" && (
+                mySarees.length === 0 ? (
+                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No sarees logged yet.</div>
+                  </div>
+                ) : isMobile ? (
+                  <div style={{ marginTop: 12 }}>
+                    {mySarees.map((s, i) => (
+                      <div key={i} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</span>
+                          <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{s.batchId}</span>
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8 }}>
+                          Type: {s.sareeTypeCode} · Loom {s.loom}
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>
+                            {s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective (QC Failed)" : "⏳ In Progress"}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
+                    <div style={{ minWidth: isTablet ? 640 : undefined }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
+                        {["Saree ID", "Batch ID", "Saree Type", "Loom", "QC Status"].map(h => (
+                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
+                        ))}
+                      </div>
+                      {mySarees.map((s, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</div>
+                          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
+                            <strong>{s.sareeTypeCode}</strong> · {s.sareeTypeName}
+                          </div>
+                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Loom {s.loom}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>
+                            {s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective" : "⏳ In Progress"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
               )}
+
             </motion.div>
           )}
         </AnimatePresence>
@@ -1258,7 +1577,43 @@ const PAST_MONTHS: { month: string; sarees: string; utrFallback: string; amtFall
 function PaymentLedgerPage() {
   const { isMobile } = useResponsive();
   const { getPaymentsForWeaver } = useWeaverPayments();
+  const { batches } = useBatches();
+  
   const myPayments = getPaymentsForWeaver(CURRENT_WEAVER_ID);
+
+  const myWeaverRows = useMemo(() => {
+    return batches.flatMap(b => b.rows.map(r => ({ ...r, batchId: b.batchId })).filter(r => r.weaverId === CURRENT_WEAVER_ID));
+  }, [batches]);
+
+  const passedSarees = useMemo(() => {
+    return myWeaverRows.filter(r => r.qcPassed === true);
+  }, [myWeaverRows]);
+
+  const failedSarees = useMemo(() => {
+    return myWeaverRows.filter(r => r.qcPassed === false).map(r => ({
+      sareeId: r.sareeId,
+      batchId: r.batchId,
+      sareeTypeName: r.sareeTypeName,
+      date: "10 Jun 2026",
+      defect: "Thread Break",
+      deduction: 450
+    }));
+  }, [myWeaverRows]);
+
+  const grossChargesVal = useMemo(() => {
+    return passedSarees.reduce((sum, r) => {
+      const chargeStr = SAREE_TYPE_RATES[r.sareeTypeCode || '']?.charge || "450";
+      return sum + parseInt(chargeStr, 10);
+    }, 0);
+  }, [passedSarees]);
+
+  const deductionsVal = useMemo(() => {
+    return failedSarees.length * 450;
+  }, [failedSarees]);
+
+  const netAmountVal = grossChargesVal - deductionsVal;
+
+  const totalSareesCount = passedSarees.length + failedSarees.length;
 
   // Determine if the current month has a matched payment
   // A payment is "current month" if its paymentDate or uploadedAt references May/Jun 2026
@@ -1279,9 +1634,9 @@ function PaymentLedgerPage() {
         <Card style={{ padding: 22 }}>
           <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.muted, textAlign: "center" as const, marginBottom: 16 }}>{CURRENT_MONTH_LABEL}</div>
           {[
-            { label: "Sarees Produced:", value: "18 sarees · 17 passed QC", color: C.text, size: 18, fw: 600 },
-            { label: "Gross Making Charges:", value: fmtAmt(GROSS_CHARGES), color: C.gold, size: 26, fw: 700 },
-            { label: "Total Deductions:", value: fmtAmt(TOTAL_DEDUCTIONS), color: C.crim, size: 18, fw: 600 },
+            { label: "Sarees Produced:", value: `${totalSareesCount} sarees · ${passedSarees.length} passed QC`, color: C.text, size: 18, fw: 600 },
+            { label: "Gross Making Charges:", value: fmtAmt(grossChargesVal), color: C.gold, size: 26, fw: 700 },
+            { label: "Total Deductions:", value: fmtAmt(deductionsVal), color: C.crim, size: 18, fw: 600 },
           ].map((row, i) => (
             <div key={i} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 14, paddingBottom: i < 2 ? 14 : 0, borderBottom: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
               <span style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>{row.label}</span>
@@ -1292,7 +1647,7 @@ function PaymentLedgerPage() {
           {/* Net amount + payment status */}
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 16, marginTop: 4, textAlign: "center" as const }}>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>Net Amount to Be Paid:</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.green, marginBottom: 8 }}>{fmtAmt(NET_AMOUNT)}</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.green, marginBottom: 8 }}>{fmtAmt(netAmountVal)}</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 16 }}>This is what you will receive this month</div>
 
             {isPaid ? (
@@ -1337,7 +1692,7 @@ function PaymentLedgerPage() {
       {/* This Month's Payout — highlight card (same info as desktop payout panel) */}
       <div style={{ margin: "0 20px 16px", background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, borderRadius: 18, padding: "24px 22px", boxShadow: "0 6px 24px rgba(61,14,26,0.20)" }}>
         <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)", letterSpacing: 1.2, textTransform: "uppercase" as const, marginBottom: 10 }}>This Month's Payout</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 40, color: C.gold, lineHeight: 1, marginBottom: 8 }}>{fmtAmt(NET_AMOUNT)}</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 40, color: C.gold, lineHeight: 1, marginBottom: 8 }}>{fmtAmt(netAmountVal)}</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", marginBottom: 16 }}>Net amount after deductions</div>
         <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.m, fontSize: 12.5, color: C.gold }}>
           Payment by end of June 2026
@@ -1348,18 +1703,25 @@ function PaymentLedgerPage() {
       <SectionTitle title="Deductions Applied This Month" />
       <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "-4px 20px 12px", lineHeight: 1.5 }}>These are the amounts deducted from your gross making charges.</div>
 
-      <div style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px 18px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
-          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.crim }}>Defective Saree Deduction</span>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.crim, flexShrink: 0 }}>₹450</span>
+      {failedSarees.map((ds, idx) => (
+        <div key={idx} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.crim }}>Defective Saree Deduction</span>
+            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.crim, flexShrink: 0 }}>₹{ds.deduction}</span>
+          </div>
+          <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, marginBottom: 8 }}>{ds.sareeId} ({ds.batchId})</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" as const }}>
+            <span style={{ background: "rgba(192,57,43,0.10)", color: C.crim, borderRadius: 999, padding: "3px 12px", fontFamily: F.m, fontSize: 12 }}>{ds.defect}</span>
+            <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>QC Date: {ds.date}</span>
+          </div>
+          <div style={{ fontFamily: F.u, fontStyle: "italic", fontSize: 13, color: C.muted, lineHeight: 1.4 }}>Defect photo was sent to you via WhatsApp</div>
         </div>
-        <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, marginBottom: 8 }}>PADMA-L1-004</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" as const }}>
-          <span style={{ background: "rgba(192,57,43,0.10)", color: C.crim, borderRadius: 999, padding: "3px 12px", fontFamily: F.m, fontSize: 12 }}>Thread Break</span>
-          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>QC Date: 10 Jun 2026</span>
+      ))}
+      {failedSarees.length === 0 && (
+        <div style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.green}`, borderRadius: 14, padding: "16px 18px" }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.green, fontWeight: 600 }}>No deductions applied this month! Perfect QC record.</div>
         </div>
-        <div style={{ fontFamily: F.u, fontStyle: "italic", fontSize: 13, color: C.muted, lineHeight: 1.4 }}>Defect photo was sent to you via WhatsApp</div>
-      </div>
+      )}
 
       {/* Earning Trend — same 4-month data shown on desktop */}
       <SectionTitle title="Earning Trend" />
@@ -1876,7 +2238,7 @@ function NotificationsPage() {
 // ─── MOBILE SHELL ──────────────────────────────────────────────────────────
 type Tab5 = "batches" | "confirm" | "designs" | "warp" | "payments";
 
-function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void }) {
+function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
   const { selectRole } = useAuth();
   const navigate = useNavigate();
   const [showNotifs, setShowNotifs] = useState(false);
@@ -1924,7 +2286,7 @@ function MobileWeaverPortal({ onBack, active, setActive }: { onBack?: () => void
                   <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                  <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
                     <UserRound size={14} color={C.muted} /> View Profile
                   </button>
                   {localStorage.getItem("bk_original_admin_role") ? (
@@ -2327,6 +2689,7 @@ function DesktopHero({ breadcrumb, titleMain, titleSub, description, pills, aler
 
 // ─── Desktop active batch card (with inline design/type expand) ─────────────
 function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
+  const { getDesign } = useDesignLibrary();
   const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
   const isTablet = bp === "tablet";
@@ -2373,13 +2736,20 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
           <div>
             <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
-              {designCodes.map(dc => (
-                <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 5, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
-                  <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                  <span style={{ fontFamily: F.m, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
-                </button>
-              ))}
+              {designCodes.map(dc => {
+                const d = getDesign(dc);
+                return (
+                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "4px 12px", cursor: "pointer" }}>
+                    {d?.colorSlipPhoto ? (
+                      <img src={d.colorSlipPhoto} alt={dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
+                    ) : (
+                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
+                    )}
+                    <span style={{ fontFamily: F.m, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
+                  </button>
+                );
+              })}
             </div>
             <AnimatePresence>
               {expandedDesign && designCodes.includes(expandedDesign) && (
@@ -2441,7 +2811,7 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 
 // ─── DESKTOP SHELL ─────────────────────────────────────────────────────────
 
-function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { onBack?: () => void; bp?: "tablet" | "desktop"; active: Tab5; setActive: (t: Tab5) => void }) {
+function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProfile }: { onBack?: () => void; bp?: "tablet" | "desktop"; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
   const { selectRole } = useAuth();
   const navigate = useNavigate();
   const isTablet = bp === "tablet";
@@ -2465,6 +2835,23 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { on
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(b => b.myRows.every(r => r.qcPassed === true));
   // Active: anything not yet fully QC-passed, with a "X of Y passed" progress indicator
   const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !b.myRows.every(r => r.qcPassed === true));
+
+  const myDefectiveSarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === CURRENT_WEAVER_ID && r.qcPassed === false)
+        .map(r => ({
+          sareeId: r.sareeId,
+          batchId: b.batchId,
+          designCode: r.designCode,
+          sareeTypeCode: r.sareeTypeCode,
+          sareeTypeName: r.sareeTypeName,
+          date: "10 Jun 2026",
+          defect: "Thread Break",
+          deduction: 450,
+        }))
+    );
+  }, [batches]);
 
   // Designs assigned to this weaver's active batch saree rows (shared by "Design Library" + "Designs" tab)
   const myDesignCodes = Array.from(new Set(
@@ -2577,7 +2964,7 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { on
                     </div>
                   </div>
                   <div style={{ padding: "6px 0" }}>
-                    <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                    <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                       <UserRound size={15} color={C.muted} /> View Profile
@@ -2660,6 +3047,24 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive }: { on
                     bgUrl={BG_IMAGE}
                   />
                   <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
+                    {/* Defective Saree Warning Alerts */}
+                    {myDefectiveSarees.map(ds => (
+                      <div key={ds.sareeId} style={{ background: "rgba(192,57,43,0.05)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "20px 24px", marginBottom: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+                        <AlertTriangle size={24} color={C.crim} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div>
+                          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16.5, color: C.crim, marginBottom: 6 }}>QC Failed — Defective Saree Alert</div>
+                          <div style={{ fontFamily: F.u, fontSize: 14.5, color: C.text, lineHeight: 1.6 }}>
+                            Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A payment deduction of <strong>₹{ds.deduction}</strong> has been registered.
+                          </div>
+                          <div style={{ display: "flex", gap: 16, marginTop: 12, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                            <span>QC Date: {ds.date}</span>
+                            <span>•</span>
+                            <span style={{ fontStyle: "italic" }}>Defect photo has been shared with you via WhatsApp</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
                     {/* Active Batches */}
                     <div style={{ marginBottom: 40 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -3299,6 +3704,7 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
 
   const { pathname } = useLocation();
   const routerNavigate = useNavigate();
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   let active: Tab5 = "batches";
   if (pathname.includes("/confirm")) active = "confirm";
@@ -3322,8 +3728,74 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
     <>
       <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       {isMobile
-        ? <MobileWeaverPortal onBack={onBack} active={active} setActive={setActive} />
-        : <DesktopWeaverPortal onBack={onBack} bp={bp} active={active} setActive={setActive} />}
+        ? <MobileWeaverPortal onBack={onBack} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />
+        : <DesktopWeaverPortal onBack={onBack} bp={bp} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />}
+      <AnimatePresence>
+        {showProfileModal && (
+          <UserProfileModal onClose={() => setShowProfileModal(false)} role="weaver" />
+        )}
+      </AnimatePresence>
     </>
+  );
+}
+
+export function UserProfileModal({ onClose, role }: { onClose: () => void; role: "admin" | "superadmin" | "shop" | "weaver" }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", padding: 20 }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: `1px solid rgba(139,26,46,0.12)`, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
+        {/* Banner */}
+        <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "rgba(255,255,255,0.12)", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <X size={16} color="#FFF" />
+          </button>
+          
+          <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
+              {role === "admin" ? "AD" : role === "superadmin" ? "SA" : role === "shop" ? "PS" : "RK"}
+            </span>
+          </div>
+
+          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
+            {role === "admin" ? "Ravi Shankar" : role === "superadmin" ? "Venkata Leeladhar Abburi" : role === "shop" ? "Priya Sharma" : "Ravi Kumar"}
+          </div>
+          
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
+            {role === "admin" ? "ADM-001" : role === "superadmin" ? "SADM-001" : role === "shop" ? "SS-001" : "WV-001 / WVR-014"}
+          </div>
+
+          <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#C4923A" }}>
+              {role === "admin" ? "Store Administrator" : role === "superadmin" ? "Super Administrator" : role === "shop" ? "Showroom Sales Staff" : "Master Handloom Weaver"}
+            </span>
+          </div>
+        </div>
+
+        {/* Details List */}
+        <div style={{ padding: "24px 24px" }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#8B7060", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {[
+              { label: "Email Address", value: role === "admin" ? "admin@beerekesava.com" : role === "superadmin" ? "leeladhar@beerekesava.com" : role === "shop" ? "priya.sharma@beerekesava.com" : "ravikumar.wvr@gmail.com" },
+              { label: "Phone Number", value: role === "admin" ? "+91 94405 88991" : role === "superadmin" ? "+91 98480 22338" : role === "shop" ? "+91 99088 12345" : "+91 99088 77665" },
+              { label: "Factory/Office", value: role === "shop" ? "Dharmavaram Main Showroom, AP" : "Dharmavaram Factory Outlet, AP" },
+              { label: "Joined Date", value: role === "admin" ? "January 2019" : role === "superadmin" ? "June 2012" : role === "shop" ? "October 2022" : "March 2018" },
+              ...(role === "weaver" ? [{ label: "Loom Assignment", value: "Loom 2 & Loom 5 (Active)" }] : [])
+            ].map(item => (
+              <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#8B7060" }}>{item.label}</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 24, textAlign: "center" as const }}>
+            <button onClick={onClose} style={{ background: "#6B1A2A", color: "#FFF", border: "none", borderRadius: 999, padding: "10px 24px", fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 14px rgba(107,26,42,0.2)" }}>
+              Close Profile
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

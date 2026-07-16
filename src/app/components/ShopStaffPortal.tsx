@@ -383,9 +383,9 @@ function NewSaleFlow() {
 
   const filteredCustomers = custSearch.length >= 2
     ? prevCustomers.filter(c =>
-        c.phone.replace(/\s/g, "").includes(custSearch.replace(/\s/g, "")) ||
-        c.name.toLowerCase().includes(custSearch.toLowerCase())
-      )
+      c.phone.replace(/\s/g, "").includes(custSearch.replace(/\s/g, "")) ||
+      c.name.toLowerCase().includes(custSearch.toLowerCase())
+    )
     : prevCustomers;
 
   const handleScan = () => setSareeFound(true);
@@ -980,12 +980,12 @@ function ShopInventory() {
   const [weaverFilter, setWeaverFilter] = useState<string[]>([]);
 
   const inventory = [
-    { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null, loom: "L1", weaver: "Padma Veni" },
-    { id: "RAVI-L2-008",  src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "Received 09 Jun", status: "available", supplier: null, loom: "L2", weaver: "Ravi Kumar" },
-    { id: "BKB-L3-002",   src: "factory", design: "BKB-022", name: "Cream Plain Silk",  color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500",  received: "Received 08 Jun", status: "available", supplier: null, loom: "L3", weaver: "Lakshmi Devi" },
-    { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks",      color: "#C9A86C", sareeColor: "Gold",  type: "Checks",      price: "₹6,200",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
-    { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design",    color: "#D4A5C5", sareeColor: "Pink",  type: "Floral",      price: "₹7,800",  received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
-    { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500",  received: "Received 07 Jun", status: "reserved", supplier: null, loom: "L1", weaver: "Padma Veni" },
+    { id: "PADMA-L1-004", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null, loom: "L1", weaver: "Padma Veni" },
+    { id: "RAVI-L2-008", src: "factory", design: "HZ-003", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "Received 09 Jun", status: "available", supplier: null, loom: "L2", weaver: "Ravi Kumar" },
+    { id: "BKB-L3-002", src: "factory", design: "PS-002", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "Received 08 Jun", status: "available", supplier: null, loom: "L3", weaver: "Lakshmi Devi" },
+    { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks", color: "#C9A86C", sareeColor: "Gold", type: "Checks", price: "₹6,200", received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
+    { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design", color: "#D4A5C5", sareeColor: "Pink", type: "Floral", price: "₹7,800", received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
+    { id: "PADMA-L1-003", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 07 Jun", status: "reserved", supplier: null, loom: "L1", weaver: "Padma Veni" },
   ];
 
   const looms = Array.from(new Set(inventory.map(s => s.loom).filter(Boolean))) as string[];
@@ -1350,7 +1350,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             {/* Barcode visual */}
             <div style={{ background: "#111", borderRadius: 8, padding: "14px 10px", marginBottom: 16, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 6 }}>
               <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 40 }}>
-                {[3,1,4,1,2,3,1,2,4,1,3,2,1,4,2,1,3,1,2,3].map((w, i) => (
+                {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3].map((w, i) => (
                   <div key={i} style={{ width: w * 2, background: "#FFF", height: i % 3 === 0 ? 40 : i % 2 === 0 ? 34 : 38, borderRadius: 1 }} />
                 ))}
               </div>
@@ -1669,10 +1669,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <div style={{ margin: "0 20px 16px", display: "flex", gap: 10 }}>
-            <button onClick={() => {}} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+            <button onClick={() => { }} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
               <Camera size={16} color={C.muted} /> Add Photo
             </button>
-            <button onClick={() => {}} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
+            <button onClick={() => { }} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
               <Package size={16} color={C.muted} /> From Gallery
             </button>
           </div>
@@ -1721,7 +1721,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             <div style={{ margin: "0 20px 16px" }}>
               <div style={{ background: "#111", borderRadius: 14, padding: "20px 16px", textAlign: "center" as const, marginBottom: 12 }}>
                 <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 48, justifyContent: "center", marginBottom: 8 }}>
-                  {[3,1,4,1,2,3,1,2,4,1,3,2,1,4,2,1,3,1,2,3,2,1,4].map((w, i) => (
+                  {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3, 2, 1, 4].map((w, i) => (
                     <div key={i} style={{ width: w * 2, background: "#FFF", height: i % 3 === 0 ? 48 : i % 2 === 0 ? 38 : 44, borderRadius: 1 }} />
                   ))}
                 </div>
@@ -1749,6 +1749,65 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   );
 }
 
+const CUSTOMER_PURCHASES: Record<string, { date: string; id: string; design: string; price: string; amt: string; pay: string }[]> = {
+  "Smt. Annapurna Devi": [
+    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
+    { date: "18 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "UPI" },
+    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
+    { date: "05 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "Cash" },
+    { date: "28 Apr 2026", id: "ANAND-L3-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
+    { date: "15 Apr 2026", id: "MEENA-L4-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
+    { date: "02 Apr 2026", id: "SURESH-L2-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Cash" },
+    { date: "20 Mar 2026", id: "KAMALA-L1-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+    { date: "10 Mar 2026", id: "VENKAT-L3-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "UPI" },
+    { date: "25 Feb 2026", id: "LAKSHMI-L2-001", design: "BS-004 · Bridal Special Saree", price: "₹15,000", amt: "₹15,000", pay: "Card" },
+    { date: "14 Feb 2026", id: "RAVI-L2-004", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
+    { date: "02 Feb 2026", id: "RAVI-L2-005", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
+    { date: "19 Jan 2026", id: "RAVI-L2-006", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
+    { date: "05 Jan 2026", id: "RAVI-L2-007", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
+    { date: "15 Dec 2025", id: "PADMA-L1-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
+    { date: "10 Nov 2025", id: "PADMA-L1-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
+  ],
+  "Smt. Lakshmi Bai": [
+    { date: "09 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+    { date: "01 Jun 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "UPI" },
+    { date: "15 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "Cash" },
+    { date: "10 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+    { date: "29 Apr 2026", id: "ANAND-L3-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
+    { date: "14 Apr 2026", id: "MEENA-L4-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
+    { date: "01 Apr 2026", id: "SURESH-L2-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Cash" },
+    { date: "18 Mar 2026", id: "KAMALA-L1-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+    { date: "05 Mar 2026", id: "VENKAT-L3-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "UPI" },
+    { date: "20 Feb 2026", id: "LAKSHMI-L2-002", design: "BS-004 · Bridal Special Saree", price: "₹15,000", amt: "₹15,000", pay: "Card" },
+    { date: "11 Feb 2026", id: "RAVI-L2-004", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
+    { date: "01 Feb 2026", id: "RAVI-L2-005", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
+  ],
+  "Sri Ramesh K.": [
+    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
+    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
+    { date: "02 Apr 2026", id: "SURESH-L2-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+  ],
+  "Smt. Padmavathi": [
+    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+  ],
+  "Smt. Saraswathi": [
+    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
+    { date: "18 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "UPI" },
+    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
+    { date: "05 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "Cash" },
+    { date: "28 Apr 2026", id: "ANAND-L3-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
+  ],
+  "Smt. Rajeshwari": [
+    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
+    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
+  ],
+};
+
 // ─── PAGE 05 — CUSTOMER PROFILES ─────────────────────────────────────────────
 function CustomerProfiles() {
   const [search, setSearch] = useState("");
@@ -1756,18 +1815,12 @@ function CustomerProfiles() {
   const [selected, setSelected] = useState<number | null>(null);
 
   const customers = [
-    { name: "Smt. Annapurna Devi",  phone: "×××× 7823", purchases: 18, total: "₹1,84,000", last: "3 days ago",  regular: true,  initials: "AD" },
-    { name: "Smt. Lakshmi Bai",     phone: "×××× 3412", purchases: 12, total: "₹1,62,000", last: "1 week ago", regular: true,  initials: "LB" },
-    { name: "Sri Ramesh K.",         phone: "×××× 4421", purchases: 4,  total: "₹48,000",   last: "2 weeks ago",regular: false, initials: "RK" },
-    { name: "Smt. Padmavathi",       phone: "×××× 9981", purchases: 1,  total: "₹12,500",   last: "Today",      regular: false, initials: "PD" },
-    { name: "Smt. Saraswathi",       phone: "×××× 6634", purchases: 7,  total: "₹84,000",   last: "5 days ago", regular: true,  initials: "SD" },
-    { name: "Smt. Rajeshwari",       phone: "×××× 2218", purchases: 2,  total: "₹28,000",   last: "6 months ago",regular: false, initials: "RD" },
-  ];
-
-  const purchaseHistory = [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "BKB-045 · Cream Zari Border", price: "₹8,500" },
-    { date: "15 May 2026", id: "RAVI-L2-006",  design: "BKB-031 · Maroon Heavy",      price: "₹12,000" },
-    { date: "20 Apr 2026", id: "BKB-L3-001",   design: "BKB-022 · Cream Plain",       price: "₹5,500" },
+    { name: "Smt. Annapurna Devi", phone: "×××× 7823", purchases: 18, total: "₹1,84,000", last: "3 days ago", regular: true, initials: "AD" },
+    { name: "Smt. Lakshmi Bai", phone: "×××× 3412", purchases: 12, total: "₹1,62,000", last: "1 week ago", regular: true, initials: "LB" },
+    { name: "Sri Ramesh K.", phone: "×××× 4421", purchases: 4, total: "₹48,000", last: "2 weeks ago", regular: false, initials: "RK" },
+    { name: "Smt. Padmavathi", phone: "×××× 9981", purchases: 1, total: "₹12,500", last: "Today", regular: false, initials: "PD" },
+    { name: "Smt. Saraswathi", phone: "×××× 6634", purchases: 7, total: "₹84,000", last: "5 days ago", regular: true, initials: "SD" },
+    { name: "Smt. Rajeshwari", phone: "×××× 2218", purchases: 2, total: "₹28,000", last: "6 months ago", regular: false, initials: "RD" },
   ];
 
   const filtered = customers.filter(c =>
@@ -1775,6 +1828,8 @@ function CustomerProfiles() {
   );
 
   const activeCustomer = selected !== null ? customers[selected] : null;
+
+  const activePurchases = activeCustomer ? (CUSTOMER_PURCHASES[activeCustomer.name] || []) : [];
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -1789,14 +1844,14 @@ function CustomerProfiles() {
       <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, padding: "16px 20px 4px" }}>
         <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, letterSpacing: 0.5, color: "rgba(255,255,255,0.60)", marginBottom: 6 }}>Total Customers</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: "#FFF", lineHeight: 1 }}>1,284</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.gold, marginBottom: 6 }}>Total Customers</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold, lineHeight: 1 }}>242</div>
           </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>All time</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Active this year</div>
         </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>New This Month</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.text, lineHeight: 1.1 }}>8</div>
+        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.text, marginBottom: 6 }}>New Signups</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.text, lineHeight: 1.2 }}>+14</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>June 2026</div>
         </div>
         <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
@@ -1896,10 +1951,10 @@ function CustomerProfiles() {
                 </div>
                 {/* Recent purchases */}
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History
+                  <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({activePurchases.length})
                 </div>
-                {purchaseHistory.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < purchaseHistory.length - 1 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
+                {activePurchases.map((p, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < activePurchases.length - 1 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <ShoppingBag size={17} color={C.burg} />
                     </div>
@@ -1954,10 +2009,10 @@ function SalesReport() {
 
   const dailySales = [
     { time: "11:42 AM", id: "PADMA-L1-004", design: "BKB-045", customer: "Smt. Annapurna", pay: "UPI", amt: "₹8,500", src: "factory" },
-    { time: "10:30 AM", id: "RAVI-L2-008",  design: "BKB-031", customer: "Sri Ramesh K.",  pay: "Card", amt: "₹12,000", src: "factory" },
-    { time: "9:45 AM",  id: "BKB-L3-002",   design: "BKB-022", customer: "Smt. Lakshmi",   pay: "Cash", amt: "₹5,500",  src: "factory" },
-    { time: "9:20 AM",  id: "EXT-RAVI-001", design: "External", customer: "Smt. Padmavathi",pay: "UPI", amt: "₹6,200",  src: "external" },
-    { time: "9:05 AM",  id: "PADMA-L1-003", design: "BKB-045", customer: "Smt. Saraswathi",pay: "Cash", amt: "₹8,500",  src: "factory" },
+    { time: "10:30 AM", id: "RAVI-L2-008", design: "BKB-031", customer: "Sri Ramesh K.", pay: "Card", amt: "₹12,000", src: "factory" },
+    { time: "9:45 AM", id: "BKB-L3-002", design: "BKB-022", customer: "Smt. Lakshmi", pay: "Cash", amt: "₹5,500", src: "factory" },
+    { time: "9:20 AM", id: "EXT-RAVI-001", design: "External", customer: "Smt. Padmavathi", pay: "UPI", amt: "₹6,200", src: "external" },
+    { time: "9:05 AM", id: "PADMA-L1-003", design: "BKB-045", customer: "Smt. Saraswathi", pay: "Cash", amt: "₹8,500", src: "factory" },
   ];
 
   const totalToday = dailySales.reduce((sum, s) => sum + Number(s.amt.replace(/[₹,]/g, "")), 0);
@@ -1970,16 +2025,16 @@ function SalesReport() {
 
   const topCustomers = [
     { name: "Smt. Annapurna Devi", purchases: 8, amt: "₹68,000" },
-    { name: "Smt. Lakshmi Bai",    purchases: 5, amt: "₹42,000" },
-    { name: "Smt. Saraswathi",     purchases: 4, amt: "₹34,000" },
-    { name: "Sri Ramesh K.",        purchases: 2, amt: "₹24,500" },
-    { name: "Smt. Padmavathi",     purchases: 1, amt: "₹12,500" },
+    { name: "Smt. Lakshmi Bai", purchases: 5, amt: "₹42,000" },
+    { name: "Smt. Saraswathi", purchases: 4, amt: "₹34,000" },
+    { name: "Sri Ramesh K.", purchases: 2, amt: "₹24,500" },
+    { name: "Smt. Padmavathi", purchases: 1, amt: "₹12,500" },
   ];
 
   const returns = [
     { date: "10 Jun", id: "RAVI-L2-007", customer: "Smt. Meenakshi", reason: "Wrong Design", amt: "₹12,000" },
-    { date: "05 Jun", id: "PADMA-L1-001",customer: "Smt. Kalpana",   reason: "Defective",    amt: "₹8,500" },
-    { date: "02 Jun", id: "BKB-L3-001",  customer: "Sri Venkat",     reason: "Changed Mind", amt: "₹5,500" },
+    { date: "05 Jun", id: "PADMA-L1-001", customer: "Smt. Kalpana", reason: "Defective", amt: "₹8,500" },
+    { date: "02 Jun", id: "BKB-L3-001", customer: "Sri Venkat", reason: "Changed Mind", amt: "₹5,500" },
   ];
 
   return (
@@ -2261,6 +2316,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Desktop Inventory states
   const [deskInvSearch, setDeskInvSearch] = useState("");
@@ -2281,11 +2337,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const [exportDone, setExportDone] = useState(false);
 
   const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: "home",      label: "Home",      icon: <Home size={20} /> },
-    { id: "sale",      label: "New Sale",  icon: <ShoppingBag size={20} /> },
+    { id: "home", label: "Home", icon: <Home size={20} /> },
+    { id: "sale", label: "New Sale", icon: <ShoppingBag size={20} /> },
     { id: "inventory", label: "Inventory", icon: <Package size={20} /> },
     { id: "customers", label: "Customers", icon: <Users size={20} /> },
-    { id: "reports",   label: "Reports",   icon: <BarChart2 size={20} /> },
+    { id: "reports", label: "Reports", icon: <BarChart2 size={20} /> },
   ];
 
   const PAGE_TITLES: Record<TabId, string> = {
@@ -2296,11 +2352,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const renderPage = () => {
     if (showReturn) return <ProcessReturn onBack={() => setShowReturn(false)} />;
     switch (active) {
-      case "home":      return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else setActive(t as TabId); }} />;
-      case "sale":      return <NewSaleFlow />;
+      case "home": return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else setActive(t as TabId); }} />;
+      case "sale": return <NewSaleFlow />;
       case "inventory": return <ShopInventory />;
       case "customers": return <CustomerProfiles />;
-      case "reports":   return <SalesReport />;
+      case "reports": return <SalesReport />;
     }
   };
 
@@ -2329,12 +2385,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     ];
 
     const inventory = [
-      { id: "PADMA-L1-004", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "10 Jun", status: "available", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
-      { id: "RAVI-L2-008", src: "factory", design: "BKB-031", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "09 Jun", status: "available", supplier: null as string | null, loom: "L2", weaver: "Ravi Kumar" },
-      { id: "BKB-L3-002", src: "factory", design: "BKB-022", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "08 Jun", status: "available", supplier: null as string | null, loom: "L3", weaver: "Lakshmi Devi" },
+      { id: "PADMA-L1-004", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "10 Jun", status: "available", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
+      { id: "RAVI-L2-008", src: "factory", design: "HZ-003", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "09 Jun", status: "available", supplier: null as string | null, loom: "L2", weaver: "Ravi Kumar" },
+      { id: "BKB-L3-002", src: "factory", design: "PS-002", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "08 Jun", status: "available", supplier: null as string | null, loom: "L3", weaver: "Lakshmi Devi" },
       { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks", color: "#C9A86C", sareeColor: "Gold", type: "Checks", price: "₹6,200", received: "05 Jun", status: "available", supplier: "Ravi Silks", loom: null as string | null, weaver: null as string | null },
       { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design", color: "#D4A5C5", sareeColor: "Pink", type: "Floral", price: "₹7,800", received: "05 Jun", status: "available", supplier: "Ravi Silks", loom: null as string | null, weaver: null as string | null },
-      { id: "PADMA-L1-003", src: "factory", design: "BKB-045", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "07 Jun", status: "reserved", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
+      { id: "PADMA-L1-003", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "07 Jun", status: "reserved", supplier: null as string | null, loom: "L1", weaver: "Padma Veni" },
     ];
 
     const looms = Array.from(new Set(inventory.map(s => s.loom).filter(Boolean))) as string[];
@@ -2402,11 +2458,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                 <Flower2 size={24} color={C.burg} />
               </div>
               {!isTablet && (
-              <div>
-                <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1 }}>Beere Kesava</div>
-                <div style={{ fontFamily: F.d, fontSize: 13, fontWeight: 400, color: "#3B2314", marginTop: 1 }}>& Brothers Silks</div>
-                <div style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>SHOP STAFF PORTAL</div>
-              </div>
+                <div>
+                  <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1 }}>Beere Kesava</div>
+                  <div style={{ fontFamily: F.d, fontSize: 13, fontWeight: 400, color: "#3B2314", marginTop: 1 }}>& Brothers Silks</div>
+                  <div style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>SHOP STAFF PORTAL</div>
+                </div>
               )}
             </div>
             <nav className="shop-topnav-groups" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center", gap: 2, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
@@ -2419,8 +2475,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   borderBottom: active === tab.id && !showReturn ? `3px solid ${TEAL}` : "2px solid transparent",
                   transition: "all 0.15s", whiteSpace: "nowrap" as const,
                 }}
-                onMouseEnter={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = TEAL; }}
-                onMouseLeave={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = C.muted; }}>
+                  onMouseEnter={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = TEAL; }}
+                  onMouseLeave={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = C.muted; }}>
                   {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, color: active === tab.id && !showReturn ? TEAL : C.muted })}
                   {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
                 </button>
@@ -2430,8 +2486,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                 fontFamily: F.u, fontSize: 14, fontWeight: showReturn ? 600 : 400, color: showReturn ? C.crim : C.muted,
                 borderBottom: showReturn ? `2px solid ${C.crim}` : "2px solid transparent", transition: "all 0.15s", whiteSpace: "nowrap" as const,
               }}
-              onMouseEnter={e => { if (!showReturn) e.currentTarget.style.color = C.crim; }}
-              onMouseLeave={e => { if (!showReturn) e.currentTarget.style.color = C.muted; }}>
+                onMouseEnter={e => { if (!showReturn) e.currentTarget.style.color = C.crim; }}
+                onMouseLeave={e => { if (!showReturn) e.currentTarget.style.color = C.muted; }}>
                 <RotateCcw size={16} color={showReturn ? C.crim : C.muted} /> Process Return
               </button>
             </nav>
@@ -2470,7 +2526,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                       </div>
                     </div>
                     <div style={{ padding: "6px 0" }}>
-                      <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
+                      <button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
                         onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                         <UserRound size={15} color={C.muted} /> View Profile
@@ -2555,26 +2611,26 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                       <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
                       <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 32 }}>
                         <div style={{ minWidth: isTablet ? 640 : undefined }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                          {["Saree ID", "Customer", "Design", "Payment", "Amount"].map(h => (
-                            <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
-                          ))}
-                        </div>
-                        {recentSales.map((s, i) => (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                              <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                              <div>
-                                <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                                {s.ext && <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
-                              </div>
-                            </div>
-                            <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
-                            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design.split("·")[0]?.trim()}</div>
-                            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                            {["Saree ID", "Customer", "Design", "Payment", "Amount"].map(h => (
+                              <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
+                            ))}
                           </div>
-                        ))}
+                          {recentSales.map((s, i) => (
+                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                                <div>
+                                  <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
+                                  {s.ext && <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                                </div>
+                              </div>
+                              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
+                              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design.split("·")[0]?.trim()}</div>
+                              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
+                              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -3245,17 +3301,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                       </div>
                     ))}
                   </div>
-                  {/* Recent purchases */}
                   <div style={{ marginBottom: 24 }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Recent Purchases
+                      <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({(CUSTOMER_PURCHASES[selectedCustomer.name] || []).length})
                     </div>
-                    {[
-                      { date: "Today", id: "PADMA-L1-004", design: "BKB-045 · Cream Zari Border", amt: "₹8,500", pay: "UPI" },
-                      { date: "3 days ago", id: "RAVI-L2-008", design: "BKB-031 · Red Silk Kanjivaram", amt: "₹12,000", pay: "Card" },
-                      { date: "2 weeks ago", id: "BKB-L3-002", design: "BKB-022 · Green Peacock", amt: "₹5,500", pay: "Cash" },
-                    ].map((p, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < 2 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
+                    {(CUSTOMER_PURCHASES[selectedCustomer.name] || []).map((p, i, arr) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
                         <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <ShoppingBag size={18} color={C.burg} />
                         </div>
@@ -3370,7 +3421,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   return (
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100vh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
-        <style>{SECTION_NAV_GLOBAL_STYLE}</style>
+      <style>{SECTION_NAV_GLOBAL_STYLE}</style>
       {/* Header */}
       {!showReturn && (
         <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky" as const, top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(107,26,42,0.30)" }}>
@@ -3396,7 +3447,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                     <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
                   </div>
                   <div style={{ padding: "6px 0" }}>
-                    <button onClick={() => setShowProfile(false)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
+                    <button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>
                       <UserRound size={14} color={C.muted} /> View Profile
                     </button>
                     {localStorage.getItem("bk_original_admin_role") ? (
@@ -3495,6 +3546,72 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
           })}
         </div>
       )}
+      <AnimatePresence>
+        {showProfileModal && (
+          <UserProfileModal onClose={() => setShowProfileModal(false)} role="shop" />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function UserProfileModal({ onClose, role }: { onClose: () => void; role: "admin" | "superadmin" | "shop" | "weaver" }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", padding: 20 }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: `1px solid rgba(139,26,46,0.12)`, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
+        {/* Banner */}
+        <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "rgba(255,255,255,0.12)", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <X size={16} color="#FFF" />
+          </button>
+
+          <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
+              {role === "admin" ? "AD" : role === "superadmin" ? "SA" : role === "shop" ? "PS" : "RK"}
+            </span>
+          </div>
+
+          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
+            {role === "admin" ? "Ravi Shankar" : role === "superadmin" ? "Venkata Leeladhar Abburi" : role === "shop" ? "Priya Sharma" : "Ravi Kumar"}
+          </div>
+
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
+            {role === "admin" ? "ADM-001" : role === "superadmin" ? "SADM-001" : role === "shop" ? "SS-001" : "WV-001 / WVR-014"}
+          </div>
+
+          <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#C4923A" }}>
+              {role === "admin" ? "Store Administrator" : role === "superadmin" ? "Super Administrator" : role === "shop" ? "Showroom Sales Staff" : "Master Handloom Weaver"}
+            </span>
+          </div>
+        </div>
+
+        {/* Details List */}
+        <div style={{ padding: "24px 24px" }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#8B7060", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {[
+              { label: "Email Address", value: role === "admin" ? "admin@beerekesava.com" : role === "superadmin" ? "leeladhar@beerekesava.com" : role === "shop" ? "priya.sharma@beerekesava.com" : "ravikumar.wvr@gmail.com" },
+              { label: "Phone Number", value: role === "admin" ? "+91 94405 88991" : role === "superadmin" ? "+91 98480 22338" : role === "shop" ? "+91 99088 12345" : "+91 99088 77665" },
+              { label: "Factory/Office", value: role === "shop" ? "Dharmavaram Main Showroom, AP" : "Dharmavaram Factory Outlet, AP" },
+              { label: "Joined Date", value: role === "admin" ? "January 2019" : role === "superadmin" ? "June 2012" : role === "shop" ? "October 2022" : "March 2018" },
+              ...(role === "weaver" ? [{ label: "Loom Assignment", value: "Loom 2 & Loom 5 (Active)" }] : [])
+            ].map(item => (
+              <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#8B7060" }}>{item.label}</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 24, textAlign: "center" as const }}>
+            <button onClick={onClose} style={{ background: "#6B1A2A", color: "#FFF", border: "none", borderRadius: 999, padding: "10px 24px", fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 14px rgba(107,26,42,0.2)" }}>
+              Close Profile
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
