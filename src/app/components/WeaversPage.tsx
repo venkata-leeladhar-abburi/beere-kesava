@@ -18,6 +18,8 @@ import { useWeaverPayments } from "./WeaverPaymentsContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { useMaterialIssue } from "./MaterialIssueContext";
+import { useBatches } from "./BatchContext";
+import { useBulkOrders } from "./BulkOrderContext";
 const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo as imgBKBLogo } from "../constants/weaverImages";
 
@@ -854,12 +856,85 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getDesign } = useDesignLibrary();
   const { getRecordsForWeaver } = useMaterialIssue();
+  const { batches } = useBatches();
+  const { bulkOrders } = useBulkOrders();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
+
+  // 1. All sarees assigned to this weaver across all batches
+  const assignedSarees: any[] = [];
+  batches.forEach(b => {
+    b.rows.forEach(r => {
+      if (r.weaverId === weaver.id) {
+        assignedSarees.push({
+          ...r,
+          batchId: b.batchId,
+          batchStatus: b.status,
+          dueDate: b.dueDate,
+        });
+      }
+    });
+  });
+
+  // Calculate design history dynamically
+  const designMap = new Map<string, { batches: Set<string>; totalSarees: number; sareeTypes: Set<string> }>();
+  assignedSarees.forEach(s => {
+    if (s.designCode) {
+      if (!designMap.has(s.designCode)) {
+        designMap.set(s.designCode, { batches: new Set(), totalSarees: 0, sareeTypes: new Set() });
+      }
+      const entry = designMap.get(s.designCode)!;
+      entry.batches.add(s.batchId);
+      entry.totalSarees += 1;
+      if (s.sareeTypeName) entry.sareeTypes.add(s.sareeTypeName);
+    }
+  });
+  const designHistory = Array.from(designMap.entries()).map(([code, data]) => ({
+    code,
+    batches: Array.from(data.batches).join(", "),
+    totalSarees: data.totalSarees,
+    sareeTypes: Array.from(data.sareeTypes).join(", ") || "—",
+  }));
+
+  // 2. Active batches the weaver is working on
+  const workingBatches = batches.filter(b => 
+    b.status === "active" && 
+    b.rows.some(r => r.weaverId === weaver.id)
+  );
+
+  // 3. Draft batches the weaver is assigned to
+  const draftBatches = batches.filter(b => 
+    b.status === "draft" && 
+    b.rows.some(r => r.weaverId === weaver.id)
+  );
+
+  // 4. Completed batches (previous batches) the weaver worked on
+  const completedBatches = batches.filter(b => 
+    b.status === "completed" && 
+    b.rows.some(r => r.weaverId === weaver.id)
+  );
+
+  // Sort completed batches by Batch ID number descending to get the latest one
+  const getBatchNum = (id: string) => {
+    const match = id.match(/BATCH-(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+  const sortedCompletedBatches = [...completedBatches].sort((a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId));
+  const previousBatch = sortedCompletedBatches[0] || null;
+
+  // All batches (active, draft, completed) assigned to this weaver
+  const allWeaverBatches = batches.filter(b => 
+    b.rows.some(r => r.weaverId === weaver.id)
+  );
+  const sortedAllWeaverBatches = [...allWeaverBatches].sort((a, b) => {
+    if (a.status === "active" && b.status !== "active") return -1;
+    if (a.status !== "active" && b.status === "active") return 1;
+    return getBatchNum(b.batchId) - getBatchNum(a.batchId);
+  });
   return (
     <>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
@@ -953,59 +1028,336 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                 </div>
               </div>
 
+              {/* Design History */}
               <div>
-                <SectionPill label="Current Batch Status" />
-                {weaver.batch ? (
-                  <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderGold}`, padding: 24, boxShadow: "0 4px 16px rgba(200,155,71,0.06)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                      <div style={{ display: "flex", gap: 12 }}>
-                        <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "6px 12px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 600 }}>{weaver.batch}</div>
-                        <div
-                          onClick={() => weaver.design && setOpenDesignCode(weaver.design)}
-                          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
-                          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-                          style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "6px 12px", fontFamily: F.mono, fontSize: 13, color: T.taupe, cursor: weaver.design ? "pointer" : "default" }}
-                        >Design: {weaver.design}</div>
-                        <div style={{ marginLeft: "auto", background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.25)", borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>On Time</div>
-                      </div>
-                    </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 15, color: T.luxuryBrown, marginBottom: 12 }}>4 of 8 sarees done <span style={{ color: T.taupe }}>(50% complete)</span></div>
-                    <div style={{ height: 10, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
-                      <div style={{ height: "100%", width: "50%", background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})`, borderRadius: 99 }} />
-                    </div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>Given 4 days ago · Started: 22 May 2026</div><div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>{["Warp: 3.0 kg", "Jari: 2 Buns (8 Reels)", "Resham: 1.2 kg"].map(m => <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}><PackageCheck size={15} color={T.royalBurgundy} />{m}</div>)}</div>
+                <SectionPill label="Design History" />
+                {designHistory.length > 0 ? (
+                  <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
+                        <tr>
+                          {["Design Code", "Saree Type", "Batches", "Total Sarees"].map(h => (
+                            <th key={h} style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "12px 16px", fontWeight: 600 }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {designHistory.map((d, i) => (
+                          <tr key={d.code} style={{ borderBottom: i < designHistory.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
+                            <td style={{ padding: "12px 16px" }}>
+                              <button onClick={() => setOpenDesignCode(d.code)}
+                                style={{ background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 8px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
+                                {d.code}
+                              </button>
+                            </td>
+                            <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{d.sareeTypes}</td>
+                            <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{d.batches}</td>
+                            <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.totalSarees}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", marginBottom: 24, color: T.taupe, fontFamily: F.ui, fontSize: 16, fontStyle: "italic" }}>No active batch right now. This weaver is currently idle.</div>
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                    No design history found for this weaver.
+                  </div>
+                )}
+              </div>
+
+              {/* Materials History */}
+              <div>
+                <SectionPill label="Materials History" />
+                {materialRecords.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 220, overflowY: "auto", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "16px 20px" }}>
+                    {materialRecords.map((r, i) => (
+                      <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: i < materialRecords.length - 1 ? 12 : 0, borderBottom: i < materialRecords.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
+                            {r.materials.map((m: any, idx: number) => (
+                              <div key={idx} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                                • {m.materialType}: <b>{m.quantity} {m.unit}</b> {m.warpSubtype || m.jariType || ""}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: r.signatureCaptured ? T.green : "#8B6018", background: r.signatureCaptured ? "rgba(30,102,64,0.08)" : "rgba(200,155,71,0.08)", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>
+                            {r.signatureCaptured ? "✓ Signed" : "Pending"}
+                          </span>
+                          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>By {r.issuedBy}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                    No materials issued to this weaver yet.
+                  </div>
+                )}
+              </div>
+
+              {/* Payments History */}
+              <div>
+                <SectionPill label="Payments History" />
+                {weaverPayments.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 220, overflowY: "auto", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "16px 20px" }}>
+                    {weaverPayments.map((p, i) => (
+                      <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: i < weaverPayments.length - 1 ? 12 : 0, borderBottom: i < weaverPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                        <div>
+                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.firmName}</div>
+                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{p.paymentDate}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                    No payments history found.
+                  </div>
+                )}
+              </div>
+
+              {/* Assigned Sarees Table */}
+              <div>
+                <SectionPill label="Assigned Sarees" />
+                {assignedSarees.length > 0 ? (
+                  <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
+                      <thead>
+                        <tr style={{ background: T.warmCream }}>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>#</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Batch ID</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom No.</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Code</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
+                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {assignedSarees.map((row, idx) => {
+                          let qcLabel = "In Production";
+                          let qcBg = "rgba(139,112,96,0.08)";
+                          let qcColorVal = T.taupe;
+
+                          if (row.qcPassed === true) {
+                            qcLabel = "QC Passed";
+                            qcBg = "rgba(30,102,64,0.08)";
+                            qcColorVal = T.green;
+                          } else if (row.qcPassed === false) {
+                            qcLabel = "QC Failed";
+                            qcBg = "rgba(192,57,43,0.08)";
+                            qcColorVal = T.crimson;
+                          }
+
+                          return (
+                            <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
+                              <td style={{ padding: "11px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{idx + 1}</td>
+                              <td style={{ padding: "11px 12px" }}>
+                                {row.sareeId ? (
+                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 8px" }}>
+                                    {row.sareeId}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.batchId}</span>
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                {row.weaverLoom ? (
+                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px" }}>
+                                    Loom {row.weaverLoom}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                {row.designCode ? (
+                                  <button onClick={() => row.designCode && setOpenDesignCode(row.designCode)}
+                                    style={{ background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 8px", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
+                                    {row.designCode}
+                                  </button>
+                                ) : (
+                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                {row.sareeTypeCode ? (
+                                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 8px" }} title={row.sareeTypeName || ""}>
+                                    {row.sareeTypeCode}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                                  {row.bulkOrderLabel || "General Stock"}
+                                </span>
+                              </td>
+                              <td style={{ padding: "11px 12px" }}>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>
+                                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: qcColorVal }} />
+                                  {qcLabel}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                    No assigned sarees found for this weaver.
+                  </div>
                 )}
               </div>
             </div>
           )}
 
           {tab === "batches" && (
-            <div>
-              <SectionPill label="Recent Batches Completed" />
-              <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-                    <tr>
-                      {["Batch", "Design", "Produced", "Passed", "Completed"].map(h => <th key={h} style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "12px 16px", fontWeight: 600 }}>{h}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {BATCH_HISTORY.map((b, i) => (
-                      <tr key={b.batch} style={{ borderBottom: i < BATCH_HISTORY.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
-                        <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{b.batch}</td>
-                        <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.design}</td>
-                        <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 15, color: T.luxuryBrown }}>{b.produced}</td>
-                        <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 15, color: b.passed === b.produced ? T.green : T.antiqueGold, fontWeight: 600 }}>{b.passed}</td>
-                        <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{b.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 16 }}>See All Batches →</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              <SectionPill label="All Batches & Assigned Sarees" />
+              {sortedAllWeaverBatches.length > 0 ? (
+                sortedAllWeaverBatches.map(b => {
+                  const weaverSareesInBatch = b.rows.filter(r => r.weaverId === weaver.id);
+                  const completedSareesInBatch = weaverSareesInBatch.filter(r => r.qcPassed === true).length;
+                  const pct = weaverSareesInBatch.length > 0 ? Math.round((completedSareesInBatch / weaverSareesInBatch.length) * 100) : 0;
+                  const statusBg = b.status === "completed" ? "rgba(30,102,64,0.08)" : b.status === "active" ? "rgba(200,155,71,0.08)" : "rgba(139,112,96,0.08)";
+                  const statusColor = b.status === "completed" ? T.green : b.status === "active" ? T.royalBurgundy : T.taupe;
+
+                  return (
+                    <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
+                      {/* Batch Header */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 11, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" }}>{b.status}</span>
+                        </div>
+                        {b.dueDate && (
+                          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                            Due Date: {b.dueDate}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>Progress: {completedSareesInBatch} of {weaverSareesInBatch.length} sarees done</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 16 }}>
+                        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }} />
+                      </div>
+
+                      {/* Saree Info Table */}
+                      <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
+                          <thead>
+                            <tr style={{ background: T.warmCream }}>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {weaverSareesInBatch.map((row, idx) => {
+                              let qcLabel = "In Production";
+                              let qcBg = "rgba(139,112,96,0.08)";
+                              let qcColorVal = T.taupe;
+
+                              if (row.qcPassed === true) {
+                                qcLabel = "QC Passed";
+                                qcBg = "rgba(30,102,64,0.08)";
+                                qcColorVal = T.green;
+                              } else if (row.qcPassed === false) {
+                                qcLabel = "QC Failed";
+                                qcBg = "rgba(192,57,43,0.08)";
+                                qcColorVal = T.crimson;
+                              }
+
+                              return (
+                                <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    {row.sareeId ? (
+                                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>
+                                        {row.sareeId}
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>—</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    {row.weaverLoom ? (
+                                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.antiqueGold }}>
+                                        L{row.weaverLoom}
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    {row.designCode ? (
+                                      <button onClick={() => row.designCode && setOpenDesignCode(row.designCode)}
+                                        style={{ border: "none", background: "none", padding: 0, fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
+                                        {row.designCode}
+                                      </button>
+                                    ) : (
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    {row.sareeTypeCode ? (
+                                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown }}>
+                                        {row.sareeTypeCode}
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    <span style={{ fontFamily: F.ui, fontSize: 11, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                                      {row.bulkOrderLabel || "General Stock"}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />
+                                      {qcLabel}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                  No batch history found for this weaver.
+                </div>
+              )}
+              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")}>See All Batches →</div>
             </div>
           )}
 
@@ -1539,6 +1891,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
+  const { batches } = useBatches();
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -1553,7 +1906,45 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void
 
       <AnimatePresence>
         {selectedWeaver && <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />}
-        {batchDialog && <ActionDialog open={!!batchDialog} title={`${batchDialog.name} batch history`} onClose={() => setBatchDialog(null)}><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{BATCH_HISTORY.map(b => <div key={b.batch} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, border: `1px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui }}><span><b>{b.batch}</b> · {b.design}</span><span style={{ color: T.taupe }}>{b.produced} produced · {b.date}</span></div>)}</div></ActionDialog>}
+        {batchDialog && (() => {
+          const weaverCompletedBatches = batches.filter(b => 
+            b.status === "completed" && 
+            b.rows.some(r => r.weaverId === batchDialog.id)
+          );
+          
+          const getBatchNum = (id: string) => {
+            const match = id.match(/BATCH-(\d+)/);
+            return match ? parseInt(match[1], 10) : 0;
+          };
+          const sorted = [...weaverCompletedBatches].sort((a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId));
+
+          return (
+            <ActionDialog open={!!batchDialog} title={`${batchDialog.name} Completed Batches`} onClose={() => setBatchDialog(null)}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 350, overflowY: "auto" }}>
+                {sorted.length > 0 ? (
+                  sorted.map(b => {
+                    const totalSarees = b.rows.filter(r => r.weaverId === batchDialog.id).length;
+                    const distinctDesigns = Array.from(new Set(b.rows.filter(r => r.weaverId === batchDialog.id && r.designCode).map(r => r.designCode).filter(Boolean))).join(", ") || "—";
+                    return (
+                      <div key={b.batchId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, border: `1px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui }}>
+                        <span>
+                          <b>{b.batchId}</b> · Design: {distinctDesigns}
+                        </span>
+                        <span style={{ color: T.taupe }}>
+                          {totalSarees} sarees · Due: {b.dueDate || "—"}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ padding: 14, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontStyle: "italic" }}>
+                    No completed batches found.
+                  </div>
+                )}
+              </div>
+            </ActionDialog>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

@@ -1316,6 +1316,12 @@ function PaymentLedgerPage() {
                   { label: "Payment Date",    value: currentPayment.paymentDate,          mono: false },
                   { label: "UTR Number",      value: currentPayment.utrNumber,            mono: true },
                   { label: "Paid By",         value: currentPayment.firmName,             mono: false },
+                  ...(currentPayment.batchNo ? [
+                    { label: "Batch No",      value: currentPayment.batchNo,              mono: true },
+                    { label: "Loom Number",   value: `Loom ${currentPayment.loomNumber}`,  mono: false },
+                    { label: "No of Sarees",  value: `${currentPayment.noOfSarees} sarees`, mono: true },
+                    { label: "Deduction",     value: fmtAmt(currentPayment.deduction ?? 0),mono: true },
+                  ] : [])
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>{f.label}</div>
@@ -1400,7 +1406,7 @@ function PaymentLedgerPage() {
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.bdr}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px" }}>
                 <div>
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>UTR Number</div>
-                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.text }}>{rec?.utrNumber ?? p.utrFallback}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.text, wordBreak: "break-all" as const }}>{rec?.utrNumber ?? p.utrFallback}</div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Paid By</div>
@@ -1411,6 +1417,22 @@ function PaymentLedgerPage() {
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Payment Date</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{rec.paymentDate}</div>
                   </div>
+                )}
+                {rec?.batchNo && (
+                  <>
+                    <div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Batch No</div>
+                      <div style={{ fontFamily: F.m, fontSize: 13, color: C.text }}>{rec.batchNo}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Loom No / Sarees</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Loom {rec.loomNumber} · {rec.noOfSarees} sarees</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Gross / Deduction</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{fmtAmt(rec.amount ?? 0)} / <span style={{ color: C.crim }}>{fmtAmt(rec.deduction ?? 0)}</span></div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -1427,17 +1449,43 @@ function PaymentLedgerPage() {
             {PAST_MONTHS.map((p, i) => {
               const rec = myPayments.find(r => r.utrNumber === p.utrFallback);
               return (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: i < PAST_MONTHS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{p.month}</div>
-                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{rec ? fmtAmt(rec.amountPaid) : p.amtFallback}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec?.utrNumber ?? p.utrFallback}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec?.firmName ?? "Beere Kesava & Brothers Silks"}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec?.paymentDate ?? "—"}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "2px 10px", width: "fit-content" }}>
-                    <Check size={10} color={C.green} />
-                    <span style={{ fontFamily: F.m, fontSize: 10, fontWeight: 600 }}>Paid</span>
+                <React.Fragment key={i}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec?.batchNo && i < PAST_MONTHS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{p.month}</div>
+                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{rec ? fmtAmt(rec.amountPaid) : p.amtFallback}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec?.utrNumber ?? p.utrFallback}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec?.firmName ?? "Beere Kesava & Brothers Silks"}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec?.paymentDate ?? "—"}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "2px 10px", width: "fit-content" }}>
+                      <Check size={10} color={C.green} />
+                      <span style={{ fontFamily: F.m, fontSize: 10, fontWeight: 600 }}>Paid</span>
+                    </div>
                   </div>
-                </div>
+                  {rec?.batchNo && (
+                    <div style={{ display: "flex", gap: 32, padding: "8px 16px 12px", background: "rgba(30,102,64,0.02)", borderBottom: i < PAST_MONTHS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
+                      <div>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Batch No:</span>
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, marginLeft: 6 }}>{rec.batchNo}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Loom Number:</span>
+                        <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, marginLeft: 6 }}>Loom {rec.loomNumber}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>No of Sarees:</span>
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, marginLeft: 6 }}>{rec.noOfSarees} sarees</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Gross Amount:</span>
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, marginLeft: 6 }}>{fmtAmt(rec.amount ?? 0)}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Deduction:</span>
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.crim, marginLeft: 6 }}>{fmtAmt(rec.deduction ?? 0)}</span>
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </div>

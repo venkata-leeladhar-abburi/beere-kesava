@@ -10,6 +10,7 @@ import { SareeTypeCard, getSareeTypeByCode } from "./RatesPricingPage";
 import { usePO, PurchaseOrder } from "./POContext";
 import { PODocumentModal } from "./PODocumentModal";
 import { useFinishing } from "./FinishingContext";
+import { useMaterialIssue } from "./MaterialIssueContext";
 import {
   Download, TrendingUp, TrendingDown, AlertTriangle,
   UploadCloud, Search, ChevronDown, Eye, LayoutGrid, LayoutList, AlignJustify,
@@ -328,48 +329,102 @@ function FinancialSummarySection() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
           {/* Card 1 — Total Received This Month */}
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.08)", padding: "22px 22px 20px", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, marginBottom: 8 }}>Total Received This Month</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.green, lineHeight: 1.1, marginBottom: 14 }}>{formatINR(TOTAL_IN)}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <motion.div
+            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(30,102,64,0.15)" }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.06) 0%, rgba(30,102,64,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(30,102,64,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, letterSpacing: "0.5px", textTransform: "uppercase" }}>Received</span>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <ArrowDownCircle size={15} color={T.green} />
+              </div>
+            </div>
+            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_IN)}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {COMING_IN.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 600 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
-          </div>
+            <div style={{ marginTop: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 6 }}>
+                <span>Collected Target</span>
+                <span style={{ fontWeight: 700 }}>{pctIn}%</span>
+              </div>
+              <AnimBar pct={pctIn} color={T.green} height={5} trackBg="rgba(30,102,64,0.08)" />
+            </div>
+          </motion.div>
 
           {/* Card 2 — Total Paid Out This Month */}
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.08)", padding: "22px 22px 20px", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, marginBottom: 8 }}>Total Paid Out This Month</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 14 }}>{formatINR(TOTAL_OUT)}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <motion.div
+            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(192,57,43,0.15)" }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            style={{ background: "linear-gradient(135deg, rgba(192,57,43,0.06) 0%, rgba(192,57,43,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(192,57,43,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson, letterSpacing: "0.5px", textTransform: "uppercase" }}>Paid Out</span>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <ArrowUpCircle size={15} color={T.crimson} />
+              </div>
+            </div>
+            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_OUT)}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {GOING_OUT.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 600 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
-          </div>
+            <div style={{ marginTop: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 6 }}>
+                <span>Expense Ratio</span>
+                <span style={{ fontWeight: 700 }}>{pctOut}%</span>
+              </div>
+              <AnimBar pct={pctOut} color={T.crimson} height={5} trackBg="rgba(192,57,43,0.08)" />
+            </div>
+          </motion.div>
 
           {/* Card 3 — Net Cash Flow */}
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.08)", padding: "22px 22px 20px", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, marginBottom: 8 }}>Net Cash Flow</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 14 }}>{formatINR(NET)}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.6 }}>Money left after all incoming and outgoing payments this month.</div>
-          </div>
+          <motion.div
+            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(110,15,45,0.12)" }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            style={{ background: "linear-gradient(135deg, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(110,15,45,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px", textTransform: "uppercase" }}>Net Income</span>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Wallet size={15} color={T.royalBurgundy} />
+              </div>
+            </div>
+            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(NET)}</div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
+              This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
+            </p>
+          </motion.div>
 
           {/* Card 4 — Outstanding (If All Collected) */}
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.08)", padding: "22px 22px 20px", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, marginBottom: 8 }}>Outstanding (If All Collected)</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 14 }}>{formatINR(IF_ALL)}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.6 }}>Total if every pending customer invoice were collected today.</div>
-          </div>
+          <motion.div
+            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(200,155,71,0.15)" }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", borderRadius: 20, border: `1px solid rgba(200,155,71,0.22)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold, letterSpacing: "0.5px", textTransform: "uppercase" }}>Projected Total</span>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <CalendarClock size={15} color={T.antiqueGold} />
+              </div>
+            </div>
+            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(IF_ALL)}</div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
+              The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
+            </p>
+          </motion.div>
 
         </div>
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Financial Report" desc="Generate and download the financial summary report for this month." actionLabel="Download" icon={Download} />
@@ -388,6 +443,12 @@ interface WeaverRecord {
   id: string; name: string; initials: string; bg: string;
   village: string; sb: number; hz: number; ps: number; bs: number; st: number;
   advance: number; status: "Paid" | "Pending";
+  // Uploaded overrides
+  uploadedAmount?: number;
+  uploadedDeduction?: number;
+  uploadedNoOfSarees?: number;
+  uploadedBatchNo?: string;
+  uploadedLoomNumber?: string;
 }
 
 const WEAVERS: WeaverRecord[] = [
@@ -402,9 +463,14 @@ const WEAVERS: WeaverRecord[] = [
 ];
 
 function calcCharges(w: WeaverRecord) {
+  if (w.uploadedAmount !== undefined) return w.uploadedAmount;
   return w.sb * RATES.sb + w.hz * RATES.hz + w.ps * RATES.ps + w.bs * RATES.bs + w.st * RATES.st;
 }
-function calcNet(w: WeaverRecord) { return calcCharges(w) - w.advance; }
+function calcNet(w: WeaverRecord) {
+  const charges = calcCharges(w);
+  const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
+  return charges - deduction;
+}
 
 const RATE_ROWS = [
   { code: "SB-001", name: "Self Brocade",   rate: 450  },
@@ -500,8 +566,9 @@ function DropBtn({ value, options, onChange }: { value?: string, options: string
 }
 
 // Weaver card (card view)
-function WeaverCard({ w, onViewDetails }: { w: WeaverRecord, onViewDetails?: () => void }) {
+function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
   const charges = calcCharges(w);
+  const net = calcNet(w);
   const breakdown = [
     w.sb > 0 && `SB×${w.sb}`,
     w.hz > 0 && `HZ×${w.hz}`,
@@ -510,46 +577,105 @@ function WeaverCard({ w, onViewDetails }: { w: WeaverRecord, onViewDetails?: () 
     w.st > 0 && `ST×${w.st}`,
   ].filter(Boolean).join(" · ");
 
+  const paid = w.status === "Paid";
+  const completedSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st);
+
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ borderLeft: `4px solid ${w.status === "Paid" ? T.green : T.antiqueGold}` }}>
-        {/* Top row */}
-        <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Pip initials={w.initials} bg={w.bg} size={38} />
-            <div>
-              <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, lineHeight: 1.2 }}>{w.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, marginTop: 2 }}>{w.id}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>📍 {w.village}</div>
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(59,35,20,0.12)" }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }}
+    >
+      {/* Top accent bar */}
+      <div style={{ height: 4, background: paid ? T.green : T.antiqueGold }} />
+      
+      {/* Card header */}
+      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Checkbox */}
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            style={{
+              width: 17,
+              height: 17,
+              cursor: "pointer",
+              accentColor: T.royalBurgundy,
+              marginRight: 4,
+            }}
+          />
+          <Pip initials={w.initials} bg={w.bg} size={42} />
+          <div>
+            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25 }}>{w.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+              <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
             </div>
           </div>
-          <StatusBadge status={w.status} />
+        </div>
+        <StatusBadge status={w.status} />
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: "0 20px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
+          Sarees completed: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{completedSarees}</span>
+          {w.uploadedBatchNo ? (
+            <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 11.5, fontFamily: F.mono, fontWeight: 600 }}>
+              Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
+            </span>
+          ) : (
+            breakdown && <span style={{ color: T.taupe, display: "block", marginTop: 2, fontSize: 11.5 }}>({breakdown})</span>
+          )}
         </div>
 
-        {/* Body */}
-        <div style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-            Sarees completed: <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown, fontWeight: 600 }}>{w.sb + w.hz + w.ps + w.bs + w.st} sarees</span>
-            {breakdown && <span style={{ color: T.taupe }}> ({breakdown})</span>}
+        {/* Financial Breakdown */}
+        <div style={{ background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontFamily: F.ui, color: T.taupe }}>
+            <span>Gross Charges</span>
+            <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}>₹{charges.toLocaleString("en-IN")}</span>
           </div>
-
-          {/* Financials */}
-          <div style={{ background: T.silkCream, borderRadius: 9, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 5 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>Making Charges</span>
-              <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: w.status === "Paid" ? T.green : T.royalBurgundy }}>₹{charges.toLocaleString("en-IN")}</span>
+          {((w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance) > 0) && (
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontFamily: F.ui, color: T.crimson }}>
+              <span>Deductions</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−₹{(w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance).toLocaleString("en-IN")}</span>
             </div>
+          )}
+          <div style={{ borderTop: `1.5px dashed ${T.borderDef}`, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Net Payable</span>
+            <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: paid ? T.green : T.royalBurgundy }}>
+              ₹{net.toLocaleString("en-IN")}
+            </span>
           </div>
-        </div>
-
-        {/* Footer button */}
-        <div style={{ padding: "0 16px 14px" }}>
-          <button onClick={onViewDetails} style={{ width: "100%", height: 34, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 8, fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
-            <Eye size={12} />View Details
-          </button>
         </div>
       </div>
-    </div>
+
+      {/* Action Footer */}
+      <div style={{ padding: "0 20px 20px", borderTop: `1px solid rgba(110,15,45,0.05)`, paddingTop: 14 }}>
+        <button
+          onClick={onViewDetails}
+          style={{
+            width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.12)`,
+            borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.08)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+        >
+          <Eye size={14} /> View Statement & History
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -726,10 +852,11 @@ function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | 
 interface ExcelRow {
   weaverId: string;
   weaverName: string;
-  amountPaid: number;
-  utrNumber: string;
-  firmName: string;
-  paymentDate: string;
+  batchNo: string;
+  loomNumber: string;
+  noOfSarees: number;
+  amount: number;
+  deduction: number;
 }
 interface MatchedPayment extends ExcelRow { weaverRecord: WeaverRecord; }
 interface UnmatchedRow   extends ExcelRow {}
@@ -742,7 +869,7 @@ interface UploadResult {
 }
 
 // ── Bank Upload Panel ─────────────────────────────────────────────────────────
-function BankUploadPanel() {
+function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (matched: MatchedPayment[]) => void; onReset?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -753,12 +880,17 @@ function BankUploadPanel() {
     String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
 
   const HEADER_MAP: Record<string, keyof ExcelRow> = {
-    weaverid:    "weaverId",
-    weavername:  "weaverName",
-    amountpaid:  "amountPaid",
-    utrnumber:   "utrNumber",
-    firmname:    "firmName",
-    paymentdate: "paymentDate",
+    weaverid:       "weaverId",
+    weavername:     "weaverName",
+    name:           "weaverName",
+    batchno:        "batchNo",
+    batchnumber:    "batchNo",
+    loomnumber:     "loomNumber",
+    noofsarees:     "noOfSarees",
+    numberofsarees: "noOfSarees",
+    amount:         "amount",
+    amountpaid:     "amount",
+    deduction:      "deduction",
   };
 
   const parseFile = useCallback((file: File) => {
@@ -784,11 +916,22 @@ function BankUploadPanel() {
           if (HEADER_MAP[norm]) colMap[k] = HEADER_MAP[norm];
         });
 
-        const missing = (Object.values(HEADER_MAP) as string[]).filter(
-          v => !Object.values(colMap).includes(v as keyof ExcelRow)
+        // Ensure all 7 fields are present
+        const requiredKeys: (keyof ExcelRow)[] = ["weaverId", "weaverName", "batchNo", "loomNumber", "noOfSarees", "amount", "deduction"];
+        const missing = requiredKeys.filter(
+          k => !Object.values(colMap).includes(k)
         );
         if (missing.length > 0) {
-          setError(`Missing required columns: ${missing.join(", ")}. Expected: Weaver ID, Weaver Name, Amount Paid, UTR Number, Firm Name, Payment Date.`);
+          setError(`Missing required columns: ${missing.map(k => {
+            if (k === "weaverId") return "Weaver ID";
+            if (k === "weaverName") return "Name";
+            if (k === "batchNo") return "Batch No";
+            if (k === "loomNumber") return "Loom Number";
+            if (k === "noOfSarees") return "No of Sarees";
+            if (k === "amount") return "Amount";
+            if (k === "deduction") return "Deduction";
+            return k;
+          }).join(", ")}. Expected all 7 columns to be present.`);
           setParsing(false);
           return;
         }
@@ -797,8 +940,10 @@ function BankUploadPanel() {
         const rows: ExcelRow[] = raw.map(r => {
           const out: Partial<ExcelRow> = {};
           Object.entries(colMap).forEach(([col, key]) => {
-            if (key === "amountPaid") {
+            if (key === "amount" || key === "deduction") {
               out[key] = parseFloat(String(r[col]).replace(/[^\d.]/g, "")) || 0;
+            } else if (key === "noOfSarees") {
+              out[key] = parseInt(String(r[col]).replace(/[^\d]/g, ""), 10) || 0;
             } else {
               (out as Record<string, unknown>)[key] = String(r[col] ?? "").trim();
             }
@@ -826,13 +971,19 @@ function BankUploadPanel() {
             id: `pay-${Date.now()}-${idx}`,
             weaverId: m.weaverRecord.id,
             weaverName: m.weaverRecord.name,
-            amountPaid: m.amountPaid,
-            utrNumber: m.utrNumber,
-            firmName: m.firmName,
-            paymentDate: m.paymentDate,
+            amountPaid: m.amount, // mapped from amount
+            utrNumber: `UTR-${m.batchNo}-${m.loomNumber}`, // generated fallback UTR
+            firmName: "Beere Kesava & Brothers Silks",
+            paymentDate: new Date().toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }),
             uploadedAt: new Date().toISOString(),
+            batchNo: m.batchNo,
+            loomNumber: m.loomNumber,
+            noOfSarees: m.noOfSarees,
+            amount: m.amount,
+            deduction: m.deduction,
           }));
           addPayments(records);
+          onMatchUpdate?.(matched);
         }
       } catch (err) {
         setError("Failed to read the file. Please ensure it is a valid .xlsx or .xls file.");
@@ -841,7 +992,7 @@ function BankUploadPanel() {
       }
     };
     reader.readAsArrayBuffer(file);
-  }, []);
+  }, [onMatchUpdate, addPayments]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -849,7 +1000,11 @@ function BankUploadPanel() {
     e.target.value = "";
   };
 
-  const handleReset = () => { setResult(null); setError(null); };
+  const handleReset = () => {
+    setResult(null);
+    setError(null);
+    onReset?.();
+  };
 
   const fmtAmt = (n: number) =>
     n >= 100000 ? `₹${(n / 100000).toFixed(2)}L` : `₹${n.toLocaleString("en-IN")}`;
@@ -865,7 +1020,7 @@ function BankUploadPanel() {
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
             <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
-              Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>Weaver ID · Weaver Name · Amount Paid · UTR Number · Firm Name · Payment Date</span>. System will auto-match weavers and flag unmatched rows.
+              Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>Weaver ID · Name · Batch No · Loom Number · No of Sarees · Amount · Deduction</span>. System will auto-match weavers and flag unmatched rows.
             </div>
             {result ? (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
@@ -921,7 +1076,7 @@ function BankUploadPanel() {
               { label: "Total Rows",          value: String(result.totalRows),                              color: T.luxuryBrown, bg: "#FFFFFF",                           icon: <FileText size={18} color={T.royalBurgundy} /> },
               { label: "Matched Weavers",     value: String(result.matched.length),                         color: T.green,       bg: "rgba(30,102,64,0.07)",             icon: <CheckCircle2 size={18} color={T.green} /> },
               { label: "Unmatched Rows",      value: String(result.unmatched.length),                       color: T.crimson,     bg: "rgba(192,57,43,0.06)",             icon: <AlertTriangle size={18} color={T.crimson} /> },
-              { label: "Total Distributed",   value: fmtAmt(result.matched.reduce((s, m) => s + m.amountPaid, 0)), color: T.antiqueGold, bg: "rgba(200,155,71,0.08)", icon: <IndianRupee size={18} color={T.antiqueGold} /> },
+              { label: "Total Distributed",   value: fmtAmt(result.matched.reduce((s, m) => s + m.amount, 0)), color: T.antiqueGold, bg: "rgba(200,155,71,0.08)", icon: <IndianRupee size={18} color={T.antiqueGold} /> },
             ].map((s, i) => (
               <div key={i} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: "#fff", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -961,22 +1116,30 @@ function BankUploadPanel() {
                       </span>
                     </div>
                     {/* Details */}
-                    <div style={{ padding: "0 16px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
+                    <div style={{ padding: "0 16px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px 14px" }}>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Amount Paid</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.green }}>₹{m.amountPaid.toLocaleString("en-IN")}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Batch No</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{m.batchNo}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Payment Date</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{m.paymentDate}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Loom Number</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>Loom {m.loomNumber}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>UTR Number</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, wordBreak: "break-all" as const }}>{m.utrNumber || "—"}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>No of Sarees</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{m.noOfSarees}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Firm Name</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.firmName || "—"}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Amount</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amount.toLocaleString("en-IN")}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Deduction</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{m.deduction.toLocaleString("en-IN")}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Net Paid</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{(m.amount - m.deduction).toLocaleString("en-IN")}</div>
                       </div>
                     </div>
                   </motion.div>
@@ -1006,12 +1169,13 @@ function BankUploadPanel() {
                         <AlertTriangle size={11} />Unmatched ⚠
                       </span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px 14px", marginBottom: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px 14px", marginBottom: 10 }}>
                       {[
-                        { label: "Amount", value: `₹${u.amountPaid.toLocaleString("en-IN")}` },
-                        { label: "UTR",    value: u.utrNumber || "—" },
-                        { label: "Firm",   value: u.firmName  || "—" },
-                        { label: "Date",   value: u.paymentDate || "—" },
+                        { label: "Batch No",   value: u.batchNo || "—" },
+                        { label: "Loom No",    value: u.loomNumber || "—" },
+                        { label: "Sarees",     value: String(u.noOfSarees) },
+                        { label: "Amount",     value: `₹${u.amount.toLocaleString("en-IN")}` },
+                        { label: "Deduction",  value: `₹${u.deduction.toLocaleString("en-IN")}` },
                       ].map(f => (
                         <div key={f.label}>
                           <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>{f.label}</div>
@@ -1034,6 +1198,8 @@ function BankUploadPanel() {
 }
 
 function WeaverMakingChargesSection() {
+  const [weaversList, setWeaversList] = useState<WeaverRecord[]>(WEAVERS);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
   const [search, setSearch] = useState("");
   const [downloadModal, setDownloadModal] = useState(false);
@@ -1041,18 +1207,109 @@ function WeaverMakingChargesSection() {
   
   const [filterVillage, setFilterVillage] = useState("All Villages");
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
+  const { batches } = useBatches();
+  const { getRecordsForWeaver } = useMaterialIssue();
 
   const viewOptions = [
     { key: "card", Icon: LayoutGrid, label: "Card View" },
     { key: "list", Icon: LayoutList, label: "List View" },
   ] as const;
 
-  const filtered = WEAVERS.filter(w => {
+  const filtered = weaversList.filter(w => {
     const matchSearch = !search || w.name.toLowerCase().includes(search.toLowerCase()) || w.id.toLowerCase().includes(search.toLowerCase()) || w.village.toLowerCase().includes(search.toLowerCase());
     const matchVillage = filterVillage === "All Villages" || w.village === filterVillage;
     const matchStatus = filterStatus === "All Payment Status" || w.status === filterStatus;
     return matchSearch && matchVillage && matchStatus;
   });
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const downloadExcelTemplate = () => {
+    const weaversToExport = selectedIds.size > 0 
+      ? weaversList.filter(w => selectedIds.has(w.id))
+      : filtered;
+
+    if (weaversToExport.length === 0) {
+      toast.error("No weavers match the current selection/filters.");
+      return;
+    }
+
+    const dataRows = weaversToExport.map(w => {
+      const weaverBatches = batches.filter(b => b.rows.some(r => r.weaverId === w.id));
+      const activeBatches = weaverBatches.filter(b => b.status === "active");
+      const activeRow = activeBatches[0]?.rows.find(r => r.weaverId === w.id);
+      
+      const loomNumber = activeRow?.weaverLoom?.toString() || "1";
+      const noOfSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st || 1);
+      const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
+      const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
+      const netAmount = grossAmount - deduction;
+
+      // Dynamic Batches Info
+      const activeBatchesString = activeBatches.map(b => b.batchId).join(", ") || "None";
+      const allBatchesString = weaverBatches.map(b => b.batchId).join(", ") || "None";
+
+      // Dynamic Material Issue Info
+      const weaverMaterials = getRecordsForWeaver(w.id);
+      const materialSummary = weaverMaterials.flatMap(r => r.materials).reduce((acc, m) => {
+        const qty = m.quantity;
+        const unit = m.unit;
+        const key = `${m.materialType} (${unit})`;
+        acc[key] = (acc[key] || 0) + qty;
+        return acc;
+      }, {} as Record<string, number>);
+      const materialSummaryString = Object.entries(materialSummary).map(([k, v]) => `${k}: ${v}`).join(", ") || "No materials issued";
+
+      return {
+        "Weaver ID": w.id,
+        "Name": w.name,
+        "Village": w.village,
+        "Loom Number": loomNumber,
+        "Active Batch ID": activeBatchesString,
+        "All Batches History": allBatchesString,
+        "Self Brocade (Qty)": w.sb,
+        "Self Brocade Rate": RATES.sb,
+        "Self Brocade Total": w.sb * RATES.sb,
+        "Heavy Zari (Qty)": w.hz,
+        "Heavy Zari Rate": RATES.hz,
+        "Heavy Zari Total": w.hz * RATES.hz,
+        "Plain Silk (Qty)": w.ps,
+        "Plain Silk Rate": RATES.ps,
+        "Plain Silk Total": w.ps * RATES.ps,
+        "Bridal Special (Qty)": w.bs,
+        "Bridal Special Rate": RATES.bs,
+        "Bridal Special Total": w.bs * RATES.bs,
+        "Stripe Brocade (Qty)": w.st,
+        "Stripe Brocade Rate": RATES.st,
+        "Stripe Brocade Total": w.st * RATES.st,
+        "Total Sarees": noOfSarees,
+        "Gross Making Charges": grossAmount,
+        "Materials Issued History": materialSummaryString,
+        "Deduction (Advance)": deduction,
+        "Net Payable": netAmount,
+        "Payment Status": w.status,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "PaymentLedger");
+    XLSX.writeFile(workbook, "Weaver_Payment_Ledger.xlsx");
+    toast.success(`Successfully exported ledger for ${weaversToExport.length} weavers!`);
+  };
+
+  const totalWeavers = weaversList.length;
+  const totalGross = weaversList.reduce((acc, w) => acc + calcCharges(w), 0);
+  const totalDeductions = weaversList.reduce((acc, w) => acc + (w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance), 0);
+  const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
+  const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
   return (
     <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
@@ -1070,10 +1327,22 @@ function WeaverMakingChargesSection() {
               Making charges are paid once a month at the end of the month. This system calculates each weaver's earnings based on completed and approved sarees.
             </p>
           </div>
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-            <Download size={15} />Download Weaver Payment Report
-          </motion.button>
+          <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+            {selectedIds.size > 0 && (
+              <motion.button whileHover={{ scale: 1.03 }} onClick={() => setSelectedIds(new Set())}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "10px 14px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                Clear Selection ({selectedIds.size})
+              </motion.button>
+            )}
+            <motion.button whileHover={{ scale: 1.03 }} onClick={downloadExcelTemplate}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
+              <Download size={15} />Export Ledger Template
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+              <Download size={15} />Download Weaver Payment Report
+            </motion.button>
+          </div>
         </div>
 
         {/* ── 4 stat cards ────────────────────────────────────── */}
@@ -1082,8 +1351,8 @@ function WeaverMakingChargesSection() {
             {
               icon: <UserCheck size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
-              label: "Total Weavers to Pay",
-              value: "84",
+              label: "Total Weavers",
+              value: String(totalWeavers),
               sub: "All active weavers this month",
               hi: false,
             },
@@ -1091,7 +1360,7 @@ function WeaverMakingChargesSection() {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
               label: "Total Making Charges",
-              value: "₹4,20,000",
+              value: formatINR(totalGross),
               sub: "Gross charges for May 2026",
               hi: false,
             },
@@ -1099,7 +1368,7 @@ function WeaverMakingChargesSection() {
               icon: <MinusCircle size={22} color={T.crimson} />,
               iconBg: "rgba(192,57,43,0.08)",
               label: "Total Deductions Applied",
-              value: "₹18,400",
+              value: formatINR(totalDeductions),
               sub: "Advance amount deducted",
               hi: false,
             },
@@ -1107,7 +1376,7 @@ function WeaverMakingChargesSection() {
               icon: <BadgeCheck size={22} color={T.antiqueGold} />,
               iconBg: "rgba(200,155,71,0.16)",
               label: "Net Amount to Pay",
-              value: "₹4,01,600",
+              value: formatINR(totalNet),
               sub: "After all deductions",
               hi: true,
             },
@@ -1130,7 +1399,29 @@ function WeaverMakingChargesSection() {
         </div>
 
         {/* ── Upload Bank Payment File panel ──────────────────── */}
-        <BankUploadPanel />
+        <BankUploadPanel 
+          onMatchUpdate={(matchedRows) => {
+            setWeaversList(prev => prev.map(w => {
+              const match = matchedRows.find(m => m.weaverId.toLowerCase() === w.id.toLowerCase());
+              if (match) {
+                return {
+                  ...w,
+                  status: "Paid" as const,
+                  uploadedAmount: match.amount,
+                  uploadedDeduction: match.deduction,
+                  uploadedNoOfSarees: match.noOfSarees,
+                  uploadedBatchNo: match.batchNo,
+                  uploadedLoomNumber: match.loomNumber,
+                };
+              }
+              return w;
+            }));
+            toast.success(`Matched and updated status for ${matchedRows.length} weavers!`);
+          }}
+          onReset={() => {
+            setWeaversList(WEAVERS);
+          }}
+        />
 
         {/* ── Filter + View toggle bar ─────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>
@@ -1145,6 +1436,25 @@ function WeaverMakingChargesSection() {
               </motion.button>
             ))}
           </div>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={filtered.length > 0 && filtered.every(w => selectedIds.has(w.id))}
+              onChange={() => {
+                const allSelected = filtered.every(w => selectedIds.has(w.id));
+                setSelectedIds(prev => {
+                  const next = new Set(prev);
+                  filtered.forEach(w => {
+                    if (allSelected) next.delete(w.id);
+                    else next.add(w.id);
+                  });
+                  return next;
+                });
+              }}
+              style={{ accentColor: T.royalBurgundy }}
+            />
+            Select All Filtered
+          </label>
           <DropBtn value="All Weavers" options={["All Weavers", "Master Weavers", "Junior Weavers"]} />
           <DropBtn value={filterVillage} options={["All Villages", "Varanasi", "Rajatalab", "Bhelupura", "Sigra", "Orderly Bazar", "Lanka", "Lahurabir"]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
@@ -1161,7 +1471,12 @@ function WeaverMakingChargesSection() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
             {filtered.map((w, i) => (
               <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
-                <WeaverCard w={w} onViewDetails={() => setSelWeaver(w)} />
+                <WeaverCard
+                  w={w}
+                  onViewDetails={() => setSelWeaver(w)}
+                  selected={selectedIds.has(w.id)}
+                  onToggleSelect={() => toggleSelection(w.id)}
+                />
               </motion.div>
             ))}
           </div>
@@ -1169,23 +1484,78 @@ function WeaverMakingChargesSection() {
 
         {/* ── List view ────────────────────────────────────────── */}
         {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 28 }}>
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
             {filtered.map((w, i) => {
               const charges = calcCharges(w); const net = calcNet(w);
+              const completedSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st);
+              const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
               return (
-                <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "12px 18px", background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${w.status === "Paid" ? T.green : T.antiqueGold}` }}>
-                  <Pip initials={w.initials} bg={w.bg} size={36} />
-                  <div style={{ flex: "0 0 160px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy }}>{w.id} · {w.village}</div>
+                <div
+                  key={w.id}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 16, padding: "14px 20px",
+                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                    borderLeft: `4px solid ${w.status === "Paid" ? T.green : T.antiqueGold}`,
+                    transition: "background-color 0.15s ease",
+                  }}
+                >
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(w.id)}
+                    onChange={() => toggleSelection(w.id)}
+                    style={{
+                      width: 17,
+                      height: 17,
+                      cursor: "pointer",
+                      accentColor: T.royalBurgundy,
+                      marginRight: 4,
+                    }}
+                  />
+                  <Pip initials={w.initials} bg={w.bg} size={38} />
+                  <div style={{ flex: "0 0 180px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{w.name}</div>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
+                    </div>
                   </div>
-                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{w.sb + w.hz + w.ps + w.bs + w.st} sarees</div>
-                  <div style={{ flex: "0 0 110px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>₹{charges.toLocaleString("en-IN")}</div>
-                  <div style={{ flex: "0 0 110px", fontFamily: F.mono, fontSize: 13, color: T.crimson }}>−₹{w.advance.toLocaleString("en-IN")}</div>
-                  <div style={{ flex: "0 0 120px", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{net.toLocaleString("en-IN")}</div>
-                  <StatusBadge status={w.status} />
-                  <button onClick={() => setSelWeaver(w)} style={{ padding: "5px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Eye size={11} />View
+                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                    <strong style={{ color: T.luxuryBrown, fontFamily: F.mono }}>{completedSarees}</strong> sarees completed
+                    {w.uploadedBatchNo && (
+                      <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 11.5, fontFamily: F.mono, fontWeight: 600 }}>
+                        Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ flex: "0 0 120px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.luxuryBrown, fontWeight: 600 }}>₹{charges.toLocaleString("en-IN")}</div>
+                  </div>
+                  <div style={{ flex: "0 0 120px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.crimson, fontWeight: 600 }}>−₹{deduction.toLocaleString("en-IN")}</div>
+                  </div>
+                  <div style={{ flex: "0 0 130px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Net Payable</div>
+                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}>₹{net.toLocaleString("en-IN")}</div>
+                  </div>
+                  <div style={{ flex: "0 0 110px" }}>
+                    <StatusBadge status={w.status} />
+                  </div>
+                  <button
+                    onClick={() => setSelWeaver(w)}
+                    style={{
+                      padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
+                      background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                      color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+                  >
+                    <Eye size={12} /> Details
                   </button>
                 </div>
               );
@@ -1295,90 +1665,135 @@ function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkO
   const isPaid = inv.status === "Paid";
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", width: "100%" }}>
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 16px 36px rgba(110,15,45,0.08)" }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1px solid ${T.borderDef}`,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        position: "relative",
+      }}
+    >
       {/* Top accent bar */}
       <div style={{ height: 4, background: cfg.color, flexShrink: 0 }} />
 
       {/* Header */}
-      <div style={{ padding: "18px 20px 12px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, flexShrink: 0 }}>
+      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 12, flexShrink: 0 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{inv.id}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
             {bulkOrderRef && (
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.13)", border: "1px solid rgba(200,155,71,0.30)", padding: "2px 7px", borderRadius: 6 }}>
+              <span style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.11)", border: "1px solid rgba(200,155,71,0.25)", padding: "2px 6px", borderRadius: 6 }}>
                 {bulkOrderRef}
               </span>
             )}
           </div>
-          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 6 }}>{inv.customer}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            <MapPin size={13} color={T.taupe} style={{ flexShrink: 0 }} />{inv.city}
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 4 }}>{inv.customer}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+            <MapPin size={12} color={T.taupe} style={{ flexShrink: 0 }} />
+            <span>{inv.city}</span>
           </div>
         </div>
-        <InvBadge status={inv.status} />
-      </div>
-
-      {/* Date row — fixed height regardless of overdue badge */}
-      <div style={{ padding: "0 20px 14px", display: "flex", gap: 0, flexShrink: 0 }}>
-        <div style={{ flex: 1, borderRight: `1px solid ${T.borderDef}`, paddingRight: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 5 }}>
-            <CalendarClock size={11} />Invoice Date
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, minHeight: 22 }}>{inv.invoiceDate}</div>
-        </div>
-        <div style={{ flex: 1, paddingLeft: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, color: inv.status === "Overdue" ? T.crimson : T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 5 }}>
-            <CalendarClock size={11} />Due Date
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 22 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: inv.status === "Overdue" ? 700 : 400, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{inv.dueDate}</span>
-            {inv.daysOverdue
-              ? <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5, flexShrink: 0 }}>{inv.daysOverdue}d late</span>
-              : <span style={{ display: "inline-block", width: 0 }} />}
-          </div>
+        <div style={{ flexShrink: 0 }}>
+          <InvBadge status={inv.status} />
         </div>
       </div>
 
-      {/* Financials — grows to fill */}
-      <div style={{ padding: "14px 20px 16px", background: T.silkCream, margin: "0 14px 0", borderRadius: 11, flex: 1 }}>
+      {/* Dates Grid */}
+      <div style={{ padding: "0 20px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, flexShrink: 0 }}>
+        <div style={{ background: T.silkCream, borderRadius: 10, padding: "8px 12px", border: `1px solid ${T.borderDef}` }}>
+          <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>Issued On</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{inv.invoiceDate}</div>
+        </div>
+        <div style={{ background: inv.status === "Overdue" ? "rgba(192,57,43,0.04)" : T.silkCream, borderRadius: 10, padding: "8px 12px", border: `1px solid ${inv.status === "Overdue" ? "rgba(192,57,43,0.18)" : T.borderDef}` }}>
+          <div style={{ fontFamily: F.mono, fontSize: 9, color: inv.status === "Overdue" ? T.crimson : T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>Due Date</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" as const }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{inv.dueDate}</span>
+            {inv.daysOverdue ? (
+              <span style={{ fontFamily: F.mono, fontSize: 10, background: "rgba(192,57,43,0.08)", color: T.crimson, padding: "1px 4px", borderRadius: 4, fontWeight: 700 }}>{inv.daysOverdue}d late</span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Financials Re-design */}
+      <div style={{ padding: "14px 18px", background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", margin: "0 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
         {bulkOrderData && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Quantity Ordered</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{bulkOrderData.total} sarees</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Dispatch Quantity</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{bulkOrderData.total} sarees</span>
           </div>
         )}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Invoice Total</span>
-          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</span>
+        
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 10 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Invoiced Amount</div>
+            <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Amount Collected</div>
+            <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</div>
+          </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Remaining Due</span>
-          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-            {isPaid ? "Fully Paid ✓" : `₹${remaining.toLocaleString("en-IN")}`}
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 2 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Outstanding Balance</span>
+          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+            {isPaid ? "Fully Settled ✓" : `₹${remaining.toLocaleString("en-IN")}`}
           </span>
         </div>
-        <div style={{ height: 8, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold, borderRadius: 99 }} />
+        
+        {/* Progress bar */}
+        <div style={{ marginTop: 2 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>
+            <span>Collection Status</span>
+            <span style={{ fontFamily: F.mono, fontWeight: 700, color: isPaid ? T.green : T.luxuryBrown }}>{pct}% Collected</span>
+          </div>
+          <AnimBar pct={pct} color={isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold} height={6} trackBg="rgba(110,15,45,0.06)" />
         </div>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 6, textAlign: "right" as const }}>{pct}% collected</div>
       </div>
 
-      {/* Action buttons — always two buttons so all cards are equal height */}
-      <div style={{ padding: "14px 14px 16px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <button onClick={onViewInvoice} style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-          <Eye size={13} />View Invoice
+      {/* Action buttons */}
+      <div style={{ padding: "16px 20px 20px", display: "flex", gap: 10, flexShrink: 0 }}>
+        <button
+          onClick={onViewInvoice}
+          style={{
+            flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 10, background: "#fff",
+            fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+        >
+          <Eye size={13} /> View Invoice
         </button>
         {isPaid ? (
-          <button style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green, cursor: "default" }}>
-            <CheckCircle2 size={13} />Fully Paid
+          <button style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, cursor: "default" }}>
+            <CheckCircle2 size={13} /> Fully Paid
           </button>
         ) : (
-          <button onClick={onRecordPayment} style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
-            <IndianRupee size={13} />Record Payment
+          <button
+            onClick={onRecordPayment}
+            style={{
+              flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              border: "none", borderRadius: 10, background: T.royalBurgundy,
+              fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
+          >
+            <IndianRupee size={13} /> Record Pay
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1392,12 +1807,15 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
   const dispatch = dispatches.find(d => d.invoiceNumber === inv.id);
   const firmName = dispatch?.firmName ?? "Beere Kesava & Brothers Silks";
 
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
+  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "10px 12px", borderBottom: `1px solid ${T.borderDef}` };
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
         transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 600, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
+        style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>Invoice — {inv.id}</div>
@@ -1428,10 +1846,66 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
             </div>
           )}
 
-          {/* Saree list placeholder */}
-          <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            Sarees dispatched — see Inventory page for full dispatch records.
-          </div>
+          {/* Dispatch Item Table */}
+          {dispatch ? (
+            <div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Dispatched Item Details</div>
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={TH}>Description</th>
+                      <th style={{ ...TH, textAlign: "right" }}>Qty</th>
+                      <th style={{ ...TH, textAlign: "right" }}>Rate</th>
+                      <th style={{ ...TH, textAlign: "right" }}>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ ...TD, whiteSpace: "normal" }}>
+                        Banarasi Silk Sarees (Dispatched via {dispatch.transportCompany} · LR: {dispatch.lrNumber})
+                      </td>
+                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>{dispatch.sareeIds?.length || 0}</td>
+                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>₹{dispatch.pricePerSaree?.toLocaleString("en-IN") || "0"}</td>
+                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>₹{(dispatch.totalAmount || 0).toLocaleString("en-IN")}</td>
+                    </tr>
+                    {dispatch.gstPct ? (
+                      <tr>
+                        <td colSpan={3} style={{ ...TD, textAlign: "right", color: T.taupe, borderBottom: "none" }}>GST ({dispatch.gstPct}%)</td>
+                        <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, borderBottom: "none" }}>₹{((dispatch.grandTotal || 0) - (dispatch.totalAmount || 0)).toLocaleString("en-IN")}</td>
+                      </tr>
+                    ) : null}
+                    <tr style={{ background: T.warmCream }}>
+                      <td colSpan={3} style={{ ...TD, fontWeight: 700, borderBottom: "none" }}>Grand Total</td>
+                      <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontWeight: 700, color: T.royalBurgundy, borderBottom: "none" }}>
+                        ₹{(dispatch.grandTotal || dispatch.totalAmount || 0).toLocaleString("en-IN")}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Saree List */}
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Dispatched Saree Barcodes:</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {dispatch.sareeIds.map(sid => (
+                    <span key={sid} style={{ fontFamily: F.mono, fontSize: 10, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "2px 6px", borderRadius: 4, color: T.luxuryBrown }}>
+                      {sid}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              Banarasi Silk Sarees (Dispatched)
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                <span>Estimated Qty</span>
+                <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{bulkOrderData ? bulkOrderData.total : "15"} sarees</span>
+              </div>
+            </div>
+          )}
 
           {/* Dates */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -1443,6 +1917,31 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
               <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Due Date</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{inv.dueDate}</div>
             </div>
+          </div>
+
+          {/* Payment History / Invoice History */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Invoice Payment History</div>
+            {(!inv.payments || inv.payments.length === 0) ? (
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>
+                No payments recorded yet.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {inv.payments.map((p, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "10px 14px" }}>
+                    <div>
+                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{p.amount.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 2 }}>{p.utr} · {p.method}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>{p.firmName || "Surat Zari Works"}</span>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{p.date}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Financial breakdown */}
@@ -1467,12 +1966,6 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
               <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 6, textAlign: "right" }}>{pct}% collected</div>
             </div>
           </div>
-
-          {isPaid && dispatch?.invoiceNumber && (
-            <div style={{ background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 10, padding: "12px 16px", fontFamily: F.ui, fontSize: 13, color: T.green }}>
-              Paid in full.
-            </div>
-          )}
 
           <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Firm that raised this invoice: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{firmName}</span></div>
         </div>
@@ -1627,7 +2120,148 @@ function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: (
   );
 }
 
+// ── Payment Reminders Modal ───────────────────────────────────────────────────
+function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
+  const [sending, setSending] = useState(false);
+  const [channels, setChannels] = useState({ whatsapp: true, email: true, sms: false });
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(overdueInvoices[0]?.id || "");
+  const [scheduleType, setScheduleType] = useState("immediate");
+
+  useEffect(() => {
+    if (overdueInvoices.length > 0 && !selectedInvoiceId) {
+      setSelectedInvoiceId(overdueInvoices[0].id);
+    }
+  }, [overdueInvoices, selectedInvoiceId]);
+
+  if (!open) return null;
+
+  const currentInvoice = overdueInvoices.find(i => i.id === selectedInvoiceId) || overdueInvoices[0];
+
+  const handleSend = () => {
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      toast.success(`Successfully sent payment reminders to ${overdueInvoices.length} customers!`);
+      onClose();
+    }, 1200);
+  };
+
+  const getPreviewText = (inv: Invoice) => {
+    if (!inv) return "";
+    const balance = inv.total - inv.paid;
+    return `Dear ${inv.customer},\n\nThis is a friendly reminder from Beere Kesava & Brothers Silks. Your invoice ${inv.id} for ₹${balance.toLocaleString("en-IN")} was due on ${inv.dueDate} (${inv.daysOverdue || 0} days overdue).\n\nPlease process the payment at your earliest convenience. If already paid, please share the UTR reference.\n\nRegards,\nAccounts Team\nBeere Kesava & Brothers Silks`;
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 450, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
+        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
+        style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
+      >
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
+          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", display: "flex", alignItems: "center", gap: 10 }}>
+            <CalendarClock size={22} color={T.antiqueGold} />
+            Set Payment Reminders
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
+            Configure and schedule alerts for {overdueInvoices.length} overdue invoices
+          </div>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Overdue Invoices List Selection */}
+          <div>
+            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</label>
+            <select value={selectedInvoiceId} onChange={e => setSelectedInvoiceId(e.target.value)}
+              style={{ width: "100%", height: 40, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
+              {overdueInvoices.map(i => (
+                <option key={i.id} value={i.id}>
+                  {i.customer} ({i.id}) — ₹{(i.total - i.paid).toLocaleString("en-IN")} ({i.daysOverdue}d late)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reminder Preview Box */}
+          {currentInvoice && (
+            <div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Reminder Message Preview</div>
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", whiteSpace: "pre-wrap" as const, fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5, maxHeight: 180, overflowY: "auto" }}>
+                {getPreviewText(currentInvoice)}
+              </div>
+            </div>
+          )}
+
+          {/* Channels Choice */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Notification Channels</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+              {[
+                { key: "whatsapp", label: "WhatsApp Chat", sub: "Auto-send message" },
+                { key: "email", label: "Official Email", sub: "Send PDF copy" },
+                { key: "sms", label: "SMS Alert", sub: "Basic SMS text" }
+              ].map(ch => (
+                <label key={ch.key} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "12px 14px", background: "#FFFFFF", border: `1.5px solid ${channels[ch.key as keyof typeof channels] ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, cursor: "pointer", position: "relative" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={channels[ch.key as keyof typeof channels]}
+                      onChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
+                      style={{ accentColor: T.royalBurgundy }}
+                    />
+                    <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
+                  </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginLeft: 22 }}>{ch.sub}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Alert Schedule options */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Reminder Schedule</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {[
+                { key: "immediate", label: "Send Immediately", desc: "One-time broadcast" },
+                { key: "daily", label: "Daily (Until Paid)", desc: "Gentle nudge daily" },
+                { key: "weekly", label: "Weekly (Every Mon)", desc: "Structured reminder" }
+              ].map(s => (
+                <button
+                  key={s.key}
+                  onClick={() => setScheduleType(s.key)}
+                  style={{
+                    flex: 1, padding: "12px 10px", borderRadius: 10,
+                    background: scheduleType === s.key ? "rgba(110,15,45,0.05)" : "#FFFFFF",
+                    border: `1.5px solid ${scheduleType === s.key ? T.royalBurgundy : T.borderDef}`,
+                    fontFamily: F.ui, textAlign: "center" as const, cursor: "pointer",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: scheduleType === s.key ? T.royalBurgundy : T.luxuryBrown }}>{s.label}</div>
+                  <div style={{ fontSize: 10.5, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: "18px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSend} disabled={sending} style={{ height: 42, padding: "0 28px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+            {sending ? "Sending..." : "Confirm & Send"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function WholesaleCollectionsSection() {
+  const { dispatches } = useFinishing();
   const { bulkOrders } = useBulkOrders();
   const { firms, addIncomeEntry } = useFirms();
   const [invoices, setInvoices] = useState<Invoice[]>(INVOICES);
@@ -1642,6 +2276,32 @@ function WholesaleCollectionsSection() {
   const [filterState, setFilterState] = useState("All States");
   const [filterCust, setFilterCust] = useState("All Customers");
   const [filterType, setFilterType] = useState("All Invoice Types");
+
+  // Synchronize dispatches
+  useEffect(() => {
+    setInvoices(prev => {
+      const updated = [...prev];
+      dispatches.forEach(d => {
+        if (d.type === "wholesale" && d.invoiceNumber) {
+          const exists = updated.some(i => i.id === d.invoiceNumber);
+          if (!exists) {
+            updated.push({
+              id: d.invoiceNumber,
+              customer: d.customerName || "Wholesale Customer",
+              city: "Surat",
+              invoiceDate: d.invoiceDate || new Date().toLocaleDateString("en-IN"),
+              dueDate: d.paymentDueDate || new Date().toLocaleDateString("en-IN"),
+              total: d.grandTotal || d.totalAmount || 0,
+              paid: 0,
+              status: "Pending",
+              payments: []
+            });
+          }
+        }
+      });
+      return updated;
+    });
+  }, [dispatches]);
 
   // Match invoice ID (INV-2026-XXX) to bulk order ref (ORD-2026-XXX) by trailing number
   const matchBulkOrder = (invId: string): BulkOrder | undefined => {
@@ -1829,25 +2489,59 @@ function WholesaleCollectionsSection() {
 
         {/* ── List view ────────────────────────────────────────── */}
         {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32 }}>
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
             {filtered.map((inv, i) => {
               const rem = inv.total - inv.paid;
               return (
-                <div key={inv.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}` }}>
-                  <div style={{ flex: "0 0 130px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{inv.id}</div>
-                  <div style={{ flex: "0 0 210px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</div>
+                <div
+                  key={inv.id}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 16, padding: "14px 20px",
+                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                    borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}`,
+                    transition: "background-color 0.15s ease",
+                  }}
+                >
+                  <div style={{ flex: "0 0 130px" }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
+                  </div>
+                  <div style={{ flex: "0 0 230px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                      <MapPin size={11} />{inv.city}
+                      <MapPin size={12} />{inv.city}
                     </div>
                   </div>
-                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>₹{inv.total.toLocaleString("en-IN")}</div>
-                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 600 }}>
-                    {rem === 0 ? "— Paid" : `₹${rem.toLocaleString("en-IN")}`}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>₹{inv.total.toLocaleString("en-IN")}</div>
                   </div>
-                  <div style={{ flex: "0 0 110px", fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.taupe, fontWeight: inv.status === "Overdue" ? 600 : 400 }}>{inv.dueDate}</div>
-                  <InvBadge status={inv.status} />
-                  <button onClick={() => setViewInvoice(inv)} style={{ padding: "6px 14px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>View</button>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
+                      {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
+                    </div>
+                  </div>
+                  <div style={{ flex: "0 0 130px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 500 }}>{inv.dueDate}</div>
+                  </div>
+                  <div style={{ flex: "0 0 150px" }}>
+                    <InvBadge status={inv.status} />
+                  </div>
+                  <button
+                    onClick={() => setViewInvoice(inv)}
+                    style={{
+                      padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
+                      background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                      color: T.royalBurgundy, cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+                  >
+                    View
+                  </button>
                 </div>
               );
             })}
@@ -1902,11 +2596,32 @@ function WholesaleCollectionsSection() {
                         <td style={{ ...TD, textAlign: "center" as const }}><InvBadge status={inv.status} /></td>
                         <td style={{ ...TD, textAlign: "center" as const }}>
                           <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                            <button onClick={() => setViewInvoice(inv)} style={{ padding: "5px 12px", background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                              <Eye size={12} />View
+                            <button
+                              onClick={() => setViewInvoice(inv)}
+                              style={{
+                                padding: "6px 12px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
+                                background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                                color: T.royalBurgundy, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+                            >
+                              <Eye size={12} /> View
                             </button>
                             {inv.status !== "Paid" && (
-                              <button onClick={() => setRecordPayment(inv)} style={{ padding: "5px 12px", background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Pay</button>
+                              <button
+                                onClick={() => setRecordPayment(inv)}
+                                style={{
+                                  padding: "6px 14px", background: T.royalBurgundy, color: "#FFFDF9",
+                                  border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                                  cursor: "pointer", transition: "all 0.2s ease"
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
+                              >
+                                Pay
+                              </button>
                             )}
                           </div>
                         </td>
@@ -1937,7 +2652,7 @@ function WholesaleCollectionsSection() {
         )}
 
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Collections Report" desc="Generate and download the wholesale customer collections report." actionLabel="Download" icon={Download} />
-        <ActionModal open={remindersModal} onClose={() => setRemindersModal(false)} title="Send Reminders" desc={`Send payment reminders to ${overdueInvs.length} customers for overdue invoices.`} actionLabel="Send Now" icon={Mail} />
+        <PaymentRemindersModal open={remindersModal} onClose={() => setRemindersModal(false)} overdueInvoices={overdueInvs} />
         <AnimatePresence>
           {viewInvoice && <ViewInvoiceModal inv={viewInvoice} bulkOrderData={matchBulkOrder(viewInvoice.id)} onClose={() => setViewInvoice(null)} />}
           {recordPayment && <RecordPaymentModal inv={recordPayment} onClose={() => setRecordPayment(null)} onSave={handleSavePayment} />}
@@ -1967,6 +2682,14 @@ const VENDOR_PAYMENTS: VendorPayment[] = [
   { id: "VP-005", vendor: "Ratan Zari Works",           poNumber: "PO-2026-031", invoiceAmt: 150000, paidAmt: 0,      dueDate: "12 May 2026", status: "Overdue", daysOverdue: 18 },
 ];
 
+// Vendor contact info (static demo — in production would come from vendor master)
+const VENDOR_CONTACTS: Record<string, { phone: string; email: string; city: string; contactPerson: string }> = {
+  "Surat Zari Works":           { phone: "+91 98765 43210", email: "suratZari@example.com",      city: "Surat, Gujarat",       contactPerson: "Ramesh Patel"    },
+  "Kanchipuram Silks":          { phone: "+91 97654 32109", email: "kanchSilks@example.com",      city: "Kanchipuram, Tamil Nadu", contactPerson: "S. Sundaram"    },
+  "Sri Venkateswara Textiles":  { phone: "+91 96543 21098", email: "sriVenkat@example.com",       city: "Hyderabad, Telangana",  contactPerson: "Venkat Reddy"   },
+  "Ratan Zari Works":           { phone: "+91 95432 10987", email: "ratanZari@example.com",       city: "Varanasi, UP",          contactPerson: "Ratan Gupta"    },
+};
+
 const VENDOR_STATUS_CFG: Record<VendorStatus, { bg: string; color: string; label: string }> = {
   Paid:    { bg: "rgba(30,102,64,0.10)",   color: "#1E6640", label: "✓ Paid"    },
   Partial: { bg: "rgba(200,155,71,0.13)",  color: "#8B6018", label: "◑ Partial" },
@@ -1983,6 +2706,194 @@ function VendorBadge({ status }: { status: VendorStatus }) {
   );
 }
 
+// ── Contact Vendor Modal ──────────────────────────────────────────────────────
+function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
+  const [selected, setSelected] = useState(vendors[0]?.id ?? "");
+  const [msgType, setMsgType]   = useState<"whatsapp"|"email"|"call">("whatsapp");
+  const [sending, setSending]   = useState(false);
+  const [sent, setSent]         = useState(false);
+
+  const vp      = vendors.find(v => v.id === selected) ?? vendors[0];
+  const contact = VENDOR_CONTACTS[vp?.vendor ?? ""] ?? { phone: "—", email: "—", city: "—", contactPerson: "—" };
+  const balance = vp ? vp.invoiceAmt - vp.paidAmt : 0;
+
+  const handleSend = () => {
+    setSending(true);
+    setTimeout(() => { setSending(false); setSent(true); setTimeout(() => setSent(false), 2200); }, 900);
+  };
+
+  const CHANNELS = [
+    { key: "whatsapp" as const, label: "WhatsApp",   icon: "💬", desc: "Send WhatsApp message" },
+    { key: "email"    as const, label: "Email",      icon: "📧", desc: "Send formal email"     },
+    { key: "call"     as const, label: "Call",       icon: "📞", desc: "Call vendor directly"  },
+  ];
+
+  const MESSAGE_PREVIEW = `Dear ${contact.contactPerson},
+
+This is a payment reminder from Beers Keshara & Brothers Silks regarding PO ${vp?.poNumber}.
+
+Outstanding Balance: ₹${balance.toLocaleString("en-IN")}
+Original Due Date: ${vp?.dueDate ?? "—"}${vp?.daysOverdue ? `\nDays Overdue: ${vp.daysOverdue} days` : ""}
+
+Please advise on payment status at your earliest convenience.
+
+Thank you.`;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.60)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(6px)" }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.24, ease: EASE }} onClick={e => e.stopPropagation()}
+        style={{ background: T.warmIvory, borderRadius: 24, width: 640, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 32px 90px rgba(44,6,27,0.35)", border: `1px solid ${T.borderDef}` }}
+      >
+        {/* Header */}
+        <div style={{ background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "26px 28px", position: "relative", borderRadius: "24px 24px 0 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 6 }}>
+            <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Phone size={22} color="#FFFDF9" />
+            </div>
+            <div>
+              <div style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: "#FFFDF9" }}>Contact Vendor</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ position: "absolute", top: 18, right: 18, width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.14)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
+
+          {/* Vendor selector */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Vendor to Contact</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {vendors.map(v => {
+                const bal = v.invoiceAmt - v.paidAmt;
+                const isSelected = selected === v.id;
+                return (
+                  <div key={v.id}
+                    onClick={() => setSelected(v.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14,
+                      padding: "14px 16px", borderRadius: 12, cursor: "pointer",
+                      border: `2px solid ${isSelected ? T.royalBurgundy : T.borderDef}`,
+                      background: isSelected ? "rgba(110,15,45,0.05)" : "#FFFFFF",
+                      transition: "all 0.16s ease",
+                    }}
+                  >
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: isSelected ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Package size={18} color={T.royalBurgundy} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{v.vendor}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, marginTop: 2 }}>{v.poNumber}</div>
+                    </div>
+                    <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{bal.toLocaleString("en-IN")}</div>
+                      {v.daysOverdue && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2 }}>{v.daysOverdue}d overdue</div>}
+                    </div>
+                    {isSelected && <div style={{ width: 20, height: 20, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CheckCircle2 size={12} color="#FFF" /></div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Vendor contact card */}
+          {vp && (
+            <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+              <div style={{ background: `linear-gradient(135deg, rgba(110,15,45,0.06), rgba(200,155,71,0.06))`, padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}` }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>Vendor Contact Details</div>
+              </div>
+              <div style={{ padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
+                {[
+                  { label: "Contact Person", val: contact.contactPerson, icon: "👤" },
+                  { label: "City / Location", val: contact.city, icon: "📍" },
+                  { label: "Phone Number",    val: contact.phone,          icon: "📞" },
+                  { label: "Email Address",   val: contact.email,          icon: "📧" },
+                ].map(row => (
+                  <div key={row.label}>
+                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{row.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>{row.icon}</span>{row.val}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Quick action buttons */}
+              <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10 }}>
+                <a href={`tel:${contact.phone}`}
+                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.06)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green }}>
+                  📞 Call Now
+                </a>
+                <a href={`mailto:${contact.email}`}
+                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>
+                  📧 Email
+                </a>
+                <a href={`https://wa.me/${contact.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(37,211,102,0.35)`, borderRadius: 9, background: "rgba(37,211,102,0.07)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: "#128C7E" }}>
+                  💬 WhatsApp
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Channel picker */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Send Payment Reminder Via</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {CHANNELS.map(ch => (
+                <div key={ch.key}
+                  onClick={() => setMsgType(ch.key)}
+                  style={{
+                    flex: 1, padding: "14px 12px", borderRadius: 12, cursor: "pointer",
+                    border: `2px solid ${msgType === ch.key ? T.royalBurgundy : T.borderDef}`,
+                    background: msgType === ch.key ? "rgba(110,15,45,0.05)" : "#FFFFFF",
+                    textAlign: "center" as const, transition: "all 0.16s",
+                  }}
+                >
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>{ch.icon}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: msgType === ch.key ? T.royalBurgundy : T.luxuryBrown }}>{ch.label}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{ch.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Message preview */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Message Preview</div>
+            <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe, lineHeight: 1.75, whiteSpace: "pre-wrap" as const }}>
+              {MESSAGE_PREVIEW}
+            </div>
+          </div>
+
+          {/* Send button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={handleSend}
+            disabled={sending || sent}
+            style={{
+              width: "100%", height: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              border: "none", borderRadius: 12,
+              background: sent ? T.green : `linear-gradient(135deg, ${T.royalBurgundy}, ${T.deepWine})`,
+              fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: "#FFFDF9",
+              cursor: sending || sent ? "default" : "pointer",
+              transition: "background 0.3s ease",
+              opacity: sending ? 0.8 : 1,
+            }}
+          >
+            {sent ? (<><CheckCircle2 size={18} /> Reminder Sent Successfully!</>) :
+             sending ? "Sending…" :
+             (<><Mail size={17} /> Send Reminder via {CHANNELS.find(c => c.key === msgType)?.label}</>)}
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
   const pct = Math.round((vp.paidAmt / vp.invoiceAmt) * 100);
@@ -1991,22 +2902,28 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: 
   const vendorName = matchedPO?.vendor ?? vp.vendor;
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", width: "100%" }}>
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(59,35,20,0.12)" }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
+      style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", width: "100%" }}
+    >
       {/* Top accent bar */}
       <div style={{ height: 4, background: cfg.color, flexShrink: 0 }} />
 
       {/* Header */}
-      <div style={{ padding: "18px 20px 12px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, flexShrink: 0 }}>
+      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 10, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
-          <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.07)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <FileText size={20} color={T.royalBurgundy} />
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25, marginBottom: 3 }}>{vendorName}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{vp.id}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{vp.id}</div>
           </div>
         </div>
-        <VendorBadge status={vp.status} />
+        <div style={{ flexShrink: 0 }}>
+          <VendorBadge status={vp.status} />
+        </div>
       </div>
 
       {/* PO / Firm row */}
@@ -2016,23 +2933,24 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: 
           <div onClick={onViewPO}
             onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
             onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-            style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, fontWeight: 600, cursor: onViewPO ? "pointer" : "default" }}>{vp.poNumber}</div>
+            style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, fontWeight: 700, cursor: onViewPO ? "pointer" : "default" }}>{vp.poNumber}</div>
         </div>
         <div style={{ flex: 1, paddingLeft: 14 }}>
           <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>Firm Name</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{matchedPO?.firmName ?? "—"}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{matchedPO?.firmName ?? "—"}</div>
         </div>
       </div>
 
       {/* Materials summary row */}
       {matchedPO && (
         <div style={{ padding: "0 20px 14px", flexShrink: 0 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>Materials</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Materials Ordered</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {matchedPO.materials.map((m, i) => (
-              <div key={i} style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 6px", borderRadius: 5, marginRight: 6 }}>{m.materialType}</span>
-                {m.description || m.subtype} — {m.quantity} {m.unit}
+              <div key={i} style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 9.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4 }}>{m.materialType}</span>
+                <span style={{ flex: 1 }}>{m.description || m.subtype}</span>
+                <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
               </div>
             ))}
           </div>
@@ -2040,61 +2958,103 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: 
       )}
 
       {/* Due date row */}
-      <div style={{ padding: "0 20px 14px", flexShrink: 0 }}>
+      <div style={{ padding: "0 20px 16px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, color: vp.status === "Overdue" ? T.crimson : T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 5 }}>
           <CalendarClock size={11} />Due Date
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 22 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: vp.status === "Overdue" ? 700 : 400, color: vp.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{vp.dueDate}</span>
-          {vp.daysOverdue
-            ? <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 7px", borderRadius: 5 }}>{vp.daysOverdue}d late</span>
-            : <span style={{ display: "inline-block", width: 0 }} />}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: vp.status === "Overdue" ? 700 : 500, color: vp.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{vp.dueDate}</span>
+          {vp.daysOverdue ? (
+            <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5, fontWeight: 700 }}>{vp.daysOverdue}d late</span>
+          ) : null}
         </div>
       </div>
 
-      {/* Financials — flex: 1 so all cards same height */}
-      <div style={{ padding: "14px 20px 16px", background: T.silkCream, margin: "0 14px 0", borderRadius: 11, flex: 1 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Invoice Amount</span>
-          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>
+      {/* Financials */}
+      <div style={{ padding: "16px 20px", background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", margin: "0 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice Amount</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14.5, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Paid So Far</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Paid So Far</span>
           <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.green }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Balance Due</span>
-          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8, marginBottom: 4 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Balance Due</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14.5, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
             {isPaid ? "Fully Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
           </span>
         </div>
-        <div style={{ height: 8, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold, borderRadius: 99 }} />
+        
+        {/* Progress bar */}
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 5 }}>
+            <span>Payment progress</span>
+            <span style={{ fontFamily: F.mono, fontWeight: 700, color: isPaid ? T.green : T.luxuryBrown }}>{pct}%</span>
+          </div>
+          <AnimBar pct={pct} color={isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold} height={5} trackBg="rgba(110,15,45,0.08)" />
         </div>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 6, textAlign: "right" as const }}>{pct}% paid</div>
         {vp.utr && (
-          <div style={{ marginTop: 8, fontFamily: F.mono, fontSize: 11, color: T.green, display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ marginTop: 6, fontFamily: F.mono, fontSize: 11, color: T.green, display: "flex", alignItems: "center", gap: 5 }}>
             <CheckCircle2 size={11} />UTR: {vp.utr}
           </div>
         )}
       </div>
 
-      {/* Action buttons — always two for equal height */}
-      <div style={{ padding: "14px 14px 16px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <button onClick={onView} style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-          <Eye size={13} />View Details
+      {/* Action buttons */}
+      <div style={{ padding: "14px 20px 8px", display: "flex", gap: 8, flexShrink: 0 }}>
+        <button
+          onClick={onView}
+          style={{
+            flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 9, background: "#fff",
+            fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+        >
+          <Eye size={13} /> Statement
         </button>
-        {isPaid ? (
-          <button style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green, cursor: "default" }}>
-            <CheckCircle2 size={13} />Fully Paid
-          </button>
-        ) : (
-          <button onClick={() => onPay(vp.id)} style={{ flex: 1, height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: "none", borderRadius: 9, background: selected ? T.deepWine : T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
-            <IndianRupee size={13} />Pay Now
+        {matchedPO && onViewPO && (
+          <button
+            onClick={onViewPO}
+            style={{
+              flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              border: `1.5px solid ${T.borderGold}`, borderRadius: 9, background: T.warmCream,
+              fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.antiqueGold, cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(200,155,71,0.15)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.warmCream; }}
+          >
+            <FileText size={13} /> View PO
           </button>
         )}
       </div>
-    </div>
+      <div style={{ padding: "8px 20px 18px", flexShrink: 0 }}>
+        {isPaid ? (
+          <button style={{ width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, cursor: "default" }}>
+            <CheckCircle2 size={13} /> Fully Settled ✓
+          </button>
+        ) : (
+          <button
+            onClick={() => onPay(vp.id)}
+            style={{
+              width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              border: "none", borderRadius: 10, background: selected ? T.deepWine : T.royalBurgundy,
+              fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
+            onMouseLeave={e => { e.currentTarget.style.background = selected ? T.deepWine : T.royalBurgundy; }}
+          >
+            <IndianRupee size={13} /> Pay Now
+          </button>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -2865,8 +3825,8 @@ function VendorPaymentsSection() {
         )}
 
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Vendor Report" desc="Generate and download the vendor payments report." actionLabel="Download" icon={Download} />
-        <ActionModal open={contactModal} onClose={() => setContactModal(false)} title="Contact Overdue Vendors" desc={`Send an automated email to ${overdueVendors.length} vendors regarding overdue payments.`} actionLabel="Contact Now" icon={Mail} />
         <AnimatePresence>
+          {contactModal && <ContactVendorModal vendors={overdueVendors} onClose={() => setContactModal(false)} />}
           {viewDetails && <VendorDetailModal vp={viewDetails} matchedPO={matchPO(viewDetails.poNumber)} onClose={() => setViewDetails(null)} />}
           {payNow && <VendorPayNowModal vp={payNow} onClose={() => setPayNow(null)} onSave={handleSavePayment} />}
         </AnimatePresence>
@@ -2980,37 +3940,51 @@ function PaymentAnalyticsSection() {
               Visual breakdown of cash flow, customer compliance, and top weaver earnings.
             </p>
           </div>
-          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: "linear-gradient(135deg,rgba(200,155,71,0.18),rgba(200,155,71,0.06))", border: `1px solid ${T.borderGold}`, borderRadius: 9, cursor: "pointer" }}>
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: 7, padding: "10px 18px",
+              background: "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))",
+              border: `1.5px solid ${T.borderGold}`, borderRadius: 10, cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.22), rgba(200,155,71,0.08))"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))"; }}
+          >
             <Download size={15} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.antiqueGold }}>Export Report</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
           </button>
         </div>
 
         {/* ── 4 summary stat cards ───────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 18, marginBottom: 24, alignItems: "stretch" }}>
           {METRICS.map((m, i) => (
-            <div key={m.label} style={{
-              display: "flex", flexDirection: "column", gap: 10,
-              background: m.hi ? `linear-gradient(145deg,${T.warmCream},#FDF6E4)` : T.warmIvory,
-              borderRadius: 16,
-              border: m.hi ? `1px solid ${T.borderGold}` : `1px solid ${T.borderDef}`,
-              borderTop: m.hi ? `3px solid ${T.antiqueGold}` : `1px solid ${T.borderDef}`,
-              boxShadow: m.hi ? "0 4px 20px rgba(200,155,71,0.12)" : "0 2px 12px rgba(74,6,27,0.06)",
-              padding: "20px 20px 20px",
-            }}>
+            <motion.div
+              key={m.label}
+              whileHover={{ y: -5, boxShadow: m.hi ? "0 8px 24px rgba(200,155,71,0.18)" : "0 8px 20px rgba(74,6,27,0.10)" }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              style={{
+                display: "flex", flexDirection: "column", gap: 10,
+                background: m.hi ? `linear-gradient(145deg, ${T.warmCream}, #FDF6E4)` : T.warmIvory,
+                borderRadius: 18,
+                border: m.hi ? `1.5px solid ${T.borderGold}` : `1.5px solid ${T.borderDef}`,
+                borderTop: m.hi ? `3px solid ${T.antiqueGold}` : `1.5px solid ${T.borderDef}`,
+                boxShadow: m.hi ? "0 4px 20px rgba(200,155,71,0.12)" : "0 2px 12px rgba(74,6,27,0.06)",
+                padding: "20px",
+              }}
+            >
               {/* Icon box */}
               <div style={{ width: 44, height: 44, borderRadius: 12, background: m.iconBg, border: `1px solid ${m.iconBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {m.icon}
               </div>
               {/* Label */}
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, lineHeight: 1.4 }}>{m.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, lineHeight: 1.4 }}>{m.label}</div>
               {/* Value */}
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: m.color, lineHeight: 1.1 }}>
+              <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 800, color: m.color, lineHeight: 1.1 }}>
                 <AnimCount raw={m.value} />
               </div>
               {/* Sub */}
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: "auto" }}>{m.sub}</div>
-            </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: "auto" }}>{m.sub}</div>
+            </motion.div>
           ))}
         </div>
 
@@ -3198,89 +4172,112 @@ function HistoryCard({ r }: { r: PayHistRecord }) {
   const isPaid    = r.status === "Paid";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%", borderRadius: 16, background: T.warmIvory, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.07)", overflow: "hidden" }}>
-
-      {/* Accent bar */}
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(59,35,20,0.12)" }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
+      style={{ display: "flex", flexDirection: "column", width: "100%", borderRadius: 20, background: T.warmIvory, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}
+    >
+      {/* Top accent bar */}
       <div style={{ height: 4, background: typeCfg.border, flexShrink: 0 }} />
 
-      {/* Header: icon + party + type badge + status */}
-      <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "flex-start", gap: 13, borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-        <div style={{ width: 46, height: 46, borderRadius: 12, background: iconBg, border: `1px solid ${iconBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Icon size={22} color={iconColor} />
+      {/* Header */}
+      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 12, borderBottom: `1px solid rgba(110,15,45,0.06)`, flexShrink: 0 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: iconBg, border: `1px solid ${iconBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon size={20} color={iconColor} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.party}</div>
-          <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+          <div style={{ fontFamily: F.display, fontSize: 15.5, fontWeight: 700, color: T.luxuryBrown, marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.party}</div>
+          <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
         </div>
-        <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
+        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
           {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
         </span>
       </div>
 
-      {/* Amount */}
-      <div style={{ padding: "14px 18px 14px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 5 }}>
-          {isReceipt ? "Amount Received" : "Amount Paid"}
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
-          {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
-        </div>
-      </div>
-
-      {/* Meta grid: date | ref no */}
-      <div style={{ padding: "13px 18px 0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flexShrink: 0 }}>
+      {/* Body / Amount */}
+      <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.06)`, flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>Date</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 22 }}>
-            <CalendarClock size={13} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span>
+          <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>
+            {isReceipt ? "Amount Received" : "Amount Paid"}
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 800, color: isReceipt ? T.green : T.crimson }}>
+            {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
           </div>
         </div>
-        <div style={{ borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 14 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>Ref No</div>
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 600 }}>{r.refNo}</span>
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>Date</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 700 }}>{r.date}</div>
         </div>
       </div>
 
-      {/* Meta grid: mode | invoice/PO */}
-      <div style={{ padding: "12px 18px 0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flexShrink: 0 }}>
+      {/* Meta Grid */}
+      <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px", flexShrink: 0, borderBottom: `1px solid rgba(110,15,45,0.06)` }}>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>Payment Mode</div>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.mode}</span>
+          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{r.refNo}</span>
         </div>
-        <div style={{ borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 14 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>Invoice / PO</div>
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{r.invoicePO ?? "—"}</span>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.invoicePO ?? "—"}</span>
+        </div>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Payment Mode</div>
+          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 500 }}>{r.mode}</span>
+        </div>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Recorded By</div>
+          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{r.recordedBy}</span>
         </div>
       </div>
 
-      {/* Description — flex: 1 fills remaining space */}
-      <div style={{ flex: 1, padding: "12px 18px 0" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>Description</div>
-        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.55 }}>{r.description}</span>
+      {/* UTR / Description info */}
+      <div style={{ padding: "14px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>Description</div>
+          <p style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.5, margin: 0 }}>{r.description}</p>
+        </div>
+        {r.utr && (
+          <div style={{ borderTop: `1px dashed rgba(110,15,45,0.08)`, paddingTop: 8, marginTop: 4 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>UTR / Reference ID</div>
+            <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.green, fontWeight: 700 }}>{r.utr}</span>
+          </div>
+        )}
       </div>
 
-      {/* UTR row — always renders */}
-      <div style={{ padding: "12px 18px 0", flexShrink: 0 }}>
-        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 5 }}>UTR / Transaction ID</div>
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: r.utr ? T.green : T.borderDef }}>{r.utr ?? "—"}</span>
-      </div>
-
-      {/* Buttons — always 2 for equal height */}
-      <div style={{ padding: "14px 18px 16px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 0", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#FFFFFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
-          <Eye size={14} />View Details
+      {/* Actions */}
+      <div style={{ padding: "14px 20px 20px", display: "flex", gap: 8, flexShrink: 0 }}>
+        <button
+          style={{
+            flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 10, background: "#fff",
+            fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
+            transition: "all 0.15s ease"
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+        >
+          <Eye size={13} /> View Details
         </button>
-        {isPaid
-          ? <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 0", border: "1px solid rgba(30,102,64,0.25)", borderRadius: 9, background: T.greenBg, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green, cursor: "default" }}>
-              <BadgeCheck size={14} />Completed
-            </button>
-          : <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 0", border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
-              <UploadCloud size={14} />Update Status
-            </button>
-        }
+        {isPaid ? (
+          <button style={{ flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green, cursor: "default" }}>
+            <BadgeCheck size={14} /> Completed
+          </button>
+        ) : (
+          <button
+            style={{
+              flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              border: "none", borderRadius: 10, background: T.royalBurgundy,
+              fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
+          >
+            <UploadCloud size={13} /> Update Status
+          </button>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -3294,7 +4291,7 @@ function PaymentHistorySection() {
   const [typeFilter,   setTypeFilter]   = useState("All Payment Types");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [search,       setSearch]       = useState("");
-  const [view,         setView]         = useState<"card" | "table">("card");
+  const [view,         setView]         = useState<"card" | "list" | "table">("card");
   const [page,         setPage]         = useState(1);
   const PER_PAGE = 10;
 
@@ -3319,14 +4316,14 @@ function PaymentHistorySection() {
 
   const viewOptions = [
     { key: "card"  as const, Icon: LayoutGrid,   label: "Card View"  },
+    { key: "list"  as const, Icon: LayoutList,   label: "List View"  },
     { key: "table" as const, Icon: AlignJustify, label: "Table View" },
   ];
 
   const HIST_STATS = [
-    { icon: <ArrowDownCircle size={22} color={T.green}         />, iconBg: T.greenBg,                 iconBorder: "rgba(30,102,64,0.18)",  label: "Total Collected",       value: `₹${totalIn.toLocaleString("en-IN")}`,       sub: "Customer receipts · period", color: T.green,         hi: false },
-    { icon: <ArrowUpCircle   size={22} color={T.crimson}       />, iconBg: T.crimsonBg,               iconBorder: "rgba(192,57,43,0.18)",  label: "Total Paid Out",        value: `₹${totalOut.toLocaleString("en-IN")}`,      sub: "Vendor & weaver payments",   color: T.crimson,       hi: false },
-    { icon: <TrendingUp      size={22} color={T.antiqueGold}   />, iconBg: "rgba(200,155,71,0.12)",   iconBorder: T.borderGold,            label: "Net Cash Flow",         value: `₹${Math.abs(netFlow).toLocaleString("en-IN")}`, sub: netFlow >= 0 ? "Positive flow" : "Net outflow", color: netFlow >= 0 ? T.green : T.crimson, hi: true },
-    { icon: <Receipt         size={22} color={T.royalBurgundy} />, iconBg: "rgba(110,15,45,0.08)",    iconBorder: T.borderDef,             label: "Total Transactions",    value: `${filtered.length}`,                        sub: "Records in selected period", color: T.royalBurgundy, hi: false },
+    { icon: <ArrowDownCircle size={22} color={T.green}         />, iconBg: T.greenBg,                 iconBorder: "rgba(30,102,64,0.18)",  label: "Total Collected",  value: `₹${totalIn.toLocaleString("en-IN")}`,           sub: "Customer receipts · period", color: T.green,         hi: false },
+    { icon: <ArrowUpCircle   size={22} color={T.crimson}       />, iconBg: T.crimsonBg,               iconBorder: "rgba(192,57,43,0.18)",  label: "Total Paid Out",   value: `₹${totalOut.toLocaleString("en-IN")}`,          sub: "Vendor & weaver payments",   color: T.crimson,       hi: false },
+    { icon: <TrendingUp      size={22} color={T.antiqueGold}   />, iconBg: "rgba(200,155,71,0.12)",   iconBorder: T.borderGold,            label: "Net Cash Flow",    value: `₹${Math.abs(netFlow).toLocaleString("en-IN")}`, sub: netFlow >= 0 ? "Positive flow" : "Net outflow", color: netFlow >= 0 ? T.green : T.crimson, hi: true },
   ];
 
   return (
@@ -3351,7 +4348,7 @@ function PaymentHistorySection() {
         </div>
 
         {/* ── 4 Summary stat cards ───────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 18, marginBottom: 22, alignItems: "stretch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 22, alignItems: "stretch" }}>
           {HIST_STATS.map(s => (
             <div key={s.label} style={{
               display: "flex", flexDirection: "column", gap: 10,
@@ -3427,7 +4424,7 @@ function PaymentHistorySection() {
 
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, alignItems: "stretch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, alignItems: "stretch", marginBottom: 32 }}>
             {filtered.map((r, i) => (
               <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
                 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
@@ -3439,6 +4436,96 @@ function PaymentHistorySection() {
               <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
                 <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>No transactions match your filters.</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── LIST VIEW ────────────────────────────────────────── */}
+        {view === "list" && (
+          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "60px 0", textAlign: "center" as const }}>
+                <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
+                <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>No transactions match your filters.</div>
+              </div>
+            ) : filtered.map((r, i) => {
+              const typeCfg = HIST_TYPE_CFG[r.type];
+              const stsCfg  = HIST_STATUS_CFG[r.status];
+              const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
+              const isReceipt = r.type === "Customer Receipt";
+              return (
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.04, ease: EASE }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
+                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                    borderBottom: `1px solid ${T.borderDef}`,
+                    borderLeft: `4px solid ${typeCfg.border}`,
+                  }}
+                >
+                  {/* Icon */}
+                  <div style={{ width: 42, height: 42, borderRadius: 11, background: iconBg, border: `1px solid ${typeCfg.border}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <HistIcon size={18} color={iconColor} />
+                  </div>
+
+                  {/* Party + Type */}
+                  <div style={{ flex: "0 0 200px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
+                    <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+                  </div>
+
+                  {/* Description */}
+                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                    {r.description}
+                  </div>
+
+                  {/* Ref + PO */}
+                  <div style={{ flex: "0 0 130px" }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.royalBurgundy, fontWeight: 600 }}>{r.refNo}</div>
+                    {r.invoicePO && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
+                  </div>
+
+                  {/* Date */}
+                  <div style={{ flex: "0 0 100px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
+
+                  {/* Amount */}
+                  <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
+                      {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
+                    </div>
+                    {r.utr && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.green, marginTop: 2 }}>{r.utr}</div>}
+                  </div>
+
+                  {/* Status badge */}
+                  <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
+                    {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
+                  </span>
+
+                  {/* Mode + Recorded */}
+                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                    <div>{r.mode}</div>
+                    <div style={{ marginTop: 2, fontSize: 11 }}>{r.recordedBy}</div>
+                  </div>
+
+                  {/* View button */}
+                  <button style={{ padding: "6px 14px", border: `1px solid ${T.borderDef}`, borderRadius: 8, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", flexShrink: 0 }}>
+                    <Eye size={13} />
+                  </button>
+                </motion.div>
+              );
+            })}
+            {/* Summary footer */}
+            {filtered.length > 0 && (
+              <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmCream }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{filtered.length} transaction{filtered.length > 1 ? "s" : ""}</span>
+                <div style={{ display: "flex", gap: 24 }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 700 }}>+₹{totalIn.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 700 }}>−₹{totalOut.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: netFlow >= 0 ? T.green : T.crimson, fontWeight: 700, borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>Net: {netFlow >= 0 ? "+" : "−"}₹{Math.abs(netFlow).toLocaleString("en-IN")}</span>
+                </div>
               </div>
             )}
           </div>
@@ -3505,8 +4592,18 @@ function PaymentHistorySection() {
                         </td>
                         <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span></td>
                         <td style={{ ...TD, textAlign: "center" as const }}>
-                          <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-                            <Eye size={12} />View
+                          <button
+                            style={{
+                              display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px",
+                              border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
+                              background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                              color: T.royalBurgundy, cursor: "pointer",
+                              transition: "all 0.15s ease",
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+                          >
+                            <Eye size={12} /> View
                           </button>
                         </td>
                       </tr>

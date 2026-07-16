@@ -302,6 +302,17 @@ function MaterialRow({
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", gap: 5, marginBottom: 2 }}>
+                {["kg", "g"].map(u => (
+                  <button key={u} onClick={() => set("unit", u)} style={{
+                    flex: 1, padding: "7px 4px", borderRadius: 7, cursor: "pointer",
+                    fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                    background: item.unit === u ? T.royalBurgundy : T.warmIvory,
+                    color: item.unit === u ? "#FFFDF9" : T.taupe,
+                    border: item.unit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
+                  }}>{u}</button>
+                ))}
+              </div>
               <div style={{ position: "relative" }}>
                 <input
                   type="number" min={0}
@@ -309,20 +320,11 @@ function MaterialRow({
                   onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
                   style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
                 />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
               </div>
-              <div style={{ position: "relative" }}>
-                <input
-                  type="number" min={0}
-                  value={item.quantityGm || ""}
-                  onChange={e => set("quantityGm", parseFloat(e.target.value) || 0)}
-                  style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
-                />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.taupe }}>g</span>
-              </div>
-              {(item.quantity > 0 || item.quantityGm > 0) && (
+              {item.quantity > 0 && (
                 <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>
-                  = {((item.quantity * 1000) + (item.quantityGm || 0)).toFixed(0)} g total
+                  = {item.unit === "kg" ? `${(item.quantity * 1000).toFixed(0)} g` : `${(item.quantity / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>

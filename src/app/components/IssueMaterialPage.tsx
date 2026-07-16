@@ -87,6 +87,7 @@ interface MaterialRowState {
   jariGrade: "1G" | "2G" | "3G" | "4G" | "5G";
   jariColor: string;
   jariUnit: "Reels" | "Buns";
+  warpReshamUnit: "kg" | "g";
   grnBatchId: string;
 }
 
@@ -102,6 +103,7 @@ function emptyRow(): MaterialRowState {
     jariGrade: "2G",
     jariColor: "Gold",
     jariUnit: "Reels",
+    warpReshamUnit: "kg",
     grnBatchId: "",
   };
 }
@@ -252,7 +254,7 @@ function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRemove }: 
         </div>
         <div>
           <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
-            Quantity {row.materialType === "Jari" ? "(Reels / Buns)" : "(kg + g)"}
+            Quantity {row.materialType === "Jari" ? "(Reels / Buns)" : `(${row.warpReshamUnit || "kg"})`}
           </label>
           {row.materialType === "Jari" ? (
             <>
@@ -284,6 +286,16 @@ function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRemove }: 
             </>
           ) : (
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                {["kg", "g"].map(u => (
+                  <button key={u} onClick={() => patch({ warpReshamUnit: u as any })} style={{
+                    flex: 1, padding: "8px 4px", borderRadius: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600,
+                    border: `1.5px solid ${(row.warpReshamUnit || "kg") === u ? T.royalBurgundy : T.borderDef}`,
+                    background: (row.warpReshamUnit || "kg") === u ? T.royalBurgundy : "#FFF",
+                    color: (row.warpReshamUnit || "kg") === u ? "#FFF" : T.luxuryBrown,
+                  }}>{u}</button>
+                ))}
+              </div>
               <div style={{ position: "relative" as const }}>
                 <input
                   type="number"
@@ -292,21 +304,11 @@ function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRemove }: 
                   placeholder="0"
                   style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
                 />
-                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>
               </div>
-              <div style={{ position: "relative" as const }}>
-                <input
-                  type="number"
-                  value={row.quantityGm}
-                  onChange={e => patch({ quantityGm: e.target.value })}
-                  placeholder="0"
-                  style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
-                />
-                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe }}>g</span>
-              </div>
-              {(row.quantity || row.quantityGm) && (
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>
-                  = {((parseFloat(row.quantity || "0") * 1000) + parseFloat(row.quantityGm || "0")).toFixed(0)} g total
+              {row.quantity && (
+                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold }}>
+                  = {(row.warpReshamUnit || "kg") === "kg" ? `${(parseFloat(row.quantity) * 1000).toFixed(0)} g` : `${(parseFloat(row.quantity) / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>
@@ -433,6 +435,37 @@ function summarizeMaterials(items: IssuedMaterialItem[]): string {
   }).join(" · ");
 }
 
+function renderIssuedMaterials(items: IssuedMaterialItem[]) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      {items.map((m, idx) => {
+        let desc = "";
+        if (m.materialType === "Warp") {
+          desc = m.warpSubtype || "";
+          if (m.description) desc += desc ? ` (${m.description})` : m.description;
+        } else if (m.materialType === "Resham") {
+          desc = m.description || m.jariColor || "";
+        } else if (m.materialType === "Jari") {
+          desc = `${m.jariType || ""} ${m.jariGrade || ""} ${m.jariColor || ""}`.replace(/\s+/g, " ").trim();
+        }
+
+        return (
+          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ 
+              fontFamily: F.mono, fontSize: 9.5, fontWeight: 700,
+              color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : T.royalBurgundy, 
+              background: m.materialType === "Warp" ? "rgba(196,146,58,0.14)" : m.materialType === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
+              padding: "2px 6px", borderRadius: 4 
+            }}>{m.materialType}</span>
+            {desc && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{desc}</span>}
+            <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function materialIcon(type: string) {
   if (type === "Warp") return <Package size={14} color={T.royalBurgundy} />;
   if (type === "Resham") return <Layers size={14} color={T.royalBurgundy} />;
@@ -448,7 +481,7 @@ function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; 
         <div style={{ background: T.darkBurgundy, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700, marginBottom: 4 }}>{record.id}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
           </div>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={16} color="#FFF" /></button>
         </div>
@@ -562,6 +595,8 @@ export function IssueMaterialPage() {
   const [viewRecord, setViewRecord] = useState<MaterialIssueRecord | null>(null);
   const ROWS_PER_PAGE = 15;
 
+  const [selectedLoom, setSelectedLoom] = useState<number | "">("");
+
   const selectedWeaver = WEAVERS.find(w => w.id === selectedWeaverId) || null;
 
   const filteredWeavers = weaverSearch.length >= 1
@@ -571,7 +606,7 @@ export function IssueMaterialPage() {
   const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
 
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
-  const canConfirm = !!selectedWeaver && validRows.length > 0 && isSigned;
+  const canConfirm = !!selectedWeaver && selectedLoom !== "" && validRows.length > 0 && isSigned;
 
   function updateRow(uid: string, updated: MaterialRowState) {
     setRows(prev => prev.map(r => r.uid === uid ? updated : r));
@@ -585,6 +620,7 @@ export function IssueMaterialPage() {
 
   function resetForm() {
     setWeaverSearch(""); setSelectedWeaverId(null); setShowWeaverList(false);
+    setSelectedLoom("");
     setRows([emptyRow()]); setNotes("");
     setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
   }
@@ -596,7 +632,7 @@ export function IssueMaterialPage() {
       const base: IssuedMaterialItem = {
         materialType: r.materialType,
         quantity: parseFloat(r.quantity),
-        unit: r.materialType === "Jari" ? r.jariUnit : "kg",
+        unit: r.materialType === "Jari" ? r.jariUnit : (r.warpReshamUnit || "kg"),
         grnBatchId: r.grnBatchId,
       };
       if (r.materialType === "Warp") { base.warpSubtype = r.warpSubtype; if (r.description) base.description = r.description; }
@@ -608,6 +644,7 @@ export function IssueMaterialPage() {
     const record = addIssueRecord({
       weaverId: selectedWeaver.id,
       weaverName: selectedWeaver.name,
+      loomNumber: selectedLoom || undefined,
       issuedBy: "Admin (Kesava Rao)",
       issuedAt: new Date().toISOString(),
       materials,
@@ -682,7 +719,7 @@ export function IssueMaterialPage() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 19, color: T.green, marginBottom: 4 }}>Materials Issued Successfully</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
-                    <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{successRecord.id}</span> · Given to {successRecord.weaverName} · {summarizeMaterials(successRecord.materials)}
+                    <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{successRecord.id}</span> · Given to {successRecord.weaverName} {successRecord.loomNumber ? `(Loom ${successRecord.loomNumber})` : ""} · {summarizeMaterials(successRecord.materials)}
                   </div>
                 </div>
                 <button onClick={() => setSuccessRecord(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} color={T.green} /></button>
@@ -727,17 +764,42 @@ export function IssueMaterialPage() {
               )}
             </div>
           ) : (
-            <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
-              <div style={{ width: 46, height: 46, borderRadius: "50%", background: selectedWeaver.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
+            <>
+              <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: selectedWeaver.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedWeaver.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedWeaver.id}</span></div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
+                </div>
+                <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
+                <button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedWeaver.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedWeaver.id}</span></div>
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
+
+              {/* Loom selector */}
+              <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Loom Number *</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  {Array.from({ length: selectedWeaver.looms }, (_, idx) => idx + 1).map(loom => (
+                    <button
+                      key={loom}
+                      onClick={() => setSelectedLoom(loom)}
+                      style={{
+                        padding: "8px 20px", borderRadius: 8, cursor: "pointer",
+                        border: `1.5px solid ${selectedLoom === loom ? T.royalBurgundy : T.borderDef}`,
+                        background: selectedLoom === loom ? T.royalBurgundy : "#FFF",
+                        color: selectedLoom === loom ? "#FFF" : T.luxuryBrown,
+                        fontFamily: F.mono, fontSize: 13, fontWeight: 700,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      Loom {loom}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
-              <button onClick={() => setSelectedWeaverId(null)} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
-            </div>
+            </>
           )}
 
           {/* STEP 2 — Materials */}
@@ -820,9 +882,12 @@ export function IssueMaterialPage() {
                     <tr key={r.id} style={{ borderTop: `1px solid ${T.borderDef}` }}>
                       <td style={{ padding: "12px 14px" }}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span></td>
                       <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe, whiteSpace: "nowrap" as const }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{r.weaverName}</td>
+                      <td style={{ padding: "12px 14px", whiteSpace: "nowrap" as const }}>
+                        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName}</div>
+                        {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
+                      </td>
                       <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, maxWidth: 260 }}>{summarizeMaterials(r.materials)}</td>
+                      <td style={{ padding: "12px 14px" }}>{renderIssuedMaterials(r.materials)}</td>
                       <td style={{ padding: "12px 14px" }}>
                         <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const }}>
                           {grnIds.map(g => <span key={g} style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 5, padding: "2px 7px" }}>{g}</span>)}

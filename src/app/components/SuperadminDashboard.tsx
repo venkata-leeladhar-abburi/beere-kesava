@@ -211,7 +211,7 @@ const MATS = [
     cardBg: "#F8F6F4", accent: "#9E9189", accentLight: "rgba(158,145,137,0.10)", borderColor: "rgba(158,145,137,0.22)", tagBg: "rgba(158,145,137,0.10)", tagCol: "#6B5F58"
   },
   {
-    name: "Jari", sub: "Metallic Thread · Gold & Silver", stock: "90 kg", pct: 30, note: "3 types available", alert: true, img: imgJari,
+    name: "Jari", sub: "Metallic Thread · Gold & Silver", stock: "36 Buns (144 Reels)", pct: 30, note: "3 types available", alert: true, img: imgJari,
     cardBg: "#FFFDF9", accent: T.royalBurgundy, accentLight: "rgba(110,15,45,0.06)", borderColor: "rgba(110,15,45,0.16)", tagBg: "rgba(110,15,45,0.07)", tagCol: T.royalBurgundy
   },
 ];

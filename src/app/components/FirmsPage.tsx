@@ -171,20 +171,24 @@ function AddEntryForm({
   onSave: (data: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">) => void;
   onCancel: () => void;
 }) {
-  const [desc, setDesc]     = useState("");
-  const [amount, setAmount] = useState("");
-  const [date, setDate]     = useState(today());
-  const [cat, setCat]       = useState<string>(type === "income" ? "Wholesale Sale" : type === "expense" ? "Weaver Payments" : "income");
-  const [notes, setNotes]   = useState("");
+  const [desc, setDesc]         = useState("");
+  const [amount, setAmount]     = useState("");
+  const [date, setDate]         = useState(today());
+  const [cat, setCat]           = useState<string>(type === "income" ? "Wholesale Sale" : type === "expense" ? "Weaver Payments" : "income");
+  const [notes, setNotes]       = useState("");
+  const [otherLabel, setOtherLabel] = useState("");
 
-  function canSave() { return desc.trim() && parseFloat(amount) > 0 && date; }
+  const isOther = cat === "Other" && type !== "misc";
+
+  function canSave() { return desc.trim() && parseFloat(amount) > 0 && date && (!isOther || otherLabel.trim()); }
 
   function handleSave() {
     if (!canSave()) return;
+    const finalCat = isOther ? `Other — ${otherLabel.trim()}` : cat;
     if (type === "misc") {
       onSave({ description: desc.trim(), amount: parseFloat(amount), date, notes: notes.trim() || undefined, type: cat as MiscType });
     } else {
-      onSave({ description: desc.trim(), amount: parseFloat(amount), date, category: cat as IncomeCategory | ExpenseCategory });
+      onSave({ description: desc.trim(), amount: parseFloat(amount), date, category: finalCat as IncomeCategory | ExpenseCategory });
     }
   }
 
@@ -194,7 +198,7 @@ function AddEntryForm({
     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.18, ease: EASE }}
       style={{ background: "#FFF", border: `1.5px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "16px 18px", marginBottom: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 130px 140px 160px", gap: 10, marginBottom: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isOther ? "1fr 130px 140px 160px 200px" : "1fr 130px 140px 160px", gap: 10, marginBottom: 10 }}>
         <div><FLabel req>Description</FLabel><Inp value={desc} onChange={setDesc} placeholder="Enter description…" /></div>
         <div><FLabel req>Amount (₹)</FLabel><Inp value={amount} onChange={setAmount} placeholder="0" type="number" mono /></div>
         <div><FLabel req>Date</FLabel>
@@ -204,10 +208,15 @@ function AddEntryForm({
             onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = T.borderDef; }} />
         </div>
         <div><FLabel req>{type === "misc" ? "Type" : "Category"}</FLabel>
-          <Sel value={cat} onChange={setCat}>
+          <Sel value={cat} onChange={v => { setCat(v); setOtherLabel(""); }}>
             {cats.map(c => <option key={c} value={c}>{c === "income" ? "Income" : c === "expense" ? "Expense" : c}</option>)}
           </Sel>
         </div>
+        {isOther && (
+          <div><FLabel req>Specify "Other" Category</FLabel>
+            <Inp value={otherLabel} onChange={setOtherLabel} placeholder="e.g. Commission, Advance, Rebate…" />
+          </div>
+        )}
       </div>
       {type === "misc" && (
         <div style={{ marginBottom: 10 }}>
@@ -273,20 +282,25 @@ function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<FinancialEnt
 }
 
 // ─── Financial entry list ─────────────────────────────────────────────────────
-function EntryRow({ entry, onRemove }: { entry: FinancialEntry | MiscEntry; onRemove?: () => void }) {
-  const isMisc  = "type" in entry;
-  const isIncome = isMisc ? (entry as MiscEntry).type === "income" : true;
-  // we only call this for misc rows; for income/expense we pass `isIncome` from outside
+function EntryRow({ entry, type, onRemove }: { entry: FinancialEntry | MiscEntry; type?: "income" | "expense"; onRemove?: () => void }) {
+  const isMisc   = "type" in entry;
+  const isIncome = isMisc ? (entry as MiscEntry).type === "income" : (type === "income");
+  const cat      = "category" in entry ? entry.category : (entry as MiscEntry).type === "income" ? "Income" : "Expense";
+
+  // Color the category chip
+  const catChipBg = isIncome ? T.greenBg : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "rgba(200,155,71,0.10)" : cat === "Salaries" ? "rgba(74,107,138,0.10)" : T.crimsonBg;
+  const catChipColor = isIncome ? T.green : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "#8B6018" : cat === "Salaries" ? "#2E5A8A" : T.crimson;
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 150px 30px", gap: 0, padding: "10px 14px", alignItems: "center", borderBottom: `1px solid ${T.borderDef}` }}>
-      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, paddingRight: 12 }}>{entry.description}</div>
-      <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: isMisc ? (isIncome ? T.green : T.crimson) : T.luxuryBrown }}>
-        {fmtFull(entry.amount)}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "10px 14px", alignItems: "center", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFDF9" }}>
+      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, paddingRight: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.description}</div>
+      <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
+        {isIncome ? "+" : "−"}₹{entry.amount.toLocaleString("en-IN")}
       </div>
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{entry.date}</div>
       <div>
-        <span style={{ background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
-          {"category" in entry ? entry.category : (entry as MiscEntry).type === "income" ? "Income" : "Expense"}
+        <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 11, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
+          {cat}
         </span>
       </div>
       <div>
@@ -356,7 +370,7 @@ function FinSection({
 
             {/* Table header */}
             {entries.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 150px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 {["Description", "Amount", "Date", "Category", ""].map((h, i) => (
                   <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
                 ))}
@@ -369,7 +383,7 @@ function FinSection({
               </div>
             ) : (
               <div style={{ background: "#FFF" }}>
-                {entries.map((e, i) => <EntryRow key={e.id} entry={e} />)}
+                {entries.map((e, i) => <EntryRow key={e.id} entry={e} type={type} />)}
               </div>
             )}
           </motion.div>
@@ -419,7 +433,7 @@ function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (e: Omit
             </AnimatePresence>
 
             {entries.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 150px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 {["Description", "Amount", "Date", "Type", ""].map((h, i) => (
                   <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
                 ))}
@@ -442,16 +456,21 @@ function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (e: Omit
   );
 }
 
-// ─── Business Overview section ────────────────────────────────────────────────
+
+
+// ─── Business Overview section (redesigned premium table) ─────────────────────
 function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => void }) {
   const { firms, getFirmFinancials } = useFirms();
   const [open, setOpen] = useState(true);
+
+  const FIRM_COLORS = ["#6E0F2D","#1E6640","#C89B47","#4A061B","#1565C0"];
 
   const rows = useMemo(() => firms.map(firm => {
     const fin = getFirmFinancials(firm.id);
     const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
     const exp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
-    return { firm, inc, exp, net: inc - exp };
+    const entryCount = fin.income.length + fin.expenses.length + fin.misc.length;
+    return { firm, inc, exp, net: inc - exp, entryCount };
   }), [firms, getFirmFinancials]);
 
   const totInc = rows.reduce((s, r) => s + r.inc, 0);
@@ -459,24 +478,25 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
   const totNet = totInc - totExp;
 
   return (
-    <div style={{ margin: "28px 56px 0", border: `1px solid ${T.borderDef}`, borderRadius: 18, overflow: "hidden", background: "#FFF", boxShadow: "0 2px 14px rgba(44,24,16,0.06)" }}>
+    <div style={{ margin: "28px 56px 0", borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
       {/* Header */}
       <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setOpen(o => !o)}>
-        <TrendingUp size={20} color={T.antiqueGold} />
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <TrendingUp size={20} color={T.antiqueGold} />
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Business Overview</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 2 }}>Live P&amp;L across all {firms.length} firms</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Live P&amp;L across all {firms.length} firms · entries manually tracked</div>
         </div>
-        {/* 3 total chips */}
         <div style={{ display: "flex", gap: 10 }}>
           {[
-            { label: "Total Income",   val: totInc, color: "#4CAF82" },
-            { label: "Total Expenses", val: totExp, color: "#E57373" },
-            { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373" },
+            { label: "Total Income",   val: totInc, color: "#4CAF82", bg: "rgba(76,175,130,0.15)" },
+            { label: "Total Expenses", val: totExp, color: "#E57373", bg: "rgba(229,115,115,0.15)" },
+            { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
           ].map((c, i) => (
-            <div key={i} style={{ textAlign: "right", background: "rgba(255,255,255,0.10)", borderRadius: 10, padding: "8px 14px" }}>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: c.color }}>{fmtAmt(c.val)}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>{c.label}</div>
+            <div key={i} style={{ textAlign: "right", background: c.bg, border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "10px 16px" }}>
+              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 17, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 2, letterSpacing: "0.3px" }}>{c.label}</div>
             </div>
           ))}
         </div>
@@ -487,48 +507,70 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
             {/* Table header */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 36px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-              {["Firm", "Income", "Expenses", "Net Balance", ""].map((h, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: i > 0 ? "right" : "left" }}>{h}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              {["Firm", "Income", "Expenses", "Net Balance", "Entries", ""].map((h, i) => (
+                <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: (i > 0 ? "right" : "left") as any }}>{h}</div>
               ))}
             </div>
-            {rows.map((r, i) => (
-              <div key={r.firm.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 36px", gap: 0, padding: "13px 28px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: cardColor(r.firm.id), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 11, color: "#FFF" }}>{initials(r.firm.firmName)}</span>
+            {rows.map((r, i) => {
+              const color = FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length];
+              return (
+                <motion.div
+                  key={r.firm.id}
+                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.04 }}
+                  style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "0 28px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : "#FFFDF9", alignItems: "center", borderLeft: `4px solid ${color}` }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0" }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px ${color}40` }}>
+                      <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials(r.firm.firmName)}</span>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.firm.firmName}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{r.firm.id}</div>
+                  <div style={{ textAlign: "right" as const }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
+                    {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
                   </div>
-                </div>
-                <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.green }}>{fmtFull(r.inc)}</div>
-                <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.crimson }}>{fmtFull(r.exp)}</div>
-                <div style={{ textAlign: "right" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson }}>
-                    {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <button onClick={() => onGoToFirm?.(r.firm.id)}
-                    style={{ width: 26, height: 26, borderRadius: 7, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <ArrowRight size={12} color={T.taupe} />
-                  </button>
-                </div>
-              </div>
-            ))}
+                  <div style={{ textAlign: "right" as const }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
+                    {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
+                  </div>
+                  <div style={{ textAlign: "right" as const }}>
+                    <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
+                      {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: "right" as const }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
+                      {r.entryCount} entries
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" as const }}>
+                    <button onClick={() => onGoToFirm?.(r.firm.id)}
+                      style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <ArrowRight size={13} color={T.taupe} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
             {/* Totals row */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 36px", gap: 0, padding: "14px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}` }}>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
-              <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
-              <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: totNet >= 0 ? T.green : T.crimson }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
+              </div>
+              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
+              <div style={{ textAlign: "right" as const }}>
+                <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: totNet >= 0 ? T.green : T.crimson }}>
                   {totNet >= 0 ? "+" : ""}{fmtFull(totNet)}
                 </span>
               </div>
-              <div />
+              <div /><div />
             </div>
           </motion.div>
         )}
@@ -796,6 +838,17 @@ function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose: () =>
 
           {tab === "finance" && (
             <div>
+              {/* Auto-populate info banner */}
+              <div style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.07), rgba(200,155,71,0.07))", border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "13px 16px", marginBottom: 18, display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <AlertTriangle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.6 }}>
+                  <strong style={{ color: T.antiqueGold }}>How entries work:</strong>{" "}
+                  <span style={{ color: T.green, fontWeight: 600 }}>Income</span> — add wholesale/retail receipts manually or import via Excel.{" "}
+                  <span style={{ color: T.crimson, fontWeight: 600 }}>Expenses</span> — add weaver payments, material purchases (from approved POs) and overheads manually or import via Excel.{" "}
+                  <span style={{ color: T.antiqueGold, fontWeight: 600 }}>Miscellaneous</span> — bonus, advance, or one-off items.{" "}
+                  When selecting <em>"Other"</em>, a text field will appear to enter a custom category label.
+                </div>
+              </div>
               <FinSummaryStrip income={fin.income} expenses={fin.expenses} misc={fin.misc} />
               <FinSection
                 title="Income" type="income" icon={<TrendingUp size={16} color={T.green} />} entries={fin.income} color={T.green} bg={T.greenBg}
@@ -808,12 +861,6 @@ function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose: () =>
                 onBulkImport={rows => bulkAddExpenses(firm.id, rows)}
               />
               <MiscSection entries={fin.misc} onAdd={e => addMiscEntry(firm.id, e)} />
-              <div style={{ background: "rgba(200,155,71,0.06)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8, marginTop: 4 }}>
-                <AlertTriangle size={14} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55 }}>
-                  <strong style={{ color: T.antiqueGold }}>Note:</strong> Material purchase expenses from approved Purchase Orders linked to this firm do not auto-populate here — add them manually or via Excel import.
-                </div>
-              </div>
             </div>
           )}
         </div>

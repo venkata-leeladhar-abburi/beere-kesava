@@ -201,9 +201,9 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
   const [jariType, setJariType] = useState("Polyester");
   const [jariGrade, setJariGrade] = useState("2G");
   const [warpQty, setWarpQty] = useState("");
-  const [warpQtyGm, setWarpQtyGm] = useState("");
-  const [reshamQtyKg, setReshamQtyKg] = useState("");
-  const [reshamQtyGm, setReshamQtyGm] = useState("");
+  const [warpUnit, setWarpUnit] = useState<"kg" | "g">("kg");
+  const [reshamQty, setReshamQty] = useState("");
+  const [reshamUnit, setReshamUnit] = useState<"kg" | "g">("kg");
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [signed, setSigned] = useState(false);
   const [remoteSent, setRemoteSent] = useState(false);
@@ -328,51 +328,57 @@ function IssueMaterialPage({ onBack }: { onBack: () => void }) {
 
         {/* Warp + Resham side by side */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px 10px" }}>
-          {/* Warp — kg + grams */}
+          {/* Warp — kg / g toggle + quantity */}
           <div style={{ ...card, padding: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
               <Layers size={13} color={C.burg} />
               <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>Warp</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
+                {(["kg", "g"] as const).map(u => (
+                  <button key={u} onClick={() => setWarpUnit(u)}
+                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${warpUnit === u ? C.burg : C.bdr}`, background: warpUnit === u ? C.burg : "#FFF", color: warpUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    {u}
+                  </button>
+                ))}
+              </div>
               <div style={{ position: "relative" }}>
                 <input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
                   style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.burg }}>kg</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.burg }}>{warpUnit}</span>
               </div>
-              <div style={{ position: "relative" }}>
-                <input type="number" value={warpQtyGm} onChange={e => setWarpQtyGm(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted }}>g</span>
-              </div>
-              {(warpQty || warpQtyGm) && (
+              {warpQty && (
                 <div style={{ fontFamily: F.u, fontSize: 10, color: C.burg, fontWeight: 600 }}>
-                  = {((parseFloat(warpQty || "0") * 1000) + parseFloat(warpQtyGm || "0")).toFixed(0)} g total
+                  = {warpUnit === "kg" ? `${(parseFloat(warpQty) * 1000).toFixed(0)} g` : `${(parseFloat(warpQty) / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Resham — kg + grams */}
+          {/* Resham — kg / g toggle + quantity */}
           <div style={{ ...card, padding: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
               <Scissors size={13} color={C.burg} />
               <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>Resham</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ position: "relative" }}>
-                <input type="number" value={reshamQtyKg} onChange={e => setReshamQtyKg(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#7A5E1C" }}>kg</span>
+              <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
+                {(["kg", "g"] as const).map(u => (
+                  <button key={u} onClick={() => setReshamUnit(u)}
+                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${reshamUnit === u ? C.burg : C.bdr}`, background: reshamUnit === u ? C.burg : "#FFF", color: reshamUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    {u}
+                  </button>
+                ))}
               </div>
               <div style={{ position: "relative" }}>
-                <input type="number" value={reshamQtyGm} onChange={e => setReshamQtyGm(e.target.value)} placeholder="0"
+                <input type="number" value={reshamQty} onChange={e => setReshamQty(e.target.value)} placeholder="0"
                   style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted }}>g</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#7A5E1C" }}>{reshamUnit}</span>
               </div>
-              {(reshamQtyKg || reshamQtyGm) && (
+              {reshamQty && (
                 <div style={{ fontFamily: F.u, fontSize: 10, color: "#7A5E1C", fontWeight: 600 }}>
-                  = {((parseFloat(reshamQtyKg || "0") * 1000) + parseFloat(reshamQtyGm || "0")).toFixed(0)} g total
+                  = {reshamUnit === "kg" ? `${(parseFloat(reshamQty) * 1000).toFixed(0)} g` : `${(parseFloat(reshamQty) / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>
@@ -768,7 +774,6 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
 
   return (
     <>
-      <PageHeader title="Receive Sarees" onBack={onBack} />
       <div style={{ paddingBottom: 28 }}>
         {/* Tab switcher */}
         <div style={{ display: "flex", margin: "12px 16px 4px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
@@ -1040,50 +1045,209 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
   );
 }
 
-// ─── Main Weavers Hub ─────────────────────────────────────────────────────────
+// ─── History Section ─────────────────────────────────────────────────────────
+const HISTORY_DATA = [
+  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", status: "Passed QC" },
+  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  status: "Passed QC" },
+  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"WV-007",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",status: "Defective" },
+  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", status: "Passed QC" },
+  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  status: "Passed QC" },
+  { id: "BKB-L3-002",   weaver: "Own Loom 3", wcode: "",        batch: "BATCH-OWN",weight: "774g", date: "14 Jul 2026", sareeType: "Kanjivaram",   status: "Passed QC" },
+];
+
+function HistorySection() {
+  const [view, setView] = useState<"day" | "weaver">("day");
+  const [search, setSearch] = useState("");
+
+  const filtered = HISTORY_DATA.filter(h =>
+    !search ||
+    h.id.toLowerCase().includes(search.toLowerCase()) ||
+    h.weaver.toLowerCase().includes(search.toLowerCase()) ||
+    h.batch.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Group by date
+  const byDay: Record<string, typeof HISTORY_DATA> = {};
+  filtered.forEach(h => { if (!byDay[h.date]) byDay[h.date] = []; byDay[h.date].push(h); });
+
+  // Group by weaver
+  const byWeaver: Record<string, typeof HISTORY_DATA> = {};
+  filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
+
+  const statusColor = (s: string) => s === "Passed QC" ? C.green : s === "Defective" ? C.crim : C.gold;
+
+  const SareeRow = ({ h, last }: { h: typeof HISTORY_DATA[0]; last: boolean }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(107,26,42,0.06)` }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
+          <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: "#FFF", background: statusColor(h.status), padding: "1px 6px", borderRadius: 999 }}>{h.status}</span>
+        </div>
+        <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{h.sareeType} · {h.weight} · {h.batch}</div>
+      </div>
+      {view === "day" && <div style={{ fontFamily: F.u, fontSize: 11, color: C.text, flexShrink: 0 }}>{h.weaver}</div>}
+      {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>{h.date}</div>}
+    </div>
+  );
+
+  return (
+    <div style={{ margin: "0 0 24px" }}>
+      {/* Section header */}
+      <div style={{ padding: "18px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>Received History</span>
+        <div style={{ display: "flex", background: "#F0ECE8", borderRadius: 8, padding: 2 }}>
+          {([["day", "Day Wise"], ["weaver", "Weaver Wise"]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setView(key)}
+              style={{ padding: "5px 10px", border: "none", borderRadius: 6, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer", background: view === key ? C.burg : "transparent", color: view === key ? "#FFF" : C.muted }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Search */}
+      <div style={{ margin: "0 16px 10px", position: "relative" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
+          style={{ ...inputStyle, height: 40, paddingLeft: 34, fontSize: 12 }} />
+        <Search size={13} color={C.muted} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
+      </div>
+
+      {/* Grouped list */}
+      <div style={{ margin: "0 16px" }}>
+        {view === "day" ? (
+          Object.entries(byDay).length === 0
+            ? <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No records found.</div>
+            : Object.entries(byDay).map(([date, items]) => (
+              <div key={date} style={{ marginBottom: 10 }}>
+                <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6, paddingLeft: 2 }}>{date}</div>
+                <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+                  {items.map((h, i) => <SareeRow key={h.id} h={h} last={i === items.length - 1} />)}
+                </div>
+              </div>
+            ))
+        ) : (
+          Object.entries(byWeaver).length === 0
+            ? <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No records found.</div>
+            : Object.entries(byWeaver).map(([weaver, items]) => (
+              <div key={weaver} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, paddingLeft: 2 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: F.d, fontSize: 8, fontWeight: 700, color: "#FFF" }}>{weaver.split(" ").map(p => p[0]).join("").slice(0,2)}</span>
+                  </div>
+                  <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>{weaver}</span>
+                  <span style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>· {items.length} sarees</span>
+                </div>
+                <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+                  {items.map((h, i) => <SareeRow key={h.id} h={h} last={i === items.length - 1} />)}
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Manual Entry Modal ───────────────────────────────────────────────────────
+function ManualEntryModal({ onClose }: { onClose: () => void }) {
+  const [weaver, setWeaver] = useState("");
+  const [batch, setBatch] = useState("");
+  const [sareeId, setSareeId] = useState("");
+  const [weight, setWeight] = useState("");
+  const [sareeType, setSareeType] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  if (saved) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ background: "#FFF", borderRadius: 20, padding: 28, width: "min(94vw,380px)", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <CheckCircle2 size={28} color={C.green} />
+          </div>
+          <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>Saree Recorded</div>
+          <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg, marginBottom: 4 }}>{sareeId || "AUTO-ID-001"}</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 20 }}>Entry saved to received history.</div>
+          <button onClick={onClose} style={{ ...btnPrimary, width: "auto", padding: "0 32px" }}>Done</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} onClick={onClose} />
+      <div style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 36px", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)", maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.text }}>Add Manually</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X size={20} color={C.muted} /></button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[
+            { label: "Weaver Name", val: weaver, set: setWeaver, placeholder: "e.g. Padma Veni" },
+            { label: "Batch ID", val: batch, set: setBatch, placeholder: "e.g. BATCH-086" },
+            { label: "Saree ID", val: sareeId, set: setSareeId, placeholder: "Auto-generate or enter manually" },
+            { label: "Saree Type", val: sareeType, set: setSareeType, placeholder: "e.g. Self Brocade, Heavy Zari" },
+            { label: "Weight (grams)", val: weight, set: setWeight, placeholder: "e.g. 850" },
+          ].map(({ label, val, set, placeholder }) => (
+            <div key={label}>
+              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</div>
+              <input value={val} onChange={e => set(e.target.value)} placeholder={placeholder}
+                style={{ ...inputStyle, height: 46, fontSize: 13 }} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8 }}>
+          <button onClick={() => setSaved(true)} style={{ ...btnPrimary, height: 50, gap: 7 }}>
+            <CheckCircle2 size={16} /> Save Record
+          </button>
+          <button onClick={onClose} style={{ ...btnGhost, height: 44 }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Weavers (now Receive Sarees) Hub ───────────────────────────────────
 interface WorkerWeaversProps {
   subPage?: WeaversPage;
   onSubPageChange?: (page: WeaversPage) => void;
 }
 
 export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) {
-  const [localPage, setLocalPage] = useState<WeaversPage>("menu");
+  const [localPage, setLocalPage] = useState<WeaversPage>("receive");
+  const [showManual, setShowManual] = useState(false);
   const page = subPage ?? localPage;
   const setPage = onSubPageChange ?? setLocalPage;
 
-  if (page === "design") return <DesignPlanningPage onBack={() => setPage("menu")} />;
-  if (page === "receive") return <ReceiveSareesPage onBack={() => setPage("menu")} />;
-
-  const menuItems = [
-    { key: "design" as WeaversPage, Icon: Palette, title: "Design Planning", sub: "Upload color slips, link to design codes", badge: null },
-    { key: "receive" as WeaversPage, Icon: CheckCircle2, title: "Receive Sarees", sub: "Record completed sarees from weavers", badge: "8 waiting" },
-  ];
+  if (page === "design") return <DesignPlanningPage onBack={() => setPage("receive")} />;
 
   return (
-    <div style={{ paddingBottom: 20 }}>
-      {/* Context */}
-      <div style={{ margin: "12px 16px 4px", background: "rgba(107,26,42,0.04)", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, padding: "10px 14px" }}>
-        <p style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.5, margin: 0 }}>
-          Manage weaver operations — design uploads, material issue, and saree receiving.
-        </p>
-      </div>
-
-      {menuItems.map((item) => (
-        <button key={item.key} onClick={() => setPage(item.key)}
-          style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 16px", padding: "16px 14px", background: "#FFF", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 14, boxShadow: "0 2px 10px rgba(107,26,42,0.05)", cursor: "pointer", width: "calc(100% - 32px)", textAlign: "left" }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <item.Icon size={22} color="#FFF" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-              <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{item.title}</span>
-              {item.badge && <span style={{ fontFamily: F.u, fontSize: 10, color: "#FFF", background: C.burg, padding: "2px 7px", borderRadius: 999 }}>{item.badge}</span>}
+    <>
+      {showManual && <ManualEntryModal onClose={() => setShowManual(false)} />}
+      <div style={{ paddingBottom: 20 }}>
+        {/* Page header strip */}
+        <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`, padding: "16px 16px 14px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", marginBottom: 2 }}>Receive Sarees</div>
+              <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
             </div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{item.sub}</div>
+            <button onClick={() => setShowManual(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: 12, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", cursor: "pointer" }}>
+              <Plus size={14} /> Add Manually
+            </button>
           </div>
-          <ChevronRight size={18} color={C.muted} />
-        </button>
-      ))}
-    </div>
+        </div>
+
+        {/* Receive Sarees form area */}
+        <ReceiveSareesPage onBack={() => {}} />
+
+        {/* History section */}
+        <HistorySection />
+      </div>
+    </>
   );
 }
+

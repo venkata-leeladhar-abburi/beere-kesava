@@ -919,16 +919,199 @@ function SectionC({ isMobile }: { isMobile?: boolean }) {
   );
 }
 
+// ── Section B with filters — Receive returns ──────────────────────────────────
+
+function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
+  const { assignments, receiveReturn } = useFinishing();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showVerif, setShowVerif] = useState(false);
+  const [toast, setToast] = useState("");
+  const [filterStaff, setFilterStaff] = useState("all");
+  const [filterBatch, setFilterBatch] = useState("all");
+
+  const awaiting = useMemo(() => assignments.filter(a => a.status === "awaiting-return"), [assignments]);
+
+  // Get unique batches from awaiting
+  const uniqueBatches = useMemo(() => {
+    const bSet = new Set(awaiting.map(a => a.batchId ?? "—"));
+    return Array.from(bSet).filter(b => b !== "—");
+  }, [awaiting]);
+
+  // Get unique staff names from awaiting
+  const uniqueStaff = useMemo(() => {
+    const sSet = new Set(awaiting.map(a => a.finishingStaffName));
+    return Array.from(sSet);
+  }, [awaiting]);
+
+  const filteredAwaiting = useMemo(() => awaiting.filter(a => {
+    const staffOk = filterStaff === "all" || a.finishingStaffName === filterStaff;
+    const batchOk = filterBatch === "all" || a.batchId === filterBatch;
+    return staffOk && batchOk;
+  }), [awaiting, filterStaff, filterBatch]);
+
+  const unselectedIds = filteredAwaiting.filter(a => !selected.has(a.id)).map(a => a.sareeId);
+  const { scanning, scanMsg, startScan } = useScanSim(unselectedIds, sareeId => {
+    const match = filteredAwaiting.find(a => a.sareeId === sareeId);
+    if (match) setSelected(prev => { const next = new Set(prev); next.add(match.id); return next; });
+  });
+
+  const toggleRow = (id: string) => {
+    setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
+
+  const toggleAll = () => {
+    if (selected.size === filteredAwaiting.length) setSelected(new Set());
+    else setSelected(new Set(filteredAwaiting.map(a => a.id)));
+  };
+
+  const selectedAssignments = filteredAwaiting.filter(a => selected.has(a.id));
+  const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const allChecked = filteredAwaiting.length > 0 && selected.size === filteredAwaiting.length;
+
+  const handleSave = (data: Record<string, VerifData>) => {
+    selectedAssignments.forEach(a => {
+      const d = data[a.id];
+      if (!d?.condition) return;
+      receiveReturn({
+        assignmentId: a.id,
+        sareeId: a.sareeId,
+        condition: d.condition,
+        damageType: d.damageType || undefined,
+        damageSeverity: d.damageSeverity || undefined,
+        damageNotes: d.damageNotes || undefined,
+        damagePhotoUrl: d.damagePhotoUrl,
+        receivedBy: WORKER_NAME,
+        receivedDate: today,
+      });
+    });
+    const perfect = Object.values(data).filter(d => d.condition === "perfect").length;
+    const damaged = Object.values(data).filter(d => d.condition === "damaged").length;
+    setToast(`${perfect} perfect, ${damaged} damaged — logged`);
+    setSelected(new Set());
+    setShowVerif(false);
+  };
+
+  const selStyle: React.CSSProperties = { height: 36, background: "#FFF", border: `1px solid rgba(107,26,42,0.15)`, borderRadius: 8, fontFamily: F.u, fontSize: 12, color: C.text, paddingLeft: 10, paddingRight: 28, cursor: "pointer", appearance: "none" as const };
+
+  return (
+    <div>
+      {/* Filters */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
+        <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
+        <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
+          <select value={filterStaff} onChange={e => setFilterStaff(e.target.value)} style={{ ...selStyle, width: "100%" }}>
+            <option value="all">All Staff</option>
+            {uniqueStaff.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <ChevronDown size={12} color={C.muted} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        </div>
+        <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
+          <select value={filterBatch} onChange={e => setFilterBatch(e.target.value)} style={{ ...selStyle, width: "100%" }}>
+            <option value="all">All Batches</option>
+            {uniqueBatches.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <ChevronDown size={12} color={C.muted} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        </div>
+        {filteredAwaiting.length > 0 && (
+          <button onClick={toggleAll} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: "4px 6px", whiteSpace: "nowrap" as const }}>
+            {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+            {allChecked ? "Deselect All" : "Select All"}
+          </button>
+        )}
+      </div>
+
+      {/* Scan feedback */}
+      {scanMsg && (
+        <div style={{ background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.18)`, borderRadius: 8, padding: "7px 11px", marginBottom: 10, fontFamily: F.m, fontSize: 12, color: "#1E6640" }}>
+          {scanMsg}
+        </div>
+      )}
+
+      {filteredAwaiting.length === 0 ? (
+        <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
+          {awaiting.length === 0 ? "No sarees currently awaiting return." : "No results for selected filters."}
+        </div>
+      ) : (
+        <div style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+          {filteredAwaiting.map((a, i) => {
+            const checked = selected.has(a.id);
+            return (
+              <div key={a.id} onClick={() => toggleRow(a.id)}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderTop: i > 0 ? `1px solid rgba(107,26,42,0.07)` : "none", background: checked ? "rgba(30,102,64,0.04)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}>
+                <div style={{ flexShrink: 0 }}>
+                  {checked ? <CheckSquare size={16} color="#1E6640" /> : <Square size={16} color={C.muted} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{a.sareeId}</div>
+                  {/* Show saree type code instead of design code */}
+                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>{a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}</div>
+                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 1 }}>{a.batchId}</div>}
+                </div>
+                <div style={{ flexShrink: 0, textAlign: "right" as const }}>
+                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginBottom: 4 }}>{a.assignedDate}</div>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(248,140,0,0.10)", border: "1px solid rgba(248,140,0,0.22)", borderRadius: 999, padding: "2px 7px" }}>
+                    <Clock size={9} color="#B85C00" />
+                    <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 600, color: "#B85C00" }}>Awaiting</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Action bar */}
+      <AnimatePresence>
+        {selected.size > 0 && (isMobile ? (
+          <motion.div key="sheet" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ duration: 0.26, ease: EASE }}
+            style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 250, background: "#FFF", borderRadius: "16px 16px 0 0", padding: "14px 16px calc(16px + env(safe-area-inset-bottom))", boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" }}>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10, textAlign: "center" as const }}>
+              {selected.size} saree{selected.size > 1 ? "s" : ""} selected
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+              <button onClick={() => setShowVerif(true)} style={{ ...btnPrimary, height: 50, fontSize: 14, background: "#1E6640", gap: 7 }}>
+                <CheckCircle2 size={16} /> Mark as Received
+              </button>
+              <button onClick={() => setSelected(new Set())} style={{ ...btnGhost, height: 46, fontSize: 13 }}>Cancel</button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div key="bar" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2, ease: EASE }}
+            style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
+            <button onClick={() => setShowVerif(true)} style={{ ...btnPrimary, flex: 1, height: 46, fontSize: 14, background: "#1E6640", gap: 7 }}>
+              <CheckCircle2 size={16} /> Mark {selected.size} as Received
+            </button>
+            <button onClick={() => setSelected(new Set())} style={{ ...btnGhost, width: 46, height: 46, padding: 0, flexShrink: 0, borderRadius: 12, flex: "none" }}>
+              <X size={16} color={C.burg} />
+            </button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showVerif && (
+          <VerificationModal assignments={selectedAssignments} onSave={handleSave} onClose={() => setShowVerif(false)} isMobile={isMobile} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {toast && <Toast msg={toast} onDone={() => setToast("")} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { readySarees, assignments, returns } = useFinishing();
   const awaiting = useMemo(() => assignments.filter(a => a.status === "awaiting-return"), [assignments]);
   const isMobile = !isDesktop && !isTablet;
+  const [activeAction, setActiveAction] = useState<"assign" | "receive" | null>(null);
 
   return (
     <div style={{ padding: isDesktop ? "28px 40px" : isTablet ? "20px 24px" : "16px 14px 24px", background: "#FAFAF8", minHeight: "100%" }}>
-      {/* Page heading */}
+
+      {/* Page heading for desktop */}
       {isDesktop && (
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
@@ -942,25 +1125,104 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
       {/* Stats strip */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
         {[
-          { val: readySarees.length,  label: "Ready",     icon: <Sparkles size={14} color={C.gold} />,       bg: "rgba(200,146,58,0.10)", col: C.gold  },
-          { val: awaiting.length,     label: "With Staff", icon: <Clock size={14} color="#B85C00" />,          bg: "rgba(248,140,0,0.09)", col: "#B85C00" },
-          { val: returns.length,      label: "Returned",   icon: <CheckCircle2 size={14} color={C.green} />,   bg: "rgba(30,102,64,0.09)", col: C.green },
+          { val: readySarees.length, label: "Ready to Assign", icon: <Sparkles size={15} color={C.gold} />,        bg: "rgba(200,146,58,0.10)", col: C.gold   },
+          { val: awaiting.length,    label: "With Staff",       icon: <Clock size={15} color="#B85C00" />,           bg: "rgba(248,140,0,0.09)", col: "#B85C00" },
+          { val: returns.length,     label: "Returned",         icon: <CheckCircle2 size={15} color={C.green} />,    bg: "rgba(30,102,64,0.09)", col: C.green   },
         ].map((s, i) => (
-          <div key={i} style={{ background: "#FFF", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 1px 6px rgba(107,26,42,0.05)" }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div key={i} style={{ background: "#FFF", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 14, padding: "12px 10px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 1px 8px rgba(107,26,42,0.05)" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {s.icon}
             </div>
             <div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: s.col, lineHeight: 1.1 }}>{s.val}</div>
-              <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>{s.label}</div>
+              <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 20, color: s.col, lineHeight: 1 }}>{s.val}</div>
+              <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginTop: 2 }}>{s.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <SectionA isMobile={isMobile} />
-      <SectionB isMobile={isMobile} />
+      {/* Two primary action buttons */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+        <button
+          onClick={() => setActiveAction(activeAction === "assign" ? null : "assign")}
+          style={{
+            padding: "16px 12px", border: "none", borderRadius: 16, cursor: "pointer",
+            background: activeAction === "assign"
+              ? `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`
+              : "#FFF",
+            boxShadow: activeAction === "assign"
+              ? "0 4px 20px rgba(107,26,42,0.30)"
+              : "0 2px 12px rgba(107,26,42,0.08)",
+            border: activeAction === "assign" ? "none" : `1.5px solid rgba(107,26,42,0.14)`,
+            transition: "all 0.2s",
+          } as React.CSSProperties}
+        >
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "assign" ? "rgba(255,255,255,0.15)" : "rgba(107,26,42,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+            <Package size={20} color={activeAction === "assign" ? "#FFF" : C.burg} />
+          </div>
+          <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "assign" ? "#FFF" : C.text, marginBottom: 3 }}>Assign Sarees</div>
+          <div style={{ fontFamily: F.u, fontSize: 11, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+            {readySarees.length} ready · assign to finishing staff
+          </div>
+        </button>
+
+        <button
+          onClick={() => setActiveAction(activeAction === "receive" ? null : "receive")}
+          style={{
+            padding: "16px 12px", border: "none", borderRadius: 16, cursor: "pointer",
+            background: activeAction === "receive"
+              ? "linear-gradient(135deg, #1E5A3A 0%, #1E6640 100%)"
+              : "#FFF",
+            boxShadow: activeAction === "receive"
+              ? "0 4px 20px rgba(30,102,64,0.28)"
+              : "0 2px 12px rgba(107,26,42,0.08)",
+            border: activeAction === "receive" ? "none" : `1.5px solid rgba(107,26,42,0.14)`,
+            transition: "all 0.2s",
+          } as React.CSSProperties}
+        >
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "receive" ? "rgba(255,255,255,0.15)" : "rgba(30,102,64,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+            <ArrowDownToLine size={20} color={activeAction === "receive" ? "#FFF" : C.green} />
+          </div>
+          <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "receive" ? "#FFF" : C.text, marginBottom: 3 }}>Receive Back</div>
+          <div style={{ fontFamily: F.u, fontSize: 11, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+            {awaiting.length} awaiting · mark as received
+          </div>
+        </button>
+      </div>
+
+      {/* Expanded action panels */}
+      <AnimatePresence>
+        {activeAction === "assign" && (
+          <motion.div key="assign-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22, ease: EASE }}>
+            <div style={{ ...card, padding: 16, marginBottom: 16, overflow: "hidden" }}>
+              <SectionHeader
+                icon={<Package size={18} color={C.burg} />}
+                title="Assign Sarees for Finishing"
+                count={readySarees.length}
+                accent="rgba(107,26,42,0.09)"
+              />
+              <SectionA isMobile={isMobile} />
+            </div>
+          </motion.div>
+        )}
+        {activeAction === "receive" && (
+          <motion.div key="receive-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22, ease: EASE }}>
+            <div style={{ ...card, padding: 16, marginBottom: 16, overflow: "hidden" }}>
+              <SectionHeader
+                icon={<ArrowDownToLine size={18} color="#1E6640" />}
+                title="Receive Sarees Back"
+                count={awaiting.length}
+                accent="rgba(30,102,64,0.10)"
+              />
+              <SectionBFiltered isMobile={isMobile} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* History always visible */}
       <SectionC isMobile={isMobile} />
     </div>
   );
 }
+

@@ -19,6 +19,7 @@ export interface FinishingAssignment {
   id: string;
   sareeId: string;
   designCode: string;
+  sareeTypeCode?: string;
   sareeType: string;
   weaverName: string;
   qcPassDate: string;
@@ -26,6 +27,7 @@ export interface FinishingAssignment {
   finishingStaffName: string;
   assignedDate: string;
   assignedBy: string;
+  batchId?: string;
   status: "awaiting-return" | "returned";
 }
 
@@ -205,6 +207,36 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     const id = `DISP-${Date.now()}`;
     const fullRecord: DispatchRecord = { ...record, id, sareeIds };
     setDispatches(prev => [...prev, fullRecord]);
+    
+    // Move any dispatched sarees that are currently in readySarees to returns
+    setReadySarees(prev => {
+      const remaining = prev.filter(s => !sareeIds.includes(s.id));
+      const moved = prev.filter(s => sareeIds.includes(s.id));
+      if (moved.length > 0) {
+        setReturns(oldReturns => [
+          ...oldReturns,
+          ...moved.map((s, idx) => ({
+            id: `FR-${Date.now()}-${idx}`,
+            assignmentId: "DIRECT-DISPATCH",
+            sareeId: s.id,
+            designCode: s.designCode,
+            sareeType: s.sareeType,
+            weaverName: s.weaverName,
+            condition: "perfect" as const,
+            receivedBy: "Admin Direct Dispatch",
+            receivedDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+            inventoryStatus: "Dispatched" as const,
+            dispatchId: id
+          }))
+        ]);
+      }
+      return remaining;
+    });
+
+    setAssignments(prev => prev.map(a =>
+      sareeIds.includes(a.sareeId) ? { ...a, status: "returned" } : a
+    ));
+
     setReturns(prev => prev.map(r =>
       sareeIds.includes(r.sareeId)
         ? { ...r, inventoryStatus: "Dispatched", dispatchId: id }

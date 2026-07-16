@@ -809,7 +809,7 @@ export interface InventoryRecord {
   sareeType: string;
   weaverName: string;
   date: string; // qcPassDate or receivedDate
-  status: "QC Passed" | "Ready for Dispatch" | "Dispatched" | "Damaged — Review Needed";
+  status: "QC Passed" | "Finishing complete" | "Dispatched" | "Damaged — Review Needed";
   rawType: "readySaree" | "return";
   originalId: string; // readySaree id or return id
   bulkOrderRef?: string;
@@ -830,6 +830,16 @@ export const getLoomForRecord = (id: string, weaverName: string): string => {
   if (name.includes("loom 2")) return "L2";
   
   return "Unknown";
+};
+
+export const getSareeColor = (id: string): string => {
+  const colors = ["Crimson Red", "Golden Yellow", "Deep Pink", "Midnight Blue", "Kora Cream", "Teal Green", "Magenta Orange", "Emerald Gold", "Royal Violet"];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
 };
 
 export function InventoryPage() {
@@ -898,7 +908,7 @@ export function InventoryPage() {
         sareeType: r.sareeType,
         weaverName: r.weaverName,
         date: r.receivedDate,
-        status: r.inventoryStatus === "Damaged \u2014 Review Needed" ? "Damaged \u2014 Review Needed" : r.inventoryStatus,
+        status: r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus) as any,
         rawType: "return",
         originalId: r.id,
         bulkOrderRef: boRef,
@@ -937,7 +947,7 @@ export function InventoryPage() {
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;
   const pendingCount = allRecords.filter(r => r.status === "QC Passed").length;
-  const ready        = allRecords.filter(r => r.status === "Ready for Dispatch").length;
+  const ready        = allRecords.filter(r => r.status === "Finishing complete").length;
   const dispatched   = allRecords.filter(r => r.status === "Dispatched").length;
   const damaged      = allRecords.filter(r => r.status === "Damaged — Review Needed").length;
 
@@ -949,12 +959,12 @@ export function InventoryPage() {
   // ── Filtered rows ──────────────────────────────────────────────────────────
   const filtered = useMemo(() => allRecords.filter(r => {
     const q = searchQ.toLowerCase();
-    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.designCode.toLowerCase().includes(q) || r.sareeType.toLowerCase().includes(q);
+    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.sareeType.toLowerCase().includes(q);
     const matchFilter = filter === "all" ? true
       : filter === "pending"    ? r.status === "QC Passed"
-      : filter === "ready"      ? r.status === "Ready for Dispatch"
+      : filter === "ready"      ? r.status === "Finishing complete"
       : filter === "dispatched" ? r.status === "Dispatched"
-      : r.status === "Damaged \u2014 Review Needed";
+      : r.status === "Damaged — Review Needed";
     const matchBulkOrder = selectedBulkOrder === "all" || r.bulkOrderRef === selectedBulkOrder;
     const recordLoom = getLoomForRecord(r.id, r.weaverName);
     const matchLoom = selectedLoom === "all" || recordLoom === selectedLoom;
@@ -965,8 +975,8 @@ export function InventoryPage() {
 
   // ── Selection helpers ──────────────────────────────────────────────────────
   const dispatchableSelected = useMemo(() => {
-    return returns.filter(r => selected.has(r.sareeId) && r.inventoryStatus === "Ready for Dispatch");
-  }, [returns, selected]);
+    return allRecords.filter(r => selected.has(r.id) && r.status !== "Dispatched");
+  }, [allRecords, selected]);
 
   const toggleRow = (id: string, isCheckable: boolean) => {
     if (!isCheckable) return;
@@ -977,7 +987,7 @@ export function InventoryPage() {
     });
   };
 
-  const checkableFiltered = useMemo(() => filtered.filter(r => r.status === "Ready for Dispatch"), [filtered]);
+  const checkableFiltered = useMemo(() => filtered.filter(r => r.status !== "Dispatched"), [filtered]);
   const checkableSelected = useMemo(() => checkableFiltered.filter(r => selected.has(r.id)), [checkableFiltered, selected]);
   
   const toggleAll = () => {
@@ -1000,19 +1010,19 @@ export function InventoryPage() {
 
   // Simulated barcode scan
   const handleScan = useCallback(() => {
-    const unselected = returns.filter(r => !selected.has(r.sareeId) && r.inventoryStatus === "Ready for Dispatch");
+    const unselected = allRecords.filter(r => !selected.has(r.id) && r.status !== "Dispatched");
     if (!unselected.length) { setScanMsg("No more sarees to scan."); setTimeout(() => setScanMsg(""), 2000); return; }
     setScanMsg("Scanning…");
     setTimeout(() => {
       const r = unselected[Math.floor(Math.random() * unselected.length)];
-      setSelected(prev => { const next = new Set(prev); next.add(r.sareeId); return next; });
-      setScanMsg(`Scanned: ${r.sareeId}`);
+      setSelected(prev => { const next = new Set(prev); next.add(r.id); return next; });
+      setScanMsg(`Scanned: ${r.id}`);
       setTimeout(() => setScanMsg(""), 2500);
     }, 800);
-  }, [returns, selected]);
+  }, [allRecords, selected]);
 
   const handleShopConfirm = (transport: TransportData) => {
-    const sareeIds = dispatchableSelected.map(r => r.sareeId);
+    const sareeIds = dispatchableSelected.map(r => r.id);
     dispatchSarees(sareeIds, { type: "shop", sareeIds, dispatchDate: transport.dispatchDate, lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes });
     setModal(null);
     setSelected(new Set());
@@ -1020,7 +1030,7 @@ export function InventoryPage() {
   };
 
   const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
-    const sareeIds = dispatchableSelected.map(r => r.sareeId);
+    const sareeIds = dispatchableSelected.map(r => r.id);
     const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
     dispatchSarees(sareeIds, {
       type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate, lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
@@ -1349,11 +1359,11 @@ export function InventoryPage() {
             {/* Table */}
             <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
               {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 90px 110px 220px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 140px 100px 130px 110px 170px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 <div onClick={toggleAll} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
                   {allChecked ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />}
                 </div>
-                {["Saree ID", "Design", "Type", "Weaver", "Date", "Status", ""].map((h, i) => (
+                {["Saree ID", "Type", "Color", "Weaver", "Date", "Status", ""].map((h, i) => (
                   <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
                 ))}
               </div>
@@ -1362,10 +1372,10 @@ export function InventoryPage() {
                 <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No sarees match your filters.</div>
               ) : filtered.map((r, i) => {
                 const sel = selected.has(r.id);
-                const isCheckable = r.status === "Ready for Dispatch";
+                const isCheckable = r.status !== "Dispatched";
                 return (
                   <div key={r.id}
-                    style={{ display: "grid", gridTemplateColumns: "36px 130px 90px 130px 90px 110px 220px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
+                    style={{ display: "grid", gridTemplateColumns: "36px 130px 140px 100px 130px 110px 170px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
                     onClick={() => toggleRow(r.id, isCheckable)}
                     onMouseEnter={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.02)"; }}
                     onMouseLeave={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#FFF" : T.warmIvory; }}
@@ -1379,12 +1389,6 @@ export function InventoryPage() {
                     </div>
                     <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{r.id}</div>
                     <div
-                      onClick={e => { e.stopPropagation(); setOpenDesignCode(r.designCode); }}
-                      style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, cursor: "pointer", width: "fit-content" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-                    >{r.designCode}</div>
-                    <div
                       onClick={e => {
                         e.stopPropagation();
                         const rec = getSareeTypeByName(r.sareeType);
@@ -1394,6 +1398,7 @@ export function InventoryPage() {
                       onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
                     >{r.sareeType}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{getSareeColor(r.id)}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
                       {r.weaverName.split(" ")[0]}
                       <div style={{ fontSize: 9.5, color: T.antiqueGold, fontWeight: 600, marginTop: 2 }}>
@@ -1479,14 +1484,25 @@ export function InventoryPage() {
         {modal === "shop" && dispatchableSelected.length > 0 && (
           <DispatchShopModal
             key="shop-modal"
-            sarees={dispatchableSelected}
+            sarees={dispatchableSelected.map(r => ({
+              id: r.originalId,
+              assignmentId: "DIRECT-DISPATCH",
+              sareeId: r.id,
+              designCode: r.designCode,
+              sareeType: r.sareeType,
+              weaverName: r.weaverName,
+              condition: "perfect" as const,
+              receivedBy: "Admin",
+              receivedDate: r.date,
+              inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
+            }))}
             onConfirm={handleShopConfirm}
             onClose={() => setModal(null)}
           />
         )}
         {modal === "wholesale" && dispatchableSelected.length > 0 && (() => {
           // Auto-detect bulk order from selected sarees
-          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.sareeId === r.id));
+          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
           const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
           // Map bulk order customerId to WHOLESALE_CUSTOMERS
@@ -1496,7 +1512,18 @@ export function InventoryPage() {
           return (
             <DispatchWholesaleModal
               key="wholesale-modal"
-              sarees={dispatchableSelected}
+              sarees={dispatchableSelected.map(r => ({
+                id: r.originalId,
+                assignmentId: "DIRECT-DISPATCH",
+                sareeId: r.id,
+                designCode: r.designCode,
+                sareeType: r.sareeType,
+                weaverName: r.weaverName,
+                condition: "perfect" as const,
+                receivedBy: "Admin",
+                receivedDate: r.date,
+                inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
+              }))}
               initialBulkOrderRef={detectedRef}
               initialCustomerId={detectedCustomerId}
               onConfirm={handleWholesaleConfirm}
@@ -1585,8 +1612,8 @@ function InventoryDetailModal({
 
           {/* Core info */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            {infoCell('Design Code', <span style={{ fontFamily: F.mono }}>{item.designCode}</span>)}
             {infoCell('Saree Type', item.sareeType)}
+            {infoCell('Saree Color', getSareeColor(item.id))}
             {infoCell('Weaver', item.weaverName)}
             {infoCell(item.rawType === 'readySaree' ? 'QC Passed Date' : 'Received Date', <span style={{ fontFamily: F.mono }}>{item.date}</span>)}
           </div>
@@ -1646,12 +1673,12 @@ function InventoryDetailModal({
             </div>
           )}
 
-          {/* Ready for Dispatch */}
-          {item.status === 'Ready for Dispatch' && (
+          {/* Finishing complete */}
+          {item.status === 'Finishing complete' && (
             <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 18 }}>
               <div style={{ background: 'rgba(30,102,64,0.04)', border: '1px solid rgba(30,102,64,0.12)', borderRadius: 12, padding: 16, textAlign: 'center' as const }}>
                 <CheckCircle2 size={22} color={T.green} style={{ marginBottom: 8 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>Ready for Dispatch</div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>Finishing Complete</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6, lineHeight: 1.6 }}>Finishing complete. Select this saree in the inventory table and use the Dispatch buttons to send it to the shop or a wholesale customer.</div>
               </div>
             </div>

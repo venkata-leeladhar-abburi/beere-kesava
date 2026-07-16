@@ -106,14 +106,14 @@ const inactiveAlerts = [
 ];
 
 const wholesaleData = [
-  { id: "WHL-001", name: "Lakshmi Silks", code: "LS", city: "Hyderabad, TG", status: "clear", orders: 22, spend: "12,40,000", out: "0", terms: "30 days", lastOrder: "28 Apr 2026", activeOrder: "ORD-2026-041", duesMsg: "✓ All Payments Clear" },
-  { id: "WHL-002", name: "Narayana Silk Emporium", code: "NS", city: "Vijayawada, AP", status: "overdue", orders: 16, spend: "9,80,000", out: "3,50,000", terms: "30 days", lastOrder: "12 Apr 2026", activeOrder: "ORD-2026-032", duesMsg: "🔴 Overdue — ₹3,50,000 unpaid since 12 May 2026", paymentAlertDays: 47 },
-  { id: "WHL-003", name: "Padmavathi Textiles", code: "PT", city: "Guntur, AP", status: "overdue", orders: 14, spend: "8,60,000", out: "2,20,000", terms: "30 days", lastOrder: "20 Apr 2026", activeOrder: null, duesMsg: "🔴 Overdue — ₹2,20,000 unpaid since 20 May 2026" },
-  { id: "WHL-004", name: "Vijaya Silk House", code: "VS", city: "Chennai, TN", status: "clear", orders: 18, spend: "7,20,000", out: "0", terms: "45 days", lastOrder: "15 Apr 2026", activeOrder: null, duesMsg: "✓ All Payments Clear" },
-  { id: "WHL-005", name: "Meenakshi Silks", code: "MS", city: "Coimbatore, TN", status: "due", orders: 12, spend: "6,40,000", out: "1,80,000", terms: "60 days", lastOrder: "05 Apr 2026", activeOrder: null, duesMsg: "◐ ₹1,80,000 due by 04 Jun 2026" },
-  { id: "WHL-006", name: "Kalavathi Exports", code: "KE", city: "Bengaluru, KA", status: "overdue", orders: 10, spend: "5,80,000", out: "1,80,000", terms: "45 days", lastOrder: "02 Apr 2026", activeOrder: null, duesMsg: "🔴 Overdue — ₹1,80,000 unpaid since 17 May 2026" },
-  { id: "WHL-007", name: "Srinivasa Silks", code: "SS", city: "Kurnool, AP", status: "inactive", orders: 8, spend: "4,20,000", out: "0", terms: "30 days", lastOrder: "8 months ago", activeOrder: null, duesMsg: "✓ All Payments Clear — Inactive" },
-  { id: "WHL-008", name: "Annapurna Textiles", code: "AT", city: "Nellore, AP", status: "due", orders: 9, spend: "3,60,000", out: "2,20,000", terms: "90 days", lastOrder: "20 Mar 2026", activeOrder: null, duesMsg: "○ ₹2,20,000 due by 18 Jun 2026 — within terms" },
+  { id: "WHL-001", name: "Lakshmi Silks", code: "LS", city: "Hyderabad, TG", status: "clear", orders: 22, spend: "12,40,000", out: "0", terms: "30 days", lastOrder: "28 Apr 2026", activeOrder: "ORD-2026-041", duesMsg: "✓ All Payments Clear", gstNumber: "36AAAAA1111A1Z1", visitingCard: "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80" },
+  { id: "WHL-002", name: "Narayana Silk Emporium", code: "NS", city: "Vijayawada, AP", status: "overdue", orders: 16, spend: "9,80,000", out: "3,50,000", terms: "30 days", lastOrder: "12 Apr 2026", activeOrder: "ORD-2026-032", duesMsg: "🔴 Overdue — ₹3,50,000 unpaid since 12 May 2026", paymentAlertDays: 47, gstNumber: "37BBBBB2222B2Z2", visitingCard: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&fit=crop&q=80" },
+  { id: "WHL-003", name: "Padmavathi Textiles", code: "PT", city: "Guntur, AP", status: "overdue", orders: 14, spend: "8,60,000", out: "2,20,000", terms: "30 days", lastOrder: "20 Apr 2026", activeOrder: null, duesMsg: "🔴 Overdue — ₹2,20,000 unpaid since 20 May 2026", gstNumber: "37CCCCC3333C3Z3", visitingCard: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&fit=crop&q=80" },
+  { id: "WHL-004", name: "Vijaya Silk House", code: "VS", city: "Chennai, TN", status: "clear", orders: 18, spend: "7,20,000", out: "0", terms: "45 days", lastOrder: "15 Apr 2026", activeOrder: null, duesMsg: "✓ All Payments Clear", gstNumber: "33DDDDD4444D4Z4", visitingCard: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&fit=crop&q=80" },
+  { id: "WHL-005", name: "Meenakshi Silks", code: "MS", city: "Coimbatore, TN", status: "due", orders: 12, spend: "6,40,000", out: "1,80,000", terms: "60 days", lastOrder: "05 Apr 2026", activeOrder: null, duesMsg: "◐ ₹1,80,000 due by 04 Jun 2026", gstNumber: "33EEEEE5555E5Z5", visitingCard: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=400&fit=crop&q=80" },
+  { id: "WHL-006", name: "Kalavathi Exports", code: "KE", city: "Bengaluru, KA", status: "overdue", orders: 10, spend: "5,80,000", out: "1,80,000", terms: "45 days", lastOrder: "02 Apr 2026", activeOrder: null, duesMsg: "🔴 Overdue — ₹1,80,000 unpaid since 17 May 2026", gstNumber: "29FFFFF6666F6Z6", visitingCard: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&fit=crop&q=80" },
+  { id: "WHL-007", name: "Srinivasa Silks", code: "SS", city: "Kurnool, AP", status: "inactive", orders: 8, spend: "4,20,000", out: "0", terms: "30 days", lastOrder: "8 months ago", activeOrder: null, duesMsg: "✓ All Payments Clear — Inactive", gstNumber: "37GGGGG7777G7Z7", visitingCard: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&fit=crop&q=80" },
+  { id: "WHL-008", name: "Annapurna Textiles", code: "AT", city: "Nellore, AP", status: "due", orders: 9, spend: "3,60,000", out: "2,20,000", terms: "90 days", lastOrder: "20 Mar 2026", activeOrder: null, duesMsg: "○ ₹2,20,000 due by 18 Jun 2026 — within terms", gstNumber: "37HHHHH8888H8Z8", visitingCard: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&fit=crop&q=80" },
 ];
 
 const retailData = [
@@ -207,6 +207,23 @@ function downloadCustomerCSV(customerName: string, fields: [string, string | und
   URL.revokeObjectURL(url);
 }
 
+function downloadDataAsCSV(filename: string, headers: string[], rows: any[][]) {
+  const csvContent = [
+    headers.map(h => `"${h.replace(/"/g, '""')}"`).join(","),
+    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+  ].join("\n");
+  
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function CardActionButton({ icon: Icon, label, color, onClick }: { icon: any, label: string, color: string, onClick?: () => void }) {
   return (
     <button onClick={onClick} style={{ background: "transparent", border: "none", color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer" }}>
@@ -232,8 +249,12 @@ export function CustomersPage() {
       }, 100);
     }
   }, []);
+  const [wholesaleList, setWholesaleList] = useState<any[]>(wholesaleData);
+  const [selectedWholesaleCust, setSelectedWholesaleCust] = useState<any>(null);
+  const [wholesaleTab, setWholesaleTab] = useState<string>("Overview");
   const [modalWholesale, setModalWholesale] = useState<any>(null);
   const [modalRetail, setModalRetail] = useState<any>(null);
+  const [retailModalTab, setRetailModalTab] = useState<"history" | "profile">("history");
   const [viewingCard, setViewingCard] = useState<string | null>(null);
   const { bulkOrders } = useBulkOrders();
   const [retailTab, setRetailTab] = useState<"inventory"|"external">("inventory");
@@ -342,8 +363,341 @@ export function CustomersPage() {
         </div>
       </div>
 
-      {/* ── SECTION 3: CUSTOMER ANALYTICS ─────────────────────────────────── */}
-      <div style={{ padding: "96px 56px 48px" }}>
+      {selectedWholesaleCust ? (
+        <div style={{ padding: "48px 56px" }}>
+          {/* Header row with Back button */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+            <button
+              onClick={() => setSelectedWholesaleCust(null)}
+              style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+            >
+              ← Back to Customers
+            </button>
+            <div style={{ display: "flex", gap: 12 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, background: selectedWholesaleCust.status === "clear" ? T.greenBg : T.crimsonBg, color: selectedWholesaleCust.status === "clear" ? T.greenMid : T.crimson, padding: "5px 12px", borderRadius: 6, fontWeight: 700 }}>
+                {selectedWholesaleCust.status.toUpperCase()}
+              </span>
+              <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>
+                {selectedWholesaleCust.id}
+              </span>
+            </div>
+          </div>
+
+          {/* Profile Header Card */}
+          <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy}, #1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 32, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700 }}>
+                  {selectedWholesaleCust.code}
+                </div>
+                <div>
+                  <h2 style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, margin: 0 }}>{selectedWholesaleCust.name}</h2>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.6)", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                    <MapPin size={14} color={T.antiqueGold} /> {selectedWholesaleCust.city}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Total Spend</div>
+                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>₹{selectedWholesaleCust.spend}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Outstanding</div>
+                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: selectedWholesaleCust.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>₹{selectedWholesaleCust.out}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-tab strip */}
+          <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, marginBottom: 32, gap: 8 }}>
+            {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map(tabName => {
+              const isActive = wholesaleTab === tabName;
+              return (
+                <button
+                  key={tabName}
+                  onClick={() => setWholesaleTab(tabName)}
+                  style={{
+                    padding: "12px 24px",
+                    fontFamily: F.ui,
+                    fontSize: 14,
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? T.royalBurgundy : T.taupe,
+                    border: "none",
+                    background: "none",
+                    borderBottom: isActive ? `3px solid ${T.royalBurgundy}` : "3px solid transparent",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {tabName}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab Content */}
+          <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: 32, boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
+            {wholesaleTab === "Overview" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                  {[
+                    { label: "Total Orders Ever", value: selectedWholesaleCust.orders, color: T.luxuryBrown },
+                    { label: "Total Spend", value: `₹${selectedWholesaleCust.spend}`, color: T.antiqueGold },
+                    { label: "Outstanding Balance", value: `₹${selectedWholesaleCust.out}`, color: selectedWholesaleCust.out === "0" ? T.greenMid : T.crimson },
+                    { label: "Payment Terms", value: selectedWholesaleCust.terms, color: T.luxuryBrown, isMono: true },
+                  ].map((s, idx) => (
+                    <div key={idx} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
+                      <div style={{ fontFamily: s.isMono ? F.mono : F.display, fontSize: 26, fontWeight: 700, color: s.color }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {selectedWholesaleCust.activeOrder && (
+                  <div style={{ background: T.darkBurgundy, padding: 28, borderRadius: 16, color: "#FFF" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 6, fontWeight: 500 }}>Active Order in Production</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 20, color: T.goldLight, marginBottom: 16, fontWeight: 700 }}>{selectedWholesaleCust.activeOrder} · 80 sarees</div>
+                    <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Recent Invoices &amp; Activity</h3>
+                  <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
+                          {["Invoice No", "Date", "Description", "Amount", "Status"].map(h => (
+                            <th key={h} style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { inv: "INV-2026-104", date: "28 Apr 2026", desc: "80x Heavy Zari Sarees (ORD-2026-041)", amt: "₹1,80,000", status: "Unpaid" },
+                          { inv: "INV-2026-085", date: "15 Mar 2026", desc: "120x Self Brocade Sarees (ORD-2026-028)", amt: "₹2,60,000", status: "Paid" },
+                        ].map((act, aIdx) => (
+                          <tr key={aIdx} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                            <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{act.inv}</td>
+                            <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{act.date}</td>
+                            <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{act.desc}</td>
+                            <td style={{ padding: "12px 14px", fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{act.amt}</td>
+                            <td style={{ padding: "12px 14px" }}>
+                              <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 11, fontWeight: 700, background: act.status === "Paid" ? T.greenBg : T.crimsonBg, color: act.status === "Paid" ? T.green : T.crimson }}>{act.status}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {wholesaleTab === "Order History" && (
+              <div>
+                <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Purchase &amp; Order History</h3>
+                <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
+                        {["Order ID", "Date", "Saree Type", "Quantity", "Total Value", "Status"].map(h => (
+                          <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { id: "ORD-2026-041", date: "28 Apr 2026", type: "Heavy Zari", qty: 80, val: "₹1,80,000", status: "In Production" },
+                        { id: "ORD-2026-028", date: "15 Mar 2026", type: "Self Brocade", qty: 120, val: "₹2,60,000", status: "Delivered" },
+                        { id: "ORD-2025-095", date: "10 Dec 2025", type: "Bridal Special", qty: 40, val: "₹1,20,000", status: "Delivered" },
+                      ].map(o => (
+                        <tr key={o.id} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.id}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{o.date}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>{o.type}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13.5, color: T.luxuryBrown }}>{o.qty} sarees</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.antiqueGold }}>{o.val}</td>
+                          <td style={{ padding: "14px 16px" }}>
+                            <span style={{ background: o.status === "Delivered" ? T.greenBg : "rgba(200,155,71,0.09)", color: o.status === "Delivered" ? T.green : T.antiqueGold, padding: "3px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>{o.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {wholesaleTab === "Payment History" && (
+              <div>
+                <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Ledger Payments Received</h3>
+                <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
+                        {["Receipt No", "Payment Date", "UTR Number", "Amount Paid", "Deductions", "Status"].map(h => (
+                          <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: "₹1,80,000", ded: "₹0", status: "Settled" },
+                        { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: "₹2,60,000", ded: "₹20,000", status: "Settled" },
+                        { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: "₹1,00,000", ded: "₹5,000", status: "Settled" },
+                      ].map(p => (
+                        <tr key={p.rec} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{p.rec}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{p.date}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{p.utr}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>{p.amt}</td>
+                          <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, color: T.crimson }}>{p.ded}</td>
+                          <td style={{ padding: "14px 16px" }}><span style={{ background: T.greenBg, color: T.green, padding: "3px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>{p.status}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {wholesaleTab === "Contact Details" && (
+              <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 20 }}>
+                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Business Contact Info</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner / Main Contact</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14.5, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>Ramesh Rao</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GSTIN Registration</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{selectedWholesaleCust.gstNumber || "Unregistered"}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>WhatsApp Contact</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Billing Address</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4, lineHeight: 1.5 }}>
+                      Shop No. 4, Silk Bazar, Main Road, {selectedWholesaleCust.city}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bank Wire Account</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>
+                      HDFC Bank · Account No. 4872 1938 8901 · IFSC: HDFC0001842
+                    </div>
+                    <span style={{ fontSize: 11, fontFamily: F.mono, color: T.taupe, marginTop: 6, display: "block" }}>🔒 Superadmin access encryption active</span>
+                  </div>
+                </div>
+
+                <div style={{ flex: "0 0 280px", display: "flex", flexDirection: "column", gap: 14 }}>
+                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Visiting Card</h3>
+                  {selectedWholesaleCust.visitingCard ? (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer" }} onClick={() => setViewingCard(selectedWholesaleCust.visitingCard)}>
+                      <img src={selectedWholesaleCust.visitingCard} alt="Visiting Card" style={{ width: "100%", height: 180, objectFit: "cover" }} />
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.5)", color: "#fff", fontFamily: F.ui, fontSize: 12, padding: "8px 12px", textAlign: "center", fontWeight: 600 }}>Click to Zoom Card</div>
+                    </div>
+                  ) : (
+                    <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: T.taupe, fontFamily: F.ui, fontSize: 13, fontStyle: "italic", background: T.silkCream }}>
+                      No visiting card uploaded.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {wholesaleTab === "Edit Profile" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Edit Customer Profile</h3>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Business Name</label>
+                      <input type="text" defaultValue={selectedWholesaleCust.name} id="edit-biz-name" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} />
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Owner Name</label>
+                      <input type="text" defaultValue="Ramesh Rao" id="edit-owner-name" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} />
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>GST Number</label>
+                      <input type="text" defaultValue={selectedWholesaleCust.gstNumber || ""} id="edit-gst-number" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.mono, fontSize: 14 }} />
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>City</label>
+                      <input type="text" defaultValue={selectedWholesaleCust.city} id="edit-city" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} />
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Credit Terms</label>
+                      <select defaultValue={selectedWholesaleCust.terms} id="edit-terms" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14, backgroundColor: "#FFF" }}>
+                        <option>30 days</option>
+                        <option>45 days</option>
+                        <option>60 days</option>
+                        <option>90 days</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Outstanding Amount (₹)</label>
+                      <input type="text" defaultValue={selectedWholesaleCust.out} id="edit-out" style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.mono, fontSize: 14 }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.borderDef}` }}>
+                  <button onClick={() => setWholesaleTab("Overview")} style={{ padding: "10px 24px", background: "transparent", color: T.taupe, borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                  <button
+                    onClick={() => {
+                      const name = (document.getElementById("edit-biz-name") as HTMLInputElement)?.value;
+                      const city = (document.getElementById("edit-city") as HTMLInputElement)?.value;
+                      const gst = (document.getElementById("edit-gst-number") as HTMLInputElement)?.value;
+                      const terms = (document.getElementById("edit-terms") as HTMLSelectElement)?.value;
+                      const out = (document.getElementById("edit-out") as HTMLInputElement)?.value;
+
+                      const updated = {
+                        ...selectedWholesaleCust,
+                        name, city, gstNumber: gst, terms, out,
+                        status: out === "0" ? "clear" : selectedWholesaleCust.status
+                      };
+                      
+                      setWholesaleList(prev => prev.map(w => w.id === selectedWholesaleCust.id ? updated : w));
+                      setSelectedWholesaleCust(updated);
+                      setWholesaleTab("Overview");
+                      setSaveSuccess(true);
+                      setTimeout(() => setSaveSuccess(false), 3000);
+                    }}
+                    style={{ padding: "10px 32px", background: T.royalBurgundy, color: "#FFF", borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    ✓ Save Changes
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* ── SECTION 3: CUSTOMER ANALYTICS ─────────────────────────────────── */}
+          <div style={{ padding: "96px 56px 48px" }}>
         <SectionTitle
           title="Customer Analytics"
           sub="Overview of customer behaviour — who spends the most, who buys most frequently, who has not bought recently, and where your customers are from."
@@ -361,14 +715,23 @@ export function CustomersPage() {
 
           {/* Chart 1: Top Customers */}
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 18 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
-                <Star size={24} color={T.antiqueGold} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+                  <Star size={24} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Customers by Purchase Value</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Wholesale and retail combined</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Customers by Purchase Value</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Wholesale and retail combined</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (₹)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
+                title="Download CSV"
+                style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
             {/* Summary strip */}
             <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -417,14 +780,23 @@ export function CustomersPage() {
 
           {/* Chart 2: Revenue Split */}
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(110,15,45,0.08)" }}>
-                <IndianRupee size={24} color={T.royalBurgundy} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(110,15,45,0.08)" }}>
+                  <IndianRupee size={24} color={T.royalBurgundy} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Wholesale vs Retail Revenue Split</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue from each sales channel</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Wholesale vs Retail Revenue Split</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue from each sales channel</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], revenueSplit.map(item => [item.name, item.value]))}
+                title="Download CSV"
+                style={{ background: "rgba(110,15,45,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.royalBurgundy, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
             <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
               <ResponsiveContainer key="rc-2" width="100%" height="100%">
@@ -453,14 +825,23 @@ export function CustomersPage() {
 
           {/* Chart 3: New vs Returning */}
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(30,102,64,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
-                <Users size={24} color={T.greenMid} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(30,102,64,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
+                  <Users size={24} color={T.greenMid} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning Customers</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Last 6 months trend</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning Customers</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Last 6 months trend</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("new_vs_returning.csv", ["Month", "New Customers", "Returning Customers"], newVsReturning.map(item => [item.month, item.new, item.returning]))}
+                title="Download CSV"
+                style={{ background: "rgba(30,102,64,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
             <div style={{ flex: 1, minHeight: 280 }}>
               <ResponsiveContainer key="rc-3" width="100%" height="100%">
@@ -483,14 +864,23 @@ export function CustomersPage() {
 
           {/* Chart 4: Frequent Buyers */}
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
-                <Calendar size={24} color={T.antiqueGold} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+                  <Calendar size={24} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Buy Most Often</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases — all time</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Buy Most Often</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases — all time</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("frequent_buyers.csv", ["Rank", "Customer Name", "Orders Count", "Frequency"], frequentBuyers.map((fb, i) => [i + 1, fb.name, fb.count, fb.freq]))}
+                title="Download CSV"
+                style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
               {frequentBuyers.map((fb, i) => (
@@ -515,14 +905,23 @@ export function CustomersPage() {
 
           {/* Chart 5: Inactive Customers */}
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(192,57,43,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(192,57,43,0.10)" }}>
-                <AlertTriangle size={24} color={T.crimson} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(192,57,43,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(192,57,43,0.10)" }}>
+                  <AlertTriangle size={24} color={T.crimson} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Have Not Bought Recently</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months — consider reaching out</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Have Not Bought Recently</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months — consider reaching out</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("inactive_customers.csv", ["Customer Name", "Type", "Last Purchase Date"], inactiveAlerts.map(al => [al.name, al.type, al.time]))}
+                title="Download CSV"
+                style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.crimson, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
               {inactiveAlerts.map((al, i) => (
@@ -552,14 +951,23 @@ export function CustomersPage() {
         {/* Charts Row 3 — Geographic */}
         <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px 36px", display: "flex", gap: 48, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 26 }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(45,145,88,0.09)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
-                <MapPin size={24} color={T.greenMid} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 26 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(45,145,88,0.09)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
+                  <MapPin size={24} color={T.greenMid} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — State-wise Distribution</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — State-wise Distribution</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
-              </div>
+              <button 
+                onClick={() => downloadDataAsCSV("customer_locations.csv", ["State", "Customers Count", "Percentage Share"], [["Andhra Pradesh", 18, "37%"], ["Telangana", 14, "29%"], ["Tamil Nadu", 8, "17%"], ["Karnataka", 5, "10%"], ["Others", 3, "6%"]])}
+                title="Download CSV"
+                style={{ background: "rgba(45,145,88,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
+              >
+                <Download size={14} />
+              </button>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -690,6 +1098,10 @@ export function CustomersPage() {
                     <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Bank Name</label><input type="text" placeholder="For any refunds" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
                     <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Account Number</label><input type="password" placeholder="Account No." style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
                   </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>GST Number</label><input type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
+                    <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Visiting Card Photo</label><input type="file" accept="image/*" style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, backgroundColor: "#FFF" }} /></div>
+                  </div>
                   <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Notes</label><input type="text" placeholder="Any special instructions..." style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
                 </div>
               </div>
@@ -748,133 +1160,87 @@ export function CustomersPage() {
         {/* Wholesale Cards View */}
         {wholesaleView === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-            {wholesaleData.map((w, i) => {
-              const statusColor = w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : w.status === "inactive" ? T.taupe : T.antiqueGold;
-              const contact = bulkOrders.find(o => o.customerId === w.id && (o.address || o.phone || o.gstCode || o.visitingCardUrl));
+            {wholesaleList.map((w, i) => {
               return (
-                <div key={i} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, borderTop: `4px solid ${statusColor}`, boxShadow: "0 4px 16px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column" }}>
-                  <div style={{ padding: "22px 22px 0", flex: 1 }}>
-                    {/* Header: avatar + name */}
-                    <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 16 }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 14, background: T.royalBurgundy, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
+                <div key={i} style={{
+                  background: `linear-gradient(135deg, ${T.warmIvory} 0%, ${T.silkCream} 100%)`,
+                  borderRadius: 20,
+                  border: `1.5px solid ${T.borderGold}`,
+                  boxShadow: "0 10px 28px rgba(74,6,27,0.06)",
+                  padding: "24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  position: "relative",
+                  overflow: "hidden",
+                  minHeight: 300,
+                  color: T.luxuryBrown,
+                }}>
+                  {/* Subtle Light Card Pattern */}
+                  <div style={{ position: "absolute", top: "-50%", right: "-30%", width: "100%", height: "100%", background: "radial-gradient(circle, rgba(200,155,71,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+                  
+                  {/* Card Header: Avatar & Short ID */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${T.royalBurgundy}, ${T.darkBurgundy})`, color: "#FFFDF9", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, fontWeight: 700, boxShadow: "0 4px 10px rgba(110,15,45,0.15)" }}>
                         {w.code}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 7px 0", lineHeight: 1.2 }}>{w.name}</h4>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "3px 8px", borderRadius: 5 }}>{w.id}</span>
-                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}><MapPin size={12} />{w.city}</span>
-                        </div>
+                      <div>
+                        <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.id}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>EST. {2020 + (i % 5)}</div>
                       </div>
                     </div>
-
-                    {/* Status banner */}
-                    <div style={{
-                      padding: "10px 14px", borderRadius: 8, marginBottom: (w as any).paymentAlertDays > 45 ? 8 : 18, fontFamily: F.ui, fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-                      background: w.status === "clear" || w.status === "inactive" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)",
-                      color: w.status === "clear" || w.status === "inactive" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold,
-                    }}>
-                      {w.duesMsg}
+                    {/* Small Gold Chip Icon to mimic a credit card */}
+                    <div style={{ width: 34, height: 26, borderRadius: 6, background: `linear-gradient(135deg, ${T.goldLight}, ${T.antiqueGold})`, border: "1px solid rgba(255,255,255,0.4)", display: "flex", flexDirection: "column", gap: 3, padding: 4, justifyContent: "center", boxShadow: "0 2px 5px rgba(200,155,71,0.2)" }}>
+                      <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
+                      <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
+                      <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
                     </div>
-                    {(w as any).paymentAlertDays > 45 && (
-                      <div style={{ marginBottom: 18 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.10)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 999, padding: "3px 10px", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                          ⚠ Payment Alert — Day {(w as any).paymentAlertDays}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Stats grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
-                      {[
-                        { label: "Total Orders", value: String(w.orders), color: T.luxuryBrown, mono: false },
-                        { label: "Total Spend", value: `₹${w.spend}`, color: T.antiqueGold, mono: false },
-                        { label: "Outstanding", value: `₹${w.out}`, color: w.out === "0" ? T.greenMid : T.crimson, mono: false },
-                        { label: "Payment Terms", value: w.terms, color: T.luxuryBrown, mono: true },
-                      ].map((s, si) => (
-                        <div key={si}>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 4 }}>{s.label}</div>
-                          <div style={{ fontFamily: s.mono ? F.mono : F.display, fontSize: 19, fontWeight: 700, color: s.color }}>{s.value}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Contact details from bulk order (address, phone, GST, visiting card) */}
-                    {contact && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16, paddingTop: 14, borderTop: `1px solid ${T.borderDef}` }}>
-                        {contact.address && (
-                          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, display: "flex", alignItems: "flex-start", gap: 7 }}>
-                            <MapPin size={13} color={T.taupe} style={{ marginTop: 1, flexShrink: 0 }} /> {contact.address}
-                          </div>
-                        )}
-                        {contact.phone && (
-                          <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe, display: "flex", alignItems: "center", gap: 7 }}>
-                            <Phone size={13} color={T.taupe} /> {contact.phone}
-                          </div>
-                        )}
-                        {contact.gstCode && (
-                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 7 }}>
-                            GST: {contact.gstCode}
-                          </div>
-                        )}
-                        {contact.visitingCardUrl && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <img
-                              src={contact.visitingCardUrl}
-                              alt="Visiting card"
-                              onClick={() => setViewingCard(contact.visitingCardUrl!)}
-                              style={{ width: 42, height: 28, objectFit: "cover", borderRadius: 4, border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
-                            />
-                            <span onClick={() => setViewingCard(contact.visitingCardUrl!)} style={{ fontFamily: F.ui, fontSize: 12.5, color: T.antiqueGold, fontWeight: 600, cursor: "pointer" }}>View Card</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Superadmin-only label */}
-                    <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
-                      🔒 Bank details &amp; special terms visible to Superadmin only
-                    </div>
-
-                    {/* Last order + active order */}
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6, marginBottom: w.activeOrder ? 10 : 22 }}>
-                      <Calendar size={14} color={T.taupe} /> Last Order: {w.lastOrder}
-                    </div>
-                    {w.activeOrder ? (
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, background: T.goldLight, padding: "7px 12px", borderRadius: 7, display: "inline-block", marginBottom: 22 }}>
-                        🔄 Active: {w.activeOrder}
-                      </div>
-                    ) : (
-                      <div style={{ height: 37 }} />
-                    )}
                   </div>
 
-                  {/* Footer actions */}
-                  <div style={{ background: T.silkCream, borderTop: `1px solid ${T.borderDef}`, padding: "12px 22px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
-                    {[
-                      { label: "View",   icon: <Eye size={13} />,      color: T.royalBurgundy, onClick: () => setModalWholesale(w) },
-                      { label: "Edit",   icon: <Edit size={13} />,     color: T.royalBurgundy, onClick: undefined },
-                      { label: "Report", icon: <Download size={13} />, color: T.royalBurgundy, onClick: undefined },
-                      { label: "Download Data", icon: <Download size={13} />, color: T.royalBurgundy, onClick: () => downloadCustomerCSV(w.name, [
-                        ["Customer ID", w.id],
-                        ["Business Name", w.name],
-                        ["City", w.city],
-                        ["Status", w.status],
-                        ["Total Orders", String(w.orders)],
-                        ["Total Spend", w.spend],
-                        ["Outstanding", w.out],
-                        ["Payment Terms", w.terms],
-                        ["Last Order", w.lastOrder],
-                        ["Active Order", w.activeOrder || undefined],
-                        ["Address", contact?.address],
-                        ["Phone Number", contact?.phone],
-                        ["GST Code", contact?.gstCode],
-                      ]) },
-                    ].map(btn => (
-                      <button key={btn.label} onClick={btn.onClick} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 36, border: `1px solid ${T.royalBurgundy}`, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: btn.color, cursor: "pointer", borderRadius: 10 }}>
-                        {btn.icon} {btn.label}
-                      </button>
-                    ))}
+                  {/* Card Middle: Firm Name & City */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginBottom: 20 }}>
+                    <h4 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", letterSpacing: "0.5px", lineHeight: 1.25 }}>{w.name}</h4>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.taupe }}>
+                      <MapPin size={13} color={T.antiqueGold} />
+                      <span style={{ fontFamily: F.ui, fontSize: 13 }}>{w.city}</span>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom: GST, Credit Terms & Dues */}
+                  <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>GSTIN</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown, fontWeight: 600 }}>{w.gstNumber || "Unregistered"}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, marginTop: 6, fontWeight: 600 }}>Credit Terms: {w.terms}</div>
+                    </div>
+                    
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Outstanding</div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: w.out === "0" ? T.greenMid : T.crimson }}>
+                        {w.out === "0" ? "Clear" : `₹${w.out}`}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: w.status === "overdue" ? T.crimson : T.taupe, marginTop: 4, fontWeight: 600 }}>
+                        {w.status === "clear" ? "✓ No Dues" : w.status === "overdue" ? "⚠ Overdue" : "◐ Pending"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Actions Footer */}
+                  <div style={{
+                    marginTop: 18,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    borderTop: `1px solid ${T.borderDef}`,
+                    paddingTop: 12,
+                  }}>
+                    <button onClick={() => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); }} style={{ flex: 1, background: "rgba(110,15,45,0.06)", border: "1px solid rgba(110,15,45,0.1)", borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", transition: "all 0.2s" }}>
+                      <Eye size={12} color={T.royalBurgundy} /> View Profile
+                    </button>
+                    <button onClick={() => { setSelectedWholesaleCust(w); setWholesaleTab("Edit Profile"); }} style={{ background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer", transition: "all 0.2s" }}>
+                      <Edit size={12} /> Edit
+                    </button>
                   </div>
                 </div>
               );
@@ -894,7 +1260,7 @@ export function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {wholesaleData.map((w, i) => (
+                {wholesaleList.map((w, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                     <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</td>
                     <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{w.name}</td>
@@ -902,7 +1268,7 @@ export function CustomersPage() {
                     <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.orders}</td>
                     <td style={{ padding: "14px 18px", color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</td>
                     <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                    <td style={{ padding: "14px 18px" }}><button onClick={() => setModalWholesale(w)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View</button></td>
+                    <td style={{ padding: "14px 18px" }}><button onClick={() => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); }} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -922,7 +1288,7 @@ export function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {wholesaleData.map((w, i) => (
+                {wholesaleList.map((w, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                     <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</td>
                     <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{w.name}</td>
@@ -933,7 +1299,7 @@ export function CustomersPage() {
                     <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.terms}</td>
                     <td style={{ padding: "14px 18px", color: T.taupe }}>{w.lastOrder}</td>
                     <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                    <td style={{ padding: "14px 18px" }}><button onClick={() => setModalWholesale(w)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View Profile</button></td>
+                    <td style={{ padding: "14px 18px" }}><button onClick={() => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); }} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View Profile</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -1202,6 +1568,15 @@ export function CustomersPage() {
           </table>
         </div>
       </div>
+        </>
+      )}
+
+      {saveSuccess && (
+        <div style={{ position: "fixed", bottom: 40, right: 40, background: T.greenMid, color: "#FFF", padding: "16px 28px", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 10, zIndex: 9999 }}>
+          <Check size={18} />
+          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>Profile updated successfully!</span>
+        </div>
+      )}
 
       {/* ── MODALS ────────────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -1277,59 +1652,89 @@ export function CustomersPage() {
                 <button onClick={() => setModalRetail(null)} style={{ marginLeft: "auto", background: "#FFF", border: `1px solid ${T.borderDef}`, color: T.taupe, width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={18} /></button>
               </div>
               <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 32px" }}>
-                <div style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.royalBurgundy, borderBottom: `2px solid ${T.royalBurgundy}`, cursor: "pointer" }}>Purchase History</div>
-                <div style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: 500, color: T.taupe, borderBottom: "2px solid transparent", cursor: "pointer" }}>Profile Details</div>
+                <div onClick={() => setRetailModalTab("history")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "history" ? 600 : 500, color: retailModalTab === "history" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "history" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Purchase History</div>
+                <div onClick={() => setRetailModalTab("profile")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "profile" ? 600 : 500, color: retailModalTab === "profile" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "profile" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Profile Details</div>
               </div>
               <div style={{ padding: 32, overflowY: "auto" }}>
-                {/* 4-stat summary strip */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
-                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{modalRetail.purchases}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{modalRetail.spend}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
-                      ₹{Math.round(parseInt(modalRetail.spend.replace(/,/g, '')) / Math.max(modalRetail.purchases, 1)).toLocaleString('en-IN')}
+                {retailModalTab === "history" ? (
+                  <>
+                    {/* 4-stat summary strip */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
+                        <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{modalRetail.purchases}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
+                        <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{modalRetail.spend}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
+                          ₹{Math.round(parseInt(modalRetail.spend.replace(/,/g, '')) / Math.max(modalRetail.purchases, 1)).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
+                      </div>
+                    </div>
+
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
+                      <thead>
+                        <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
+                          {["Sale Date", "Saree ID", "Saree Type", "Price Paid", "Return"].map(h => (
+                            <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { date: modalRetail.lastVisit, id: "RAVI-L2-008", type: "Heavy Zari",       price: "₹14,500" },
+                          { date: "12 Feb 2026",         id: "PADMA-L1-012", type: "Plain Silk",       price: "₹22,000" },
+                          { date: "08 Jan 2026",         id: "BKB-L3-004",   type: "Self Brocade",     price: "₹9,800" },
+                          { date: "14 Dec 2025",         id: "SURESH-L2-007", type: "Bridal Special", price: "₹38,500" },
+                          { date: "02 Nov 2025",         id: "RAVI-L2-003",  type: "Heavy Zari",      price: "₹16,200" },
+                        ].map((row, i) => (
+                          <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                            <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
+                            <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.id}</td>
+                            <td style={{ padding: "14px 14px", color: T.luxuryBrown }}>{row.type}</td>
+                            <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
+                            <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
+                      </div>
+                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>City / Location</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{modalRetail.city || "Hyderabad, TG"}</div>
+                      </div>
+                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Favorite Category</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.antiqueGold }}>Heavy Zari / Self Brocade</div>
+                      </div>
+                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Status</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.greenMid }}>{modalRetail.regular ? "★ Preferred Regular Client" : "Regular Client"}</div>
+                      </div>
+                    </div>
+                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Manager Notes</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5, marginTop: 4 }}>
+                        Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops.
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
-                  </div>
-                </div>
-
-                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                      {["Sale Date", "Saree ID", "Design", "Saree Type", "Price Paid", "Return"].map(h => (
-                        <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { date: modalRetail.lastVisit, id: "RAVI-L2-008", design: "BKB-045", type: "Heavy Zari",       price: "₹14,500", returned: false },
-                      { date: "12 Feb 2026",         id: "PADMA-L1-012", design: "BKB-031", type: "Plain Silk",       price: "₹22,000", returned: false },
-                      { date: "08 Jan 2026",         id: "BKB-L3-004",   design: "BKB-022", type: "Self Brocade",     price: "₹9,800",  returned: false },
-                      { date: "14 Dec 2025",         id: "SURESH-L2-007", design: "BKB-019", type: "Bridal Special", price: "₹38,500", returned: false },
-                      { date: "02 Nov 2025",         id: "RAVI-L2-003",  design: "BKB-038", type: "Heavy Zari",      price: "₹16,200", returned: false },
-                    ].map((row, i) => (
-                      <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                        <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
-                        <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.id}</td>
-                        <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.design}</td>
-                        <td style={{ padding: "14px 14px", color: T.luxuryBrown }}>{row.type}</td>
-                        <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
-                        <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                )}
               </div>
             </motion.div>
           </div>

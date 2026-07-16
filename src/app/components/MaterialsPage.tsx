@@ -278,6 +278,7 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
     quantity: "",
     quantityGm: "",
     jariUnit: "Reels" as "Reels" | "Buns",
+    warpReshamUnit: "kg" as "kg" | "g",
     pricePerKg: "",
     notes: "",
   });
@@ -288,7 +289,7 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
   const handleSubmit = () => {
     if (!form.details || !form.vendor || !form.receivedDate || !form.quantity) return;
     setSubmitted(true);
-    setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", pricePerKg: "", notes: "" }); }, 1800);
+    setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", warpReshamUnit: "kg", pricePerKg: "", notes: "" }); }, 1800);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -356,7 +357,7 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
               </div>
               <div>
                 <label style={labelStyle}>
-                  {form.materialType === "Jari" ? `Quantity (${form.jariUnit}) *` : "Quantity Received *"}
+                  {form.materialType === "Jari" ? `Quantity (${form.jariUnit}) *` : `Quantity Received (${form.warpReshamUnit || "kg"}) *`}
                 </label>
                 {form.materialType === "Jari" ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -383,17 +384,24 @@ function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => voi
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                      {(["kg", "g"] as const).map(u => (
+                        <button key={u} onClick={() => set("warpReshamUnit", u)} style={{
+                          flex: 1, padding: "8px 0", borderRadius: 9, cursor: "pointer",
+                          fontFamily: F.ui, fontSize: 13, fontWeight: 700,
+                          background: (form.warpReshamUnit || "kg") === u ? T.royalBurgundy : T.warmIvory,
+                          color: (form.warpReshamUnit || "kg") === u ? "#FFFDF9" : T.taupe,
+                          border: (form.warpReshamUnit || "kg") === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
+                        }}>{u}</button>
+                      ))}
+                    </div>
                     <div style={{ position: "relative" }}>
                       <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 36 }} />
-                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>kg</span>
+                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.warpReshamUnit || "kg"}</span>
                     </div>
-                    <div style={{ position: "relative" }}>
-                      <input type="number" value={form.quantityGm} onChange={e => set("quantityGm", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 36 }} />
-                      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe }}>g</span>
-                    </div>
-                    {(form.quantity || form.quantityGm) && (
+                    {form.quantity && (
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
-                        = {((parseFloat(form.quantity || "0") * 1000) + parseFloat(form.quantityGm || "0")).toFixed(0)} g total
+                        = {(form.warpReshamUnit || "kg") === "kg" ? `${(parseFloat(form.quantity) * 1000).toFixed(0)} g` : `${(parseFloat(form.quantity) / 1000).toFixed(3)} kg`}
                       </div>
                     )}
                   </div>
@@ -504,8 +512,19 @@ function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | null; onC
           ].map(row => (
             <div key={row.label} style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 16px 14px", textAlign: "center" }}>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>{row.icon}</div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 28, color: row.color, lineHeight: 1 }}>{row.value}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 4 }}>{row.label} (kg)</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: batch.type === "Jari" ? 20 : 28, color: row.color, lineHeight: 1.2 }}>
+                {batch.type === "Jari" ? (
+                  <>
+                    <div>{row.value} Buns</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: T.taupe, marginTop: 3 }}>({row.value * 4} Reels)</div>
+                  </>
+                ) : (
+                  row.value
+                )}
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 4 }}>
+                {row.label} {batch.type === "Jari" ? "" : "(kg)"}
+              </div>
             </div>
           ))}
         </div>
@@ -1015,12 +1034,12 @@ function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => voi
 // ─── FULL ISSUE HISTORY MODAL ─────────────────────────────────────────────────
 function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const historyEntries = [
-    { ref: "ISS-PV-BATCH086-20260501", weaver: "Padma Veni", weaverId: "WV002", batch: "BATCH-086", materials: "Warp 4.5kg · Resham 1.2kg · Jari 200g", date: "01 May 2026, 2:15 PM", status: "Active" },
-    { ref: "ISS-RK-BATCH089-20260429", weaver: "Ravi Kumar", weaverId: "WV001", batch: "BATCH-089", materials: "Warp 6kg · Resham 900g · Jari 250g", date: "29 Apr 2026, 9:45 AM", status: "Active" },
-    { ref: "ISS-SM-BATCH081-20260427", weaver: "Suresh Murti", weaverId: "WV003", batch: "BATCH-081", materials: "Warp 3kg · Resham 900g · Jari 150g", date: "27 Apr 2026, 10:00 AM", status: "Quality Check" },
-    { ref: "ISS-AK-BATCH083-20260425", weaver: "Anand K.", weaverId: "WV005", batch: "BATCH-083", materials: "Warp 5kg · Resham 700g · Jari 200g", date: "25 Apr 2026, 11:30 AM", status: "Active" },
-    { ref: "ISS-MR-BATCH085-20260423", weaver: "Meena R.", weaverId: "WV004", batch: "BATCH-085", materials: "Warp 3.5kg · Resham 700g · Jari 150g", date: "23 Apr 2026, 2:00 PM", status: "Overdue" },
-    { ref: "ISS-RK-BATCH077-20260415", weaver: "Ravi Kumar", weaverId: "WV001", batch: "BATCH-077", materials: "Warp 5.5kg · Resham 1.1kg · Jari 220g", date: "15 Apr 2026, 9:00 AM", status: "Completed" },
+    { ref: "ISS-PV-BATCH086-20260501", weaver: "Padma Veni", weaverId: "WV002", batch: "BATCH-086", materials: "Warp 4.5kg · Resham 1.2kg · Jari 6 Reels", date: "01 May 2026, 2:15 PM", status: "Active" },
+    { ref: "ISS-RK-BATCH089-20260429", weaver: "Ravi Kumar", weaverId: "WV001", batch: "BATCH-089", materials: "Warp 6kg · Resham 900g · Jari 8 Reels", date: "29 Apr 2026, 9:45 AM", status: "Active" },
+    { ref: "ISS-SM-BATCH081-20260427", weaver: "Suresh Murti", weaverId: "WV003", batch: "BATCH-081", materials: "Warp 3kg · Resham 900g · Jari 5 Reels", date: "27 Apr 2026, 10:00 AM", status: "Quality Check" },
+    { ref: "ISS-AK-BATCH083-20260425", weaver: "Anand K.", weaverId: "WV005", batch: "BATCH-083", materials: "Warp 5kg · Resham 700g · Jari 6 Reels", date: "25 Apr 2026, 11:30 AM", status: "Active" },
+    { ref: "ISS-MR-BATCH085-20260423", weaver: "Meena R.", weaverId: "WV004", batch: "BATCH-085", materials: "Warp 3.5kg · Resham 700g · Jari 5 Reels", date: "23 Apr 2026, 2:00 PM", status: "Overdue" },
+    { ref: "ISS-RK-BATCH077-20260415", weaver: "Ravi Kumar", weaverId: "WV001", batch: "BATCH-077", materials: "Warp 5.5kg · Resham 1.1kg · Jari 7 Reels", date: "15 Apr 2026, 9:00 AM", status: "Completed" },
   ];
 
   const statusColors: Record<string, string> = { Active: T.green, "Quality Check": "#7A5E1C", Overdue: T.crimson, Completed: T.taupe };
@@ -1151,7 +1170,7 @@ function PageHeader() {
 // SECTION 2 — METRICS BAR
 // ═══════════════════════════════════════════════════════════════════════════════
 const MATERIAL_METRICS = [
-  { label: "Total In Stock",       val: "412", sub: "kg combined",       hi: false },
+  { label: "Total In Stock",       val: "322", sub: "kg Warp & Resham",  hi: false },
   { label: "Warp Available",       val: "142", sub: "approx 284 sarees", hi: false },
   { label: "Resham Available",     val: "180", sub: "6 colors",          hi: false },
   { label: "Jari Alerts",          val: "36 Buns",  sub: "(144 Reels) · some colors low",           hi: true  },
@@ -1216,7 +1235,7 @@ function MetricsBar() {
 // SECTION 3 — STOCK ALERTS CARD
 // ═══════════════════════════════════════════════════════════════════════════════
 const ALERTS = [
-  { type: "JARI",   subtype: "Polyester · 1G · Silver", batchId: "JRI-PLY-1G-SLV-20260501-002", current: "1 kg",  minimum: "5 kg",  pct: 20 },
+  { type: "JARI",   subtype: "Polyester · 1G · Silver", batchId: "JRI-PLY-1G-SLV-20260501-002", current: "4 Buns (16 Reels)",  minimum: "20 Buns (80 Reels)",  pct: 20 },
   { type: "RESHAM", subtype: "Silk · Green",            batchId: "RSM-GRN-20260428-001",         current: "2 kg",  minimum: "8 kg",  pct: 25 },
   { type: "WARP",   subtype: "Cotton / Silk",           batchId: "WRP-20260428-003",             current: "4 kg",  minimum: "10 kg", pct: 40 },
 ];
@@ -1882,32 +1901,149 @@ function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string) => voi
     else if (m.materialType === "Jari") jariBuns += m.unit === "Buns" ? m.quantity : m.quantity / 4;
   }));
 
+  const jariReels = jariBuns * 4;
+
   return (
     <section id="mat-issued" style={{ padding: `24px ${px}px 0` }}>
       <div style={{
-        background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 16,
-        padding: "20px 24px", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap",
-        boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+        background: `linear-gradient(135deg, ${T.warmIvory} 0%, #FFFFFF 100%)`,
+        border: `1.5px solid ${T.borderDef}`,
+        borderRadius: 20,
+        padding: "24px 30px",
+        boxShadow: "0 10px 30px rgba(74,6,27,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+        display: "flex",
+        flexDirection: isMobile ? "column" : "row",
+        alignItems: isMobile ? "stretch" : "center",
+        justifyContent: "space-between",
+        gap: 24,
+        position: "relative",
+        overflow: "hidden",
       }}>
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, marginBottom: 2 }}>Materials Issued to Weavers This Month</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{thisMonthRecords.length} issuance{thisMonthRecords.length !== 1 ? "s" : ""} recorded</div>
+        {/* Subtle decorative gold line at the left */}
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: G_GOLD }} />
+
+        {/* Info Left */}
+        <div style={{ flex: "1 1 25%", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ClipboardList size={18} color={T.royalBurgundy} />
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>
+              Issued to Weavers
+            </span>
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Weaver material disbursements recorded for {now.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+          </div>
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            width: "fit-content",
+            gap: 6,
+            background: "rgba(110,15,45,0.06)",
+            color: T.royalBurgundy,
+            fontFamily: F.mono,
+            fontSize: 11,
+            fontWeight: 600,
+            padding: "4px 10px",
+            borderRadius: 6,
+            marginTop: 4,
+          }}>
+            {thisMonthRecords.length} {thisMonthRecords.length === 1 ? "Issuance" : "Issuances"}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 18, flex: 1, minWidth: isMobile ? "100%" : undefined }}>
+
+        {/* Middle Stats Grid */}
+        <div style={{
+          flex: "1 1 55%",
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+          gap: 16,
+        }}>
           {[
-            { label: "Total Warp", val: `${warpKg.toFixed(warpKg % 1 === 0 ? 0 : 1)} kg`, color: T.royalBurgundy },
-            { label: "Total Resham", val: `${reshamKg.toFixed(reshamKg % 1 === 0 ? 0 : 1)} kg`, color: T.antiqueGold },
-            { label: "Total Jari", val: `${jariBuns.toFixed(jariBuns % 1 === 0 ? 0 : 1)} Buns`, color: T.crimson },
+            {
+              label: "Warp Disbursed",
+              val: `${warpKg.toFixed(warpKg % 1 === 0 ? 0 : 1)} kg`,
+              sub: "For vertical threads",
+              color: T.royalBurgundy,
+              bg: "rgba(110,15,45,0.04)",
+              border: "rgba(110,15,45,0.12)",
+              icon: <Layers size={16} color={T.royalBurgundy} />
+            },
+            {
+              label: "Resham Disbursed",
+              val: `${reshamKg.toFixed(reshamKg % 1 === 0 ? 0 : 1)} kg`,
+              sub: "For body & borders",
+              color: T.antiqueGold,
+              bg: "rgba(200,155,71,0.06)",
+              border: "rgba(200,155,71,0.18)",
+              icon: <Tag size={16} color="#7A5E1C" />
+            },
+            {
+              label: "Jari Disbursed",
+              val: `${jariBuns.toFixed(jariBuns % 1 === 0 ? 0 : 1)} Buns`,
+              sub: `${jariReels.toFixed(0)} Reels`,
+              color: T.luxuryBrown,
+              bg: "rgba(59,35,20,0.04)",
+              border: "rgba(59,35,20,0.12)",
+              icon: <Sparkles size={16} color={T.luxuryBrown} />
+            },
           ].map(s => (
-            <div key={s.label} style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 3 }}>{s.label}</div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: s.color }}>{s.val}</div>
+            <div
+              key={s.label}
+              style={{
+                background: s.bg,
+                border: `1px solid ${s.border}`,
+                borderRadius: 14,
+                padding: "14px 16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {s.icon}
+                <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  {s.label}
+                </span>
+              </div>
+              <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: s.color, marginTop: 4 }}>
+                {s.val}
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500 }}>
+                {s.sub}
+              </div>
             </div>
           ))}
         </div>
-        <button onClick={() => onNavigate?.("IssueMaterial")} style={{ background: "none", border: "none", fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.antiqueGold, cursor: "pointer", flexShrink: 0 }}>
-          View Full History →
-        </button>
+
+        {/* Right Action Button */}
+        <div style={{ flex: "1 1 15%", display: "flex", justifyContent: isMobile ? "stretch" : "flex-end" }}>
+          <motion.button
+            onClick={() => onNavigate?.("IssueMaterial")}
+            whileHover={{ scale: 1.03, boxShadow: "0 6px 20px rgba(110,15,45,0.15)" }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              width: isMobile ? "100%" : "auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "12px 20px",
+              borderRadius: 12,
+              background: "rgba(110,15,45,0.06)",
+              color: T.royalBurgundy,
+              border: `1.5px solid rgba(110,15,45,0.16)`,
+              fontFamily: F.ui,
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.2s",
+            }}
+          >
+            <span>View Full History</span>
+            <ArrowRight size={14} />
+          </motion.button>
+        </div>
       </div>
     </section>
   );
@@ -2001,11 +2137,21 @@ function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRo
                 <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>{r.details}</span></td>
                 <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span></td>
                 <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe }}>{r.date}</span></td>
-                <td style={TD}><span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>kg</span></span></td>
-                <td style={TD}><span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.taupe }}>{r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>kg</span></span></td>
+                <td style={TD}>
+                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>
+                    {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received * 4} Reels)` : "kg"}</span>
+                  </span>
+                </td>
+                <td style={TD}>
+                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.taupe }}>
+                    {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given * 4} Reels)` : "kg"}</span>
+                  </span>
+                </td>
                 <td style={TD}>
                   <div>
-                    <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: sc.color }}>{r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>kg</span></span>
+                    <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: sc.color }}>
+                      {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining * 4} Reels)` : "kg"}</span>
+                    </span>
                     <div style={{ width: 64, height: 4, background: "rgba(110,15,45,0.08)", borderRadius: 2, marginTop: 5 }}>
                       <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 2 }} />
                     </div>
@@ -2078,8 +2224,19 @@ function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow
                   ].map(s => (
                     <div key={s.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 10px 8px", textAlign: "center" as const }}>
                       <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>{s.icon}</div>
-                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>{s.label} kg</div>
+                      <div style={{ fontFamily: F.display, fontSize: r.type === "Jari" ? 14 : 18, fontWeight: 700, color: s.color, lineHeight: 1.2 }}>
+                        {r.type === "Jari" ? (
+                          <>
+                            <div>{s.val} Buns</div>
+                            <div style={{ fontSize: 11, fontWeight: 500, color: T.taupe, marginTop: 2 }}>{s.val * 4} Reels</div>
+                          </>
+                        ) : (
+                          s.val
+                        )}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>
+                        {s.label} {r.type === "Jari" ? "" : "kg"}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2330,8 +2487,8 @@ function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => 
 
       {/* Filter Panel */}
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", marginBottom: 24, overflow: "hidden" }}>
-          <div style={{ background: `linear-gradient(100deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "16px 24px", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", marginBottom: 24, overflow: "visible" }}>
+          <div style={{ background: `linear-gradient(100deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "16px 24px", display: "flex", alignItems: "center", gap: 12, borderTopLeftRadius: 17, borderTopRightRadius: 17 }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <SlidersHorizontal size={17} color="#FFFDF9" strokeWidth={2} />
             </div>

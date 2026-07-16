@@ -19,14 +19,14 @@ type Tab = "home" | "qc" | "weavers" | "finishing" | "profile";
 const TABS: { id: Tab; Icon: React.ComponentType<{ size: number; color: string }>; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
-  { id: "weavers",   Icon: Users,      label: "Weavers"       },
+  { id: "weavers",   Icon: Package,    label: "Receive"       },
   { id: "finishing", Icon: Sparkles,   label: "Finishing", badge: "2" },
 ];
 
 const PAGE_TITLES: Record<Tab, string> = {
-  home:      "Today's Tasks",
+  home:      "Worker Dashboard",
   qc:        "Quality Check",
-  weavers:   "Weavers",
+  weavers:   "Receive Sarees",
   finishing: "Finishing",
   profile:   "My Profile",
 };

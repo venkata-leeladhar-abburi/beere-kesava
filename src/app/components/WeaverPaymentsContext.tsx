@@ -9,6 +9,13 @@ export interface WeaverPaymentRecord {
   firmName: string;
   paymentDate: string;
   uploadedAt: string;
+
+  // New ledger fields
+  batchNo?: string;
+  loomNumber?: string;
+  noOfSarees?: number;
+  amount?: number;
+  deduction?: number;
 }
 
 interface WeaverPaymentsContextValue {

@@ -17,6 +17,7 @@ export interface MaterialIssueRecord {
   id: string;               // auto-generated e.g. "MIR-2026-001"
   weaverId: string;
   weaverName: string;
+  loomNumber?: number;      // Loom number selected
   issuedBy: string;         // Admin name who issued
   issuedAt: string;         // date-time
   materials: IssuedMaterialItem[];
@@ -33,6 +34,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     id: "MIR-2026-001",
     weaverId: "WV-001",
     weaverName: "Ravi Kumar",
+    loomNumber: 2,
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-01T09:15:00.000Z",
     materials: [
@@ -49,6 +51,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     id: "MIR-2026-002",
     weaverId: "WV-002",
     weaverName: "Padma Veni",
+    loomNumber: 1,
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-02T11:40:00.000Z",
     materials: [
@@ -64,6 +67,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     id: "MIR-2026-003",
     weaverId: "WV-001",
     weaverName: "Ravi Kumar",
+    loomNumber: 2,
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-03T10:00:00.000Z",
     materials: [

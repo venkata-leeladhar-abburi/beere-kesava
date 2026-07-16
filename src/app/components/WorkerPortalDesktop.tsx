@@ -32,7 +32,7 @@ type NavTab = "home" | "qc" | "weavers" | "finishing";
 const TOPNAV_ITEMS: { id: NavTab; Icon: React.ComponentType<{ size?: number; color?: string }>; label: string; badge?: number }[] = [
   { id: "home",      Icon: Home,     label: "Home" },
   { id: "qc",        Icon: Search,   label: "Quality Check", badge: 6 },
-  { id: "weavers",   Icon: Users,    label: "Weavers" },
+  { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
   { id: "finishing", Icon: Sparkles, label: "Finishing" },
 ];
 

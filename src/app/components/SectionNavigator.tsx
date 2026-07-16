@@ -56,16 +56,7 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
     { id: "pay-analytics", label: "Analytics" },
     { id: "pay-history", label: "Payment History" },
   ],
-  Reports: [
-    { id: "rep-raw-materials", label: "Raw Materials" },
-    { id: "rep-production", label: "Production" },
-    { id: "rep-weaver-payments", label: "Weaver Payments" },
-    { id: "rep-retail", label: "Retail Sales" },
-    { id: "rep-wholesale", label: "Wholesale Sales" },
-    { id: "rep-pnl", label: "P&L" },
-    { id: "rep-customers", label: "Customers" },
-    { id: "rep-overdue", label: "Overdue & Alerts" },
-  ],
+  Reports: [],
   Weavers: [
     { id: "weav-all-weavers", label: "All Weavers" },
     { id: "weav-performance", label: "Performance" },
@@ -73,7 +64,6 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
   ],
   WorkerQC: [
     { id: "wqc-pending", label: "Pending QC" },
-    { id: "wqc-in-progress", label: "In Progress" },
     { id: "wqc-completed", label: "Completed Today" },
     { id: "wqc-defective", label: "Defective" },
   ],
