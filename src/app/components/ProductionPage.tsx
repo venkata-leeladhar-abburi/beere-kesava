@@ -744,7 +744,7 @@ function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; onView?:
 
 // ── Batch Table View ──────────────────────────────────────────────────────────
 function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
-  const headers = ["Batch No.", "Stage", "Weaver(s)", "Design Code", "Saree Type", "Materials Given", "Started", "Expected End", "Target", "Done", "QC Passed", "Rate/Saree", "Est. Charges", "Action"];
+  const headers = ["Batch No.", "Stage", "Weaver(s)", "Saree Type", "Materials Given", "Started", "Expected End", "Target", "Done", "QC Passed", "Rate/Saree", "Est. Charges", "Action"];
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ overflowX: "auto" }}>
@@ -767,7 +767,6 @@ function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?
                       {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} <span style={{ color: T.taupe }}>({w.id})</span></div>)}
                     </div>
                   </td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe, maxWidth: 200, lineHeight: 1.5 }}>{b.materials}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>{b.started}</td>
@@ -1019,13 +1018,7 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
           </div>
 
           {/* Details metadata grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Design Code</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
-                <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{firstRow?.designCode || "N/A"}</span>
-              </div>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
               <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
@@ -1449,7 +1442,7 @@ function DefectiveSareesSection({ superadmin = false, onNavigate, onDesignClick,
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
             <thead>
               <tr>
-                {["Saree ID", "Weaver", "Batch", "Design Code", "Saree Type Code", "Saree Type", "Defect Type(s)", "QC Date", "Deduction Applied", "Action"].map(col => (
+                {["Saree ID", "Weaver", "Batch", "Saree Type", "Defect Type(s)", "QC Date", "Deduction Applied", "Action"].map(col => (
                   <th key={col} style={TH}>{col}</th>
                 ))}
               </tr>
@@ -1460,18 +1453,7 @@ function DefectiveSareesSection({ superadmin = false, onNavigate, onDesignClick,
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{row.id}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{row.weaver}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{row.batch}</span></td>
-                  <td style={TD}>
-                    <ClickableCode onClick={onDesignClick ? () => onDesignClick(row.design) : undefined} style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.design}</ClickableCode>
-                  </td>
-                  <td style={TD}>
-                    {(() => {
-                      const rec = getSareeTypeByName(row.sareeType);
-                      if (!rec) return <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>—</span>;
-                      return (
-                        <ClickableCode onClick={onSareeTypeClick ? () => onSareeTypeClick(rec.code) : undefined} style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{rec.code}</ClickableCode>
-                      );
-                    })()}
-                  </td>
+
                   <td style={TD}>{row.sareeType}</td>
                   <td style={TD}>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" as const }}>
@@ -1617,7 +1599,6 @@ function DefectiveSareesSection({ superadmin = false, onNavigate, onDesignClick,
                     { label: "Saree ID",    val: viewDefect.id,       mono: true  },
                     { label: "Weaver",      val: viewDefect.weaver,   mono: false },
                     { label: "Batch",       val: viewDefect.batch,    mono: true  },
-                    { label: "Design Code", val: viewDefect.design,   mono: true  },
                     { label: "Saree Type",  val: viewDefect.sareeType, mono: false },
                     { label: "QC Date",     val: viewDefect.qcDate,   mono: false },
                   ].map(r => (
@@ -2120,7 +2101,6 @@ function ProductionHistorySection({ onDesignClick, onSareeTypeClick }: CodeCallb
             <thead>
               <tr>
                 <th style={TH}>Batch Number</th>
-                <th style={TH}>Design Code</th>
                 <th style={TH}>Saree Type</th>
                 <th style={{ ...TH, textAlign: "center" }}>Batch Size</th>
                 <th style={TH}>Weavers</th>
@@ -2139,9 +2119,6 @@ function ProductionHistorySection({ onDesignClick, onSareeTypeClick }: CodeCallb
                 <tr key={b.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#F8F4EF", borderBottom: `1px solid ${T.borderDef}` }}>
                   <td style={TD}>
                     <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{b.id}</span>
-                  </td>
-                  <td style={TD}>
-                    <ClickableCode onClick={onDesignClick ? () => onDesignClick(b.designCode) : undefined} style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{b.designCode}</ClickableCode>
                   </td>
                   <td style={TD}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>

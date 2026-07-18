@@ -85,10 +85,10 @@ const lbl: React.CSSProperties = {
 
 // ─── Row completeness ─────────────────────────────────────────────────────────
 function rowComplete(r: SareeRow) {
-  return !!(r.weaverId && r.sareeId && r.designCode && r.sareeTypeCode);
+  return !!(r.weaverId && r.sareeId && r.sareeTypeCode);
 }
 function rowEmpty(r: SareeRow) {
-  return !r.weaverId && !r.designCode && !r.sareeTypeCode;
+  return !r.weaverId && !r.sareeTypeCode;
 }
 
 // ─── Pip avatar ───────────────────────────────────────────────────────────────
@@ -655,12 +655,75 @@ export function BatchCreationPage() {
       {/* ── Tab bar ── */}
       <div style={{ padding: "32px 56px 0" }}>
         <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 12, padding: 4, width: "fit-content", border: `1px solid ${T.borderDef}` }}>
-          {(["new", "drafts"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: tab === t ? T.royalBurgundy : "transparent", color: tab === t ? "#fff" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
-              {t === "new" ? (editingBatchId ? `Edit ${editingBatchId}` : "New Batch") : `All Batches (${batches.length})`}
+          {/* New Batch */}
+          <button
+            onClick={() => {
+              if (editingBatchId) {
+                setEditingBatchId(null);
+                setBatchId(nextBatchId);
+                setRows([]);
+                setTotalCount("");
+                setDueDate("");
+                setGenerated(false);
+                setSelected(new Set());
+              }
+              setTab("new");
+            }}
+            style={{
+              padding: "9px 20px",
+              borderRadius: 9,
+              border: "none",
+              background: tab === "new" && !editingBatchId ? T.royalBurgundy : "transparent",
+              color: tab === "new" && !editingBatchId ? "#fff" : T.taupe,
+              fontFamily: F.ui,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.18s"
+            }}
+          >
+            Create New Batch
+          </button>
+
+          {/* Edit Batch (Conditional) */}
+          {editingBatchId && (
+            <button
+              onClick={() => setTab("new")}
+              style={{
+                padding: "9px 20px",
+                borderRadius: 9,
+                border: "none",
+                background: tab === "new" ? T.royalBurgundy : "transparent",
+                color: tab === "new" ? "#fff" : T.taupe,
+                fontFamily: F.ui,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.18s"
+              }}
+            >
+              Edit {editingBatchId}
             </button>
-          ))}
+          )}
+
+          {/* All Batches */}
+          <button
+            onClick={() => setTab("drafts")}
+            style={{
+              padding: "9px 20px",
+              borderRadius: 9,
+              border: "none",
+              background: tab === "drafts" ? T.royalBurgundy : "transparent",
+              color: tab === "drafts" ? "#fff" : T.taupe,
+              fontFamily: F.ui,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.18s"
+            }}
+          >
+            All Batches ({batches.length})
+          </button>
         </div>
       </div>
 
@@ -727,7 +790,6 @@ export function BatchCreationPage() {
                       { key: "weaver",    icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
                       { key: "bulkorder", icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
                       { key: "loom",      icon: <Hash size={14} weight="bold" />,        label: "Assign Loom Number" },
-                      { key: "design",    icon: <Graph size={14} weight="bold" />,       label: "Assign Design Code" },
                       { key: "saretype",  icon: <Tag size={14} weight="bold" />,         label: "Assign Saree Type" },
                     ] as const).map(a => (
                       <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
@@ -754,7 +816,7 @@ export function BatchCreationPage() {
                           {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                         </button>
                       </th>
-                      {["#", "Saree ID", "Weaver", "Loom No.", "Design Code", "Saree Type", "Bulk Order", ""].map(h => (
+                      {["#", "Saree ID", "Weaver", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
                         <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
@@ -801,14 +863,7 @@ export function BatchCreationPage() {
                               </span>
                             ) : <EmptyCell />}
                           </td>
-                          <td style={{ ...td, minWidth: 110 }}>
-                            {row.designCode ? (
-                              <button onClick={() => openDesignCard(row.designCode!)}
-                                style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                {row.designCode}
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
+
                           <td style={{ ...td, minWidth: 110 }}>
                             {row.sareeTypeCode ? (
                               <button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
@@ -845,7 +900,7 @@ export function BatchCreationPage() {
             <div style={{ background: "rgba(183,121,31,0.08)", border: "1px solid rgba(183,121,31,0.28)", borderRadius: 12, padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 10 }}>
               <WarningCircle size={17} color={T.amber} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "#7A5A10", lineHeight: 1.6 }}>
-                <strong>{incompleteRows.length} row(s) are incomplete</strong> — missing weaver, design code, or saree type.
+                <strong>{incompleteRows.length} row(s) are incomplete</strong> — missing weaver or saree type.
                 {" "}Rows {incompleteRows.slice(0, 8).map(r => r.serial).join(", ")}{incompleteRows.length > 8 ? "…" : ""} need attention.
                 {" "}You can save as draft and complete them later, but <strong>Finalize</strong> will remain disabled until all rows are complete.
               </div>
