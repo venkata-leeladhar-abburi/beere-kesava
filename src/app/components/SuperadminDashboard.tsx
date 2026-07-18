@@ -1236,17 +1236,6 @@ function SARawMaterial() {
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: m.accent, lineHeight: 1.0, marginBottom: 4, ...NUM }}>
                 <AnimatedNumber raw={m.stock.replace(" kg", "")} />{m.stock.includes("kg") ? " kg" : ""}
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, marginBottom: 18, letterSpacing: "0.1px" }}>{m.note}</div>
-              <AnimatedBar pct={m.pct}
-                color={m.alert ? `linear-gradient(to right, ${T.royalBurgundy}, ${DARK_MAROON})` : `linear-gradient(to right, ${m.accent}CC, ${m.accent})`}
-                trackBg={m.accentLight} height={5}
-              />
-              <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 14px", borderRadius: 999, background: m.tagBg, border: `1px solid ${m.borderColor}` }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: m.tagCol }} />
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.tagCol, letterSpacing: "0.1px" }}>
-                  {m.alert ? "⚠ Low Stock Alert" : "Stock Healthy"}
-                </span>
-              </div>
             </div>
           </motion.div>
         ))}

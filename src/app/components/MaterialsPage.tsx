@@ -1866,14 +1866,7 @@ function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => void }) {
               <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>{card.name}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 4 }}>{card.desc}</div>
-                <div style={{ minHeight: 38 }}>{card.extra}</div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 36, color: card.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{card.stock}</div>
-                <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: card.green ? T.taupe : T.crimson, lineHeight: 1.55, marginBottom: 18 }}>{card.note}</div>
-                <div style={{ marginBottom: 10 }}><AnimatedBar pct={card.pct} color={card.barColor} height={6} /></div>
-                <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{card.pct}% of your storage capacity</div>
-                <div style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 8, background: card.green ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", border: `1px solid ${card.green ? "rgba(30,102,64,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 10, padding: "6px 14px" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: card.green ? T.green : T.crimson }}>{card.badge}</span>
-                </div>
               </div>
             </motion.div>
           </FadeUp>

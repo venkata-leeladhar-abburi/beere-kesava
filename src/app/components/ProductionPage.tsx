@@ -4,7 +4,7 @@ import {
   Eye, Plus, Search, ChevronDown, LayoutGrid, LayoutList, AlignJustify,
   ChevronRight, Facebook, Instagram, Youtube, Linkedin, Phone, Mail,
   Download, UploadCloud, Calendar, Users, Receipt, CalendarClock,
-  Shield,
+  Shield, X,
 } from "lucide-react";
 import {
   Package, CalendarBlank, WarningCircle, CheckCircle, XCircle,
@@ -382,16 +382,6 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         >
           <CurrencyInr size={18} weight="regular" /> Payment
         </motion.button>
-        {!superadmin && !tallied && (
-          <motion.button
-            onClick={handleTally}
-            whileHover={{ scale: 1.02, background: "rgba(30,102,64,0.10)" }}
-            whileTap={{ scale: 0.97 }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(30,102,64,0.05)", color: T.green, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-          >
-            <CheckCircle size={18} weight="regular" /> Tally
-          </motion.button>
-        )}
       </div>
     </motion.div>
   );
@@ -513,6 +503,50 @@ const BATCHES: Batch[] = [
   { id: "BATCH-093", stage: "finishing", sareeCode: "BS-004", sareeTypeName: "Bridal Special", rate: 1200, design: "BKB-019", designName: "Red Bridal Zari",       weavers: [{ name: "Lakshmi D.",   id: "WV-018", initials: "LD", bg: "#C4923A"       }], materials: "Warp: 5 kg · Resham: Red 800g, Gold 400g · Jari: SF-4G-Gold 350g",        started: "08 May 2026", expected: "18 May 2026",                       done: 5, total: 5, qcPassed: 5, finishingDone: 3 },
 ];
 
+function SwipeToTally({ onConfirm }: { onConfirm?: () => void }) {
+  const [phase, setPhase] = useState<"idle" | "swipe" | "done">("idle");
+  const trackRef = useRef<HTMLDivElement>(null);
+  
+  if (phase === "done") {
+    return (
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(30,102,64,0.1)", color: T.green, border: `1.5px solid rgba(30,102,64,0.2)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
+        <CheckCircle size={16} weight="fill" /> Tallied
+      </div>
+    );
+  }
+
+  if (phase === "swipe") {
+    return (
+      <div ref={trackRef} style={{ flex: 1, position: "relative", background: "rgba(110,15,45,0.06)", borderRadius: 10, height: 40, overflow: "hidden", border: `1px solid rgba(110,15,45,0.15)` }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, pointerEvents: "none", paddingLeft: 20 }}>
+          Swipe to confirm
+        </div>
+        <motion.div
+          drag="x"
+          dragConstraints={trackRef}
+          dragElastic={0.05}
+          dragSnapToOrigin={true}
+          onDragEnd={(e, info) => {
+            if (trackRef.current && info.offset.x > trackRef.current.offsetWidth - 55) {
+              setPhase("done");
+              if (onConfirm) setTimeout(onConfirm, 500);
+            }
+          }}
+          style={{ width: 48, height: 38, position: "absolute", left: 0, top: 0, background: T.royalBurgundy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", color: "#fff", zIndex: 2 }}
+        >
+          <PhCaretRight size={18} weight="bold" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.button onClick={(e) => { e.stopPropagation(); setPhase("swipe"); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(200,155,71,0.08)", color: T.antiqueGold, border: `1.5px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+      <CheckCircle size={16} weight="bold" /> Tally
+    </motion.button>
+  );
+}
+
 function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const cfg = STAGE_CFG[b.stage];
   const pct = Math.round((b.done / b.total) * 100);
@@ -544,25 +578,9 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
               {cfg.label}
             </span>
           </div>
-          <div style={{ background: "linear-gradient(135deg, #F5E8D0 0%, #FFFDF9 100%)", border: `1.5px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 14px", display: "flex", flexDirection: "column", alignItems: "flex-end", boxShadow: "0 4px 12px rgba(200,155,71,0.06)", flexShrink: 0, marginLeft: 12, textAlign: "right" }}>
-            <div style={{ color: T.royalBurgundy, fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{b.sareeCode}</div>
-            <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: T.taupe }}>{b.sareeTypeName} · ₹{b.rate}</div>
-          </div>
         </div>
         {/* Body */}
         <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-          {/* Design block */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 14px" }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Palette size={16} color={T.royalBurgundy} weight="fill" />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 2 }}>Design Code</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
-                <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{b.design}</span> · {b.designName}
-              </div>
-            </div>
-          </div>
 
           {/* Assigned Weavers */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 0" }}>
@@ -591,15 +609,7 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
 
           {/* Materials & Dates block */}
           <div style={{ background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {/* Materials */}
-            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <Package size={17} color={T.royalBurgundy} weight="fill" style={{ marginTop: 2, flexShrink: 0 }} />
-              <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
-                <strong style={{ color: T.taupe, fontWeight: 600 }}>Materials: </strong>
-                {b.materials}
-              </div>
-            </div>
-            <div style={{ height: 1, background: "rgba(110,15,45,0.05)" }} />
+
             {/* Dates */}
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <CalendarBlank size={17} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
@@ -614,7 +624,7 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
           </div>
 
           {/* Progress */}
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: "auto" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: T.luxuryBrown }}>{b.done}</span>
@@ -656,49 +666,15 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
             )}
           </div>
 
-          {/* Making charge banner */}
-          <div style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", border: `1px solid rgba(200,155,71,0.16)`, borderRadius: 12, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Est. Making Charges</span>
-            <span style={{ fontFamily: F.display, fontSize: 16.5, fontWeight: 800, color: "#8B6018" }}>₹{est.toLocaleString("en-IN")}</span>
-          </div>
-          
-          {/* Expand sarees */}
-          <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : b.id); }}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, textAlign: "left", padding: "8px 0 4px", display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-            <PhCaretRight size={14} weight="bold" style={{ transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
-            {isExpanded ? "Hide Individual Sarees" : "Show Individual Sarees"}
-          </button>
-          
-          {isExpanded && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
-              {sarees.map((s, index) => (
-                <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px" }}>
-                  <div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Weight: {s.weight} {s.notes !== "—" && `· Note: ${s.notes}`}</div>
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", color: s.qc === "Passed" ? T.green : s.qc === "Rejected" ? T.crimson : T.taupe, background: s.qc === "Passed" ? "rgba(30,102,64,0.08)" : s.qc === "Rejected" ? "rgba(192,57,43,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 10px" }}>
-                    {s.qc}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+
         </div>
         
         {/* Bottom buttons */}
         <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
           <motion.button onClick={(e) => { e.stopPropagation(); onView?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <PhEye size={16} /> Details
+            <PhEye size={16} /> Open Batch
           </motion.button>
-          <motion.button onClick={(e) => { e.stopPropagation(); onSlip?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <Palette size={16} /> Slip
-          </motion.button>
-          {b.isLive && onEdit && (
-            <motion.button onClick={(e) => { e.stopPropagation(); onEdit(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-              <PencilSimple size={16} /> Edit
-            </motion.button>
-          )}
+          <SwipeToTally />
         </div>
       </div>
     </motion.div>
@@ -1224,13 +1200,8 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
     };
   });
 
-  // Combine with BATCHES, filtering duplicates by ID
+  // Only use context batches so they can all be edited in the Batches page
   const combined: Batch[] = [...mappedContextBatches];
-  BATCHES.forEach(b => {
-    if (!combined.some(c => c.id === b.id)) {
-      combined.push(b);
-    }
-  });
 
   const visible = combined.filter(b => {
     if (filter && b.stage !== filter) return false;
@@ -1324,9 +1295,9 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
               No batches found matching the current filters.
             </div>
           ) : (
-            view === "card" ? <BatchCardGrid batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
-            view === "list" ? <BatchListView batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onEdit={handleEditBatch} /> :
-            <BatchTableView batches={visible} onView={(batch) => setBatchDialog({ mode: "view", batch })} onEdit={handleEditBatch} />
+            view === "card" ? <BatchCardGrid batches={visible} onView={handleEditBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
+            view === "list" ? <BatchListView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} /> :
+            <BatchTableView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} />
           )}
         </div>
       </FadeUp>
@@ -2476,6 +2447,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
   const balance = amountDue - amountPaid;
 
   const [activeTab, setActiveTab] = useState<"invoices" | "payments">("invoices");
+  const [previewInvoice, setPreviewInvoice] = useState<any>(null);
 
   if (mode === "slip") {
     const invoices = matchedInvoice ? [
@@ -2579,9 +2551,14 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                         <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inv.id}</div>
                         <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{inv.date}</div>
                       </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.amount.toLocaleString("en-IN")}</div>
-                        <span style={{ display: "inline-block", fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: inv.status === "paid" ? "rgba(30,102,64,0.11)" : "rgba(200,155,71,0.11)", color: inv.status === "paid" ? T.green : T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", marginTop: 4 }}>{inv.status}</span>
+                      <div style={{ textAlign: "right", display: "flex", alignItems: "center", gap: 16 }}>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.amount.toLocaleString("en-IN")}</div>
+                          <span style={{ display: "inline-block", fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: inv.status === "paid" ? "rgba(30,102,64,0.11)" : "rgba(200,155,71,0.11)", color: inv.status === "paid" ? T.green : T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", marginTop: 4 }}>{inv.status}</span>
+                        </div>
+                        <button onClick={() => setPreviewInvoice(inv)} style={{ background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.1)`, borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, transition: "background 0.2s" }} onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.1)"} onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"}>
+                          <Eye size={12} /> View
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -2620,60 +2597,173 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
             </>
           )}
         </div>
+      
+      {/* Invoice Preview Overlay */}
+      <AnimatePresence>
+        {previewInvoice && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(30,5,12,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+            <motion.div initial={{ y: 20, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.95 }} style={{ width: "100%", maxWidth: 550, background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 40px rgba(0,0,0,0.2)", border: `1px solid ${T.borderGold}` }}>
+              {/* Header */}
+              <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Beere Kesava & Brothers Silks</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
+                </div>
+                <button onClick={() => setPreviewInvoice(null)} style={{ background: "transparent", border: "none", color: "#FFF", cursor: "pointer", display: "flex", padding: 4 }}><X size={20} /></button>
+              </div>
+              {/* Invoice Body */}
+              <div style={{ padding: "18px 24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
+                  <div>
+                    <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{previewInvoice.id}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {previewInvoice.date}</div>
+                    <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
+                        <ShoppingBag size={10} color={T.royalBurgundy} />
+                        <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{order.ref}</span>
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 1 }}>
+                        {order.sareeType} · {order.design}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right", maxWidth: "55%" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Bill To</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{order.customer}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>G-12, Silk Plaza, Madhapur, Hyderabad - 500081</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>+91 98450 11223</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: 36AAAAA1111A1Z1</div>
+                  </div>
+                </div>
+                
+                {/* Items */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Item</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>Amount (₹)</div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>Bulk Order Production</span>
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{order.design} · {order.sareeType}</div>
+                    </div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</div>
+                  </div>
+                </div>
+                
+                {/* Totals */}
+                <div style={{ borderTop: `1.5px solid ${T.borderDef}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Subtotal ({order.quantity || 0} sarees)</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+
+                {/* Dispatch details */}
+                <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
+                  <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Bulk Order: </span>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{order.ref}</span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+                    {[
+                      ["LR Number", "wef"],
+                      ["Transport", "dsf"],
+                      ["Vehicle", "dfsa"],
+                      ["Date", previewInvoice.date || "2026-07-18"],
+                    ].map(([k, v]) => (
+                      <div key={k}>
+                        <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{k}: </span>
+                        <span style={{ fontFamily: F.mono, fontSize: 10, color: T.luxuryBrown }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 16 }}>
-      <div>
-        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 4 }}>Order Reference</div>
-        <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{order.ref}</div>
-      </div>
-      <div>
-        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 4 }}>Customer</div>
-        <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>{order.customer}</div>
-        {order.customerId && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{order.customerId}</div>}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        {[
-          { label: "Total Sarees", val: String(order.total) },
-          { label: "Completed", val: String(order.done) },
-          { label: "Delivery Due", val: order.due },
-          { label: "Status", val: order.status === "on-track" ? "On Track" : order.status === "at-risk" ? "At Risk" : "Overdue" },
-        ].map(({ label, val }) => (
-          <div key={label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>{label}</div>
-            <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{val}</div>
-          </div>
-        ))}
-      </div>
-      {amountDue > 0 && (
-        <div style={{ padding: "12px 14px", background: "rgba(200,155,71,0.07)", borderRadius: 10, border: "1px solid rgba(200,155,71,0.20)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
-          <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#8B6018" }}>₹{amountDue.toLocaleString("en-IN")}</span>
+    <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Customer Info (Important only) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, background: T.warmIvory, padding: "16px", borderRadius: 12, border: `1px solid ${T.borderDef}` }}>
+        <div style={{ width: 42, height: 42, borderRadius: 10, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700, fontSize: 18 }}>
+          {order.customer.charAt(0)}
         </div>
-      )}
-      {order.instructions && (
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Special Instructions</div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>{order.instructions}</div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2 }}>{order.customer}</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{order.customerId || "WHL-00X"}</div>
         </div>
-      )}
-      {order.photoUrls && order.photoUrls.length > 0 && (
-        <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Attached Photos</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, background: "rgba(110,15,45,0.04)", borderRadius: 12, padding: "14px", border: "1px solid rgba(110,15,45,0.10)" }}>
-            {order.photoUrls.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
+        <div style={{ marginLeft: "auto", textAlign: "right" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Order Ref</div>
+          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{order.ref}</div>
+        </div>
+      </div>
+
+      {/* Order Photos */}
+      <div>
+        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>Order Photos</div>
+        <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
+          {order.photoUrls && order.photoUrls.length > 0 ? (
+            order.photoUrls.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ display: "block", flexShrink: 0 }}>
                 <img src={url} alt={`Bulk order attachment ${i + 1}`} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}`, cursor: "pointer", transition: "transform 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
                   onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
               </a>
-            ))}
-          </div>
+            ))
+          ) : (
+            <div style={{ width: 80, height: 80, borderRadius: 10, background: "rgba(110,15,45,0.04)", border: `1px dashed rgba(110,15,45,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", color: T.taupe, fontSize: 11, fontFamily: F.ui }}>
+              No photos
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Details Grid: Quantity & Deadline */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Quantity (Sarees)</div>
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{order.total}</div>
+        </div>
+        <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Delivery Deadline</div>
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{order.due}</div>
+        </div>
+      </div>
+
+      {/* Estimated Value & Priority */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ padding: "12px 14px", background: "rgba(200,155,71,0.07)", borderRadius: 10, border: "1px solid rgba(200,155,71,0.20)", display: "flex", flexDirection: "column" }}>
+          <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Estimated Value (₹)</span>
+          <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: "#8B6018" }}>₹{amountDue.toLocaleString("en-IN")}</span>
+        </div>
+        <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)", display: "flex", flexDirection: "column" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Priority</div>
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{order.status === "at-risk" || order.status === "overdue" ? "Urgent" : "Normal"}</div>
+        </div>
+      </div>
+
+      {/* Special Instructions */}
+      <div>
+        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 6 }}>Special Instructions</div>
+        <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)", minHeight: 60 }}>
+          {order.instructions || <span style={{ color: "rgba(139,112,96,0.5)", fontStyle: "italic" }}>No special instructions provided.</span>}
+        </div>
+      </div>
     </div>
   );
 }

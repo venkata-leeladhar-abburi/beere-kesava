@@ -181,7 +181,7 @@ function TransportForm({ data, onChange, wholesale }: { data: TransportData; onC
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 interface InvoiceData {
   invoiceNumber: string; invoiceDate: string;
-  pricePerSaree: string; applyGst: boolean; gstPct: string;
+  prices: Record<string, string>; applyGst: boolean; gstPct: string;
   firmId: string; paymentDueDate: string; invoiceNotes: string;
 }
 
@@ -202,11 +202,11 @@ function InvoiceGenerator({
   const { bulkOrders } = useBulkOrders();
   const { batches } = useBatches();
   const linkedOrder = bulkOrders.find(o => o.ref === bulkOrderRef);
-  const set = (k: keyof InvoiceData) => (v: string | boolean) => onChange({ ...data, [k]: v });
+  const set = (k: keyof InvoiceData) => (v: string | boolean | Record<string, string>) => onChange({ ...data, [k]: v });
+  const setPrice = (sId: string, p: string) => onChange({ ...data, prices: { ...data.prices, [sId]: p } });
 
   const qty          = sarees.length;
-  const price        = parseFloat(data.pricePerSaree) || 0;
-  const subtotal     = qty * price;
+  const subtotal     = sarees.reduce((sum, s) => sum + (parseFloat(data.prices[s.sareeId || s.id]) || 0), 0);
   const gstAmount    = data.applyGst ? subtotal * (parseFloat(data.gstPct) || 0) / 100 : 0;
   const grandTotal   = subtotal + gstAmount;
   const selectedFirm = firms.find(f => f.id === data.firmId);
@@ -253,9 +253,32 @@ function InvoiceGenerator({
               onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
               onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
           </Field>
-          <Field label={`Price per Saree (₹)`} req>
-            <NumInput value={data.pricePerSaree} onChange={set("pricePerSaree") as (v: string) => void} placeholder="e.g. 8500" />
-          </Field>
+
+          <div style={{ gridColumn: "1 / -1", marginTop: 8 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Enter Price per Saree *</div>
+            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
+              {sarees.map((s, i) => {
+                const sId = s.sareeId || s.id;
+                const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
+                return (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{sId}</div>
+                        {sareeBatch && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</div>}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.designCode} · {s.sareeType}</div>
+                    </div>
+                    <div style={{ position: "relative", width: 120 }}>
+                      <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, color: T.taupe, fontSize: 13 }}>₹</span>
+                      <input type="number" value={data.prices[sId] || ""} onChange={e => setPrice(sId, e.target.value)} placeholder="0" style={{ ...inp, paddingLeft: 22, fontFamily: F.mono, fontSize: 14 }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <Field label="Total Amount">
             <div style={{ ...inp, background: "rgba(245,232,208,0.40)", color: T.royalBurgundy, fontFamily: F.mono, fontWeight: 600, display: "flex", alignItems: "center" }}>
               ₹{subtotal.toLocaleString("en-IN")}
@@ -365,16 +388,17 @@ function InvoiceGenerator({
 
           {/* Sarees table */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 80px 90px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
-              {["Item", "Qty", "Rate (₹)", "Amount (₹)"].map((h, i) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
+              {["Item", "Amount (₹)"].map((h, i) => (
                 <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i > 0 ? "right" as const : "left" as const }}>{h}</div>
               ))}
             </div>
             {sarees.slice(0, 4).map((s, i) => {
               const sId = s.sareeId || s.id;
               const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
+              const p = parseFloat(data.prices[sId]) || 0;
               return (
-                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 60px 80px 90px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                       <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
@@ -384,9 +408,7 @@ function InvoiceGenerator({
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
                   </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>1</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown, textAlign: "right" as const }}>₹{price ? price.toLocaleString("en-IN") : "—"}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>₹{p ? p.toLocaleString("en-IN") : "—"}</div>
                 </div>
               );
             })}
@@ -603,15 +625,16 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
   const [customerSearch, setCustomerSearch] = useState("");
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
   const { bulkOrders } = useBulkOrders();
+  const { batches } = useBatches();
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "", expectedDelivery: "", specialInstructions: "" });
-  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, pricePerSaree: "", applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
+  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
   const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
   const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
 
   const canNext1 = !!customerId;
   const canNext3 = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
-  const canSend  = inv.invoiceNumber.trim() && inv.firmId && inv.pricePerSaree;
+  const canSend  = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
 
   const STEPS = ["Customer", "Sarees", "Transport & LR", "Upload Receipt", "Invoice"];
 
@@ -727,17 +750,40 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
                 ) : null;
               })()}
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} will be dispatched to {selectedCustomer?.name}.</div>
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                {sarees.map((s, i) => (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream }}>
-                    <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
-                    </div>
-                    <StatusBadge status={s.inventoryStatus} />
-                  </div>
-                ))}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {(() => {
+                  const grouped: Record<string, typeof sarees> = {};
+                  sarees.forEach(s => {
+                    const sId = s.sareeId || s.id;
+                    const bId = batches.find(b => b.rows.some(r => r.sareeId === sId))?.batchId || "No Batch";
+                    if (!grouped[bId]) grouped[bId] = [];
+                    grouped[bId].push(s);
+                  });
+                  return Object.entries(grouped).map(([bId, groupSarees]) => {
+                    const batchObj = batches.find(b => b.batchId === bId);
+                    return (
+                      <div key={bId} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                        <div style={{ padding: "10px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bId}</span>
+                            {batchObj && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{batchObj.quantity} sarees · {batchObj.weaverName}</span>}
+                          </div>
+                          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe }}>{groupSarees.length} selected</span>
+                        </div>
+                        {groupSarees.map((s, i) => (
+                          <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < groupSarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: "#FFF" }}>
+                            <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
+                              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
+                            </div>
+                            <StatusBadge status={s.inventoryStatus} />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
@@ -937,12 +983,8 @@ export function InventoryPage() {
   }, [allRecords]);
 
   const uniqueBatches = useMemo(() => {
-    const set = new Set<string>();
-    allRecords.forEach(r => {
-      if (r.batchId) set.add(r.batchId);
-    });
-    return Array.from(set).sort();
-  }, [allRecords]);
+    return batches.map(b => b.batchId).sort();
+  }, [batches]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;
@@ -1359,11 +1401,11 @@ export function InventoryPage() {
             {/* Table */}
             <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
               {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 140px 100px 130px 110px 170px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 130px 90px 120px 100px 110px 170px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 <div onClick={toggleAll} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
                   {allChecked ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />}
                 </div>
-                {["Saree ID", "Type", "Color", "Weaver", "Date", "Status", ""].map((h, i) => (
+                {["Saree ID", "Type", "Color", "Weaver", "Batch", "Date", "Status", ""].map((h, i) => (
                   <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
                 ))}
               </div>
@@ -1375,7 +1417,7 @@ export function InventoryPage() {
                 const isCheckable = r.status !== "Dispatched";
                 return (
                   <div key={r.id}
-                    style={{ display: "grid", gridTemplateColumns: "36px 130px 140px 100px 130px 110px 170px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
+                    style={{ display: "grid", gridTemplateColumns: "36px 130px 130px 90px 120px 100px 110px 170px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
                     onClick={() => toggleRow(r.id, isCheckable)}
                     onMouseEnter={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.02)"; }}
                     onMouseLeave={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#FFF" : T.warmIvory; }}
@@ -1405,6 +1447,11 @@ export function InventoryPage() {
                         {getLoomForRecord(r.id, r.weaverName)}
                       </div>
                     </div>
+                    <div>{r.batchId ? (
+                      <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 6, padding: "2px 8px", fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, width: "fit-content" }}>{r.batchId}</div>
+                    ) : (
+                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown }}>—</div>
+                    )}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.date}</div>
                     <div><StatusBadge status={r.status} /></div>
                     <div onClick={e => e.stopPropagation()}>

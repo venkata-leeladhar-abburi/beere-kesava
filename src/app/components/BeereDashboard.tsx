@@ -330,39 +330,83 @@ function Lotus({ sz = 28, col = T.crimson }: { sz?: number; col?: string }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHARTS — with entrance animations
 // ═══════════════════════════════════════════════════════════════════════════════
-function Donut({ pct = 72, size = 160 }: { pct?: number; size?: number }) {
+function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
   const r = 62, cx = 80, cy = 80;
   const circ = 2 * Math.PI * r;
   const filled = (pct / 100) * circ;
   const wrapRef = useRef<HTMLDivElement>(null);
   const inView = useInView(wrapRef, { once: true });
+
+  // Custom size style
+  const svgStyle: React.CSSProperties = size 
+    ? { width: size, height: size } 
+    : { width: "100%", height: "100%", maxWidth: 250, maxHeight: 250 };
+
   return (
-    <div ref={wrapRef}>
-      <svg width={size} height={size} viewBox="0 0 160 160">
+    <div ref={wrapRef} style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100%" }}>
+      <svg viewBox="0 0 160 160" style={svgStyle}>
         <defs>
           <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={T.royalBurgundy} />
             <stop offset="100%" stopColor={T.antiqueGold} />
           </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor={T.royalBurgundy} floodOpacity="0.15" />
+          </filter>
         </defs>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(110,15,45,0.08)" strokeWidth="16" />
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(200,155,71,0.12)" strokeWidth="15" />
+
+        {/* Outer decorative dashed ring */}
+        <circle cx={cx} cy={cy} r={74} fill="none" stroke="rgba(110,15,45,0.08)" strokeWidth="1" strokeDasharray="3 4" />
+        
+        {/* Inner decorative fine ring */}
+        <circle cx={cx} cy={cy} r={50} fill="none" stroke="rgba(110,15,45,0.04)" strokeWidth="1" />
+
+        {/* Background track */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(110,15,45,0.06)" strokeWidth="14" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(200,155,71,0.10)" strokeWidth="13" />
+
+        {/* Active progress track */}
         <motion.circle
           cx={cx} cy={cy} r={r}
           fill="none"
           stroke="url(#donutGrad)"
-          strokeWidth={15}
+          strokeWidth={13}
           strokeLinecap="round"
+          filter="url(#shadow)"
           initial={{ strokeDasharray: `0 ${circ}` }}
           animate={inView ? { strokeDasharray: `${filled} ${circ - filled}` } : undefined}
           transition={{ duration: 1.8, delay: 0.35, ease: EASE }}
           transform={`rotate(-90 ${cx} ${cy})`}
         />
-        <text x={cx} y={cy - 6} textAnchor="middle" dominantBaseline="central"
-          fontFamily={F.display} fontWeight="700" fontSize="48" fill={T.royalBurgundy}
-          style={{ fontVariantNumeric: "tabular-nums" }}>{pct}%</text>
-        <text x={cx} y={cy + 20} textAnchor="middle" dominantBaseline="central"
-          fontFamily={F.ui} fontWeight="700" fontSize="9.5" fill={T.luxuryBrown} letterSpacing="1.2">
+
+        {/* Animated glowing tip dot */}
+        <motion.g
+          initial={{ rotate: -90 }}
+          animate={inView ? { rotate: -90 + (pct / 100) * 360 } : undefined}
+          transition={{ duration: 1.8, delay: 0.35, ease: EASE }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        >
+          {/* Outer glowing halo */}
+          <circle cx={cx} cy={cy - r} r="8.5" fill={T.antiqueGold} opacity="0.6" filter="url(#glow)" />
+          {/* Inner solid dot */}
+          <circle cx={cx} cy={cy - r} r="4.5" fill="#FFFDF9" stroke={T.royalBurgundy} strokeWidth="2.5" />
+        </motion.g>
+
+        {/* Center Typography */}
+        <text x={cx} y={cy - 5} textAnchor="middle" dominantBaseline="central"
+          fontFamily={F.display} fontWeight="800" fontSize="42" fill={T.royalBurgundy}
+          style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-1px" }}>
+          {pct}%
+        </text>
+        <text x={cx} y={cy + 19} textAnchor="middle" dominantBaseline="central"
+          fontFamily={F.ui} fontWeight="700" fontSize="8.5" fill={T.taupe} letterSpacing="1.5">
           IN PROGRESS
         </text>
       </svg>
@@ -1266,25 +1310,29 @@ const PROG_BARS = [
 function ProductionProgress() {
   return (
     <Card style={{ flex: "0 0 26%", display: "flex", flexDirection: "column", padding: "32px" }}>
-      <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 26, letterSpacing: "-0.1px", lineHeight: 1.15 }}>
+      <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 4, letterSpacing: "-0.1px", lineHeight: 1.15 }}>
         Production Progress
       </div>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}><Donut /></div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: "auto" }}>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 16, letterSpacing: "0.1px" }}>
+        Real-time weaving & supply
+      </div>
+      
+      {/* Centered large progress chart taking up remaining space */}
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200, margin: "10px 0 20px" }}>
+        <Donut />
+      </div>
+
+      {/* Redesigned horizontal breakdown that matches SareesProduced bottom layout style */}
+      <div style={{ display: "flex", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, marginTop: "auto" }}>
         {PROG_BARS.map((b, i) => (
-          <motion.div
-            key={b.label}
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12.5, color: T.taupe, letterSpacing: "0.1px" }}>{b.label}</span>
-              <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, ...NUM }}>{b.pct}%</span>
+          <div key={b.label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
+            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>
+              {b.label}
             </div>
-            <AnimatedBar pct={b.pct} color={b.color} />
-          </motion.div>
+            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: b.color, ...NUM }}>
+              {b.pct}%
+            </div>
+          </div>
         ))}
       </div>
     </Card>
@@ -1348,28 +1396,25 @@ function SareesProduced({ compact }: { compact?: boolean }) {
 function FeaturedProduct({ compact }: { compact?: boolean }) {
   return (
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
-      <div style={{ padding: compact ? "20px 20px 0" : "32px 32px 0" }}>
-        <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 18 : 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Featured Product</span>
-      </div>
-      <div style={{ padding: compact ? "18px 20px 18px" : "28px 32px 28px", borderBottom: `1px solid ${T.borderDef}` }}>
-        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 16 : 18, color: T.luxuryBrown, lineHeight: 1.2 }}>
-          Silk Saree – Design BKB-045
-        </div>
-        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe, marginTop: 4, letterSpacing: "0.1px" }}>
-          Cream · Gold Zari Border
-        </div>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: `1px solid ${T.borderDef}`, marginTop: "auto" }}>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
         {[
           { label: "Weavers",  val: "6 active",   vc: T.luxuryBrown,  rb: true,  bb: true  },
           { label: "Designs",  val: "24 codes",   vc: T.luxuryBrown,  rb: false, bb: true  },
-          { label: "QC Pass",  val: "96%",        vc: T.green,        rb: true,  bb: false },
-          { label: "Overdue",  val: "2 invoices", vc: "#C0392B", rb: false, bb: false, alert: true },
-        ].map(s => (
-          <div key={s.label} style={{ padding: compact ? "12px 16px" : "16px 24px", borderRight: s.rb ? `1px solid ${T.borderDef}` : "none", borderBottom: s.bb ? `1px solid ${T.borderDef}` : "none" }}>
-            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9.5, color: T.taupe, marginBottom: 5, textTransform: "uppercase", letterSpacing: "1.5px" }}>{s.label}</div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 17 : 19, color: s.vc, lineHeight: 1.1, ...NUM, display: "flex", alignItems: "center", gap: 5 }}>
-              {(s as any).alert && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C0392B", flexShrink: 0, display: "inline-block" }} />}
+          { label: "QC Pass",  val: "96%",        vc: T.green,        rb: true,  bb: true  },
+          { label: "Overdue",  val: "2 invoices", vc: "#C0392B",      rb: false, bb: true, alert: true },
+          { label: "Inventory",val: "1,240 pcs",  vc: T.luxuryBrown,  rb: true,  bb: false },
+          { label: "Dispatch", val: "18 today",   vc: T.antiqueGold,  rb: false, bb: false },
+        ].map((s, idx) => (
+          <div key={s.label} style={{ 
+            display: "flex", flexDirection: "column", justifyContent: "center",
+            padding: compact ? "16px 20px" : "24px 32px", 
+            borderRight: s.rb ? `1px solid ${T.borderDef}` : "none", 
+            borderBottom: s.bb ? `1px solid ${T.borderDef}` : "none",
+            background: idx % 2 === 0 ? "transparent" : "rgba(110,15,45,0.01)" // subtle alternating bg
+          }}>
+            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: compact ? 10 : 11, color: T.taupe, marginBottom: 8, textTransform: "uppercase", letterSpacing: "1.5px" }}>{s.label}</div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 20 : 24, color: s.vc, lineHeight: 1.1, ...NUM, display: "flex", alignItems: "center", gap: 6 }}>
+              {(s as any).alert && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#C0392B", flexShrink: 0, display: "inline-block" }} />}
               {s.val}
             </div>
           </div>
@@ -1760,16 +1805,7 @@ function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
               <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>{m.name}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 4 }}>{m.desc}</div>
-                <div style={{ minHeight: 38 }}>{m.extra}</div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 36, color: m.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{m.stock}</div>
-                <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: m.green ? T.taupe : T.crimson, lineHeight: 1.55, marginBottom: 18 }}>{m.note}</div>
-                <div style={{ marginBottom: 10 }}>
-                  <AnimatedBar pct={m.pct} color={m.barColor} height={6} />
-                </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{m.pct}% of your storage capacity</div>
-                <div style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 8, background: m.green ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", border: `1px solid ${m.green ? "rgba(30,102,64,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 10, padding: "6px 14px" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
-                </div>
               </div>
             </motion.div>
           </FadeUp>

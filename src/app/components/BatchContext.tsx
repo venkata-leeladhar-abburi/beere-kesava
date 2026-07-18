@@ -116,6 +116,30 @@ const INITIAL_BATCHES: BatchRecord[] = [
       { serial: 4, sareeId: "RAVI-L2-007", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
     ],
   },
+  {
+    batchId: "BATCH-095",
+    totalCount: 14,
+    dueDate: "2026-08-01",
+    status: "active",
+    createdAt: "2026-07-01T08:00:00.000Z",
+    updatedAt: "2026-07-01T08:00:00.000Z",
+    rows: [
+      { serial: 1, sareeId: "RAVI-L2-009", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
+      { serial: 2, sareeId: "PADMA-L1-006", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
+      { serial: 3, sareeId: "BKB-L3-003", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
+      { serial: 4, sareeId: "RAVI-L2-008", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 5, sareeId: "PADMA-L1-005", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 6, sareeId: "BKB-L3-002", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 7, sareeId: "BKB-INV-001", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 8, sareeId: "BKB-INV-002", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 9, sareeId: "BKB-INV-003", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 10, sareeId: "BKB-INV-004", weaverId: "WV-004", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "HZ-003", sareeTypeName: "Gadwal Cotton", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 11, sareeId: "BKB-INV-005", weaverId: "WV-005", weaverName: "Loom 1", weaverInitials: "L1", weaverLoom: 1, designCode: "BKB-019", sareeTypeCode: "PS-002", sareeTypeName: "Mysore Crepe", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 12, sareeId: "BKB-INV-006", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-052", sareeTypeCode: "BS-004", sareeTypeName: "Pochampally Ikat", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 13, sareeId: "BKB-INV-007", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 14, sareeId: "BKB-INV-008", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
+    ],
+  },
 ];
 
 export function BatchProvider({ children }: { children: React.ReactNode }) {
