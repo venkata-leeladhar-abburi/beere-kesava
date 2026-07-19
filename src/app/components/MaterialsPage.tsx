@@ -1673,30 +1673,64 @@ function POTrackerSection({
                     <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
                       {po.materials.map((m, mi) => {
                         const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+                        const invKey = `${po.id}-${mi}`;
                         return (
-                          <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 10, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 8 : 0, paddingTop: mi > 0 ? 4 : 0 }}>
-                            <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
-                              {m.materialType}
-                            </span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              {(m.subtype || m.description) ? (
-                                <>
-                                  <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                                    {m.subtype || m.description}
-                                  </div>
-                                  {m.description && m.subtype && (
-                                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
-                                      {m.description}
+                          <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
+                                {m.materialType}
+                              </span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                {(m.subtype || m.description) ? (
+                                  <>
+                                    <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                                      {m.subtype || m.description}
                                     </div>
-                                  )}
-                                </>
+                                    {m.description && m.subtype && (
+                                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
+                                        {m.description}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>—</div>
+                                )}
+                              </div>
+                              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1 }}>
+                                {m.quantity} {m.unit}
+                              </span>
+                            </div>
+                            
+                            {/* Material Invoice Section */}
+                            <div style={{ paddingLeft: 60, marginTop: 4 }}>
+                              {invoiceAmounts[invKey] ? (
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
+                                    ₹{parseFloat(invoiceAmounts[invKey]).toLocaleString("en-IN")}
+                                  </span>
+                                </div>
                               ) : (
-                                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>—</div>
+                                <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                                  <input
+                                    type="number"
+                                    value={invoiceDrafts[invKey] || ""}
+                                    onChange={e => setInvoiceDrafts(prev => ({ ...prev, [invKey]: e.target.value }))}
+                                    placeholder="Invoice amount in ₹"
+                                    style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 11, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" }}
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (invoiceDrafts[invKey]) setInvoiceAmounts(prev => ({ ...prev, [invKey]: invoiceDrafts[invKey] }));
+                                    }}
+                                    style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
+                                  >
+                                    Save
+                                  </button>
+                                </div>
                               )}
                             </div>
-                            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1 }}>
-                              {m.quantity} {m.unit}
-                            </span>
                           </div>
                         );
                       })}
@@ -1721,36 +1755,25 @@ function POTrackerSection({
                     </div>
                   )}
 
-                  {/* Collapsible Invoice Amount */}
-                  <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18, marginTop: "auto" }}>
-                    {invoiceAmounts[po.id] ? (
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Invoice Value</span>
-                        <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
-                          ₹{parseFloat(invoiceAmounts[po.id]).toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>Record Invoice Amount</span>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <input
-                            type="number"
-                            value={invoiceDrafts[po.id] || ""}
-                            onChange={e => setInvoiceDrafts(prev => ({ ...prev, [po.id]: e.target.value }))}
-                            placeholder="Amount in ₹"
-                            style={{ flex: 1, height: 34, fontFamily: F.ui, fontSize: 12, padding: "0 10px", borderRadius: 8, border: `1.5px solid ${T.borderGold}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" }}
-                          />
-                          <button
-                            onClick={() => invoiceDrafts[po.id] && setInvoiceAmounts(prev => ({ ...prev, [po.id]: invoiceDrafts[po.id] }))}
-                            style={{ height: 34, padding: "0 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", background: T.antiqueGold, border: "none", borderRadius: 8, cursor: "pointer" }}
-                          >
-                            Save
-                          </button>
+                  {/* Total Invoice Amount */}
+                  {(() => {
+                    const totalInvoiceAmount = po.materials.reduce((sum, _, mi) => {
+                      const amount = invoiceAmounts[`${po.id}-${mi}`];
+                      return sum + (amount ? parseFloat(amount) : 0);
+                    }, 0);
+                    const hasAnyAmount = po.materials.some((_, mi) => invoiceAmounts[`${po.id}-${mi}`]);
+                    if (!hasAnyAmount) return null;
+                    return (
+                      <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18, marginTop: "auto" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Total Invoice Value</span>
+                          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
+                            ₹{totalInvoiceAmount.toLocaleString("en-IN")}
+                          </span>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
 
                   {/* Status Badge */}
                   <div style={{ background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", marginBottom: 18, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", gap: 6 }}>

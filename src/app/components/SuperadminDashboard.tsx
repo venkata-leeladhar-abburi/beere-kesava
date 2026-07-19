@@ -29,6 +29,7 @@ import { ProductionPage } from "./ProductionPage";
 import { PaymentsPage } from "./PaymentsPage";
 import { ReportsPage } from "./ReportsPage";
 import { CustomersPage } from "./CustomersPage";
+import { VendorsPage } from "./VendorsPage";
 import { FirmsPage } from "./FirmsPage";
 import { InventoryPage } from "./InventoryPage";
 import { QcHistoryPage } from "./QcHistoryPage";
@@ -299,6 +300,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "people", label: "People", icon: Users, pages: [
       { key: "Weavers", label: "Weavers" },
       { key: "Customers", label: "Customers" },
+      { key: "Vendors", label: "Vendors" },
       { key: "AddUser", label: "Add New User" },
     ]
   },
@@ -1285,6 +1287,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "reports") nav = "Reports";
   else if (tab === "inventory") nav = "Inventory";
   else if (tab === "customers") nav = "Customers";
+  else if (tab === "vendors") nav = "Vendors";
   else if (tab === "firms") nav = "Firms";
   else if (tab === "notifications") nav = "Notifications";
   else if (tab === "receive-stock") nav = "ReceiveStock";
@@ -1326,6 +1329,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       Reports: "/superadmin/reports",
       Inventory: "/superadmin/inventory",
       Customers: "/superadmin/customers",
+      Vendors: "/superadmin/vendors",
       Firms: "/superadmin/firms",
       Notifications: "/superadmin/notifications",
       ReceiveStock: "/superadmin/receive-stock",
@@ -1357,6 +1361,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "Payments": return <PaymentsPage />;
       case "Reports": return <ReportsPage />;
       case "Customers": return <CustomersPage />;
+      case "Vendors": return <VendorsPage />;
       case "Firms": return <FirmsPage />;
       case "Inventory": return <InventoryPage />;
       case "Batches": return <BatchCreationPage />;
