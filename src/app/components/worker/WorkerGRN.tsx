@@ -130,11 +130,13 @@ function renderMaterialsSummary(summary: string) {
 export function WorkerGRN({ 
   mode = "all", 
   history: externalHistory, 
-  setHistory: setExternalHistory 
+  setHistory: setExternalHistory,
+  initialPOId
 }: { 
   mode?: "form" | "history" | "all"; 
   history?: ReceiptRecord[]; 
   setHistory?: React.Dispatch<React.SetStateAction<ReceiptRecord[]>>;
+  initialPOId?: string | null;
 } = {}) {
   const { pos } = usePO();
   const approvedPOs = pos.filter(p => p.status === "approved");
@@ -173,6 +175,16 @@ export function WorkerGRN({
     setReceivedUnit(initialUnits);
     setGrnBatchId(generateGrnId(receiptHistory.length + 1));
   };
+
+  React.useEffect(() => {
+    if (initialPOId) {
+      const po = approvedPOs.find(p => p.id === initialPOId || p.poNumber === initialPOId);
+      if (po && po.id !== selectedPO?.id) {
+        handleSelectPO(po);
+      }
+    }
+  }, [initialPOId]);
+
 
   const getQtyInOrderedUnit = (idx: number, m: POItem) => {
     const qtyStr = receivedQty[idx] || "";

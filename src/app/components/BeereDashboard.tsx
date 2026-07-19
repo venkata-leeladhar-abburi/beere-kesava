@@ -2994,7 +2994,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [splashVisible, setSplashVisible] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [grnHistory, setGrnHistory] = useState<any[]>(() => GRN_INITIAL_HISTORY);
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
   const { logout } = useAuth();
@@ -3043,7 +3043,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav, mobileTab]);
 
-  const navigate = (tab: string) => {
+  const navigate = (tab: string, ctx?: any) => {
     const routeMap: Record<string, string> = {
       Overview: "/admin/overview",
       Materials: "/admin/materials",
@@ -3071,7 +3071,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     };
     const path = routeMap[tab] || "/admin/materials";
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    routerNavigate(path);
+    routerNavigate(path, { state: ctx });
   };
   const navigateMobile = navigate;
 
@@ -3210,7 +3210,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
           <div style={{ padding: "40px 56px 80px", maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 24, alignItems: "start" }}>
               <div style={{ background: "#fff", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "visible", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
-                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} />
+                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>

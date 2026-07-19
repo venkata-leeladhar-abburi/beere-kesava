@@ -1785,7 +1785,10 @@ function POTrackerSection({
                   <div style={{ display: "flex", gap: 10 }}>
                     {po.status === "approved" && (
                       <motion.button
-                        onClick={() => toast.info("Navigate to GRN page to receive against this PO")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigate?.("ReceiveStock", { poId: po.poNumber });
+                        }}
                         whileHover={{ scale: 1.02, backgroundColor: "#154d30" }}
                         whileTap={{ scale: 0.98 }}
                         style={{
@@ -1805,7 +1808,7 @@ function POTrackerSection({
                     )}
                     {po.status === "rejected" && (
                       <motion.button
-                        onClick={onCreatePO}
+                        onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
                         whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                         whileTap={{ scale: 0.98 }}
                         style={{
@@ -1820,7 +1823,7 @@ function POTrackerSection({
                       </motion.button>
                     )}
                     <motion.button
-                      onClick={() => onViewPO(po)}
+                      onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
                       whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
                       whileTap={{ scale: 0.98 }}
                       style={{
@@ -3107,7 +3110,7 @@ function MaterialsFooter() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
-export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string) => void } = {}) {
+export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
   const isMobile = useIsMobile();
   const px = isMobile ? 16 : 56;
 

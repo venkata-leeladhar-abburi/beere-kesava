@@ -324,14 +324,125 @@ function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => v
   );
 }
 
-function VendorProfile({ vendor, onBack }: { vendor: Vendor; onBack: () => void }) {
+const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
+  Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },
+  Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)"  },
+  Jari:   { col: T.luxuryBrown,   bg: "rgba(59,35,20,0.09)"    },
+};
+
+function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead><tr style={{ background: T.silkCream }}>{["PO Reference","Materials","Total Value","Receipt Details","Status"].map(h => <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>)}</tr></thead>
+      <tbody>{orders.map((o, i) => <tr key={o.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
+        <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{o.id}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.date}</div>
+        </td>
+        <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {o.materials.map((m: any, mi: number) => {
+               const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp;
+               return (
+                 <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: mi < o.materials.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
+                   <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 4, padding: "2px 6px", marginTop: 1 }}>{m.type}</span>
+                   <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                     <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>{m.description}</span>
+                     {m.invoiceAmount && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice: <span style={{fontFamily: F.mono, fontWeight: 600}}>{m.invoiceAmount}</span></span>}
+                   </div>
+                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, marginTop: 1 }}>{m.qty}</span>
+                 </div>
+               );
+            })}
+          </div>
+        </td>
+        <td style={{ padding: "14px 16px", verticalAlign: "top", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: "#8B6018" }}>
+          {o.totalAmount}
+        </td>
+        <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
+          {o.grnId ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: T.royalBurgundy }}>{o.grnId}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{o.firmName}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{o.receivedDate}</div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
+          )}
+        </td>
+        <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: o.status === "Delivered" ? T.greenBg : T.silkCream, color: o.status === "Delivered" ? T.greenMid : T.taupe, padding: "3px 8px", borderRadius: 6 }}>{o.status}</span>
+            {o.receiveStatus && (
+               <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, background: o.receiveStatus === "Match" ? T.greenBg : "rgba(242,153,74,0.15)", color: o.receiveStatus === "Match" ? T.greenMid : "#E67E22", padding: "2px 6px", borderRadius: 4 }}>
+                 {o.receiveStatus}
+               </span>
+            )}
+          </div>
+        </td>
+      </tr>)}</tbody>
+    </table>
+  );
+}
+
+function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "contact" | "edit">("overview");
   const tabs = [{ key: "overview", label: "Overview" }, { key: "orders", label: "Order History" }, { key: "contact", label: "Contact Details" }, { key: "edit", label: "Edit Profile" }] as const;
+  
+  const [form, setForm] = useState(vendor);
+  const set = (k: keyof Vendor, v: string) => setForm(p => ({ ...p, [k]: v }));
+  
+  React.useEffect(() => { setForm(vendor); }, [vendor]);
+
+  const inp: React.CSSProperties = {
+    width: "100%", padding: "10px 12px", borderRadius: 6,
+    border: `1px solid rgba(110,15,45,0.12)`, fontFamily: F.ui,
+    fontSize: 14, color: T.luxuryBrown, background: "#FFF",
+    outline: "none", boxSizing: "border-box" as const,
+  };
+  const lbl: React.CSSProperties = {
+    fontFamily: F.ui, fontSize: 12, fontWeight: 600,
+    color: T.luxuryBrown, display: "block", marginBottom: 6,
+  };
+  
+  const t1 = vendor.type.split(" / ")[0] || "Warp";
+  const t2 = vendor.type.split(" / ")[1] || "Resham";
+  
   const mockOrders = [
-    { id: "PO-2026-041", date: "15 Jun 2026", material: vendor.type, description: "Premium quality raw threads", qty: "120 kg", amount: "₹2,40,000", status: "Delivered" },
-    { id: "PO-2026-028", date: "02 May 2026", material: vendor.type, description: "Standard dye grade lot", qty: "80 kg", amount: "₹1,60,000", status: "Delivered" },
-    { id: "PO-2026-014", date: "10 Mar 2026", material: vendor.type, description: "High tensile strength batch", qty: "150 kg", amount: "₹3,00,000", status: "Delivered" },
-    { id: "PO-2026-005", date: "18 Jan 2026", material: vendor.type, description: "Bulk replenishment stock", qty: "100 kg", amount: "₹2,00,000", status: "Delivered" },
+    { 
+      id: "PO-2026-041", date: "15 Jun 2026", 
+      status: "Delivered", grnId: "GRN-2026-MAY-814", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "20 May 2026", receiveStatus: "Match",
+      materials: [
+        { type: t1, description: "Premium quality raw threads", qty: "60 kg", invoiceAmount: "₹1,20,000" },
+        { type: t2, description: "Standard dye grade lot", qty: "60 kg", invoiceAmount: "₹1,20,000" }
+      ],
+      totalAmount: "₹2,40,000" 
+    },
+    { 
+      id: "PO-2026-028", date: "02 May 2026", 
+      status: "Delivered", grnId: "GRN-2026-MAY-011", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "17 May 2026", receiveStatus: "Short",
+      materials: [
+        { type: t1, description: "Red 30 kg", qty: "30 kg", invoiceAmount: "₹1,25,000" },
+        { type: t2, description: "Gold 24 kg", qty: "24 kg", invoiceAmount: "₹1,00,000" }
+      ],
+      totalAmount: "₹2,25,000" 
+    },
+    { 
+      id: "PO-2026-014", date: "10 Mar 2026", 
+      status: "Pending",
+      materials: [
+        { type: t1, description: "Polyester 2G Gold 6 Buns", qty: "6 Buns", invoiceAmount: "₹65,000" }
+      ],
+      totalAmount: "₹65,000" 
+    },
+    { 
+      id: "PO-2026-005", date: "18 Jan 2026", 
+      status: "Approved",
+      materials: [
+        { type: t1, description: "Bulk replenishment stock", qty: "100 kg", invoiceAmount: "₹2,00,000" }
+      ],
+      totalAmount: "₹2,00,000" 
+    },
   ];
   return (
     <div style={{ padding: "40px 56px" }}>
@@ -407,36 +518,14 @@ function VendorProfile({ vendor, onBack }: { vendor: Vendor; onBack: () => void 
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Recent Purchase Orders</div>
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead><tr style={{ background: T.silkCream }}>{["PO Number","Date","Material","Description","Quantity","Amount","Status"].map(h => <th key={h} style={{ padding: "10px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>)}</tr></thead>
-                  <tbody>{mockOrders.map((o, i) => <tr key={o.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                    <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.id}</td>
-                    <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.date}</td>
-                    <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{o.material}</td>
-                    <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.description}</td>
-                    <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{o.qty}</td>
-                    <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{o.amount}</td>
-                    <td style={{ padding: "12px 16px" }}><span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: T.greenBg, color: T.greenMid, padding: "3px 8px", borderRadius: 6 }}>{o.status}</span></td>
-                  </tr>)}</tbody>
-                </table>
+                <PurchaseOrderHistoryTable orders={mockOrders.slice(0, 2)} />
               </div>
             </div>
           )}
           {tab === "orders" && (
             <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
               <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}><div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Full Purchase Order History</div></div>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr style={{ background: T.silkCream }}>{["PO Number","Date","Material","Description","Quantity","Amount","Status"].map(h => <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>)}</tr></thead>
-                <tbody>{mockOrders.map((o, i) => <tr key={o.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.id}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.date}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.material}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.description}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{o.qty}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{o.amount}</td>
-                  <td style={{ padding: "14px 16px" }}><span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: T.greenBg, color: T.greenMid, padding: "3px 8px", borderRadius: 6 }}>{o.status}</span></td>
-                </tr>)}</tbody>
-              </table>
+              <PurchaseOrderHistoryTable orders={mockOrders} />
             </div>
           )}
           {tab === "contact" && (
@@ -468,11 +557,82 @@ function VendorProfile({ vendor, onBack }: { vendor: Vendor; onBack: () => void 
           )}
           {tab === "edit" && (
             <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px" }}>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Edit Profile</div>
-              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 24 }}>Contact your system administrator to update vendor records.</p>
-              <div style={{ display: "flex", gap: 12 }}>
-                <span style={{ background: T.greenBg, color: T.greenMid, fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 8 }}>✓ GST Verified</span>
-                <span style={{ background: T.silkCream, color: T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 8 }}>Active since 2020</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>Edit Profile</div>
+                <button onClick={() => onUpdate?.(form)} style={{ padding: "8px 16px", background: T.royalBurgundy, color: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer", border: "none" }}>Save Changes</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div>
+                    <label style={lbl}>Business Name *</label>
+                    <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={inp} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Owner / Contact Name *</label>
+                    <input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={inp} />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <label style={lbl}>Phone Number *</label>
+                      <input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={inp} />
+                    </div>
+                    <div>
+                      <label style={lbl}>WhatsApp Number</label>
+                      <input value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <label style={lbl}>City *</label>
+                      <input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={inp} />
+                    </div>
+                    <div>
+                      <label style={lbl}>State *</label>
+                      <select value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+                        {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <label style={lbl}>Material Type</label>
+                      <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+                        {MATERIAL_TYPES.filter(t => t !== "All Types").map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={lbl}>Payment Terms *</label>
+                      <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+                        {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div>
+                    <label style={lbl}>Business Address</label>
+                    <textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <label style={lbl}>Bank Name</label>
+                      <input value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
+                    </div>
+                    <div>
+                      <label style={lbl}>Account Number</label>
+                      <input value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={lbl}>GST Number</label>
+                    <input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={inp} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Notes</label>
+                    <textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -528,7 +688,7 @@ export function VendorsPage() {
     return mSearch && mType && mStatus;
   });
 
-  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} />;
+  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={(v) => { setVendors(prev => prev.map(old => old.id === v.id ? v : old)); setSelectedVendor(v); }} />;
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 100 }}>
