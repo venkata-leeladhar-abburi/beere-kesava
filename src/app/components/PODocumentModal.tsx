@@ -193,23 +193,21 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
 
                   {/* Materials table */}
                   <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden", marginBottom: 18 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1fr", background: T.silkCream, padding: "10px 16px", gap: 8 }}>
-                      {["Material", "Description", "Quantity", "Unit Price", "Total"].map(h => (
+                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", background: T.silkCream, padding: "10px 16px", gap: 8 }}>
+                      {["Material", "Description", "Quantity"].map(h => (
                         <span key={h} style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
                       ))}
                     </div>
                     {po.materials.map((m, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1fr", padding: "11px 16px", gap: 8, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", padding: "11px 16px", gap: 8, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
                         <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{m.materialType}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.subtype || "—"}</span>
                         <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe }}>₹{m.pricePerUnit?.toLocaleString("en-IN")}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>₹{m.subtotal?.toLocaleString("en-IN")}</span>
                       </div>
                     ))}
                     {/* Total row */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1fr", padding: "13px 16px", gap: 8, background: T.warmCream, borderTop: `2px solid ${T.borderGold}` }}>
-                      <span style={{ fontFamily: F.display, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, gridColumn: "1 / 5" }}>Estimated Total</span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", padding: "13px 16px", gap: 8, background: T.warmCream, borderTop: `2px solid ${T.borderGold}` }}>
+                      <span style={{ fontFamily: F.display, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, gridColumn: "1 / 3" }}>Estimated Total</span>
                       <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}>
                         ₹{po.totalValue?.toLocaleString("en-IN")}
                       </span>

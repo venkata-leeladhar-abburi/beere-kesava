@@ -2815,174 +2815,167 @@ Thank you.`;
 
 function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
-  const pct = Math.round((vp.paidAmt / vp.invoiceAmt) * 100);
-  const cfg = VENDOR_STATUS_CFG[vp.status];
   const isPaid = vp.status === "Paid";
+  const cfg = VENDOR_STATUS_CFG[vp.status];
   const vendorName = matchedPO?.vendor ?? vp.vendor;
+  
+  const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
+    "Warp": { col: "#B85C38", bg: "rgba(184,92,56,0.12)" },
+    "Resham": { col: "#4A7059", bg: "rgba(74,112,89,0.12)" },
+    "Jari": { col: "#C19A5B", bg: "rgba(193,154,91,0.15)" },
+  };
 
   return (
     <motion.div
-      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(59,35,20,0.12)" }}
-      transition={{ type: "spring", stiffness: 280, damping: 24 }}
-      style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", width: "100%" }}
+      whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
+      transition={{ duration: 0.25 }}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1.5px solid ${T.borderDef}`,
+        boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        position: "relative",
+      }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: cfg.color, flexShrink: 0 }} />
+      <div style={{ height: 6, background: cfg.color, flexShrink: 0 }} />
 
-      {/* Header */}
-      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 10, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <FileText size={20} color={T.royalBurgundy} />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25, marginBottom: 3 }}>{vendorName}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{vp.id}</div>
-          </div>
-        </div>
-        <div style={{ flexShrink: 0 }}>
-          <VendorBadge status={vp.status} />
-        </div>
-      </div>
-
-      {/* PO / Firm row */}
-      <div style={{ padding: "0 20px 14px", display: "flex", gap: 0, flexShrink: 0 }}>
-        <div style={{ flex: 1, borderRight: `1px solid ${T.borderDef}`, paddingRight: 14 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>PO Number</div>
-          <div onClick={onViewPO}
-            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
-            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-            style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, fontWeight: 700, cursor: onViewPO ? "pointer" : "default" }}>{vp.poNumber}</div>
-        </div>
-        <div style={{ flex: 1, paddingLeft: 14 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>Firm Name</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{matchedPO?.firmName ?? "—"}</div>
-        </div>
-      </div>
-
-      {/* Materials summary row */}
-      {matchedPO && (
-        <div style={{ padding: "0 20px 14px", flexShrink: 0 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Materials Ordered</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            {matchedPO.materials.map((m, i) => (
-              <div key={i} style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 9.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4 }}>{m.materialType}</span>
-                <span style={{ flex: 1 }}>{m.description || m.subtype}</span>
-                <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Due date row */}
-      <div style={{ padding: "0 20px 16px", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, color: vp.status === "Overdue" ? T.crimson : T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 5 }}>
-          <CalendarClock size={11} />Due Date
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: vp.status === "Overdue" ? 700 : 500, color: vp.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{vp.dueDate}</span>
-          {vp.daysOverdue ? (
-            <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5, fontWeight: 700 }}>{vp.daysOverdue}d late</span>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Financials */}
-      <div style={{ padding: "16px 20px", background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", margin: "0 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice Amount</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14.5, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Paid So Far</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.green }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8, marginBottom: 4 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Balance Due</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14.5, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-            {isPaid ? "Fully Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+      <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+        {/* Top row: PO number + Date */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <span onClick={onViewPO} style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default" }}>
+            {vp.poNumber}
+          </span>
+          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+            {vp.dueDate}
           </span>
         </div>
-        
-        {/* Progress bar */}
-        <div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 5 }}>
-            <span>Payment progress</span>
-            <span style={{ fontFamily: F.mono, fontWeight: 700, color: isPaid ? T.green : T.luxuryBrown }}>{pct}%</span>
+
+        {/* Vendor Details */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 4 }}>
+            {vendorName}
           </div>
-          <AnimBar pct={pct} color={isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold} height={5} trackBg="rgba(110,15,45,0.08)" />
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+            <span>{matchedPO?.vendorCity ?? "—"}</span>
+            {matchedPO?.firmName && (
+              <>
+                <span style={{ color: T.borderDef }}>•</span>
+                <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{matchedPO.firmName}</span>
+              </>
+            )}
+          </div>
         </div>
-        {vp.utr && (
-          <div style={{ marginTop: 6, fontFamily: F.mono, fontSize: 11, color: T.green, display: "flex", alignItems: "center", gap: 5 }}>
-            <CheckCircle2 size={11} />UTR: {vp.utr}
+
+        {/* Materials Grid */}
+        {matchedPO && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
+            <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+            {matchedPO.materials.map((m, mi) => {
+              const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+              return (
+                <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 6, borderBottom: mi < matchedPO.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < matchedPO.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", flexShrink: 0 }}>
+                      {m.materialType}
+                    </span>
+                    {m.subtype && (
+                      <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.subtype}</span>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }} />
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5 }}>
+                      {m.quantity} {m.unit}
+                    </span>
+                  </div>
+                  
+                  <div style={{ paddingLeft: 60 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
+                        {m.subtotal ? `₹${m.subtotal.toLocaleString("en-IN")}` : "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
+
+        {/* Financials (Replaces Invoice amount inputs from Image 2) */}
+        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Paid</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.green }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px dashed ${T.borderDef}`, paddingTop: 8, marginTop: 4 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Balance</span>
+            <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+              {isPaid ? "Fully Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Action buttons */}
-      <div style={{ padding: "14px 20px 8px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <button
-          onClick={onView}
-          style={{
-            flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 9, background: "#fff",
-            fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-        >
-          <Eye size={13} /> Statement
-        </button>
-        {matchedPO && onViewPO && (
+      {/* Footer / Actions */}
+      <div style={{ background: "rgba(110,15,45,0.02)", borderTop: `1px solid ${T.borderDef}`, padding: "14px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <VendorBadge status={vp.status} />
+        
+                <div style={{ display: "flex", gap: 8 }}>
+          {matchedPO && onViewPO && (
+            <button
+              onClick={onViewPO}
+              style={{
+                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                border: `1.5px solid ${T.borderGold}`, borderRadius: 8, background: T.warmCream,
+                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, cursor: "pointer",
+              }}
+            >
+              View PO
+            </button>
+          )}
           <button
-            onClick={onViewPO}
+            onClick={onView}
             style={{
-              flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              border: `1.5px solid ${T.borderGold}`, borderRadius: 9, background: T.warmCream,
-              fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.antiqueGold, cursor: "pointer",
-              transition: "all 0.15s ease",
+              padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8, background: "#fff",
+              fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(200,155,71,0.15)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = T.warmCream; }}
           >
-            <FileText size={13} /> View PO
+            Statement
           </button>
-        )}
-      </div>
-      <div style={{ padding: "8px 20px 18px", flexShrink: 0 }}>
-        {isPaid ? (
-          <button style={{ width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, cursor: "default" }}>
-            <CheckCircle2 size={13} /> Fully Settled ✓
-          </button>
-        ) : (
-          <button
-            onClick={() => onPay(vp.id)}
-            style={{
-              width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              border: "none", borderRadius: 10, background: selected ? T.deepWine : T.royalBurgundy,
-              fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
-            onMouseLeave={e => { e.currentTarget.style.background = selected ? T.deepWine : T.royalBurgundy; }}
-          >
-            <IndianRupee size={13} /> Pay Now
-          </button>
-        )}
+          {!isPaid && (
+            <button
+              onClick={() => onPay(vp.id)}
+              style={{
+                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                border: "none", borderRadius: 8, background: selected ? T.deepWine : T.royalBurgundy,
+                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
+              }}
+            >
+              Pay Now
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 }
 
 // Static sample payment history per vendor PO (for VendorDetailModal — no live payment ledger exists yet)
-const VENDOR_STATIC_PAYMENT_HISTORY: Record<string, { amount: number; date: string; utr: string; method: string }[]> = {
-  "VP-001": [{ amount: 192000, date: "05 May 2026", utr: "UTR20260505001", method: "Bank Transfer" }],
-  "VP-002": [{ amount: 375000, date: "08 May 2026", utr: "UTR20260508002", method: "RTGS" }],
-  "VP-003": [{ amount: 140000, date: "12 May 2026", utr: "UTR20260512003", method: "NEFT" }],
-  "VP-004": [{ amount: 80000, date: "01 May 2026", utr: "UTR20260501004", method: "Bank Transfer" }],
+const VENDOR_STATIC_PAYMENT_HISTORY: Record<string, { amount: number; date: string; utr: string; method: string; firm: string }[]> = {
+  "VP-001": [{ amount: 192000, date: "05 May 2026", utr: "UTR20260505001", method: "Bank Transfer", firm: "Surat Zari Works" }],
+  "VP-002": [{ amount: 375000, date: "08 May 2026", utr: "UTR20260508002", method: "RTGS", firm: "Surat Zari Works" }],
+  "VP-003": [{ amount: 140000, date: "12 May 2026", utr: "UTR20260512003", method: "NEFT", firm: "Beere Kesava" }],
+  "VP-004": [{ amount: 80000, date: "01 May 2026", utr: "UTR20260501004", method: "Bank Transfer", firm: "Beere Kesava" }],
 };
 
 // ── Vendor Detail Modal ───────────────────────────────────────────────────────
@@ -3066,9 +3059,10 @@ function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matc
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {history.map((h, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
+                  <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1.1fr 1.1fr 1fr 1fr", gap: 10 }}>
                     <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{h.amount.toLocaleString("en-IN")}</div></div>
                     <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.date}</div></div>
+                    <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.firm}</div></div>
                     <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{h.utr}</div></div>
                     <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.method}</div></div>
                   </div>
@@ -3090,6 +3084,7 @@ function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matc
 function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
   const balance = vp.invoiceAmt - vp.paidAmt;
+  const history = VENDOR_STATIC_PAYMENT_HISTORY[vp.id] ?? [];
   const [amount, setAmount] = useState(String(balance));
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [utr, setUtr] = useState("");
@@ -3097,6 +3092,7 @@ function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose
   const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, marginBottom: 6, display: "block" };
@@ -3115,52 +3111,98 @@ function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
         transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 480, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
+        style={{ background: T.warmIvory, borderRadius: 20, width: 840, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column" }}
       >
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
           <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
             <X size={16} />
           </button>
         </div>
 
-        <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
-            <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
+        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
+          {/* Left Column: Payment History & Invoice Upload */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Payment History</div>
+              {history.length === 0 ? (
+                <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>No payments recorded yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {history.map((h, i) => (
+                    <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1.2fr", gap: "8px 10px" }}>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{h.amount.toLocaleString("en-IN")}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.date}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.firm}</div></div>
+                      <div style={{ gridColumn: "1 / 3" }}><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{h.utr}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.method}</div></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Upload Invoice Document</div>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  background: "#FFFFFF", border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "20px",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", transition: "all 0.2s"
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.02)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = T.borderDef; }}
+              >
+                <div style={{ width: 44, height: 44, borderRadius: 22, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                  <FileText size={20} color={T.royalBurgundy} />
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>Click to upload invoice</div>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
+                <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label style={labelStyle}>Amount to Pay (₹) *</label>
-            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle}>Payment Date *</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle}>UTR Number *</label>
-            <input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle}>Payment Method</label>
-            <select value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {["Bank Transfer", "Cheque", "RTGS", "NEFT"].map(m => <option key={m}>{m}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Paying from Firm *</label>
-            <select value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Notes (optional)</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
+          {/* Right Column: Payment Form */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
+              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Amount to Pay (₹) *</label>
+              <input type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Payment Date *</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>UTR Number *</label>
+              <input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Payment Method</label>
+              <select value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                {["Bank Transfer", "Cheque", "RTGS", "NEFT"].map(m => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Paying from Firm *</label>
+              <select value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Notes (optional)</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
+            </div>
           </div>
         </div>
 
-        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}` }}>
           <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
           <button onClick={handleSave} disabled={saving} style={{ height: 42, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>
             {saving ? "Processing..." : "Confirm Payment"}
