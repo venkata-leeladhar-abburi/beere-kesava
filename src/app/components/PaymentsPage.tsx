@@ -684,7 +684,7 @@ function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | 
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
-  const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
+
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
 
   if (!weaver) return null;
@@ -700,7 +700,7 @@ function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | 
 
   const myBatches = batches.filter(b => (b.status === "active" || b.status === "draft") && b.rows.some(r => r.weaverId === weaver.id));
 
-  const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
+
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
   const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
@@ -811,12 +811,7 @@ function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | 
                   return (
                     <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const }}>
                       <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
-                      {row?.designCode && (
-                        <span onClick={() => setOpenDesignCode(row.designCode!)}
-                          onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
-                          onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
-                          style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, cursor: "pointer" }}>{row.designCode}</span>
-                      )}
+
                       {row?.sareeTypeCode && (
                         <span onClick={() => setOpenSareeTypeCode(row.sareeTypeCode!)}
                           onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
@@ -841,7 +836,7 @@ function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | 
       </motion.div>
 
       <AnimatePresence>
-        {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
+
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
     </div>
@@ -2123,7 +2118,7 @@ function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: (
 // ── Payment Reminders Modal ───────────────────────────────────────────────────
 function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
   const [sending, setSending] = useState(false);
-  const [channels, setChannels] = useState({ whatsapp: true, email: true, sms: false });
+  const [channels, setChannels] = useState({ whatsapp: true });
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(overdueInvoices[0]?.id || "");
   const [scheduleType, setScheduleType] = useState("immediate");
 
@@ -2199,11 +2194,9 @@ function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boole
           {/* Channels Choice */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Notification Channels</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
               {[
-                { key: "whatsapp", label: "WhatsApp Chat", sub: "Auto-send message" },
-                { key: "email", label: "Official Email", sub: "Send PDF copy" },
-                { key: "sms", label: "SMS Alert", sub: "Basic SMS text" }
+                { key: "whatsapp", label: "WhatsApp Chat", sub: "Auto-send message" }
               ].map(ch => (
                 <label key={ch.key} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "12px 14px", background: "#FFFFFF", border: `1.5px solid ${channels[ch.key as keyof typeof channels] ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, cursor: "pointer", position: "relative" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
