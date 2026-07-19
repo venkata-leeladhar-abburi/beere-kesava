@@ -2115,8 +2115,8 @@ function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRo
           <tr>
             {[
               { label: "Batch ID",         icon: <Tag size={12} /> },
-              { label: "Type",             icon: <Layers size={12} /> },
-              { label: "Details",          icon: <FileText size={12} /> },
+              { label: "Material",         icon: <Layers size={12} /> },
+              { label: "Description",      icon: <FileText size={12} /> },
               { label: "Vendor",           icon: <Boxes size={12} /> },
               { label: "Received On",      icon: <Calendar size={12} /> },
               { label: "Received",         icon: <Package size={12} /> },
@@ -2306,8 +2306,8 @@ function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void }) {
     <section style={{ padding: `44px ${px}px 0` }}>
       <SectionHeader
         title="All Material Batches in Stock"
-        action="Add New Stock"
-        actionIcon={<Plus size={15} />}
+        action="Receive Materials"
+        actionIcon={<Package size={15} />}
         onAction={onAddNewStock}
         actionVariant="solid"
       />
@@ -2460,12 +2460,12 @@ const W_STATUS: Record<WeaverStatus, { border: string; bannerBg: string; bannerC
 // SECTION 7 — PURCHASE HISTORY FROM ALL VENDORS
 // ═══════════════════════════════════════════════════════════════════════════════
 const VENDOR_DATA = [
-  { name: "Sri Venkateswara Textiles", material: "Warp · Cotton/Silk",       total: "1,200 kg", price: "₹280 per kg",   paid: "₹3,36,000",  orders: 12, last: "01 May 2026", type: "Warp"   },
-  { name: "Lakshmi Thread House",      material: "Warp · Cotton/Silk",       total: "1,640 kg", price: "₹275 per kg",   paid: "₹4,51,000",  orders: 18, last: "28 Apr 2026", type: "Warp"   },
-  { name: "Kanchipuram Silks",         material: "Resham · All Colors",      total: "820 kg",   price: "₹1,500 per kg", paid: "₹12,30,000", orders: 22, last: "02 May 2026", type: "Resham" },
-  { name: "Mysore Silk Co.",           material: "Resham · Selected Colors", total: "420 kg",   price: "₹1,480 per kg", paid: "₹6,21,600",  orders: 14, last: "28 Apr 2026", type: "Resham" },
-  { name: "Surat Zari Works",          material: "Jari · Polyester Types",   total: "24 Buns (96 Reels)",   price: "—", paid: "₹15,36,000", orders: 16, last: "01 May 2026", type: "Jari"   },
-  { name: "Varanasi Zari House",       material: "Jari · Silk Fast Types",   total: "10 Buns (40 Reels)",   price: "—",  paid: "₹9,12,000",  orders: 8,  last: "28 Apr 2026", type: "Jari"   },
+  { name: "Sri Venkateswara Textiles", materials: [{ type: "Warp", label: "Warp" }, { type: "Jari", label: "Jari" }], totals: ["1,200 kg", "2 Buns (8 Reels)"], price: "₹280 per kg",   paid: "₹3,36,000",  orders: 12, last: "01 May 2026" },
+  { name: "Lakshmi Thread House",      materials: [{ type: "Warp", label: "Warp" }],       totals: ["1,640 kg"], price: "₹275 per kg",   paid: "₹4,51,000",  orders: 18, last: "28 Apr 2026" },
+  { name: "Kanchipuram Silks",         materials: [{ type: "Resham", label: "Resham" }],      totals: ["820 kg"],   price: "₹1,500 per kg", paid: "₹12,30,000", orders: 22, last: "02 May 2026" },
+  { name: "Mysore Silk Co.",           materials: [{ type: "Resham", label: "Resham" }], totals: ["420 kg"],   price: "₹1,480 per kg", paid: "₹6,21,600",  orders: 14, last: "28 Apr 2026" },
+  { name: "Surat Zari Works",          materials: [{ type: "Jari", label: "Jari" }],   totals: ["24 Buns (96 Reels)"],   price: "—", paid: "₹15,36,000", orders: 16, last: "01 May 2026" },
+  { name: "Varanasi Zari House",       materials: [{ type: "Jari", label: "Jari" }],   totals: ["10 Buns (40 Reels)"],   price: "—",  paid: "₹9,12,000",  orders: 8,  last: "28 Apr 2026" },
 ];
 
 const MONTHLY_DATA = [
@@ -2581,7 +2581,7 @@ function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => 
         {[
           { Icon: Layers,      label: "Total Warp Purchased",   amount: "2,840 kg", cost: "₹14,20,000", sub: "From 4 vendors · Since system started",    dark: false },
           { Icon: Tag,         label: "Total Resham Purchased", amount: "1,240 kg", cost: "₹18,60,000", sub: "From 3 vendors · All colors combined",       dark: false },
-          { Icon: Sparkles,    label: "Total Jari Purchased",   amount: "680 kg",   cost: "₹24,48,000", sub: "From 2 vendors · All types and grades",      dark: false },
+          { Icon: Sparkles,    label: "Total Jari Purchased",   amount: "680 Reels (170 Buns)", cost: "₹24,48,000", sub: "From 2 vendors · All types and grades",      dark: false },
           { Icon: IndianRupee, label: "TOTAL AMOUNT SPENT",     amount: "₹57,28,000", cost: "", sub: "On all raw materials since system started", dark: true  },
         ].map((card, i) => (
           <FadeUp key={card.label} delay={i * 0.09} style={{ height: "100%" }}>
@@ -2622,7 +2622,6 @@ function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => 
               </thead>
               <tbody>
                 {VENDOR_DATA.map((v, i) => {
-                  const mt = MAT_TAG[v.type];
                   return (
                     <motion.tr
                       key={v.name}
@@ -2630,14 +2629,23 @@ function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => 
                       transition={{ duration: 0.38, delay: i * 0.05, ease: EASE }}
                       style={{ background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}
                     >
-                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14.5, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>{v.name}</td>
-                      <td style={{ padding: "15px 18px", borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{v.material}</span>
+                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14.5, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.name}</td>
+                      <td style={{ padding: "15px 18px", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                          {v.materials.map(m => {
+                            const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG["Warp"];
+                            return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>
+                          })}
+                        </div>
                       </td>
-                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>{v.total}</td>
-                      <td style={{ padding: "15px 18px", fontFamily: F.mono, fontWeight: 700, fontSize: 14.5, color: T.antiqueGold, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>{v.paid}</td>
-                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontSize: 14.5, color: T.taupe, textAlign: "center", borderBottom: `1px solid rgba(110,15,45,0.05)` }}>{v.orders}</td>
-                      <td style={{ padding: "15px 18px", fontFamily: F.mono, fontSize: 13, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>{v.last}</td>
+                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+                          {v.totals.map((t, idx) => <div key={idx}>{t}</div>)}
+                        </div>
+                      </td>
+                      <td style={{ padding: "15px 18px", fontFamily: F.mono, fontWeight: 700, fontSize: 14.5, color: T.antiqueGold, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.paid}</td>
+                      <td style={{ padding: "15px 18px", fontFamily: F.ui, fontSize: 14.5, color: T.taupe, textAlign: "center", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.orders}</td>
+                      <td style={{ padding: "15px 18px", fontFamily: F.mono, fontSize: 13, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.last}</td>
                     </motion.tr>
                   );
                 })}
@@ -3177,7 +3185,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           />
           <StockOverview onSeeFullReports={() => setShowFullReports(true)} />
           <IssuedThisMonthCard onNavigate={onNavigate} />
-          <BatchesSection onAddNewStock={() => setShowAddStock(true)} />
+          <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
           <PurchaseHistorySection onDownloadReport={() => setShowPurchaseDownload(true)} />
           <RecentProcurementSection onViewAllPurchases={() => setShowAllPurchases(true)} />
           <MovementHistorySection onDownloadMovementReport={() => setShowMovementDownload(true)} />
