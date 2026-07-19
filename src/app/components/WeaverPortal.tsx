@@ -2689,14 +2689,74 @@ function DesktopHero({ breadcrumb, titleMain, titleSub, description, pills, aler
 }
 
 // ─── Desktop active batch card (with inline design/type expand) ─────────────
+// ─── Materials given to the current weaver for a specific batch (aggregated by type) ──
+function useMaterialsGivenForBatch(batchId: string) {
+  const { getRecordsForWeaver } = useMaterialIssue();
+  const records = getRecordsForWeaver(CURRENT_WEAVER_ID).filter(r => r.batchId === batchId && r.status !== "cancelled");
+  const totals: Record<string, { qty: number; unit: string }> = {};
+  records.forEach(r => r.materials.forEach(m => {
+    if (!totals[m.materialType]) totals[m.materialType] = { qty: 0, unit: m.unit };
+    totals[m.materialType].qty += m.quantity;
+  }));
+  return Object.entries(totals).map(([type, v]) => `${type}: ${v.qty}${v.unit}`).join(", ");
+}
+
+// ─── Dispatch instructions sent to the current weaver, linked to a specific batch ──
+function DispatchInstructionsBlock({ batchId }: { batchId: string }) {
+  const { getDispatchesForWeaver } = useDesignLibrary();
+  const myDispatches = getDispatchesForWeaver(CURRENT_WEAVER_ID).filter(d => d.batches.includes(batchId));
+  if (myDispatches.length === 0) return null;
+  return (
+    <div>
+      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>DISPATCH INSTRUCTIONS</div>
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+        {myDispatches.map(d => (
+          <div key={d.id} style={{ background: "rgba(107,26,42,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>{d.instructions}</div>
+            {(d.colorSlipImage || d.designGraphImage) && (
+              <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                {d.colorSlipImage && (
+                  <div>
+                    <img src={d.colorSlipImage} alt="Color Slip" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
+                    <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Color Slip</div>
+                  </div>
+                )}
+                {d.designGraphImage && (
+                  <div>
+                    <img src={d.designGraphImage} alt="Design Graph" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
+                    <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Design Graph</div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div style={{ fontFamily: F.u, fontSize: 10.5, color: C.muted, marginTop: 8 }}>{d.sentAt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Materials given block (shared by active + completed batch cards) ──
+function MaterialsGivenBlock({ batchId }: { batchId: string }) {
+  const summary = useMaterialsGivenForBatch(batchId);
+  if (!summary) return null;
+  return (
+    <div>
+      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>MATERIALS GIVEN</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(196,146,58,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
+        <Package size={14} color={C.gold} />
+        <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>{summary}</span>
+      </div>
+    </div>
+  );
+}
+
 function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
-  const { getDesign } = useDesignLibrary();
-  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
   const isTablet = bp === "tablet";
 
   const borderColor    = idx % 2 === 0 ? C.burg : C.gold;
-  const designCodes    = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -2732,33 +2792,104 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
           </div>
         </div>
 
-        {/* Clickable design code chips */}
-        {designCodes.length > 0 && (
+        {/* Dispatch instructions assigned to this weaver for this batch */}
+        <DispatchInstructionsBlock batchId={b.batchId} />
+
+        {/* Materials issued to this weaver for this batch */}
+        <MaterialsGivenBlock batchId={b.batchId} />
+
+        {/* Clickable saree type chips */}
+        {sareeTypePairs.length > 0 && (
           <div>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
-              {designCodes.map(dc => {
-                const d = getDesign(dc);
-                return (
-                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "4px 12px", cursor: "pointer" }}>
-                    {d?.colorSlipPhoto ? (
-                      <img src={d.colorSlipPhoto} alt={dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
-                    ) : (
-                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                    )}
-                    <span style={{ fontFamily: F.m, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
-                  </button>
-                );
-              })}
+              {sareeTypePairs.map(([code, name]) => (
+                <button key={code} onClick={() => setExpandedType(expandedType === code ? null : code)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 5, background: expandedType === code ? C.dark : "rgba(61,14,26,0.04)", border: `1.5px solid ${expandedType === code ? C.dark : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
+                  <Layers size={12} color={expandedType === code ? "#FFF" : C.text} />
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: expandedType === code ? "#FFF" : C.text }}>{name}</span>
+                </button>
+              ))}
             </div>
             <AnimatePresence>
-              {expandedDesign && designCodes.includes(expandedDesign) && (
-                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
+              {expandedType && (
+                <SareeTypeDetailCard
+                  key={expandedType}
+                  typeCode={expandedType}
+                  typeName={sareeTypePairs.find(([c]) => c === expandedType)?.[1] ?? expandedType}
+                  onClose={() => setExpandedType(null)}
+                />
               )}
             </AnimatePresence>
           </div>
         )}
+
+        {/* Order links */}
+        {bulkOrders.map(label => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.15)", borderRadius: 10, padding: "10px 14px" }}>
+            <Package size={13} color={C.green} />
+            <div>
+              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Customer Order</div>
+              <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.green }}>{label}</div>
+            </div>
+          </div>
+        ))}
+        {generalStock > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(139,112,96,0.07)", border: "1px solid rgba(139,112,96,0.15)", borderRadius: 10, padding: "10px 14px" }}>
+            <Package size={13} color={C.muted} />
+            <div>
+              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>General Stock</div>
+              <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{generalStock} saree{generalStock !== 1 ? "s" : ""} for stock</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Completed batch card — same full info as the active batch card, but with a completed badge
+function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
+  const [expandedType, setExpandedType] = useState<string | null>(null);
+  const isTablet = bp === "tablet";
+
+  const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
+  const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
+  const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
+
+  return (
+    <div style={{ background: "#FFFDF9", borderRadius: 24, border: `1px solid rgba(110,15,45,0.10)`, borderLeft: `4px solid ${C.green}`, boxShadow: "0px 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
+      <div style={{ padding: "22px 24px 20px", display: "flex", flexDirection: "column" as const, gap: 14 }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{b.batchId}</span>
+          <span style={{ fontFamily: F.u, fontSize: 11, color: "#1D4ED8", background: "rgba(29,78,216,0.10)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+            ✓ Completed
+          </span>
+        </div>
+
+        {/* Saree count + QC pass rate */}
+        <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 14, alignItems: isTablet ? "stretch" : "center" }}>
+          <div style={{ background: C.cream, borderRadius: 12, padding: "14px 18px", textAlign: "center" as const, flex: isTablet ? undefined : "0 0 auto", minWidth: isTablet ? undefined : 160 }}>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>Sarees assigned to you</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: C.text, lineHeight: 1 }}>{b.myRows.length}</div>
+            {b.dueDate && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></div>}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>QC: {b.myRows.length} of {b.myRows.length} passed</span>
+              <span style={{ fontFamily: F.m, fontSize: 13, color: C.green, fontWeight: 600 }}>100%</span>
+            </div>
+            <ProgressBar pct={100} height={8} />
+          </div>
+        </div>
+
+        {/* Dispatch instructions assigned to this weaver for this batch */}
+        <DispatchInstructionsBlock batchId={b.batchId} />
+
+        {/* Materials issued to this weaver for this batch */}
+        <MaterialsGivenBlock batchId={b.batchId} />
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
@@ -2824,7 +2955,7 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
   const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
 
   const { batches } = useBatches();
-  const { getDesign } = useDesignLibrary();
+  const { getDesign, getDispatchesForWeaver } = useDesignLibrary();
   const { getRecordsForWeaver, updateSignatureStatus } = useMaterialIssue();
   const weaverMaterialRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
   const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
@@ -2863,6 +2994,16 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
       .map(r => r.designCode)
       .filter((c): c is string => Boolean(c))
   ));
+
+  // Which batch(es) each design code is being woven in, for this weaver
+  const batchIdsForDesignCode = (code: string) => batches
+    .filter(b => b.rows.some(r => r.weaverId === CURRENT_WEAVER_ID && r.designCode === code))
+    .map(b => b.batchId);
+  const myDispatches = getDispatchesForWeaver(CURRENT_WEAVER_ID);
+  const dispatchesForDesignCode = (code: string) => {
+    const batchIds = batchIdsForDesignCode(code);
+    return myDispatches.filter(d => d.batches.some(bid => batchIds.includes(bid)));
+  };
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const openDesignCode = (code: string) => { const d = getDesign(code); if (d) setViewDesign(d); };
 
@@ -3114,8 +3255,8 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>A batch moves here once QC has passed on every saree you wove.</div>
                         </div>
                       ) : (
-                        <div style={{ display: "grid", gridTemplateColumns: isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 22 }}>
-                          {completedBatches.slice(0, 4).map(b => <CompletedBatchCard key={b.batchId} b={b} onDesignClick={openDesignCode} />)}
+                        <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 1fr", gap: isTablet ? 18 : 24 }}>
+                          {completedBatches.slice(0, 4).map((b, idx) => <DesktopCompletedBatchCard key={b.batchId} b={b} idx={idx} bp={bp} />)}
                         </div>
                       )}
                     </div>
@@ -3138,11 +3279,12 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No designs assigned yet. Check with your supervisor.</div>
                             </div>
                           ) : (
-                            <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr" : "1fr 1fr 1fr", gap: 14 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr" : "1fr 1fr", gap: 14 }}>
                               {myDesignCodes.map(code => {
                                 const d = getDesign(code);
+                                const codeDispatches = dispatchesForDesignCode(code);
                                 return (
-                                  <button key={code} onClick={() => openDesignCode(code)} style={{ background: "#FAFAF8", borderRadius: 14, border: `1px solid ${C.bdr}`, overflow: "hidden", cursor: "pointer", textAlign: "left" as const, padding: 0 }}>
+                                  <button key={code} onClick={() => openDesignCode(code)} style={{ background: "#FAFAF8", borderRadius: 14, border: `1px solid ${C.bdr}`, overflow: "hidden", cursor: "pointer", textAlign: "left" as const, padding: 0, display: "flex", flexDirection: "column" as const }}>
                                     {d?.colorSlipPhoto ? (
                                       <div style={{ height: 100, backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                                     ) : (
@@ -3150,9 +3292,31 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                                         <Sparkles size={26} color={C.muted} />
                                       </div>
                                     )}
-                                    <div style={{ padding: "12px 12px" }}>
+                                    <div style={{ padding: "12px 12px", flex: 1 }}>
                                       <div style={{ fontFamily: F.m, fontSize: 11, color: C.burg, marginBottom: 4 }}>{code}</div>
-                                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.3 }}>{d?.name || "—"}</div>
+                                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.3, marginBottom: codeDispatches.length > 0 ? 8 : 0 }}>{d?.name || "—"}</div>
+                                      {codeDispatches.map(disp => (
+                                        <div key={disp.id} style={{ background: "rgba(107,26,42,0.05)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 10px", marginTop: 6 }}>
+                                          <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.text, lineHeight: 1.5 }}>{disp.instructions}</div>
+                                          {(disp.colorSlipImage || disp.designGraphImage) && (
+                                            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                                              {disp.colorSlipImage && (
+                                                <div>
+                                                  <img src={disp.colorSlipImage} alt="Color Slip" style={{ width: 44, height: 44, borderRadius: 6, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
+                                                  <div style={{ fontFamily: F.u, fontSize: 9, color: C.muted, marginTop: 2, textAlign: "center" as const }}>Color Slip</div>
+                                                </div>
+                                              )}
+                                              {disp.designGraphImage && (
+                                                <div>
+                                                  <img src={disp.designGraphImage} alt="Design Graph" style={{ width: 44, height: 44, borderRadius: 6, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
+                                                  <div style={{ fontFamily: F.u, fontSize: 9, color: C.muted, marginTop: 2, textAlign: "center" as const }}>Design Graph</div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                          <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 6 }}>{disp.sentAt}</div>
+                                        </div>
+                                      ))}
                                     </div>
                                   </button>
                                 );

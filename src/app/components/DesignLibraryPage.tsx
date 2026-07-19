@@ -7,7 +7,7 @@ import {
   PaperPlaneTilt, CalendarCheck, User, Buildings, FileText, SlidersHorizontal,
 } from "@phosphor-icons/react";
 
-import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
+import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
 import { useBatches } from "./BatchContext";
 
 // ─── Design tokens (match app-wide palette) ──────────────────────────────────
@@ -538,42 +538,8 @@ const WEAVERS_LIST = [
   { id: "WV-007", name: "Suresh Murti", initials: "SM", looms: 2 },
 ];
 
-interface DispatchRecord {
-  id: string;
-  recipientType: "weaver" | "loom";
-  recipientName: string;
-  batches: string[];
-  instructions: string;
-  colorSlipImage: string | null;
-  designGraphImage: string | null;
-  sentAt: string;
-}
-
-const INITIAL_DISPATCHES: DispatchRecord[] = [
-  {
-    id: "DISP-001",
-    recipientType: "weaver",
-    recipientName: "Padma Veni",
-    batches: ["BATCH-086"],
-    instructions: "Maintain light warp tension in the borders. Ensure Resham thread transition is smooth in pallu section.",
-    colorSlipImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    designGraphImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    sentAt: "15 Jul 2026, 09:30 AM",
-  },
-  {
-    id: "DISP-002",
-    recipientType: "loom",
-    recipientName: "Loom 3",
-    batches: ["BATCH-OWN"],
-    instructions: "Run at standard speed. Check for any zari threads snapping before finalizing the border weave.",
-    colorSlipImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    designGraphImage: null,
-    sentAt: "14 Jul 2026, 04:15 PM",
-  }
-];
-
 export function DesignLibraryPage() {
-  const { designs, addDesign, updateDesign } = useDesignLibrary();
+  const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch } = useDesignLibrary();
   const { batches } = useBatches();
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState("All Designs");
@@ -591,8 +557,6 @@ export function DesignLibraryPage() {
   const [uploadedSlip, setUploadedSlip] = useState<string | null>(null);
   const [uploadedGraph, setUploadedGraph] = useState<string | null>(null);
 
-  // Dispatch history state
-  const [dispatchHistory, setDispatchHistory] = useState<DispatchRecord[]>(INITIAL_DISPATCHES);
   const [dispatchSavedMsg, setDispatchSavedMsg] = useState<string | null>(null);
 
   // Filters / Search for dispatches history log
@@ -618,26 +582,17 @@ export function DesignLibraryPage() {
 
   const handleSendDispatch = () => {
     const rName = dispRecipientType === "weaver" ? (selectedWeaver?.name || "Weaver") : `Loom ${dispLoomNum}`;
-    
-    const newRecord: DispatchRecord = {
-      id: `DISP-${String(dispatchHistory.length + 1).padStart(3, "0")}`,
+    const rId = dispRecipientType === "weaver" ? dispWeaverId : `Loom ${dispLoomNum}`;
+
+    addDispatch({
       recipientType: dispRecipientType,
+      recipientId: rId,
       recipientName: rName,
       batches: dispBatches,
       instructions: dispInstructions,
       colorSlipImage: uploadedSlip,
       designGraphImage: uploadedGraph,
-      sentAt: new Date().toLocaleString("en-US", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true
-      })
-    };
-
-    setDispatchHistory([newRecord, ...dispatchHistory]);
+    });
     setDispatchSavedMsg(`Instructions successfully dispatched to ${rName}!`);
     setTimeout(() => setDispatchSavedMsg(null), 4000);
 
