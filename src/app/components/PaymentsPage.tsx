@@ -1795,181 +1795,136 @@ function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkO
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
   const { dispatches } = useFinishing();
-  const printRef = useRef<HTMLDivElement>(null);
-  const remaining = inv.total - inv.paid;
-  const pct = Math.round((inv.paid / inv.total) * 100);
-  const isPaid = inv.status === "Paid";
   const dispatch = dispatches.find(d => d.invoiceNumber === inv.id);
   const firmName = dispatch?.firmName ?? "Beere Kesava & Brothers Silks";
-
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "10px 12px", borderBottom: `1px solid ${T.borderDef}` };
+  
+  // Try to determine the price per saree to display in the list. 
+  // If not available, we just split the total amount evenly.
+  const numSarees = dispatch?.sareeIds?.length || bulkOrderData?.total || 1;
+  const pricePerSaree = dispatch?.pricePerSaree || Math.round(inv.total / numSarees);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
-          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>Invoice — {inv.id}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>{inv.customer}</div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+      <motion.div initial={{ y: 20, scale: 0.95, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 20, scale: 0.95, opacity: 0 }} onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 550, background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderGold}` }}>
+        {/* Header */}
+        <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{firmName}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
+          </div>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "#FFF", cursor: "pointer", display: "flex", padding: 4 }}><X size={20} /></button>
         </div>
-
-        <div ref={printRef} style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* Customer details */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Customer Details</div>
-            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <div><span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Name</span><div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</div></div>
-              <div><span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>City</span><div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>{inv.city}</div></div>
-              {dispatch?.customerPhone && <div><span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Phone</span><div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{dispatch.customerPhone}</div></div>}
-            </div>
-          </div>
-
-          {/* Order reference */}
-          {bulkOrderData && (
+        {/* Invoice Body */}
+        <div style={{ padding: "18px 24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
             <div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Order Reference</div>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.13)", border: "1px solid rgba(200,155,71,0.30)", padding: "5px 12px", borderRadius: 8 }}>
-                {bulkOrderData.ref}
-              </span>
-            </div>
-          )}
-
-          {/* Dispatch Item Table */}
-          {dispatch ? (
-            <div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Dispatched Item Details</div>
-              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr>
-                      <th style={TH}>Description</th>
-                      <th style={{ ...TH, textAlign: "right" }}>Qty</th>
-                      <th style={{ ...TH, textAlign: "right" }}>Rate</th>
-                      <th style={{ ...TH, textAlign: "right" }}>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ ...TD, whiteSpace: "normal" }}>
-                        Banarasi Silk Sarees (Dispatched via {dispatch.transportCompany} · LR: {dispatch.lrNumber})
-                      </td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>{dispatch.sareeIds?.length || 0}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>₹{dispatch.pricePerSaree?.toLocaleString("en-IN") || "0"}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>₹{(dispatch.totalAmount || 0).toLocaleString("en-IN")}</td>
-                    </tr>
-                    {dispatch.gstPct ? (
-                      <tr>
-                        <td colSpan={3} style={{ ...TD, textAlign: "right", color: T.taupe, borderBottom: "none" }}>GST ({dispatch.gstPct}%)</td>
-                        <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, borderBottom: "none" }}>₹{((dispatch.grandTotal || 0) - (dispatch.totalAmount || 0)).toLocaleString("en-IN")}</td>
-                      </tr>
-                    ) : null}
-                    <tr style={{ background: T.warmCream }}>
-                      <td colSpan={3} style={{ ...TD, fontWeight: 700, borderBottom: "none" }}>Grand Total</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontWeight: 700, color: T.royalBurgundy, borderBottom: "none" }}>
-                        ₹{(dispatch.grandTotal || dispatch.totalAmount || 0).toLocaleString("en-IN")}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              {/* Saree List */}
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Dispatched Saree Barcodes:</div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {dispatch.sareeIds.map(sid => (
-                    <span key={sid} style={{ fontFamily: F.mono, fontSize: 10, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "2px 6px", borderRadius: 4, color: T.luxuryBrown }}>
-                      {sid}
-                    </span>
-                  ))}
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{inv.id}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {inv.invoiceDate}</div>
+              {bulkOrderData && (
+                <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
+                    <ShoppingBag size={10} color={T.royalBurgundy} />
+                    <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 1 }}>
+                    {bulkOrderData.sareeType || "Sarees"} · {bulkOrderData.design || "Design"}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          ) : (
-            <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-              Banarasi Silk Sarees (Dispatched)
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                <span>Estimated Qty</span>
-                <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{bulkOrderData ? bulkOrderData.total : "15"} sarees</span>
-              </div>
-            </div>
-          )}
-
-          {/* Dates */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Invoice Date</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{inv.invoiceDate}</div>
-            </div>
-            <div style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Due Date</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown }}>{inv.dueDate}</div>
+            <div style={{ textAlign: "right", maxWidth: "55%" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Bill To</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{inv.customer}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{inv.city || "G-12, Silk Plaza, Madhapur, Hyderabad - 500081"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{dispatch?.customerPhone || "+91 98450 11223"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {dispatch?.gstPct ? "36AAAAA1111A1Z1" : "—"}</div>
             </div>
           </div>
-
-          {/* Payment History / Invoice History */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Invoice Payment History</div>
-            {(!inv.payments || inv.payments.length === 0) ? (
-              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>
-                No payments recorded yet.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {inv.payments.map((p, idx) => (
-                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "10px 14px" }}>
+          
+          {/* Items */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Item</div>
+              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>Amount (₹)</div>
+            </div>
+            {dispatch?.sareeIds ? (
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                {dispatch.sareeIds.map((sid, i) => (
+                  <div key={sid} style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
                     <div>
-                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{p.amount.toLocaleString("en-IN")}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 2 }}>{p.utr} · {p.method}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>{sid}</span>
+                        {bulkOrderData?.batches && bulkOrderData.batches.length > 0 && (
+                           <span style={{ fontFamily: F.mono, fontSize: 9, background: "rgba(200,155,71,0.12)", color: T.antiqueGold, padding: "2px 5px", borderRadius: 4, border: `1px solid rgba(200,155,71,0.2)` }}>{bulkOrderData.batches[0]}</span>
+                        )}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Type"}</div>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <span style={{ fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>{p.firmName || "Surat Zari Works"}</span>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{p.date}</div>
-                    </div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{pricePerSaree.toLocaleString("en-IN")}</div>
                   </div>
                 ))}
               </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>Bulk Order Production</span>
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Sarees"}</div>
+                </div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{inv.total.toLocaleString("en-IN")}</div>
+              </div>
             )}
           </div>
-
-          {/* Financial breakdown */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Financial Breakdown</div>
-            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice Total</span>
-                <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</span>
+          
+          {/* Totals */}
+          <div style={{ borderTop: `1.5px solid ${T.borderDef}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Subtotal ({numSarees} sarees)</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</span>
+            </div>
+            {dispatch?.gstPct ? (
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST ({dispatch.gstPct}%)</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{((dispatch.grandTotal || 0) - (dispatch.totalAmount || 0)).toLocaleString("en-IN")}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Amount Paid</span>
-                <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Balance Due</span>
-                <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: isPaid ? T.green : T.crimson }}>{isPaid ? "₹0" : `₹${remaining.toLocaleString("en-IN")}`}</span>
-              </div>
-              <div style={{ height: 8, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: isPaid ? T.green : T.antiqueGold, borderRadius: 99 }} />
-              </div>
-              <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 6, textAlign: "right" }}>{pct}% collected</div>
+            ) : null}
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+              <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
+              <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{(dispatch?.grandTotal || inv.total).toLocaleString("en-IN")}</span>
             </div>
           </div>
 
-          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Firm that raised this invoice: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{firmName}</span></div>
-        </div>
-
-        <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={() => window.print()} style={{ height: 40, padding: "0 20px", display: "flex", alignItems: "center", gap: 7, background: "#fff", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-            <FileText size={14} />Print Invoice
-          </button>
-          <button onClick={onClose} style={{ height: 40, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>Close</button>
+          {/* Dispatch details */}
+          <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
+            <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
+            {bulkOrderData && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Bulk Order: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
+              </div>
+            )}
+            {bulkOrderData?.batches && bulkOrderData.batches.length > 0 && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(200,155,71,0.06)", border: `1px solid rgba(200,155,71,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Production Batch: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{bulkOrderData.batches.join(", ")}</span>
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+              {[
+                ["LR Number", dispatch?.lrNumber || "—"],
+                ["Transport", dispatch?.transportCompany || "—"],
+                ["Vehicle", dispatch?.vehicleNo || "—"],
+                ["Date", dispatch?.date || inv.invoiceDate],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{k}: </span>
+                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.luxuryBrown }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
@@ -2804,7 +2759,6 @@ Thank you.`;
                   { label: "Contact Person", val: contact.contactPerson, icon: "👤" },
                   { label: "City / Location", val: contact.city, icon: "📍" },
                   { label: "Phone Number",    val: contact.phone,          icon: "📞" },
-                  { label: "Email Address",   val: contact.email,          icon: "📧" },
                 ].map(row => (
                   <div key={row.label}>
                     <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{row.label}</div>
@@ -2820,39 +2774,11 @@ Thank you.`;
                   style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.06)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green }}>
                   📞 Call Now
                 </a>
-                <a href={`mailto:${contact.email}`}
-                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>
-                  📧 Email
-                </a>
-                <a href={`https://wa.me/${contact.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer"
-                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(37,211,102,0.35)`, borderRadius: 9, background: "rgba(37,211,102,0.07)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: "#128C7E" }}>
-                  💬 WhatsApp
-                </a>
               </div>
             </div>
           )}
 
-          {/* Channel picker */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Send Payment Reminder Via</div>
-            <div style={{ display: "flex", gap: 10 }}>
-              {CHANNELS.map(ch => (
-                <div key={ch.key}
-                  onClick={() => setMsgType(ch.key)}
-                  style={{
-                    flex: 1, padding: "14px 12px", borderRadius: 12, cursor: "pointer",
-                    border: `2px solid ${msgType === ch.key ? T.royalBurgundy : T.borderDef}`,
-                    background: msgType === ch.key ? "rgba(110,15,45,0.05)" : "#FFFFFF",
-                    textAlign: "center" as const, transition: "all 0.16s",
-                  }}
-                >
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{ch.icon}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: msgType === ch.key ? T.royalBurgundy : T.luxuryBrown }}>{ch.label}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{ch.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* Message preview */}
           <div>
@@ -3581,8 +3507,8 @@ function VendorPaymentsSection() {
           ))}
         </div>
 
-        {/* ── Overdue alert ───────────────────────────────────── */}
-        {overdueVendors.length > 0 && (
+        {/* ── Overdue alert (Hidden) ───────────────────────────── */}
+        {false && overdueVendors.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.22)", borderLeft: `4px solid ${T.crimson}`, borderRadius: 10, padding: "14px 20px", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />
