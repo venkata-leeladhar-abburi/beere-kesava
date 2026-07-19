@@ -24,6 +24,7 @@ import { BatchCreationPage } from "./BatchCreationPage";
 import { IssueMaterialPage } from "./IssueMaterialPage";
 import { InventoryPage } from "./InventoryPage";
 import { VendorsPage } from "./VendorsPage";
+import { FactoryLoomPage } from "./FactoryLoomPage";
 import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "./worker/WorkerGRN";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
@@ -684,10 +685,11 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Reports",  label: "Reports" },
   ]},
   { key: "people", label: "People", icon: Users, pages: [
-      { key: "Weavers",   label: "Weavers" },
-      { key: "Customers", label: "Customers" },
-      { key: "Vendors",   label: "Vendors" },
-      { key: "AddUser",   label: "Add New User" },
+      { key: "Weavers",       label: "Weavers" },
+      { key: "Customers",     label: "Customers" },
+      { key: "Vendors",       label: "Vendors" },
+      { key: "FactoryLooms",  label: "Factory Looms" },
+      { key: "AddUser",       label: "Add New User" },
   ]},
   { key: "operations", label: "Operations", icon: Settings2, pages: [
       { key: "Inventory",     label: "Inventory" },
@@ -3019,6 +3021,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "inventory") nav = "Inventory";
   else if (tab === "customers") nav = "Customers";
   else if (tab === "vendors") nav = "Vendors";
+  else if (tab === "factory-looms") nav = "FactoryLooms";
   else if (tab === "firms") nav = "Firms";
   else if (tab === "notifications") nav = "Notifications";
   else if (tab === "receive-stock") nav = "ReceiveStock";
@@ -3058,6 +3061,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       Inventory: "/admin/inventory",
       Customers: "/admin/customers",
       Vendors: "/admin/vendors",
+      FactoryLooms: "/admin/factory-looms",
       Firms: "/admin/firms",
       Notifications: "/admin/notifications",
       ReceiveStock: "/admin/receive-stock",
@@ -3166,6 +3170,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <CustomersPage />
       ) : nav === "Vendors" ? (
         <VendorsPage />
+      ) : nav === "FactoryLooms" ? (
+        <FactoryLoomPage />
       ) : nav === "Firms" ? (
         <FirmsPage />
       ) : nav === "Notifications" ? (

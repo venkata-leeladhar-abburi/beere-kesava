@@ -3187,7 +3187,6 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           <IssuedThisMonthCard onNavigate={onNavigate} />
           <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
           <PurchaseHistorySection onDownloadReport={() => setShowPurchaseDownload(true)} />
-          <RecentProcurementSection onViewAllPurchases={() => setShowAllPurchases(true)} />
           <MovementHistorySection onDownloadMovementReport={() => setShowMovementDownload(true)} />
         </div>
         <MaterialsFooter />
