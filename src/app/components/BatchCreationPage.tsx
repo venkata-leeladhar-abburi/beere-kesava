@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   FloppyDisk, CheckCircle,
-  Hash, Users, Tag, ShoppingBag, Trash,
+  Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
   WarningCircle, CheckSquare, Square, ArrowRight,
   MagnifyingGlass, Stack, Package, Graph,
 } from "@phosphor-icons/react";
@@ -11,6 +11,8 @@ import { useBulkOrders } from "./BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "./RatesPricingPage";
+import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
+import { useMaterialIssue } from "./MaterialIssueContext";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -85,10 +87,10 @@ const lbl: React.CSSProperties = {
 
 // ─── Row completeness ─────────────────────────────────────────────────────────
 function rowComplete(r: SareeRow) {
-  return !!(r.weaverId && r.sareeId && r.sareeTypeCode);
+  return !!((r.weaverId || r.factoryLoomId) && r.sareeId && r.sareeTypeCode);
 }
 function rowEmpty(r: SareeRow) {
-  return !r.weaverId && !r.sareeTypeCode;
+  return !r.weaverId && !r.factoryLoomId && !r.sareeTypeCode;
 }
 
 // ─── Pip avatar ───────────────────────────────────────────────────────────────
@@ -324,13 +326,18 @@ function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => void; onSe
   );
 }
 
-// ── Loom Picker ──────────────────────────────────────────────────────────────
-function LoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (loomNum: number) => void }) {
-  const [sel, setSel] = useState<number | null>(null);
-  const LOOMS = [1, 2, 3, 4, 5, 6];
+// ── Per-weaver Loom Picker (capped to that weaver's own loom count) ──────────
+function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
+  weaver: typeof WEAVERS[0]; current: number | null; onClose: () => void; onSelect: (loomNum: number) => void;
+}) {
+  const [sel, setSel] = useState<number | null>(current);
+  const LOOMS = Array.from({ length: weaver.loom }, (_, i) => i + 1);
   return (
-    <PickerShell title="Assign Loom Number" onClose={onClose} width={400}>
-      <div style={{ padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+    <PickerShell title={`Select Loom for ${weaver.name}`} onClose={onClose} width={400}>
+      <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+        {weaver.name} operates {weaver.loom} loom{weaver.loom !== 1 ? "s" : ""}.
+      </div>
+      <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
         {LOOMS.map(loom => (
           <button key={loom} onClick={() => setSel(loom)}
             style={{
@@ -351,6 +358,39 @@ function LoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect:
         <motion.button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} whileHover={sel !== null ? { scale: 1.02 } : undefined}
           style={{ flex: 2, height: 46, background: sel !== null ? T.royalBurgundy : T.taupe, opacity: sel !== null ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel !== null ? "pointer" : "not-allowed" }}>
           Assign Loom
+        </motion.button>
+        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+      </div>
+    </PickerShell>
+  );
+}
+
+// ── Factory Loom Picker (assigns a factory loom instead of a weaver) ─────────
+function FactoryLoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (loom: typeof FACTORY_LOOMS_LIST[0]) => void }) {
+  const [sel, setSel] = useState<string | null>(null);
+  const statusColor = (s: string) => s === "active" ? T.green : s === "maintenance" ? T.red : T.taupe;
+  return (
+    <PickerShell title="Assign Factory Loom" onClose={onClose}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 24px" }}>
+        {FACTORY_LOOMS_LIST.map(l => (
+          <button key={l.id} onClick={() => setSel(l.id)}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `2px solid ${sel === l.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === l.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Factory size={17} color={T.royalBurgundy} weight="duotone" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{l.id} · {l.location}</div>
+            </div>
+            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status}</span>
+          </button>
+        ))}
+      </div>
+      <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
+        <motion.button onClick={() => { const l = FACTORY_LOOMS_LIST.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
+          whileHover={sel ? { scale: 1.02 } : undefined}
+          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+          Assign Factory Loom
         </motion.button>
         <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
       </div>
@@ -379,7 +419,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
-type ActivePicker = "weaver" | "bulkorder" | "loom" | "saretype" | "design" | null;
+type ActivePicker = "weaver" | "bulkorder" | "factoryloom" | "saretype" | "design" | null;
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
@@ -410,8 +450,17 @@ export function BatchCreationPage() {
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
   const [viewWeaver, setViewWeaver] = useState<typeof WEAVERS[0] | null>(null);
+  const [viewFactoryLoom, setViewFactoryLoom] = useState<typeof FACTORY_LOOMS_LIST[0] | null>(null);
   const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
+
+  // ── Per-row loom picker (scoped to that row's weaver's own loom count)
+  const [loomPickerRow, setLoomPickerRow] = useState<SareeRow | null>(null);
+
+  // ── Sort control
+  const [sortBy, setSortBy] = useState<"serial" | "weaver" | "factoryLoom">("serial");
+
+  const { issueRecords } = useMaterialIssue();
 
   // ── Saved feedback
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -427,7 +476,9 @@ export function BatchCreationPage() {
     if (!n || n < 1 || n > 500) return;
     setRows(Array.from({ length: n }, (_, i) => ({
       serial: i + 1,
-      sareeId: null, weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+      sareeId: null, recipientType: undefined,
+      weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+      factoryLoomId: null, factoryLoomNumber: null,
       designCode: null, sareeTypeCode: null, sareeTypeName: null,
       bulkOrderRef: null, bulkOrderLabel: null,
     })));
@@ -460,8 +511,48 @@ export function BatchCreationPage() {
       if (!selected.has(r.serial)) return r;
       seq++;
       return {
-        ...r, weaverId: w.id, weaverName: w.name, weaverInitials: w.initials, weaverLoom: w.loom,
-        sareeId: generateSareeId(w.name, w.loom, seq),
+        ...r, recipientType: "weaver" as const,
+        weaverId: w.id, weaverName: w.name, weaverInitials: w.initials, weaverLoom: 1,
+        factoryLoomId: null, factoryLoomNumber: null,
+        sareeId: generateSareeId(w.name, 1, seq),
+      };
+    }));
+    setPicker(null);
+  }
+
+  // ── Apply a specific loom (scoped to that weaver's own loom count) to one row
+  function applyWeaverLoomToRow(row: SareeRow, loomNum: number) {
+    setRows(prev => prev.map(r => {
+      if (r.serial !== row.serial) return r;
+      const seqMatch = r.sareeId ? r.sareeId.match(/-(\d+)$/) : null;
+      const seq = seqMatch ? parseInt(seqMatch[1], 10) : r.serial;
+      const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loomNum, seq) : r.sareeId;
+      return { ...r, weaverLoom: loomNum, sareeId: newSareeId };
+    }));
+    setLoomPickerRow(null);
+  }
+
+  // ── Apply a factory loom to selected rows (replaces any weaver assignment)
+  function applyFactoryLoom(loom: typeof FACTORY_LOOMS_LIST[0]) {
+    const seqMap: Record<string, number> = {};
+    rows.forEach(r => {
+      if (r.factoryLoomId === loom.id && r.sareeId) {
+        const m = r.sareeId.match(/-(\d+)$/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          seqMap[loom.id] = Math.max(seqMap[loom.id] || 0, n);
+        }
+      }
+    });
+    let seq = seqMap[loom.id] || 0;
+    setRows(prev => prev.map(r => {
+      if (!selected.has(r.serial)) return r;
+      seq++;
+      return {
+        ...r, recipientType: "factoryLoom" as const,
+        weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+        factoryLoomId: loom.id, factoryLoomNumber: loom.loomNumber,
+        sareeId: `${loom.id}-${String(seq).padStart(3, "0")}`,
       };
     }));
     setPicker(null);
@@ -501,16 +592,6 @@ export function BatchCreationPage() {
   // ── Apply design code
   function applyDesign(code: string) {
     setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, designCode: code } : r));
-    setPicker(null);
-  }
-
-  // ── Apply loom number
-  function applyLoom(loom: number) {
-    setRows(prev => prev.map(r => {
-      if (!selected.has(r.serial)) return r;
-      const newSareeId = r.weaverName ? generateSareeId(r.weaverName, loom, r.serial) : r.sareeId;
-      return { ...r, weaverLoom: loom, sareeId: newSareeId };
-    }));
     setPicker(null);
   }
 
@@ -612,6 +693,36 @@ export function BatchCreationPage() {
 
   const drafts = batches.filter(b => b.status === "draft");
   const active = batches.filter(b => b.status === "active");
+
+  // ── Sorted view of rows (does not mutate underlying row order/serials)
+  const displayRows = [...rows].sort((a, b) => {
+    if (sortBy === "weaver") {
+      const an = a.weaverName || "￿", bn = b.weaverName || "￿";
+      return an.localeCompare(bn) || a.serial - b.serial;
+    }
+    if (sortBy === "factoryLoom") {
+      const an = a.factoryLoomNumber || "￿", bn = b.factoryLoomNumber || "￿";
+      return an.localeCompare(bn) || a.serial - b.serial;
+    }
+    return a.serial - b.serial;
+  });
+
+  // ── Merge "Materials Given" cell across consecutive rows for the same weaver/factory loom
+  const materialsCellSpan: Record<number, number> = {}; // serial -> rowSpan (only set for the first row of a run)
+  {
+    let i = 0;
+    while (i < displayRows.length) {
+      const key = displayRows[i].weaverId || displayRows[i].factoryLoomId || null;
+      let span = 1;
+      if (key) {
+        while (i + span < displayRows.length && (displayRows[i + span].weaverId || displayRows[i + span].factoryLoomId) === key) {
+          span++;
+        }
+      }
+      materialsCellSpan[displayRows[i].serial] = span;
+      i += span;
+    }
+  }
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
@@ -770,7 +881,7 @@ export function BatchCreationPage() {
 
               {/* Table header + action bar */}
               <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
                     {rows.length} Sarees
                   </div>
@@ -782,15 +893,25 @@ export function BatchCreationPage() {
                       {incompleteRows.length} incomplete
                     </span>
                   )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
+                    <SortAscending size={14} color={T.taupe} weight="bold" />
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sort by</span>
+                    <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                      style={{ height: 30, borderRadius: 8, border: `1.5px solid ${T.borderDef}`, padding: "0 8px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
+                      <option value="serial">Default (#)</option>
+                      <option value="weaver">Weaver</option>
+                      <option value="factoryLoom">Factory Loom</option>
+                    </select>
+                  </div>
                 </div>
                 {selected.size > 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{selected.size} selected</span>
                     {([
-                      { key: "weaver",    icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
-                      { key: "bulkorder", icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
-                      { key: "loom",      icon: <Hash size={14} weight="bold" />,        label: "Assign Loom Number" },
-                      { key: "saretype",  icon: <Tag size={14} weight="bold" />,         label: "Assign Saree Type" },
+                      { key: "weaver",     icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
+                      { key: "bulkorder",  icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
+                      { key: "factoryloom", icon: <Factory size={14} weight="bold" />,     label: "Assign Factory Loom" },
+                      { key: "saretype",   icon: <Tag size={14} weight="bold" />,          label: "Assign Saree Type" },
                     ] as const).map(a => (
                       <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -816,15 +937,31 @@ export function BatchCreationPage() {
                           {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                         </button>
                       </th>
-                      {["#", "Saree ID", "Weaver", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
+                      {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
                         <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row, idx) => {
+                    {displayRows.map((row, idx) => {
                       const isSelected = selected.has(row.serial);
                       const complete = rowComplete(row);
+                      const weaverForRow = row.weaverId ? WEAVERS.find(x => x.id === row.weaverId) : undefined;
+                      const materialsSummary = (row.weaverId || row.factoryLoomId)
+                        ? issueRecords
+                            .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
+                              row.weaverId ? r.weaverId === row.weaverId : r.factoryLoomId === row.factoryLoomId
+                            ))
+                            .flatMap(r => r.materials)
+                            .reduce((acc: Record<string, { qty: number; unit: string }>, m) => {
+                              if (!acc[m.materialType]) acc[m.materialType] = { qty: 0, unit: m.unit };
+                              acc[m.materialType].qty += m.quantity;
+                              return acc;
+                            }, {})
+                        : null;
+                      const materialsText = materialsSummary && Object.keys(materialsSummary).length > 0
+                        ? Object.entries(materialsSummary).map(([type, v]) => `${type}: ${v.qty}${v.unit}`).join(", ")
+                        : null;
                       return (
                         <tr key={row.serial}
                           style={{ background: isSelected ? "rgba(110,15,45,0.04)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.5)", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -844,23 +981,34 @@ export function BatchCreationPage() {
                               <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>— assign weaver</span>
                             )}
                           </td>
-                          <td style={{ ...td, minWidth: 140 }}>
-                            {row.weaverName ? (
+                          <td style={{ ...td, minWidth: 150 }}>
+                            {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
                               <button onClick={() => {
-                                const w = WEAVERS.find(x => x.id === row.weaverId);
-                                if (w) setViewWeaver(w);
+                                const l = FACTORY_LOOMS_LIST.find(x => x.id === row.factoryLoomId);
+                                if (l) setViewFactoryLoom(l);
                               }}
                                 style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
-                                <Pip initials={row.weaverInitials!} bg={WEAVERS.find(w => w.id === row.weaverId)?.bg || T.taupe} size={22} />
+                                <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <Factory size={12} color={T.royalBurgundy} weight="fill" />
+                                </div>
+                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
+                              </button>
+                            ) : row.weaverName ? (
+                              <button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
+                                style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
+                                <Pip initials={row.weaverInitials!} bg={weaverForRow?.bg || T.taupe} size={22} />
                                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
                               </button>
                             ) : <EmptyCell />}
                           </td>
                           <td style={{ ...td, minWidth: 90 }}>
-                            {row.weaverLoom ? (
-                              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}>
-                                Loom {row.weaverLoom}
-                              </span>
+                            {row.recipientType === "factoryLoom" ? (
+                              <EmptyCell />
+                            ) : row.weaverId ? (
+                              <button onClick={() => setLoomPickerRow(row)}
+                                style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                {row.weaverLoom ? `Loom ${row.weaverLoom}` : "— select loom"}
+                              </button>
                             ) : <EmptyCell />}
                           </td>
 
@@ -883,6 +1031,13 @@ export function BatchCreationPage() {
                               </button>
                             ) : <EmptyCell />}
                           </td>
+                          {materialsCellSpan[row.serial] !== undefined && (
+                            <td style={{ ...td, minWidth: 170, verticalAlign: "middle" }} rowSpan={materialsCellSpan[row.serial]}>
+                              {materialsText ? (
+                                <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{materialsText}</span>
+                              ) : <EmptyCell />}
+                            </td>
+                          )}
                           <td style={{ ...td, width: 24 }}>
                             <StatusDot row={row} />
                           </td>
@@ -987,14 +1142,23 @@ export function BatchCreationPage() {
 
       {/* ── Picker modals ── */}
       <AnimatePresence>
-        {picker === "weaver"    && <WeaverPickerModal    key="wp" onClose={() => setPicker(null)} onSelect={applyWeaver} />}
-        {picker === "bulkorder" && <BulkOrderPickerModal key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
-        {picker === "loom"      && <LoomPickerModal      key="lp" onClose={() => setPicker(null)} onSelect={applyLoom} />}
-        {picker === "design"    && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
-        {picker === "saretype"  && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
+        {picker === "weaver"     && <WeaverPickerModal     key="wp" onClose={() => setPicker(null)} onSelect={applyWeaver} />}
+        {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
+        {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
+        {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
+        {picker === "saretype"   && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
+        {loomPickerRow && loomPickerRow.weaverId && (() => {
+          const w = WEAVERS.find(x => x.id === loomPickerRow.weaverId);
+          return w ? (
+            <WeaverLoomPickerModal key="wlp" weaver={w} current={loomPickerRow.weaverLoom}
+              onClose={() => setLoomPickerRow(null)}
+              onSelect={(loomNum) => applyWeaverLoomToRow(loomPickerRow, loomNum)} />
+          ) : null;
+        })()}
         {viewDesign    && <DesignCodeCard  key="dc" design={viewDesign}    onClose={() => setViewDesign(null)} />}
         {viewSareeType && <SareeTypeCard   key="sc" sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
         {viewWeaver    && <WeaverDetailsModal key="wv" weaver={viewWeaver} onClose={() => setViewWeaver(null)} />}
+        {viewFactoryLoom && <FactoryLoomDetailsModal key="fld" loom={viewFactoryLoom} onClose={() => setViewFactoryLoom(null)} />}
         {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
         {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
       </AnimatePresence>
@@ -1018,14 +1182,57 @@ function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; on
         <div style={{ height: 1, background: T.borderDef }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Default Loom</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>Loom {weaver.loom}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Looms Owned</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{weaver.loom} Loom{weaver.loom !== 1 ? "s" : ""}</div>
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Experience</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>Master Weaver</div>
           </div>
         </div>
+      </div>
+    </PickerShell>
+  );
+}
+
+function FactoryLoomDetailsModal({ loom, onClose }: { loom: typeof FACTORY_LOOMS_LIST[0]; onClose: () => void }) {
+  const statusColor = loom.status === "active" ? T.green : loom.status === "maintenance" ? T.red : T.taupe;
+  return (
+    <PickerShell title="Factory Loom Details" onClose={onClose} width={400}>
+      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Factory size={24} color={T.royalBurgundy} weight="duotone" />
+          </div>
+          <div>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{loom.loomNumber}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>ID: {loom.id}</div>
+          </div>
+        </div>
+        <div style={{ height: 1, background: T.borderDef }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Location</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{loom.location}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Status</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: statusColor, marginTop: 2, textTransform: "capitalize" }}>{loom.status}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Operator</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{loom.operatorName}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" }}>Phone</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{loom.operatorPhone}</div>
+          </div>
+        </div>
+        {loom.notes && (
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+            {loom.notes}
+          </div>
+        )}
       </div>
     </PickerShell>
   );
@@ -1084,14 +1291,23 @@ function SareeDetailsModal({ row, onClose }: { row: SareeRow; onClose: () => voi
         </div>
         <div style={{ height: 1, background: T.borderDef }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Weaver Name</span>
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverName || "Not assigned"}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loom Assigned</span>
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverLoom ? `Loom ${row.weaverLoom}` : "Not assigned"}</span>
-          </div>
+          {row.recipientType === "factoryLoom" ? (
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Factory Loom</span>
+              <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.factoryLoomNumber || "Not assigned"}</span>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Weaver Name</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverName || "Not assigned"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loom Assigned</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverLoom ? `Loom ${row.weaverLoom}` : "Not assigned"}</span>
+              </div>
+            </>
+          )}
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Saree Type</span>
             <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.sareeTypeName || "Not assigned"} ({row.sareeTypeCode || "N/A"})</span>

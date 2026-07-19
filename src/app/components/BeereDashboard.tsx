@@ -764,18 +764,18 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
           style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 14, flexShrink: 0, cursor: "pointer" }}
         >
           <div style={{ width: compact ? 40 : 52, height: compact ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.30)", border: `1.5px solid rgba(200,155,71,0.30)` }}>
-            <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           {!compact && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.warmCream, letterSpacing: "0.3px", lineHeight: 1 }}>
+              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
                 Beere Kesava
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: "rgba(245,232,208,0.75)", letterSpacing: "0.2px" }}>
-                &amp; Brothers Silks
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 10.5, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
+                And Brothers Silks
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
-                Est. 1999
+                Since 1999
               </div>
             </div>
           )}
@@ -1511,9 +1511,7 @@ function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => void }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESKTOP — WEAVERS
 // ═══════════════════════════════════════════════════════════════════════════════
-function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
-
+function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   return (
     <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
@@ -1521,7 +1519,7 @@ function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
         {WEAVERS.map((w, i) => (
           <motion.div
             key={w.id}
-            onClick={() => setSelectedWeaver(w)}
+            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
             initial={{ opacity: 0, y: 44, scale: 0.90, filter: "blur(7px)", boxShadow: "0px 10px 40px rgba(74,6,27,0.06)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", boxShadow: "0px 10px 40px rgba(74,6,27,0.06)" }}
             viewport={{ once: true, margin: "-60px" }}
@@ -1653,7 +1651,7 @@ function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); setSelectedWeaver(w); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
@@ -1661,7 +1659,7 @@ function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
                   <Eye size={14} /> Details
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
@@ -1669,7 +1667,7 @@ function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
                   <Edit3 size={13} /> Edit
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
@@ -1691,90 +1689,6 @@ function WeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
           </motion.div>
         </div>
       </div>
-
-      <AnimatePresence>
-        {selectedWeaver && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-            onClick={() => setSelectedWeaver(null)}
-          >
-            <motion.div
-              initial={{ y: 50, opacity: 0, scale: 0.95 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 20, opacity: 0, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              onClick={e => e.stopPropagation()}
-              style={{ background: T.warmIvory, borderRadius: 24, padding: 32, width: "90%", maxWidth: 500, border: `1px solid ${T.borderDef}`, boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
-                <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                   <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", border: `2px solid ${T.borderGold}` }}>
-                     {selectedWeaver.img ? (
-                       <img src={selectedWeaver.img} alt={selectedWeaver.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                     ) : (
-                       <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${selectedWeaver.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                         <span style={{ fontFamily: F.display, fontSize: 24, color: "#FFFDF9", fontWeight: 700 }}>{selectedWeaver.initials}</span>
-                       </div>
-                     )}
-                   </div>
-                   <div>
-                     <div style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2 }}>
-                       {selectedWeaver.name}
-                     </div>
-                     <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                       {selectedWeaver.id} · {selectedWeaver.status.toUpperCase()}
-                     </div>
-                   </div>
-                </div>
-                <button onClick={() => setSelectedWeaver(null)} style={{ background: "rgba(110,15,45,0.05)", borderRadius: "50%", border: "none", cursor: "pointer", padding: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <X size={20} color={T.royalBurgundy} />
-                </button>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Location</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{selectedWeaver.village}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Contact</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{selectedWeaver.mobile}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Active Batch</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700 }}>{selectedWeaver.batch || "None"}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Looms</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{selectedWeaver.looms} Looms</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid rgba(110,15,45,0.05)` }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Making Charge</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{WEAVER_RATES[selectedWeaver.id]?.rate || "—"}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Design Type</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{WEAVER_RATES[selectedWeaver.id]?.type || "—"}</span>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 32, display: "flex", gap: 12 }}>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => { setSelectedWeaver(null); onNavigate("Weavers"); }}
-                  style={{ flex: 1, padding: "14px", background: G.button, color: T.warmCream, border: "none", borderRadius: 14, fontFamily: F.ui, fontWeight: 600, cursor: "pointer", fontSize: 14, boxShadow: "0 8px 24px rgba(110,15,45,0.2)" }}
-                >
-                  View Full Profile
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
@@ -2412,7 +2326,7 @@ function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => void }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MOBILE — WEAVERS
 // ═══════════════════════════════════════════════════════════════════════════════
-function MobileWeavers({ onNavigate }: { onNavigate: (tab: string) => void }) {
+function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   return (
@@ -2428,7 +2342,7 @@ function MobileWeavers({ onNavigate }: { onNavigate: (tab: string) => void }) {
         {WEAVERS.map((w, i) => (
           <motion.div
             key={w.id}
-            onClick={() => onNavigate("Weavers")}
+            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
             initial={{ opacity: 0, y: 22 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             whileHover={{ y: -4, boxShadow: "0px 14px 40px rgba(74,6,27,0.12)" }}
@@ -2553,7 +2467,7 @@ function MobileWeavers({ onNavigate }: { onNavigate: (tab: string) => void }) {
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 8, paddingTop: 8 }}>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
@@ -2561,7 +2475,7 @@ function MobileWeavers({ onNavigate }: { onNavigate: (tab: string) => void }) {
                   <Eye size={14} /> Details
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
@@ -2569,7 +2483,7 @@ function MobileWeavers({ onNavigate }: { onNavigate: (tab: string) => void }) {
                   <Edit3 size={13} /> Edit
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}

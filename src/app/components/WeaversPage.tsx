@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
+import { useLocation } from "react-router";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import {
-  AlertTriangle, Plus, Search, ChevronDown, LayoutGrid, LayoutList,
+  AlertTriangle, Plus, Search, ChevronDown, ChevronLeft as ChevronLeftIcon, LayoutGrid, LayoutList,
   AlignJustify, Eye, X, Facebook, Instagram, Youtube, Linkedin,
   MapPin, Calendar, Star, Phone, Mail, Camera, FileText, Download, Save, UserPlus, Layers3, PackageCheck, XOctagon, Check, Edit3, Bell, ClipboardList,
   Smartphone, Landmark, Home, CreditCard, Activity
@@ -880,26 +881,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
     });
   });
 
-  // Calculate design history dynamically
-  const designMap = new Map<string, { batches: Set<string>; totalSarees: number; sareeTypes: Set<string> }>();
-  assignedSarees.forEach(s => {
-    if (s.designCode) {
-      if (!designMap.has(s.designCode)) {
-        designMap.set(s.designCode, { batches: new Set(), totalSarees: 0, sareeTypes: new Set() });
-      }
-      const entry = designMap.get(s.designCode)!;
-      entry.batches.add(s.batchId);
-      entry.totalSarees += 1;
-      if (s.sareeTypeName) entry.sareeTypes.add(s.sareeTypeName);
-    }
-  });
-  const designHistory = Array.from(designMap.entries()).map(([code, data]) => ({
-    code,
-    batches: Array.from(data.batches).join(", "),
-    totalSarees: data.totalSarees,
-    sareeTypes: Array.from(data.sareeTypes).join(", ") || "—",
-  }));
-
   // 2. Active batches the weaver is working on
   const workingBatches = batches.filter(b => 
     b.status === "active" && 
@@ -937,29 +918,45 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
   });
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
-        style={{ position: "fixed", inset: 0, background: "rgba(26,10,15,0.4)", backdropFilter: "blur(4px)", zIndex: 999 }} />
-      <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 600, maxWidth: "100vw", background: T.silkCream, boxShadow: "-10px 0 40px rgba(0,0,0,0.1)", zIndex: 1000, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
+        style={{ width: "100%", background: T.silkCream, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 32px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
-          <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 18, color: T.luxuryBrown }}>Weaver Details</span>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.1, rotate: 90 }} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.taupe }}><X size={24} /></motion.button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
+          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 15, padding: "8px 4px" }}>
+            <ChevronLeftIcon size={20} /> Back to Weavers
+          </button>
+          <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
         </div>
 
-        <div style={{ padding: "32px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
-          <div style={{ display: "flex", gap: 24 }}>
-            <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={100} />
-            <div>
-              <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", marginBottom: 12 }}>{cfg.label}</span>
-              <div style={{ fontFamily: F.display, fontSize: 28, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
+        <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
+          <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" as const }}>
+            <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={104} />
+            <div style={{ flex: "1 1 320px" }}>
+              <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{cfg.label}</span>
+              <div style={{ fontFamily: F.display, fontSize: 32, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
               <div style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, marginTop: 6 }}>{weaver.id}</div>
+            </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+              {[
+                { icon: <MapPin size={15} color={T.royalBurgundy} />, label: "Village", value: weaver.village },
+                { icon: <Phone size={15} color={T.royalBurgundy} />, label: "Mobile", value: weaver.mobile },
+                { icon: <Activity size={15} color={T.royalBurgundy} />, label: "Looms", value: `${weaver.looms} Looms` },
+                { icon: <FileText size={15} color={T.royalBurgundy} />, label: "Making Charge", value: WEAVER_RATES[weaver.id]?.rate || "—" },
+              ].map(s => (
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", minWidth: 140 }}>
+                  {s.icon}
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {mode === "edit" && (
-          <div style={{ padding: "24px 32px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
+          <div style={{ padding: "24px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
             <SectionPill label="Edit Weaver Details" />
             <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 20 }}>
               <div style={{ width: 88, height: 88, borderRadius: "50%", border: "2px dashed rgba(110,15,45,0.25)", background: "rgba(110,15,45,0.04)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
@@ -990,7 +987,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           </div>
         )}
 
-        <div style={{ padding: "0 32px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
+        <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
           {[
             { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
             { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
@@ -1005,9 +1002,10 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           ))}
         </div>
 
-        <div style={{ padding: "32px", flex: 1 }}>
+        <div style={{ padding: "40px 48px", flex: 1 }}>
           {tab === "overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 32, alignItems: "start" }}>
               <div>
                 <SectionPill label="Personal Details" />
                 <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
@@ -1026,43 +1024,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Design History */}
-              <div>
-                <SectionPill label="Design History" />
-                {designHistory.length > 0 ? (
-                  <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-                        <tr>
-                          {["Design Code", "Saree Type", "Batches", "Total Sarees"].map(h => (
-                            <th key={h} style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "12px 16px", fontWeight: 600 }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {designHistory.map((d, i) => (
-                          <tr key={d.code} style={{ borderBottom: i < designHistory.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
-                            <td style={{ padding: "12px 16px" }}>
-                              <button onClick={() => setOpenDesignCode(d.code)}
-                                style={{ background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 8px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
-                                {d.code}
-                              </button>
-                            </td>
-                            <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{d.sareeTypes}</td>
-                            <td style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{d.batches}</td>
-                            <td style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.totalSarees}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
-                    No design history found for this weaver.
-                  </div>
-                )}
               </div>
 
               {/* Materials History */}
@@ -1125,6 +1086,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                   </div>
                 )}
               </div>
+              </div>
 
               {/* Assigned Sarees Table */}
               <div>
@@ -1138,7 +1100,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Batch ID</th>
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom No.</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Code</th>
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
                           <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
@@ -1180,16 +1141,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px" }}>
                                     Loom {row.weaverLoom}
                                   </span>
-                                ) : (
-                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                )}
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                {row.designCode ? (
-                                  <button onClick={() => row.designCode && setOpenDesignCode(row.designCode)}
-                                    style={{ background: "rgba(110,15,45,0.08)", border: "1px solid rgba(110,15,45,0.22)", borderRadius: 6, padding: "3px 8px", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
-                                    {row.designCode}
-                                  </button>
                                 ) : (
                                   <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
                                 )}
@@ -1883,15 +1834,25 @@ function Footer() {
 // ══════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ══════════════════════════════════════════════════════════════════════════
-export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void } = {}) {
+export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
+  const location = useLocation();
+  const navState = location.state as { weaverId?: string; mode?: "view" | "edit" } | null;
+  const initialSelected = navState?.weaverId ? WEAVERS.find(w => w.id === navState.weaverId) || null : null;
+
   const [view, setView] = useState("card");
   const [filter, setFilter] = useState("All Weavers");
   const [search, setSearch] = useState("");
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
+  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(initialSelected);
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
+  const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
   const { batches } = useBatches();
+
+  if (selectedWeaver) {
+    return (
+      <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />
+    );
+  }
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -1905,7 +1866,6 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string) => void
       <Footer />
 
       <AnimatePresence>
-        {selectedWeaver && <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />}
         {batchDialog && (() => {
           const weaverCompletedBatches = batches.filter(b => 
             b.status === "completed" && 

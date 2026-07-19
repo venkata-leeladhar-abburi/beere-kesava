@@ -3,11 +3,14 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
   serial: number;
-  sareeId: string | null;        // null until weaver is assigned
+  sareeId: string | null;        // null until weaver or factory loom is assigned
+  recipientType?: "weaver" | "factoryLoom";
   weaverId: string | null;
   weaverName: string | null;
   weaverInitials: string | null;
-  weaverLoom: number | null;
+  weaverLoom: number | null;     // which of the weaver's own looms (1..weaver's loom count)
+  factoryLoomId?: string | null;      // set when recipientType === "factoryLoom"
+  factoryLoomNumber?: string | null;  // e.g. "Loom F-02"
   designCode: string | null;
   sareeTypeCode: string | null;
   sareeTypeName: string | null;

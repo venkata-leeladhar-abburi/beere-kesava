@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useMaterialIssue, MaterialIssueRecord, IssuedMaterialItem } from "./MaterialIssueContext";
 import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
+import { useBatches } from "./BatchContext";
 
 // ── Design Tokens (matches MaterialsPage.tsx / WeaversPage.tsx) ─────────────
 const T = {
@@ -565,6 +566,7 @@ function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; 
 // ═══════════════════════════════════════════════════════════════════════════════
 export function IssueMaterialPage() {
   const { issueRecords, addIssueRecord } = useMaterialIssue();
+  const { batches } = useBatches();
   const [grnBatches, setGrnBatches] = useState<GrnBatch[]>(INITIAL_GRN_BATCHES);
 
   // Step 1 — recipient type toggle
@@ -574,6 +576,7 @@ export function IssueMaterialPage() {
   const [weaverSearch, setWeaverSearch] = useState("");
   const [showWeaverList, setShowWeaverList] = useState(false);
   const [selectedWeaverId, setSelectedWeaverId] = useState<string | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
   // Step 1 — factory loom
   const [selectedLoomId, setSelectedLoomId] = useState<string | null>(null);
@@ -607,6 +610,11 @@ export function IssueMaterialPage() {
   const selectedWeaver = WEAVERS.find(w => w.id === selectedWeaverId) || null;
   const selectedFactoryLoom = FACTORY_LOOMS_LIST.find(l => l.id === selectedLoomId) || null;
 
+  const weaverBatches = selectedWeaver
+    ? batches.filter(b => b.status !== "completed" && b.rows.some(r => r.weaverId === selectedWeaver.id))
+    : [];
+  const selectedBatch = weaverBatches.find(b => b.batchId === selectedBatchId) || null;
+
   const filteredWeavers = weaverSearch.length >= 1
     ? WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase()) || w.id.toLowerCase().includes(weaverSearch.toLowerCase()))
     : WEAVERS;
@@ -615,7 +623,7 @@ export function IssueMaterialPage() {
 
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
   const recipientReady = recipientType === "weaver"
-    ? (!!selectedWeaver && selectedLoom !== "")
+    ? (!!selectedWeaver && selectedLoom !== "" && !!selectedBatchId)
     : !!selectedFactoryLoom;
   const canConfirm = recipientReady && validRows.length > 0 && isSigned;
 
@@ -633,6 +641,7 @@ export function IssueMaterialPage() {
     setWeaverSearch(""); setSelectedWeaverId(null); setShowWeaverList(false);
     setSelectedLoomId(null);
     setSelectedLoom("");
+    setSelectedBatchId(null);
     setRows([emptyRow()]); setNotes("");
     setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
   }
@@ -657,6 +666,7 @@ export function IssueMaterialPage() {
       weaverId: selectedWeaver.id,
       weaverName: selectedWeaver.name,
       loomNumber: selectedLoom || undefined,
+      batchId: selectedBatchId || undefined,
       issuedBy: "Admin (Kesava Rao)",
       issuedAt: new Date().toISOString(),
       materials,
@@ -751,7 +761,7 @@ export function IssueMaterialPage() {
             {(["weaver", "factoryLoom"] as const).map(type => (
               <button
                 key={type}
-                onClick={() => { setRecipientType(type); setSelectedWeaverId(null); setSelectedLoomId(null); setSelectedLoom(""); setShowWeaverList(false); }}
+                onClick={() => { setRecipientType(type); setSelectedWeaverId(null); setSelectedLoomId(null); setSelectedLoom(""); setSelectedBatchId(null); setShowWeaverList(false); }}
                 style={{
                   display: "flex", alignItems: "center", gap: 7,
                   padding: "9px 20px", borderRadius: 10, cursor: "pointer",
@@ -785,7 +795,7 @@ export function IssueMaterialPage() {
                     {filteredWeavers.length === 0 ? (
                       <div style={{ padding: 16, textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No weavers found</div>
                     ) : filteredWeavers.map(w => (
-                      <button key={w.id} onClick={() => { setSelectedWeaverId(w.id); setShowWeaverList(false); setWeaverSearch(""); }} style={{
+                      <button key={w.id} onClick={() => { setSelectedWeaverId(w.id); setSelectedBatchId(null); setShowWeaverList(false); setWeaverSearch(""); }} style={{
                         width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: "none",
                         borderBottom: `1px solid ${T.borderDef}`, background: "#FFF", cursor: "pointer", textAlign: "left" as const,
                       }}>
@@ -813,16 +823,44 @@ export function IssueMaterialPage() {
                     <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
                   </div>
                   <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
-                  <button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
+                  <button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
                 </div>
                 {/* Loom selector */}
-                <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
+                <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px", marginBottom: 12 }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Loom Number *</div>
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     {Array.from({ length: selectedWeaver.looms }, (_, idx) => idx + 1).map(loom => (
                       <button key={loom} onClick={() => setSelectedLoom(loom)} style={{ padding: "8px 20px", borderRadius: 8, cursor: "pointer", border: `1.5px solid ${selectedLoom === loom ? T.royalBurgundy : T.borderDef}`, background: selectedLoom === loom ? T.royalBurgundy : "#FFF", color: selectedLoom === loom ? "#FFF" : T.luxuryBrown, fontFamily: F.mono, fontSize: 13, fontWeight: 700, transition: "all 0.15s ease" }}>Loom {loom}</button>
                     ))}
                   </div>
+                </div>
+                {/* Batch selector */}
+                <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Batch Number *</div>
+                  {weaverBatches.length === 0 ? (
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic" }}>
+                      No open production batches found for {selectedWeaver.name}.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      {weaverBatches.map(b => {
+                        const sareeCount = b.rows.filter(r => r.weaverId === selectedWeaver.id).length;
+                        const active = selectedBatchId === b.batchId;
+                        return (
+                          <button key={b.batchId} onClick={() => setSelectedBatchId(b.batchId)} style={{
+                            display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2,
+                            padding: "8px 16px", borderRadius: 10, cursor: "pointer",
+                            border: `1.5px solid ${active ? T.royalBurgundy : T.borderDef}`,
+                            background: active ? T.royalBurgundy : "#FFF",
+                            color: active ? "#FFF" : T.luxuryBrown, transition: "all 0.15s ease",
+                          }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </>
             )

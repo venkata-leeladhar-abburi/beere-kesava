@@ -1,0 +1,18 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5DFA0"/>
+      <stop offset="45%" stop-color="#C89B47"/>
+      <stop offset="100%" stop-color="#8B6018"/>
+    </linearGradient>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#5D1027"/>
+      <stop offset="100%" stop-color="#3D0E1A"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="url(#bg)"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="80" fill="none" stroke="url(#gold)" stroke-width="1.2" opacity="0.8"/>
+  <path d="M100 26 C102 34 108 38 116 36 C110 42 110 50 116 56 C108 54 102 58 100 66 C98 58 92 54 84 56 C90 50 90 42 84 36 C92 38 98 34 100 26 Z" fill="url(#gold)"/>
+  <text x="100" y="132" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" fill="url(#gold)" letter-spacing="-4">BK</text>
+</svg>

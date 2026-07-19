@@ -216,9 +216,9 @@ function ChartTip({ active, payload, label, prefix = "", suffix = "" }: any) {
 }
 
 // ── Mini SVG Donut ────────────────────────────────────────────────────────────
-function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeType = "ok" }: {
+function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeType = "ok", footNote }: {
   value: number; max: number; color: string; label: string;
-  unit?: string; badge?: string; badgeType?: "ok" | "low" | "out";
+  unit?: string; badge?: string; badgeType?: "ok" | "low" | "out"; footNote?: string;
 }) {
   const pct = max > 0 ? Math.min(value / max, 1) : 0;
   const r = 30; const circ = 2 * Math.PI * r;
@@ -243,6 +243,7 @@ function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeType = "
       </div>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 3 }}>{label}</div>
+        {footNote && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
         {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: F.mono, fontSize: 11, fontWeight: 700 }}>{badge}</span>}
       </div>
     </div>
@@ -679,17 +680,23 @@ const rawGivenData = [
   { material: "Resham", may: 51, apr: 40 },
   { material: "Jari",   may: 31, apr: 25 },
 ];
+const REELS_PER_BUN = 4;
+const bunsAndReels = (reels: number) => {
+  const buns = Math.floor(reels / REELS_PER_BUN);
+  const rem = reels % REELS_PER_BUN;
+  return rem > 0 ? `${buns} Buns ${rem} Reel${rem > 1 ? "s" : ""}` : `${buns} Buns`;
+};
 const rawMaterialRows = [
-  { type: "WARP",   sub: "Cotton / Silk",         open: 92,  recv: 50,  given: 22, close: 120, change: "↑ 30%",  oos: false },
-  { type: "RESHAM", sub: "Red",                   open: 18,  recv: 30,  given: 8,  close: 40,  change: "↑ 122%", oos: false },
-  { type: "RESHAM", sub: "Gold",                  open: 12,  recv: 25,  given: 10, close: 27,  change: "↑ 125%", oos: false },
-  { type: "RESHAM", sub: "Green",                 open: 8,   recv: 20,  given: 18, close: 10,  change: "↑ 25%",  oos: false },
-  { type: "RESHAM", sub: "Blue",                  open: 5,   recv: 0,   given: 5,  close: 0,   change: "— Out of Stock", oos: true },
-  { type: "RESHAM", sub: "Maroon",                open: 6,   recv: 0,   given: 6,  close: 0,   change: "— Out of Stock", oos: true },
-  { type: "RESHAM", sub: "Cream",                 open: 4,   recv: 0,   given: 4,  close: 0,   change: "— Out of Stock", oos: true },
-  { type: "JARI",   sub: "Polyester 2G Gold",     open: 8,   recv: 15,  given: 6,  close: 17,  change: "↑ 112%", oos: false },
-  { type: "JARI",   sub: "Polyester 1G Silver",   open: 3,   recv: 12,  given: 11, close: 4,   change: "↑ 33%",  oos: false },
-  { type: "JARI",   sub: "Silk Fast 3G Gold",     open: 10,  recv: 20,  given: 14, close: 16,  change: "↑ 60%",  oos: false },
+  { type: "WARP",   sub: "Cotton / Silk",         open: 92,  recv: 50,  given: 22, close: 120, change: "↑ 30%",  oos: false, unit: "kg" },
+  { type: "RESHAM", sub: "Red",                   open: 18,  recv: 30,  given: 8,  close: 40,  change: "↑ 122%", oos: false, unit: "kg" },
+  { type: "RESHAM", sub: "Gold",                  open: 12,  recv: 25,  given: 10, close: 27,  change: "↑ 125%", oos: false, unit: "kg" },
+  { type: "RESHAM", sub: "Green",                 open: 8,   recv: 20,  given: 18, close: 10,  change: "↑ 25%",  oos: false, unit: "kg" },
+  { type: "RESHAM", sub: "Blue",                  open: 5,   recv: 0,   given: 5,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
+  { type: "RESHAM", sub: "Maroon",                open: 6,   recv: 0,   given: 6,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
+  { type: "RESHAM", sub: "Cream",                 open: 4,   recv: 0,   given: 4,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
+  { type: "JARI",   sub: "Polyester 2G Gold",     open: 8,   recv: 15,  given: 6,  close: 17,  change: "↑ 112%", oos: false, unit: "reels" },
+  { type: "JARI",   sub: "Polyester 1G Silver",   open: 3,   recv: 12,  given: 11, close: 4,   change: "↑ 33%",  oos: false, unit: "reels" },
+  { type: "JARI",   sub: "Silk Fast 3G Gold",     open: 10,  recv: 20,  given: 14, close: 16,  change: "↑ 60%",  oos: false, unit: "reels" },
 ];
 
 // Receipt-log rows — one row per GRN batch received against a PO (matches WorkerGRN + MaterialsPage "Recently Received")
@@ -768,7 +775,7 @@ function RawMaterialReport() {
           <div style={{ display: "flex", justifyContent: "space-around", alignItems: "flex-start", padding: "12px 0 8px" }}>
             <MiniDonut value={120} max={200} color={T.royalBurgundy} label="Warp" badge="Healthy" badgeType="ok" />
             <MiniDonut value={77}  max={150} color={T.antiqueGold}    label="Resham" badge="3 Out of Stock" badgeType="low" />
-            <MiniDonut value={37}  max={80}  color={T.green}          label="Jari" badge="Healthy" badgeType="ok" />
+            <MiniDonut value={37}  max={80}  color={T.green}          label="Jari" unit="reels" footNote="9 Buns · 1 Reel" badge="Healthy" badgeType="ok" />
           </div>
         </ChartCard>
       </div>
@@ -794,10 +801,13 @@ function RawMaterialReport() {
                   <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.type === "WARP" ? T.royalBurgundy : r.type === "RESHAM" ? T.antiqueGold : T.green}` }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
                     <td style={TD}>{r.sub}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.open} kg</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{r.recv > 0 ? `${r.recv} kg` : "—"}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson }}>{r.given > 0 ? `${r.given} kg` : "—"}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} kg</td>
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.open} {r.unit}</td>
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{r.recv > 0 ? `${r.recv} ${r.unit}` : "—"}</td>
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson }}>{r.given > 0 ? `${r.given} ${r.unit}` : "—"}</td>
+                    <td style={{ ...TD, textAlign: "right" }}>
+                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
+                      {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
+                    </td>
                     <td style={{ ...TD, textAlign: "center" }}>
                       <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>
                     </td>

@@ -367,13 +367,19 @@ function SATopNav({ active, set, onBack, sections, onProfile }: { active: string
           style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 14, flexShrink: 0, cursor: "pointer" }}
         >
           <div style={{ width: compact ? 40 : 52, height: compact ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.30)", border: `1.5px solid rgba(200,155,71,0.30)` }}>
-            <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           {!compact && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.warmCream, letterSpacing: "0.3px", lineHeight: 1 }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: "rgba(245,232,208,0.75)", letterSpacing: "0.2px" }}>&amp; Brothers Silks</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>Est. 1999</div>
+              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
+                Beere Kesava
+              </div>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 10.5, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
+                And Brothers Silks
+              </div>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
+                Since 1999
+              </div>
             </div>
           )}
         </motion.div>
@@ -1032,7 +1038,7 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SA OVERVIEW — WEAVERS SECTION (simplified)
 // ═══════════════════════════════════════════════════════════════════════════════
-function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
+function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   return (
     <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
@@ -1040,7 +1046,7 @@ function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) 
         {WEAVERS.map((w, i) => (
           <motion.div
             key={w.id}
-            onClick={() => onNavigate("Weavers")}
+            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
             initial={{ opacity: 0, y: 44, scale: 0.90, filter: "blur(7px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-60px" }}
@@ -1168,7 +1174,7 @@ function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) 
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
@@ -1176,7 +1182,7 @@ function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) 
                   <Eye size={14} /> Details
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
@@ -1184,7 +1190,7 @@ function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string) => void }) 
                   <Edit3 size={13} /> Edit
                 </motion.button>
                 <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers"); }}
+                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
                   whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
@@ -1315,7 +1321,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav]);
 
-  const navigate = (tab: string) => {
+  const navigate = (tab: string, ctx?: any) => {
     const routeMap: Record<string, string> = {
       Overview: "/superadmin/overview",
       Materials: "/superadmin/materials",
@@ -1346,10 +1352,10 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     };
     const path = routeMap[tab] || "/superadmin/materials";
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    routerNavigate(path);
+    routerNavigate(path, { state: ctx });
   };
 
-  function renderPage(navigate: (v: string) => void) {
+  function renderPage(navigate: (v: string, ctx?: any) => void) {
     switch (nav) {
       case "Materials": return <MaterialsPage onNavigate={navigate} />;
       case "Weavers": return <WeaversPage onNavigate={navigate} />;

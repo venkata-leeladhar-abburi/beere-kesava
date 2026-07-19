@@ -15,9 +15,12 @@ export interface IssuedMaterialItem {
 
 export interface MaterialIssueRecord {
   id: string;               // auto-generated e.g. "MIR-2026-001"
-  weaverId: string;
-  weaverName: string;
+  weaverId?: string;         // set when issued to a weaver
+  weaverName?: string;
   loomNumber?: number;      // Loom number selected
+  batchId?: string;         // Production batch this issuance is for
+  factoryLoomId?: string;   // set instead of weaverId when issued to a factory loom
+  factoryLoomNumber?: string;
   issuedBy: string;         // Admin name who issued
   issuedAt: string;         // date-time
   materials: IssuedMaterialItem[];
@@ -35,6 +38,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     weaverId: "WV-001",
     weaverName: "Ravi Kumar",
     loomNumber: 2,
+    batchId: "BATCH-094",
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-01T09:15:00.000Z",
     materials: [
@@ -52,6 +56,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     weaverId: "WV-002",
     weaverName: "Padma Veni",
     loomNumber: 1,
+    batchId: "BATCH-094",
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-02T11:40:00.000Z",
     materials: [
@@ -68,6 +73,7 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     weaverId: "WV-001",
     weaverName: "Ravi Kumar",
     loomNumber: 2,
+    batchId: "BATCH-094",
     issuedBy: "Admin (Kesava Rao)",
     issuedAt: "2026-07-03T10:00:00.000Z",
     materials: [
@@ -78,6 +84,40 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     signatureCaptured: false,
     notes: "Awaiting weaver signature at next visit.",
     status: "pending-signature",
+  },
+  {
+    id: "MIR-2026-004",
+    weaverId: "WV-005",
+    weaverName: "Anand K.",
+    loomNumber: 3,
+    batchId: "BATCH-094",
+    issuedBy: "Admin (Kesava Rao)",
+    issuedAt: "2026-07-03T14:20:00.000Z",
+    materials: [
+      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 3.6, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
+      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 5, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
+    ],
+    signatureMethod: "here",
+    signatureCaptured: true,
+    signatureTimestamp: "2026-07-03T14:28:00.000Z",
+    status: "signed",
+  },
+  {
+    id: "MIR-2026-005",
+    factoryLoomId: "FL-002",
+    factoryLoomNumber: "Loom F-02",
+    batchId: "BATCH-094",
+    issuedBy: "Admin (Kesava Rao)",
+    issuedAt: "2026-07-04T10:30:00.000Z",
+    materials: [
+      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 5, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
+      { materialType: "Resham", description: "Gold Resham", quantity: 1.5, unit: "kg", grnBatchId: "GRN-2026-JUN-002" },
+      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 6, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
+    ],
+    signatureMethod: "here",
+    signatureCaptured: true,
+    signatureTimestamp: "2026-07-04T10:40:00.000Z",
+    status: "signed",
   },
 ];
 
