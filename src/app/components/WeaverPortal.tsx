@@ -19,6 +19,7 @@ import {
   CheckCircle2, History, ListChecks,
   AlertTriangle, Inbox, Zap,
 } from "lucide-react";
+import { imgBKLogo } from "../constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 const C = {
@@ -2905,13 +2906,13 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
       <div style={{ background: "#FFF", borderBottom: `1px solid ${C.bdr}`, position: "sticky" as const, top: 0, zIndex: 200, boxShadow: "0 1px 10px rgba(107,26,42,0.07)" }}>
         <div style={{ maxWidth: 1440, margin: "0 auto", padding: isTablet ? "0 24px" : "0 48px", display: "flex", alignItems: "center", height: 64, gap: isTablet ? 16 : 28 }}>
           <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FFF", border: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Flower2 size={24} color={C.burg} />
+            <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(0,0,0,0.08)", flexShrink: 0 }}>
+              <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             {!isTablet && (
             <div>
-              <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1 }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.d, fontSize: 13, fontWeight: 400, color: "#3B2314", marginTop: 1 }}>& Brothers Silks</div>
+              <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1, textTransform: "uppercase" as const }}>Beere Kesava</div>
+              <div style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 400, color: "#3B2314", letterSpacing: 1.6, textTransform: "uppercase" as const, marginTop: 1 }}>And Brothers Silks</div>
               <div style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>WEAVER PORTAL</div>
             </div>
             )}

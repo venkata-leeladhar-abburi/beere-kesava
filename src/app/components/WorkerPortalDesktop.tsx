@@ -76,8 +76,9 @@ function WorkerTopNav({ active, onSelect, onBack, bp }: {
         </div>
         {!isTablet && (
           <div>
-            <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 8, color: C.gold, letterSpacing: "2px", textTransform: "uppercase" }}>Worker Staff</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
+            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 10, color: C.dark, marginTop: 1 }}>& Brothers Silks</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 8, color: C.gold, letterSpacing: "2px", textTransform: "uppercase", marginTop: 2 }}>Worker Staff</div>
           </div>
         )}
       </div>
