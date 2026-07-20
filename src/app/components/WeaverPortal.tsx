@@ -335,6 +335,120 @@ function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) => void }
   );
 }
 
+// ─── Materials Received History card — shows a full handover record, with inline signing for pending ones ──
+function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; isTablet: boolean }) {
+  const { updateSignatureStatus } = useMaterialIssue();
+  const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
+  const [hasSig, setHasSig] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+
+  const isPending = r.status === "pending-signature";
+  const canConfirm = (sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent);
+
+  const handleConfirm = () => {
+    if (!canConfirm) return;
+    updateSignatureStatus(r.id, sigMethod === "remote" ? "remote" : "here");
+  };
+
+  return (
+    <div style={{ background: "#FFF", border: `1px solid ${isPending ? C.gold : C.bdr}`, borderRadius: 18, padding: "22px 26px", boxShadow: "0 3px 16px rgba(44,24,16,0.06)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap" as const, gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.burg, background: "rgba(107,26,42,0.08)", borderRadius: 8, padding: "4px 10px" }}>{r.id}</span>
+          {r.batchId && (
+            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.gold, background: "rgba(196,146,58,0.12)", borderRadius: 8, padding: "4px 10px" }}>{r.batchId}</span>
+          )}
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+        </div>
+        {r.status === "signed" ? (
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.green }}>
+            <Check size={14} color={C.green} /> Signed
+          </span>
+        ) : isPending ? (
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.gold }}>
+            <Clock size={14} color={C.gold} /> Pending
+          </span>
+        ) : (
+          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted }}>Cancelled</span>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : `repeat(${Math.min(r.materials.length, 3)}, 1fr)`, gap: 10, marginBottom: 14 }}>
+        {r.materials.map((m, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
+            <div>
+              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || "")}</div>
+            </div>
+            <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+              <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{m.quantity} {m.unit}</div>
+              <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{m.grnBatchId}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Issued by {r.issuedBy}{r.signatureTimestamp ? ` · Signed on ${new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : ""}</div>
+
+      {/* Inline signing — collect the weaver's signature right on this card, on-screen or via a remote request to their phone */}
+      {isPending && (
+        <div style={{ marginTop: 18, paddingTop: 18, borderTop: `1px dashed ${C.bdr}` }}>
+          <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Collect Your Signature</div>
+          <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 10, marginBottom: sigMethod !== "none" ? 12 : 0 }}>
+            <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Pencil size={15} color={sigMethod === "here" ? "#FFF" : C.burg} />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.text }}>Sign here on this screen</div>
+                <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Draw your signature now</div>
+              </div>
+            </button>
+            <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "remote" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Send size={15} color={sigMethod === "remote" ? "#FFF" : C.burg} />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.text }}>Send to my phone</div>
+                <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Sign remotely on your own device</div>
+              </div>
+            </button>
+          </div>
+
+          {sigMethod === "here" && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ border: `1.5px solid rgba(107,26,42,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+                <SignatureCanvas onSigned={setHasSig} />
+              </div>
+            </div>
+          )}
+
+          {sigMethod === "remote" && !requestSent && (
+            <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 44, border: `1.5px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.gold, cursor: "pointer", marginBottom: 12 }}>
+              Send Signature Request to My Phone
+            </button>
+          )}
+          {sigMethod === "remote" && requestSent && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
+              <Check size={14} color={C.green} />
+              <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.green, fontWeight: 600 }}>Request sent to your phone!</span>
+            </div>
+          )}
+
+          {sigMethod !== "none" && (
+            <button
+              onClick={handleConfirm}
+              disabled={!canConfirm}
+              style={{ width: "100%", height: 46, background: canConfirm ? C.green : "#C8C0B8", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: canConfirm ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <Check size={16} /> Confirm Material Receipt
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Hero Header ────────────────────────────────────────────────────────────
 
 function HeroHeader({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
@@ -384,127 +498,6 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
   );
 }
 
-function WeaverDesignCard({ d }: { d: DesignEntry }) {
-  const [showGraphModal, setShowGraphModal] = useState(false);
-
-  return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(107,26,42,0.06)", display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Banner Photo */}
-      {d.colorSlipPhoto ? (
-        <div style={{ height: 160, overflow: "hidden", position: "relative", flexShrink: 0 }}>
-          <img src={d.colorSlipPhoto} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(26,10,15,0.50) 100%)" }} />
-          <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: C.dark, borderRadius: 8, padding: "5px 10px", border: `1px solid rgba(255,255,255,0.15)` }}>
-            <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: "0.4px" }}>{d.code}</span>
-          </div>
-        </div>
-      ) : (
-        <div style={{ height: 160, background: `linear-gradient(135deg, #FFFDF9 0%, ${C.cream} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, flexShrink: 0, position: "relative" }}>
-          <Palette size={32} color={C.muted} />
-          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, fontWeight: 500 }}>Color Slip Not Uploaded</span>
-          <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(139,112,96,0.14)", borderRadius: 8, padding: "5px 10px" }}>
-            <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{d.code}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Card Content */}
-      <div style={{ padding: "18px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-        <div>
-          <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{d.name || d.code}</div>
-          {d.typeCode && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,146,58,0.10)", border: `1px solid rgba(196,146,58,0.25)`, borderRadius: 8, padding: "4px 8px", marginTop: 4 }}>
-              <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.gold, fontWeight: 700 }}>{d.typeCode}</span>
-              <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>· {d.typeName}</span>
-            </div>
-          )}
-        </div>
-
-        {d.desc && (
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, background: "#FAFAF8", padding: "10px 12px", borderRadius: 10, border: `1px solid ${C.bdr}` }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>Description</div>
-            <div>{d.desc}</div>
-          </div>
-        )}
-
-        {d.notesForWeaver && (
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, background: "rgba(196,146,58,0.08)", padding: "10px 12px", borderRadius: 10, border: `1px solid rgba(196,146,58,0.20)` }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>Weaving Instructions / Notes</div>
-            <div style={{ fontWeight: 500 }}>{d.notesForWeaver}</div>
-          </div>
-        )}
-
-        {/* Status badges */}
-        <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-          <div style={{ flex: 1, background: d.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 7, cursor: d.designGraph ? "pointer" : "default" }} onClick={() => d.designGraph && setShowGraphModal(true)}>
-            <Layers size={14} color={d.hasGraph ? C.green : C.muted} />
-            <div>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>Graph Drawing</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: d.hasGraph ? C.green : C.muted, fontWeight: 600 }}>{d.hasGraph ? "View Graph ✓" : "No Graph"}</div>
-            </div>
-          </div>
-          <div style={{ flex: 1, background: d.hasColorSlip ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d.hasColorSlip ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 7 }}>
-            <Palette size={14} color={d.hasColorSlip ? C.green : C.muted} />
-            <div>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>Color Slip</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: d.hasColorSlip ? C.green : C.muted, fontWeight: 600 }}>{d.hasColorSlip ? "Uploaded ✓" : "Missing"}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Graph Modal overlay if clicked */}
-      <AnimatePresence>
-        {showGraphModal && d.designGraph && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowGraphModal(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }} onClick={e => e.stopPropagation()}>
-              <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-                <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
-                <button onClick={() => setShowGraphModal(false)} style={{ background: C.burg, border: "none", color: "#FFF", fontFamily: F.u, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close Reference</button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ─── Design Library Strip — only designs assigned to this weaver's active batches ──
-function DesignLibrarySection() {
-  const { batches } = useBatches();
-  const { getDesign } = useDesignLibrary();
-
-  const myDesignCodes = Array.from(new Set(
-    batches
-      .filter(b => b.status === "active" || b.status === "draft")
-      .flatMap(b => b.rows)
-      .filter(r => r.weaverId === CURRENT_WEAVER_ID)
-      .map(r => r.designCode)
-      .filter((c): c is string => Boolean(c))
-  ));
-
-  return (
-    <>
-      <SectionTitle title="Design Reference Sheets" />
-      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "-4px 20px 20px" }}>Detailed design specifications, color slip photos, and instructions for your active work.</div>
-      {myDesignCodes.length === 0 ? (
-        <div style={{ margin: "0 20px", padding: "30px 20px", textAlign: "center" as const, background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}` }}>
-          <Palette size={28} color={C.muted} style={{ margin: "0 auto 8px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No design specifications assigned currently.</div>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20, padding: "0 20px" }}>
-          {myDesignCodes.map(code => {
-            const d = getDesign(code);
-            return d ? <WeaverDesignCard key={code} d={d} /> : null;
-          })}
-        </div>
-      )}
-    </>
-  );
-}
 
 // ─── PAGE 01 — MY BATCHES ──────────────────────────────────────────────────
 type MyBatchEntry = { batchId: string; status: string; dueDate: string; rows: SareeRow[]; myRows: SareeRow[]; totalCount: number; createdAt: string; updatedAt: string; };
@@ -883,10 +876,6 @@ function MyBatchesPage() {
       </>
       )}
 
-      {/* Design Library */}
-      <div style={{ marginTop: 8 }}>
-        <DesignLibrarySection />
-      </div>
       <AnimatePresence>
         {viewDesignCode && <DesignDetailCard designCode={viewDesignCode} onClose={() => setViewDesignCode(null)} />}
       </AnimatePresence>
@@ -1331,18 +1320,6 @@ function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } =
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-// ─── PAGE 03 — YOUR DESIGNS ────────────────────────────────────────────────
-function DesignsPage() {
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      <HeroHeader eyebrow="SINCE 1999 · DESIGN REFERENCE" title="Your Designs" sub="Design instructions assigned to your active batches" />
-      <div style={{ marginTop: 8 }}>
-        <DesignLibrarySection />
       </div>
     </div>
   );
@@ -2237,7 +2214,7 @@ function NotificationsPage() {
 }
 
 // ─── MOBILE SHELL ──────────────────────────────────────────────────────────
-type Tab5 = "batches" | "confirm" | "designs" | "warp" | "payments";
+type Tab5 = "batches" | "confirm" | "warp" | "payments";
 
 function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
   const { selectRole } = useAuth();
@@ -2251,13 +2228,12 @@ function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?:
   const TABS: { id: Tab5; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "batches",   label: "My Batches", icon: <ClipboardList size={20} />, },
     { id: "confirm",   label: "Confirm",    icon: <CheckSquare size={20} />, badge: pendingConfirmCount },
-    { id: "designs",   label: "Designs",    icon: <Palette size={20} /> },
     { id: "warp",      label: "Warp",       icon: <ArrowUpRight size={20} /> },
     { id: "payments",  label: "Payments",   icon: <Wallet size={20} /> },
   ];
 
   const PAGE_TITLES: Record<Tab5, string> = {
-    batches: "My Batches", confirm: "Confirm", designs: "Designs",
+    batches: "My Batches", confirm: "Confirm",
     warp: "Warp Request", payments: "Payments",
   };
 
@@ -2328,7 +2304,6 @@ function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?:
             <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
               {active === "batches" && (<MyBatchesPage />)}
               {active === "confirm" && (<ConfirmMaterialPage onGoToBatches={() => setActive("batches")} />)}
-              {active === "designs" && (<DesignsPage />)}
               {active === "warp"    && (<WarpRequestPage />)}
               {active === "payments" && (<PaymentLedgerPage />)}
             </motion.div>
@@ -2753,10 +2728,13 @@ function MaterialsGivenBlock({ batchId }: { batchId: string }) {
 }
 
 function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
+  const { getDesign } = useDesignLibrary();
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
+  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const isTablet = bp === "tablet";
 
   const borderColor    = idx % 2 === 0 ? C.burg : C.gold;
+  const designCodes     = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -2797,6 +2775,34 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 
         {/* Materials issued to this weaver for this batch */}
         <MaterialsGivenBlock batchId={b.batchId} />
+
+        {/* Clickable design chips */}
+        {designCodes.length > 0 && (
+          <div>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
+              {designCodes.map(dc => {
+                const d = getDesign(dc);
+                return (
+                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
+                    {d?.colorSlipPhoto ? (
+                      <img src={d.colorSlipPhoto} alt={d.typeName || dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
+                    ) : (
+                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
+                    )}
+                    <span style={{ fontFamily: F.u, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.text }}>{d?.typeName || d?.name || dc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <AnimatePresence>
+              {expandedDesign && designCodes.includes(expandedDesign) && (
+                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
@@ -2850,9 +2856,12 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 
 // Completed batch card — same full info as the active batch card, but with a completed badge
 function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
+  const { getDesign } = useDesignLibrary();
   const [expandedType, setExpandedType] = useState<string | null>(null);
+  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const isTablet = bp === "tablet";
 
+  const designCodes    = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -2890,6 +2899,34 @@ function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry
 
         {/* Materials issued to this weaver for this batch */}
         <MaterialsGivenBlock batchId={b.batchId} />
+
+        {/* Clickable design chips */}
+        {designCodes.length > 0 && (
+          <div>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
+              {designCodes.map(dc => {
+                const d = getDesign(dc);
+                return (
+                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
+                    {d?.colorSlipPhoto ? (
+                      <img src={d.colorSlipPhoto} alt={d.typeName || dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
+                    ) : (
+                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
+                    )}
+                    <span style={{ fontFamily: F.u, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.text }}>{d?.typeName || d?.name || dc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <AnimatePresence>
+              {expandedDesign && designCodes.includes(expandedDesign) && (
+                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
@@ -2955,7 +2992,7 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
   const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
 
   const { batches } = useBatches();
-  const { getDesign, getDispatchesForWeaver } = useDesignLibrary();
+  const { getDesign } = useDesignLibrary();
   const { getRecordsForWeaver, updateSignatureStatus } = useMaterialIssue();
   const weaverMaterialRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
   const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
@@ -2985,27 +3022,7 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
     );
   }, [batches]);
 
-  // Designs assigned to this weaver's active batch saree rows (shared by "Design Library" + "Designs" tab)
-  const myDesignCodes = Array.from(new Set(
-    batches
-      .filter(b => b.status === "active" || b.status === "draft")
-      .flatMap(b => b.rows)
-      .filter(r => r.weaverId === CURRENT_WEAVER_ID)
-      .map(r => r.designCode)
-      .filter((c): c is string => Boolean(c))
-  ));
-
-  // Which batch(es) each design code is being woven in, for this weaver
-  const batchIdsForDesignCode = (code: string) => batches
-    .filter(b => b.rows.some(r => r.weaverId === CURRENT_WEAVER_ID && r.designCode === code))
-    .map(b => b.batchId);
-  const myDispatches = getDispatchesForWeaver(CURRENT_WEAVER_ID);
-  const dispatchesForDesignCode = (code: string) => {
-    const batchIds = batchIdsForDesignCode(code);
-    return myDispatches.filter(d => d.batches.some(bid => batchIds.includes(bid)));
-  };
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
-  const openDesignCode = (code: string) => { const d = getDesign(code); if (d) setViewDesign(d); };
 
   // Confirm page state
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
@@ -3024,7 +3041,6 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
   const NAV: { id: Tab5; label: string; icon: React.ReactNode }[] = [
     { id: "batches",   label: "My Batches",   icon: <Layers size={16} /> },
     { id: "confirm",   label: "Confirm",       icon: <ClipboardCheck size={16} /> },
-    { id: "designs",   label: "Designs",       icon: <Palette size={16} /> },
     { id: "warp",      label: "Warp Request",  icon: <Package size={16} /> },
     { id: "payments",  label: "Payments",      icon: <CreditCard size={16} /> },
   ];
@@ -3261,84 +3277,19 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                       )}
                     </div>
 
-                    {/* Design Library + Quick Actions row */}
-                    <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 400px", gap: 28 }}>
-                      {/* Design Library */}
-                      <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
-                        <div style={{ padding: "20px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <div style={{ width: 5, height: 22, background: C.gold, borderRadius: 3 }} />
-                            <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Design Library</span>
-                          </div>
-                          <button onClick={() => setActive("designs")} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 13, color: C.gold, cursor: "pointer", fontWeight: 500 }}>View All →</button>
-                        </div>
-                        <div style={{ padding: "20px 26px" }}>
-                          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18 }}>Design instructions assigned to your active batches.</div>
-                          {myDesignCodes.length === 0 ? (
-                            <div style={{ padding: "20px", textAlign: "center" as const, background: "#FAFAF8", borderRadius: 14, border: `1px solid ${C.bdr}` }}>
-                              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No designs assigned yet. Check with your supervisor.</div>
-                            </div>
-                          ) : (
-                            <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr" : "1fr 1fr", gap: 14 }}>
-                              {myDesignCodes.map(code => {
-                                const d = getDesign(code);
-                                const codeDispatches = dispatchesForDesignCode(code);
-                                return (
-                                  <button key={code} onClick={() => openDesignCode(code)} style={{ background: "#FAFAF8", borderRadius: 14, border: `1px solid ${C.bdr}`, overflow: "hidden", cursor: "pointer", textAlign: "left" as const, padding: 0, display: "flex", flexDirection: "column" as const }}>
-                                    {d?.colorSlipPhoto ? (
-                                      <div style={{ height: 100, backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-                                    ) : (
-                                      <div style={{ height: 100, background: C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <Sparkles size={26} color={C.muted} />
-                                      </div>
-                                    )}
-                                    <div style={{ padding: "12px 12px", flex: 1 }}>
-                                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.burg, marginBottom: 4 }}>{code}</div>
-                                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.3, marginBottom: codeDispatches.length > 0 ? 8 : 0 }}>{d?.name || "—"}</div>
-                                      {codeDispatches.map(disp => (
-                                        <div key={disp.id} style={{ background: "rgba(107,26,42,0.05)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 10px", marginTop: 6 }}>
-                                          <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.text, lineHeight: 1.5 }}>{disp.instructions}</div>
-                                          {(disp.colorSlipImage || disp.designGraphImage) && (
-                                            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                                              {disp.colorSlipImage && (
-                                                <div>
-                                                  <img src={disp.colorSlipImage} alt="Color Slip" style={{ width: 44, height: 44, borderRadius: 6, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
-                                                  <div style={{ fontFamily: F.u, fontSize: 9, color: C.muted, marginTop: 2, textAlign: "center" as const }}>Color Slip</div>
-                                                </div>
-                                              )}
-                                              {disp.designGraphImage && (
-                                                <div>
-                                                  <img src={disp.designGraphImage} alt="Design Graph" style={{ width: 44, height: 44, borderRadius: 6, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
-                                                  <div style={{ fontFamily: F.u, fontSize: 9, color: C.muted, marginTop: 2, textAlign: "center" as const }}>Design Graph</div>
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
-                                          <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 6 }}>{disp.sentAt}</div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
+                    {/* Quick Actions */}
+                    <div style={{ background: C.dark, borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.22)" }}>
+                      <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
+                        <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.75)" }}>Navigate to key tasks</div>
                       </div>
-
-                      {/* Quick Actions */}
-                      <div style={{ background: C.dark, borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.22)" }}>
-                        <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
-                          <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.75)" }}>Navigate to key tasks</div>
-                        </div>
+                      <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "repeat(3, 1fr)" }}>
                         {[
                           { label: "Confirm Materials", sub: "New batch awaiting signature", tab: "confirm" as Tab5, icon: <ClipboardCheck size={18} color={C.gold} />, badge: "Pending" },
-                          { label: "View Designs", sub: "Your design instructions", tab: "designs" as Tab5, icon: <Palette size={18} color={C.gold} />, badge: null },
                           { label: "Raise Warp Request", sub: "Request additional material", tab: "warp" as Tab5, icon: <Package size={18} color={C.gold} />, badge: null },
                           { label: "Payment Ledger", sub: "View earnings & deductions", tab: "payments" as Tab5, icon: <CreditCard size={18} color={C.gold} />, badge: null },
                         ].map((a, i) => (
-                          <button key={a.tab} onClick={() => setActive(a.tab)} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "18px 26px", border: "none", borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.07)" : "none", background: "transparent", cursor: "pointer", textAlign: "left" as const }}
+                          <button key={a.tab} onClick={() => setActive(a.tab)} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "18px 26px", border: "none", borderBottom: "1px solid rgba(255,255,255,0.07)", borderRight: !isTablet && i < 2 ? "1px solid rgba(255,255,255,0.07)" : "none", background: "transparent", cursor: "pointer", textAlign: "left" as const }}
                             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
                             onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                             <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
@@ -3432,31 +3383,6 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                         </div>
                       </div>
 
-                      {/* Materials */}
-                      <DSectionHeader label="Materials You Are Receiving" />
-                      <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr" : "1fr 1fr 1fr", gap: 20, marginBottom: 36 }}>
-                        {pendingMaterialRecord.materials.map((m, i) => (
-                          <div key={i} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, padding: "26px 22px", textAlign: "center" as const, boxShadow: "0 3px 16px rgba(44,24,16,0.07)" }}>
-                            <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>{materialTypeIcon(m.materialType)}</div>
-                            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.text, marginBottom: 10 }}>{m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}</div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, marginBottom: 8 }}>{m.quantity} {m.unit}</div>
-                            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6 }}>{m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || "")}</div>
-                            <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>From batch: {m.grnBatchId}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Color Slip Preview */}
-                      <DSectionHeader label="Check Your Color Slip" />
-                      <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 20 }}>Review the design you will be weaving before you sign.</div>
-                      <div style={{ background: "linear-gradient(135deg, #E8D5B0 0%, #C9A86C 50%, #E8D5B0 100%)", borderRadius: 18, height: 220, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" as const, overflow: "hidden", marginBottom: 14, boxShadow: "0 6px 28px rgba(44,24,16,0.14)" }} onClick={() => setActive("designs")}>
-                        <Flower2 size={90} color="rgba(107,26,42,0.18)" />
-                        <div style={{ position: "absolute" as const, bottom: 16, right: 16, background: "rgba(0,0,0,0.50)", borderRadius: 10, padding: "8px 16px", display: "flex", alignItems: "center", gap: 7 }}>
-                          <Eye size={16} color="#FFF" />
-                          <span style={{ fontFamily: F.u, fontSize: 13, color: "#FFF", fontWeight: 500 }}>View Full Color Slip</span>
-                        </div>
-                      </div>
-                      <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg, textAlign: "center" as const }}>BKB-045 · Cream Zari Border Saree</div>
                     </div>
 
                     {/* Right: Signature panel (sticky) */}
@@ -3543,53 +3469,23 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                     </div>
                   </div>
                 )}
-              </div>
-            </>
-          )}
 
-          {/* ════════ COLOR SLIP ════════ */}
-          {!showNotifs && active === "designs" && (
-            <>
-              <DesktopHero
-                bp={bp}
-                breadcrumb="SINCE 1999 · WEAVER PORTAL · DESIGN REFERENCE"
-                titleMain="Your Designs"
-                titleSub="& Weaving Instructions"
-                description="Design instructions assigned to your active batches."
-                pills={myDesignCodes.map(code => ({ text: code }))}
-                bgUrl={FABRIC_BG}
-              />
-              <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
-                {myDesignCodes.length === 0 ? (
-                  <div style={{ padding: "60px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>
-                    <Palette size={32} color={C.muted} style={{ margin: "0 auto 14px" }} />
-                    <div style={{ fontFamily: F.u, fontSize: 17, color: C.muted }}>No designs assigned yet. Check with your supervisor.</div>
-                  </div>
-                ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: isTablet ? "repeat(2,1fr)" : "repeat(3,1fr)", gap: 22 }}>
-                    {myDesignCodes.map(code => {
-                      const d = getDesign(code);
-                      return (
-                        <button key={code} onClick={() => openDesignCode(code)} style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", cursor: "pointer", boxShadow: "0 3px 14px rgba(44,24,16,0.07)", padding: 0, textAlign: "left" as const }}>
-                          {d?.colorSlipPhoto ? (
-                            <div style={{ height: 150, backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-                          ) : (
-                            <div style={{ height: 150, background: C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Flower2 size={38} color={C.muted} />
-                            </div>
-                          )}
-                          <div style={{ padding: "16px 18px" }}>
-                            <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, marginBottom: 5 }}>{code}</div>
-                            <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{d?.name || "—"}</div>
-                            {d?.notesForWeaver && (
-                              <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>{d.notesForWeaver}</div>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                {/* Materials Received History */}
+                <div style={{ marginTop: 48 }}>
+                  <DSectionHeader label="Materials Received History" />
+                  <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>Every material handover issued to you, and whether you've signed for it.</div>
+                  {weaverMaterialRecords.length === 0 ? (
+                    <div style={{ padding: "40px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>
+                      <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>No materials have been issued to you yet.</div>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 16 }}>
+                      {weaverMaterialRecords.slice().sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime()).map(r => (
+                        <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -3873,7 +3769,6 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
 
   let active: Tab5 = "batches";
   if (pathname.includes("/confirm")) active = "confirm";
-  else if (pathname.includes("/designs")) active = "designs";
   else if (pathname.includes("/warp")) active = "warp";
   else if (pathname.includes("/payments")) active = "payments";
 
@@ -3881,7 +3776,6 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
     const routeMap: Record<Tab5, string> = {
       batches: "/weaver/batches",
       confirm: "/weaver/confirm",
-      designs: "/weaver/designs",
       warp: "/weaver/warp",
       payments: "/weaver/payments",
     };

@@ -50,7 +50,7 @@ const INITIAL_DESIGNS: DesignEntry[] = [
   { code: "BKB-045", name: "Cream Zari Border Saree",  typeCode: "HZ-003", typeName: "Heavy Zari",     desc: "Cream body, gold zari border, pallu with lotus motif",         weaverName: "Ravi Kumar",   notesForWeaver: "Keep border width consistent at 5cm. Lotus motif on pallu only.", colorSlipPhoto: imgWarp,     designGraph: null,     batches: 3, total: 284, hasColorSlip: true,  hasGraph: true  },
   { code: "BKB-031", name: "Maroon Heavy Border",       typeCode: "HZ-003", typeName: "Heavy Zari",     desc: "Dark maroon with heavy gold border, traditional pallu",        weaverName: "Padma Veni",   notesForWeaver: "Gold jari border — minimum 3 passes each edge.", colorSlipPhoto: imgResham,   designGraph: null,     batches: 2, total: 196, hasColorSlip: true,  hasGraph: false },
   { code: "BKB-022", name: "Cream Plain Silk",          typeCode: "PS-002", typeName: "Plain Silk",     desc: "Plain cream silk, minimal zari, lightweight",                  weaverName: "",             notesForWeaver: "",                                                 colorSlipPhoto: imgJari,     designGraph: imgWarp,  batches: 1, total: 312, hasColorSlip: true,  hasGraph: true  },
-  { code: "BKB-038", name: "Blue Zari Checks",          typeCode: "SB-001", typeName: "Self Brocade",   desc: "Blue body with gold zari check pattern",                       weaverName: "Meena R.",     notesForWeaver: "Check spacing: 2cm x 2cm throughout body.",        colorSlipPhoto: imgShowroom, designGraph: null,     batches: 2, total: 148, hasColorSlip: true,  hasGraph: false },
+  { code: "BKB-038", name: "Blue Zari Checks",          typeCode: "SB-001", typeName: "Self Brocade",   desc: "Blue body with gold zari check pattern",                       weaverName: "Meena R.",     notesForWeaver: "Check spacing: 2cm x 2cm throughout body.",        colorSlipPhoto: imgJari,     designGraph: null,     batches: 2, total: 148, hasColorSlip: true,  hasGraph: false },
   { code: "BKB-019", name: "Red Bridal Zari",           typeCode: "BS-004", typeName: "Bridal Special", desc: "Deep red with heavy gold zari, bridal pallu, temple border",   weaverName: "Anand K.",     notesForWeaver: "Temple border on all four edges. Pallu: peacock motif.", colorSlipPhoto: imgSaree,  designGraph: imgResham, batches: 1, total: 84,  hasColorSlip: true,  hasGraph: true  },
   { code: "BKB-012", name: "Green Checks",              typeCode: "SB-001", typeName: "Self Brocade",   desc: "Green with small gold checks throughout",                      weaverName: "",             notesForWeaver: "",                                                 colorSlipPhoto: null,        designGraph: null,     batches: 0, total: 220, hasColorSlip: false, hasGraph: false },
 ];
@@ -88,6 +88,17 @@ const INITIAL_DISPATCHES: DispatchRecord[] = [
     colorSlipImage: "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
     designGraphImage: null,
     sentAt: "01 Jul 2026, 08:45 AM",
+  },
+  {
+    id: "DISP-004",
+    recipientType: "weaver",
+    recipientId: "WV-001",
+    recipientName: "Ravi Kumar",
+    batches: ["BATCH-078"],
+    instructions: "Check spacing: 2cm x 2cm throughout body. Keep zari check pattern even across all four sarees.",
+    colorSlipImage: "https://images.unsplash.com/photo-1643766882273-335aae5a9309?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+    designGraphImage: null,
+    sentAt: "10 May 2026, 09:10 AM",
   },
 ];
 

@@ -119,6 +119,24 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
     signatureTimestamp: "2026-07-04T10:40:00.000Z",
     status: "signed",
   },
+  {
+    id: "MIR-2026-006",
+    weaverId: "WV-001",
+    weaverName: "Ravi Kumar",
+    loomNumber: 2,
+    batchId: "BATCH-078",
+    issuedBy: "Admin (Kesava Rao)",
+    issuedAt: "2026-05-10T08:30:00.000Z",
+    materials: [
+      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 3, unit: "kg", grnBatchId: "GRN-2026-MAY-001" },
+      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 4, unit: "Reels", grnBatchId: "GRN-2026-MAY-002" },
+    ],
+    signatureMethod: "here",
+    signatureCaptured: true,
+    signatureTimestamp: "2026-05-10T08:40:00.000Z",
+    notes: "Batch BATCH-078 handover.",
+    status: "signed",
+  },
 ];
 
 // ─── Context ──────────────────────────────────────────────────────────────────
