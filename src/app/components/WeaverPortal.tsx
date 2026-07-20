@@ -3350,121 +3350,31 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                     </button>
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 400px", gap: 36, alignItems: "start" }}>
-                    {/* Left */}
-                    <div>
-                      {/* Alert — weaver-specific */}
-                      <div style={{ background: "rgba(196,146,58,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px", marginBottom: 36 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                          <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>RK</span>
-                          </div>
-                          <div>
-                            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Ravi Kumar, your materials are ready</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-                              <span style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{pendingMaterialRecord.id}</span>
-                              <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.muted, display: "inline-block" }} />
-                              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Issued {new Date(pendingMaterialRecord.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.7 }}>
-                          The admin has issued your materials. Please review the list carefully and sign below to officially confirm receipt.
-                        </div>
-                        <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-                          <div style={{ background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
-                            <CheckCircle2 size={14} color={C.green} />
-                            <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>{pendingMaterialRecord.materials.length} material{pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to confirm</span>
-                          </div>
-                          <div style={{ background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
-                            <Clock size={14} color={C.muted} />
-                            <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Signature required</span>
-                          </div>
+                  <div style={{ background: "rgba(196,146,58,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>RK</span>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Ravi Kumar, your materials are ready</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+                          <span style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{pendingMaterialRecord.id}</span>
+                          <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.muted, display: "inline-block" }} />
+                          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Issued {new Date(pendingMaterialRecord.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
                         </div>
                       </div>
-
                     </div>
-
-                    {/* Right: Signature panel (sticky) */}
-                    <div style={{ position: "sticky" as const, top: 84 }}>
-                      <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 6px 32px rgba(44,24,16,0.12)" }}>
-                        <div style={{ padding: "24px 28px", background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)` }}>
-                          {/* Weaver identity in signature panel */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20, paddingBottom: 18, borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
-                            <div style={{ width: 52, height: 52, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(107,26,42,0.40)" }}>
-                              <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>RK</span>
-                            </div>
-                            <div>
-                              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
-                              <div style={{ fontFamily: F.m, fontSize: 11, color: C.gold, marginTop: 3 }}>WVR-014 · Handloom Weaver</div>
-                              <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Pochampally, Telangana</div>
-                            </div>
-                          </div>
-                          <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.5, textTransform: "uppercase" as const, marginBottom: 8 }}>YOUR SIGNATURE</div>
-                          <div style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF" }}>Ravi, confirm your receipt</div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 6 }}>Sign below to confirm {pendingMaterialRecord.id}</div>
-                        </div>
-                        <div style={{ padding: "28px" }}>
-                          <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.65, marginBottom: 24 }}>
-                            Sign below to confirm you have received all materials listed. This creates a permanent record.
-                          </div>
-
-                          <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{ width: "100%", background: "#F8F4F0", border: `2px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 14, padding: "16px 20px", cursor: "pointer", textAlign: "left" as const, marginBottom: 12, display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, background: sigMethod === "here" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Check size={18} color={sigMethod === "here" ? "#FFF" : C.burg} />
-                            </div>
-                            <div>
-                              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>Sign here on screen</div>
-                              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Draw your signature below</div>
-                            </div>
-                          </button>
-
-                          {sigMethod === "here" && (
-                            <div style={{ marginBottom: 16 }}>
-                              <div style={{ border: `1.5px solid rgba(107,26,42,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
-                                <SignatureCanvas onSigned={setHasSig} />
-                              </div>
-                            </div>
-                          )}
-
-                          <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{ width: "100%", background: "#F8F4F0", border: `2px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 14, padding: "16px 20px", cursor: "pointer", textAlign: "left" as const, marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, background: sigMethod === "remote" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Send size={18} color={sigMethod === "remote" ? "#FFF" : C.burg} />
-                            </div>
-                            <div>
-                              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>Sign on your phone</div>
-                              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>We'll send you a notification</div>
-                            </div>
-                          </button>
-
-                          {sigMethod === "remote" && !requestSent && (
-                            <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 50, border: `1.5px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.gold, cursor: "pointer", marginBottom: 16 }}>
-                              Send Signature Request
-                            </button>
-                          )}
-                          {sigMethod === "remote" && requestSent && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 12, padding: "14px 18px", marginBottom: 16 }}>
-                              <Check size={18} color={C.green} />
-                              <span style={{ fontFamily: F.u, fontSize: 15, color: C.green, fontWeight: 600 }}>Request sent to your phone!</span>
-                            </div>
-                          )}
-
-                          <div style={{ background: "#F8F4F0", borderRadius: 12, padding: "14px 16px", marginBottom: 20 }}>
-                            <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.6 }}>By confirming, you agree you have received all materials. This record is permanent.</span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (!pendingMaterialRecord) return;
-                              if ((sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent)) {
-                                updateSignatureStatus(pendingMaterialRecord.id, sigMethod === "remote" ? "remote" : "here");
-                                setConfirmedRecord(pendingMaterialRecord);
-                                setConfirmed(true);
-                              }
-                            }}
-                            style={{ width: "100%", height: 56, background: (sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent) ? C.green : "#C8C0B8", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 17, color: "#FFF", cursor: (sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent) ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                            <Check size={20} /> Confirm Material Receipt
-                          </button>
-                        </div>
+                    <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.7 }}>
+                      The admin has issued your materials. Review the list below in Materials Received History, then sign to confirm receipt.
+                    </div>
+                    <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+                      <div style={{ background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                        <CheckCircle2 size={14} color={C.green} />
+                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>{pendingMaterialRecord.materials.length} material{pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to confirm</span>
+                      </div>
+                      <div style={{ background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                        <Clock size={14} color={C.muted} />
+                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Signature required</span>
                       </div>
                     </div>
                   </div>
