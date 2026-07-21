@@ -1403,7 +1403,7 @@ function FeaturedProduct({ compact }: { compact?: boolean }) {
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
         {[
           { label: "Weavers",  val: "6 active",   vc: T.luxuryBrown,  rb: true,  bb: true  },
-          { label: "Designs",  val: "24 codes",   vc: T.luxuryBrown,  rb: false, bb: true  },
+          { label: "Saree Codes",  val: "24 codes",   vc: T.luxuryBrown,  rb: false, bb: true  },
           { label: "QC Pass",  val: "96%",        vc: T.green,        rb: true,  bb: true  },
           { label: "Overdue",  val: "2 invoices", vc: "#C0392B",      rb: false, bb: true, alert: true },
           { label: "Inventory",val: "1,240 pcs",  vc: T.luxuryBrown,  rb: true,  bb: false },

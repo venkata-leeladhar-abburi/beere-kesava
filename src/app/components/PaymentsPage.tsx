@@ -2813,7 +2813,7 @@ Thank you.`;
   );
 }
 
-function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; selected: boolean }) {
+function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
   const isPaid = vp.status === "Paid";
   const cfg = VENDOR_STATUS_CFG[vp.status];
@@ -2952,6 +2952,18 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, selected }: { vp: 
           >
             Statement
           </button>
+          {onAddInvoice && (
+            <button
+              onClick={onAddInvoice}
+              style={{
+                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8, background: "#fff",
+                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
+              }}
+            >
+              <FileText size={13} /> Add Invoice
+            </button>
+          )}
           {!isPaid && (
             <button
               onClick={() => onPay(vp.id)}
@@ -3081,6 +3093,83 @@ function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matc
 }
 
 // ── Vendor Pay Now Modal ──────────────────────────────────────────────────────
+function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onClose: () => void }) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [invoiceNo, setInvoiceNo] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [saving, setSaving] = useState(false);
+
+  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, marginBottom: 6, display: "block" };
+
+  const handleSave = () => {
+    if (!file) return;
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      toast.success(`Invoice ${invoiceNo || file.name} added for ${vp.vendor}`);
+      onClose();
+    }, 500);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
+        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
+        style={{ background: T.warmIvory, borderRadius: 20, width: 460, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+          <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: "#FFFDF9" }}>Add Invoice — {vp.vendor}</div>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                background: "#FFFFFF", border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "20px",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.2s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.02)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = T.borderDef; }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 22, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                <FileText size={20} color={T.royalBurgundy} />
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>
+                {file ? file.name : "Click to upload invoice"}
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
+              <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>Vendor Invoice Number</label>
+            <input value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Invoice Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button onClick={onClose} style={{ padding: "0 18px", height: 40, border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} disabled={!file || saving} style={{ padding: "0 18px", height: 40, border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: file ? "pointer" : "not-allowed", opacity: !file || saving ? 0.6 : 1 }}>
+            {saving ? "Saving..." : "Add Invoice"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
   const balance = vp.invoiceAmt - vp.paidAmt;
@@ -3426,6 +3515,7 @@ function VendorPaymentsSection() {
   const [viewDetails, setViewDetails] = useState<VendorPayment | null>(null);
   const [viewPO, setViewPO] = useState<PurchaseOrder | null>(null);
   const [payNow, setPayNow] = useState<VendorPayment | null>(null);
+  const [addInvoiceFor, setAddInvoiceFor] = useState<VendorPayment | null>(null);
 
   const matchPO = (poNumber: string) => pos.find(p => p.poNumber === poNumber);
 
@@ -3598,7 +3688,7 @@ function VendorPaymentsSection() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
             {filtered.map((vp, i) => (
               <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNow(vp)} onView={() => setViewDetails(vp)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} selected={selVendor === vp.id} />
+                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNow(vp)} onView={() => setViewDetails(vp)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceFor(vp)} selected={selVendor === vp.id} />
               </motion.div>
             ))}
           </div>
@@ -3790,6 +3880,7 @@ function VendorPaymentsSection() {
           {contactModal && <ContactVendorModal vendors={overdueVendors} onClose={() => setContactModal(false)} />}
           {viewDetails && <VendorDetailModal vp={viewDetails} matchedPO={matchPO(viewDetails.poNumber)} onClose={() => setViewDetails(null)} />}
           {payNow && <VendorPayNowModal vp={payNow} onClose={() => setPayNow(null)} onSave={handleSavePayment} />}
+          {addInvoiceFor && <AddVendorInvoiceModal vp={addInvoiceFor} onClose={() => setAddInvoiceFor(null)} />}
         </AnimatePresence>
         <PODocumentModal open={!!viewPO} onClose={() => setViewPO(null)} po={viewPO} />
       </FadeUp>

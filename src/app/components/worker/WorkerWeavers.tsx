@@ -153,6 +153,43 @@ const WEAVERS = [
   { name: "Suresh Murti", code: "WV-007", looms: 1, avatar: "SM" },
 ];
 
+// ─── Weaver Batches (for Receive Sarees) ─────────────────────────────────────
+type SareeStatus = "pending" | "received" | "defective";
+interface BatchSaree { no: number; status: SareeStatus; color?: string; weight?: string; }
+interface WeaverBatchData { id: string; total: number; sareeTypeCode: string; bulkOrderLabel?: string; sarees: BatchSaree[]; }
+
+function makeBatch(id: string, total: number, doneCount: number, sareeTypeCode: string, bulkOrderLabel?: string): WeaverBatchData {
+  return {
+    id, total, sareeTypeCode, bulkOrderLabel,
+    sarees: Array.from({ length: total }, (_, i) => ({
+      no: i + 1,
+      status: i < doneCount ? "received" as SareeStatus : "pending" as SareeStatus,
+      color: i < doneCount ? ["Gold", "Red", "Green"][i % 3] : undefined,
+      weight: i < doneCount ? String(820 + i * 12) : undefined,
+    })),
+  };
+}
+
+const WEAVER_BATCHES: Record<string, WeaverBatchData[]> = {
+  "WV-002": [
+    makeBatch("BATCH-086", 5, 3, "SB-001", "Lakshmi Silks · ORD-041"),
+    makeBatch("BATCH-090", 3, 0, "SB-004"),
+  ],
+  "WV-001": [
+    makeBatch("BATCH-089", 8, 4, "HZ-002"),
+    makeBatch("BATCH-095", 4, 0, "HZ-005"),
+  ],
+  "WV-007": [
+    makeBatch("BATCH-081", 4, 2, "GC-003", "Vijaylakshmi Silks · ORD-038"),
+    makeBatch("BATCH-084", 2, 0, "GC-006"),
+  ],
+};
+
+interface ReceivedSareeLog {
+  id: string; weaver: string; wcode: string; batch: string;
+  weight: string; date: string; color: string; status: "Passed QC" | "Defective" | "Pending QC";
+}
+
 function IssueColors({ label, compact }: { label: string; compact?: boolean }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [qty, setQty] = useState<Record<string, string>>({});
@@ -713,9 +750,14 @@ function DefectPhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onC
   );
 }
 
-function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
+function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const [activeSection, setActiveSection] = useState<"outsourced" | "own">("outsourced");
   const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(WEAVERS[0]);
+  const [batches, setBatches] = useState<Record<string, WeaverBatchData[]>>(() => JSON.parse(JSON.stringify(WEAVER_BATCHES)));
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(WEAVER_BATCHES[WEAVERS[0].code]?.[0]?.id ?? null);
+  const [selectedSareeNo, setSelectedSareeNo] = useState<number | null>(null);
+  const [sareeSort, setSareeSort] = useState<"serial" | "status">("serial");
+  const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
   const [hasPhoto, setHasPhoto] = useState(false);
   const [sareeCount, setSareeCount] = useState(4);
@@ -737,10 +779,56 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
   const [ownRemoteSent, setOwnRemoteSent] = useState(false);
   const [ownRemoteConfirmed, setOwnRemoteConfirmed] = useState(false);
 
+  const weaverBatches = selectedWeaver ? (batches[selectedWeaver.code] ?? []) : [];
+  const currentBatch = weaverBatches.find(b => b.id === selectedBatchId) ?? weaverBatches[0] ?? null;
+  const doneCount = currentBatch ? currentBatch.sarees.filter(s => s.status !== "pending").length : 0;
+  const allDone = currentBatch ? doneCount === currentBatch.total : false;
+
   const weightNum = sareeWeight ? parseFloat(sareeWeight) : null;
   const weightOk = weightNum !== null && weightNum >= 600;
-  const sareeId = selectedWeaver ? `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-00${sareeCount}` : "—";
+  const sareeId = selectedWeaver && currentBatch && selectedSareeNo
+    ? `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-00${selectedSareeNo}` : "—";
   const ownSareeId = loomNum ? `BKB-L${loomNum}-00${sareeCount}` : "—";
+
+  const pickWeaver = (name: string) => {
+    const w = WEAVERS.find(w => w.name === name) || null;
+    setSelectedWeaver(w);
+    setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
+    setSelectedSareeNo(null);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+  };
+
+  const pickBatch = (batchId: string) => {
+    setSelectedBatchId(batchId);
+    setSelectedSareeNo(null);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+  };
+
+  const selectSareeSlot = (no: number) => {
+    const s = currentBatch?.sarees.find(s => s.no === no);
+    if (!s || s.status !== "pending") return;
+    setSelectedSareeNo(prev => prev === no ? null : no);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+  };
+
+  const canSaveSaree = !!sareeColor && !!sareeWeight && hasPhoto;
+
+  const saveSaree = () => {
+    if (!selectedWeaver || !currentBatch || !selectedSareeNo || !canSaveSaree) return;
+    setBatches(prev => {
+      const next = JSON.parse(JSON.stringify(prev)) as Record<string, WeaverBatchData[]>;
+      const b = next[selectedWeaver.code].find(b => b.id === currentBatch.id)!;
+      const s = b.sarees.find(s => s.no === selectedSareeNo)!;
+      s.status = "received"; s.color = sareeColor; s.weight = sareeWeight;
+      return next;
+    });
+    onSareeReceived?.({
+      id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+      weight: `${sareeWeight}g`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      color: sareeColor, status: "Pending QC",
+    });
+    setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+  };
 
   if (showTagPrint) {
     return (
@@ -791,115 +879,255 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
               <div style={{ position: "relative" }}>
-                <select style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }} onChange={e => setSelectedWeaver(WEAVERS.find(w => w.name === e.target.value) || null)}>
+                <select value={selectedWeaver?.name ?? ""} style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }} onChange={e => pickWeaver(e.target.value)}>
                   {WEAVERS.map(w => <option key={w.code}>{w.name}</option>)}
                 </select>
                 <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
               </div>
             </div>
 
-            {/* Batch progress */}
-            {selectedWeaver && (
-              <div style={{ ...card, margin: "8px 16px 0", padding: "10px 14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>BATCH-086</div>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>3 of 5 sarees done</div>
-                  </div>
-                  <span style={{ fontFamily: F.u, fontSize: 10, color: C.green, background: "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>Active</span>
+            {/* Batch selector */}
+            {selectedWeaver && weaverBatches.length > 0 && (
+              <div style={{ margin: "10px 16px 0" }}>
+                <FieldLabel>Select Batch</FieldLabel>
+                <div style={{ position: "relative" }}>
+                  <select value={selectedBatchId ?? ""} onChange={e => pickBatch(e.target.value)}
+                    style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }}>
+                    {weaverBatches.map(b => {
+                      const bDone = b.sarees.filter(s => s.status !== "pending").length;
+                      return <option key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</option>;
+                    })}
+                  </select>
+                  <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
                 </div>
-                <div style={{ background: "#F0F0F0", borderRadius: 999, height: 5, overflow: "hidden" }}>
-                  <div style={{ width: "60%", height: "100%", background: C.gold, borderRadius: 999 }} />
+
+                {currentBatch && (
+                  <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div>
+                        <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
+                      </div>
+                      <span style={{ fontFamily: F.u, fontSize: 10, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
+                        {allDone ? "Ready for signature" : "Active"}
+                      </span>
+                    </div>
+                    <div style={{ background: "#F0F0F0", borderRadius: 999, height: 5, overflow: "hidden" }}>
+                      <div style={{ width: `${(doneCount / currentBatch.total) * 100}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Saree table — pick a saree from this batch */}
+            {currentBatch && selectedWeaver && (
+              <div style={{ margin: "10px 16px 0" }}>
+                <FieldLabel>Sarees in {currentBatch.id}</FieldLabel>
+                <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${C.bdr}`, overflow: "hidden" }}>
+                  {/* Summary bar */}
+                  <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>{currentBatch.total} Sarees</span>
+                      <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 999, padding: "3px 9px" }}>
+                        {doneCount} complete
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Sort by</span>
+                      <select value={sareeSort} onChange={e => setSareeSort(e.target.value as "serial" | "status")}
+                        style={{ height: 28, borderRadius: 7, border: `1px solid ${C.bdr}`, padding: "0 6px", fontFamily: F.u, fontSize: 11, color: C.text, background: "#FFF", cursor: "pointer" }}>
+                        <option value="serial">Default (#)</option>
+                        <option value="status">Status</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
+                      <thead>
+                        <tr style={{ background: "rgba(196,146,58,0.10)" }}>
+                          {["", "#", "Saree ID", "Weaver / Loom", "Loom No.", "Saree Type", "Bulk Order", "Status"].map((h, i) => (
+                            <th key={i} style={{ textAlign: "left", padding: "8px 10px", fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.4px", whiteSpace: "nowrap" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...currentBatch.sarees]
+                          .sort((a, b) => sareeSort === "status" ? a.status.localeCompare(b.status) : a.no - b.no)
+                          .map((s, idx) => {
+                            const isSel = selectedSareeNo === s.no;
+                            const rowSareeId = `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-00${s.no}`;
+                            const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green }
+                              : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim }
+                              : { label: "Pending", bg: "rgba(196,146,58,0.12)", col: C.gold };
+                            return (
+                              <tr key={s.no} onClick={() => selectSareeSlot(s.no)}
+                                style={{ background: isSel ? "rgba(107,26,42,0.05)" : idx % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.5)", borderBottom: `1px solid rgba(107,26,42,0.06)`, cursor: s.status === "pending" ? "pointer" : "default" }}>
+                                <td style={{ padding: "9px 10px" }}>
+                                  <button onClick={e => { e.stopPropagation(); selectSareeSlot(s.no); }} disabled={s.status !== "pending"}
+                                    style={{ background: "none", border: "none", padding: 0, display: "flex", alignItems: "center", cursor: s.status === "pending" ? "pointer" : "default" }}>
+                                    {s.status === "received" ? <CheckCircle2 size={16} color={C.green} />
+                                      : s.status === "defective" ? <AlertTriangle size={16} color={C.crim} />
+                                      : isSel ? <CheckCircle2 size={16} color={C.burg} />
+                                      : <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${C.bdr}` }} />}
+                                  </button>
+                                </td>
+                                <td style={{ padding: "9px 10px", fontFamily: F.m, fontSize: 11, color: C.muted }}>{s.no}</td>
+                                <td style={{ padding: "9px 10px" }}>
+                                  {s.status === "pending" ? (
+                                    <span
+                                      style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(107,26,42,0.08)", borderRadius: 6, padding: "3px 8px" }}>
+                                      {rowSareeId}
+                                    </span>
+                                  ) : (
+                                    <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: C.text, background: "rgba(0,0,0,0.03)", borderRadius: 6, padding: "3px 8px" }}>{rowSareeId}</span>
+                                  )}
+                                </td>
+                                <td style={{ padding: "9px 10px" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                      <span style={{ fontFamily: F.d, fontSize: 7, fontWeight: 700, color: "#FFF" }}>{selectedWeaver.avatar}</span>
+                                    </div>
+                                    <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{selectedWeaver.name}</span>
+                                  </div>
+                                </td>
+                                <td style={{ padding: "9px 10px" }}>
+                                  <span style={{ fontFamily: F.m, fontSize: 10.5, fontWeight: 700, color: C.gold, background: "rgba(196,146,58,0.10)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 6, padding: "3px 8px" }}>Loom {selectedWeaver.looms}</span>
+                                </td>
+                                <td style={{ padding: "9px 10px" }}>
+                                  <span style={{ fontFamily: F.m, fontSize: 10.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 8px" }}>{currentBatch.sareeTypeCode}</span>
+                                </td>
+                                <td style={{ padding: "9px 10px", fontFamily: F.u, fontSize: 11, color: currentBatch.bulkOrderLabel ? C.burg : C.muted }}>
+                                  {currentBatch.bulkOrderLabel ?? "—"}
+                                </td>
+                                <td style={{ padding: "9px 10px" }}>
+                                  <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: statusCfg.col, background: statusCfg.bg, borderRadius: 999, padding: "3px 9px" }}>{statusCfg.label}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Saree entry */}
-            <div style={{ ...card, margin: "10px 16px 10px", padding: 14 }}>
-              <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>
-                Saree #{sareeCount} — BATCH-086
-              </div>
-
-              {/* Weight + Photo in a 2-col layout */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                <div>
-                  <FieldLabel>Weight (grams)</FieldLabel>
-                  <div style={{ position: "relative" }}>
-                    <input type="number" value={sareeWeight} onChange={e => setSareeWeight(e.target.value)} placeholder="0"
-                      style={{ ...inputStyle, height: 52, fontFamily: F.m, fontSize: 18, paddingRight: 10 }} />
-                  </div>
-                  {weightNum !== null && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
-                      {weightOk ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
-                      <span style={{ fontFamily: F.u, fontSize: 10, color: weightOk ? C.green : C.crim }}>
-                        {weightOk ? "OK" : "Too low"}
-                      </span>
-                    </div>
-                  )}
+            {/* Saree entry — for the selected saree */}
+            {selectedSareeNo && currentBatch && (
+              <div style={{ ...card, margin: "10px 16px 10px", padding: 14 }}>
+                <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>
+                  Saree #{selectedSareeNo} — {currentBatch.id}
                 </div>
-                <div>
-                  <FieldLabel>Photo</FieldLabel>
-                  {!hasPhoto ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: C.burg, border: "none", borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                        <Camera size={12} /> Camera
-                      </button>
-                      <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                        <UploadCloud size={12} /> Gallery
-                      </button>
+
+                <div style={{ marginBottom: 10 }}>
+                  <FieldLabel>Saree Color</FieldLabel>
+                  <input value={sareeColor} onChange={e => setSareeColor(e.target.value)} placeholder="e.g. Maroon, Cream Gold"
+                    style={{ ...inputStyle, height: 44, fontSize: 14 }} />
+                </div>
+
+                {/* Weight + Photo in a 2-col layout */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <FieldLabel>Weight (grams)</FieldLabel>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" value={sareeWeight} onChange={e => setSareeWeight(e.target.value)} placeholder="0"
+                        style={{ ...inputStyle, height: 52, fontFamily: F.m, fontSize: 18, paddingRight: 10 }} />
                     </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, background: "linear-gradient(135deg,#F0E8D0,#C4923A)", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
-                      <Camera size={20} color="rgba(255,255,255,0.85)" />
-                      <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <CheckCircle2 size={10} color="#FFF" />
+                    {weightNum !== null && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                        {weightOk ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
+                        <span style={{ fontFamily: F.u, fontSize: 10, color: weightOk ? C.green : C.crim }}>
+                          {weightOk ? "OK" : "Too low"}
+                        </span>
                       </div>
-                      <button onClick={() => setHasPhoto(false)} style={{ position: "absolute", bottom: 3, right: 5, background: "none", border: "none", fontFamily: F.u, fontSize: 9, color: "rgba(0,0,0,0.5)", cursor: "pointer" }}>Retake</button>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <div>
+                    <FieldLabel>Photo</FieldLabel>
+                    {!hasPhoto ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: C.burg, border: "none", borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                          <Camera size={12} /> Camera
+                        </button>
+                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                          <UploadCloud size={12} /> Gallery
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, background: "linear-gradient(135deg,#F0E8D0,#C4923A)", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
+                        <Camera size={20} color="rgba(255,255,255,0.85)" />
+                        <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <CheckCircle2 size={10} color="#FFF" />
+                        </div>
+                        <button onClick={() => setHasPhoto(false)} style={{ position: "absolute", bottom: 3, right: 5, background: "none", border: "none", fontFamily: F.u, fontSize: 9, color: "rgba(0,0,0,0.5)", cursor: "pointer" }}>Retake</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {sareeWeight && hasPhoto && (
-                <div style={{ textAlign: "center", marginBottom: 10 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginBottom: 2 }}>Saree ID</div>
-                  <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{sareeId}</div>
+                {sareeColor && sareeWeight && hasPhoto && (
+                  <div style={{ textAlign: "center", marginBottom: 10 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginBottom: 2 }}>Saree ID</div>
+                    <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{sareeId}</div>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  <button onClick={() => setShowTagPrint(true)} style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    <Printer size={12} /> Print Tag
+                  </button>
+                  <button onClick={saveSaree} disabled={!canSaveSaree}
+                    style={{ flex: 1, height: 42, background: canSaveSaree ? "#FFF" : "#F5F0EC", border: `1px solid ${canSaveSaree ? C.burg : C.bdr}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: canSaveSaree ? C.burg : C.muted, cursor: canSaveSaree ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    <Plus size={12} /> Next Saree
+                  </button>
                 </div>
-              )}
-
-              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                <button onClick={() => setShowTagPrint(true)} style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <Printer size={12} /> Print Tag
-                </button>
-                <button onClick={() => { setSareeCount(p => p + 1); setSareeWeight(""); setHasPhoto(false); }}
-                  style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <Plus size={12} /> Next Saree
+                <button onClick={() => setShowDefectPrompt(true)}
+                  style={{ width: "100%", height: 38, background: "rgba(220,53,69,0.06)", border: `1px solid rgba(220,53,69,0.25)`, borderRadius: 999, fontFamily: F.u, fontSize: 11.5, fontWeight: 600, color: C.crim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  <AlertTriangle size={12} /> Mark as Defective
                 </button>
               </div>
-              <button onClick={() => setShowDefectPrompt(true)}
-                style={{ width: "100%", height: 38, background: "rgba(220,53,69,0.06)", border: `1px solid rgba(220,53,69,0.25)`, borderRadius: 999, fontFamily: F.u, fontSize: 11.5, fontWeight: 600, color: C.crim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                <AlertTriangle size={12} /> Mark as Defective
-              </button>
-            </div>
+            )}
+
+            {currentBatch && !selectedSareeNo && !allDone && (
+              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap a pending saree above to record its color, weight and photo.</span>
+              </div>
+            )}
 
             {showDefectPrompt && (
               <DefectPhotoPrompt
                 onCancel={() => setShowDefectPrompt(false)}
                 onCapture={() => {
-                  setRejectedSarees(prev => [
-                    {
-                      id: sareeId,
-                      weaver: selectedWeaver?.name ?? "Weaver",
-                      weight: sareeWeight ? `${sareeWeight}g` : "—",
-                      date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-                      photoUrl: "captured-defect-photo",
-                    },
-                    ...prev,
-                  ]);
+                  if (selectedWeaver && currentBatch && selectedSareeNo) {
+                    setBatches(prev => {
+                      const next = JSON.parse(JSON.stringify(prev)) as Record<string, WeaverBatchData[]>;
+                      const b = next[selectedWeaver.code].find(b => b.id === currentBatch.id)!;
+                      const s = b.sarees.find(s => s.no === selectedSareeNo)!;
+                      s.status = "defective"; s.color = sareeColor || undefined; s.weight = sareeWeight || undefined;
+                      return next;
+                    });
+                    setRejectedSarees(prev => [
+                      {
+                        id: sareeId,
+                        weaver: selectedWeaver.name,
+                        weight: sareeWeight ? `${sareeWeight}g` : "—",
+                        date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+                        photoUrl: "captured-defect-photo",
+                      },
+                      ...prev,
+                    ]);
+                    onSareeReceived?.({
+                      id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+                      weight: sareeWeight ? `${sareeWeight}g` : "—", date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+                      color: sareeColor || "—", status: "Defective",
+                    });
+                  }
                   setShowDefectPrompt(false);
-                  setSareeCount(p => p + 1);
-                  setSareeWeight("");
-                  setHasPhoto(false);
+                  setSelectedSareeNo(null);
+                  setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
                 }}
               />
             )}
@@ -925,32 +1153,43 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
               </div>
             )}
 
-            <WeaverSigBlock
-              weaverName={selectedWeaver?.name ?? "Weaver"}
-              sigMethod={sigMethod} setSigMethod={setSigMethod}
-              signed={signed} setSigned={setSigned}
-              remoteSent={remoteSent} setRemoteSent={setRemoteSent}
-              remoteConfirmed={remoteConfirmed} setRemoteConfirmed={setRemoteConfirmed}
-            />
+            {currentBatch && allDone && (
+              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <CheckCircle2 size={16} color={C.green} />
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green }}>All {currentBatch.total} sarees recorded. Collect weaver signature to complete the batch.</span>
+              </div>
+            )}
 
-            {(() => {
-              const sigOk = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
-              return (
-                <div style={{ padding: "14px 16px 0" }}>
-                  {!sigOk && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, padding: "8px 12px", background: "rgba(220,53,69,0.08)", border: "1px solid rgba(220,53,69,0.20)", borderRadius: 8 }}>
-                      <AlertTriangle size={13} color={C.crim} />
-                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim }}>Weaver signature required to complete batch</span>
+            {currentBatch && allDone && (
+              <>
+                <WeaverSigBlock
+                  weaverName={selectedWeaver?.name ?? "Weaver"}
+                  sigMethod={sigMethod} setSigMethod={setSigMethod}
+                  signed={signed} setSigned={setSigned}
+                  remoteSent={remoteSent} setRemoteSent={setRemoteSent}
+                  remoteConfirmed={remoteConfirmed} setRemoteConfirmed={setRemoteConfirmed}
+                />
+
+                {(() => {
+                  const sigOk = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
+                  return (
+                    <div style={{ padding: "14px 16px 0" }}>
+                      {!sigOk && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, padding: "8px 12px", background: "rgba(220,53,69,0.08)", border: "1px solid rgba(220,53,69,0.20)", borderRadius: 8 }}>
+                          <AlertTriangle size={13} color={C.crim} />
+                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim }}>Weaver signature required to complete batch</span>
+                        </div>
+                      )}
+                      <button
+                        disabled={!sigOk}
+                        style={{ ...btnPrimary, height: 50, gap: 7, background: sigOk ? C.green : "#E0D5CC", color: sigOk ? "#FFF" : C.muted, cursor: sigOk ? "pointer" : "not-allowed" }}>
+                        <CheckCircle2 size={16} /> Mark Batch Complete
+                      </button>
                     </div>
-                  )}
-                  <button
-                    onClick={() => sigOk ? undefined : undefined}
-                    style={{ ...btnPrimary, height: 50, gap: 7, background: sigOk ? C.green : "#E0D5CC", color: sigOk ? "#FFF" : C.muted, cursor: sigOk ? "pointer" : "not-allowed" }}>
-                    <CheckCircle2 size={16} /> Mark Batch Complete
-                  </button>
-                </div>
-              );
-            })()}
+                  );
+                })()}
+              </>
+            )}
           </>
         )}
 
@@ -1046,44 +1285,57 @@ function ReceiveSareesPage({ onBack }: { onBack: () => void }) {
 }
 
 // ─── History Section ─────────────────────────────────────────────────────────
-const HISTORY_DATA = [
-  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", status: "Passed QC" },
-  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  status: "Passed QC" },
-  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"WV-007",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",status: "Defective" },
-  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", status: "Passed QC" },
-  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  status: "Passed QC" },
-  { id: "BKB-L3-002",   weaver: "Own Loom 3", wcode: "",        batch: "BATCH-OWN",weight: "774g", date: "14 Jul 2026", sareeType: "Kanjivaram",   status: "Passed QC" },
+const HISTORY_DATA: (ReceivedSareeLog & { sareeType: string })[] = [
+  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", color: "Gold",   status: "Passed QC" },
+  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  color: "Maroon", status: "Passed QC" },
+  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"WV-007",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",color: "Red",    status: "Defective" },
+  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", color: "Green",  status: "Passed QC" },
+  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  color: "Blue",   status: "Passed QC" },
+  { id: "BKB-L3-002",   weaver: "Own Loom 3", wcode: "",        batch: "BATCH-OWN",weight: "774g", date: "14 Jul 2026", sareeType: "Kanjivaram",   color: "Cream",  status: "Passed QC" },
 ];
 
-function HistorySection() {
+function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
 
-  const filtered = HISTORY_DATA.filter(h =>
+  const allData: (ReceivedSareeLog & { sareeType?: string })[] = [
+    ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
+    ...HISTORY_DATA,
+  ];
+
+  const filtered = allData.filter(h =>
     !search ||
     h.id.toLowerCase().includes(search.toLowerCase()) ||
     h.weaver.toLowerCase().includes(search.toLowerCase()) ||
-    h.batch.toLowerCase().includes(search.toLowerCase())
+    h.batch.toLowerCase().includes(search.toLowerCase()) ||
+    h.color.toLowerCase().includes(search.toLowerCase())
   );
 
   // Group by date
-  const byDay: Record<string, typeof HISTORY_DATA> = {};
+  const byDay: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byDay[h.date]) byDay[h.date] = []; byDay[h.date].push(h); });
 
   // Group by weaver
-  const byWeaver: Record<string, typeof HISTORY_DATA> = {};
+  const byWeaver: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
 
   const statusColor = (s: string) => s === "Passed QC" ? C.green : s === "Defective" ? C.crim : C.gold;
 
-  const SareeRow = ({ h, last }: { h: typeof HISTORY_DATA[0]; last: boolean }) => (
+  const SareeRow = ({ h, last }: { h: typeof filtered[0]; last: boolean }) => (
     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(107,26,42,0.06)` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
           <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: "#FFF", background: statusColor(h.status), padding: "1px 6px", borderRadius: 999 }}>{h.status}</span>
         </div>
-        <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{h.sareeType} · {h.weight} · {h.batch}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 11, color: C.muted }}>
+          {h.sareeType && h.sareeType !== "—" && <>{h.sareeType} · </>}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: h.color?.toLowerCase() || "#CCC", border: "1px solid rgba(0,0,0,0.15)" }} />
+            {h.color}
+          </span>
+          · {h.weight} · {h.batch}
+        </div>
       </div>
       {view === "day" && <div style={{ fontFamily: F.u, fontSize: 11, color: C.text, flexShrink: 0 }}>{h.weaver}</div>}
       {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>{h.date}</div>}
@@ -1218,6 +1470,7 @@ interface WorkerWeaversProps {
 export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) {
   const [localPage, setLocalPage] = useState<WeaversPage>("receive");
   const [showManual, setShowManual] = useState(false);
+  const [liveRecords, setLiveRecords] = useState<ReceivedSareeLog[]>([]);
   const page = subPage ?? localPage;
   const setPage = onSubPageChange ?? setLocalPage;
 
@@ -1242,10 +1495,10 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
         </div>
 
         {/* Receive Sarees form area */}
-        <ReceiveSareesPage onBack={() => {}} />
+        <ReceiveSareesPage onBack={() => {}} onSareeReceived={rec => setLiveRecords(prev => [rec, ...prev])} />
 
         {/* History section */}
-        <HistorySection />
+        <HistorySection liveRecords={liveRecords} />
       </div>
     </>
   );
