@@ -6,7 +6,31 @@ import {
   ArrowRight, Check, X,
   Inbox, AlertCircle, Zap
 } from "lucide-react";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 const imgNotifHero = "https://images.unsplash.com/photo-1633613286991-611fe299c4be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+
+// Reconstructs an absolute date from the app's relative time labels ("10 min ago", "Yesterday", "3 days ago", "8:15 AM")
+// so the shared date filter can operate on real dates instead of relative strings.
+function relativeTimeToDate(time: string): string {
+  const now = new Date();
+  if (time === "Just now") return now.toISOString();
+  let m = time.match(/^(\d+)\s*min ago$/);
+  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 60000).toISOString();
+  m = time.match(/^(\d+)h ago$/);
+  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 3600000).toISOString();
+  m = time.match(/^(\d+)\s*days? ago$/);
+  if (m) return new Date(now.getTime() - parseInt(m[1], 10) * 86400000).toISOString();
+  if (time === "Yesterday") return new Date(now.getTime() - 86400000).toISOString();
+  m = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+  if (m) {
+    let h = parseInt(m[1], 10) % 12;
+    if (m[3] === "PM") h += 12;
+    const d = new Date(now);
+    d.setHours(h, parseInt(m[2], 10), 0, 0);
+    return d.toISOString();
+  }
+  return now.toISOString();
+}
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -124,6 +148,7 @@ export function NotificationsPage() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [filter, setFilter]                 = useState<Filter>("all");
   const [selected, setSelected]             = useState<UnifiedNotif | null>(null);
+  const [dateFilter, setDateFilter]         = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const markRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -144,7 +169,10 @@ export function NotificationsPage() {
   const categoryFiltered = activeCategory === "all" ? notifications : notifications.filter(n => n.category === activeCategory);
   
   // 2. Filter by Active Priority second
-  const filtered = filter === "all" ? categoryFiltered : categoryFiltered.filter(n => n.priority === filter);
+  const priorityFiltered = filter === "all" ? categoryFiltered : categoryFiltered.filter(n => n.priority === filter);
+
+  // 3. Filter by date last
+  const filtered = priorityFiltered.filter(n => matchesDateFilter(relativeTimeToDate(n.time), dateFilter));
   
   const unread   = notifications.filter(n => !n.read).length;
 
@@ -337,6 +365,10 @@ export function NotificationsPage() {
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{filtered.length} notification{filtered.length !== 1 ? "s" : ""}</span>
           </div>
         </div>
+      </div>
+
+      <div style={{ padding: "16px 56px 0" }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
       {/* ── CONTENT ── */}

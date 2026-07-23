@@ -158,6 +158,7 @@ export const ROLE_COLORS = {
   worker:     { accent: "#1E6640", lightBg: "rgba(30,102,64,0.08)",   border: "rgba(30,102,64,0.22)"  },
   weaver:     { accent: "#7B3F00", lightBg: "rgba(123,63,0,0.08)",    border: "rgba(123,63,0,0.22)"   },
   shop:       { accent: "#008080", lightBg: "rgba(0,128,128,0.08)",   border: "rgba(0,128,128,0.22)"  },
+  accountant: { accent: "#1E5C8A", lightBg: "rgba(30,92,138,0.08)",   border: "rgba(30,92,138,0.22)"  },
 } as const;
 
 export type RoleKey = keyof typeof ROLE_COLORS;

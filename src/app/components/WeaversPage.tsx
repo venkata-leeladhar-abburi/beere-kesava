@@ -16,11 +16,10 @@ import {
 import { PieChart, Pie, Cell } from "recharts";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../constants/weaverImages";
 import { useWeaverPayments } from "./WeaverPaymentsContext";
-import { useDesignLibrary } from "./DesignLibraryContext";
-import { DesignCodeCard } from "./DesignLibraryPage";
 import { useMaterialIssue } from "./MaterialIssueContext";
 import { useBatches } from "./BatchContext";
 import { useBulkOrders } from "./BulkOrderContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo as imgBKBLogo } from "../constants/weaverImages";
 
@@ -605,9 +604,8 @@ function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof 
 
                   <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
 
-                  {/* Dual Column Stats (Looms & Rate/Charge) */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-                    {/* Looms block */}
+                  {/* Looms stat */}
+                  <div style={{ marginBottom: 12 }}>
                     <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Rows size={14} color={T.royalBurgundy} weight="fill" />
@@ -617,28 +615,7 @@ function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof 
                         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
                       </div>
                     </div>
-
-                    {/* Rate / Making Charge block */}
-                    <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>₹</span>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Making Charge</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
-                          {WEAVER_RATES[w.id] ? WEAVER_RATES[w.id].rate.split("/")[0] : "—"}
-                        </span>
-                      </div>
-                    </div>
                   </div>
-
-                  {/* Design type detail strip */}
-                  {WEAVER_RATES[w.id] && (
-                    <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown }}>{WEAVER_RATES[w.id].type}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{WEAVER_RATES[w.id].code}</span>
-                    </div>
-                  )}
 
                   {/* Action buttons */}
                   <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
@@ -854,13 +831,12 @@ function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; 
 function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
   const [mode, setMode] = useState<"view" | "edit">(initialMode);
+  const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const { getPaymentsForWeaver } = useWeaverPayments();
-  const { getDesign } = useDesignLibrary();
   const { getRecordsForWeaver } = useMaterialIssue();
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
-  const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
-  const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
@@ -915,7 +891,8 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
     if (a.status === "active" && b.status !== "active") return -1;
     if (a.status !== "active" && b.status === "active") return 1;
     return getBatchNum(b.batchId) - getBatchNum(a.batchId);
-  });
+  }).filter(b => matchesDateFilter(b.createdAt, batchDateFilter));
+  const filteredWeaverPayments = weaverPayments.filter(p => matchesDateFilter(p.paymentDate, paymentDateFilter));
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
@@ -941,7 +918,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                 { icon: <MapPin size={15} color={T.royalBurgundy} />, label: "Village", value: weaver.village },
                 { icon: <Phone size={15} color={T.royalBurgundy} />, label: "Mobile", value: weaver.mobile },
                 { icon: <Activity size={15} color={T.royalBurgundy} />, label: "Looms", value: `${weaver.looms} Looms` },
-                { icon: <FileText size={15} color={T.royalBurgundy} />, label: "Making Charge", value: WEAVER_RATES[weaver.id]?.rate || "—" },
               ].map(s => (
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", minWidth: 140 }}>
                   {s.icon}
@@ -1183,6 +1159,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           {tab === "batches" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <SectionPill label="All Batches & Assigned Sarees" />
+              <DateFilterBar filter={batchDateFilter} onChange={setBatchDateFilter} />
               {sortedAllWeaverBatches.length > 0 ? (
                 sortedAllWeaverBatches.map(b => {
                   const weaverSareesInBatch = b.rows.filter(r => r.weaverId === weaver.id);
@@ -1222,7 +1199,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                             <tr style={{ background: T.warmCream }}>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
@@ -1260,16 +1236,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                                       <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.antiqueGold }}>
                                         L{row.weaverLoom}
                                       </span>
-                                    ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    {row.designCode ? (
-                                      <button onClick={() => row.designCode && setOpenDesignCode(row.designCode)}
-                                        style={{ border: "none", background: "none", padding: 0, fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>
-                                        {row.designCode}
-                                      </button>
                                     ) : (
                                       <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
                                     )}
@@ -1323,13 +1289,14 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
               </div>
 
               <SectionPill label="Payment History" />
-              {weaverPayments.length === 0 ? (
+              <DateFilterBar filter={paymentDateFilter} onChange={setPaymentDateFilter} />
+              {filteredWeaverPayments.length === 0 ? (
                 <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" }}>
-                  No payment records found. Payments appear here after Excel upload on the Payments page.
+                  {weaverPayments.length === 0 ? "No payment records found. Payments appear here after Excel upload on the Payments page." : "No payments found for the selected period."}
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {weaverPayments.map(p => (
+                  {filteredWeaverPayments.map(p => (
                     <div key={p.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
                       <div>
                         <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Amount Paid</div>
@@ -1351,8 +1318,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                   ))}
                 </div>
               )}
-
-              <div onClick={() => onNavigate?.("Payments")} style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 16 }}>See Full Payment History →</div>
             </div>
           )}
 
@@ -1406,9 +1371,6 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           </motion.button>
         </div>
       </motion.div>
-      <AnimatePresence>
-        {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
-      </AnimatePresence>
     </>
   );
 }

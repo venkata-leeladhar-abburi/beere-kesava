@@ -48,6 +48,45 @@ export interface FinishingReturn {
   receivedDate: string;
   inventoryStatus: "Ready for Dispatch" | "Damaged — Review Needed" | "Dispatched";
   dispatchId?: string;
+  quotationRef?: string;
+}
+
+// ── Quotation (Inventory → Worker finishing → Admin dispatch) ─────────────────
+export interface QuotationSaree {
+  sareeId: string;
+  designCode: string;
+  sareeTypeCode?: string;
+  sareeType: string;
+  weaverName: string;
+  finishingStatus: "pending" | "in-finishing" | "received";
+}
+
+export interface Quotation {
+  id: string;
+  quotationNumber: string;
+  quotationDate: string;
+  customerId: string;
+  customerName: string;
+  customerCity?: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  customerGst?: string;
+  bulkOrderRef?: string;
+  sarees: QuotationSaree[];
+  prices: Record<string, string>;
+  applyGst: boolean;
+  gstPct: string;
+  firmId?: string;
+  firmName?: string;
+  notes?: string;
+  subtotal: number;
+  grandTotal: number;
+  raisedBy: string;
+  status: "raised" | "in-finishing" | "partially-received" | "received" | "dispatched";
+  finishingStaffId?: string;
+  finishingStaffName?: string;
+  assignedDate?: string;
+  createdAt: number;
 }
 
 export interface DispatchRecord {
@@ -98,6 +137,11 @@ interface FinishingContextValue {
     receivedDate: string;
   }) => void;
   dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => void;
+  quotations: Quotation[];
+  raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => string;
+  assignQuotationFinishing: (quotationId: string, staff: { id: string; name: string }, assignedBy: string) => void;
+  receiveQuotationSarees: (quotationId: string, sareeIds: string[], receivedBy: string) => void;
+  markQuotationDispatched: (quotationId: string, dispatchId: string) => void;
 }
 
 // ── Seed data ─────────────────────────────────────────────────────────────────
@@ -130,6 +174,34 @@ const SEED_DISPATCHES: DispatchRecord[] = [
   { id: "DISP-seed-001", type: "shop", sareeIds: ["BKB-INV-007", "BKB-INV-008"], dispatchDate: "20 Jun 2026", lrNumber: "LR-20260620-001", transportCompany: "Shyam Carriers", vehicleNumber: "AP09AB1234", driverName: "Ramesh", notes: "" },
 ];
 
+const SEED_QUOTATIONS: Quotation[] = [
+  {
+    id: "QT-seed-001",
+    quotationNumber: "QT-2026-001",
+    quotationDate: "26 Jun 2026",
+    customerId: "WHL-001",
+    customerName: "Lakshmi Silks",
+    customerCity: "Hyderabad",
+    customerPhone: "+91 98450 11223",
+    customerAddress: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081",
+    customerGst: "36AAAAA1111A1Z1",
+    sarees: [
+      { sareeId: "BKB-QT-101", designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeType: "Heavy Zari",   weaverName: "Ravi Kumar", finishingStatus: "pending" },
+      { sareeId: "BKB-QT-102", designCode: "BKB-045", sareeTypeCode: "SB-001", sareeType: "Self Brocade", weaverName: "Padma Veni", finishingStatus: "pending" },
+    ],
+    prices: { "BKB-QT-101": "12000", "BKB-QT-102": "9500" },
+    applyGst: true,
+    gstPct: "5",
+    firmId: "",
+    notes: "Priority order for festive season.",
+    subtotal: 21500,
+    grandTotal: 22575,
+    raisedBy: "Admin",
+    status: "raised",
+    createdAt: Date.now() - 86400000,
+  },
+];
+
 // ── Context ───────────────────────────────────────────────────────────────────
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
@@ -139,6 +211,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const [assignments,  setAssignments]  = useState<FinishingAssignment[]>(SEED_ASSIGNMENTS);
   const [returns,      setReturns]      = useState<FinishingReturn[]>(SEED_RETURNS);
   const [dispatches,   setDispatches]   = useState<DispatchRecord[]>(SEED_DISPATCHES);
+  const [quotations,   setQuotations]   = useState<Quotation[]>(SEED_QUOTATIONS);
 
   const assignSarees = useCallback((
     sareeIds: string[],
@@ -245,8 +318,98 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     ));
   }, []);
 
+  const todayLabel = () => new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+  const raiseQuotation = useCallback((q: Omit<Quotation, "id" | "createdAt">) => {
+    const id = `QT-${Date.now()}`;
+    setQuotations(prev => [{ ...q, id, createdAt: Date.now() }, ...prev]);
+    return id;
+  }, []);
+
+  const assignQuotationFinishing = useCallback((
+    quotationId: string,
+    staff: { id: string; name: string },
+    assignedBy: string,
+  ) => {
+    const today = todayLabel();
+    const q = quotations.find(x => x.id === quotationId);
+    if (!q) return;
+
+    setQuotations(prev => prev.map(x => x.id === quotationId ? {
+      ...x,
+      status: "in-finishing",
+      finishingStaffId: staff.id,
+      finishingStaffName: staff.name,
+      assignedDate: today,
+      sarees: x.sarees.map(s => ({ ...s, finishingStatus: "in-finishing" as const })),
+    } : x));
+
+    // Mirror each quotation saree into the finishing assignments list so it is tracked.
+    const stamp = Date.now();
+    const newAssignments: FinishingAssignment[] = q.sarees.map((s, i) => ({
+      id: `FA-QT-${stamp}-${i}`,
+      sareeId: s.sareeId,
+      designCode: s.designCode,
+      sareeTypeCode: s.sareeTypeCode,
+      sareeType: s.sareeType,
+      weaverName: s.weaverName,
+      qcPassDate: q.quotationDate,
+      finishingStaffId: staff.id,
+      finishingStaffName: staff.name,
+      assignedDate: today,
+      assignedBy,
+      status: "awaiting-return",
+    }));
+    setAssignments(a => [...a, ...newAssignments]);
+  }, [quotations]);
+
+  const receiveQuotationSarees = useCallback((
+    quotationId: string,
+    sareeIds: string[],
+    receivedBy: string,
+  ) => {
+    const today = todayLabel();
+    const q = quotations.find(x => x.id === quotationId);
+    if (!q) return;
+
+    setQuotations(prev => prev.map(x => {
+      if (x.id !== quotationId) return x;
+      const sarees = x.sarees.map(s =>
+        sareeIds.includes(s.sareeId) ? { ...s, finishingStatus: "received" as const } : s
+      );
+      const allReceived = sarees.every(s => s.finishingStatus === "received");
+      const anyReceived = sarees.some(s => s.finishingStatus === "received");
+      return { ...x, sarees, status: allReceived ? "received" : anyReceived ? "partially-received" : x.status };
+    }));
+
+    // Push received sarees into inventory as Ready-for-Dispatch returns, tagged with the quotation.
+    const stamp = Date.now();
+    const newReturns: FinishingReturn[] = q.sarees
+      .filter(s => sareeIds.includes(s.sareeId))
+      .map((s, i) => ({
+        id: `FR-QT-${stamp}-${i}`,
+        assignmentId: `QT:${quotationId}`,
+        sareeId: s.sareeId,
+        designCode: s.designCode,
+        sareeTypeCode: s.sareeTypeCode,
+        sareeType: s.sareeType,
+        weaverName: s.weaverName,
+        condition: "perfect" as const,
+        receivedBy,
+        receivedDate: today,
+        inventoryStatus: "Ready for Dispatch" as const,
+        quotationRef: q.quotationNumber,
+      }));
+    setReturns(r => [...r, ...newReturns]);
+    setAssignments(a => a.map(as => sareeIds.includes(as.sareeId) ? { ...as, status: "returned" as const } : as));
+  }, [quotations]);
+
+  const markQuotationDispatched = useCallback((quotationId: string, _dispatchId: string) => {
+    setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q));
+  }, []);
+
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees }}>
+    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched }}>
       {children}
     </FinishingContext.Provider>
   );

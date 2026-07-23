@@ -14,6 +14,7 @@ import {
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { imgShowroom } from "../constants/weaverImages";
 import { useBulkOrders } from "./BulkOrderContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -252,8 +253,12 @@ export function CustomersPage() {
   const [wholesaleList, setWholesaleList] = useState<any[]>(wholesaleData);
   const [selectedWholesaleCust, setSelectedWholesaleCust] = useState<any>(null);
   const [wholesaleTab, setWholesaleTab] = useState<string>("Overview");
+  const [wholesaleOrderDateFilter, setWholesaleOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [wholesalePaymentDateFilter, setWholesalePaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [retailPurchaseDateFilter, setRetailPurchaseDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [modalWholesale, setModalWholesale] = useState<any>(null);
   const [modalRetail, setModalRetail] = useState<any>(null);
+  const [downloadConfirmRetail, setDownloadConfirmRetail] = useState<any>(null);
   const [retailModalTab, setRetailModalTab] = useState<"history" | "profile">("history");
   const [viewingCard, setViewingCard] = useState<string | null>(null);
   const { bulkOrders } = useBulkOrders();
@@ -502,6 +507,7 @@ export function CustomersPage() {
             {wholesaleTab === "Order History" && (
               <div>
                 <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Purchase &amp; Order History</h3>
+                <DateFilterBar filter={wholesaleOrderDateFilter} onChange={setWholesaleOrderDateFilter} />
                 <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
@@ -516,7 +522,7 @@ export function CustomersPage() {
                         { id: "ORD-2026-041", date: "28 Apr 2026", type: "Heavy Zari", qty: 80, val: "₹1,80,000", status: "In Production" },
                         { id: "ORD-2026-028", date: "15 Mar 2026", type: "Self Brocade", qty: 120, val: "₹2,60,000", status: "Delivered" },
                         { id: "ORD-2025-095", date: "10 Dec 2025", type: "Bridal Special", qty: 40, val: "₹1,20,000", status: "Delivered" },
-                      ].map(o => (
+                      ].filter(o => matchesDateFilter(o.date, wholesaleOrderDateFilter)).map(o => (
                         <tr key={o.id} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                           <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.id}</td>
                           <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{o.date}</td>
@@ -537,6 +543,7 @@ export function CustomersPage() {
             {wholesaleTab === "Payment History" && (
               <div>
                 <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Ledger Payments Received</h3>
+                <DateFilterBar filter={wholesalePaymentDateFilter} onChange={setWholesalePaymentDateFilter} />
                 <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
@@ -551,7 +558,7 @@ export function CustomersPage() {
                         { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: "₹1,80,000", ded: "₹0", status: "Settled" },
                         { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: "₹2,60,000", ded: "₹20,000", status: "Settled" },
                         { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: "₹1,00,000", ded: "₹5,000", status: "Settled" },
-                      ].map(p => (
+                      ].filter(p => matchesDateFilter(p.date, wholesalePaymentDateFilter)).map(p => (
                         <tr key={p.rec} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                           <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{p.rec}</td>
                           <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{p.date}</td>
@@ -693,6 +700,117 @@ export function CustomersPage() {
               </div>
             )}
           </div>
+        </div>
+      ) : modalRetail ? (
+        <div style={{ padding: "48px 56px" }}>
+          {/* Header row with Back button */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+            <button
+              onClick={() => setModalRetail(null)}
+              style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+            >
+              ← Back to Customers
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.warmCream, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, flexShrink: 0 }}>{modalRetail.initials}</div>
+            <div>
+              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: "0 0 6px 0" }}>{modalRetail.name}</h2>
+              <div style={{ display: "flex", gap: 8 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, background: T.crimsonBg, padding: "4px 8px", borderRadius: 12 }}>Retail Customer</span>
+                <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "4px 8px", borderRadius: 12 }}>Since 2024</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, marginBottom: 28 }}>
+            <div onClick={() => setRetailModalTab("history")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "history" ? 600 : 500, color: retailModalTab === "history" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "history" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Purchase History</div>
+            <div onClick={() => setRetailModalTab("profile")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "profile" ? 600 : 500, color: retailModalTab === "profile" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "profile" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Profile Details</div>
+          </div>
+
+          {retailModalTab === "history" ? (
+            <>
+              {/* 4-stat summary strip */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
+                  <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{modalRetail.purchases}</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
+                  <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{modalRetail.spend}</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
+                    ₹{Math.round(parseInt(modalRetail.spend.replace(/,/g, '')) / Math.max(modalRetail.purchases, 1)).toLocaleString('en-IN')}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
+                </div>
+              </div>
+
+              <DateFilterBar filter={retailPurchaseDateFilter} onChange={setRetailPurchaseDateFilter} />
+              <div style={{ background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
+                      {["Sale Date", "Saree ID", "Saree Type", "Price Paid", "Return"].map(h => (
+                        <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { date: modalRetail.lastVisit, id: "RAVI-L2-008", type: "Heavy Zari",       price: "₹14,500" },
+                      { date: "12 Feb 2026",         id: "PADMA-L1-012", type: "Plain Silk",       price: "₹22,000" },
+                      { date: "08 Jan 2026",         id: "BKB-L3-004",   type: "Self Brocade",     price: "₹9,800" },
+                      { date: "14 Dec 2025",         id: "SURESH-L2-007", type: "Bridal Special", price: "₹38,500" },
+                      { date: "02 Nov 2025",         id: "RAVI-L2-003",  type: "Heavy Zari",      price: "₹16,200" },
+                    ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter)).map((row, i) => (
+                      <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                        <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
+                        <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.id}</td>
+                        <td style={{ padding: "14px 14px", color: T.luxuryBrown }}>{row.type}</td>
+                        <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
+                        <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
+                </div>
+                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>City / Location</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{modalRetail.city || "Hyderabad, TG"}</div>
+                </div>
+                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Favorite Category</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.antiqueGold }}>Heavy Zari / Self Brocade</div>
+                </div>
+                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Status</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.greenMid }}>{modalRetail.regular ? "★ Preferred Regular Client" : "Regular Client"}</div>
+                </div>
+              </div>
+              <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Manager Notes</div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5, marginTop: 4 }}>
+                  Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops.
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -1316,7 +1434,7 @@ export function CustomersPage() {
           action="📥 Download Retail Customer List →"
         />
 
-        {/* Tab switcher + Add button */}
+        {/* Tab switcher */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <div style={{ display: "flex", background: "#FFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
             {[["inventory","Stock Inventory"],["external","External Purchases"]].map(([key,label]) => (
@@ -1325,9 +1443,6 @@ export function CustomersPage() {
               </button>
             ))}
           </div>
-          <button onClick={() => setShowExtDrawer(true)} style={{ display: "flex", alignItems: "center", gap: 7, height: 40, padding: "0 20px", background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            <Plus size={15} /> Add External Purchase
-          </button>
         </div>
 
         {/* Retail stat cards */}
@@ -1436,16 +1551,7 @@ export function CustomersPage() {
                     <Eye size={16} /> View Purchase History
                   </button>
                   <button
-                    onClick={() => downloadCustomerCSV(r.name, [
-                      ["Customer Name", r.name],
-                      ["Phone", r.phone],
-                      ["City", r.city],
-                      ["Total Purchases", String(r.purchases)],
-                      ["Total Spend", r.spend],
-                      ["Last Visit", r.lastVisit],
-                      ["Regular Buyer", r.regular ? "Yes" : "No"],
-                      ["Inactive", r.inactive ? "Yes" : "No"],
-                    ])}
+                    onClick={() => setDownloadConfirmRetail(r)}
                     style={{ height: 42, padding: "0 14px", background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 9, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, whiteSpace: "nowrap" as const }}
                     title="Download Data"
                   >
@@ -1639,106 +1745,6 @@ export function CustomersPage() {
           </div>
         )}
 
-        {modalRetail && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModalRetail(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: "100%", maxWidth: 680, background: "#FFF", borderRadius: 24, overflow: "hidden", position: "relative", zIndex: 10, boxShadow: "0 20px 60px rgba(44,24,16,0.20)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
-              <div style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, padding: "24px 32px", display: "flex", alignItems: "center", gap: 20 }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.warmCream, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>{modalRetail.initials}</div>
-                <div>
-                  <h2 style={{ fontFamily: F.display, fontSize: 22, color: T.luxuryBrown, margin: "0 0 4px 0" }}>{modalRetail.name}</h2>
-                  <div style={{ display: "flex", gap: 8 }}><span style={{ fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, background: T.crimsonBg, padding: "4px 8px", borderRadius: 12 }}>Retail Customer</span><span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "4px 8px", borderRadius: 12 }}>Since 2024</span></div>
-                </div>
-                <button onClick={() => setModalRetail(null)} style={{ marginLeft: "auto", background: "#FFF", border: `1px solid ${T.borderDef}`, color: T.taupe, width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={18} /></button>
-              </div>
-              <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 32px" }}>
-                <div onClick={() => setRetailModalTab("history")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "history" ? 600 : 500, color: retailModalTab === "history" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "history" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Purchase History</div>
-                <div onClick={() => setRetailModalTab("profile")} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: retailModalTab === "profile" ? 600 : 500, color: retailModalTab === "profile" ? T.royalBurgundy : T.taupe, borderBottom: retailModalTab === "profile" ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", cursor: "pointer", transition: "all 0.15s" }}>Profile Details</div>
-              </div>
-              <div style={{ padding: 32, overflowY: "auto" }}>
-                {retailModalTab === "history" ? (
-                  <>
-                    {/* 4-stat summary strip */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
-                        <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{modalRetail.purchases}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-                        <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{modalRetail.spend}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
-                          ₹{Math.round(parseInt(modalRetail.spend.replace(/,/g, '')) / Math.max(modalRetail.purchases, 1)).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
-                      </div>
-                    </div>
-
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
-                      <thead>
-                        <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                          {["Sale Date", "Saree ID", "Saree Type", "Price Paid", "Return"].map(h => (
-                            <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          { date: modalRetail.lastVisit, id: "RAVI-L2-008", type: "Heavy Zari",       price: "₹14,500" },
-                          { date: "12 Feb 2026",         id: "PADMA-L1-012", type: "Plain Silk",       price: "₹22,000" },
-                          { date: "08 Jan 2026",         id: "BKB-L3-004",   type: "Self Brocade",     price: "₹9,800" },
-                          { date: "14 Dec 2025",         id: "SURESH-L2-007", type: "Bridal Special", price: "₹38,500" },
-                          { date: "02 Nov 2025",         id: "RAVI-L2-003",  type: "Heavy Zari",      price: "₹16,200" },
-                        ].map((row, i) => (
-                          <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                            <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
-                            <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.id}</td>
-                            <td style={{ padding: "14px 14px", color: T.luxuryBrown }}>{row.type}</td>
-                            <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
-                            <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
-                      </div>
-                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>City / Location</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{modalRetail.city || "Hyderabad, TG"}</div>
-                      </div>
-                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Favorite Category</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.antiqueGold }}>Heavy Zari / Self Brocade</div>
-                      </div>
-                      <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Status</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.greenMid }}>{modalRetail.regular ? "★ Preferred Regular Client" : "Regular Client"}</div>
-                      </div>
-                    </div>
-                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Manager Notes</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5, marginTop: 4 }}>
-                        Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops.
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
       </AnimatePresence>
 
       {/* ── EXTERNAL PURCHASE DRAWER ───────────────────────────────── */}
@@ -1837,6 +1843,47 @@ export function CustomersPage() {
           ✓ External purchase recorded successfully
         </div>
       )}
+
+      {/* Retail customer — Download confirmation modal */}
+      <AnimatePresence>
+        {downloadConfirmRetail && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 2100, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDownloadConfirmRetail(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 420, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 28 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <Download size={22} color={T.antiqueGold} />
+              </div>
+              <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 8px 0" }}>Download Customer Data?</h3>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px 0", lineHeight: 1.5 }}>
+                This will download a CSV file with {downloadConfirmRetail.name}'s profile and purchase summary.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setDownloadConfirmRetail(null)} style={{ flex: 1, height: 42, background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    downloadCustomerCSV(downloadConfirmRetail.name, [
+                      ["Customer Name", downloadConfirmRetail.name],
+                      ["Phone", downloadConfirmRetail.phone],
+                      ["City", downloadConfirmRetail.city],
+                      ["Total Purchases", String(downloadConfirmRetail.purchases)],
+                      ["Total Spend", downloadConfirmRetail.spend],
+                      ["Last Visit", downloadConfirmRetail.lastVisit],
+                      ["Regular Buyer", downloadConfirmRetail.regular ? "Yes" : "No"],
+                      ["Inactive", downloadConfirmRetail.inactive ? "Yes" : "No"],
+                    ]);
+                    setDownloadConfirmRetail(null);
+                  }}
+                  style={{ flex: 1, height: 42, background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <Download size={15} /> Download
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Visiting Card Viewer Modal */}
       <AnimatePresence>

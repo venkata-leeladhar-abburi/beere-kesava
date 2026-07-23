@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SariTagPrintModal } from "./SariTagPrintModal";
 import { SareeTypeCard, SareeTypeRecord, INITIAL_RATES, getSareeTypeByCode } from "./RatesPricingPage";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -1021,6 +1022,7 @@ export function ExternalPurchasesPage() {
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit"; editId?: string } | null>(null);
@@ -1037,7 +1039,8 @@ export function ExternalPurchasesPage() {
       p.gstNumber.toLowerCase().includes(search.toLowerCase()) ||
       p.invoiceNumber.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All Status" || p.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchDate = matchesDateFilter(p.date, dateFilter);
+    return matchSearch && matchStatus && matchDate;
   });
 
   const nextId = () => {
@@ -1453,6 +1456,7 @@ export function ExternalPurchasesPage() {
             onClick={() => {
               setSearch("");
               setStatusFilter("All Status");
+              setDateFilter(DEFAULT_DATE_FILTER);
             }}
             style={{
               height: 40,
@@ -1469,6 +1473,8 @@ export function ExternalPurchasesPage() {
             Clear
           </button>
         </div>
+
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
       {/* MAIN TABLE */}

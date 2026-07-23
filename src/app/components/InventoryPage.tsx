@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useFinishing, FinishingReturn, DispatchRecord } from "./FinishingContext";
 import { useFirms } from "./FirmsContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { useBulkOrders } from "./BulkOrderContext";
 import { useBatches } from "./BatchContext";
@@ -187,6 +188,7 @@ interface InvoiceData {
 
 function InvoiceGenerator({
   sarees, customer, transport, data, onChange, onSend, onDraft, onCancel, bulkOrderRef,
+  mode = "invoice", embedded = false,
 }: {
   sarees: FinishingReturn[];
   customer: typeof WHOLESALE_CUSTOMERS[0] | null;
@@ -197,7 +199,11 @@ function InvoiceGenerator({
   onDraft: () => void;
   onCancel: () => void;
   bulkOrderRef?: string;
+  mode?: "invoice" | "quotation";
+  embedded?: boolean;
 }) {
+  const isQuotation = mode === "quotation";
+  const docLabel = isQuotation ? "Quotation" : "Invoice";
   const { firms } = useFirms();
   const { bulkOrders } = useBulkOrders();
   const { batches } = useBatches();
@@ -244,10 +250,10 @@ function InvoiceGenerator({
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" }}>
-          <Field label="Invoice Number" req>
-            <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder="INV-2026-001" mono />
+          <Field label={`${docLabel} Number`} req>
+            <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder={isQuotation ? "QT-2026-001" : "INV-2026-001"} mono />
           </Field>
-          <Field label="Invoice Date" req>
+          <Field label={`${docLabel} Date`} req>
             <input type="date" value={data.invoiceDate} onChange={e => set("invoiceDate")(e.target.value)}
               style={{ ...inp, fontFamily: F.mono }}
               onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
@@ -306,7 +312,7 @@ function InvoiceGenerator({
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
-            <Field label="Invoice raised by (Firm)" req>
+            <Field label={`${docLabel} raised by (Firm)`} req>
               <SelectInput value={data.firmId} onChange={set("firmId") as (v: string) => void}>
                 <option value="">Select firm…</option>
                 {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
@@ -314,17 +320,19 @@ function InvoiceGenerator({
             </Field>
           </div>
 
+          {!isQuotation && (
           <Field label="Payment Due Date">
             <input type="date" value={data.paymentDueDate} onChange={e => set("paymentDueDate")(e.target.value)}
               style={{ ...inp, fontFamily: F.mono }}
               onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
               onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
           </Field>
+          )}
 
           <div style={{ gridColumn: "1 / -1" }}>
             <Field label="Additional Notes">
               <textarea value={data.invoiceNotes} onChange={e => set("invoiceNotes")(e.target.value)} rows={2}
-                placeholder="Any notes for this invoice…"
+                placeholder={`Any notes for this ${docLabel.toLowerCase()}…`}
                 style={{ ...inp, resize: "none" as const, lineHeight: 1.55 }}
                 onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.royalBurgundy; }}
                 onBlur={e =>  { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
@@ -352,8 +360,8 @@ function InvoiceGenerator({
           {/* Invoice meta */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || "INV-XXXX"}</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>{isQuotation ? "QUOTATION" : "TAX INVOICE"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || (isQuotation ? "QT-XXXX" : "INV-XXXX")}</div>
               <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
               {bulkOrderRef && (
                 <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
@@ -439,6 +447,7 @@ function InvoiceGenerator({
           </div>
 
           {/* Dispatch details */}
+          {!isQuotation && (
           <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
             {bulkOrderRef && (
@@ -467,13 +476,15 @@ function InvoiceGenerator({
               ))}
             </div>
           </div>
+          )}
         </div>
       </div>
 
       {/* Action buttons — full width below both columns */}
+      {!embedded && (
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 10, flexWrap: "wrap" as const }}>
         <button onClick={onSend} style={{ flex: 1, height: 50, background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
-          <Send size={16} /> Send Invoice to Customer
+          <Send size={16} /> {isQuotation ? "Send Quotation to Customer" : "Send Invoice to Customer"}
         </button>
         <button onClick={onDraft} style={{ height: 50, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
           <Save size={15} /> Save as Draft
@@ -482,6 +493,7 @@ function InvoiceGenerator({
           Cancel
         </button>
       </div>
+      )}
     </div>
   );
 }
@@ -633,16 +645,19 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
   const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
 
   const canNext1 = !!customerId;
-  const canNext3 = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
-  const canSend  = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
+  const canInvoice = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
+  const canTransport = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
 
-  const STEPS = ["Customer", "Sarees", "Transport & LR", "Upload Receipt", "Invoice"];
+  // Steps reordered: Tax Invoice is raised BEFORE transport & receipt.
+  const STEPS = ["Customer", "Sarees", "Tax Invoice", "Transport & LR", "Upload Receipt"];
+  const INVOICE_STEP = 3;
+  const nextDisabled = (step === 1 && !canNext1) || (step === INVOICE_STEP && !canInvoice) || (step === 4 && !canTransport);
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: step === 5 ? 1100 : 680, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
+        style={{ position: "relative", width: step === INVOICE_STEP ? 1100 : 680, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
 
         {/* Header */}
         <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
@@ -788,20 +803,8 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
             </div>
           )}
 
-          {step === 3 && <TransportForm data={transport} onChange={setTransport} wholesale />}
-
-          {step === 4 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Upload the LR receipt document for this wholesale dispatch.</div>
-              <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "40px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
-                <Upload size={32} color={T.taupe} style={{ margin: "0 auto 12px" }} />
-                <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Click to upload LR receipt</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
-              </div>
-            </div>
-          )}
-
-          {step === 5 && (
+          {/* Step 3 — Tax Invoice (raised before transport) */}
+          {step === INVOICE_STEP && (
             <InvoiceGenerator
               sarees={sarees}
               customer={selectedCustomer}
@@ -809,33 +812,207 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
               data={inv}
               onChange={setInv}
               bulkOrderRef={bulkOrderRef || undefined}
-              onSend={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined)}
-              onDraft={() => onClose()}
+              embedded
+              onSend={() => {}}
+              onDraft={() => {}}
               onCancel={onClose}
             />
           )}
+
+          {step === 4 && <TransportForm data={transport} onChange={setTransport} wholesale />}
+
+          {step === 5 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Upload the LR receipt document for this wholesale dispatch. You can skip this and upload later from Dispatch Records.</div>
+              <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "40px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
+                <Upload size={32} color={T.taupe} style={{ margin: "0 auto 12px" }} />
+                <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Click to upload LR receipt</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {step < 5 && (
-          <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
-            {step > 1 && (
-              <button onClick={() => setStep(s => s - 1)}
-                style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
-                Back
-              </button>
-            )}
-            <button onClick={() => setStep(s => s + 1)} disabled={(step === 1 && !canNext1) || (step === 3 && !canNext3)}
-              style={{ flex: 1, height: 46, background: ((step === 1 && !canNext1) || (step === 3 && !canNext3)) ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: ((step === 1 && !canNext1) || (step === 3 && !canNext3)) ? T.taupe : "#FFF", cursor: ((step === 1 && !canNext1) || (step === 3 && !canNext3)) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+          {step > 1 && (
+            <button onClick={() => setStep(s => s - 1)}
+              style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+              Back
+            </button>
+          )}
+          {step < STEPS.length ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={nextDisabled}
+              style={{ flex: 1, height: 46, background: nextDisabled ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: nextDisabled ? T.taupe : "#FFF", cursor: nextDisabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
               Continue <ArrowRight size={15} />
             </button>
-          </div>
-        )}
+          ) : (
+            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined)}
+              style={{ flex: 1, height: 46, background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
+              <Truck size={16} /> Confirm &amp; Dispatch
+            </button>
+          )}
+        </div>
       </motion.div>
     </div>
   );
 }
 
 
+
+// ── Raise Quotation modal (Customer → Sarees → Quotation) ─────────────────────
+function RaiseQuotationModal({ sarees, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
+  sarees: FinishingReturn[];
+  onConfirm: (inv: InvoiceData, customerId: string, bulkOrderRef?: string) => void;
+  onClose: () => void;
+  initialBulkOrderRef?: string;
+  initialCustomerId?: string;
+}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [step, setStep] = useState(1);
+  const [customerId, setCustomerId] = useState(initialCustomerId || "");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
+  const { bulkOrders } = useBulkOrders();
+  const { batches } = useBatches();
+  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `QT-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
+
+  const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
+  const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
+
+  const canNext1 = !!customerId;
+  const canQuote = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
+
+  const STEPS = ["Customer", "Sarees", "Quotation"];
+  const nextDisabled = step === 1 && !canNext1;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
+        style={{ position: "relative", width: step === 3 ? 1100 : 680, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
+
+        {/* Header */}
+        <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <FileText size={20} color={T.antiqueGold} />
+              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Raise Quotation</span>
+              {selectedCustomer && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>→ {selectedCustomer.name}</span>}
+            </div>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+          </div>
+          <div style={{ display: "flex", gap: 0 }}>
+            {STEPS.map((s, i) => (
+              <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
+                  </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 10, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
+                </div>
+                {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)", margin: "0 4px" }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+          {/* Step 1 — Customer */}
+          {step === 1 && (
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>Select the customer for this quotation.</div>
+              <div style={{ position: "relative", marginBottom: 14 }}>
+                <Search size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                <input value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" style={{ ...inp, paddingLeft: 36 }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {filteredCustomers.map(c => (
+                  <button key={c.id} onClick={() => setCustomerId(c.id)}
+                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: customerId === c.id ? "rgba(110,15,45,0.04)" : "#FFF", cursor: "pointer", textAlign: "left" as const, transition: "all 0.15s" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: customerId === c.id ? "rgba(110,15,45,0.12)" : T.silkCream, border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Building2 size={16} color={customerId === c.id ? T.royalBurgundy : T.taupe} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{c.name}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{c.city} · {c.phone}</div>
+                    </div>
+                    {customerId === c.id && <CheckCircle2 size={18} color={T.royalBurgundy} />}
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginTop: 18 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
+                <div style={{ position: "relative" }}>
+                  <select value={bulkOrderRef} onChange={e => setBulkOrderRef(e.target.value)} style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}>
+                    <option value="">— Not linked to a bulk order —</option>
+                    {bulkOrders.map(o => (<option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>))}
+                  </select>
+                  <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 — Sarees */}
+          {step === 2 && (
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} will be included in this quotation for {selectedCustomer?.name}.</div>
+              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                {sarees.map((s, i) => (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: "#FFF" }}>
+                    <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
+                    </div>
+                    <StatusBadge status={s.inventoryStatus} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Quotation */}
+          {step === 3 && (
+            <InvoiceGenerator
+              sarees={sarees}
+              customer={selectedCustomer}
+              transport={{ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: "", notes: "" }}
+              data={inv}
+              onChange={setInv}
+              bulkOrderRef={bulkOrderRef || undefined}
+              mode="quotation"
+              embedded
+              onSend={() => {}}
+              onDraft={() => {}}
+              onCancel={onClose}
+            />
+          )}
+        </div>
+
+        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+          {step > 1 && (
+            <button onClick={() => setStep(s => s - 1)}
+              style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+              Back
+            </button>
+          )}
+          {step < STEPS.length ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={nextDisabled}
+              style={{ flex: 1, height: 46, background: nextDisabled ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: nextDisabled ? T.taupe : "#FFF", cursor: nextDisabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+              Continue <ArrowRight size={15} />
+            </button>
+          ) : (
+            <button onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined)} disabled={!canQuote}
+              style={{ flex: 1, height: 46, background: !canQuote ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canQuote ? T.taupe : "#FFF", cursor: !canQuote ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
+              <Send size={16} /> Raise Quotation
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
@@ -845,6 +1022,72 @@ function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
       style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: T.deepWine, color: "#FFF", padding: "14px 22px", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, zIndex: 600, whiteSpace: "nowrap", boxShadow: "0 8px 32px rgba(0,0,0,0.25)", display: "flex", alignItems: "center", gap: 9 }}>
       <CheckCircle2 size={16} color={T.antiqueGold} /> {msg}
     </motion.div>
+  );
+}
+
+// ── Dispatch History section ──────────────────────────────────────────────────
+function DispatchHistorySection({ dispatches, firms }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[] }) {
+  const [tab, setTab] = useState<"all" | "shop" | "wholesale">("all");
+  const rows = useMemo(() =>
+    [...dispatches]
+      .filter(d => tab === "all" || d.type === tab)
+      .sort((a, b) => (b.id > a.id ? 1 : -1)),
+  [dispatches, tab]);
+
+  const TABS: { key: typeof tab; label: string; count: number }[] = [
+    { key: "all",       label: "All",       count: dispatches.length },
+    { key: "shop",      label: "To Shop",   count: dispatches.filter(d => d.type === "shop").length },
+    { key: "wholesale", label: "Wholesale", count: dispatches.filter(d => d.type === "wholesale").length },
+  ];
+
+  return (
+    <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Truck size={18} color={T.royalBurgundy} />
+          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>Dispatch History</span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {TABS.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, border: `1px solid ${tab === t.key ? T.royalBurgundy : T.borderDef}`, background: tab === t.key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: tab === t.key ? T.royalBurgundy : T.taupe, cursor: "pointer" }}>
+              {t.label} <span style={{ fontFamily: F.mono, fontSize: 11 }}>({t.count})</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Header row */}
+      <div style={{ display: "grid", gridTemplateColumns: "120px 90px 1fr 140px 110px 90px 130px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm"].map((h, i) => (
+          <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches yet.</div>
+      ) : rows.map((d, i) => {
+        const firm = firms.find(f => f.id === d.firmId);
+        return (
+          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "120px 90px 1fr 140px 110px 90px 130px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
+            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{d.dispatchDate}</div>
+            <div>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, textTransform: "capitalize" as const }}>
+                {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
+              </span>
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</div>
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
+            </div>
+            <div style={{ fontFamily: F.mono, fontSize: 11, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -860,6 +1103,7 @@ export interface InventoryRecord {
   originalId: string; // readySaree id or return id
   bulkOrderRef?: string;
   batchId?: string;
+  quotationRef?: string;
 }
 
 export const getLoomForRecord = (id: string, weaverName: string): string => {
@@ -889,10 +1133,11 @@ export const getSareeColor = (id: string): string => {
 };
 
 export function InventoryPage() {
-  const { returns, dispatches, dispatchSarees, readySarees } = useFinishing();
+  const { returns, dispatches, dispatchSarees, readySarees, raiseQuotation } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
   const { batches } = useBatches();
+  const { firms } = useFirms();
 
   // ── Clickable code modals ───────────────────────────────────────────────────
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -904,13 +1149,14 @@ export function InventoryPage() {
   const [selected, setSelected]               = useState<Set<string>>(new Set());
   const [filter,   setFilter]                 = useState<"all" | "pending" | "ready" | "dispatched" | "damaged">("all");
   const [searchQ,  setSearchQ]                = useState("");
+  const [dateFilter, setDateFilter]           = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [selectedBulkOrder, setSelectedBulkOrder] = useState<string>("all");
   const [selectedLoom, setSelectedLoom]       = useState<string>("all");
   const [selectedWeaver, setSelectedWeaver]   = useState<string>("all");
   const [selectedBatch, setSelectedBatch]     = useState<string>("all");
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [modal,    setModal]                  = useState<"shop" | "wholesale" | null>(null);
+  const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
   const [toast,    setToast]                  = useState("");
   const [scanMsg,  setScanMsg]                = useState("");
 
@@ -958,7 +1204,8 @@ export function InventoryPage() {
         rawType: "return",
         originalId: r.id,
         bulkOrderRef: boRef,
-        batchId: bId
+        batchId: bId,
+        quotationRef: r.quotationRef,
       });
     });
 
@@ -1012,8 +1259,9 @@ export function InventoryPage() {
     const matchLoom = selectedLoom === "all" || recordLoom === selectedLoom;
     const matchWeaver = selectedWeaver === "all" || r.weaverName === selectedWeaver;
     const matchBatch = selectedBatch === "all" || r.batchId === selectedBatch;
-    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver && matchBatch;
-  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver, selectedBatch]);
+    const matchDate = matchesDateFilter(r.date, dateFilter);
+    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver && matchBatch && matchDate;
+  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver, selectedBatch, dateFilter]);
 
   // ── Selection helpers ──────────────────────────────────────────────────────
   const dispatchableSelected = useMemo(() => {
@@ -1088,6 +1336,45 @@ export function InventoryPage() {
     setModal(null);
     setSelected(new Set());
     setToast(`Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
+  };
+
+  const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
+    const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+    const quoteSarees = dispatchableSelected;
+    const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]) || 0), 0);
+    const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
+    const firm = firms.find(f => f.id === inv.firmId);
+    raiseQuotation({
+      quotationNumber: inv.invoiceNumber,
+      quotationDate: inv.invoiceDate,
+      customerId,
+      customerName: customer?.name ?? "—",
+      customerCity: customer?.city,
+      customerPhone: customer?.phone,
+      customerAddress: customer?.address,
+      customerGst: customer?.gstCode,
+      bulkOrderRef,
+      sarees: quoteSarees.map(r => ({
+        sareeId: r.id,
+        designCode: r.designCode,
+        sareeType: r.sareeType,
+        weaverName: r.weaverName,
+        finishingStatus: "pending" as const,
+      })),
+      prices: inv.prices,
+      applyGst: inv.applyGst,
+      gstPct: inv.gstPct,
+      firmId: inv.firmId,
+      firmName: firm?.firmName,
+      notes: inv.invoiceNotes,
+      subtotal,
+      grandTotal: subtotal + gstAmount,
+      raisedBy: "Admin",
+      status: "raised",
+    });
+    setModal(null);
+    setSelected(new Set());
+    setToast(`Quotation ${inv.invoiceNumber} raised for ${customer?.name} — sent to finishing`);
   };
 
   const FILTER_PILLS: { key: typeof filter; label: string; count: number }[] = [
@@ -1366,6 +1653,8 @@ export function InventoryPage() {
                 </div>
               </div>
 
+              <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+
               {/* Scan feedback */}
               {scanMsg && (
                 <div style={{ marginTop: 10, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 8, padding: "7px 12px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>
@@ -1390,6 +1679,10 @@ export function InventoryPage() {
                   <button onClick={() => setModal("wholesale")} disabled={!dispatchableSelected.length}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: dispatchableSelected.length ? "pointer" : "not-allowed", opacity: dispatchableSelected.length ? 1 : 0.5 }}>
                     <Users size={15} /> Dispatch to Wholesale
+                  </button>
+                  <button onClick={() => setModal("quotation")} disabled={!dispatchableSelected.length}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: dispatchableSelected.length ? "pointer" : "not-allowed", opacity: dispatchableSelected.length ? 1 : 0.5 }}>
+                    <FileText size={15} /> Raise Quotation
                   </button>
                   <button onClick={() => setSelected(new Set())} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                     <X size={14} color="#FFF" />
@@ -1493,7 +1786,17 @@ export function InventoryPage() {
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Dispatch to Wholesale</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With invoice generation</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
+                  </div>
+                </button>
+                <button onClick={() => { if (ready > 0) setFilter("ready"); setModal(selected.size > 0 ? "quotation" : null); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <FileText size={18} color={T.antiqueGold} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Raise Quotation</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Send to finishing before dispatch</div>
                   </div>
                 </button>
               </div>
@@ -1524,6 +1827,11 @@ export function InventoryPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
+      <div style={{ padding: "0 48px 80px", marginTop: 40 }}>
+        <DispatchHistorySection dispatches={dispatches} firms={firms} />
       </div>
 
       {/* ── MODALS ──────────────────────────────────────────────────────── */}
@@ -1574,6 +1882,35 @@ export function InventoryPage() {
               initialBulkOrderRef={detectedRef}
               initialCustomerId={detectedCustomerId}
               onConfirm={handleWholesaleConfirm}
+              onClose={() => setModal(null)}
+            />
+          );
+        })()}
+        {modal === "quotation" && dispatchableSelected.length > 0 && (() => {
+          const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
+          const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
+          const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
+          const detectedCustomerId = detectedOrder?.customerId
+            ? WHOLESALE_CUSTOMERS.find(c => c.id === detectedOrder.customerId)?.id
+            : undefined;
+          return (
+            <RaiseQuotationModal
+              key="quotation-modal"
+              sarees={dispatchableSelected.map(r => ({
+                id: r.originalId,
+                assignmentId: "QUOTATION",
+                sareeId: r.id,
+                designCode: r.designCode,
+                sareeType: r.sareeType,
+                weaverName: r.weaverName,
+                condition: "perfect" as const,
+                receivedBy: "Admin",
+                receivedDate: r.date,
+                inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
+              }))}
+              initialBulkOrderRef={detectedRef}
+              initialCustomerId={detectedCustomerId}
+              onConfirm={handleRaiseQuotation}
               onClose={() => setModal(null)}
             />
           );
@@ -1653,6 +1990,11 @@ function InventoryDetailModal({
             {item.bulkOrderRef && (
               <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(200,155,71,0.10)', border: '1px solid rgba(200,155,71,0.25)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: '#7A5310' }}>
                 <Hash size={10} /> {item.bulkOrderRef}
+              </div>
+            )}
+            {item.quotationRef && (
+              <div style={{ marginTop: 8, marginLeft: item.bulkOrderRef ? 6 : 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(110,15,45,0.06)', border: '1px solid rgba(110,15,45,0.16)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy }}>
+                <FileText size={10} /> {item.quotationRef}
               </div>
             )}
           </div>

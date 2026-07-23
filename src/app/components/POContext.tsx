@@ -9,6 +9,7 @@ export interface POItem {
   unit: string;
   pricePerUnit: number;
   subtotal: number;
+  invoiceAmount?: number;
 }
 
 export interface PurchaseOrder {
@@ -107,6 +108,7 @@ interface POContextValue {
   addPO: (po: PurchaseOrder) => void;
   approvePO: (id: string) => void;
   rejectPO: (id: string, reason?: string) => void;
+  setMaterialInvoiceAmount: (poId: string, materialIndex: number, amount: number) => void;
   nextPONumber: string;
 }
 
@@ -139,6 +141,16 @@ export function POProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const setMaterialInvoiceAmount = useCallback((poId: string, materialIndex: number, amount: number) => {
+    setPos(prev =>
+      prev.map(p =>
+        p.id === poId
+          ? { ...p, materials: p.materials.map((m, i) => i === materialIndex ? { ...m, invoiceAmount: amount } : m) }
+          : p
+      )
+    );
+  }, []);
+
   // Compute next PO number based on existing POs
   const allNums = pos
     .map(p => {
@@ -150,7 +162,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   const nextPONumber = `PO-2026-${String(maxNum + 1).padStart(3, "0")}`;
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, nextPONumber }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, setMaterialInvoiceAmount, nextPONumber }}>
       {children}
     </POContext.Provider>
   );

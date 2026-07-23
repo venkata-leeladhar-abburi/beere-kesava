@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router";
 import { motion } from "motion/react";
 import {
-  LayoutDashboard, Shield, Package, Layers, ShoppingCart, ArrowRight,
+  LayoutDashboard, Shield, Package, Layers, ShoppingCart, ArrowRight, Calculator,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import type { Role } from "../../contexts/AuthContext";
@@ -50,6 +50,13 @@ const PORTALS: {
     desc:  "Record sales, manage inventory, process returns, and view reports.",
     icon:  <ShoppingCart size={26} />,
   },
+  {
+    role:  "accountant",
+    label: "Accountant Portal",
+    sub:   "Finance & Payments",
+    desc:  "Track payments, firms, rates & pricing, and financial reports.",
+    icon:  <Calculator size={26} />,
+  },
 ];
 
 // Role → route
@@ -59,6 +66,7 @@ const ROLE_ROUTES: Record<Role, string> = {
   worker:     "/worker",
   weaver:     "/weaver",
   shop:       "/shop",
+  accountant: "/accountant",
 };
 
 // ── Portal Card ────────────────────────────────────────────────────────────────
@@ -263,7 +271,7 @@ export function RoleSelectPage() {
           <div style={{ position: "relative", zIndex: 1, marginTop: "auto", paddingTop: 32 }}>
             <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 12, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 600, letterSpacing: "2px", color: "rgba(245,237,208,0.35)", textTransform: "uppercase", marginBottom: 10 }}>
-                5 portals available
+                6 portals available
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 7px" }}>
                 {PORTALS.map(p => (

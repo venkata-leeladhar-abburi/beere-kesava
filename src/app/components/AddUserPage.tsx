@@ -6,6 +6,7 @@ import {
   Briefcase, Lock, FileText, Eye, Sparkles,
 } from "lucide-react";
 import { useFinishingStaff, FinishingStaffMember } from "./FinishingStaffContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -344,6 +345,7 @@ export function AddUserPage() {
   // ── Table state ─────────────────────────────────────────────────────────
   const [searchQ,        setSearchQ]        = useState("");
   const [roleFilter,     setRoleFilter]     = useState("All Roles");
+  const [dateFilter,     setDateFilter]     = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [page,           setPage]           = useState(1);
   const ROWS_PER_PAGE = 7;
 
@@ -394,8 +396,9 @@ export function AddUserPage() {
     const q = searchQ.toLowerCase();
     const matchSearch = !q || `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) || u.mobile.includes(q) || u.empId.toLowerCase().includes(q);
     const matchRole = roleFilter === "All Roles" || u.role === roleFilter;
-    return matchSearch && matchRole;
-  }), [allRows, searchQ, roleFilter]);
+    const matchDate = matchesDateFilter(u.dateAdded, dateFilter);
+    return matchSearch && matchRole && matchDate;
+  }), [allRows, searchQ, roleFilter, dateFilter]);
 
   const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE);
   const pagedRows  = filtered.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
@@ -689,6 +692,10 @@ export function AddUserPage() {
                   <ChevronDown size={13} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                 </div>
               </div>
+            </div>
+
+            <div style={{ padding: "0 28px 16px" }}>
+              <DateFilterBar filter={dateFilter} onChange={f => { setDateFilter(f); setPage(1); }} />
             </div>
 
             {/* Table */}

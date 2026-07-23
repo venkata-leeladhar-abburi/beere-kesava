@@ -10,6 +10,7 @@ import { SuperadminLayout } from "./layouts/SuperadminLayout";
 import { WorkerLayout }     from "./layouts/WorkerLayout";
 import { WeaverLayout }     from "./layouts/WeaverLayout";
 import { ShopLayout }       from "./layouts/ShopLayout";
+import { AccountantLayout } from "./layouts/AccountantLayout";
 
 // Auth / Role pages
 import { LoginPage }      from "./pages/LoginPage";
@@ -21,6 +22,7 @@ import { SuperadminDashboardPage } from "./pages/superadmin/DashboardPage";
 import { WorkerHomePage }          from "./pages/worker/HomePage";
 import { WeaverHomePage }          from "./pages/weaver/HomePage";
 import { ShopHomePage }            from "./pages/shop/HomePage";
+import { AccountantHomePage }      from "./pages/accountant/HomePage";
 
 // Other views
 import { MobileScanView } from "./components/MobileScanView";
@@ -68,6 +70,12 @@ export default function App() {
             <Route path="/shop" element={<ShopLayout />}>
               <Route index element={<Navigate to="home" replace />} />
               <Route path=":tab" element={<ShopHomePage />} />
+            </Route>
+
+            {/* Accountant Portal */}
+            <Route path="/accountant" element={<AccountantLayout />}>
+              <Route index element={<Navigate to="payments" replace />} />
+              <Route path=":tab" element={<AccountantHomePage />} />
             </Route>
 
             {/* Mobile Scanner */}

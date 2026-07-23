@@ -7,6 +7,7 @@ import {
 import { useMaterialIssue, MaterialIssueRecord, IssuedMaterialItem } from "./MaterialIssueContext";
 import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
 import { useBatches } from "./BatchContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ── Design Tokens (matches MaterialsPage.tsx / WeaversPage.tsx) ─────────────
 const T = {
@@ -599,8 +600,7 @@ export function IssueMaterialPage() {
   // History section state
   const [histSearch, setHistSearch] = useState("");
   const [histWeaverFilter, setHistWeaverFilter] = useState("All Weavers");
-  const [histDateFrom, setHistDateFrom] = useState("");
-  const [histDateTo, setHistDateTo] = useState("");
+  const [histDateFilter, setHistDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [histPage, setHistPage] = useState(1);
   const [viewRecord, setViewRecord] = useState<MaterialIssueRecord | null>(null);
   const ROWS_PER_PAGE = 15;
@@ -613,7 +613,10 @@ export function IssueMaterialPage() {
   const weaverBatches = selectedWeaver
     ? batches.filter(b => b.status !== "completed" && b.rows.some(r => r.weaverId === selectedWeaver.id))
     : [];
-  const selectedBatch = weaverBatches.find(b => b.batchId === selectedBatchId) || null;
+  const loomBatches = selectedFactoryLoom
+    ? batches.filter(b => b.status !== "completed" && b.rows.some(r => r.factoryLoomId === selectedFactoryLoom.id))
+    : [];
+  const selectedBatch = (recipientType === "weaver" ? weaverBatches : loomBatches).find(b => b.batchId === selectedBatchId) || null;
 
   const filteredWeavers = weaverSearch.length >= 1
     ? WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase()) || w.id.toLowerCase().includes(weaverSearch.toLowerCase()))
@@ -624,7 +627,7 @@ export function IssueMaterialPage() {
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
   const recipientReady = recipientType === "weaver"
     ? (!!selectedWeaver && selectedLoom !== "" && !!selectedBatchId)
-    : !!selectedFactoryLoom;
+    : (!!selectedFactoryLoom && !!selectedBatchId);
   const canConfirm = recipientReady && validRows.length > 0 && isSigned;
 
   function updateRow(uid: string, updated: MaterialRowState) {
@@ -647,7 +650,9 @@ export function IssueMaterialPage() {
   }
 
   function handleConfirm() {
-    if (!canConfirm || !selectedWeaver) return;
+    if (!canConfirm) return;
+    if (recipientType === "weaver" && !selectedWeaver) return;
+    if (recipientType === "factoryLoom" && !selectedFactoryLoom) return;
 
     const materials: IssuedMaterialItem[] = validRows.map(r => {
       const base: IssuedMaterialItem = {
@@ -663,9 +668,9 @@ export function IssueMaterialPage() {
     });
 
     const record = addIssueRecord({
-      weaverId: selectedWeaver.id,
-      weaverName: selectedWeaver.name,
-      loomNumber: selectedLoom || undefined,
+      ...(recipientType === "weaver"
+        ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
+        : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
       batchId: selectedBatchId || undefined,
       issuedBy: "Admin (Kesava Rao)",
       issuedAt: new Date().toISOString(),
@@ -695,10 +700,8 @@ export function IssueMaterialPage() {
       r.id.toLowerCase().includes(histSearch.toLowerCase()) ||
       r.materials.some(m => m.grnBatchId.toLowerCase().includes(histSearch.toLowerCase()));
     const matchWeaver = histWeaverFilter === "All Weavers" || r.weaverName === histWeaverFilter;
-    const issuedDate = r.issuedAt.slice(0, 10);
-    const matchFrom = !histDateFrom || issuedDate >= histDateFrom;
-    const matchTo = !histDateTo || issuedDate <= histDateTo;
-    return matchSearch && matchWeaver && matchFrom && matchTo;
+    const matchDate = matchesDateFilter(r.issuedAt, histDateFilter);
+    return matchSearch && matchWeaver && matchDate;
   });
   const totalPages = Math.max(1, Math.ceil(filteredHistory.length / ROWS_PER_PAGE));
   const pagedHistory = filteredHistory.slice((histPage - 1) * ROWS_PER_PAGE, histPage * ROWS_PER_PAGE);
@@ -871,7 +874,7 @@ export function IssueMaterialPage() {
             !selectedFactoryLoom ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
                 {FACTORY_LOOMS_LIST.map(loom => (
-                  <button key={loom.id} onClick={() => setSelectedLoomId(loom.id)} style={{
+                  <button key={loom.id} onClick={() => { setSelectedLoomId(loom.id); setSelectedBatchId(null); }} style={{
                     background: "#FFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, padding: "14px 16px",
                     cursor: "pointer", textAlign: "left" as const, transition: "all 0.15s",
                   }}>
@@ -892,16 +895,46 @@ export function IssueMaterialPage() {
                 ))}
               </div>
             ) : (
-              <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 14, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Factory size={22} color="#FFF" />
+              <>
+                <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+                  <div style={{ width: 46, height: 46, borderRadius: 14, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Factory size={22} color="#FFF" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedFactoryLoom.loomNumber} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedFactoryLoom.id}</span></div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
+                  </div>
+                  <button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedFactoryLoom.loomNumber} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedFactoryLoom.id}</span></div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
+                {/* Batch selector */}
+                <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Batch Number *</div>
+                  {loomBatches.length === 0 ? (
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic" }}>
+                      No open production batches found for {selectedFactoryLoom.loomNumber}.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      {loomBatches.map(b => {
+                        const sareeCount = b.rows.filter(r => r.factoryLoomId === selectedFactoryLoom.id).length;
+                        const active = selectedBatchId === b.batchId;
+                        return (
+                          <button key={b.batchId} onClick={() => setSelectedBatchId(b.batchId)} style={{
+                            display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2,
+                            padding: "8px 16px", borderRadius: 10, cursor: "pointer",
+                            border: `1.5px solid ${active ? T.royalBurgundy : T.borderDef}`,
+                            background: active ? T.royalBurgundy : "#FFF",
+                            color: active ? "#FFF" : T.luxuryBrown, transition: "all 0.15s ease",
+                          }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => setSelectedLoomId(null)} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
-              </div>
+              </>
             )
           )}
 
@@ -961,10 +994,9 @@ export function IssueMaterialPage() {
               style={{ height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 12px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFF" }}>
               {weaverNames.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-            <input type="date" value={histDateFrom} onChange={e => { setHistDateFrom(e.target.value); setHistPage(1); }} style={{ height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5 }} />
-            <span style={{ alignSelf: "center", color: T.taupe, fontFamily: F.ui, fontSize: 12.5 }}>to</span>
-            <input type="date" value={histDateTo} onChange={e => { setHistDateTo(e.target.value); setHistPage(1); }} style={{ height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5 }} />
           </div>
+
+          <DateFilterBar filter={histDateFilter} onChange={f => { setHistDateFilter(f); setHistPage(1); }} />
 
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", overflowX: "auto" as const }}>
             <table style={{ width: "100%", borderCollapse: "collapse" as const, minWidth: 900 }}>

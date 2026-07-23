@@ -30,6 +30,7 @@ const imgHeaderBg = "https://images.unsplash.com/photo-1588140686379-1b76a52103d
 import { imgBKLogo, imgSareeFooter } from "../constants/weaverImages";
 import { useBulkOrders, BulkOrder } from "./BulkOrderContext";
 import { useFirms } from "./FirmsContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -2224,6 +2225,7 @@ function WholesaleCollectionsSection() {
   const [filterState, setFilterState] = useState("All States");
   const [filterCust, setFilterCust] = useState("All Customers");
   const [filterType, setFilterType] = useState("All Invoice Types");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   // Synchronize dispatches
   useEffect(() => {
@@ -2289,7 +2291,8 @@ function WholesaleCollectionsSection() {
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.customer.toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase());
     const matchState = filterState === "All States" || inv.city === filterState; // close enough
-    return matchSearch && matchState;
+    const matchDate = matchesDateFilter(inv.invoiceDate, dateFilter);
+    return matchSearch && matchState && matchDate;
   });
 
   const viewOptions = [
@@ -2420,6 +2423,8 @@ function WholesaleCollectionsSection() {
               style={{ width: "100%", padding: "8px 12px 8px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
           </div>
         </div>
+
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
         {/* ── Card grid ────────────────────────────────────────── */}
         {view === "card" && (
@@ -2818,7 +2823,9 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, sele
   const isPaid = vp.status === "Paid";
   const cfg = VENDOR_STATUS_CFG[vp.status];
   const vendorName = matchedPO?.vendor ?? vp.vendor;
-  
+  const { setMaterialInvoiceAmount } = usePO();
+  const [invoiceDrafts, setInvoiceDrafts] = useState<Record<number, string>>({});
+
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
     "Warp": { col: "#B85C38", bg: "rgba(184,92,56,0.12)" },
     "Resham": { col: "#4A7059", bg: "rgba(74,112,89,0.12)" },
@@ -2893,12 +2900,36 @@ function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, sele
                   </div>
                   
                   <div style={{ paddingLeft: 60 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
-                        {m.subtotal ? `₹${m.subtotal.toLocaleString("en-IN")}` : "—"}
-                      </span>
-                    </div>
+                    {m.invoiceAmount ? (
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
+                          ₹{m.invoiceAmount.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                        <input
+                          type="number"
+                          value={invoiceDrafts[mi] || ""}
+                          onChange={e => setInvoiceDrafts(prev => ({ ...prev, [mi]: e.target.value }))}
+                          placeholder="Invoice amount in ₹"
+                          style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 11, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" as const }}
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const val = parseFloat(invoiceDrafts[mi]);
+                            if (invoiceDrafts[mi] && !isNaN(val) && matchedPO) {
+                              setMaterialInvoiceAmount(matchedPO.id, mi, val);
+                            }
+                          }}
+                          style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -3509,6 +3540,7 @@ function VendorPaymentsSection() {
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
   const [vendorFilter, setVendorFilter] = useState("All Vendors");
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const [downloadModal, setDownloadModal] = useState(false);
   const [contactModal, setContactModal] = useState(false);
@@ -3551,7 +3583,8 @@ function VendorPaymentsSection() {
     const matchStatus = statusFilter === "All Bill Status" || v.status === statusFilter;
     const matchVendor = vendorFilter === "All Vendors" || v.vendor === vendorFilter;
     const matchSearch = !search || v.vendor.toLowerCase().includes(search.toLowerCase()) || v.poNumber.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchVendor && matchSearch;
+    const matchDate = matchesDateFilter(v.dueDate, dateFilter);
+    return matchStatus && matchVendor && matchSearch && matchDate;
   });
 
   const viewOptions = [
@@ -3682,6 +3715,8 @@ function VendorPaymentsSection() {
               style={{ width: "100%", padding: "8px 12px 8px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
           </div>
         </div>
+
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
         {/* ── Card View ────────────────────────────────────────── */}
         {view === "card" && (
@@ -4338,8 +4373,7 @@ function HistoryCard({ r }: { r: PayHistRecord }) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function PaymentHistorySection() {
-  const [dateFrom,     setDateFrom]     = useState("2026-05-10");
-  const [dateTo,       setDateTo]       = useState("2026-05-31");
+  const [dateFilter,   setDateFilter]   = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [typeFilter,   setTypeFilter]   = useState("All Payment Types");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [search,       setSearch]       = useState("");
@@ -4350,6 +4384,7 @@ function PaymentHistorySection() {
   const filtered = PAY_HISTORY.filter(r => {
     if (typeFilter   !== "All Payment Types" && r.type   !== typeFilter)   return false;
     if (statusFilter !== "All Statuses"      && r.status !== statusFilter) return false;
+    if (!matchesDateFilter(r.date, dateFilter)) return false;
     if (search && !r.party.toLowerCase().includes(search.toLowerCase()) &&
         !r.refNo.toLowerCase().includes(search.toLowerCase()) &&
         !r.description.toLowerCase().includes(search.toLowerCase())) return false;
@@ -4361,7 +4396,7 @@ function PaymentHistorySection() {
   const totalAmt = filtered.reduce((s, r) => s + r.amount, 0);
   const netFlow  = totalIn - totalOut;
 
-  const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); };
+  const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); };
 
   const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
@@ -4435,18 +4470,6 @@ function PaymentHistorySection() {
               ))}
             </div>
 
-            {/* Date range */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" as const }}>From</span>
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                style={{ height: 38, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, background: "#FFFFFF", outline: "none" }} />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" as const }}>To</span>
-              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                style={{ height: 38, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, background: "#FFFFFF", outline: "none" }} />
-            </div>
-
             {/* Type dropdown */}
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
               style={{ height: 38, padding: "0 12px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", cursor: "pointer" }}>
@@ -4472,6 +4495,8 @@ function PaymentHistorySection() {
               <X size={13} />Clear
             </button>
           </div>
+
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
         {/* ── CARD VIEW ───────────────────────────────────────── */}

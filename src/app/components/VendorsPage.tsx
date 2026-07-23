@@ -9,6 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 const T = {
   silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
@@ -388,6 +389,7 @@ function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
 function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "contact" | "edit">("overview");
   const tabs = [{ key: "overview", label: "Overview" }, { key: "orders", label: "Order History" }, { key: "contact", label: "Contact Details" }, { key: "edit", label: "Edit Profile" }] as const;
+  const [orderDateFilter, setOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   
   const [form, setForm] = useState(vendor);
   const set = (k: keyof Vendor, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -524,8 +526,11 @@ function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: (
           )}
           {tab === "orders" && (
             <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}><div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Full Purchase Order History</div></div>
-              <PurchaseOrderHistoryTable orders={mockOrders} />
+              <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
+                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 12 }}>Full Purchase Order History</div>
+                <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
+              </div>
+              <PurchaseOrderHistoryTable orders={mockOrders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
             </div>
           )}
           {tab === "contact" && (

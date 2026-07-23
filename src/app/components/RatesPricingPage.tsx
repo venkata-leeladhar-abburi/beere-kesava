@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
   Edit2, Plus, Check, X, AlertTriangle, ChevronRight,
@@ -398,6 +399,7 @@ export function RatesPricingPage() {
 
   // History pagination
   const [histPage, setHistPage] = useState(1);
+  const [histDateFilter, setHistDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   return (
     <>
@@ -1262,6 +1264,8 @@ export function RatesPricingPage() {
           A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail.
         </p>
 
+        <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+
         <div style={cardStyle}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -1272,7 +1276,7 @@ export function RatesPricingPage() {
               </tr>
             </thead>
             <tbody>
-              {HISTORY.map((row, i) => (
+              {HISTORY.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).map((row, i) => (
                 <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(110,15,45,0.015)" }}>
                   <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>{row.date}</td>
                   <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{row.by}</td>

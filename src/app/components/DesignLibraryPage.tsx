@@ -9,6 +9,7 @@ import {
 
 import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
 import { useBatches } from "./BatchContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ─── Design tokens (match app-wide palette) ──────────────────────────────────
 const T = {
@@ -561,6 +562,8 @@ export function DesignLibraryPage() {
 
   // Filters / Search for dispatches history log
   const [historySearch, setHistorySearch] = useState("");
+  const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
 
   const selectedWeaver = WEAVERS_LIST.find(w => w.id === dispWeaverId);
 
@@ -777,8 +780,11 @@ export function DesignLibraryPage() {
                     <FileText size={18} color={T.royalBurgundy} /> Sent History Log
                   </h3>
 
+                  <DateFilterBar filter={historyDateFilter} onChange={setHistoryDateFilter} />
+
                   <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100vh - 360px)", overflowY: "auto", paddingRight: 4 }}>
                     {dispatchHistory.filter(h => {
+                      if (!matchesDateFilter(h.sentAt, historyDateFilter)) return false;
                       if (!historySearch) return true;
                       const q = historySearch.toLowerCase();
                       return h.recipientName.toLowerCase().includes(q) || h.instructions.toLowerCase().includes(q);
@@ -818,16 +824,28 @@ export function DesignLibraryPage() {
                           <strong>Instructions:</strong> {h.instructions}
                         </div>
 
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
                           {h.colorSlipImage && (
-                            <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(30,102,64,0.08)", color: T.green, borderRadius: 6, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
-                              Color Slip Attached
-                            </span>
+                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                              <img
+                                src={h.colorSlipImage}
+                                alt="Color slip"
+                                onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
+                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
+                              />
+                            </div>
                           )}
                           {h.designGraphImage && (
-                            <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(30,102,64,0.08)", color: T.green, borderRadius: 6, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
-                              Design Graph Attached
-                            </span>
+                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                              <img
+                                src={h.designGraphImage}
+                                alt="Design graph"
+                                onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
+                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
+                              />
+                            </div>
                           )}
                           {!h.colorSlipImage && !h.designGraphImage && (
                             <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>
@@ -874,6 +892,20 @@ export function DesignLibraryPage() {
               setSlipDesign(null);
             }}
           />
+        )}
+        {zoomImage && (
+          <motion.div key="zoom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setZoomImage(null)}
+            style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+              onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh", display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 14 }}>
+              <img src={zoomImage.url} alt={zoomImage.label} style={{ maxWidth: "100%", maxHeight: "78vh", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.85)" }}>{zoomImage.label}</span>
+                <button onClick={() => setZoomImage(null)} style={{ background: T.royalBurgundy, border: "none", color: "#FFF", fontFamily: F.ui, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close</button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { C, F, card, inputStyle, btnPrimary, btnGhost } from "./tokens";
 import { usePO, PurchaseOrder, POItem } from "../POContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../DateFilterBar";
 
 type GRNStep = "form" | "success" | "print";
 
@@ -152,15 +153,20 @@ export function WorkerGRN({
   const [grnBatchId, setGrnBatchId] = useState(() => generateGrnId(receiptHistory.length + 1));
   const [receivedQty, setReceivedQty] = useState<Record<number, string>>({});
   const [receivedUnit, setReceivedUnit] = useState<Record<number, "kg" | "g" | "Reels" | "Buns">>({});
+  const [itemApproval, setItemApproval] = useState<Record<number, "approved" | "rejected">>({});
+  const [itemRejectReason, setItemRejectReason] = useState<Record<number, string>>({});
   const [confirmedReceived, setConfirmedReceived] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const [historyPage, setHistoryPage] = useState(1);
+  const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const PAGE_SIZE = 10;
 
   const handleSelectPO = (po: PurchaseOrder) => {
     setSelectedPO(po);
     setShowPODrop(false);
     setReceivedQty({});
+    setItemApproval({});
+    setItemRejectReason({});
     setConfirmedReceived(false);
 
     // Initialize units
@@ -220,6 +226,9 @@ export function WorkerGRN({
   }) : [];
 
   const allFilled = selectedPO ? selectedPO.materials.every((m, i) => getHasQty(i, m)) : false;
+  const allApproved = selectedPO ? selectedPO.materials.every((m, i) =>
+    itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
+  ) : false;
 
   const overallStatus: "Match" | "Short" | "Excess" = (() => {
     const diffs = comparisons.filter(Boolean) as { diff: number }[];
@@ -236,7 +245,8 @@ export function WorkerGRN({
       const qty = receivedQty[i] || "0";
       const unit = receivedUnit[i] || m.unit;
       const desc = m.subtype || m.description || "General";
-      return `${m.materialType} - ${desc} (${qty} ${unit})`;
+      const rejection = itemApproval[i] === "rejected" ? ` [Not Approved: ${itemRejectReason[i]}]` : "";
+      return `${m.materialType} - ${desc} (${qty} ${unit})${rejection}`;
     }).join(", ");
   };
 
@@ -260,6 +270,8 @@ export function WorkerGRN({
     setStep("form");
     setSelectedPO(null);
     setReceivedQty({});
+    setItemApproval({});
+    setItemRejectReason({});
     setConfirmedReceived(false);
     setGrnBatchId(generateGrnId(receiptHistory.length + 1));
   };
@@ -267,6 +279,7 @@ export function WorkerGRN({
   const filteredHistory = receiptHistory
     .slice(0, 20)
     .filter(r => {
+      if (!matchesDateFilter(r.dateReceived, historyDateFilter)) return false;
       if (!historySearch) return true;
       const q = historySearch.toLowerCase();
       return r.grnId.toLowerCase().includes(q) || r.poRef.toLowerCase().includes(q) || r.vendor.toLowerCase().includes(q);
@@ -288,6 +301,8 @@ export function WorkerGRN({
           <input value={historySearch} onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }} placeholder="Search by GRN ID, PO number, or vendor..."
             style={{ ...inputStyle, height: 42, paddingLeft: 34, fontSize: 13.5 }} />
         </div>
+
+        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
 
         <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
           <div style={{ overflowX: "auto" }}>
@@ -654,6 +669,53 @@ export function WorkerGRN({
                       )}
                     </div>
                   )}
+
+                  {/* Per-item approval */}
+                  <div style={{ marginTop: 12, borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>Confirm This Item</div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => { setItemApproval(prev => ({ ...prev, [i]: "approved" })); setItemRejectReason(prev => ({ ...prev, [i]: "" })); }}
+                        style={{
+                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
+                          border: `1.5px solid ${itemApproval[i] === "approved" ? C.green : C.bdr}`,
+                          background: itemApproval[i] === "approved" ? "rgba(30,102,64,0.09)" : "#FFF",
+                          color: itemApproval[i] === "approved" ? C.green : C.text,
+                          fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
+                        }}
+                      >
+                        <CheckCircle2 size={14} /> Approved
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setItemApproval(prev => ({ ...prev, [i]: "rejected" }))}
+                        style={{
+                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
+                          border: `1.5px solid ${itemApproval[i] === "rejected" ? "#C0392B" : C.bdr}`,
+                          background: itemApproval[i] === "rejected" ? "rgba(192,57,43,0.08)" : "#FFF",
+                          color: itemApproval[i] === "rejected" ? "#C0392B" : C.text,
+                          fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
+                        }}
+                      >
+                        <AlertTriangle size={14} /> Not Approved
+                      </button>
+                    </div>
+                    {itemApproval[i] === "rejected" && (
+                      <div style={{ marginTop: 8 }}>
+                        <textarea
+                          value={itemRejectReason[i] ?? ""}
+                          onChange={e => setItemRejectReason(prev => ({ ...prev, [i]: e.target.value }))}
+                          placeholder="Reason this item was not approved (e.g. damaged, wrong shade, torn packaging)…"
+                          rows={2}
+                          style={{ ...inputStyle, height: "auto", padding: "8px 10px", fontFamily: F.u, fontSize: 12.5, resize: "vertical" as const, borderColor: itemRejectReason[i]?.trim() ? C.bdr : "#C0392B" }}
+                        />
+                        {!itemRejectReason[i]?.trim() && (
+                          <div style={{ fontFamily: F.u, fontSize: 10.5, color: "#C0392B", marginTop: 4 }}>Reason is required for items marked Not Approved.</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -677,14 +739,14 @@ export function WorkerGRN({
             {/* Confirm Button */}
             <button
               onClick={handleConfirm}
-              disabled={!allFilled || !confirmedReceived}
+              disabled={!allFilled || !allApproved || !confirmedReceived}
               style={{
                 ...btnPrimary,
                 height: 52,
                 marginTop: 6,
                 gap: 8,
-                opacity: (allFilled && confirmedReceived) ? 1 : 0.5,
-                cursor: (allFilled && confirmedReceived) ? "pointer" : "default"
+                opacity: (allFilled && allApproved && confirmedReceived) ? 1 : 0.5,
+                cursor: (allFilled && allApproved && confirmedReceived) ? "pointer" : "default"
               }}
             >
               <CheckCircle2 size={17} /> Confirm Receipt — Generate GRN
@@ -703,6 +765,8 @@ export function WorkerGRN({
               <input value={historySearch} onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }} placeholder="Search by GRN ID, PO number, or vendor..."
                 style={{ ...inputStyle, height: 40, paddingLeft: 34, fontSize: 13 }} />
             </div>
+
+            <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
 
             <div style={{ ...card, overflow: "hidden" }}>
               <div style={{ overflowX: "auto" }}>

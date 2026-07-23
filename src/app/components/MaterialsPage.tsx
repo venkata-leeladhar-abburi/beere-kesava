@@ -1538,8 +1538,6 @@ function POTrackerSection({
   const { px } = useContext(MobileCtx);
   const { pos } = usePO();
   const [filter, setFilter] = useState<POFilter>("all");
-  const [invoiceAmounts, setInvoiceAmounts] = useState<Record<string, string>>({});
-  const [invoiceDrafts, setInvoiceDrafts] = useState<Record<string, string>>({});
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
     Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },
@@ -1673,7 +1671,6 @@ function POTrackerSection({
                     <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
                       {po.materials.map((m, mi) => {
                         const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
-                        const invKey = `${po.id}-${mi}`;
                         return (
                           <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
                             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -1701,35 +1698,14 @@ function POTrackerSection({
                               </span>
                             </div>
                             
-                            {/* Material Invoice Section */}
+                            {/* Material Invoice Section — read-only; entered from Payments → Vendor Payments */}
                             <div style={{ paddingLeft: 60, marginTop: 4 }}>
-                              {invoiceAmounts[invKey] ? (
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
-                                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
-                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
-                                    ₹{parseFloat(invoiceAmounts[invKey]).toLocaleString("en-IN")}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                                  <input
-                                    type="number"
-                                    value={invoiceDrafts[invKey] || ""}
-                                    onChange={e => setInvoiceDrafts(prev => ({ ...prev, [invKey]: e.target.value }))}
-                                    placeholder="Invoice amount in ₹"
-                                    style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 11, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" }}
-                                  />
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (invoiceDrafts[invKey]) setInvoiceAmounts(prev => ({ ...prev, [invKey]: invoiceDrafts[invKey] }));
-                                    }}
-                                    style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
-                                  >
-                                    Save
-                                  </button>
-                                </div>
-                              )}
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
+                                  {m.invoiceAmount ? `₹${m.invoiceAmount.toLocaleString("en-IN")}` : "Not yet invoiced"}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         );
@@ -1757,11 +1733,8 @@ function POTrackerSection({
 
                   {/* Total Invoice Amount */}
                   {(() => {
-                    const totalInvoiceAmount = po.materials.reduce((sum, _, mi) => {
-                      const amount = invoiceAmounts[`${po.id}-${mi}`];
-                      return sum + (amount ? parseFloat(amount) : 0);
-                    }, 0);
-                    const hasAnyAmount = po.materials.some((_, mi) => invoiceAmounts[`${po.id}-${mi}`]);
+                    const totalInvoiceAmount = po.materials.reduce((sum, m) => sum + (m.invoiceAmount || 0), 0);
+                    const hasAnyAmount = po.materials.some(m => !!m.invoiceAmount);
                     if (!hasAnyAmount) return null;
                     return (
                       <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18, marginTop: "auto" }}>

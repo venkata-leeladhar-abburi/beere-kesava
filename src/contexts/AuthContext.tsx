@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-export type Role = "admin" | "superadmin" | "worker" | "weaver" | "shop";
+export type Role = "admin" | "superadmin" | "worker" | "weaver" | "shop" | "accountant";
 
 interface AuthState {
   isAuthenticated: boolean;

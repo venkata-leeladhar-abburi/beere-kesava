@@ -504,8 +504,6 @@ type MyBatchEntry = { batchId: string; status: string; dueDate: string; rows: Sa
 
 // Active batch card with inline design/type expand (no modal)
 function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
-  const { getDesign } = useDesignLibrary();
-  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const [expandedType, setExpandedType] = useState<string | null>(null);
 
   const isActive = b.status === "active";
@@ -514,7 +512,6 @@ function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
   const readyCount = b.myRows.filter(r => r.sareeId).length;
   const pendingCount = myCount - readyCount;
   const qcPassedCount = b.myRows.filter(r => r.qcPassed === true).length;
-  const designCodes = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders    = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock  = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -552,34 +549,6 @@ function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           </div>
           <ProgressBar pct={(qcPassedCount / myCount) * 100} height={7} />
         </div>
-
-        {/* Clickable design code chips */}
-        {designCodes.length > 0 && (
-          <div style={{ marginBottom: 6 }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW DESIGN DETAILS</div>
-            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-              {designCodes.map(dc => {
-                const d = getDesign(dc);
-                return (
-                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "4px 10px", cursor: "pointer" }}>
-                    {d?.colorSlipPhoto ? (
-                      <img src={d.colorSlipPhoto} alt={dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
-                    ) : (
-                      <Palette size={11} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                    )}
-                    <span style={{ fontFamily: F.m, fontSize: 12, color: expandedDesign === dc ? "#FFF" : C.burg, fontWeight: 700 }}>{dc}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <AnimatePresence>
-              {expandedDesign && designCodes.includes(expandedDesign) && (
-                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
-              )}
-            </AnimatePresence>
-          </div>
-        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
@@ -639,24 +608,16 @@ function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 }
 
 // Completed batch card — shown only once ALL of the weaver's sarees in the batch have passed QC
-function CompletedBatchCard({ b, onDesignClick }: { b: MyBatchEntry; onDesignClick?: (code: string) => void }) {
-  const designCodes = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
+function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
   const produced = b.myRows.length;
   return (
     <div style={{ margin: "0 16px 12px", background: C.white, borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 2px 16px rgba(44,24,16,0.07)" }}>
-      {/* Color band + design code */}
+      {/* Color band + batch id */}
       <div style={{ height: 56, background: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "relative" as const }}>
         <div style={{ position: "absolute" as const, inset: 0, background: "linear-gradient(to right, rgba(26,5,12,0.45) 0%, transparent 70%)" }} />
         <div style={{ position: "relative" as const, display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
           <Flower2 size={18} color="rgba(255,255,255,0.70)" />
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{b.batchId}</span>
-          {designCodes.map(dc => (
-            <span
-              key={dc}
-              onClick={e => { e.stopPropagation(); onDesignClick?.(dc); }}
-              style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.65)", cursor: onDesignClick ? "pointer" : "default", textDecoration: onDesignClick ? "underline" : "none" }}
-            >{dc}</span>
-          ))}
         </div>
         <span style={{ position: "relative" as const, fontFamily: F.u, fontSize: 11, color: "#1D4ED8", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>✓ Completed</span>
       </div>
@@ -727,7 +688,6 @@ function BatchQuickFilterPills({ value, onChange }: { value: BatchQuickFilter; o
 function MyBatchesPage() {
   const { isMobile, cols } = useResponsive();
   const { batches } = useBatches();
-  const [viewDesignCode, setViewDesignCode] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState<BatchQuickFilter>("all");
 
   const myWeaverBatches: MyBatchEntry[] = batches
@@ -864,21 +824,17 @@ function MyBatchesPage() {
         </div>
       ) : isMobile ? (
         completedBatches.slice(0, 3).map(b => (
-          <CompletedBatchCard key={b.batchId} b={b} onDesignClick={setViewDesignCode} />
+          <CompletedBatchCard key={b.batchId} b={b} />
         ))
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: cols(1, 2, 2), gap: 4 }}>
           {completedBatches.slice(0, 4).map(b => (
-            <CompletedBatchCard key={b.batchId} b={b} onDesignClick={setViewDesignCode} />
+            <CompletedBatchCard key={b.batchId} b={b} />
           ))}
         </div>
       )}
       </>
       )}
-
-      <AnimatePresence>
-        {viewDesignCode && <DesignDetailCard designCode={viewDesignCode} onClose={() => setViewDesignCode(null)} />}
-      </AnimatePresence>
     </div>
   );
 }
@@ -2728,13 +2684,10 @@ function MaterialsGivenBlock({ batchId }: { batchId: string }) {
 }
 
 function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
-  const { getDesign } = useDesignLibrary();
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
-  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const isTablet = bp === "tablet";
 
   const borderColor    = idx % 2 === 0 ? C.burg : C.gold;
-  const designCodes     = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -2776,33 +2729,6 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
         {/* Materials issued to this weaver for this batch */}
         <MaterialsGivenBlock batchId={b.batchId} />
 
-        {/* Clickable design chips */}
-        {designCodes.length > 0 && (
-          <div>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
-            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
-              {designCodes.map(dc => {
-                const d = getDesign(dc);
-                return (
-                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
-                    {d?.colorSlipPhoto ? (
-                      <img src={d.colorSlipPhoto} alt={d.typeName || dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
-                    ) : (
-                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                    )}
-                    <span style={{ fontFamily: F.u, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.text }}>{d?.typeName || d?.name || dc}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <AnimatePresence>
-              {expandedDesign && designCodes.includes(expandedDesign) && (
-                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
-              )}
-            </AnimatePresence>
-          </div>
-        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
@@ -2856,12 +2782,9 @@ function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; i
 
 // Completed batch card — same full info as the active batch card, but with a completed badge
 function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
-  const { getDesign } = useDesignLibrary();
   const [expandedType, setExpandedType] = useState<string | null>(null);
-  const [expandedDesign, setExpandedDesign] = useState<string | null>(null);
   const isTablet = bp === "tablet";
 
-  const designCodes    = Array.from(new Set(b.myRows.map(r => r.designCode).filter(Boolean))) as string[];
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -2900,33 +2823,6 @@ function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry
         {/* Materials issued to this weaver for this batch */}
         <MaterialsGivenBlock batchId={b.batchId} />
 
-        {/* Clickable design chips */}
-        {designCodes.length > 0 && (
-          <div>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW DESIGN DETAILS</div>
-            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
-              {designCodes.map(dc => {
-                const d = getDesign(dc);
-                return (
-                  <button key={dc} onClick={() => setExpandedDesign(expandedDesign === dc ? null : dc)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, background: expandedDesign === dc ? C.burg : "rgba(107,26,42,0.07)", border: `1.5px solid ${expandedDesign === dc ? C.burg : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
-                    {d?.colorSlipPhoto ? (
-                      <img src={d.colorSlipPhoto} alt={d.typeName || dc} style={{ width: 18, height: 18, borderRadius: 4, objectFit: "cover" }} />
-                    ) : (
-                      <Palette size={12} color={expandedDesign === dc ? "#FFF" : C.burg} />
-                    )}
-                    <span style={{ fontFamily: F.u, fontSize: 13, color: expandedDesign === dc ? "#FFF" : C.text }}>{d?.typeName || d?.name || dc}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <AnimatePresence>
-              {expandedDesign && designCodes.includes(expandedDesign) && (
-                <DesignDetailCard key={expandedDesign} designCode={expandedDesign} onClose={() => setExpandedDesign(null)} />
-              )}
-            </AnimatePresence>
-          </div>
-        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
