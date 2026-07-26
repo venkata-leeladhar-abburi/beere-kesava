@@ -19,3 +19,4 @@ export { FirmsProvider, useFirms } from "../app/components/FirmsContext";
 export { WeaverPaymentsProvider, useWeaverPayments } from "../app/components/WeaverPaymentsContext";
 export { FinishingStaffProvider, useFinishingStaff } from "../app/components/FinishingStaffContext";
 export { FinishingProvider, useFinishing } from "../app/components/FinishingContext";
+export { SalesProvider, useSales } from "../app/components/SalesContext";

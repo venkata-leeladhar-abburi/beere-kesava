@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "../contexts/AuthContext";
+import { FinishingProvider, FinishingStaffProvider } from "../contexts";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "./components/ui/sonner";
 
@@ -32,6 +33,10 @@ import "../styles/mobile.css";
 export default function App() {
   return (
     <AuthProvider>
+      {/* Shared across every portal (worker, admin, superadmin, accountant) so finishing
+          assignments/returns/quotations raised in one show up identically in the others. */}
+      <FinishingStaffProvider>
+      <FinishingProvider>
       <BrowserRouter>
         <ErrorBoundary>
           <Routes>
@@ -86,6 +91,8 @@ export default function App() {
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>
+      </FinishingProvider>
+      </FinishingStaffProvider>
       <Toaster position="top-right" richColors />
     </AuthProvider>
   );

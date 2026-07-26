@@ -5,6 +5,7 @@ import {
   Building2, Users, PenLine, Send, Clock, X, Palette,
 } from "lucide-react";
 import { C, F, card, inputStyle, btnPrimary, btnGhost } from "./tokens";
+import { useMaterialIssue } from "../MaterialIssueContext";
 
 type WeaversPage = "menu" | "design" | "issue" | "receive";
 type IssueSource = "own" | "outsourced" | null;
@@ -1471,8 +1472,26 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
   const [localPage, setLocalPage] = useState<WeaversPage>("receive");
   const [showManual, setShowManual] = useState(false);
   const [liveRecords, setLiveRecords] = useState<ReceivedSareeLog[]>([]);
+  const { addReceivedSaree } = useMaterialIssue();
   const page = subPage ?? localPage;
   const setPage = onSubPageChange ?? setLocalPage;
+
+  const handleSareeReceived = (rec: ReceivedSareeLog) => {
+    setLiveRecords(prev => [rec, ...prev]);
+    // Feed into the material ledger so outstanding material at the weaver updates.
+    const weightGrams = parseFloat(rec.weight.replace(/[^\d.]/g, "")) || 0;
+    if (rec.wcode && weightGrams > 0) {
+      addReceivedSaree({
+        id: rec.id,
+        weaverId: rec.wcode,
+        batchId: rec.batch,
+        weightGrams,
+        receivedAt: new Date().toISOString(),
+        color: rec.color,
+        status: rec.status === "Defective" ? "defective" : "received",
+      });
+    }
+  };
 
   if (page === "design") return <DesignPlanningPage onBack={() => setPage("receive")} />;
 
@@ -1495,7 +1514,7 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
         </div>
 
         {/* Receive Sarees form area */}
-        <ReceiveSareesPage onBack={() => {}} onSareeReceived={rec => setLiveRecords(prev => [rec, ...prev])} />
+        <ReceiveSareesPage onBack={() => {}} onSareeReceived={handleSareeReceived} />
 
         {/* History section */}
         <HistorySection liveRecords={liveRecords} />

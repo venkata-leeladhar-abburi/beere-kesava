@@ -139,11 +139,90 @@ const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
   },
 ];
 
+// ─── Material weight conversion ───────────────────────────────────────────────
+// One reel of Jari weighs 230 grams; a Bun is 4 reels (see IssueMaterialPage).
+export const JARI_REEL_GRAMS = 230;
+export const REELS_PER_BUN = 4;
+
+/** Convert a single issued material line into grams. */
+export function materialItemToGrams(m: IssuedMaterialItem): number {
+  const qty = m.quantity || 0;
+  if (m.materialType === "Jari") {
+    const unit = (m.unit || "").toLowerCase();
+    if (unit.startsWith("bun")) return qty * REELS_PER_BUN * JARI_REEL_GRAMS;
+    // default: Reels
+    return qty * JARI_REEL_GRAMS;
+  }
+  // Warp / Resham are weight-based
+  const unit = (m.unit || "").toLowerCase();
+  if (unit === "g" || unit === "gram" || unit === "grams") return qty;
+  return qty * 1000; // kg → g
+}
+
+// ─── Received sarees (returned by weaver, weighed by worker staff) ─────────────
+export interface ReceivedSareeRecord {
+  id: string;          // Saree ID e.g. "RAVI-L2-004"
+  weaverId: string;
+  batchId?: string;
+  weightGrams: number; // weight entered by worker staff at receipt
+  receivedAt: string;  // ISO date-time
+  color?: string;
+  status: "received" | "defective";
+}
+
+// Seed received sarees so outstanding material is meaningful in the demo.
+const INITIAL_RECEIVED_SAREES: ReceivedSareeRecord[] = [
+  { id: "RAVI-L2-001",  weaverId: "WV-001", batchId: "BATCH-094", weightGrams: 842, receivedAt: "2026-07-05T10:00:00.000Z", color: "Gold",  status: "received" },
+  { id: "RAVI-L2-002",  weaverId: "WV-001", batchId: "BATCH-094", weightGrams: 918, receivedAt: "2026-07-06T10:00:00.000Z", color: "Maroon", status: "received" },
+  { id: "PADMA-L1-001", weaverId: "WV-002", batchId: "BATCH-094", weightGrams: 856, receivedAt: "2026-07-05T11:00:00.000Z", color: "Red",   status: "received" },
+  { id: "ANAND-L3-001", weaverId: "WV-005", batchId: "BATCH-094", weightGrams: 774, receivedAt: "2026-07-06T09:00:00.000Z", color: "Cream", status: "received" },
+];
+
+// ─── Outstanding material summary ─────────────────────────────────────────────
+export interface WeaverMaterialSummary {
+  issuedGrams: number;       // total material given (in grams)
+  receivedGrams: number;     // total weight of sarees returned & weighed
+  outstandingGrams: number;  // still lying with the weaver (issued − received)
+  jariReels: number;         // total jari issued expressed in reels
+  sareesReceived: number;    // count of sarees returned
+}
+
+export interface BatchMaterialSummary extends WeaverMaterialSummary {
+  batchId: string;           // production batch this material relates to
+}
+
+// Compute a summary from a set of issue records + received sarees.
+function summarize(records: MaterialIssueRecord[], received: ReceivedSareeRecord[]): WeaverMaterialSummary {
+  let issuedGrams = 0;
+  let jariReels = 0;
+  records.forEach(r => r.materials.forEach(m => {
+    issuedGrams += materialItemToGrams(m);
+    if (m.materialType === "Jari") {
+      jariReels += (m.unit || "").toLowerCase().startsWith("bun")
+        ? (m.quantity || 0) * REELS_PER_BUN
+        : (m.quantity || 0);
+    }
+  }));
+  const receivedGrams = received.reduce((sum, r) => sum + (r.weightGrams || 0), 0);
+  return {
+    issuedGrams,
+    receivedGrams,
+    outstandingGrams: issuedGrams - receivedGrams,
+    jariReels,
+    sareesReceived: received.length,
+  };
+}
+
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface MaterialIssueContextValue {
   issueRecords: MaterialIssueRecord[];
+  receivedSarees: ReceivedSareeRecord[];
   addIssueRecord: (record: Omit<MaterialIssueRecord, "id">) => MaterialIssueRecord;
+  addReceivedSaree: (rec: ReceivedSareeRecord) => void;
   getRecordsForWeaver: (weaverId: string) => MaterialIssueRecord[];
+  getReceivedForWeaver: (weaverId: string) => ReceivedSareeRecord[];
+  getMaterialSummaryForWeaver: (weaverId: string) => WeaverMaterialSummary;
+  getMaterialSummaryByBatch: (weaverId: string) => BatchMaterialSummary[];
   updateSignatureStatus: (recordId: string, method: "here" | "remote") => void;
 }
 
@@ -151,6 +230,7 @@ const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(nul
 
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
   const [issueRecords, setIssueRecords] = useState<MaterialIssueRecord[]>(INITIAL_ISSUE_RECORDS);
+  const [receivedSarees, setReceivedSarees] = useState<ReceivedSareeRecord[]>(INITIAL_RECEIVED_SAREES);
 
   // Compute next MIR number
   const allNums = issueRecords
@@ -172,6 +252,41 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     return issueRecords.filter(r => r.weaverId === weaverId);
   }, [issueRecords]);
 
+  const addReceivedSaree = useCallback((rec: ReceivedSareeRecord) => {
+    setReceivedSarees(prev => [rec, ...prev]);
+  }, []);
+
+  const getReceivedForWeaver = useCallback((weaverId: string) => {
+    return receivedSarees.filter(r => r.weaverId === weaverId);
+  }, [receivedSarees]);
+
+  const getMaterialSummaryForWeaver = useCallback((weaverId: string): WeaverMaterialSummary => {
+    return summarize(
+      issueRecords.filter(r => r.weaverId === weaverId),
+      receivedSarees.filter(r => r.weaverId === weaverId),
+    );
+  }, [issueRecords, receivedSarees]);
+
+  const getMaterialSummaryByBatch = useCallback((weaverId: string): BatchMaterialSummary[] => {
+    const records = issueRecords.filter(r => r.weaverId === weaverId);
+    const received = receivedSarees.filter(r => r.weaverId === weaverId);
+    // Every batch that appears in either issued material or returned sarees.
+    const batchIds = Array.from(new Set([
+      ...records.map(r => r.batchId || "Unassigned"),
+      ...received.map(r => r.batchId || "Unassigned"),
+    ]));
+    return batchIds
+      .map(batchId => ({
+        batchId,
+        ...summarize(
+          records.filter(r => (r.batchId || "Unassigned") === batchId),
+          received.filter(r => (r.batchId || "Unassigned") === batchId),
+        ),
+      }))
+      // Show batches with the most material still outstanding first.
+      .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
+  }, [issueRecords, receivedSarees]);
+
   const updateSignatureStatus = useCallback((recordId: string, method: "here" | "remote") => {
     setIssueRecords(prev =>
       prev.map(r =>
@@ -183,7 +298,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   }, []);
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, addIssueRecord, getRecordsForWeaver, updateSignatureStatus }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus }}>
       {children}
     </MaterialIssueContext.Provider>
   );

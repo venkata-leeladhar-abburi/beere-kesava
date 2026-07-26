@@ -39,6 +39,7 @@ import { AllWeaversPage } from "./AllWeaversPage";
 import { AllStockPage } from "./AllStockPage";
 import { AllOrdersPage } from "./AllOrdersPage";
 import { ProductionHistoryPage } from "./ProductionHistoryPage";
+import { FinishingTrackingPage } from "./FinishingTrackingPage";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
@@ -279,6 +280,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Production", label: "Production" },
       { key: "Batches", label: "Batches" },
       { key: "Designs", label: "Designs" },
+      { key: "Finishing", label: "Finishing" },
     ]
   },
   {
@@ -1301,6 +1303,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "batches") nav = "Batches";
   else if (tab === "designs") nav = "Designs";
+  else if (tab === "finishing") nav = "Finishing";
   else if (tab === "rates") nav = "Rates";
   else if (tab === "issue-material") nav = "IssueMaterial";
   else if (tab === "approvals") nav = "Approvals";
@@ -1343,6 +1346,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       ExternalPurchases: "/superadmin/external-purchases",
       Batches: "/superadmin/batches",
       Designs: "/superadmin/designs",
+      Finishing: "/superadmin/finishing",
       Rates: "/superadmin/rates",
       IssueMaterial: "/superadmin/issue-material",
       ProductionHistory: "/superadmin/production-history",
@@ -1372,6 +1376,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "Inventory": return <InventoryPage />;
       case "Batches": return <BatchCreationPage />;
       case "Designs": return <DesignLibraryPage />;
+      case "Finishing": return <FinishingTrackingPage />;
       case "Rates": return <RatesPricingPage />;
       case "Approvals": return <ApprovalsPage />;
       case "AuditLog": return <AuditLogPage />;

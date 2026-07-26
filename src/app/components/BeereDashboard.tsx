@@ -10,6 +10,7 @@ import { PaymentsPage }   from "./PaymentsPage";
 import { ReportsPage }    from "./ReportsPage";
 import { CustomersPage }  from "./CustomersPage";
 import { ProductionHistoryPage } from "./ProductionHistoryPage";
+import { FinishingTrackingPage } from "./FinishingTrackingPage";
 import { NotificationsPage } from "./NotificationsPage";
 import { AllWeaversPage }   from "./AllWeaversPage";
 import { AllStockPage }    from "./AllStockPage";
@@ -672,6 +673,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Production", label: "Production" },
       { key: "Batches",    label: "Batches" },
       { key: "Designs",    label: "Designs" },
+      { key: "Finishing",  label: "Finishing" },
   ]},
   { key: "materials", label: "Materials", icon: Package, pages: [
       { key: "Materials",         label: "Materials" },
@@ -2901,6 +2903,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "batches") nav = "Batches";
   else if (tab === "designs") nav = "Designs";
+  else if (tab === "finishing") nav = "Finishing";
   else if (tab === "rates") nav = "Rates";
   else if (tab === "issue-material") nav = "IssueMaterial";
   else if (tab === "overview") nav = "Overview";
@@ -2941,6 +2944,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ExternalPurchases: "/admin/external-purchases",
       Batches: "/admin/batches",
       Designs: "/admin/designs",
+      Finishing: "/admin/finishing",
       Rates: "/admin/rates",
       IssueMaterial: "/admin/issue-material",
       ProductionHistory: "/admin/production-history",
@@ -3007,6 +3011,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <BatchCreationPage />
       ) : mobileTab === "Designs" ? (
         <DesignLibraryPage />
+      ) : mobileTab === "Finishing" ? (
+        <FinishingTrackingPage />
       ) : mobileTab === "Rates" ? (
         <RatesPricingPage />
       ) : mobileTab === "IssueMaterial" ? (
@@ -3141,6 +3147,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <BatchCreationPage />
       ) : nav === "Designs" ? (
         <DesignLibraryPage />
+      ) : nav === "Finishing" ? (
+        <FinishingTrackingPage />
       ) : nav === "Rates" ? (
         <RatesPricingPage />
       ) : nav === "IssueMaterial" ? (

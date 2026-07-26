@@ -29,6 +29,7 @@ export interface FinishingAssignment {
   assignedBy: string;
   batchId?: string;
   status: "awaiting-return" | "returned";
+  quotationRef?: string;
 }
 
 export interface FinishingReturn {
@@ -59,6 +60,9 @@ export interface QuotationSaree {
   sareeType: string;
   weaverName: string;
   finishingStatus: "pending" | "in-finishing" | "received";
+  /** Set once this specific saree is assigned — different sarees in the same
+   *  quotation can go to different finishing staff across separate assign actions. */
+  finishingStaffName?: string;
 }
 
 export interface Quotation {
@@ -139,7 +143,7 @@ interface FinishingContextValue {
   dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => void;
   quotations: Quotation[];
   raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => string;
-  assignQuotationFinishing: (quotationId: string, staff: { id: string; name: string }, assignedBy: string) => void;
+  assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
   receiveQuotationSarees: (quotationId: string, sareeIds: string[], receivedBy: string) => void;
   markQuotationDispatched: (quotationId: string, dispatchId: string) => void;
 }
@@ -328,25 +332,35 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
 
   const assignQuotationFinishing = useCallback((
     quotationId: string,
+    sareeIds: string[],
     staff: { id: string; name: string },
     assignedBy: string,
   ) => {
     const today = todayLabel();
     const q = quotations.find(x => x.id === quotationId);
     if (!q) return;
+    // Only sarees still pending can be (re-)assigned — already assigned/received ones are untouched.
+    const toAssign = q.sarees.filter(s => sareeIds.includes(s.sareeId) && s.finishingStatus === "pending");
+    if (toAssign.length === 0) return;
 
-    setQuotations(prev => prev.map(x => x.id === quotationId ? {
-      ...x,
-      status: "in-finishing",
-      finishingStaffId: staff.id,
-      finishingStaffName: staff.name,
-      assignedDate: today,
-      sarees: x.sarees.map(s => ({ ...s, finishingStatus: "in-finishing" as const })),
-    } : x));
+    setQuotations(prev => prev.map(x => {
+      if (x.id !== quotationId) return x;
+      const sarees = x.sarees.map(s =>
+        sareeIds.includes(s.sareeId) && s.finishingStatus === "pending"
+          ? { ...s, finishingStatus: "in-finishing" as const, finishingStaffName: staff.name }
+          : s
+      );
+      const allAssignedOrBeyond = sarees.every(s => s.finishingStatus !== "pending");
+      const anyReceived = sarees.some(s => s.finishingStatus === "received");
+      const status = anyReceived
+        ? (allAssignedOrBeyond && sarees.every(s => s.finishingStatus === "received") ? "received" : "partially-received")
+        : allAssignedOrBeyond ? "in-finishing" : x.status === "raised" ? "in-finishing" : x.status;
+      return { ...x, status, finishingStaffId: staff.id, finishingStaffName: staff.name, assignedDate: today, sarees };
+    }));
 
-    // Mirror each quotation saree into the finishing assignments list so it is tracked.
+    // Mirror only the newly assigned sarees into the finishing assignments list so they are tracked.
     const stamp = Date.now();
-    const newAssignments: FinishingAssignment[] = q.sarees.map((s, i) => ({
+    const newAssignments: FinishingAssignment[] = toAssign.map((s, i) => ({
       id: `FA-QT-${stamp}-${i}`,
       sareeId: s.sareeId,
       designCode: s.designCode,
@@ -359,6 +373,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       assignedDate: today,
       assignedBy,
       status: "awaiting-return",
+      quotationRef: q.quotationNumber,
     }));
     setAssignments(a => [...a, ...newAssignments]);
   }, [quotations]);

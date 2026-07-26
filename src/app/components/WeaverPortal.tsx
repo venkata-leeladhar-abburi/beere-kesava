@@ -5,7 +5,7 @@ import { useResponsive } from "./useResponsive";
 import { useBatches, SareeRow } from "./BatchContext";
 import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord } from "./MaterialIssueContext";
+import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "./MaterialIssueContext";
 import { useWeaverPayments } from "./WeaverPaymentsContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence, useInView } from "motion/react";
@@ -848,9 +848,12 @@ function materialTypeIcon(type: string) {
 
 function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
-  const { getRecordsForWeaver, updateSignatureStatus } = useMaterialIssue();
+  const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
+
+  const matSummary = getMaterialSummaryForWeaver(CURRENT_WEAVER_ID);
+  const matByBatch = getMaterialSummaryByBatch(CURRENT_WEAVER_ID);
 
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [hasSig, setHasSig] = useState(false);
@@ -1095,6 +1098,75 @@ function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } =
           </Card>
         </div>
       )}
+
+      {/* Outstanding Material with the weaver */}
+      {matByBatch.length > 0 && (() => {
+        const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;
+        const outColor = matSummary.outstandingGrams > 0 ? C.crim : C.green;
+        return (
+          <div style={{ marginTop: 28 }}>
+            <SectionTitle title="Material Still With You" />
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, margin: "-4px 20px 12px", lineHeight: 1.5 }}>
+              Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
+            </div>
+
+            {/* Totals */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "0 20px 14px" }}>
+              {[
+                { label: "Issued", value: fmtKg(matSummary.issuedGrams), color: C.text },
+                { label: "Submitted", value: fmtKg(matSummary.receivedGrams), color: C.green },
+                { label: "Outstanding", value: fmtKg(matSummary.outstandingGrams), color: outColor },
+              ].map(s => (
+                <div key={s.label} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 12px", textAlign: "center" as const }}>
+                  <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Batch wise — combined with the handovers that make up each batch */}
+            <div style={{ margin: "0 20px", display: "flex", flexDirection: "column" as const, gap: 16 }}>
+              {(() => {
+                const recordsByBatch = new Map<string, typeof weaverRecords>();
+                weaverRecords.forEach(r => {
+                  const key = r.batchId || "Unassigned";
+                  if (!recordsByBatch.has(key)) recordsByBatch.set(key, []);
+                  recordsByBatch.get(key)!.push(r);
+                });
+                return matByBatch.map(b => {
+                  const records = (recordsByBatch.get(b.batchId) ?? []).slice()
+                    .sort((a, c) => new Date(c.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+                  return (
+                    <div key={b.batchId} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflow: "hidden" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 6 }}>
+                        <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
+                        <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${C.bdr}` }}>
+                        {[
+                          { label: "Issued", value: fmtKg(b.issuedGrams), color: C.text },
+                          { label: "Submitted", value: fmtKg(b.receivedGrams), color: C.green },
+                          { label: "Outstanding", value: fmtKg(b.outstandingGrams), color: b.outstandingGrams > 0 ? C.crim : C.green },
+                        ].map((s, i) => (
+                          <div key={s.label} style={{ padding: "10px 14px", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+                            <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
+                            <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column" as const, gap: 12 }}>
+                        {records.map(r => (
+                          <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Complete Reference History */}
       <div style={{ marginTop: 28 }}>
@@ -2889,9 +2961,11 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
 
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
-  const { getRecordsForWeaver, updateSignatureStatus } = useMaterialIssue();
+  const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const weaverMaterialRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
   const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
+  const matSummary = getMaterialSummaryForWeaver(CURRENT_WEAVER_ID);
+  const matByBatch = getMaterialSummaryByBatch(CURRENT_WEAVER_ID);
   const myWeaverBatches: MyBatchEntry[] = batches
     .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === CURRENT_WEAVER_ID) }))
     .filter(b => b.myRows.length > 0);
@@ -3276,22 +3350,85 @@ function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive, onProf
                   </div>
                 )}
 
-                {/* Materials Received History */}
-                <div style={{ marginTop: 48 }}>
-                  <DSectionHeader label="Materials Received History" />
-                  <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>Every material handover issued to you, and whether you've signed for it.</div>
-                  {weaverMaterialRecords.length === 0 ? (
+                {/* Outstanding Material still with the weaver */}
+                {matByBatch.length > 0 && (() => {
+                  const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;
+                  const outColor = matSummary.outstandingGrams > 0 ? C.crim : C.green;
+                  return (
+                    <div style={{ marginTop: 48 }}>
+                      <DSectionHeader label="Material Still With You" />
+                      <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>
+                        Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
+                      </div>
+
+                      {/* Totals */}
+                      <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr 1fr" : "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+                        {[
+                          { label: "Issued", value: fmtKg(matSummary.issuedGrams), sub: `incl. ${matSummary.jariReels} jari reels`, color: C.text },
+                          { label: "Submitted", value: fmtKg(matSummary.receivedGrams), sub: `${matSummary.sareesReceived} sarees`, color: C.green },
+                          { label: "Outstanding", value: fmtKg(matSummary.outstandingGrams), sub: "still with you", color: outColor },
+                        ].map(s => (
+                          <div key={s.label} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "20px 22px" }}>
+                            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>{s.label}</div>
+                            <div style={{ fontFamily: F.d, fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                            <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 5 }}>{s.sub}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Batch wise — combined with the handovers that make up each batch */}
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: 20 }}>
+                        {(() => {
+                          const recordsByBatch = new Map<string, typeof weaverMaterialRecords>();
+                          weaverMaterialRecords.forEach(r => {
+                            const key = r.batchId || "Unassigned";
+                            if (!recordsByBatch.has(key)) recordsByBatch.set(key, []);
+                            recordsByBatch.get(key)!.push(r);
+                          });
+                          return matByBatch.map(b => {
+                            const records = (recordsByBatch.get(b.batchId) ?? []).slice()
+                              .sort((a, c) => new Date(c.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+                            return (
+                              <div key={b.batchId} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden" }}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 8 }}>
+                                  <span style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
+                                  <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${C.bdr}` }}>
+                                  {[
+                                    { label: "Issued", value: fmtKg(b.issuedGrams), sub: b.jariReels > 0 ? `incl. ${b.jariReels} jari reels` : undefined, color: C.text },
+                                    { label: "Submitted", value: fmtKg(b.receivedGrams), sub: undefined, color: C.green },
+                                    { label: "Outstanding", value: fmtKg(b.outstandingGrams), sub: undefined, color: b.outstandingGrams > 0 ? C.crim : C.green },
+                                  ].map((s, i) => (
+                                    <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+                                      <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                                      <div style={{ fontFamily: F.m, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                                      {s.sub && <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 3 }}>{s.sub}</div>}
+                                    </div>
+                                  ))}
+                                </div>
+                                <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column" as const, gap: 16 }}>
+                                  {records.map(r => (
+                                    <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {matByBatch.length === 0 && (
+                  <div style={{ marginTop: 48 }}>
+                    <DSectionHeader label="Materials Received History" />
                     <div style={{ padding: "40px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>
                       <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>No materials have been issued to you yet.</div>
                     </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 16 }}>
-                      {weaverMaterialRecords.slice().sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime()).map(r => (
-                        <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </>
           )}

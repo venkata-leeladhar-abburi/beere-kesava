@@ -8,6 +8,7 @@ export { WeaversPage }            from "../components/WeaversPage";
 export { ProductionPage }         from "../components/ProductionPage";
 export { PaymentsPage }           from "../components/PaymentsPage";
 export { ReportsPage }            from "../components/ReportsPage";
+export { OutstandingPage }        from "../components/OutstandingPage";
 export { CustomersPage }          from "../components/CustomersPage";
 export { InventoryPage }          from "../components/InventoryPage";
 export { NotificationsPage }      from "../components/NotificationsPage";

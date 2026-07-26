@@ -834,12 +834,13 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
   const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const { getPaymentsForWeaver } = useWeaverPayments();
-  const { getRecordsForWeaver } = useMaterialIssue();
+  const { getRecordsForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
+  const materialByBatch = getMaterialSummaryByBatch(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
 
   // 1. All sarees assigned to this weaver across all batches
@@ -1323,44 +1324,85 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
 
           {tab === "materials" && (
             <div>
-              <SectionPill label="Materials Issued to This Weaver" />
+              <SectionPill label="Materials Issued — Batch Wise" />
               {materialRecords.length === 0 ? (
                 <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" }}>
                   No materials issued to this weaver yet. Use the Issue Material page to record material handovers.
                 </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {materialRecords.map(r => (
-                    <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "18px 20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 10px", fontWeight: 700 }}>{r.id}</span>
-                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                        </div>
-                        {r.signatureCaptured ? (
-                          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.green, display: "flex", alignItems: "center", gap: 5 }}><Check size={13} /> Signed</span>
-                        ) : (
-                          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "#8B6018", display: "flex", alignItems: "center", gap: 5 }}><Clock size={13} /> Pending</span>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
-                        {r.materials.map((m, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" }}>
-                            <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
-                              {m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}
-                            </span>
-                            {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
-                            {m.materialType === "Jari" && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.jariType} · {m.jariGrade} · {m.jariColor}</span>}
-                            <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                            <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+              ) : (() => {
+                const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;
+                const recordsByBatch = new Map<string, typeof materialRecords>();
+                materialRecords.forEach(r => {
+                  const key = r.batchId || "Unassigned";
+                  if (!recordsByBatch.has(key)) recordsByBatch.set(key, []);
+                  recordsByBatch.get(key)!.push(r);
+                });
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    {materialByBatch.map(b => {
+                      const outColor = b.outstandingGrams > 0 ? T.crimson : T.green;
+                      const records = recordsByBatch.get(b.batchId) ?? [];
+                      return (
+                        <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                          {/* Batch header */}
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, flexWrap: "wrap", gap: 10 }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{b.batchId}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} returned</span>
                           </div>
-                        ))}
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Issued by {r.issuedBy}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+
+                          {/* Stats strip — issued / returned / outstanding */}
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${T.borderDef}` }}>
+                            {[
+                              { label: "Issued", value: fmtKg(b.issuedGrams), sub: b.jariReels > 0 ? `incl. ${b.jariReels} jari reels` : undefined, color: T.luxuryBrown },
+                              { label: "Returned", value: fmtKg(b.receivedGrams), sub: undefined, color: T.green },
+                              { label: "Outstanding", value: fmtKg(b.outstandingGrams), sub: "still with weaver", color: outColor },
+                            ].map((s, i) => (
+                              <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
+                                <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                                <div style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                                {s.sub && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>{s.sub}</div>}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Individual handover records for this batch */}
+                          <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
+                            {records.map(r => (
+                              <div key={r.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px", fontWeight: 700 }}>{r.id}</span>
+                                    <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                  </div>
+                                  {r.signatureCaptured ? (
+                                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5 }}><Check size={12} /> Signed</span>
+                                  ) : (
+                                    <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", alignItems: "center", gap: 5 }}><Clock size={12} /> Pending</span>
+                                  )}
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+                                  {r.materials.map((m, i) => (
+                                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" }}>
+                                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
+                                        {m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}
+                                      </span>
+                                      {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
+                                      {m.materialType === "Jari" && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.jariType} · {m.jariGrade} · {m.jariColor}</span>}
+                                      <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
+                                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Issued by {r.issuedBy}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

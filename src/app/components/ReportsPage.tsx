@@ -18,6 +18,7 @@ const imgHeaderBg = "https://images.unsplash.com/photo-1588140686379-1b76a52103d
 import { imgBKLogo, imgSaree } from "../constants/weaverImages";
 import { useWeaverPayments } from "./WeaverPaymentsContext";
 import { useBulkOrders } from "./BulkOrderContext";
+import { OutstandingPage } from "./OutstandingPage";
 import { useFirms } from "./FirmsContext";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
@@ -464,7 +465,7 @@ function ReportsStatsStrip() {
 // ══════════════════════════════════════════════════════════════════════════════
 // SECTION 3 — REPORT TAB NAVIGATION
 // ══════════════════════════════════════════════════════════════════════════════
-type ReportTabKey = "raw-material" | "production" | "weaver-payment" | "retail" | "wholesale" | "pnl" | "customers" | "overdue";
+type ReportTabKey = "raw-material" | "production" | "outstanding" | "weaver-payment" | "retail" | "wholesale" | "pnl" | "customers" | "overdue";
 
 interface ReportTab {
   key: ReportTabKey;
@@ -478,6 +479,7 @@ interface ReportTab {
 const REPORT_TABS: ReportTab[] = [
   { key: "raw-material",   Icon: Package,       label: "Raw Material",     desc: "Stock & flow",      iconColor: "#8B6018",        iconBg: "rgba(200,155,71,0.22)"  },
   { key: "production",     Icon: Scissors,      label: "Saree Production", desc: "Output & batches",  iconColor: "#FFFDF9",        iconBg: "rgba(245,232,208,0.16)" },
+  { key: "outstanding",    Icon: Boxes,         label: "Outstanding Stock", desc: "Unsold by source", iconColor: "#E67E22",        iconBg: "rgba(230,126,34,0.20)"  },
   { key: "weaver-payment", Icon: Users,         label: "Weaver Payments",  desc: "Making charges",    iconColor: "#2D9158",        iconBg: "rgba(45,145,88,0.20)"   },
   { key: "retail",         Icon: Store,         label: "Retail Sales",     desc: "Walk-in & direct",  iconColor: "#4A7FB5",        iconBg: "rgba(74,127,181,0.20)"  },
   { key: "wholesale",      Icon: Boxes,         label: "Wholesale Sales",  desc: "Bulk & exports",    iconColor: "#9B4DCA",        iconBg: "rgba(155,77,202,0.20)"  },
@@ -2659,6 +2661,7 @@ export function ReportsPage() {
   const TAB_CONTENT: Record<ReportTabKey, React.ReactNode> = {
     "raw-material":   <RawMaterialReport />,
     "production":     <SareeProductionReport />,
+    "outstanding":    <OutstandingPage embedded />,
     "weaver-payment": <WeaverPaymentReport />,
     "retail":         <RetailSalesReport />,
     "wholesale":      <WholesaleSalesReport />,

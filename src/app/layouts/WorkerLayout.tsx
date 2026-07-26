@@ -4,21 +4,17 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   BatchProvider,
   MaterialIssueProvider,
-  FinishingProvider,
-  FinishingStaffProvider,
   DesignLibraryProvider,
 } from "../../contexts";
 
+// FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
+// finishing data is shared across worker, admin, superadmin and accountant.
 function WorkerContexts({ children }: { children: React.ReactNode }) {
   return (
     <DesignLibraryProvider>
       <BatchProvider>
         <MaterialIssueProvider>
-          <FinishingProvider>
-            <FinishingStaffProvider>
-              {children}
-            </FinishingStaffProvider>
-          </FinishingProvider>
+          {children}
         </MaterialIssueProvider>
       </BatchProvider>
     </DesignLibraryProvider>

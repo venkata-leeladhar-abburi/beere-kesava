@@ -53,14 +53,21 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
 
 // ── Stock data ──────────────────────────────────────────────────────────────
 type StockStatus = "available" | "sold" | "wholesale";
+/** factory = our own looms · outsourced = our weavers · external = bought from a supplier */
+type StockSource = "factory" | "outsourced" | "external";
 interface StockSaree {
-  id: string; source: "factory" | "outsourced";
+  id: string; source: StockSource;
   weaver: string | null; weaverCode: string | null;
   loom: number; weight: string; qcDate: string;
   design: string; sareeType: string; status: StockStatus;
   saleRef: string | null; customer: string | null;
   assignedBy: string | null; assignedAt: string | null;
   initials?: string; avatarBg?: string;
+  // ── external source only (fields match ExternalPurchasesPage) ──
+  supplier?: string | null;
+  supplierLocation?: string | null;
+  purchaseId?: string | null;
+  invoiceNumber?: string | null;
 }
 
 const ALL_STOCK: StockSaree[] = [
@@ -73,6 +80,14 @@ const ALL_STOCK: StockSaree[] = [
   { id: "KAMALA-L2-001", source: "outsourced", weaver: "Kamala B.",    weaverCode: "WV-031", loom: 2, weight: "876g", qcDate: "04 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "KB", avatarBg: "#7A2040" },
   { id: "MEENA-L1-001",  source: "outsourced", weaver: "Meena R.",     weaverCode: "WV-012", loom: 1, weight: "820g", qcDate: "03 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "MR", avatarBg: "#9B6B8A" },
   { id: "BKB-L2-002",    source: "factory",    weaver: null,           weaverCode: null,     loom: 2, weight: "934g", qcDate: "02 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "wholesale",  saleRef: "ORD-2026-038", customer: "Padmavathi Textiles",assignedBy: "admin", assignedAt: "Yesterday · 1:10 PM", initials: "BK", avatarBg: T.darkBurgundy },
+
+  // ── Externally purchased sarees (ids follow ExternalPurchasesPage: PREFIX-SERIAL-INVOICE) ──
+  { id: "RAVI-001-INV-RS-2026-118", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "717g", qcDate: "01 Jun 2026", design: "BKB-022", sareeType: "Plain Silk",   status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "RS", avatarBg: "#6B4A2D", supplier: "Ravi Silks",              supplierLocation: "Dharmavaram, AP", purchaseId: "EXT-2026-0001", invoiceNumber: "INV-RS-2026-118" },
+  { id: "MYSO-003-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "726g", qcDate: "05 Jun 2026", design: "BKB-038", sareeType: "Mysore Silk",  status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
+  { id: "MYSO-007-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "800g", qcDate: "05 Jun 2026", design: "BKB-045", sareeType: "Mysore Silk",  status: "sold",      saleRef: "SAL-2026-052", customer: "Mrs. Sujatha Rao",  assignedBy: "shop", assignedAt: "Today · 12:05 PM", initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
+  { id: "CHEN-002-INV-CS-2026-073", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "754g", qcDate: "08 Jun 2026", design: "BKB-019", sareeType: "Kanjivaram",   status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "CS", avatarBg: "#7B4A5A", supplier: "Chennai Silks",           supplierLocation: "Chennai, TN",     purchaseId: "EXT-2026-0003", invoiceNumber: "INV-CS-2026-073" },
+  { id: "KANC-005-INV-KH-2026-209", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "868g", qcDate: "10 Jun 2026", design: "BKB-052", sareeType: "Kanjivaram",   status: "wholesale", saleRef: "ORD-2026-044", customer: "Vijaya Silk House", assignedBy: "admin",assignedAt: "Yesterday · 4:40 PM", initials: "KH", avatarBg: "#3D6B5A", supplier: "Kanchipuram House",       supplierLocation: "Kanchipuram, TN", purchaseId: "EXT-2026-0004", invoiceNumber: "INV-KH-2026-209" },
+  { id: "POCH-004-INV-PC-2026-301", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "791g", qcDate: "11 Jun 2026", design: "BKB-031", sareeType: "Patola",       status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "PC", avatarBg: "#6B3D6B", supplier: "Pochampally Coop",        supplierLocation: "Pochampally, TG", purchaseId: "EXT-2026-0006", invoiceNumber: "INV-PC-2026-301" },
 ];
 
 const STATUS_CFG: Record<StockStatus, { label: string; color: string; bg: string; border: string; topAccent: string }> = {
@@ -112,7 +127,9 @@ function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree) => vo
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-              {s.source === "factory" ? `🏭 Factory · Loom ${s.loom}` : `🪡 ${s.weaver} · ${s.weaverCode}`}
+              {s.source === "factory"  ? `🏭 Factory · Loom ${s.loom}`
+             : s.source === "external" ? `🚚 ${s.supplier} · ${s.invoiceNumber}`
+             :                           `🪡 ${s.weaver} · ${s.weaverCode}`}
             </div>
           </div>
         </div>
@@ -135,7 +152,7 @@ function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree) => vo
       <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, flex: 1 }}>
         {[
           { label: "Weight",   val: s.weight,   icon: <Scales size={13} color={T.taupe} /> },
-          { label: "QC Date",  val: s.qcDate,   icon: <CalendarBlank size={13} color={T.taupe} /> },
+          { label: s.source === "external" ? "Received" : "QC Date", val: s.qcDate, icon: <CalendarBlank size={13} color={T.taupe} /> },
           { label: "Design",   val: s.design,   icon: <Palette size={13} color={T.taupe} />, mono: true },
           { label: "Type",     val: s.sareeType, icon: <Tag size={13} color={T.taupe} /> },
         ].map(r => (
@@ -223,7 +240,9 @@ function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () =>
               { label: "Saree Type", val: saree.sareeType, mono: false },
               { label: "Weight",     val: saree.weight,   mono: true  },
               { label: "QC Date",    val: saree.qcDate,   mono: false },
-              { label: "Loom No.",   val: `Loom ${saree.loom}`, mono: true },
+              saree.source === "external"
+                ? { label: "Invoice No.", val: saree.invoiceNumber || "—", mono: true }
+                : { label: "Loom No.",    val: `Loom ${saree.loom}`,       mono: true },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
@@ -235,7 +254,9 @@ function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () =>
           <div style={{ background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-              {saree.source === "factory" ? `Own Factory · Loom ${saree.loom}` : `${saree.weaver} (${saree.weaverCode}) · Loom ${saree.loom}`}
+              {saree.source === "factory"  ? `Own Factory · Loom ${saree.loom}`
+             : saree.source === "external" ? `External Purchase · ${saree.supplier} (${saree.supplierLocation}) · ${saree.purchaseId}`
+             :                               `${saree.weaver} (${saree.weaverCode}) · Loom ${saree.loom}`}
             </div>
           </div>
           {/* Customer info if any */}
@@ -265,17 +286,21 @@ function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () =>
 export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StockStatus>("all");
+  const [sourceFilter, setSourceFilter] = useState<"all" | StockSource>("all");
   const [viewSaree, setViewSaree] = useState<StockSaree | null>(null);
 
   const filtered = ALL_STOCK.filter(s => {
-    const matchSearch = search === "" || s.id.toLowerCase().includes(search.toLowerCase()) || (s.weaver || "").toLowerCase().includes(search.toLowerCase()) || s.design.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const matchSearch = search === "" || s.id.toLowerCase().includes(q) || (s.weaver || "").toLowerCase().includes(q) || s.design.toLowerCase().includes(q) || (s.supplier || "").toLowerCase().includes(q) || (s.invoiceNumber || "").toLowerCase().includes(q);
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchSource = sourceFilter === "all" || s.source === sourceFilter;
+    return matchSearch && matchStatus && matchSource;
   });
 
   const availableCount  = ALL_STOCK.filter(s => s.status === "available").length;
   const soldCount       = ALL_STOCK.filter(s => s.status === "sold").length;
   const wholesaleCount  = ALL_STOCK.filter(s => s.status === "wholesale").length;
+  const externalCount   = ALL_STOCK.filter(s => s.source === "external").length;
 
   return (
     <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
@@ -304,7 +329,8 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 Sarees In Stock
               </h1>
               <p style={{ fontFamily: F.ui, fontSize: 15, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 560 }}>
-                All sarees that have passed quality check and are ready for sale or assignment to finishing staff.
+                All sarees ready for sale or assignment to finishing staff — produced on our factory looms,
+                woven by our weavers, or bought in from external suppliers.
               </p>
             </div>
           </div>
@@ -316,6 +342,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
               { label: "Available for Sale", value: String(availableCount),   gold: false, greenAccent: true  },
               { label: "Sold — Pending Finishing", value: String(soldCount), gold: true,  greenAccent: false },
               { label: "Assigned Wholesale", value: String(wholesaleCount),  gold: false, greenAccent: false },
+              { label: "External Purchases", value: String(externalCount),  gold: true,  greenAccent: false },
             ].map(c => (
               <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: c.gold ? "rgba(200,155,71,0.20)" : c.greenAccent ? "rgba(30,102,64,0.18)" : "rgba(255,253,249,0.10)", border: `1px solid ${c.gold ? "rgba(200,155,71,0.40)" : c.greenAccent ? "rgba(30,102,64,0.35)" : "rgba(255,253,249,0.15)"}`, borderRadius: 99, padding: "9px 18px" }}>
                 <span style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: c.gold ? T.antiqueGold : c.greenAccent ? "#6DCE9A" : "#FFFDF9" }}>{c.value}</span>
@@ -336,7 +363,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by saree ID, weaver name, or design code..."
+                placeholder="Search by saree ID, weaver, supplier, invoice, or design code..."
                 style={{ width: "100%", height: 44, paddingLeft: 44, paddingRight: 14, fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" }}
               />
             </div>
@@ -353,6 +380,25 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                   onClick={() => setStatusFilter(f.key as "all" | StockStatus)}
                   whileHover={{ scale: 1.03 }}
                   style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "9px 18px", borderRadius: 99, cursor: "pointer", background: statusFilter === f.key ? T.royalBurgundy : "transparent", color: statusFilter === f.key ? "#FFFDF9" : T.taupe, border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}
+                >
+                  {f.label}
+                </motion.button>
+              ))}
+            </div>
+            {/* Source pills */}
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Source</span>
+              {[
+                { key: "all",        label: "All Sources"   },
+                { key: "factory",    label: "🏭 Factory"     },
+                { key: "outsourced", label: "🪡 Weavers"     },
+                { key: "external",   label: "🚚 External"    },
+              ].map(f => (
+                <motion.button
+                  key={f.key}
+                  onClick={() => setSourceFilter(f.key as "all" | StockSource)}
+                  whileHover={{ scale: 1.03 }}
+                  style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 99, cursor: "pointer", background: sourceFilter === f.key ? T.antiqueGold : "transparent", color: sourceFilter === f.key ? "#3D0E1A" : T.taupe, border: sourceFilter === f.key ? "none" : `1.5px solid rgba(200,155,71,0.32)`, transition: "all 0.18s" }}
                 >
                   {f.label}
                 </motion.button>

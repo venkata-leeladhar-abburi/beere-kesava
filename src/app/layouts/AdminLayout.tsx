@@ -4,13 +4,14 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
   BatchProvider, MaterialIssueProvider, FirmsProvider,
-  WeaverPaymentsProvider, FinishingStaffProvider, FinishingProvider,
+  WeaverPaymentsProvider, SalesProvider,
 } from "../../contexts";
 
+// FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
+// finishing data is shared across worker, admin, superadmin and accountant.
 function AdminContexts({ children }: { children: React.ReactNode }) {
   return (
-    <FinishingStaffProvider>
-      <FinishingProvider>
+    <SalesProvider>
         <POProvider>
           <BulkOrderProvider>
             <DesignLibraryProvider>
@@ -26,8 +27,7 @@ function AdminContexts({ children }: { children: React.ReactNode }) {
             </DesignLibraryProvider>
           </BulkOrderProvider>
         </POProvider>
-      </FinishingProvider>
-    </FinishingStaffProvider>
+    </SalesProvider>
   );
 }
 

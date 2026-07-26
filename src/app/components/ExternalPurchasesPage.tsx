@@ -11,9 +11,10 @@ import {
   Printer,
   Tag,
   Save,
+  FileText,
+  UploadCloud,
 } from "lucide-react";
 import { SariTagPrintModal } from "./SariTagPrintModal";
-import { SareeTypeCard, SareeTypeRecord, INITIAL_RATES, getSareeTypeByCode } from "./RatesPricingPage";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 const F = {
@@ -40,17 +41,14 @@ const T = {
   cream: "#F0E8D0",
 };
 
-const SAREE_TYPES = ["Plain Silk", "Kanjivaram", "Banarasi", "Mysore Silk", "Patola"];
-const CONDITIONS = ["Perfect", "Minor Defect", "Damaged"] as const;
-type Condition = (typeof CONDITIONS)[number];
-
 interface SareeTag {
-  id: string;
+  id: string;          // auto-generated: SUPPLIER-PREFIX + serial + invoice number
   weight: string;
   date: string;
-  sareeType: string;
-  sareeTypeCode: string;
-  condition: Condition;
+  sareeType: string;    // entered manually by admin
+  price: number;        // cost price entered manually
+  sellPercent: number;  // markup % to sell at, entered manually
+  finalAmount: number;  // price + price * sellPercent / 100, computed automatically
   notes: string;
 }
 
@@ -59,15 +57,13 @@ interface Purchase {
   supplier: string;
   location: string;
   date: string;
-  sareeType: string;
   sareeCount: number;
   gstNumber: string;
   invoiceNumber: string;
   billAmount: string;
-  deduction: number;
   status: string;
-  addedBy: string;
   notes: string;
+  invoiceFileName?: string;
   sarees: SareeTag[];
 }
 
@@ -76,32 +72,46 @@ function weightFor(i: number) {
   return `${w}g`;
 }
 
-function parseCurrency(v: string): number {
-  const n = parseFloat(String(v).replace(/[^\d.]/g, ""));
-  return isNaN(n) ? 0 : n;
-}
-
 function formatINR(n: number): string {
   return "₹" + Math.max(0, n).toLocaleString("en-IN");
 }
 
+// First 4 letters of the supplier name + saree serial number + invoice number.
+function supplierPrefix(supplier: string): string {
+  const letters = (supplier || "").replace(/[^A-Za-z]/g, "").toUpperCase();
+  return (letters.slice(0, 4) || "SUPP").padEnd(4, "X");
+}
+
+function buildSareeCode(supplier: string, serial: number, invoiceNumber: string): string {
+  const inv = (invoiceNumber || "").trim() || "NOINV";
+  return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${inv}`;
+}
+
+function computeFinalAmount(price: number, sellPercent: number): number {
+  return price + (price * sellPercent) / 100;
+}
+
 function generateSarees(
-  purchaseId: string,
   count: number,
   date: string,
-  sareeType: string
+  sareeType: string,
+  supplier: string,
+  invoiceNumber: string
 ): SareeTag[] {
-  const defaultCode = INITIAL_RATES.find((r) => r.type === sareeType)?.code
-    ?? INITIAL_RATES[0].code;
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${purchaseId}-${String(i + 1).padStart(3, "0")}`,
-    weight: weightFor(i),
-    date,
-    sareeType,
-    sareeTypeCode: defaultCode,
-    condition: "Perfect" as Condition,
-    notes: "",
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const price = 400 + ((i * 53) % 300);
+    const sellPercent = 20 + ((i * 7) % 15);
+    return {
+      id: buildSareeCode(supplier, i + 1, invoiceNumber),
+      weight: weightFor(i),
+      date,
+      sareeType,
+      price,
+      sellPercent,
+      finalAmount: computeFinalAmount(price, sellPercent),
+      notes: "",
+    };
+  });
 }
 
 const INITIAL_RAW = [
@@ -110,14 +120,12 @@ const INITIAL_RAW = [
     supplier: "Ravi Silks",
     location: "Dharmavaram, AP",
     date: "01 Jun 2026",
-    sareeType: "Plain Silk",
+    seedType: "Plain Silk",
     sareeCount: 4,
     gstNumber: "37ABCRS1234F1Z5",
     invoiceNumber: "INV-RS-2026-118",
     billAmount: "₹34,000",
-    deduction: 800,
     status: "Paid",
-    addedBy: "Admin (BK)",
     notes: "Fresh stock for summer season",
   },
   {
@@ -125,14 +133,12 @@ const INITIAL_RAW = [
     supplier: "Mysore Sarees",
     location: "Mysore, KA",
     date: "05 Jun 2026",
-    sareeType: "Mysore Silk",
+    seedType: "Mysore Silk",
     sareeCount: 12,
     gstNumber: "29MYSRS5678K1Z2",
     invoiceNumber: "INV-MS-2026-552",
     billAmount: "₹74,400",
-    deduction: 0,
     status: "Pending",
-    addedBy: "Admin (RK)",
     notes: "Awaiting full payment",
   },
   {
@@ -140,14 +146,12 @@ const INITIAL_RAW = [
     supplier: "Chennai Silks",
     location: "Chennai, TN",
     date: "08 Jun 2026",
-    sareeType: "Kanjivaram",
+    seedType: "Kanjivaram",
     sareeCount: 6,
     gstNumber: "33CHNSK9012L1Z8",
     invoiceNumber: "INV-CS-2026-073",
     billAmount: "₹66,000",
-    deduction: 1200,
     status: "Partial",
-    addedBy: "Admin (MK)",
     notes: "First instalment paid",
   },
   {
@@ -155,14 +159,12 @@ const INITIAL_RAW = [
     supplier: "Kanchipuram House",
     location: "Kanchipuram, TN",
     date: "10 Jun 2026",
-    sareeType: "Kanjivaram",
+    seedType: "Kanjivaram",
     sareeCount: 8,
     gstNumber: "33KNCH3456M1Z1",
     invoiceNumber: "INV-KH-2026-209",
     billAmount: "₹88,000",
-    deduction: 0,
     status: "Paid",
-    addedBy: "Admin (BK)",
     notes: "",
   },
   {
@@ -170,14 +172,12 @@ const INITIAL_RAW = [
     supplier: "Venkateshwara Handlooms",
     location: "Ongole, AP",
     date: "11 Jun 2026",
-    sareeType: "Plain Silk",
+    seedType: "Plain Silk",
     sareeCount: 3,
     gstNumber: "37VENK7890N1Z6",
     invoiceNumber: "INV-VH-2026-014",
     billAmount: "₹22,500",
-    deduction: 500,
     status: "Paid",
-    addedBy: "Admin (RK)",
     notes: "Trial batch",
   },
   {
@@ -185,21 +185,20 @@ const INITIAL_RAW = [
     supplier: "Pochampally Coop",
     location: "Pochampally, TG",
     date: "11 Jun 2026",
-    sareeType: "Patola",
+    seedType: "Patola",
     sareeCount: 15,
     gstNumber: "36POCH2345P1Z9",
     invoiceNumber: "INV-PC-2026-301",
     billAmount: "₹1,20,000",
-    deduction: 0,
     status: "Pending",
-    addedBy: "Superadmin",
     notes: "Inter-branch transfer",
   },
 ];
 
-const INITIAL_PURCHASES: Purchase[] = INITIAL_RAW.map((p) => ({
+const INITIAL_PURCHASES: Purchase[] = INITIAL_RAW.map(({ seedType, sareeCount, ...p }) => ({
   ...p,
-  sarees: generateSarees(p.id, p.sareeCount, p.date, p.sareeType),
+  sareeCount,
+  sarees: generateSarees(sareeCount, p.date, seedType, p.supplier, p.invoiceNumber),
 }));
 
 function StatusPill({ status }: { status: string }) {
@@ -254,93 +253,108 @@ interface FormState {
   supplier: string;
   location: string;
   date: string;
-  sareeType: string;
-  sareeCount: string;
   gstNumber: string;
   invoiceNumber: string;
   billAmount: string;
-  deduction: string;
   status: string;
-  addedBy: string;
   notes: string;
+  invoiceFileName: string;
 }
 
 const EMPTY_FORM: FormState = {
   supplier: "",
   location: "",
   date: "",
-  sareeType: SAREE_TYPES[0],
-  sareeCount: "1",
   gstNumber: "",
   invoiceNumber: "",
   billAmount: "",
-  deduction: "0",
   status: "Pending",
-  addedBy: "Admin",
   notes: "",
+  invoiceFileName: "",
 };
+
+// Internal per-row state for the saree details editor — carries a stable key
+// (_uid) separate from the auto-generated saree code, which is recomputed
+// live from the supplier/invoice number as the admin types.
+type SareeRow = Omit<SareeTag, "id"> & { _uid: string };
+
+let rowUidCounter = 0;
+function nextRowUid() {
+  rowUidCounter += 1;
+  return `row-${rowUidCounter}-${Date.now()}`;
+}
+
+function toSareeRow(s: SareeTag): SareeRow {
+  const { id, ...rest } = s;
+  return { ...rest, _uid: nextRowUid() };
+}
 
 function PurchaseFormModal({
   mode,
   initial,
   initialSarees,
-  previewId,
   onClose,
   onSubmit,
 }: {
   mode: "add" | "edit";
   initial: FormState;
   initialSarees: SareeTag[];
-  previewId: string;
   onClose: () => void;
   onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
   const [form, setForm] = useState<FormState>(initial);
-  const [sareeDetails, setSareeDetails] = useState<SareeTag[]>(initialSarees);
-  const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
+  const [sareeDetails, setSareeDetails] = useState<SareeRow[]>(() => initialSarees.map(toSareeRow));
 
   const set = (key: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   const addSareeRow = () => {
-    const seq = sareeDetails.length + 1;
     setSareeDetails((prev) => [
       ...prev,
       {
-        id: `${previewId}-${String(seq).padStart(3, "0")}`,
+        _uid: nextRowUid(),
         weight: "",
         date: form.date || "—",
-        sareeType: INITIAL_RATES[0].type,
-        sareeTypeCode: INITIAL_RATES[0].code,
-        condition: "Perfect",
+        sareeType: "",
+        price: 0,
+        sellPercent: 20,
+        finalAmount: 0,
         notes: "",
       },
     ]);
   };
-  const removeSareeRow = (id: string) =>
-    setSareeDetails((prev) => prev.filter((s) => s.id !== id));
-  const updateSareeRow = (id: string, patch: Partial<SareeTag>) =>
+  const removeSareeRow = (uid: string) =>
+    setSareeDetails((prev) => prev.filter((s) => s._uid !== uid));
+  const updateSareeRow = (uid: string, patch: Partial<SareeRow>) =>
     setSareeDetails((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        const next = { ...s, ...patch };
-        if (patch.sareeTypeCode) {
-          const rec = INITIAL_RATES.find((r) => r.code === patch.sareeTypeCode);
-          if (rec) next.sareeType = rec.type;
-        }
-        return next;
-      })
+      prev.map((s) => (s._uid === uid ? { ...s, ...patch } : s))
     );
 
-  const billNum = parseCurrency(form.billAmount);
-  const deductionNum = parseCurrency(form.deduction) || 0;
-  const netAmount = billNum - deductionNum;
+  const handleInvoiceFile = (file: File | null) => {
+    if (file) set("invoiceFileName", file.name);
+  };
 
   const valid =
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
     sareeDetails.length > 0;
+
+  const buildFinalSarees = (): SareeTag[] =>
+    sareeDetails.map((s, idx) => {
+      const price = Number(s.price) || 0;
+      const sellPercent = Number(s.sellPercent) || 0;
+      return {
+        id: buildSareeCode(form.supplier, idx + 1, form.invoiceNumber),
+        weight: s.weight,
+        date: s.date,
+        sareeType: s.sareeType,
+        price,
+        sellPercent,
+        finalAmount: computeFinalAmount(price, sellPercent),
+        notes: s.notes,
+      };
+    });
 
   return (
     <AnimatePresence>
@@ -446,18 +460,6 @@ function PurchaseFormModal({
                 />
               </div>
               <div>
-                <label style={labelStyle}>Saree Type</label>
-                <select
-                  style={{ ...inputStyle, cursor: "pointer" }}
-                  value={form.sareeType}
-                  onChange={(e) => set("sareeType", e.target.value)}
-                >
-                  {SAREE_TYPES.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
                 <label style={labelStyle}>Number of Sarees</label>
                 <div style={{ ...inputStyle, display: "flex", alignItems: "center", color: T.taupe, background: T.cream }}>
                   {sareeDetails.length} saree{sareeDetails.length !== 1 ? "s" : ""} added below
@@ -503,43 +505,41 @@ function PurchaseFormModal({
                 />
               </div>
               <div>
-                <label style={labelStyle}>Deduction Amount (₹)</label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  value={form.deduction}
-                  onChange={(e) => set("deduction", e.target.value)}
-                  placeholder="0"
-                />
+                <label style={labelStyle}>Upload Invoice</label>
+                <label
+                  style={{
+                    ...inputStyle,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: form.invoiceFileName ? T.royalBurgundy : T.taupe,
+                  }}
+                >
+                  <UploadCloud size={14} />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {form.invoiceFileName || "Choose file from supplier..."}
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf,image/*"
+                    onChange={(e) => handleInvoiceFile(e.target.files?.[0] ?? null)}
+                    style={{ display: "none" }}
+                  />
+                </label>
+                {form.invoiceFileName && (
+                  <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                    <FileText size={12} color={T.royalBurgundy} />
+                    <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{form.invoiceFileName}</span>
+                    <button
+                      onClick={() => set("invoiceFileName", "")}
+                      style={{ background: "none", border: "none", color: T.crimson, cursor: "pointer", fontSize: 11, fontFamily: F.ui, padding: 0 }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
-              <div>
-                <label style={labelStyle}>Added By</label>
-                <input
-                  style={inputStyle}
-                  value={form.addedBy}
-                  onChange={(e) => set("addedBy", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Computed net amount */}
-            <div
-              style={{
-                marginTop: 14,
-                background: T.silkCream,
-                borderRadius: 10,
-                padding: "10px 14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-                Bill Amount − Deduction = Net Amount
-              </span>
-              <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>
-                {formatINR(netAmount)}
-              </span>
             </div>
 
             <div style={{ marginTop: 14 }}>
@@ -597,11 +597,14 @@ function PurchaseFormModal({
               )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {sareeDetails.map((s) => {
-                  const rec = getSareeTypeByCode(s.sareeTypeCode);
+                {sareeDetails.map((s, idx) => {
+                  const price = Number(s.price) || 0;
+                  const sellPercent = Number(s.sellPercent) || 0;
+                  const finalAmount = computeFinalAmount(price, sellPercent);
+                  const code = buildSareeCode(form.supplier, idx + 1, form.invoiceNumber);
                   return (
                     <div
-                      key={s.id}
+                      key={s._uid}
                       style={{
                         border: `1px solid ${T.borderDef}`,
                         borderRadius: 10,
@@ -610,54 +613,29 @@ function PurchaseFormModal({
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                        <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy }}>
-                          {s.id}
+                        <span
+                          title="Auto-generated: supplier prefix + serial number + invoice number"
+                          style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(200,155,71,0.13)", border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}
+                        >
+                          {code}
                         </span>
                         <button
-                          onClick={() => removeSareeRow(s.id)}
+                          onClick={() => removeSareeRow(s._uid)}
                           style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center" }}
                           title="Remove saree"
                         >
                           <X size={14} />
                         </button>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                         <div>
-                          <label style={labelStyle}>Saree Type Code</label>
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <select
-                              style={{ ...inputStyle, cursor: "pointer", height: 36, fontSize: 12 }}
-                              value={s.sareeTypeCode}
-                              onChange={(e) => updateSareeRow(s.id, { sareeTypeCode: e.target.value })}
-                            >
-                              {INITIAL_RATES.map((r) => (
-                                <option key={r.code} value={r.code}>
-                                  {r.type} ({r.code})
-                                </option>
-                              ))}
-                            </select>
-                            {rec && (
-                              <button
-                                onClick={() => setViewSareeType(rec)}
-                                title="View saree type details"
-                                style={{
-                                  flexShrink: 0,
-                                  height: 36,
-                                  padding: "0 10px",
-                                  background: "rgba(200,155,71,0.13)",
-                                  border: `1px solid ${T.borderGold}`,
-                                  borderRadius: 8,
-                                  fontFamily: F.mono,
-                                  fontSize: 11,
-                                  fontWeight: 700,
-                                  color: T.luxuryBrown,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                {rec.code}
-                              </button>
-                            )}
-                          </div>
+                          <label style={labelStyle}>Saree Type</label>
+                          <input
+                            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+                            value={s.sareeType}
+                            onChange={(e) => updateSareeRow(s._uid, { sareeType: e.target.value })}
+                            placeholder="e.g. Kanjivaram"
+                          />
                         </div>
                         <div>
                           <label style={labelStyle}>Weight (grams)</label>
@@ -665,28 +643,44 @@ function PurchaseFormModal({
                             type="number"
                             style={{ ...inputStyle, height: 36, fontSize: 12 }}
                             value={s.weight.replace(/g$/, "")}
-                            onChange={(e) => updateSareeRow(s.id, { weight: `${e.target.value}g` })}
+                            onChange={(e) => updateSareeRow(s._uid, { weight: `${e.target.value}g` })}
                             placeholder="e.g. 820"
                           />
                         </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
                         <div>
-                          <label style={labelStyle}>Condition</label>
-                          <select
-                            style={{ ...inputStyle, cursor: "pointer", height: 36, fontSize: 12 }}
-                            value={s.condition}
-                            onChange={(e) => updateSareeRow(s.id, { condition: e.target.value as Condition })}
-                          >
-                            {CONDITIONS.map((c) => (
-                              <option key={c}>{c}</option>
-                            ))}
-                          </select>
+                          <label style={labelStyle}>Price (₹)</label>
+                          <input
+                            type="number"
+                            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+                            value={s.price || ""}
+                            onChange={(e) => updateSareeRow(s._uid, { price: Number(e.target.value) })}
+                            placeholder="e.g. 600"
+                          />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Sell % (markup)</label>
+                          <input
+                            type="number"
+                            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+                            value={s.sellPercent || ""}
+                            onChange={(e) => updateSareeRow(s._uid, { sellPercent: Number(e.target.value) })}
+                            placeholder="e.g. 25"
+                          />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Final Amount</label>
+                          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
+                            {formatINR(finalAmount)}
+                          </div>
                         </div>
                       </div>
                       <div>
                         <label style={labelStyle}>Notes (optional)</label>
                         <textarea
                           value={s.notes}
-                          onChange={(e) => updateSareeRow(s.id, { notes: e.target.value })}
+                          onChange={(e) => updateSareeRow(s._uid, { notes: e.target.value })}
                           rows={2}
                           style={{ ...inputStyle, height: "auto", padding: "8px 12px", fontSize: 12, resize: "vertical" as const }}
                         />
@@ -709,7 +703,7 @@ function PurchaseFormModal({
           >
             <button
               disabled={!valid}
-              onClick={() => valid && onSubmit({ ...form, sareeCount: String(sareeDetails.length) }, sareeDetails)}
+              onClick={() => valid && onSubmit(form, buildFinalSarees())}
               style={{
                 flex: 1,
                 background: valid ? T.royalBurgundy : "rgba(110,15,45,0.30)",
@@ -750,34 +744,7 @@ function PurchaseFormModal({
           </div>
         </motion.div>
       </div>
-      {viewSareeType && <SareeTypeCard sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
     </AnimatePresence>
-  );
-}
-
-const CONDITION_CFG: Record<Condition, { color: string; bg: string }> = {
-  Perfect: { color: "#1E6640", bg: "rgba(30,102,64,0.10)" },
-  "Minor Defect": { color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
-  Damaged: { color: "#C0392B", bg: "rgba(192,57,43,0.10)" },
-};
-
-function ConditionBadge({ condition }: { condition: Condition }) {
-  const c = CONDITION_CFG[condition];
-  return (
-    <span
-      style={{
-        fontFamily: F.ui,
-        fontWeight: 700,
-        fontSize: 11,
-        color: c.color,
-        background: c.bg,
-        borderRadius: 999,
-        padding: "3px 10px",
-        whiteSpace: "nowrap" as const,
-      }}
-    >
-      {condition}
-    </span>
   );
 }
 
@@ -792,8 +759,6 @@ function SareeListModal({
   onPrint: (saree: SareeTag) => void;
   onPrintAll: () => void;
 }) {
-  const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
-
   return (
     <AnimatePresence>
       <div
@@ -820,7 +785,7 @@ function SareeListModal({
           style={{
             position: "relative",
             zIndex: 1,
-            width: "min(92vw, 860px)",
+            width: "min(94vw, 1040px)",
             maxHeight: "82vh",
             background: "#FFF",
             borderRadius: 18,
@@ -867,11 +832,11 @@ function SareeListModal({
             </button>
           </div>
 
-          <div style={{ overflowY: "auto", flex: 1 }}>
+          <div style={{ overflow: "auto", flex: 1 }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: T.silkCream }}>
-                  {["Saree ID", "Saree Type Code", "Weight", "Condition", "Notes", "Barcode"].map((h) => (
+                  {["Saree Code", "Saree Type", "Weight", "Price", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -893,70 +858,54 @@ function SareeListModal({
                 </tr>
               </thead>
               <tbody>
-                {purchase.sarees.map((s, i) => {
-                  const rec = getSareeTypeByCode(s.sareeTypeCode);
-                  return (
-                    <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
-                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>
-                        {s.id}
-                      </td>
-                      <td style={{ padding: "10px 14px" }}>
-                        {rec ? (
-                          <button
-                            onClick={() => setViewSareeType(rec)}
-                            style={{
-                              fontFamily: F.mono,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              color: T.luxuryBrown,
-                              background: "rgba(200,155,71,0.13)",
-                              border: `1px solid ${T.borderGold}`,
-                              borderRadius: 6,
-                              padding: "3px 9px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {s.sareeTypeCode}
-                          </button>
-                        ) : (
-                          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.sareeTypeCode || "—"}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
-                        {s.weight}
-                      </td>
-                      <td style={{ padding: "10px 14px" }}>
-                        <ConditionBadge condition={s.condition} />
-                      </td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200 }}>
-                        {s.notes || "—"}
-                      </td>
-                      <td style={{ padding: "10px 14px" }}>
-                        <button
-                          onClick={() => onPrint(s)}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                            background: T.royalBurgundy,
-                            color: "#FFF",
-                            border: "none",
-                            borderRadius: 7,
-                            padding: "5px 11px",
-                            fontFamily: F.ui,
-                            fontWeight: 600,
-                            fontSize: 11.5,
-                            cursor: "pointer",
-                            whiteSpace: "nowrap" as const,
-                          }}
-                        >
-                          <Printer size={11} />
-                          Print
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {purchase.sarees.map((s, i) => (
+                  <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>
+                      {s.id}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                      {s.sareeType || "—"}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                      {s.weight}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
+                      {formatINR(s.price)}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
+                      {s.sellPercent}%
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>
+                      {formatINR(s.finalAmount)}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200 }}>
+                      {s.notes || "—"}
+                    </td>
+                    <td style={{ padding: "10px 14px" }}>
+                      <button
+                        onClick={() => onPrint(s)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          background: T.royalBurgundy,
+                          color: "#FFF",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "5px 11px",
+                          fontFamily: F.ui,
+                          fontWeight: 600,
+                          fontSize: 11.5,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap" as const,
+                        }}
+                      >
+                        <Printer size={11} />
+                        Print
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -1012,7 +961,6 @@ function SareeListModal({
           </div>
         </motion.div>
       </div>
-      {viewSareeType && <SareeTypeCard sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
     </AnimatePresence>
   );
 }
@@ -1055,15 +1003,13 @@ export function ExternalPurchasesPage() {
       supplier: form.supplier,
       location: form.location,
       date: form.date || "—",
-      sareeType: form.sareeType,
       sareeCount: sarees.length,
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
       billAmount: form.billAmount || "₹0",
-      deduction: parseCurrency(form.deduction),
       status: form.status,
-      addedBy: form.addedBy || "Admin",
       notes: form.notes,
+      invoiceFileName: form.invoiceFileName || undefined,
       sarees,
     };
     setPurchases((prev) => [newPurchase, ...prev]);
@@ -1079,15 +1025,13 @@ export function ExternalPurchasesPage() {
           supplier: form.supplier,
           location: form.location,
           date: form.date || p.date,
-          sareeType: form.sareeType,
           sareeCount: sarees.length,
           gstNumber: form.gstNumber,
           invoiceNumber: form.invoiceNumber,
           billAmount: form.billAmount,
-          deduction: parseCurrency(form.deduction),
           status: form.status,
-          addedBy: form.addedBy,
           notes: form.notes,
+          invoiceFileName: form.invoiceFileName || undefined,
           sarees,
         };
       })
@@ -1108,15 +1052,12 @@ export function ExternalPurchasesPage() {
         supplier: editingPurchase.supplier,
         location: editingPurchase.location,
         date: editingPurchase.date,
-        sareeType: editingPurchase.sareeType,
-        sareeCount: String(editingPurchase.sareeCount),
         gstNumber: editingPurchase.gstNumber,
         invoiceNumber: editingPurchase.invoiceNumber,
         billAmount: editingPurchase.billAmount,
-        deduction: String(editingPurchase.deduction ?? 0),
         status: editingPurchase.status,
-        addedBy: editingPurchase.addedBy,
         notes: editingPurchase.notes,
+        invoiceFileName: editingPurchase.invoiceFileName || "",
       }
     : null;
 
@@ -1501,7 +1442,6 @@ export function ExternalPurchasesPage() {
                   "Invoice Number",
                   "Bill Amount",
                   "Payment Status",
-                  "Added By",
                   "Actions",
                 ].map((h) => (
                   <th
@@ -1607,11 +1547,6 @@ export function ExternalPurchasesPage() {
                     <StatusPill status={row.status} />
                   </td>
                   <td style={{ padding: "14px 16px" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
-                      {row.addedBy}
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => setDetailRow(row)}
@@ -1674,7 +1609,7 @@ export function ExternalPurchasesPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={10}
                     style={{
                       padding: "40px 16px",
                       textAlign: "center",
@@ -1802,15 +1737,12 @@ export function ExternalPurchasesPage() {
                   { label: "Supplier Name", value: detailRow.supplier },
                   { label: "Location", value: detailRow.location },
                   { label: "Purchase Date", value: detailRow.date },
-                  { label: "Saree Type", value: detailRow.sareeType },
                   { label: "Number of Sarees", value: String(detailRow.sareeCount) },
                   { label: "GST Number", value: detailRow.gstNumber || "—", mono: true },
                   { label: "Invoice Number", value: detailRow.invoiceNumber || "—", mono: true },
                   { label: "Bill Amount", value: detailRow.billAmount, gold: true },
-                  { label: "Deduction Amount", value: formatINR(detailRow.deduction ?? 0) },
-                  { label: "Net Amount", value: formatINR(parseCurrency(detailRow.billAmount) - (detailRow.deduction ?? 0)), gold: true },
                   { label: "Payment Status", value: detailRow.status, pill: true },
-                  { label: "Added By", value: detailRow.addedBy },
+                  { label: "Invoice File", value: detailRow.invoiceFileName || "Not uploaded" },
                 ].map((field) => (
                   <div key={field.label}>
                     <div
@@ -1946,7 +1878,6 @@ export function ExternalPurchasesPage() {
           mode="add"
           initial={EMPTY_FORM}
           initialSarees={[]}
-          previewId={nextId()}
           onClose={() => setFormModal(null)}
           onSubmit={handleAddSubmit}
         />
@@ -1956,7 +1887,6 @@ export function ExternalPurchasesPage() {
           mode="edit"
           initial={editingFormInitial}
           initialSarees={editingPurchase.sarees}
-          previewId={editingPurchase.id}
           onClose={() => setFormModal(null)}
           onSubmit={(data, sarees) => handleEditSubmit(formModal.editId!, data, sarees)}
         />
@@ -1984,7 +1914,6 @@ export function ExternalPurchasesPage() {
             weaver: null,
             design: printSaree.id,
             sareeType: printSaree.sareeType,
-            sareeTypeCode: printSaree.sareeTypeCode,
             weight: printSaree.weight,
             qcDate: printSaree.date,
             source: "external",
