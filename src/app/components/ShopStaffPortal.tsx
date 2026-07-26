@@ -17,6 +17,12 @@ import { SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, SHOP_MOBILE_
 import { useResponsive } from "./useResponsive";
 import { imgBKLogo } from "../constants/weaverImages";
 
+// ─── Price Visibility Context ────────────────────────────────────────────────
+// Shop staff (role="shop") cannot see monetary values.
+// Admins and superadmins who access the shop portal CAN see prices.
+const ShopPriceContext = React.createContext<boolean>(false);
+function useCanSeePrices() { return React.useContext(ShopPriceContext); }
+
 // ─── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
@@ -170,6 +176,7 @@ function Chip({ label, color, bg }: { label: string; color: string; bg: string }
 
 // ─── PAGE 01 — SHOP HOME ────────────────────────────────────────────────────
 function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void }) {
+  const canSeePrices = useCanSeePrices();
   const [alerted, setAlerted] = useState(false);
   const [showLowStockDialog, setShowLowStockDialog] = useState(false);
   const [lowStockMsg, setLowStockMsg] = useState("");
@@ -190,7 +197,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
         desc="Today's sales, current inventory, and quick actions for the shop counter." />
       <StatsStrip items={[
         { label: "TODAY'S SALES", val: "12 sarees", sub: "↑ 3 more than yesterday" },
-        { label: "TODAY'S REVENUE", val: "₹1,04,000", sub: "From 12 sales" },
+        ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: "₹1,04,000", sub: "From 12 sales" }] : []),
         { label: "SHOP INVENTORY", val: "84 sarees", sub: "Currently in stock", highlight: true },
         { label: "RETURNS TODAY", val: "1 return", sub: "Processed and recorded" },
       ]} />
@@ -241,7 +248,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
             </div>
             <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>
+              {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
               <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 3 }}>{s.time}</div>
             </div>
           </div>
@@ -255,7 +262,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
           <Chip label="↩ Return" color={C.crim} bg="rgba(192,57,43,0.10)" />
           <div style={{ flex: 1, minWidth: 180 }}>
             <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>RAVI-L2-007</div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>Wrong Design · Smt. Meenakshi · ₹12,000</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
           </div>
           <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>9:10 AM</div>
         </div>
@@ -453,10 +460,12 @@ function NewSaleFlow() {
                 </div>
               ))}
             </div>
-            <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount:</span>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.gold }}>{fmtPrice(soldPrice)}</span>
-            </div>
+            {canSeePrices && (
+              <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount:</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.gold }}>{fmtPrice(soldPrice)}</span>
+              </div>
+            )}
             <div style={{ textAlign: "center" as const, marginBottom: 8 }}>
               <Chip label={`Payment: ${payment === "upi" ? "UPI" : payment === "card" ? "Card" : payment === "cash" ? "Cash" : "Other"}`} color={C.burg} bg="rgba(107,26,42,0.08)" />
             </div>
@@ -507,10 +516,12 @@ function NewSaleFlow() {
                   <span style={{ fontFamily: mono ? F.m : F.u, fontSize: 13, color: C.text }}>{v as string}</span>
                 </div>
               ))}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Amount</span>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{fmtPrice(soldPrice)}</span>
-              </div>
+              {canSeePrices && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Amount</span>
+                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{fmtPrice(soldPrice)}</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -845,19 +856,21 @@ function NewSaleFlow() {
                       ))}
                     </div>
                   </div>
-                  <div style={{ borderTop: isMobile ? `1px solid ${C.bdr}` : "none", borderLeft: isMobile ? "none" : `1px solid ${C.bdr}`, paddingTop: isMobile ? 14 : 0, marginTop: isMobile ? 16 : 0, paddingLeft: isMobile ? 0 : 24, width: isMobile ? undefined : 220, flexShrink: 0 }}>
-                    <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price (₹)</label>
-                    <div style={{ position: "relative" as const }}>
-                      <span style={{ position: "absolute" as const, left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, pointerEvents: "none" as const }}>₹</span>
-                      <input
-                        type="number"
-                        value={soldPrice}
-                        onChange={e => setSoldPrice(e.target.value === "" ? 0 : Number(e.target.value))}
-                        style={{ width: "100%", height: 56, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 36px", fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                      />
+                  {canSeePrices && (
+                    <div style={{ borderTop: isMobile ? `1px solid ${C.bdr}` : "none", borderLeft: isMobile ? "none" : `1px solid ${C.bdr}`, paddingTop: isMobile ? 14 : 0, marginTop: isMobile ? 16 : 0, paddingLeft: isMobile ? 0 : 24, width: isMobile ? undefined : 220, flexShrink: 0 }}>
+                      <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price (₹)</label>
+                      <div style={{ position: "relative" as const }}>
+                        <span style={{ position: "absolute" as const, left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, pointerEvents: "none" as const }}>₹</span>
+                        <input
+                          type="number"
+                          value={soldPrice}
+                          onChange={e => setSoldPrice(e.target.value === "" ? 0 : Number(e.target.value))}
+                          style={{ width: "100%", height: 56, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 36px", fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, outline: "none", boxSizing: "border-box" as const }}
+                        />
+                      </div>
+                      <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 6 }}>Default: {fmtPrice(originalPrice)}</div>
                     </div>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 6 }}>Default: {fmtPrice(originalPrice)}</div>
-                  </div>
+                  )}
                 </div>
               </Card>
 
@@ -974,6 +987,7 @@ function NewSaleFlow() {
 
 // ─── PAGE 03 — SHOP INVENTORY ────────────────────────────────────────────────
 function ShopInventory() {
+  const canSeePrices = useCanSeePrices();
   const { isMobile } = useResponsive();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All Sarees");
@@ -1120,7 +1134,7 @@ function ShopInventory() {
                 {s.loom && <Chip label={`Loom ${s.loom}`} color={TEAL} bg="rgba(15,118,110,0.10)" />}
               </div>
             )}
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>
+            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>}
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, lineHeight: 1.4 }}>{s.received} {s.src === "factory" ? "· From factory dispatch" : "· External purchase"}</div>
             {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(196,146,58,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
@@ -1460,7 +1474,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                       ["Design", "BKB-045 · Cream Zari Border Saree", false],
                       ["Sale Date", "05 Jun 2026", true],
                       ["Customer", "Smt. Meenakshi", false],
-                      ["Amount Paid", "₹8,500", false],
+                      ...(canSeePrices ? [["Amount Paid", "₹8,500", false]] : []),
                       ["Payment Method", "UPI", true],
                     ].map(([k, v, mono], i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${C.bdr}` }}>
@@ -1646,12 +1660,14 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                     style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
                   />
                 </div>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Original Purchase Price ₹</label>
-                  <input value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number"
-                    style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                  />
-                </div>
+                {canSeePrices && (
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Original Purchase Price ₹</label>
+                    <input value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number"
+                      style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -1695,10 +1711,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                 ["Vendor", wsVendor || "—"], ["Design Code", wsDesign || "—"],
                 ["Color", wsColor || "—"], ["Type", wsType],
                 ["Weight", wsWeight ? `${wsWeight} grams` : "—"],
-                ["Price", wsPrice ? `₹${wsPrice}` : "—"],
+                ...(canSeePrices ? [["Price", wsPrice ? `₹${wsPrice}` : "—"]] : []),
                 ["Return Reason", wsReason || "—"],
-              ].map(([k, v], i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < 6 ? `1px solid ${C.bdr}` : "none" }}>
+              ].map(([k, v], i, arr) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
                   <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k}</span>
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v}</span>
                 </div>
@@ -1811,6 +1827,7 @@ const CUSTOMER_PURCHASES: Record<string, { date: string; id: string; design: str
 
 // ─── PAGE 05 — CUSTOMER PROFILES ─────────────────────────────────────────────
 function CustomerProfiles() {
+  const canSeePrices = useCanSeePrices();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("All");
   const [selected, setSelected] = useState<number | null>(null);
@@ -1893,7 +1910,7 @@ function CustomerProfiles() {
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginBottom: 16 }}>
               <Chip label={`${c.purchases} purchases`} color={C.burg} bg="rgba(107,26,42,0.08)" />
-              <Chip label={c.total} color={C.gold} bg="rgba(196,146,58,0.12)" />
+              {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(196,146,58,0.12)" />}
               <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />
             </div>
             <button onClick={() => setSelected(i)} style={{ width: "100%", height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer", boxShadow: "0 2px 10px rgba(107,26,42,0.28)" }}>
@@ -1941,7 +1958,7 @@ function CustomerProfiles() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
                   {[
                     { label: "Purchases", val: `${activeCustomer.purchases}`, color: C.burg },
-                    { label: "Total Spent", val: activeCustomer.total, color: C.gold },
+                    ...(canSeePrices ? [{ label: "Total Spent", val: activeCustomer.total, color: C.gold }] : []),
                     { label: "Last Visit", val: activeCustomer.last, color: C.text },
                   ].map(s => (
                     <div key={s.label} style={{ background: "#F8F4F0", borderRadius: 14, padding: "12px 10px", textAlign: "center" as const }}>
@@ -1964,7 +1981,7 @@ function CustomerProfiles() {
                       <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.text }}>{p.design}</div>
                       <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.date}</div>
                     </div>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0 }}>{p.price}</div>
+                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0 }}>{p.price}</div>}
                   </div>
                 ))}
                 {/* Frequency Analysis */}
@@ -2001,6 +2018,7 @@ function CustomerProfiles() {
 
 // ─── PAGE 06 — SALES REPORT ──────────────────────────────────────────────────
 function SalesReport() {
+  const canSeePrices = useCanSeePrices();
   const [period, setPeriod] = useState<"today" | "week" | "month" | "3months">("today");
   const periods = [{ id: "today", label: "Today" }, { id: "week", label: "This Week" }, { id: "month", label: "This Month" }, { id: "3months", label: "Last 3 Months" }] as const;
 
@@ -2068,22 +2086,26 @@ function SalesReport() {
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>13 Jun 2026</div>
         </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Revenue Today</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>{dailySales.length} transactions</div>
-        </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹18,40,000</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>June 2026</div>
-        </div>
+        {canSeePrices && (
+          <>
+            <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Revenue Today</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>{dailySales.length} transactions</div>
+            </div>
+            <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹18,40,000</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>June 2026</div>
+            </div>
+          </>
+        )}
         <div style={{ flex: "1 1 100%", background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.crim, marginBottom: 6 }}>Returns This Month</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.crim, lineHeight: 1.1 }}>3 returns</div>
           </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>₹26,000</div>
+          {canSeePrices && <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>₹26,000</div>}
         </div>
       </div>
 
@@ -2113,14 +2135,16 @@ function SalesReport() {
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{s.customer}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
             </div>
-            <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>
+            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
           </div>
         ))}
         {/* Total row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
-          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Total (Today)</span>
-          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{fmtINR(totalToday)}</span>
-        </div>
+        {canSeePrices && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Total (Today)</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{fmtINR(totalToday)}</span>
+          </div>
+        )}
       </Card>
 
       {/* Monthly Totals */}
@@ -2128,10 +2152,12 @@ function SalesReport() {
       <div style={{ margin: "0 20px", display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
         {[
           { label: "Total Sales", val: "248 sarees" },
-          { label: "Revenue", val: "₹18,40,000" },
-          { label: "Avg per sale", val: "₹7,419" },
+          ...(canSeePrices ? [
+            { label: "Revenue", val: "₹18,40,000" },
+            { label: "Avg per sale", val: "₹7,419" },
+          ] : []),
           { label: "Returns", val: "3 sarees" },
-          { label: "Net Revenue", val: "₹18,18,000" },
+          ...(canSeePrices ? [{ label: "Net Revenue", val: "₹18,18,000" }] : []),
           { label: "Most sold", val: "BKB-045" },
         ].map((s, i) => (
           <Card key={i} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
@@ -2151,7 +2177,7 @@ function SalesReport() {
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{c.name}</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>{c.purchases} purchases</div>
             </div>
-            <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.gold, flexShrink: 0 }}>{c.amt}</div>
+            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.gold, flexShrink: 0 }}>{c.amt}</div>}
           </div>
         ))}
       </Card>
@@ -2185,7 +2211,7 @@ function SalesReport() {
             </div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 3 }}>{r.customer} · {r.reason}</div>
           </div>
-          <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.crim }}>{r.amt}</div>
+          {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.crim }}>{r.amt}</div>}
         </div>
       ))}
 
@@ -2281,7 +2307,9 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const isTablet = bp === "tablet";
   const { pathname } = useLocation();
   const routerNavigate = useNavigate();
-  const { logout, selectRole } = useAuth();
+  const { logout, selectRole, role } = useAuth();
+  // Admin and superadmin can always see monetary values; shop staff cannot.
+  const canSeePrices = role === "admin" || role === "superadmin";
 
   const handleLogout = () => {
     logout();
@@ -2448,6 +2476,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     ];
 
     return (
+      <ShopPriceContext.Provider value={canSeePrices}>
       <div style={{ minHeight: "100vh", background: "#F8F4F0", fontFamily: F.u }}>
         <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
         <style>{SECTION_NAV_GLOBAL_STYLE}</style>
@@ -2580,11 +2609,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   titleMain="Shop Home"
                   titleSub="& Today's Overview"
                   description="Today's sales, current inventory, and quick actions for the shop counter. Track every transaction and customer in real time."
-                  pills={[{ text: "12 Sales Today", color: C.gold }, { text: "₹1,04,000 Revenue" }, { text: "84 Sarees in Stock" }, { text: "1 Return Processed" }]}
+                  pills={[{ text: "12 Sales Today", color: C.gold }, ...(canSeePrices ? [{ text: "₹1,04,000 Revenue" }] : []), { text: "84 Sarees in Stock" }, { text: "1 Return Processed" }]}
                   alertBadge="Priya Sharma · Shop Staff"
                   stats={[
                     { label: "TODAY'S SALES", val: "12", sub: "↑ 3 more than yesterday" },
-                    { label: "TODAY'S REVENUE", val: "₹1,04,000", sub: "From 12 sales", highlight: true },
+                    ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: "₹1,04,000", sub: "From 12 sales", highlight: true }] : []),
                     { label: "SHOP INVENTORY", val: "84", sub: "Sarees currently in stock" },
                     { label: "RETURNS TODAY", val: "1", sub: "Processed and recorded", crimson: true },
                   ]}
@@ -2612,13 +2641,13 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                       <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
                       <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 32 }}>
                         <div style={{ minWidth: isTablet ? 640 : undefined }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                            {["Saree ID", "Customer", "Design", "Payment", "Amount"].map(h => (
+                          <div style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                            {["Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
                               <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                             ))}
                           </div>
                           {recentSales.map((s, i) => (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 100px", padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                            <div key={i} style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                                 <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
                                 <div>
@@ -2629,7 +2658,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                               <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
                               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design.split("·")[0]?.trim()}</div>
                               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>
+                              {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
                             </div>
                           ))}
                         </div>
@@ -2644,7 +2673,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.burg, marginBottom: 4 }}>RAVI-L2-007</div>
-                            <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>Wrong Design · Smt. Meenakshi · ₹12,000</div>
+                            <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
                           </div>
                           <div>
                             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>9:10 AM</div>
@@ -2833,13 +2862,13 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                     {/* Table */}
                     <div>
                       <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(44,24,16,0.08)" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 120px 100px 120px 100px", padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                          {["Saree ID", "Design & Name", "Color / Type", "Price", "Source", "Status"].map(h => (
+                        <div style={{ display: "grid", gridTemplateColumns: `180px 1fr 120px${canSeePrices ? " 100px" : ""} 120px 100px`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                          {["Saree ID", "Design & Name", "Color / Type", ...(canSeePrices ? ["Price"] : []), "Source", "Status"].map(h => (
                             <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                           ))}
                         </div>
                         {filteredInventory.map((s, i) => (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 120px 100px 120px 100px", padding: "20px 24px", borderBottom: i < filteredInventory.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                          <div key={i} style={{ display: "grid", gridTemplateColumns: `180px 1fr 120px${canSeePrices ? " 100px" : ""} 120px 100px`, padding: "20px 24px", borderBottom: i < filteredInventory.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, flexShrink: 0 }} />
                               <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{s.id}</span>
@@ -2856,7 +2885,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                               <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{s.sareeColor}</div>
                               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.type}</div>
                             </div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 17, color: C.gold }}>{s.price}</div>
+                            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 17, color: C.gold }}>{s.price}</div>}
                             <div>
                               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: s.src === "factory" ? C.green : C.gold, background: s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", padding: "4px 10px", borderRadius: 999 }}>
                                 {s.src === "factory" ? "Factory" : "External"}
@@ -2930,11 +2959,11 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   titleMain="Customer Profiles"
                   titleSub="& Purchase History"
                   description="All retail customers — browse their history, spending patterns, and contact details. Regular customers are starred for easy identification."
-                  pills={[{ text: "1,284 Total Customers" }, { text: "8 New This Month", color: C.gold }, { text: "₹1,84,000 Top Spender" }]}
+                  pills={[{ text: "1,284 Total Customers" }, { text: "8 New This Month", color: C.gold }, ...(canSeePrices ? [{ text: "₹1,84,000 Top Spender" }] : [])]}
                   stats={[
                     { label: "TOTAL CUSTOMERS", val: "1,284", sub: "All time" },
                     { label: "NEW THIS MONTH", val: "8", sub: "June 2026", highlight: true },
-                    { label: "TOP SPENDER", val: "₹1,84,000", sub: "Smt. Annapurna Devi" },
+                    ...(canSeePrices ? [{ label: "TOP SPENDER", val: "₹1,84,000", sub: "Smt. Annapurna Devi" }] : []),
                     { label: "REGULAR CUSTOMERS", val: "3", sub: "Shown below (starred)" },
                   ]}
                   bgUrl={SILK_BG}
@@ -2967,15 +2996,17 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           </div>
                           {c.regular && <Star size={20} fill={C.gold} color={C.gold} />}
                         </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: canSeePrices ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 18 }}>
                           <div style={{ background: "#F8F4F0", borderRadius: 12, padding: "12px 14px" }}>
                             <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>PURCHASES</div>
                             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.burg }}>{c.purchases}</div>
                           </div>
-                          <div style={{ background: "#F8F4F0", borderRadius: 12, padding: "12px 14px" }}>
-                            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>TOTAL SPENT</div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{c.total}</div>
-                          </div>
+                          {canSeePrices && (
+                            <div style={{ background: "#F8F4F0", borderRadius: 12, padding: "12px 14px" }}>
+                              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>TOTAL SPENT</div>
+                              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{c.total}</div>
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
                           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Last visit: <strong style={{ color: C.text }}>{c.last}</strong></div>
@@ -2999,12 +3030,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   titleMain="Sales Report"
                   titleSub="& Analytics"
                   description="Review all sales, revenue, customer trends, and return patterns. Use the period selector to view different time ranges."
-                  pills={[{ text: "Today's View" }, { text: "248 Sarees This Month" }, { text: "₹18,40,000 Revenue" }]}
+                  pills={[{ text: "Today's View" }, { text: "248 Sarees This Month" }, ...(canSeePrices ? [{ text: "₹18,40,000 Revenue" }] : [])]}
                   stats={[
                     { label: "TOTAL SALES THIS MONTH", val: "248", sub: "Sarees sold" },
-                    { label: "TOTAL REVENUE", val: "₹18,40,000", sub: "Gross sales", highlight: true },
+                    ...(canSeePrices ? [{ label: "TOTAL REVENUE", val: "₹18,40,000", sub: "Gross sales", highlight: true }] : []),
                     { label: "RETURNS", val: "3", sub: "This month", crimson: true },
-                    { label: "AVERAGE PER SALE", val: "₹7,419", sub: "Per saree" },
+                    ...(canSeePrices ? [{ label: "AVERAGE PER SALE", val: "₹7,419", sub: "Per saree" }] : []),
                   ]}
                   bgUrl={SHOP_BG}
                 />
@@ -3021,8 +3052,8 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                     <div>
                       <DSH label="Today's Sales" link="Export →" onLink={() => { setExportDone(false); setExportDialog({ label: "Today's Sales" }); }} />
                       <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(44,24,16,0.08)", marginBottom: 32 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "80px 160px 1fr 1fr 80px 120px", padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                          {["Time", "Saree ID", "Customer", "Design", "Payment", "Amount"].map(h => (
+                        <div style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                          {["Time", "Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
                             <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                           ))}
                         </div>
@@ -3033,19 +3064,21 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           { time: "9:20", id: "EXT-RAVI-001", customer: "Smt. Padmavathi", design: "External", pay: "UPI", amt: "₹6,200", src: "external" },
                           { time: "9:05", id: "PADMA-L1-003", customer: "Smt. Saraswathi", design: "BKB-045", pay: "Cash", amt: "₹8,500", src: "factory" },
                         ].map((s, i) => (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 160px 1fr 1fr 80px 120px", padding: "18px 24px", borderBottom: i < 4 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                          <div key={i} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < 4 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                             <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{s.time}</div>
                             <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
                             <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
                             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{s.design}</div>
                             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>
+                            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
                           </div>
                         ))}
-                        <div style={{ padding: "16px 24px", background: "#FAFAF8", borderTop: `1px solid ${C.bdr}`, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
-                          <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>Total Today:</span>
-                          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹40,700</span>
-                        </div>
+                        {canSeePrices && (
+                          <div style={{ padding: "16px 24px", background: "#FAFAF8", borderTop: `1px solid ${C.bdr}`, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
+                            <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>Total Today:</span>
+                            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹40,700</span>
+                          </div>
+                        )}
                       </div>
 
                       <DSH label="Returns This Month" />
@@ -3066,7 +3099,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                               </div>
                               <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{r.customer} · {r.reason}</div>
                             </div>
-                            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}>{r.amt}</div>
+                            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}>{r.amt}</div>}
                           </div>
                         ))}
                       </div>
@@ -3109,7 +3142,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>{c.name}</div>
                               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{c.purchases} purchases</div>
                             </div>
-                            <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{c.amt}</div>
+                            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{c.amt}</div>}
                           </div>
                         ))}
                       </div>
@@ -3292,7 +3325,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 28 }}>
                     {[
                       { label: "Total Purchases", val: `${selectedCustomer.purchases}`, sub: "sarees bought", color: C.burg },
-                      { label: "Total Spent", val: selectedCustomer.total, sub: "lifetime value", color: C.gold },
+                      ...(canSeePrices ? [{ label: "Total Spent", val: selectedCustomer.total, sub: "lifetime value", color: C.gold }] : []),
                       { label: "Last Visit", val: selectedCustomer.last, sub: "most recent", color: C.text },
                     ].map(s => (
                       <div key={s.label} style={{ background: "#F8F4F0", borderRadius: 14, padding: "16px 14px" }}>
@@ -3316,7 +3349,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{p.design}</div>
                           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.date} · {p.pay}</div>
                         </div>
-                        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{p.amt}</div>
+                        {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{p.amt}</div>}
                       </div>
                     ))}
                   </div>
@@ -3376,7 +3409,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                       <div style={{ marginBottom: 24 }}>
                         <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 14 }}>Export format</div>
                         <div style={{ display: "flex", gap: 12 }}>
-                          {([
+          {([
                             { key: "pdf" as const, label: "PDF", icon: "📄", desc: "Print-ready" },
                             { key: "csv" as const, label: "CSV", icon: "📊", desc: "Spreadsheet" },
                             { key: "excel" as const, label: "Excel", icon: "📗", desc: "Advanced" },
@@ -3415,11 +3448,13 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
         </AnimatePresence>
 
       </div>
+      </ShopPriceContext.Provider>
     );
   }
 
   // ── Mobile / Tablet Layout ──────────────────────────────────────────────
   return (
+    <ShopPriceContext.Provider value={canSeePrices}>
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100vh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
@@ -3553,6 +3588,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
         )}
       </AnimatePresence>
     </div>
+    </ShopPriceContext.Provider>
   );
 }
 

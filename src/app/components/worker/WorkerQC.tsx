@@ -94,7 +94,7 @@ type SareeItem = {
   bulkOrderRef?: string;
   sareeTypeCode?: string;
 };
-type InspectionResult = "defective" | null;
+type InspectionResult = "defective" | "semi_approved" | null;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function variance(w: number, std: number) {
@@ -151,6 +151,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [defectTypes, setDefectTypes] = useState<string[]>([]);
   const [hasPhoto, setHasPhoto] = useState(false);
   const [notes, setNotes] = useState("");
+  const [deductionAmount, setDeductionAmount] = useState<number | "">("");
   const [defectSubmitted, setDefectSubmitted] = useState(false);
   const [inspected, setInspected] = useState<Set<string>>(new Set());
   const [defLog, setDefLog] = useState(DEFECTIVE_LOG);
@@ -191,6 +192,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setDefectTypes([]);
     setHasPhoto(false);
     setNotes("");
+    setDeductionAmount("");
     setDefectSubmitted(false);
   };
 
@@ -230,6 +232,36 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setDefectSubmitted(true);
   };
 
+  const startSemiApproved = (s: SareeItem) => {
+    reset();
+    setInspecting(s);
+    setResult("semi_approved");
+  };
+
+  const confirmSemiApproved = () => {
+    if (!inspecting) return;
+    setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: `₹${deductionAmount || 0}` }, ...p]);
+    setInspected(p => new Set(p).add(inspecting.id));
+    setDefectSubmitted(true);
+
+    const { code: designCode, typeName } = splitDesignField(inspecting.design);
+    const sareeTypeCode = inspecting.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
+    const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
+    addReadySaree({
+      id: inspecting.id,
+      weaverId: inspecting.wcode || undefined,
+      weaverName: inspecting.weaver,
+      designCode,
+      sareeTypeCode,
+      sareeType: typeName,
+      weight: inspecting.weight ? `${inspecting.weight}g` : undefined,
+      qcPassDate,
+      bulkOrderRef: inspecting.bulkOrderRef,
+      status: "qc-passed-pending-finishing",
+    });
+  };
+
   // ── Inspection / Defect screen ─────────────────────────────────────────────
   if (inspecting) {
     const v = variance(inspecting.weight, inspecting.std);
@@ -241,27 +273,27 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               <ChevronLeft size={18} color="rgba(255,255,255,0.85)" />
             </button>
             <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", flex: 1 }}>
-              Mark Defective: {inspecting.id}
+              {result === "semi_approved" ? `Semi-Approved: ${inspecting.id}` : `Mark Defective: ${inspecting.id}`}
             </span>
           </div>
 
           {/* Defect submitted — confirmation */}
           {defectSubmitted && (
             <div style={{ padding: "20px 16px" }}>
-              <div style={{ ...baseCard, padding: 20, border: `1px solid rgba(192,57,43,0.25)` }}>
+              <div style={{ ...baseCard, padding: 20, border: `1px solid ${result === "semi_approved" ? "rgba(200,155,71,0.25)" : "rgba(192,57,43,0.25)"}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.bgCrim, border: `1.5px solid ${T.crim}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <XCircle size={22} color={T.crim} />
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: result === "semi_approved" ? T.bgGold : T.bgCrim, border: `1.5px solid ${result === "semi_approved" ? T.gold : T.crim}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {result === "semi_approved" ? <AlertTriangle size={22} color={T.gold} /> : <XCircle size={22} color={T.crim} />}
                   </div>
-                  <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: T.brown }}>{inspecting.id} — DEFECTIVE</div>
+                  <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: T.brown }}>{inspecting.id} — {result === "semi_approved" ? "SEMI-APPROVED" : "DEFECTIVE"}</div>
                 </div>
                 <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, lineHeight: 1.5, marginBottom: 12 }}>
-                  Stored in defective inventory. Deduction applied. WhatsApp sent.
+                  {result === "semi_approved" ? "Saree passed QC with deduction applied. WhatsApp sent." : "Stored in defective inventory. Deduction applied. WhatsApp sent."}
                 </div>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
-                  {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", background: T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
+                  {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", background: result === "semi_approved" ? T.gold : T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
                 </div>
-                <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: T.crim, marginBottom: 18 }}>₹450 deducted</div>
+                <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim, marginBottom: 18 }}>₹{result === "semi_approved" ? (deductionAmount || 0) : 450} deducted</div>
                 <button onClick={closeInspect} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 48, background: T.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFF", cursor: "pointer", marginBottom: 10 }}>
                   <CheckCircle2 size={15} /> Back to Queue
                 </button>
@@ -349,16 +381,25 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Additional notes (optional)..."
                   style={{ width: "100%", minHeight: 70, background: T.inp, border: `1px solid ${T.bdrMed}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.u, fontSize: 13, color: T.brown, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 14 } as React.CSSProperties} />
 
-                <div style={{ background: T.bgCrim, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <AlertTriangle size={14} color={T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: T.crim, lineHeight: 1.5 }}>
-                    ₹450 will be deducted from {inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment. Weaver notified via WhatsApp.
+                {result === "semi_approved" && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Deduction Amount (₹)</div>
+                    <input type="number" value={deductionAmount} onChange={e => setDeductionAmount(e.target.value ? Number(e.target.value) : "")}
+                      placeholder="Enter deduction amount"
+                      style={{ width: "100%", height: 44, background: T.inp, border: `1px solid ${T.bdrMed}`, borderRadius: 10, padding: "0 12px", fontFamily: F.m, fontSize: 14, color: T.brown, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                )}
+
+                <div style={{ background: result === "semi_approved" ? T.bgGold : T.bgCrim, border: `1px solid ${result === "semi_approved" ? "rgba(200,155,71,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <AlertTriangle size={14} color={result === "semi_approved" ? T.gold : T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div style={{ fontFamily: F.u, fontSize: 11, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
+                    ₹{result === "semi_approved" ? (deductionAmount || 0) : 450} will be deducted from {inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment. Weaver notified via WhatsApp.
                   </div>
                 </div>
 
-                <button onClick={confirmDefective} disabled={defectTypes.length === 0 || !hasPhoto}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 52, background: defectTypes.length > 0 && hasPhoto ? T.crim : "#DDD", border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: defectTypes.length > 0 && hasPhoto ? "#FFF" : "#999", cursor: defectTypes.length > 0 && hasPhoto ? "pointer" : "not-allowed" }}>
-                  <XCircle size={15} /> Confirm — Mark as Defective
+                <button onClick={result === "semi_approved" ? confirmSemiApproved : confirmDefective} disabled={defectTypes.length === 0 || !hasPhoto || (result === "semi_approved" && deductionAmount === "")}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 52, background: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? (result === "semi_approved" ? T.gold : T.crim) : "#DDD", border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? "#FFF" : "#999", cursor: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? "pointer" : "not-allowed" }}>
+                  {result === "semi_approved" ? <CheckCircle2 size={15} /> : <XCircle size={15} />} Confirm — {result === "semi_approved" ? "Semi-Approve" : "Mark as Defective"}
                 </button>
               </div>
             </div>
@@ -430,6 +471,14 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
           }}>
             <CheckCircle2 size={isDesktop ? 13 : 11} /> Passed
+          </button>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.3)" }} />
+          <button onClick={() => startSemiApproved(s)} style={{
+            flex: 1, height: btnH, background: T.gold, border: "none",
+            fontFamily: F.u, fontSize: isDesktop ? 12 : 10, fontWeight: 700, color: "#FFF", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+          }}>
+            <AlertTriangle size={isDesktop ? 13 : 11} /> Semi
           </button>
           <div style={{ width: 1, background: "rgba(255,255,255,0.3)" }} />
           <button onClick={() => startDefect(s)} style={{
