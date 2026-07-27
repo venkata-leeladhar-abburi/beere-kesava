@@ -4,9 +4,9 @@ const imgInventoryHero = "https://images.unsplash.com/photo-1585914924626-15adac
 import {
   Search, Scan, CheckSquare, Square, Package, Truck, ShoppingBag, Users,
   ChevronDown, ChevronUp, X, CheckCircle2, AlertTriangle, Clock, FileText,
-  Upload, Eye, Send, Save, ArrowRight, Building2, Hash, Filter,
+  Upload, Eye, Send, Save, ArrowRight, Building2, Hash, Filter, Zap,
 } from "lucide-react";
-import { useFinishing, FinishingReturn, DispatchRecord } from "./FinishingContext";
+import { useFinishing, FinishingReturn, DispatchRecord, Quotation } from "./FinishingContext";
 import { useFirms } from "./FirmsContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import { useDesignLibrary } from "./DesignLibraryContext";
@@ -14,6 +14,7 @@ import { useBulkOrders } from "./BulkOrderContext";
 import { useBatches } from "./BatchContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
+import { WeaverSareesSection, WeaverSareeRow } from "./WeaverSareesSection";
 
 // ── Design tokens (matches Admin portal) ──────────────────────────────────────
 const T = {
@@ -501,7 +502,7 @@ function InvoiceGenerator({
 // ── Dispatch to Shop modal ────────────────────────────────────────────────────
 function DispatchShopModal({ sarees, onConfirm, onClose }: {
   sarees: FinishingReturn[];
-  onConfirm: (transport: TransportData) => void;
+  onConfirm: (transport: TransportData, opts?: { skipped?: boolean }) => void;
   onClose: () => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -606,6 +607,12 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
               Back
             </button>
           )}
+          {step < 4 && (
+            <button onClick={() => onConfirm(transport, { skipped: true })} title="Dispatch now — fill remaining details later from Dispatch History"
+              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#8B6018", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
+              <Zap size={14} /> Dispatch Now
+            </button>
+          )}
           {step < 4 ? (
             <button onClick={() => setStep(s => s + 1)} disabled={step === 2 && !canNext2}
               style={{ flex: 1, height: 46, background: (step === 2 && !canNext2) ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: (step === 2 && !canNext2) ? T.taupe : "#FFF", cursor: (step === 2 && !canNext2) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
@@ -626,7 +633,7 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
 function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
   sarees: FinishingReturn[];
-  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string) => void;
+  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean }) => void;
   onClose: () => void;
   initialBulkOrderRef?: string;
   initialCustomerId?: string;
@@ -840,6 +847,13 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
               Back
             </button>
           )}
+          {step === INVOICE_STEP && (
+            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, { skipped: true })} disabled={!canInvoice}
+              title="Dispatch now — fill transport & receipt later from Dispatch History"
+              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: !canInvoice ? T.taupe : "#8B6018", cursor: !canInvoice ? "not-allowed" : "pointer", opacity: !canInvoice ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
+              <Zap size={14} /> Dispatch Now
+            </button>
+          )}
           {step < STEPS.length ? (
             <button onClick={() => setStep(s => s + 1)} disabled={nextDisabled}
               style={{ flex: 1, height: 46, background: nextDisabled ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: nextDisabled ? T.taupe : "#FFF", cursor: nextDisabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
@@ -1025,8 +1039,66 @@ function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
   );
 }
 
+// ── Resume (complete pending) dispatch modal ──────────────────────────────────
+function ResumeDispatchModal({ record, onSave, onClose }: {
+  record: DispatchRecord;
+  onSave: (patch: Partial<DispatchRecord>) => void;
+  onClose: () => void;
+}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [transport, setTransport] = useState<TransportData>({
+    lrNumber: record.lrNumber || "", transportCompany: record.transportCompany || "", vehicleNumber: record.vehicleNumber || "",
+    driverName: record.driverName || "", dispatchDate: record.dispatchDate || today, notes: record.notes || "",
+    expectedDelivery: record.expectedDelivery || "", specialInstructions: record.specialInstructions || "",
+  });
+
+  const canSave = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
+        style={{ position: "relative", width: 620, maxHeight: "88vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden" }}>
+        <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Truck size={20} color={T.antiqueGold} />
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Complete Dispatch Details</span>
+          </div>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>
+            {record.type === "wholesale" ? `Wholesale dispatch to ${record.customerName ?? "customer"}` : "Shop dispatch"} · {record.sareeIds.length} saree{record.sareeIds.length > 1 ? "s" : ""} · Invoice {record.invoiceNumber || "—"}
+          </div>
+          <TransportForm data={transport} onChange={setTransport} wholesale={record.type === "wholesale"} />
+          {record.pendingReceipt && (
+            <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Upload Receipt</div>
+              <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
+                <Upload size={28} color={T.taupe} style={{ margin: "0 auto 10px" }} />
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>Click to upload LR receipt</div>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
+          <button onClick={onClose}
+            style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button onClick={() => onSave({ ...transport, pendingTransport: false, pendingReceipt: false })} disabled={!canSave}
+            style={{ flex: 1, height: 46, background: !canSave ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canSave ? T.taupe : "#FFF", cursor: !canSave ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <CheckCircle2 size={16} /> Save Details
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ── Dispatch History section ──────────────────────────────────────────────────
-function DispatchHistorySection({ dispatches, firms }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[] }) {
+function DispatchHistorySection({ dispatches, firms, onResume }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void }) {
   const [tab, setTab] = useState<"all" | "shop" | "wholesale">("all");
   const rows = useMemo(() =>
     [...dispatches]
@@ -1058,8 +1130,8 @@ function DispatchHistorySection({ dispatches, firms }: { dispatches: DispatchRec
       </div>
 
       {/* Header row */}
-      <div style={{ display: "grid", gridTemplateColumns: "120px 90px 1fr 140px 110px 90px 130px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm"].map((h, i) => (
+      <div style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm", "Status"].map((h, i) => (
           <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
         ))}
       </div>
@@ -1068,8 +1140,9 @@ function DispatchHistorySection({ dispatches, firms }: { dispatches: DispatchRec
         <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches yet.</div>
       ) : rows.map((d, i) => {
         const firm = firms.find(f => f.id === d.firmId);
+        const incomplete = d.pendingTransport || d.pendingReceipt;
         return (
-          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "120px 90px 1fr 140px 110px 90px 130px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
+          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
             <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{d.dispatchDate}</div>
             <div>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, textTransform: "capitalize" as const }}>
@@ -1084,6 +1157,88 @@ function DispatchHistorySection({ dispatches, firms }: { dispatches: DispatchRec
             <div style={{ fontFamily: F.mono, fontSize: 11, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</div>
             <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
+            <div>
+              {incomplete ? (
+                <button onClick={() => onResume(d)}
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", background: "rgba(200,155,71,0.14)", border: `1px solid rgba(200,155,71,0.32)`, borderRadius: 999, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#8B6018", cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                  <Clock size={11} /> Complete Details
+                </button>
+              ) : (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.green }}>
+                  <CheckCircle2 size={12} /> Complete
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Quotations section (raised from this page, dispatch once finishing is done) ─
+function quotationStatusStyle(status: Quotation["status"]) {
+  switch (status) {
+    case "received":          return { bg: "rgba(30,102,64,0.10)",   color: T.green,       border: "rgba(30,102,64,0.22)"  };
+    case "dispatched":        return { bg: "rgba(110,15,45,0.08)",   color: T.royalBurgundy, border: "rgba(110,15,45,0.18)" };
+    case "partially-received": return { bg: "rgba(200,155,71,0.14)", color: "#8B6018",     border: "rgba(200,155,71,0.32)" };
+    case "in-finishing":      return { bg: "rgba(200,155,71,0.10)",  color: "#8B6018",     border: "rgba(200,155,71,0.24)" };
+    default:                  return { bg: "rgba(139,112,96,0.10)", color: T.taupe,       border: T.borderDef };
+  }
+}
+
+function QuotationsSection({ quotations, onDispatch }: { quotations: Quotation[]; onDispatch: (q: Quotation) => void }) {
+  const [tab, setTab] = useState<"active" | "all">("active");
+  const rows = useMemo(() =>
+    [...quotations]
+      .filter(q => tab === "all" || q.status !== "dispatched")
+      .sort((a, b) => b.createdAt - a.createdAt),
+  [quotations, tab]);
+
+  if (quotations.length === 0) return null;
+
+  return (
+    <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <FileText size={18} color={T.royalBurgundy} />
+          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>Quotations</span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {([["active", "Active"], ["all", "All"]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setTab(key)}
+              style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${tab === key ? T.royalBurgundy : T.borderDef}`, background: tab === key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, cursor: "pointer" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {rows.length === 0 ? (
+        <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No quotations raised yet.</div>
+      ) : rows.map((q, i) => {
+        const st = quotationStatusStyle(q.status);
+        const receivedCount = q.sarees.filter(s => s.finishingStatus === "received").length;
+        const canDispatch = q.status === "received" || q.status === "partially-received";
+        return (
+          <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
+            <div style={{ minWidth: 140 }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
+            </div>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
+            </div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, minWidth: 70 }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
+            <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
+              {q.status.replace("-", " ")}
+            </div>
+            <button onClick={() => canDispatch && onDispatch(q)} disabled={!canDispatch}
+              title={canDispatch ? "Dispatch the received sarees from this quotation" : "Waiting on finishing to complete"}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: canDispatch ? `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)` : "rgba(139,112,96,0.12)", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 12.5, color: canDispatch ? "#FFF" : T.taupe, cursor: canDispatch ? "pointer" : "not-allowed", whiteSpace: "nowrap" as const }}>
+              <Truck size={13} /> Dispatch
+            </button>
           </div>
         );
       })}
@@ -1133,7 +1288,7 @@ export const getSareeColor = (id: string): string => {
 };
 
 export function InventoryPage() {
-  const { returns, dispatches, dispatchSarees, readySarees, raiseQuotation } = useFinishing();
+  const { returns, dispatches, dispatchSarees, updateDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
   const { batches } = useBatches();
@@ -1145,20 +1300,15 @@ export function InventoryPage() {
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
-  // ── Selection & Filter States ──────────────────────────────────────────────
+  // ── Selection States ────────────────────────────────────────────────────────
   const [selected, setSelected]               = useState<Set<string>>(new Set());
-  const [filter,   setFilter]                 = useState<"all" | "pending" | "ready" | "dispatched" | "damaged">("all");
-  const [searchQ,  setSearchQ]                = useState("");
-  const [dateFilter, setDateFilter]           = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [selectedBulkOrder, setSelectedBulkOrder] = useState<string>("all");
-  const [selectedLoom, setSelectedLoom]       = useState<string>("all");
-  const [selectedWeaver, setSelectedWeaver]   = useState<string>("all");
-  const [selectedBatch, setSelectedBatch]     = useState<string>("all");
+  const [mirroredRows, setMirroredRows]       = useState<WeaverSareeRow[]>([]);
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
   const [toast,    setToast]                  = useState("");
   const [scanMsg,  setScanMsg]                = useState("");
+  const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
+  const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
 
   // ── Unified Records ────────────────────────────────────────────────────────
   const allRecords = useMemo(() => {
@@ -1212,27 +1362,6 @@ export function InventoryPage() {
     return list;
   }, [readySarees, returns, bulkOrders, batches]);
 
-  const uniqueWeavers = useMemo(() => {
-    const set = new Set<string>();
-    allRecords.forEach(r => {
-      if (r.weaverName) set.add(r.weaverName);
-    });
-    return Array.from(set).sort();
-  }, [allRecords]);
-
-  const uniqueLooms = useMemo(() => {
-    const set = new Set<string>();
-    allRecords.forEach(r => {
-      const loom = getLoomForRecord(r.id, r.weaverName);
-      if (loom && loom !== "Unknown") set.add(loom);
-    });
-    return Array.from(set).sort();
-  }, [allRecords]);
-
-  const uniqueBatches = useMemo(() => {
-    return batches.map(b => b.batchId).sort();
-  }, [batches]);
-
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;
   const pendingCount = allRecords.filter(r => r.status === "QC Passed").length;
@@ -1245,97 +1374,99 @@ export function InventoryPage() {
     try { return new Date(d.dispatchDate).getMonth() === new Date().getMonth(); } catch { return true; }
   }).reduce((acc, d) => acc + d.sareeIds.length, 0);
 
-  // ── Filtered rows ──────────────────────────────────────────────────────────
-  const filtered = useMemo(() => allRecords.filter(r => {
-    const q = searchQ.toLowerCase();
-    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.sareeType.toLowerCase().includes(q);
-    const matchFilter = filter === "all" ? true
-      : filter === "pending"    ? r.status === "QC Passed"
-      : filter === "ready"      ? r.status === "Finishing complete"
-      : filter === "dispatched" ? r.status === "Dispatched"
-      : r.status === "Damaged — Review Needed";
-    const matchBulkOrder = selectedBulkOrder === "all" || r.bulkOrderRef === selectedBulkOrder;
-    const recordLoom = getLoomForRecord(r.id, r.weaverName);
-    const matchLoom = selectedLoom === "all" || recordLoom === selectedLoom;
-    const matchWeaver = selectedWeaver === "all" || r.weaverName === selectedWeaver;
-    const matchBatch = selectedBatch === "all" || r.batchId === selectedBatch;
-    const matchDate = matchesDateFilter(r.date, dateFilter);
-    return matchSearch && matchFilter && matchBulkOrder && matchLoom && matchWeaver && matchBatch && matchDate;
-  }), [allRecords, filter, searchQ, selectedBulkOrder, selectedLoom, selectedWeaver, selectedBatch, dateFilter]);
-
-  // ── Selection helpers ──────────────────────────────────────────────────────
+  // ── Selection helpers — driven by the "All Sarees Inventory" table's own filters/tabs ──
   const dispatchableSelected = useMemo(() => {
-    return allRecords.filter(r => selected.has(r.id) && r.status !== "Dispatched");
-  }, [allRecords, selected]);
+    return mirroredRows.filter(r => selected.has(r.sareeId)).map(r => ({
+      id: r.sareeId,
+      originalId: r.sareeId,
+      designCode: r.designCode || "",
+      sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
+      weaverName: r.ownerLabel || "—",
+      date: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
+      status: r.finishingStatus === "completed" ? "Finishing complete" : r.qcStatus === "passed" ? "QC Passed" : "In Production",
+      bulkOrderRef: undefined as string | undefined,
+    }));
+  }, [mirroredRows, selected]);
 
-  const toggleRow = (id: string, isCheckable: boolean) => {
-    if (!isCheckable) return;
+  const toggleSareeRow = useCallback((id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-  };
+  }, []);
 
-  const checkableFiltered = useMemo(() => filtered.filter(r => r.status !== "Dispatched"), [filtered]);
-  const checkableSelected = useMemo(() => checkableFiltered.filter(r => selected.has(r.id)), [checkableFiltered, selected]);
-  
-  const toggleAll = () => {
-    if (checkableSelected.length === checkableFiltered.length && checkableFiltered.length > 0) {
-      setSelected(prev => {
-        const next = new Set(prev);
-        checkableFiltered.forEach(r => next.delete(r.id));
-        return next;
-      });
-    } else {
-      setSelected(prev => {
-        const next = new Set(prev);
-        checkableFiltered.forEach(r => next.add(r.id));
-        return next;
-      });
-    }
-  };
-
-  const allChecked = checkableFiltered.length > 0 && checkableSelected.length === checkableFiltered.length;
+  const toggleAllVisible = useCallback((ids: string[]) => {
+    setSelected(prev => {
+      const allSelected = ids.length > 0 && ids.every(id => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) ids.forEach(id => next.delete(id));
+      else ids.forEach(id => next.add(id));
+      return next;
+    });
+  }, []);
 
   // Simulated barcode scan
   const handleScan = useCallback(() => {
-    const unselected = allRecords.filter(r => !selected.has(r.id) && r.status !== "Dispatched");
+    const unselected = mirroredRows.filter(r => !selected.has(r.sareeId));
     if (!unselected.length) { setScanMsg("No more sarees to scan."); setTimeout(() => setScanMsg(""), 2000); return; }
     setScanMsg("Scanning…");
     setTimeout(() => {
       const r = unselected[Math.floor(Math.random() * unselected.length)];
-      setSelected(prev => { const next = new Set(prev); next.add(r.id); return next; });
-      setScanMsg(`Scanned: ${r.id}`);
+      setSelected(prev => { const next = new Set(prev); next.add(r.sareeId); return next; });
+      setScanMsg(`Scanned: ${r.sareeId}`);
       setTimeout(() => setScanMsg(""), 2500);
     }, 800);
-  }, [allRecords, selected]);
+  }, [mirroredRows, selected]);
 
-  const handleShopConfirm = (transport: TransportData) => {
+  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean }) => {
     const sareeIds = dispatchableSelected.map(r => r.id);
-    dispatchSarees(sareeIds, { type: "shop", sareeIds, dispatchDate: transport.dispatchDate, lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes });
+    dispatchSarees(sareeIds, {
+      type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+      lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
+      pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+      pendingReceipt: !!opts?.skipped,
+    });
     setModal(null);
     setSelected(new Set());
-    setToast(`${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`);
+    setToast(opts?.skipped
+      ? `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop — complete remaining details from Dispatch History`
+      : `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`);
   };
 
-  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
-    const sareeIds = dispatchableSelected.map(r => r.id);
+  // Sarees belonging to a quotation that have come back from finishing and are ready to dispatch.
+  const quotationDispatchSarees = useMemo(() => {
+    if (!quotationDispatch) return [];
+    return returns.filter(r => r.quotationRef === quotationDispatch.quotationNumber && r.inventoryStatus === "Ready for Dispatch");
+  }, [quotationDispatch, returns]);
+
+  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean }) => {
+    const sareeIds = quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
     const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
-    dispatchSarees(sareeIds, {
-      type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate, lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
+    const dispatchId = dispatchSarees(sareeIds, {
+      type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+      lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
       customerId, customerName: customer?.name, customerPhone: customer?.phone,
       expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
       invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate, pricePerSaree: parseFloat(inv.pricePerSaree) || 0,
       gstPct: parseFloat(inv.gstPct) || 0, firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
       bulkOrderRef,
+      quotationRef: quotationDispatch?.quotationNumber,
+      pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+      pendingReceipt: !!opts?.skipped,
     });
     if (bulkOrderRef) {
       markDispatched(bulkOrderRef, inv.invoiceNumber);
     }
+    if (quotationDispatch) {
+      markQuotationDispatched(quotationDispatch.id, dispatchId);
+    }
     setModal(null);
+    setQuotationDispatch(null);
     setSelected(new Set());
-    setToast(`Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
+    setToast(opts?.skipped
+      ? `Invoice raised — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}, complete transport & receipt later`
+      : `Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
   };
 
   const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
@@ -1376,14 +1507,6 @@ export function InventoryPage() {
     setSelected(new Set());
     setToast(`Quotation ${inv.invoiceNumber} raised for ${customer?.name} — sent to finishing`);
   };
-
-  const FILTER_PILLS: { key: typeof filter; label: string; count: number }[] = [
-    { key: "all",        label: "All Sarees",        count: total        },
-    { key: "pending",    label: "QC Passed",         count: pendingCount },
-    { key: "ready",      label: "Ready to Dispatch", count: ready        },
-    { key: "dispatched", label: "Dispatched",         count: dispatched   },
-    { key: "damaged",    label: "Damaged",            count: damaged      },
-  ];
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
@@ -1462,9 +1585,7 @@ export function InventoryPage() {
 
             {/* Toolbar */}
             <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Main row: Scan | Search | Pills | Filter▾ */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-
                 {/* Scan */}
                 <button onClick={handleScan}
                   style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 14px", height: 38, background: T.deepWine, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" as const }}
@@ -1472,192 +1593,14 @@ export function InventoryPage() {
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = T.deepWine; }}>
                   <Scan size={14} color="#FFF" /> Scan
                 </button>
-
-                {/* Search — grows to fill space */}
-                <div style={{ position: "relative", flex: "1 1 160px", minWidth: 0 }}>
-                  <Search size={13} color={T.taupe} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search by Saree ID, Design, Type…"
-                    style={{ ...inp, paddingLeft: 34, height: 38, fontSize: 13, width: "100%" }}
-                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-                    onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
-                </div>
-
-                {/* Status pills — inline beside search */}
-                {FILTER_PILLS.map(p => (
-                  <button key={p.key} onClick={() => setFilter(p.key)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 4,
-                      padding: "0 10px", height: 38, flexShrink: 0,
-                      border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`,
-                      borderRadius: 999,
-                      background: filter === p.key ? "rgba(110,15,45,0.07)" : "#FFF",
-                      fontFamily: F.ui, fontSize: 12,
-                      fontWeight: filter === p.key ? 700 : 400,
-                      color: filter === p.key ? T.royalBurgundy : T.taupe,
-                      cursor: "pointer", transition: "all 0.13s", whiteSpace: "nowrap" as const
-                    }}>
-                    {p.label}
-                    <span style={{
-                      fontFamily: F.mono, fontSize: 10,
-                      background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)",
-                      color: filter === p.key ? T.royalBurgundy : T.taupe,
-                      borderRadius: 999, padding: "1px 5px"
-                    }}>{p.count}</span>
-                  </button>
-                ))}
-
-                {/* Filter button — bulk order popover */}
-                <div style={{ position: "relative", flexShrink: 0 }}>
-                  <button
-                    onClick={() => setShowFilterPanel(v => !v)}
-                    title="More filters (Bulk Order, Loom, Weaver)"
-                    style={{
-                      display: "flex", alignItems: "center", gap: 5, height: 38, padding: "0 12px",
-                      border: `1px solid ${(selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? T.royalBurgundy : T.borderDef}`,
-                      borderRadius: 10,
-                      background: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? "rgba(110,15,45,0.07)" : "#FFF",
-                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                      color: (selectedBulkOrder !== "all" || selectedLoom !== "all" || selectedWeaver !== "all" || selectedBatch !== "all") ? T.royalBurgundy : T.taupe,
-                      cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const
-                    }}>
-                    <Filter size={14} />
-                    {((selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0) + (selectedBatch !== "all" ? 1 : 0)) > 0 && (
-                      <span style={{ background: T.royalBurgundy, color: "#FFF", borderRadius: 999, fontFamily: F.mono, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>
-                        {(selectedBulkOrder !== "all" ? 1 : 0) + (selectedLoom !== "all" ? 1 : 0) + (selectedWeaver !== "all" ? 1 : 0) + (selectedBatch !== "all" ? 1 : 0)}
-                      </span>
-                    )}
-                    <ChevronDown size={12} style={{ transition: "transform 0.2s", transform: showFilterPanel ? "rotate(180deg)" : "rotate(0deg)" }} />
-                  </button>
-
-                  {/* Filter Popover modal (centered in the middle, large size) */}
-                  <AnimatePresence>
-                    {showFilterPanel && (
-                      <div
-                        style={{
-                          position: "fixed", inset: 0, zIndex: 9999,
-                          background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)",
-                          display: "flex", alignItems: "center", justifyContent: "center"
-                        }}
-                        onClick={() => setShowFilterPanel(false)}
-                      >
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                          onClick={e => e.stopPropagation()}
-                          style={{
-                            background: "#FFFDF9", border: `1px solid ${T.borderDef}`,
-                            borderRadius: 24, boxShadow: "0 24px 70px rgba(61,14,26,0.30)",
-                            padding: "32px 36px", width: "480px", maxWidth: "90%", display: "flex", flexDirection: "column", gap: 20
-                          }}
-                        >
-                          {/* Modal Header */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${T.borderDef}`, paddingBottom: 16 }}>
-                            <div>
-                              <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.royalBurgundy }}>Advanced Filters</div>
-                              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 4 }}>Filter sarees by status, batch order, loom, or weaver</div>
-                            </div>
-                            <button onClick={() => setShowFilterPanel(false)} style={{ background: "rgba(110,15,45,0.06)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                              <X size={16} color={T.royalBurgundy} />
-                            </button>
-                          </div>
-
-                          {/* Status section */}
-                          <div>
-                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: 10 }}>Filter by Status</div>
-                            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
-                              {FILTER_PILLS.map(p => (
-                                <button key={p.key} onClick={() => setFilter(p.key)}
-                                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", height: 34, border: `1px solid ${filter === p.key ? T.royalBurgundy : T.borderDef}`, borderRadius: 999, background: filter === p.key ? "rgba(110,15,45,0.07)" : "transparent", fontFamily: F.ui, fontSize: 12.5, fontWeight: filter === p.key ? 600 : 400, color: filter === p.key ? T.royalBurgundy : T.taupe, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" as const }}>
-                                  {p.label}
-                                  <span style={{ fontFamily: F.mono, fontSize: 10, background: filter === p.key ? "rgba(110,15,45,0.12)" : "rgba(139,112,96,0.10)", color: filter === p.key ? T.royalBurgundy : T.taupe, borderRadius: 999, padding: "1px 6px" }}>{p.count}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Bulk Order section */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Bulk Production Order</div>
-                            <select
-                              value={selectedBulkOrder}
-                              onChange={e => setSelectedBulkOrder(e.target.value)}
-                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
-                              <option value="all">All Bulk Orders</option>
-                              {bulkOrders.map(bo => (
-                                <option key={bo.ref} value={bo.ref}>{bo.ref} — {bo.customer}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Loom Section */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Loom Number</div>
-                            <select
-                              value={selectedLoom}
-                              onChange={e => setSelectedLoom(e.target.value)}
-                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
-                              <option value="all">All Looms</option>
-                              {uniqueLooms.map(l => (
-                                <option key={l} value={l}>Loom {l}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                           {/* Weaver Section */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Weaver</div>
-                            <select
-                              value={selectedWeaver}
-                              onChange={e => setSelectedWeaver(e.target.value)}
-                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
-                              <option value="all">All Weavers</option>
-                              {uniqueWeavers.map(w => (
-                                <option key={w} value={w}>{w}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Batch Number Section */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.07em" }}>Batch Number</div>
-                            <select
-                              value={selectedBatch}
-                              onChange={e => setSelectedBatch(e.target.value)}
-                              style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, outline: "none", cursor: "pointer" }}>
-                              <option value="all">All Batches</option>
-                              {uniqueBatches.map(b => (
-                                <option key={b} value={b}>{b}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Clear + Done */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, marginTop: 8 }}>
-                            <button
-                              onClick={() => { setFilter("all"); setSelectedBulkOrder("all"); setSelectedLoom("all"); setSelectedWeaver("all"); setSelectedBatch("all"); }}
-                              style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                              Reset All Filters
-                            </button>
-                            <button
-                              onClick={() => setShowFilterPanel(false)}
-                              style={{ height: 44, padding: "0 28px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
-                              Apply Filters
-                            </button>
-                          </div>
-                        </motion.div>
-                      </div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                  Scans a random unselected saree from the table below and selects it.
+                </span>
               </div>
-
-              <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
               {/* Scan feedback */}
               {scanMsg && (
-                <div style={{ marginTop: 10, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 8, padding: "7px 12px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>
+                <div style={{ marginTop: 2, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 8, padding: "7px 12px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>
                   {scanMsg}
                 </div>
               )}
@@ -1691,75 +1634,16 @@ export function InventoryPage() {
               )}
             </AnimatePresence>
 
-            {/* Table */}
-            <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
-              {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "36px 130px 130px 90px 120px 100px 110px 170px 90px", gap: 0, padding: "11px 20px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-                <div onClick={toggleAll} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-                  {allChecked ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />}
-                </div>
-                {["Saree ID", "Type", "Color", "Weaver", "Batch", "Date", "Status", ""].map((h, i) => (
-                  <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
-                ))}
-              </div>
-
-              {filtered.length === 0 ? (
-                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No sarees match your filters.</div>
-              ) : filtered.map((r, i) => {
-                const sel = selected.has(r.id);
-                const isCheckable = r.status !== "Dispatched";
-                return (
-                  <div key={r.id}
-                    style={{ display: "grid", gridTemplateColumns: "36px 130px 130px 90px 120px 100px 110px 170px 90px", gap: 0, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none", background: sel ? "rgba(110,15,45,0.03)" : i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center", cursor: isCheckable ? "pointer" : "default", transition: "background 0.12s" }}
-                    onClick={() => toggleRow(r.id, isCheckable)}
-                    onMouseEnter={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.02)"; }}
-                    onMouseLeave={e => { if (isCheckable && !sel) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#FFF" : T.warmIvory; }}
-                  >
-                    <div onClick={e => { e.stopPropagation(); toggleRow(r.id, isCheckable); }} style={{ display: "flex", alignItems: "center" }}>
-                      {isCheckable ? (
-                        sel ? <CheckSquare size={15} color={T.royalBurgundy} /> : <Square size={15} color={T.taupe} />
-                      ) : (
-                        <Square size={15} color={T.taupe} style={{ opacity: 0.2, cursor: "not-allowed" }} />
-                      )}
-                    </div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{r.id}</div>
-                    <div
-                      onClick={e => {
-                        e.stopPropagation();
-                        const rec = getSareeTypeByName(r.sareeType);
-                        if (rec) setOpenSareeTypeCode(rec.code);
-                      }}
-                      style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer", width: "fit-content" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "underline"}
-                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.textDecoration = "none"}
-                    >{r.sareeType}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{getSareeColor(r.id)}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
-                      {r.weaverName.split(" ")[0]}
-                      <div style={{ fontSize: 9.5, color: T.antiqueGold, fontWeight: 600, marginTop: 2 }}>
-                        {getLoomForRecord(r.id, r.weaverName)}
-                      </div>
-                    </div>
-                    <div>{r.batchId ? (
-                      <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 6, padding: "2px 8px", fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, width: "fit-content" }}>{r.batchId}</div>
-                    ) : (
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown }}>—</div>
-                    )}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.date}</div>
-                    <div><StatusBadge status={r.status} /></div>
-                    <div onClick={e => e.stopPropagation()}>
-                      <button
-                        onClick={() => setViewingItem(r)}
-                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, cursor: "pointer" }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.06)"; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                      >
-                        <Eye size={11} /> View
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* All Sarees Inventory — same table used on the Production page */}
+            <div style={{ ...card, borderRadius: 16, padding: 20 }}>
+              <WeaverSareesSection
+                ownerType="all"
+                selectable
+                selectedIds={selected}
+                onToggleRow={toggleSareeRow}
+                onToggleAll={toggleAllVisible}
+                onVisibleChange={setMirroredRows}
+              />
             </div>
           </div>
 
@@ -1769,7 +1653,7 @@ export function InventoryPage() {
             <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 14 }}>Quick Dispatch</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button onClick={() => { if (ready > 0) { setFilter("ready"); } setModal(selected.size > 0 ? "shop" : null); }}
+                <button onClick={() => setModal(selected.size > 0 ? "shop" : null)}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left" as const }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <ShoppingBag size={18} color="#FFF" />
@@ -1779,7 +1663,7 @@ export function InventoryPage() {
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>Select sarees first</div>
                   </div>
                 </button>
-                <button onClick={() => { if (ready > 0) setFilter("ready"); setModal(selected.size > 0 ? "wholesale" : null); }}
+                <button onClick={() => setModal(selected.size > 0 ? "wholesale" : null)}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Users size={18} color={T.royalBurgundy} />
@@ -1789,7 +1673,7 @@ export function InventoryPage() {
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
                   </div>
                 </button>
-                <button onClick={() => { if (ready > 0) setFilter("ready"); setModal(selected.size > 0 ? "quotation" : null); }}
+                <button onClick={() => setModal(selected.size > 0 ? "quotation" : null)}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <FileText size={18} color={T.antiqueGold} />
@@ -1829,9 +1713,17 @@ export function InventoryPage() {
         </div>
       </div>
 
+      {/* ── QUOTATIONS ───────────────────────────────────────────────────── */}
+      <div style={{ padding: "0 48px", marginTop: 40 }}>
+        <QuotationsSection
+          quotations={quotations}
+          onDispatch={q => { setQuotationDispatch(q); setModal("wholesale"); }}
+        />
+      </div>
+
       {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
-      <div style={{ padding: "0 48px 80px", marginTop: 40 }}>
-        <DispatchHistorySection dispatches={dispatches} firms={firms} />
+      <div style={{ padding: "0 48px 80px", marginTop: 24 }}>
+        <DispatchHistorySection dispatches={dispatches} firms={firms} onResume={setResumeDispatch} />
       </div>
 
       {/* ── MODALS ──────────────────────────────────────────────────────── */}
@@ -1855,7 +1747,17 @@ export function InventoryPage() {
             onClose={() => setModal(null)}
           />
         )}
-        {modal === "wholesale" && dispatchableSelected.length > 0 && (() => {
+        {modal === "wholesale" && quotationDispatch && (
+          <DispatchWholesaleModal
+            key="wholesale-modal-quotation"
+            sarees={quotationDispatchSarees}
+            initialCustomerId={quotationDispatch.customerId}
+            initialBulkOrderRef={quotationDispatch.bulkOrderRef}
+            onConfirm={handleWholesaleConfirm}
+            onClose={() => { setModal(null); setQuotationDispatch(null); }}
+          />
+        )}
+        {modal === "wholesale" && !quotationDispatch && dispatchableSelected.length > 0 && (() => {
           // Auto-detect bulk order from selected sarees
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
@@ -1915,6 +1817,19 @@ export function InventoryPage() {
             />
           );
         })()}
+      </AnimatePresence>
+      <AnimatePresence>
+        {resumeDispatch && (
+          <ResumeDispatchModal
+            record={resumeDispatch}
+            onSave={patch => {
+              updateDispatch(resumeDispatch.id, patch);
+              setResumeDispatch(null);
+              setToast("Dispatch details completed");
+            }}
+            onClose={() => setResumeDispatch(null)}
+          />
+        )}
       </AnimatePresence>
       <AnimatePresence>
         {toast && <Toast key="toast" msg={toast} onDone={() => setToast("")} />}

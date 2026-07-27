@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "../contexts/AuthContext";
-import { FinishingProvider, FinishingStaffProvider, QcProvider } from "../contexts";
+import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "./components/ui/sonner";
 
@@ -38,6 +38,9 @@ export default function App() {
       <FinishingStaffProvider>
       <FinishingProvider>
       <QcProvider>
+      {/* Suppliers + external purchases are shared so the Suppliers page and the
+          External Purchases page always read the same inventory and spend. */}
+      <SupplierProvider>
       <BrowserRouter>
         <ErrorBoundary>
           <Routes>
@@ -92,6 +95,7 @@ export default function App() {
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>
+      </SupplierProvider>
       </QcProvider>
       </FinishingProvider>
       </FinishingStaffProvider>

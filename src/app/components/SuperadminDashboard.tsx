@@ -30,6 +30,7 @@ import { PaymentsPage } from "./PaymentsPage";
 import { ReportsPage } from "./ReportsPage";
 import { CustomersPage } from "./CustomersPage";
 import { VendorsPage } from "./VendorsPage";
+import { SuppliersPage } from "./SuppliersPage";
 import { FactoryLoomPage } from "./FactoryLoomPage";
 import { FirmsPage } from "./FirmsPage";
 import { InventoryPage } from "./InventoryPage";
@@ -304,6 +305,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Weavers", label: "Weavers" },
       { key: "Customers", label: "Customers" },
       { key: "Vendors", label: "Vendors" },
+      { key: "Suppliers", label: "Suppliers" },
       { key: "FactoryLooms", label: "Factory Looms" },
       { key: "AddUser", label: "Add New User" },
     ]
@@ -1298,6 +1300,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "inventory") nav = "Inventory";
   else if (tab === "customers") nav = "Customers";
   else if (tab === "vendors") nav = "Vendors";
+  else if (tab === "suppliers") nav = "Suppliers";
   else if (tab === "factory-looms") nav = "FactoryLooms";
   else if (tab === "firms") nav = "Firms";
   else if (tab === "notifications") nav = "Notifications";
@@ -1342,6 +1345,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       Inventory: "/superadmin/inventory",
       Customers: "/superadmin/customers",
       Vendors: "/superadmin/vendors",
+      Suppliers: "/superadmin/suppliers",
       FactoryLooms: "/superadmin/factory-looms",
       Firms: "/superadmin/firms",
       Notifications: "/superadmin/notifications",
@@ -1376,6 +1380,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "Reports": return <ReportsPage />;
       case "Customers": return <CustomersPage />;
       case "Vendors": return <VendorsPage />;
+      case "Suppliers": return <SuppliersPage />;
       case "FactoryLooms": return <FactoryLoomPage />;
       case "Firms": return <FirmsPage />;
       case "Inventory": return <InventoryPage />;

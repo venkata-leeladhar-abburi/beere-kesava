@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useBatches } from "./BatchContext";
 import { useQc, QcResult } from "./QcContext";
 import { useFinishing } from "./FinishingContext";
@@ -160,12 +160,19 @@ function Select({ label, value, options, onChange }: {
 }
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver" }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
   /** "all" shows every saree across every weaver and factory loom, with owner filters/column. */
   ownerType?: "weaver" | "loom" | "all";
+  /** When true, renders a checkbox column (main table only) driven by the props below. */
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleRow?: (sareeId: string) => void;
+  onToggleAll?: (visibleIds: string[]) => void;
+  /** Fired whenever the currently visible (filtered + sorted) row list changes. */
+  onVisibleChange?: (rows: WeaverSareeRow[]) => void;
 }) {
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
@@ -389,13 +396,22 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier]);
 
-  const visible = rows
+  const visible = useMemo(() => rows
     .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
     .sort((a, b) => {
       const da = tabDate(a, tab), db = tabDate(b, tab);
       if (da && db) return new Date(db).getTime() - new Date(da).getTime();
       return a.sareeId.localeCompare(b.sareeId);
-    });
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier]);
+
+  // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
+  const onVisibleChangeRef = useRef(onVisibleChange);
+  onVisibleChangeRef.current = onVisibleChange;
+  useEffect(() => {
+    onVisibleChangeRef.current?.(visible);
+  }, [visible]);
 
   const TABS: { key: TabKey; label: string; color: string }[] = [
     { key: "assigned", label: "Assigned", color: T.royalBurgundy },
@@ -583,6 +599,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
             <thead>
               <tr style={{ background: T.warmCream }}>
+                {selectable && (
+                  <th style={{ ...th, width: 34 }}>
+                    <input type="checkbox"
+                      checked={visible.length > 0 && visible.every(r => selectedIds?.has(r.sareeId))}
+                      onChange={() => onToggleAll?.(visible.map(r => r.sareeId))}
+                      style={{ cursor: "pointer" }} />
+                  </th>
+                )}
                 <th style={th}>Saree ID</th>
                 <th style={th}>Batch</th>
                 {isAll && <th style={th}>Weaver / Loom</th>}
@@ -613,7 +637,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                   ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}`
                   : "—";
                 return (
-                  <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
+                  <tr key={r.sareeId} style={{ background: selectedIds?.has(r.sareeId) ? "rgba(110,15,45,0.05)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
+                    {selectable && (
+                      <td style={td}>
+                        <input type="checkbox" checked={!!selectedIds?.has(r.sareeId)}
+                          onChange={() => onToggleRow?.(r.sareeId)} style={{ cursor: "pointer" }} />
+                      </td>
+                    )}
                     <td style={tdMono}>{r.sareeId}</td>
                     <td style={tdMono}>{r.batchId || "—"}</td>
                     {isAll && (

@@ -13,9 +13,14 @@ import {
   Save,
   FileText,
   UploadCloud,
+  Send,
 } from "lucide-react";
 import { SariTagPrintModal } from "./SariTagPrintModal";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import {
+  useSuppliers, Supplier, SareeTag, Purchase,
+  formatINR, supplierPrefix, buildSareeCode, computeFinalAmount,
+} from "./SupplierContext";
 
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -41,169 +46,6 @@ const T = {
   cream: "#F0E8D0",
 };
 
-interface SareeTag {
-  id: string;          // auto-generated: SUPPLIER-PREFIX + serial + invoice number
-  weight: string;
-  date: string;
-  sareeType: string;    // entered manually by admin
-  color: string;        // entered manually by admin
-  price: number;        // cost price entered manually
-  sellPercent: number;  // markup % to sell at, entered manually
-  finalAmount: number;  // price + price * sellPercent / 100, computed automatically
-  notes: string;
-}
-
-interface Purchase {
-  id: string;
-  supplier: string;
-  location: string;
-  date: string;
-  sareeCount: number;
-  gstNumber: string;
-  invoiceNumber: string;
-  billAmount: string;
-  status: string;
-  notes: string;
-  invoiceFileName?: string;
-  sarees: SareeTag[];
-}
-
-function weightFor(i: number) {
-  const w = 680 + ((i * 37) % 220);
-  return `${w}g`;
-}
-
-function formatINR(n: number): string {
-  return "₹" + Math.max(0, n).toLocaleString("en-IN");
-}
-
-// First 4 letters of the supplier name + saree serial number + invoice number.
-function supplierPrefix(supplier: string): string {
-  const letters = (supplier || "").replace(/[^A-Za-z]/g, "").toUpperCase();
-  return (letters.slice(0, 4) || "SUPP").padEnd(4, "X");
-}
-
-function buildSareeCode(supplier: string, serial: number, invoiceNumber: string): string {
-  const inv = (invoiceNumber || "").trim() || "NOINV";
-  return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${inv}`;
-}
-
-function computeFinalAmount(price: number, sellPercent: number): number {
-  return price + (price * sellPercent) / 100;
-}
-
-const SEED_COLORS = ["Cream", "Maroon", "Red", "Blue", "Indigo", "Gold", "Black", "Pink", "Orange", "Purple"];
-
-function generateSarees(
-  count: number,
-  date: string,
-  sareeType: string,
-  supplier: string,
-  invoiceNumber: string
-): SareeTag[] {
-  return Array.from({ length: count }, (_, i) => {
-    const price = 400 + ((i * 53) % 300);
-    const sellPercent = 20 + ((i * 7) % 15);
-    return {
-      id: buildSareeCode(supplier, i + 1, invoiceNumber),
-      weight: weightFor(i),
-      date,
-      sareeType,
-      color: SEED_COLORS[i % SEED_COLORS.length],
-      price,
-      sellPercent,
-      finalAmount: computeFinalAmount(price, sellPercent),
-      notes: "",
-    };
-  });
-}
-
-const INITIAL_RAW = [
-  {
-    id: "EXT-2026-0001",
-    supplier: "Ravi Silks",
-    location: "Dharmavaram, AP",
-    date: "01 Jun 2026",
-    seedType: "Plain Silk",
-    sareeCount: 4,
-    gstNumber: "37ABCRS1234F1Z5",
-    invoiceNumber: "INV-RS-2026-118",
-    billAmount: "₹34,000",
-    status: "Paid",
-    notes: "Fresh stock for summer season",
-  },
-  {
-    id: "EXT-2026-0002",
-    supplier: "Mysore Sarees",
-    location: "Mysore, KA",
-    date: "05 Jun 2026",
-    seedType: "Mysore Silk",
-    sareeCount: 12,
-    gstNumber: "29MYSRS5678K1Z2",
-    invoiceNumber: "INV-MS-2026-552",
-    billAmount: "₹74,400",
-    status: "Pending",
-    notes: "Awaiting full payment",
-  },
-  {
-    id: "EXT-2026-0003",
-    supplier: "Chennai Silks",
-    location: "Chennai, TN",
-    date: "08 Jun 2026",
-    seedType: "Kanjivaram",
-    sareeCount: 6,
-    gstNumber: "33CHNSK9012L1Z8",
-    invoiceNumber: "INV-CS-2026-073",
-    billAmount: "₹66,000",
-    status: "Partial",
-    notes: "First instalment paid",
-  },
-  {
-    id: "EXT-2026-0004",
-    supplier: "Kanchipuram House",
-    location: "Kanchipuram, TN",
-    date: "10 Jun 2026",
-    seedType: "Kanjivaram",
-    sareeCount: 8,
-    gstNumber: "33KNCH3456M1Z1",
-    invoiceNumber: "INV-KH-2026-209",
-    billAmount: "₹88,000",
-    status: "Paid",
-    notes: "",
-  },
-  {
-    id: "EXT-2026-0005",
-    supplier: "Venkateshwara Handlooms",
-    location: "Ongole, AP",
-    date: "11 Jun 2026",
-    seedType: "Plain Silk",
-    sareeCount: 3,
-    gstNumber: "37VENK7890N1Z6",
-    invoiceNumber: "INV-VH-2026-014",
-    billAmount: "₹22,500",
-    status: "Paid",
-    notes: "Trial batch",
-  },
-  {
-    id: "EXT-2026-0006",
-    supplier: "Pochampally Coop",
-    location: "Pochampally, TG",
-    date: "11 Jun 2026",
-    seedType: "Patola",
-    sareeCount: 15,
-    gstNumber: "36POCH2345P1Z9",
-    invoiceNumber: "INV-PC-2026-301",
-    billAmount: "₹1,20,000",
-    status: "Pending",
-    notes: "Inter-branch transfer",
-  },
-];
-
-const INITIAL_PURCHASES: Purchase[] = INITIAL_RAW.map(({ seedType, sareeCount, ...p }) => ({
-  ...p,
-  sareeCount,
-  sarees: generateSarees(sareeCount, p.date, seedType, p.supplier, p.invoiceNumber),
-}));
 
 function StatusPill({ status }: { status: string }) {
   const styles: Record<string, { color: string; bg: string }> = {
@@ -253,7 +95,9 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 6,
 };
 
-interface FormState {
+export interface FormState {
+  /** Registered supplier this purchase is against — empty for a one-off supplier typed by hand. */
+  supplierId: string;
   supplier: string;
   location: string;
   date: string;
@@ -265,7 +109,8 @@ interface FormState {
   invoiceFileName: string;
 }
 
-const EMPTY_FORM: FormState = {
+export const EMPTY_FORM: FormState = {
+  supplierId: "",
   supplier: "",
   location: "",
   date: "",
@@ -293,21 +138,27 @@ function toSareeRow(s: SareeTag): SareeRow {
   return { ...rest, _uid: nextRowUid() };
 }
 
-function PurchaseFormModal({
+export function PurchaseFormModal({
   mode,
   initial,
   initialSarees,
   onClose,
   onSubmit,
 }: {
-  mode: "add" | "edit";
+  mode: "add" | "edit" | "request";
   initial: FormState;
   initialSarees: SareeTag[];
   onClose: () => void;
-  onSubmit: (data: FormState, sarees: SareeTag[]) => void;
+  onSubmit: (data: FormState, sarees: SareeTag[], request?: { urgency: "Normal" | "Urgent"; reason: string }) => void;
 }) {
+  const { suppliers } = useSuppliers();
   const [form, setForm] = useState<FormState>(initial);
   const [sareeDetails, setSareeDetails] = useState<SareeRow[]>(() => initialSarees.map(toSareeRow));
+  const [urgency, setUrgency] = useState<"Normal" | "Urgent">("Normal");
+  const [reason, setReason] = useState("");
+
+  const selectedSupplier = suppliers.find((s) => s.id === form.supplierId) ?? null;
+  const isRequest = mode === "request";
 
   const set = (key: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -319,12 +170,14 @@ function PurchaseFormModal({
         _uid: nextRowUid(),
         weight: "",
         date: form.date || "—",
-        sareeType: "",
+        // Default the type to what this supplier normally supplies — still editable.
+        sareeType: selectedSupplier?.specialty ?? "",
         color: "",
         price: 0,
         sellPercent: 20,
         finalAmount: 0,
         notes: "",
+        imageUrl: undefined,
       },
     ]);
   };
@@ -343,7 +196,8 @@ function PurchaseFormModal({
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
-    sareeDetails.length > 0;
+    sareeDetails.length > 0 &&
+    (!isRequest || reason.trim() !== "");
 
   const buildFinalSarees = (): SareeTag[] =>
     sareeDetails.map((s, idx) => {
@@ -359,6 +213,7 @@ function PurchaseFormModal({
         sellPercent,
         finalAmount: computeFinalAmount(price, sellPercent),
         notes: s.notes,
+        imageUrl: s.imageUrl,
       };
     });
 
@@ -415,7 +270,7 @@ function PurchaseFormModal({
             }}
           >
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>
-              {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
+              {mode === "add" ? "Add External Purchase" : mode === "edit" ? `Edit Purchase — ${initial.supplier}` : "Raise Purchase Request"}
             </div>
             <button
               onClick={onClose}
@@ -437,6 +292,61 @@ function PurchaseFormModal({
           </div>
 
           <div style={{ padding: "22px 26px", overflowY: "auto", flex: 1 }}>
+            {isRequest && (
+              <div style={{ marginBottom: 16, background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
+                This goes to the superadmin for approval before it becomes an external purchase. Fill it in exactly like a real purchase — supplier, invoice and saree details — so it's ready to convert once approved.
+              </div>
+            )}
+            {/* Supplier selector — picking a registered supplier fills in every
+                detail below; "Other" leaves the fields free for a one-off buy. */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Select Supplier</label>
+              <select
+                style={{ ...inputStyle, cursor: "pointer" }}
+                value={form.supplierId || (form.supplier ? "__other__" : "")}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "" || val === "__other__") {
+                    setForm((f) => ({ ...f, supplierId: "", ...(val === "" ? { supplier: "", location: "", gstNumber: "" } : {}) }));
+                    return;
+                  }
+                  const s = suppliers.find((x) => x.id === val);
+                  if (!s) return;
+                  setForm((f) => ({
+                    ...f,
+                    supplierId: s.id,
+                    supplier: s.name,
+                    location: `${s.city}, ${s.state}`,
+                    gstNumber: s.gstCode,
+                  }));
+                }}
+              >
+                <option value="">— Choose a registered supplier —</option>
+                {suppliers.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} · {s.city} · {s.specialty}</option>
+                ))}
+                <option value="__other__">Other (enter manually)</option>
+              </select>
+            </div>
+
+            {selectedSupplier && (
+              <div style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                {[
+                  ["Supplier ID", selectedSupplier.id],
+                  ["Contact", selectedSupplier.contactName],
+                  ["Phone", selectedSupplier.phone],
+                  ["Supplies", selectedSupplier.specialty],
+                  ["Payment Terms", selectedSupplier.terms],
+                  ["GST", selectedSupplier.gstCode || "—"],
+                ].map(([k, v]) => (
+                  <div key={k}>
+                    <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, wordBreak: "break-word" }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
                 <label style={labelStyle}>Supplier Name</label>
@@ -557,6 +467,34 @@ function PurchaseFormModal({
                 style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }}
               />
             </div>
+
+            {isRequest && (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+                  <div>
+                    <label style={labelStyle}>Urgency</label>
+                    <select
+                      style={{ ...inputStyle, cursor: "pointer" }}
+                      value={urgency}
+                      onChange={(e) => setUrgency(e.target.value as "Normal" | "Urgent")}
+                    >
+                      <option value="Normal">Normal</option>
+                      <option value="Urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginTop: 14 }}>
+                  <label style={labelStyle}>Reason for Request *</label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={2}
+                    placeholder="Why is this purchase needed?"
+                    style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }}
+                  />
+                </div>
+              </>
+            )}
 
             {/* Saree Details — per-saree entry */}
             <div style={{ marginTop: 20 }}>
@@ -691,14 +629,50 @@ function PurchaseFormModal({
                           </div>
                         </div>
                       </div>
-                      <div>
-                        <label style={labelStyle}>Notes (optional)</label>
-                        <textarea
-                          value={s.notes}
-                          onChange={(e) => updateSareeRow(s._uid, { notes: e.target.value })}
-                          rows={2}
-                          style={{ ...inputStyle, height: "auto", padding: "8px 12px", fontSize: 12, resize: "vertical" as const }}
-                        />
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 10 }}>
+                        <div>
+                          <label style={labelStyle}>Notes (optional)</label>
+                          <textarea
+                            value={s.notes}
+                            onChange={(e) => updateSareeRow(s._uid, { notes: e.target.value })}
+                            rows={2}
+                            style={{ ...inputStyle, height: "auto", padding: "8px 12px", fontSize: 12, resize: "vertical" as const }}
+                          />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Saree Photo (optional)</label>
+                          {s.imageUrl ? (
+                            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                              <img src={s.imageUrl} alt="Saree" style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }} />
+                              <button
+                                onClick={() => updateSareeRow(s._uid, { imageUrl: undefined })}
+                                title="Remove photo"
+                                style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+                          ) : (
+                            <label
+                              style={{ height: 68, border: `1.5px dashed ${T.borderGold}`, borderRadius: 8, background: T.silkCream, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, cursor: "pointer", color: T.taupe }}
+                            >
+                              <UploadCloud size={16} />
+                              <span style={{ fontFamily: F.ui, fontSize: 10.5 }}>Upload photo</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = (ev) => updateSareeRow(s._uid, { imageUrl: ev.target?.result as string });
+                                  reader.readAsDataURL(file);
+                                }}
+                                style={{ display: "none" }}
+                              />
+                            </label>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -718,7 +692,7 @@ function PurchaseFormModal({
           >
             <button
               disabled={!valid}
-              onClick={() => valid && onSubmit(form, buildFinalSarees())}
+              onClick={() => valid && onSubmit(form, buildFinalSarees(), isRequest ? { urgency, reason } : undefined)}
               style={{
                 flex: 1,
                 background: valid ? T.royalBurgundy : "rgba(110,15,45,0.30)",
@@ -736,8 +710,8 @@ function PurchaseFormModal({
                 gap: 8,
               }}
             >
-              <Save size={15} />
-              {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
+              {isRequest ? <Send size={15} /> : <Save size={15} />}
+              {mode === "add" ? "Add Purchase & Generate Barcodes" : mode === "edit" ? "Save Changes" : "Send to Superadmin"}
             </button>
             <button
               onClick={onClose}
@@ -984,7 +958,9 @@ function SareeListModal({
 }
 
 export function ExternalPurchasesPage() {
-  const [purchases, setPurchases] = useState<Purchase[]>(INITIAL_PURCHASES);
+  // Purchases live in the shared supplier context so the Suppliers page sees the
+  // same inventory, spend and payment history that gets entered here.
+  const { purchases, addPurchase, updatePurchase, deletePurchase } = useSuppliers();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -1009,15 +985,9 @@ export function ExternalPurchasesPage() {
     return matchSearch && matchStatus && matchDate;
   });
 
-  const nextId = () => {
-    const n = purchases.length + 1;
-    return `EXT-2026-${String(n).padStart(4, "0")}`;
-  };
-
   const handleAddSubmit = (form: FormState, sarees: SareeTag[]) => {
-    const id = nextId();
-    const newPurchase: Purchase = {
-      id,
+    addPurchase({
+      supplierId: form.supplierId || undefined,
       supplier: form.supplier,
       location: form.location,
       date: form.date || "—",
@@ -1029,44 +999,39 @@ export function ExternalPurchasesPage() {
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
       sarees,
-    };
-    setPurchases((prev) => [newPurchase, ...prev]);
+    });
     setFormModal(null);
   };
 
   const handleEditSubmit = (id: string, form: FormState, sarees: SareeTag[]) => {
-    setPurchases((prev) =>
-      prev.map((p) => {
-        if (p.id !== id) return p;
-        return {
-          ...p,
-          supplier: form.supplier,
-          location: form.location,
-          date: form.date || p.date,
-          sareeCount: sarees.length,
-          gstNumber: form.gstNumber,
-          invoiceNumber: form.invoiceNumber,
-          billAmount: form.billAmount,
-          status: form.status,
-          notes: form.notes,
-          invoiceFileName: form.invoiceFileName || undefined,
-          sarees,
-        };
-      })
-    );
+    updatePurchase(id, {
+      supplierId: form.supplierId || undefined,
+      supplier: form.supplier,
+      location: form.location,
+      date: form.date || undefined,
+      sareeCount: sarees.length,
+      gstNumber: form.gstNumber,
+      invoiceNumber: form.invoiceNumber,
+      billAmount: form.billAmount,
+      status: form.status,
+      notes: form.notes,
+      invoiceFileName: form.invoiceFileName || undefined,
+      sarees,
+    });
     setFormModal(null);
-    setDetailRow((d) => (d && d.id === id ? purchases.find((p) => p.id === id) || d : d));
+    setDetailRow((d) => (d && d.id === id ? null : d));
   };
 
   const handleDelete = (id: string) => {
     if (!window.confirm(`Delete purchase ${id}? This cannot be undone.`)) return;
-    setPurchases((prev) => prev.filter((p) => p.id !== id));
+    deletePurchase(id);
     setDetailRow((d) => (d && d.id === id ? null : d));
   };
 
   const editingPurchase = formModal?.mode === "edit" ? purchases.find((p) => p.id === formModal.editId) : null;
   const editingFormInitial: FormState | null = editingPurchase
     ? {
+        supplierId: editingPurchase.supplierId || "",
         supplier: editingPurchase.supplier,
         location: editingPurchase.location,
         date: editingPurchase.date,

@@ -120,6 +120,11 @@ export interface DispatchRecord {
   paymentDueDate?: string;
   invoiceNotes?: string;
   bulkOrderRef?: string;
+  // Set when the dispatch was raised directly (e.g. from the invoice step or the very
+  // first step) and transport / receipt details were skipped to be filled in later.
+  pendingTransport?: boolean;
+  pendingReceipt?: boolean;
+  quotationRef?: string;
 }
 
 interface FinishingContextValue {
@@ -140,7 +145,8 @@ interface FinishingContextValue {
     receivedBy: string;
     receivedDate: string;
   }) => void;
-  dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => void;
+  dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => string;
+  updateDispatch: (id: string, patch: Partial<DispatchRecord>) => void;
   quotations: Quotation[];
   raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => string;
   assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
@@ -330,6 +336,12 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         ? { ...r, inventoryStatus: "Dispatched", dispatchId: id }
         : r
     ));
+
+    return id;
+  }, []);
+
+  const updateDispatch = useCallback((id: string, patch: Partial<DispatchRecord>) => {
+    setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d));
   }, []);
 
   const todayLabel = () => new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -434,7 +446,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched }}>
+    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched }}>
       {children}
     </FinishingContext.Provider>
   );
