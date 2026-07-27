@@ -30,13 +30,6 @@ const F = {
 
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 
-/** Swatch shown next to a colour name in the sarees table. */
-const COLOR_SWATCH: Record<string, string> = {
-  Cream: "#EFE2C6", Maroon: "#7B1F32", Red: "#C0392B", Blue: "#3A6EA5",
-  Green: "#2E7D50", Indigo: "#3B3B77", Gold: "#C89B47", Black: "#2B2B2B",
-  White: "#F7F5F0", Pink: "#D9788F", Orange: "#E67E22", Purple: "#7C3AED",
-};
-
 const AGE_COLOR: Record<string, string> = {
   "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
 };
@@ -50,7 +43,7 @@ function fmtDate(d: string | null | undefined): string {
 }
 
 // ── Row model ────────────────────────────────────────────────────────────────
-type FinishingStatus = "completed" | "in-finishing" | "pending" | "none";
+type FinishingStatus = "completed" | "in-finishing" | "pending" | "none" | "rejected";
 
 export interface WeaverSareeRow {
   sareeId: string;
@@ -81,6 +74,11 @@ export interface WeaverSareeRow {
 
   /** present when the saree exists in the sales / stock ledger */
   stock: UnifiedSaree | null;
+
+  /** Who wove/produced this saree — only populated in "all" (cross-weaver) mode. */
+  ownerKind: "weaver" | "loom" | null;
+  ownerId: string | null;
+  ownerLabel: string | null;
 }
 
 const QC_CFG: Record<QcResult | "pending", { label: string; color: string }> = {
@@ -95,12 +93,13 @@ const FIN_CFG: Record<FinishingStatus, { label: string; color: string }> = {
   "in-finishing": { label: "In Finishing", color: T.antiqueGold },
   pending: { label: "Not Assigned", color: T.taupe },
   none: { label: "—", color: T.taupe },
+  rejected: { label: "Rejected", color: T.crimson },
 };
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 type TabKey =
   | "assigned" | "produced" | "qcpassed" | "semi"
-  | "defective" | "finishing" | "sold" | "outstanding";
+  | "defective" | "finishing" | "sold" | "outstanding" | "shortage" | "external";
 
 /** Which date each tab filters and sorts on. */
 function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
@@ -113,6 +112,8 @@ function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
     case "finishing": return row.finishingCompletedDate;
     case "sold": return row.stock?.sale?.date ?? null;
     case "outstanding": return row.stock?.qcDate ?? null;
+    case "shortage": return row.finishingCompletedDate ?? row.qcDate ?? null;
+    case "external": return row.stock?.purchaseDate ?? row.stock?.qcDate ?? null;
   }
 }
 
@@ -160,19 +161,22 @@ function Select({ label, value, options, onChange }: {
 
 // ── Main section ─────────────────────────────────────────────────────────────
 export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver" }: {
-  /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. */
-  weaverId: string;
-  weaverName: string;
-  ownerType?: "weaver" | "loom";
+  /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
+  weaverId?: string;
+  weaverName?: string;
+  /** "all" shows every saree across every weaver and factory loom, with owner filters/column. */
+  ownerType?: "weaver" | "loom" | "all";
 }) {
   const isLoom = ownerType === "loom";
+  const isAll = ownerType === "all";
   const { batches } = useBatches();
-  const { getQcForWeaver, getQcForLoom } = useQc();
+  const { qcRecords: allQcRecords, getQcForWeaver, getQcForLoom } = useQc();
   const { readySarees, assignments, returns } = useFinishing();
   const { sarees: allStock } = useSales();
   const { getDesign } = useDesignLibrary();
 
   const [tab, setTab] = useState<TabKey>("assigned");
+  const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [fBatch, setFBatch] = useState("all");
   const [fLoom, setFLoom] = useState("all");
@@ -181,8 +185,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const [fColor, setFColor] = useState("all");
   const [fQc, setFQc] = useState("all");
   const [fFinishing, setFFinishing] = useState("all");
+  const [fOwnerWeaver, setFOwnerWeaver] = useState("all");
+  const [fOwnerLoom, setFOwnerLoom] = useState("all");
+  const [fSupplier, setFSupplier] = useState("all");
 
-  const qcRecords = isLoom ? getQcForLoom(weaverId) : getQcForWeaver(weaverId);
+  const isExternalTab = tab === "external";
+
+  const qcRecords = isAll ? allQcRecords : isLoom ? getQcForLoom(weaverId!) : getQcForWeaver(weaverId!);
 
   // ── Build one enriched row per saree, joining batch + QC + finishing + stock ──
   const rows = useMemo<WeaverSareeRow[]>(() => {
@@ -195,22 +204,31 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
       finishingCompletedDate: null, stock: null,
+      ownerKind: null, ownerId: null, ownerLabel: null,
     });
 
-    // 1. Sarees assigned to this weaver through production batches
+    // 1. Sarees assigned to this weaver/loom (or everyone, in "all" mode) through production batches
     batches.forEach(b => {
       b.rows.forEach(r => {
-        const belongs = isLoom ? r.factoryLoomId === weaverId : r.weaverId === weaverId;
+        const rowIsLoom = r.recipientType === "factoryLoom";
+        const belongs = isAll ? true : isLoom ? r.factoryLoomId === weaverId : r.weaverId === weaverId;
         if (!belongs || !r.sareeId) return;
         const row = byId.get(r.sareeId) ?? blank(r.sareeId);
         row.batchId = b.batchId;
-        row.loomNumber = isLoom ? null : (r.weaverLoom ?? null);
+        row.loomNumber = (isLoom || (isAll && rowIsLoom)) ? null : (r.weaverLoom ?? null);
         row.sareeTypeCode = r.sareeTypeCode ?? null;
         row.sareeTypeName = r.sareeTypeName ?? null;
         row.bulkOrderLabel = r.bulkOrderLabel ?? null;
         row.designCode = r.designCode ?? null;
         row.isAssigned = true;
         row.assignedDate = b.createdAt;
+        if (isAll) {
+          if (rowIsLoom) {
+            row.ownerKind = "loom"; row.ownerId = r.factoryLoomId ?? null; row.ownerLabel = r.factoryLoomNumber ?? null;
+          } else {
+            row.ownerKind = "weaver"; row.ownerId = r.weaverId ?? null; row.ownerLabel = r.weaverName ?? null;
+          }
+        }
         // Fall back to the batch flag until a QC record exists for the saree
         if (r.qcPassed === true) row.qcStatus = "passed";
         else if (r.qcPassed === false) row.qcStatus = "defective";
@@ -233,22 +251,36 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       row.makingCharge = q.makingCharge;
       row.deduction = q.deduction;
       row.payable = q.payable;
+      if (isAll && !row.ownerKind) {
+        if (q.factoryLoomId) {
+          row.ownerKind = "loom"; row.ownerId = q.factoryLoomId; row.ownerLabel = q.factoryLoomNumber;
+        } else if (q.weaverId) {
+          row.ownerKind = "weaver"; row.ownerId = q.weaverId; row.ownerLabel = q.weaverName;
+        }
+      }
       byId.set(q.sareeId, row);
     });
 
-    // 3. Stock / sales ledger entries for this weaver
+    // 3. Stock / sales ledger entries for this weaver/loom (or everyone, in "all" mode)
     allStock.forEach(s => {
-      const belongs = isLoom
+      const belongs = isAll ? true : isLoom
         ? s.origin === "factoryLoom" && s.factoryLoomId === weaverId
         : s.origin === "weaver" && s.weaverId === weaverId;
       if (!belongs) return;
       const row = byId.get(s.sareeId) ?? blank(s.sareeId);
       row.batchId = row.batchId ?? s.batchId;
-      row.loomNumber = isLoom ? null : (row.loomNumber ?? s.weaverLoom ?? null);
+      row.loomNumber = (isLoom || (isAll && s.origin === "factoryLoom")) ? null : (row.loomNumber ?? s.weaverLoom ?? null);
       row.sareeTypeCode = row.sareeTypeCode ?? s.sareeTypeCode;
       row.sareeTypeName = row.sareeTypeName ?? s.sareeTypeName;
       row.designCode = row.designCode ?? s.designCode ?? null;
       row.stock = s;
+      if (isAll && !row.ownerKind) {
+        if (s.origin === "factoryLoom") {
+          row.ownerKind = "loom"; row.ownerId = s.factoryLoomId ?? null; row.ownerLabel = s.factoryLoomNumber ?? null;
+        } else if (s.origin === "weaver") {
+          row.ownerKind = "weaver"; row.ownerId = s.weaverId ?? null; row.ownerLabel = s.weaverName ?? null;
+        }
+      }
       byId.set(s.sareeId, row);
     });
 
@@ -257,13 +289,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       const ret = returns.find(r => r.sareeId === row.sareeId);
       const asg = assignments.find(a => a.sareeId === row.sareeId);
       if (ret) {
-        row.finishingStatus = "completed";
+        row.finishingStatus = ret.condition === "damaged" ? "rejected" : "completed";
         row.finishingCompletedDate = ret.receivedDate;
         row.finishingAssignedDate = asg?.assignedDate ?? null;
       } else if (asg && asg.status === "awaiting-return") {
         row.finishingStatus = "in-finishing";
         row.finishingAssignedDate = asg.assignedDate;
-      } else if (readySarees.some(s => s.id === row.sareeId)) {
+      } else if (readySarees.some(s => s.id === row.sareeId) || row.qcStatus === "passed") {
         row.finishingStatus = "pending";
       }
     });
@@ -274,19 +306,21 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     });
 
     return [...byId.values()];
-  }, [batches, qcRecords, allStock, returns, assignments, readySarees, weaverId, isLoom, getDesign]);
+  }, [batches, qcRecords, allStock, returns, assignments, readySarees, weaverId, isLoom, isAll, getDesign]);
 
   // ── Tab membership ──────────────────────────────────────────────────────────
   const inTab = (r: WeaverSareeRow, t: TabKey) => {
     switch (t) {
       case "assigned": return r.isAssigned;
-      case "produced": return r.stock !== null;
+      case "produced": return r.stock !== null && r.stock.origin !== "external";
       case "qcpassed": return r.qcStatus === "passed";
       case "semi": return r.qcStatus === "semi";
       case "defective": return r.qcStatus === "defective";
       case "finishing": return r.finishingStatus === "completed";
-      case "sold": return r.stock !== null && isSold(r.stock);
-      case "outstanding": return r.stock !== null && isOutstanding(r.stock);
+      case "sold": return r.stock !== null && r.stock.origin !== "external" && isSold(r.stock);
+      case "outstanding": return r.stock !== null && r.stock.origin !== "external" && isOutstanding(r.stock);
+      case "shortage": return !!r.bulkOrderLabel && (r.qcStatus === "defective" || r.finishingStatus === "rejected");
+      case "external": return r.stock !== null && r.stock.origin === "external";
     }
   };
 
@@ -301,11 +335,34 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       type: uniq(rows.map(r => (r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : null))),
       color: uniq(rows.map(r => r.color)),
       qc: ["all", "QC Passed", "Semi-Approved", "Defective", "In Production"],
-      finishing: ["all", "Completed", "In Finishing", "Not Assigned"],
+      finishing: ["all", "Completed", "In Finishing", "Not Assigned", "Rejected"],
+      ownerWeaver: uniq(rows.filter(r => r.ownerKind === "weaver").map(r => r.ownerLabel)),
+      ownerLoom: uniq(rows.filter(r => r.ownerKind === "loom").map(r => r.ownerLabel)),
+      supplier: uniq(rows.filter(r => r.stock?.origin === "external").map(r => r.stock?.supplier ?? null)),
     };
   }, [rows]);
 
+  // Loom numbers belonging only to the currently selected weaver (for the cascading loom filter).
+  const weaverLoomOpts = useMemo(() => {
+    const uniq = (vals: (string | null)[]) =>
+      ["all", ...Array.from(new Set(vals.filter((v): v is string => !!v))).sort()];
+    if (!isAll || fOwnerWeaver === "all") return ["all"];
+    return uniq(rows.filter(r => r.ownerKind === "weaver" && r.ownerLabel === fOwnerWeaver)
+      .map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null)));
+  }, [rows, isAll, fOwnerWeaver]);
+
+  const matchesSearch = (r: WeaverSareeRow) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    const hay = [
+      r.sareeId, r.batchId, r.sareeTypeCode, r.sareeTypeName, r.color, r.bulkOrderLabel, r.ownerLabel,
+      r.stock?.supplier, r.stock?.supplierLocation, r.stock?.invoiceNumber,
+    ].filter(Boolean).join(" ").toLowerCase();
+    return hay.includes(q);
+  };
+
   const passesFilters = (r: WeaverSareeRow) => {
+    if (!matchesSearch(r)) return false;
     if (fBatch !== "all" && r.batchId !== fBatch) return false;
     if (fLoom !== "all" && (r.loomNumber == null || `Loom ${r.loomNumber}` !== fLoom)) return false;
     if (fOrder !== "all" && (r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null)) !== fOrder) return false;
@@ -316,18 +373,21 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     if (fColor !== "all" && r.color !== fColor) return false;
     if (fQc !== "all" && QC_CFG[r.qcStatus].label !== fQc) return false;
     if (fFinishing !== "all" && FIN_CFG[r.finishingStatus].label !== fFinishing) return false;
+    if (isAll && fOwnerWeaver !== "all" && (r.ownerKind !== "weaver" || r.ownerLabel !== fOwnerWeaver)) return false;
+    if (isAll && fOwnerLoom !== "all" && (r.ownerKind !== "loom" || r.ownerLabel !== fOwnerLoom)) return false;
+    if (fSupplier !== "all" && r.stock?.supplier !== fSupplier) return false;
     return true;
   };
 
   const counts = useMemo(() => {
     const c = {} as Record<TabKey, number>;
-    (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding"] as TabKey[])
+    (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding", "shortage", "external"] as TabKey[])
       .forEach(t => {
         c[t] = rows.filter(r => inTab(r, t) && passesFilters(r) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, dateFilter, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing]);
+  }, [rows, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier]);
 
   const visible = rows
     .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
@@ -346,14 +406,19 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     { key: "finishing", label: "Finishing Completed", color: T.purple },
     { key: "sold", label: "Sold", color: T.blue },
     { key: "outstanding", label: "Outstanding", color: T.orange },
+    { key: "shortage", label: "Shortage Sarees", color: T.crimson },
+    ...(isAll ? [{ key: "external" as TabKey, label: "External Purchases", color: T.taupe }] : []),
   ];
 
-  const filtersActive = fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
-    || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all" || dateFilter.mode !== "all";
+  const filtersActive = search.trim() !== "" || fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
+    || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all"
+    || fOwnerWeaver !== "all" || fOwnerLoom !== "all" || fSupplier !== "all" || dateFilter.mode !== "all";
 
   const resetFilters = () => {
+    setSearch("");
     setFBatch("all"); setFLoom("all"); setFOrder("all");
     setFType("all"); setFColor("all"); setFQc("all"); setFFinishing("all");
+    setFOwnerWeaver("all"); setFOwnerLoom("all"); setFSupplier("all");
     setDateFilter(DEFAULT_DATE_FILTER);
   };
 
@@ -368,7 +433,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             : tab === "defective" ? "Marked Defective On"
               : tab === "finishing" ? "Finishing Completed On"
                 : tab === "sold" ? "Sold On"
-                  : "In Stock Since";
+                  : tab === "shortage" ? "Rejected On"
+                    : tab === "external" ? "Purchase Date"
+                      : "In Stock Since";
 
   return (
     <div>
@@ -405,13 +472,45 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 14,
         background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px",
       }}>
-        <Select label="Batch" value={fBatch} options={opts.batch} onChange={setFBatch} />
-        {!isLoom && <Select label="Loom" value={fLoom} options={opts.loom} onChange={setFLoom} />}
-        <Select label="Bulk Order" value={fOrder} options={opts.order} onChange={setFOrder} />
-        <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
-        <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
-        <Select label="QC Status" value={fQc} options={opts.qc} onChange={setFQc} />
-        <Select label="Finishing" value={fFinishing} options={opts.finishing} onChange={setFFinishing} />
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 220px", minWidth: 200 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Search</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Saree ID, batch, type, colour, weaver, supplier…"
+            style={{
+              height: 36, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`,
+              borderRadius: 9, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, outline: "none",
+            }}
+          />
+        </label>
+
+        {isExternalTab ? (
+          <>
+            <Select label="Supplier" value={fSupplier} options={opts.supplier} onChange={setFSupplier} />
+            <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
+            <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
+          </>
+        ) : (
+          <>
+            <Select label="Batch" value={fBatch} options={opts.batch} onChange={setFBatch} />
+            {!isLoom && !isAll && <Select label="Loom" value={fLoom} options={opts.loom} onChange={setFLoom} />}
+            {isAll && (
+              <Select label="Weaver" value={fOwnerWeaver} options={opts.ownerWeaver}
+                onChange={v => { setFOwnerWeaver(v); setFLoom("all"); }} />
+            )}
+            {isAll && fOwnerWeaver !== "all" && (
+              <Select label="Weaver's Loom" value={fLoom} options={weaverLoomOpts} onChange={setFLoom} />
+            )}
+            {isAll && <Select label="Factory Loom" value={fOwnerLoom} options={opts.ownerLoom} onChange={setFOwnerLoom} />}
+            <Select label="Bulk Order" value={fOrder} options={opts.order} onChange={setFOrder} />
+            <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
+            <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
+            <Select label="QC Status" value={fQc} options={opts.qc} onChange={setFQc} />
+            <Select label="Finishing" value={fFinishing} options={opts.finishing} onChange={setFFinishing} />
+          </>
+        )}
+
         {filtersActive && (
           <button onClick={resetFilters}
             style={{
@@ -432,6 +531,50 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         }}>
           No sarees match this view{filtersActive ? " with the current filters." : "."}
         </div>
+      ) : isExternalTab ? (
+        <div style={{
+          overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
+          background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
+        }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+            <thead>
+              <tr style={{ background: T.warmCream }}>
+                <th style={th}>Saree ID</th>
+                <th style={th}>Supplier</th>
+                <th style={th}>Location</th>
+                <th style={th}>Saree Type</th>
+                <th style={th}>Colour</th>
+                <th style={th}>Weight</th>
+                <th style={th}>Purchase Date</th>
+                <th style={{ ...th, textAlign: "right" }}>Cost Price</th>
+                <th style={{ ...th, textAlign: "right" }}>Sell %</th>
+                <th style={{ ...th, textAlign: "right" }}>Final Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((r, idx) => (
+                <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
+                  <td style={tdMono}>{r.sareeId}</td>
+                  <td style={{ ...td, fontWeight: 600, color: T.royalBurgundy }}>{r.stock?.supplier || "—"}</td>
+                  <td style={td}>{r.stock?.supplierLocation || "—"}</td>
+                  <td style={td}>{r.sareeTypeName || "—"}</td>
+                  <td style={td}>{r.color || <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}</td>
+                  <td style={td}>{r.stock?.weight || "—"}</td>
+                  <td style={td}>{fmtDate(r.stock?.purchaseDate)}</td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                    {r.stock ? inr(r.stock.costPrice) : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                    {r.stock ? `${r.stock.sellPercent}%` : "—"}
+                  </td>
+                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+                    {r.stock ? inr(r.stock.finalAmount) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div style={{
           overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
@@ -442,6 +585,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               <tr style={{ background: T.warmCream }}>
                 <th style={th}>Saree ID</th>
                 <th style={th}>Batch</th>
+                {isAll && <th style={th}>Weaver / Loom</th>}
                 {!isLoom && <th style={th}>Loom</th>}
                 <th style={th}>Saree Type</th>
                 <th style={th}>Colour</th>
@@ -458,10 +602,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                   <th style={{ ...th, textAlign: "right" }}>Deducted</th>
                   <th style={{ ...th, textAlign: "right" }}>Weaver Earns</th>
                 </>}
-                {showMoney && <>
-                  <th style={{ ...th, textAlign: "right" }}>Cost</th>
-                  <th style={{ ...th, textAlign: "right" }}>{tab === "sold" ? "Sold For" : "Sell Price"}</th>
-                </>}
+                {showMoney && <th style={{ ...th, textAlign: "right" }}>{tab === "sold" ? "Sold For" : "Sell Price"}</th>}
               </tr>
             </thead>
             <tbody>
@@ -475,6 +616,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                   <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
                     <td style={tdMono}>{r.sareeId}</td>
                     <td style={tdMono}>{r.batchId || "—"}</td>
+                    {isAll && (
+                      <td style={{ ...td, fontWeight: 600, color: r.ownerKind === "loom" ? T.antiqueGold : T.royalBurgundy }}>
+                        {r.ownerLabel || "—"}
+                      </td>
+                    )}
                     {!isLoom && (
                       <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700 }}>
                         {r.loomNumber != null ? `L${r.loomNumber}` : "—"}
@@ -483,10 +629,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                     <td style={td}>{typeLabel}</td>
                     <td style={td}>
                       {r.color
-                        ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-                            <span style={{ width: 12, height: 12, borderRadius: 3, background: COLOR_SWATCH[r.color] || "#B9A48A", border: "1px solid rgba(0,0,0,0.14)", flexShrink: 0 }} />
-                            {r.color}
-                          </span>
+                        ? r.color
                         : <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}
                     </td>
                     <td style={{ ...td, color: r.bulkOrderLabel ? T.royalBurgundy : T.green, fontWeight: 600 }}>
@@ -547,17 +690,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                       </td>
                     </>}
 
-                    {showMoney && <>
-                      <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
-                        {r.stock ? inr(r.stock.costPrice) : "—"}
-                      </td>
+                    {showMoney && (
                       <td style={{
                         ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700,
                         color: tab === "sold" ? T.green : T.royalBurgundy,
                       }}>
                         {r.stock ? inr(tab === "sold" ? (r.stock.sale?.amount || 0) : r.stock.finalAmount) : "—"}
                       </td>
-                    </>}
+                    )}
                   </tr>
                 );
               })}
@@ -587,9 +727,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           ))}
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center", maxWidth: 320, lineHeight: 1.5 }}>
             {tab === "defective"
-              ? (isLoom
-                  ? `Defective sarees from ${weaverName} carry no making-charge credit — the full charge is written off.`
-                  : `${weaverName} is not paid for defective sarees — the full making charge is withheld.`)
+              ? (isAll
+                  ? `Defective sarees carry no making-charge credit — the full charge is written off.`
+                  : isLoom
+                    ? `Defective sarees from ${weaverName} carry no making-charge credit — the full charge is written off.`
+                    : `${weaverName} is not paid for defective sarees — the full making charge is withheld.`)
               : `Semi-approved sarees carry the deduction entered by worker staff at QC.`}
           </div>
         </div>

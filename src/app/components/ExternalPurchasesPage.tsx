@@ -46,6 +46,7 @@ interface SareeTag {
   weight: string;
   date: string;
   sareeType: string;    // entered manually by admin
+  color: string;        // entered manually by admin
   price: number;        // cost price entered manually
   sellPercent: number;  // markup % to sell at, entered manually
   finalAmount: number;  // price + price * sellPercent / 100, computed automatically
@@ -91,6 +92,8 @@ function computeFinalAmount(price: number, sellPercent: number): number {
   return price + (price * sellPercent) / 100;
 }
 
+const SEED_COLORS = ["Cream", "Maroon", "Red", "Blue", "Indigo", "Gold", "Black", "Pink", "Orange", "Purple"];
+
 function generateSarees(
   count: number,
   date: string,
@@ -106,6 +109,7 @@ function generateSarees(
       weight: weightFor(i),
       date,
       sareeType,
+      color: SEED_COLORS[i % SEED_COLORS.length],
       price,
       sellPercent,
       finalAmount: computeFinalAmount(price, sellPercent),
@@ -316,6 +320,7 @@ function PurchaseFormModal({
         weight: "",
         date: form.date || "—",
         sareeType: "",
+        color: "",
         price: 0,
         sellPercent: 20,
         finalAmount: 0,
@@ -349,6 +354,7 @@ function PurchaseFormModal({
         weight: s.weight,
         date: s.date,
         sareeType: s.sareeType,
+        color: s.color,
         price,
         sellPercent,
         finalAmount: computeFinalAmount(price, sellPercent),
@@ -627,7 +633,7 @@ function PurchaseFormModal({
                           <X size={14} />
                         </button>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
                         <div>
                           <label style={labelStyle}>Saree Type</label>
                           <input
@@ -635,6 +641,15 @@ function PurchaseFormModal({
                             value={s.sareeType}
                             onChange={(e) => updateSareeRow(s._uid, { sareeType: e.target.value })}
                             placeholder="e.g. Kanjivaram"
+                          />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Colour</label>
+                          <input
+                            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+                            value={s.color}
+                            onChange={(e) => updateSareeRow(s._uid, { color: e.target.value })}
+                            placeholder="e.g. Maroon"
                           />
                         </div>
                         <div>
@@ -836,7 +851,7 @@ function SareeListModal({
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: T.silkCream }}>
-                  {["Saree Code", "Saree Type", "Weight", "Price", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
+                  {["Saree Code", "Saree Type", "Colour", "Weight", "Price", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -865,6 +880,9 @@ function SareeListModal({
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.sareeType || "—"}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                      {s.color || "—"}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.weight}

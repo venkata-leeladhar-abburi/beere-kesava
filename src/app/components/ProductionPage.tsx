@@ -27,6 +27,7 @@ import { useDesignLibrary } from "./DesignLibraryContext";
 import { INVOICES } from "./PaymentsPage";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
+import { WeaverSareesSection } from "./WeaverSareesSection";
 const imgSaree    = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgShowroom = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgWarp     = "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
@@ -2367,6 +2368,29 @@ function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: string) => v
   );
 }
 
+function AllSareesSection() {
+  return (
+    <div id="prod-all-sarees" style={{ padding: "36px 48px 0" }}>
+      <FadeUp>
+        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
+          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Stack size={26} color="#FFFDF9" weight="fill" />
+            </div>
+            <div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.2px" }}>All Sarees Inventory</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Track every saree end to end, across all weavers and in-house looms combined</div>
+            </div>
+          </div>
+          <div style={{ padding: "24px 28px 28px" }}>
+            <WeaverSareesSection ownerType="all" />
+          </div>
+        </div>
+      </FadeUp>
+    </div>
+  );
+}
+
 export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?: boolean; onNavigate?: (tab: string) => void }) {
   const { getDesign } = useDesignLibrary();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -2378,6 +2402,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
     <div style={{ fontFamily: F.ui }}>
       <PageHeader />
       <StatsStrip />
+      <AllSareesSection />
       <div style={{ background: T.silkCream, paddingBottom: 0 }}>
         <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} />
         <ActiveBatchesSection onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
