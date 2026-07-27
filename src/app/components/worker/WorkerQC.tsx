@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useBatches } from "../BatchContext";
 import { useFinishing } from "../FinishingContext";
 import { useDesignLibrary } from "../DesignLibraryContext";
+import { useQc, makingChargeFor, computeQcPayment } from "../QcContext";
 import { DesignCodeCard } from "../DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByName, getSareeTypeByCode } from "../RatesPricingPage";
 import { motion, AnimatePresence } from "motion/react";
@@ -93,6 +94,7 @@ type SareeItem = {
   bulkOrderLabel?: string;
   bulkOrderRef?: string;
   sareeTypeCode?: string;
+  loomNumber?: number | null;
 };
 type InspectionResult = "defective" | "semi_approved" | null;
 
@@ -110,6 +112,7 @@ function initials(name: string) {
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
   const { addReadySaree } = useFinishing();
+  const { recordQc } = useQc();
   const { getDesign } = useDesignLibrary();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
@@ -136,6 +139,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             bulkOrderLabel: r.bulkOrderLabel ?? undefined,
             bulkOrderRef: r.bulkOrderRef ?? undefined,
             sareeTypeCode: r.sareeTypeCode ?? undefined,
+            loomNumber: r.weaverLoom ?? null,
           }))
       );
   }, [batches]);
@@ -196,8 +200,36 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setDefectSubmitted(false);
   };
 
+  /** Saree-type code for an item, whether it came from context or the static queue. */
+  const typeCodeOf = (s: SareeItem) =>
+    s.sareeTypeCode ?? getSareeTypeByName(splitDesignField(s.design).typeName)?.code ?? "";
+
+  /** Full making charge the weaver would earn for this saree if it passes clean. */
+  const makingChargeOf = (s: SareeItem | null) => (s ? makingChargeFor(typeCodeOf(s)) : 0);
+
+  /** Writes the QC outcome to the shared store so admin/accountant portals see it. */
+  const saveQc = (s: SareeItem, result: "passed" | "semi" | "defective", semiDeduction = 0) => {
+    const { typeName } = splitDesignField(s.design);
+    recordQc({
+      sareeId: s.id,
+      weaverId: s.wcode || null,
+      weaverName: s.weaver,
+      batchId: s.batch,
+      loomNumber: s.loomNumber ?? null,
+      sareeTypeCode: typeCodeOf(s),
+      sareeTypeName: typeName || null,
+      bulkOrderLabel: s.bulkOrderLabel ?? null,
+      result,
+      defects: result === "passed" ? [] : defectTypes,
+      semiDeduction,
+      notes: result === "passed" ? undefined : notes || undefined,
+      inspectedBy: "Worker Staff",
+    });
+  };
+
   const markPassedDirect = (s: SareeItem) => {
     setInspected(p => new Set(p).add(s.id));
+    saveQc(s, "passed");
 
     const { code: designCode, typeName } = splitDesignField(s.design);
     const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
@@ -227,7 +259,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const confirmDefective = () => {
     if (!inspecting) return;
-    setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: "₹450" }, ...p]);
+    // Defective → the weaver is not paid for this saree at all, so the whole
+    // making charge is withheld rather than a flat figure.
+    saveQc(inspecting, "defective");
+    setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: `₹${makingChargeOf(inspecting)}` }, ...p]);
     setInspected(p => new Set(p).add(inspecting.id));
     setDefectSubmitted(true);
   };
@@ -240,6 +275,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const confirmSemiApproved = () => {
     if (!inspecting) return;
+    saveQc(inspecting, "semi", Number(deductionAmount) || 0);
     setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: `₹${deductionAmount || 0}` }, ...p]);
     setInspected(p => new Set(p).add(inspecting.id));
     setDefectSubmitted(true);
@@ -288,12 +324,26 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                   <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: T.brown }}>{inspecting.id} — {result === "semi_approved" ? "SEMI-APPROVED" : "DEFECTIVE"}</div>
                 </div>
                 <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, lineHeight: 1.5, marginBottom: 12 }}>
-                  {result === "semi_approved" ? "Saree passed QC with deduction applied. WhatsApp sent." : "Stored in defective inventory. Deduction applied. WhatsApp sent."}
+                  {result === "semi_approved" ? "Saree passed QC with deduction applied. WhatsApp sent." : "Stored in defective inventory. No payment for this saree. WhatsApp sent."}
                 </div>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
                   {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", background: result === "semi_approved" ? T.gold : T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
                 </div>
-                <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim, marginBottom: 18 }}>₹{result === "semi_approved" ? (deductionAmount || 0) : 450} deducted</div>
+                {(() => {
+                  const charge = makingChargeOf(inspecting);
+                  const ded = result === "semi_approved" ? (Number(deductionAmount) || 0) : charge;
+                  const payable = Math.max(charge - ded, 0);
+                  return (
+                    <div style={{ marginBottom: 18 }}>
+                      <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim }}>₹{ded} deducted</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted, marginTop: 4 }}>
+                        {result === "semi_approved"
+                          ? `Weaver earns ₹${payable} of the ₹${charge} making charge.`
+                          : `Weaver earns nothing for this saree (full ₹${charge} making charge withheld).`}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <button onClick={closeInspect} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 48, background: T.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFF", cursor: "pointer", marginBottom: 10 }}>
                   <CheckCircle2 size={15} /> Back to Queue
                 </button>
@@ -393,7 +443,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
                 <div style={{ background: result === "semi_approved" ? T.bgGold : T.bgCrim, border: `1px solid ${result === "semi_approved" ? "rgba(200,155,71,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 8 }}>
                   <AlertTriangle size={14} color={result === "semi_approved" ? T.gold : T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
                   <div style={{ fontFamily: F.u, fontSize: 11, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
-                    ₹{result === "semi_approved" ? (deductionAmount || 0) : 450} will be deducted from {inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment. Weaver notified via WhatsApp.
+                    {result === "semi_approved"
+                      ? `₹${Number(deductionAmount) || 0} of the ₹${makingChargeOf(inspecting)} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment.`
+                      : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ₹${makingChargeOf(inspecting)} making charge is withheld.`}
+                    {" "}Weaver notified via WhatsApp.
                   </div>
                 </div>
 

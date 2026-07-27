@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "../contexts/AuthContext";
-import { FinishingProvider, FinishingStaffProvider } from "../contexts";
+import { FinishingProvider, FinishingStaffProvider, QcProvider } from "../contexts";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "./components/ui/sonner";
 
@@ -37,6 +37,7 @@ export default function App() {
           assignments/returns/quotations raised in one show up identically in the others. */}
       <FinishingStaffProvider>
       <FinishingProvider>
+      <QcProvider>
       <BrowserRouter>
         <ErrorBoundary>
           <Routes>
@@ -91,6 +92,7 @@ export default function App() {
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>
+      </QcProvider>
       </FinishingProvider>
       </FinishingStaffProvider>
       <Toaster position="top-right" richColors />

@@ -155,10 +155,10 @@ function StatusChip({ s }: { s: UnifiedSaree }) {
   return <Pill label={cfg.l} color={cfg.c} bg={`${cfg.c}1A`} />;
 }
 
-type TableMode = "outstanding" | "sold" | "produced";
+export type TableMode = "outstanding" | "sold" | "produced";
 
 // ── Saree detail rows (shared by weaver / loom / batch / purchase drilldowns) ──
-function SareeDetailTable({ sarees, mode = "outstanding", showReturn = false, showBatch = false, showSource = false }: {
+export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = false, showBatch = false, showSource = false }: {
   sarees: UnifiedSaree[]; mode?: TableMode; showReturn?: boolean; showBatch?: boolean; showSource?: boolean;
 }) {
   if (sarees.length === 0) {

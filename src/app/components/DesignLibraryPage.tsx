@@ -391,7 +391,7 @@ const SAREE_TYPES = [
 ];
 
 function emptyForm(): Partial<DesignEntry> {
-  return { code: "", name: "", typeCode: "HZ-003", typeName: "Heavy Zari", desc: "", weaverName: "", notesForWeaver: "", colorSlipPhoto: null, designGraph: null };
+  return { code: "", name: "", typeCode: "HZ-003", typeName: "Heavy Zari", desc: "", color: "", weaverName: "", notesForWeaver: "", colorSlipPhoto: null, designGraph: null };
 }
 
 function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSave: (d: DesignEntry) => void }) {
@@ -407,6 +407,7 @@ function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSave: (d: 
       typeCode: form.typeCode || "",
       typeName: type?.name || form.typeName || "",
       desc: form.desc?.trim() || "",
+      color: form.color?.trim() || "",
       weaverName: form.weaverName?.trim() || "",
       notesForWeaver: form.notesForWeaver?.trim() || "",
       colorSlipPhoto: form.colorSlipPhoto ?? null,
@@ -444,6 +445,12 @@ function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSave: (d: 
                 {SAREE_TYPES.map(t => <option key={t.code} value={t.code}>{t.code} · {t.name}</option>)}
               </select>
             </div>
+          </div>
+
+          {/* Colour */}
+          <div>
+            <label style={labelStyle}>Colour <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <input value={form.color ?? ""} onChange={e => set("color", e.target.value)} style={fieldStyle} placeholder="e.g. Maroon, Cream, Indigo" />
           </div>
 
           {/* Weaver name */}

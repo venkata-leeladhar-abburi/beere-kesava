@@ -4,11 +4,11 @@ import {
   FloppyDisk, CheckCircle,
   Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
   WarningCircle, CheckSquare, Square, ArrowRight,
-  MagnifyingGlass, Stack, Package, Graph,
+  MagnifyingGlass, Stack, Package, Graph, PaperPlaneTilt,
 } from "@phosphor-icons/react";
 import { useBatches, SareeRow, BatchRecord, generateSareeId } from "./BatchContext";
 import { useBulkOrders } from "./BulkOrderContext";
-import { useDesignLibrary, DesignEntry } from "./DesignLibraryContext";
+import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "./RatesPricingPage";
 import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
@@ -202,7 +202,7 @@ function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => void; onS
     if (!newCode.trim()) return;
     const entry: DesignEntry = {
       code: newCode.trim(), name: "", typeCode: "", typeName: "",
-      desc: "", weaverName: newWeaver.trim(), notesForWeaver: newNotes.trim(),
+      desc: "", color: "", weaverName: newWeaver.trim(), notesForWeaver: newNotes.trim(),
       colorSlipPhoto: null, designGraph: null,
       batches: 0, total: 0, hasColorSlip: false, hasGraph: false,
     };
@@ -424,7 +424,7 @@ type ActivePicker = "weaver" | "bulkorder" | "factoryloom" | "saretype" | "desig
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
-  const { designs } = useDesignLibrary();
+  const { designs, dispatches } = useDesignLibrary();
 
   // ── Tab: "new" or "drafts"
   const [tab, setTab] = useState<"new" | "drafts">("new");
@@ -455,6 +455,7 @@ export function BatchCreationPage() {
   const [viewFactoryLoom, setViewFactoryLoom] = useState<typeof FACTORY_LOOMS_LIST[0] | null>(null);
   const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
+  const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
 
   // ── Per-row loom picker (scoped to that row's weaver's own loom count)
   const [loomPickerRow, setLoomPickerRow] = useState<SareeRow | null>(null);
@@ -939,7 +940,7 @@ export function BatchCreationPage() {
                           {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                         </button>
                       </th>
-                      {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
+                      {["#", "Saree ID", "Weaver / Factory Loom", "Design Dispatch", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
                         <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
@@ -949,6 +950,9 @@ export function BatchCreationPage() {
                       const isSelected = selected.has(row.serial);
                       const complete = rowComplete(row);
                       const weaverForRow = row.weaverId ? WEAVERS.find(x => x.id === row.weaverId) : undefined;
+                      const rowDispatches = row.weaverId
+                        ? dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === row.weaverId && d.batches.includes(batchId))
+                        : [];
                       const materialsSummary = (row.weaverId || row.factoryLoomId)
                         ? issueRecords
                             .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
@@ -1000,6 +1004,14 @@ export function BatchCreationPage() {
                                 style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
                                 <Pip initials={row.weaverInitials!} bg={weaverForRow?.bg || T.taupe} size={22} />
                                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
+                              </button>
+                            ) : <EmptyCell />}
+                          </td>
+                          <td style={{ ...td, minWidth: 130 }}>
+                            {rowDispatches.length > 0 ? (
+                              <button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
+                                style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                <PaperPlaneTilt size={12} weight="bold" /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
                               </button>
                             ) : <EmptyCell />}
                           </td>
@@ -1164,6 +1176,7 @@ export function BatchCreationPage() {
         {viewFactoryLoom && <FactoryLoomDetailsModal key="fld" loom={viewFactoryLoom} onClose={() => setViewFactoryLoom(null)} />}
         {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
         {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
+        {viewDispatches && <DispatchDetailsModal key="dd" weaverName={viewDispatches.weaverName} records={viewDispatches.records} onClose={() => setViewDispatches(null)} />}
       </AnimatePresence>
     </div>
   );
@@ -1220,6 +1233,31 @@ function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; on
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green, marginTop: 3 }}>{completedBatches}</div>
           </div>
         </div>
+      </div>
+    </PickerShell>
+  );
+}
+
+export function DispatchDetailsModal({ weaverName, records, onClose }: { weaverName: string; records: DispatchRecord[]; onClose: () => void }) {
+  return (
+    <PickerShell title={`Design Dispatch — ${weaverName}`} onClose={onClose} width={460}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {records.map(d => (
+          <div key={d.id} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.sentAt}</span>
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55, marginBottom: d.colorSlipImage ? 12 : 0 }}>{d.instructions}</div>
+            {d.colorSlipImage && (
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 6 }}>Color Slip</div>
+                <img src={d.colorSlipImage} alt="Color slip" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </PickerShell>
   );

@@ -119,6 +119,34 @@ const INITIAL_BATCHES: BatchRecord[] = [
       { serial: 4, sareeId: "RAVI-L2-007", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
     ],
   },
+  // ── In-house factory loom batches (saree ids match the sales ledger BKB-F-0X-NNN scheme) ──
+  {
+    batchId: "BATCH-088",
+    totalCount: 3,
+    dueDate: "2026-07-05",
+    status: "completed",
+    createdAt: "2026-06-20T08:00:00.000Z",
+    updatedAt: "2026-06-22T10:00:00.000Z",
+    rows: [
+      { serial: 1, sareeId: "BKB-F-01-001", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
+      { serial: 2, sareeId: "BKB-F-01-002", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
+      { serial: 3, sareeId: "BKB-F-01-003", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
+    ],
+  },
+  {
+    batchId: "BATCH-090",
+    totalCount: 4,
+    dueDate: "2026-07-28",
+    status: "active",
+    createdAt: "2026-06-24T09:00:00.000Z",
+    updatedAt: "2026-06-27T09:00:00.000Z",
+    rows: [
+      { serial: 1, sareeId: "BKB-F-01-004", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: false },
+      { serial: 2, sareeId: "BKB-F-01-005", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
+      { serial: 3, sareeId: "BKB-F-01-006", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
+      { serial: 4, sareeId: "BKB-F-02-001", recipientType: "factoryLoom", factoryLoomId: "FL-002", factoryLoomNumber: "Loom F-02", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: null, bulkOrderLabel: null },
+    ],
+  },
   {
     batchId: "BATCH-095",
     totalCount: 14,

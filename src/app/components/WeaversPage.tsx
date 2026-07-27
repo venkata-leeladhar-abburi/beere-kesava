@@ -20,6 +20,10 @@ import { useMaterialIssue } from "./MaterialIssueContext";
 import { useBatches } from "./BatchContext";
 import { useBulkOrders } from "./BulkOrderContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { useDesignLibrary, DispatchRecord } from "./DesignLibraryContext";
+import { DispatchDetailsModal } from "./BatchCreationPage";
+import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { WeaverSareesSection } from "./WeaverSareesSection";
 const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo as imgBKBLogo } from "../constants/weaverImages";
 
@@ -833,32 +837,21 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
   const [mode, setMode] = useState<"view" | "edit">(initialMode);
   const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [dispatchDateFilter, setDispatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getRecordsForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
+  const { dispatches } = useDesignLibrary();
+  const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);
   const materialByBatch = getMaterialSummaryByBatch(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
 
-  // 1. All sarees assigned to this weaver across all batches
-  const assignedSarees: any[] = [];
-  batches.forEach(b => {
-    b.rows.forEach(r => {
-      if (r.weaverId === weaver.id) {
-        assignedSarees.push({
-          ...r,
-          batchId: b.batchId,
-          batchStatus: b.status,
-          dueDate: b.dueDate,
-        });
-      }
-    });
-  });
-
-  // 2. Active batches the weaver is working on
+  // Active batches the weaver is working on
   const workingBatches = batches.filter(b => 
     b.status === "active" && 
     b.rows.some(r => r.weaverId === weaver.id)
@@ -894,6 +887,19 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
     return getBatchNum(b.batchId) - getBatchNum(a.batchId);
   }).filter(b => matchesDateFilter(b.createdAt, batchDateFilter));
   const filteredWeaverPayments = weaverPayments.filter(p => matchesDateFilter(p.paymentDate, paymentDateFilter));
+
+  // Design dispatches sent to this weaver, grouped by batch
+  const weaverDispatches = dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaver.id && matchesDateFilter(d.sentAt, dispatchDateFilter));
+  const dispatchGroups: { batchId: string; records: DispatchRecord[] }[] = [];
+  weaverDispatches.forEach(d => {
+    const batchIds = d.batches.length > 0 ? d.batches : ["No batch linked"];
+    batchIds.forEach(bId => {
+      let group = dispatchGroups.find(g => g.batchId === bId);
+      if (!group) { group = { batchId: bId, records: [] }; dispatchGroups.push(group); }
+      group.records.push(d);
+    });
+  });
+  dispatchGroups.sort((a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId));
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
@@ -968,6 +974,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           {[
             { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
             { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
+            { key: "dispatches", label: "Design Dispatches", icon: <PaperPlaneTilt size={16} /> },
             { key: "payments", label: "Payments", icon: <FileText size={16} /> },
             { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
           ].map(({ key, label, icon }) => (
@@ -1065,94 +1072,10 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
               </div>
               </div>
 
-              {/* Assigned Sarees Table */}
+              {/* Sarees — Assigned / Produced / QC / Finishing / Sold / Outstanding */}
               <div>
-                <SectionPill label="Assigned Sarees" />
-                {assignedSarees.length > 0 ? (
-                  <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
-                      <thead>
-                        <tr style={{ background: T.warmCream }}>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>#</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Batch ID</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom No.</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
-                          <th style={{ padding: "10px 12px", textAlign: "left", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {assignedSarees.map((row, idx) => {
-                          let qcLabel = "In Production";
-                          let qcBg = "rgba(139,112,96,0.08)";
-                          let qcColorVal = T.taupe;
-
-                          if (row.qcPassed === true) {
-                            qcLabel = "QC Passed";
-                            qcBg = "rgba(30,102,64,0.08)";
-                            qcColorVal = T.green;
-                          } else if (row.qcPassed === false) {
-                            qcLabel = "QC Failed";
-                            qcBg = "rgba(192,57,43,0.08)";
-                            qcColorVal = T.crimson;
-                          }
-
-                          return (
-                            <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
-                              <td style={{ padding: "11px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{idx + 1}</td>
-                              <td style={{ padding: "11px 12px" }}>
-                                {row.sareeId ? (
-                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 8px" }}>
-                                    {row.sareeId}
-                                  </span>
-                                ) : (
-                                  <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>—</span>
-                                )}
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.batchId}</span>
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                {row.weaverLoom ? (
-                                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px" }}>
-                                    Loom {row.weaverLoom}
-                                  </span>
-                                ) : (
-                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                )}
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                {row.sareeTypeCode ? (
-                                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 8px" }} title={row.sareeTypeName || ""}>
-                                    {row.sareeTypeCode}
-                                  </span>
-                                ) : (
-                                  <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                )}
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
-                                  {row.bulkOrderLabel || "General Stock"}
-                                </span>
-                              </td>
-                              <td style={{ padding: "11px 12px" }}>
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>
-                                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: qcColorVal }} />
-                                  {qcLabel}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
-                    No assigned sarees found for this weaver.
-                  </div>
-                )}
+                <SectionPill label="Sarees" />
+                <WeaverSareesSection weaverId={weaver.id} weaverName={weaver.name} />
               </div>
             </div>
           )}
@@ -1164,6 +1087,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
               {sortedAllWeaverBatches.length > 0 ? (
                 sortedAllWeaverBatches.map(b => {
                   const weaverSareesInBatch = b.rows.filter(r => r.weaverId === weaver.id);
+                  const batchDispatches = dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaver.id && d.batches.includes(b.batchId));
                   const completedSareesInBatch = weaverSareesInBatch.filter(r => r.qcPassed === true).length;
                   const pct = weaverSareesInBatch.length > 0 ? Math.round((completedSareesInBatch / weaverSareesInBatch.length) * 100) : 0;
                   const statusBg = b.status === "completed" ? "rgba(30,102,64,0.08)" : b.status === "active" ? "rgba(200,155,71,0.08)" : "rgba(139,112,96,0.08)";
@@ -1202,6 +1126,7 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Dispatch</th>
                               <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
                             </tr>
                           </thead>
@@ -1256,6 +1181,16 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                                     </span>
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
+                                    {idx === 0 && batchDispatches.length > 0 ? (
+                                      <button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                        <PaperPlaneTilt size={11} weight="bold" /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
+                                      </button>
+                                    ) : (
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "9px 10px" }}>
                                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
                                       <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />
                                       {qcLabel}
@@ -1276,6 +1211,63 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
                 </div>
               )}
               <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")}>See All Batches →</div>
+            </div>
+          )}
+
+          {tab === "dispatches" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              <SectionPill label="Design Dispatches Sent to This Weaver" />
+              <DateFilterBar filter={dispatchDateFilter} onChange={setDispatchDateFilter} />
+              {dispatchGroups.length > 0 ? (
+                dispatchGroups.map(group => (
+                  <div key={group.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                      {group.records.map(h => (
+                        <div key={h.id} style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                              <Calendar size={12} /> Sent on {h.sentAt}
+                            </div>
+                          </div>
+                          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                            <strong>Instructions:</strong> {h.instructions}
+                          </div>
+                          <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
+                            {h.colorSlipImage && (
+                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                                <img src={h.colorSlipImage} alt="Color slip"
+                                  onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — ${h.id}` })}
+                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                              </div>
+                            )}
+                            {h.designGraphImage && (
+                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                                <img src={h.designGraphImage} alt="Design graph"
+                                  onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — ${h.id}` })}
+                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                              </div>
+                            )}
+                            {!h.colorSlipImage && !h.designGraphImage && (
+                              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>No files attached</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                  No design dispatches found for this weaver.
+                </div>
+              )}
             </div>
           )}
 
@@ -1413,6 +1405,17 @@ function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { w
           </motion.button>
         </div>
       </motion.div>
+      <AnimatePresence>
+        {viewDispatches && <DispatchDetailsModal key="dd" weaverName={viewDispatches.weaverName} records={viewDispatches.records} onClose={() => setViewDispatches(null)} />}
+        {zoomImage && (
+          <motion.div key="zoom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setZoomImage(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(20,4,10,0.85)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, cursor: "zoom-out" }}>
+            <img src={zoomImage.url} alt={zoomImage.label} style={{ maxWidth: "80vw", maxHeight: "75vh", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }} />
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: "#fff", fontWeight: 600 }}>{zoomImage.label}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

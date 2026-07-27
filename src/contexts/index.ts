@@ -20,3 +20,5 @@ export { WeaverPaymentsProvider, useWeaverPayments } from "../app/components/Wea
 export { FinishingStaffProvider, useFinishingStaff } from "../app/components/FinishingStaffContext";
 export { FinishingProvider, useFinishing } from "../app/components/FinishingContext";
 export { SalesProvider, useSales } from "../app/components/SalesContext";
+export { QcProvider, useQc, computeQcPayment, makingChargeFor, QC_RESULT_LABEL } from "../app/components/QcContext";
+export type { QcRecord, QcResult } from "../app/components/QcContext";

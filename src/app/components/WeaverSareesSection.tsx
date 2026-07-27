@@ -1,0 +1,599 @@
+import React, { useMemo, useState } from "react";
+import { useBatches } from "./BatchContext";
+import { useQc, QcResult } from "./QcContext";
+import { useFinishing } from "./FinishingContext";
+import { useSales, UnifiedSaree, isSold, isOutstanding, ageBucket } from "./SalesContext";
+import { useDesignLibrary } from "./DesignLibraryContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+
+// ── Design tokens (matches WeaversPage) ──────────────────────────────────────
+const T = {
+  warmIvory: "#FFFDF9",
+  royalBurgundy: "#6E0F2D",
+  antiqueGold: "#C89B47",
+  luxuryBrown: "#3B2314",
+  warmCream: "#F5E8D0",
+  taupe: "#8B7060",
+  crimson: "#C0392B",
+  green: "#1E6640",
+  orange: "#E67E22",
+  blue: "#4A7FB5",
+  purple: "#9B4DCA",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
+};
+const F = {
+  display: "'Plus Jakarta Sans', sans-serif",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
+};
+
+const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+
+/** Swatch shown next to a colour name in the sarees table. */
+const COLOR_SWATCH: Record<string, string> = {
+  Cream: "#EFE2C6", Maroon: "#7B1F32", Red: "#C0392B", Blue: "#3A6EA5",
+  Green: "#2E7D50", Indigo: "#3B3B77", Gold: "#C89B47", Black: "#2B2B2B",
+  White: "#F7F5F0", Pink: "#D9788F", Orange: "#E67E22", Purple: "#7C3AED",
+};
+
+const AGE_COLOR: Record<string, string> = {
+  "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
+};
+
+/** Renders a date string in a compact, consistent form. */
+function fmtDate(d: string | null | undefined): string {
+  if (!d) return "—";
+  const parsed = new Date(d);
+  if (isNaN(parsed.getTime())) return d;
+  return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// ── Row model ────────────────────────────────────────────────────────────────
+type FinishingStatus = "completed" | "in-finishing" | "pending" | "none";
+
+export interface WeaverSareeRow {
+  sareeId: string;
+  batchId: string | null;
+  loomNumber: number | null;
+  sareeTypeCode: string | null;
+  sareeTypeName: string | null;
+  bulkOrderLabel: string | null;
+  designCode: string | null;
+  /** Body colour, resolved from the design library via designCode. */
+  color: string | null;
+
+  /** true when the saree comes from a production batch assigned to this weaver */
+  isAssigned: boolean;
+  assignedDate: string | null;
+
+  qcStatus: QcResult | "pending";
+  receivedDate: string | null;
+  qcDate: string | null;
+  defects: string[];
+  makingCharge: number | null;
+  deduction: number | null;
+  payable: number | null;
+
+  finishingStatus: FinishingStatus;
+  finishingAssignedDate: string | null;
+  finishingCompletedDate: string | null;
+
+  /** present when the saree exists in the sales / stock ledger */
+  stock: UnifiedSaree | null;
+}
+
+const QC_CFG: Record<QcResult | "pending", { label: string; color: string }> = {
+  passed: { label: "QC Passed", color: T.green },
+  semi: { label: "Semi-Approved", color: T.antiqueGold },
+  defective: { label: "Defective", color: T.crimson },
+  pending: { label: "In Production", color: T.taupe },
+};
+
+const FIN_CFG: Record<FinishingStatus, { label: string; color: string }> = {
+  completed: { label: "Completed", color: T.green },
+  "in-finishing": { label: "In Finishing", color: T.antiqueGold },
+  pending: { label: "Not Assigned", color: T.taupe },
+  none: { label: "—", color: T.taupe },
+};
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+type TabKey =
+  | "assigned" | "produced" | "qcpassed" | "semi"
+  | "defective" | "finishing" | "sold" | "outstanding";
+
+/** Which date each tab filters and sorts on. */
+function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
+  switch (tab) {
+    case "assigned": return row.assignedDate;
+    case "produced": return row.receivedDate ?? row.stock?.qcDate ?? null;
+    case "qcpassed":
+    case "semi":
+    case "defective": return row.qcDate;
+    case "finishing": return row.finishingCompletedDate;
+    case "sold": return row.stock?.sale?.date ?? null;
+    case "outstanding": return row.stock?.qcDate ?? null;
+  }
+}
+
+// ── Small presentational bits ────────────────────────────────────────────────
+function Chip({ label, color }: { label: string; color: string }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11,
+      fontWeight: 700, color, background: `${color}1A`, borderRadius: 99, padding: "3px 9px", whiteSpace: "nowrap",
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: color }} />
+      {label}
+    </span>
+  );
+}
+
+const th: React.CSSProperties = {
+  fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase",
+  letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px",
+  borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap",
+};
+const td: React.CSSProperties = {
+  fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, padding: "10px 12px",
+  borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle", whiteSpace: "nowrap",
+};
+const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+
+function Select({ label, value, options, onChange }: {
+  label: string; value: string; options: string[]; onChange: (v: string) => void;
+}) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>{label}</span>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        style={{
+          height: 36, minWidth: 130, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`,
+          borderRadius: 9, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown,
+          cursor: "pointer", outline: "none",
+        }}>
+        {options.map(o => <option key={o} value={o}>{o === "all" ? `All ${label}` : o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+// ── Main section ─────────────────────────────────────────────────────────────
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver" }: {
+  /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. */
+  weaverId: string;
+  weaverName: string;
+  ownerType?: "weaver" | "loom";
+}) {
+  const isLoom = ownerType === "loom";
+  const { batches } = useBatches();
+  const { getQcForWeaver, getQcForLoom } = useQc();
+  const { readySarees, assignments, returns } = useFinishing();
+  const { sarees: allStock } = useSales();
+  const { getDesign } = useDesignLibrary();
+
+  const [tab, setTab] = useState<TabKey>("assigned");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [fBatch, setFBatch] = useState("all");
+  const [fLoom, setFLoom] = useState("all");
+  const [fOrder, setFOrder] = useState("all");
+  const [fType, setFType] = useState("all");
+  const [fColor, setFColor] = useState("all");
+  const [fQc, setFQc] = useState("all");
+  const [fFinishing, setFFinishing] = useState("all");
+
+  const qcRecords = isLoom ? getQcForLoom(weaverId) : getQcForWeaver(weaverId);
+
+  // ── Build one enriched row per saree, joining batch + QC + finishing + stock ──
+  const rows = useMemo<WeaverSareeRow[]>(() => {
+    const byId = new Map<string, WeaverSareeRow>();
+
+    const blank = (sareeId: string): WeaverSareeRow => ({
+      sareeId, batchId: null, loomNumber: null, sareeTypeCode: null, sareeTypeName: null,
+      bulkOrderLabel: null, designCode: null, color: null,
+      isAssigned: false, assignedDate: null, qcStatus: "pending",
+      receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
+      payable: null, finishingStatus: "none", finishingAssignedDate: null,
+      finishingCompletedDate: null, stock: null,
+    });
+
+    // 1. Sarees assigned to this weaver through production batches
+    batches.forEach(b => {
+      b.rows.forEach(r => {
+        const belongs = isLoom ? r.factoryLoomId === weaverId : r.weaverId === weaverId;
+        if (!belongs || !r.sareeId) return;
+        const row = byId.get(r.sareeId) ?? blank(r.sareeId);
+        row.batchId = b.batchId;
+        row.loomNumber = isLoom ? null : (r.weaverLoom ?? null);
+        row.sareeTypeCode = r.sareeTypeCode ?? null;
+        row.sareeTypeName = r.sareeTypeName ?? null;
+        row.bulkOrderLabel = r.bulkOrderLabel ?? null;
+        row.designCode = r.designCode ?? null;
+        row.isAssigned = true;
+        row.assignedDate = b.createdAt;
+        // Fall back to the batch flag until a QC record exists for the saree
+        if (r.qcPassed === true) row.qcStatus = "passed";
+        else if (r.qcPassed === false) row.qcStatus = "defective";
+        byId.set(r.sareeId, row);
+      });
+    });
+
+    // 2. QC outcomes — authoritative over the batch flag
+    qcRecords.forEach(q => {
+      const row = byId.get(q.sareeId) ?? blank(q.sareeId);
+      row.batchId = row.batchId ?? q.batchId;
+      row.loomNumber = row.loomNumber ?? q.loomNumber;
+      row.sareeTypeCode = row.sareeTypeCode ?? q.sareeTypeCode;
+      row.sareeTypeName = row.sareeTypeName ?? q.sareeTypeName;
+      row.bulkOrderLabel = row.bulkOrderLabel ?? q.bulkOrderLabel;
+      row.qcStatus = q.result;
+      row.receivedDate = q.receivedDate;
+      row.qcDate = q.qcDate;
+      row.defects = q.defects;
+      row.makingCharge = q.makingCharge;
+      row.deduction = q.deduction;
+      row.payable = q.payable;
+      byId.set(q.sareeId, row);
+    });
+
+    // 3. Stock / sales ledger entries for this weaver
+    allStock.forEach(s => {
+      const belongs = isLoom
+        ? s.origin === "factoryLoom" && s.factoryLoomId === weaverId
+        : s.origin === "weaver" && s.weaverId === weaverId;
+      if (!belongs) return;
+      const row = byId.get(s.sareeId) ?? blank(s.sareeId);
+      row.batchId = row.batchId ?? s.batchId;
+      row.loomNumber = isLoom ? null : (row.loomNumber ?? s.weaverLoom ?? null);
+      row.sareeTypeCode = row.sareeTypeCode ?? s.sareeTypeCode;
+      row.sareeTypeName = row.sareeTypeName ?? s.sareeTypeName;
+      row.designCode = row.designCode ?? s.designCode ?? null;
+      row.stock = s;
+      byId.set(s.sareeId, row);
+    });
+
+    // 4. Finishing stage
+    byId.forEach(row => {
+      const ret = returns.find(r => r.sareeId === row.sareeId);
+      const asg = assignments.find(a => a.sareeId === row.sareeId);
+      if (ret) {
+        row.finishingStatus = "completed";
+        row.finishingCompletedDate = ret.receivedDate;
+        row.finishingAssignedDate = asg?.assignedDate ?? null;
+      } else if (asg && asg.status === "awaiting-return") {
+        row.finishingStatus = "in-finishing";
+        row.finishingAssignedDate = asg.assignedDate;
+      } else if (readySarees.some(s => s.id === row.sareeId)) {
+        row.finishingStatus = "pending";
+      }
+    });
+
+    // 5. Body colour comes from the design library entry for the saree's design
+    byId.forEach(row => {
+      row.color = row.designCode ? (getDesign(row.designCode)?.color || null) : null;
+    });
+
+    return [...byId.values()];
+  }, [batches, qcRecords, allStock, returns, assignments, readySarees, weaverId, isLoom, getDesign]);
+
+  // ── Tab membership ──────────────────────────────────────────────────────────
+  const inTab = (r: WeaverSareeRow, t: TabKey) => {
+    switch (t) {
+      case "assigned": return r.isAssigned;
+      case "produced": return r.stock !== null;
+      case "qcpassed": return r.qcStatus === "passed";
+      case "semi": return r.qcStatus === "semi";
+      case "defective": return r.qcStatus === "defective";
+      case "finishing": return r.finishingStatus === "completed";
+      case "sold": return r.stock !== null && isSold(r.stock);
+      case "outstanding": return r.stock !== null && isOutstanding(r.stock);
+    }
+  };
+
+  // ── Filter options, derived from the rows actually available ────────────────
+  const opts = useMemo(() => {
+    const uniq = (vals: (string | null)[]) =>
+      ["all", ...Array.from(new Set(vals.filter((v): v is string => !!v))).sort()];
+    return {
+      batch: uniq(rows.map(r => r.batchId)),
+      loom: uniq(rows.map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null))),
+      order: uniq(rows.map(r => r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null))),
+      type: uniq(rows.map(r => (r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : null))),
+      color: uniq(rows.map(r => r.color)),
+      qc: ["all", "QC Passed", "Semi-Approved", "Defective", "In Production"],
+      finishing: ["all", "Completed", "In Finishing", "Not Assigned"],
+    };
+  }, [rows]);
+
+  const passesFilters = (r: WeaverSareeRow) => {
+    if (fBatch !== "all" && r.batchId !== fBatch) return false;
+    if (fLoom !== "all" && (r.loomNumber == null || `Loom ${r.loomNumber}` !== fLoom)) return false;
+    if (fOrder !== "all" && (r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null)) !== fOrder) return false;
+    if (fType !== "all") {
+      const label = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : null;
+      if (label !== fType) return false;
+    }
+    if (fColor !== "all" && r.color !== fColor) return false;
+    if (fQc !== "all" && QC_CFG[r.qcStatus].label !== fQc) return false;
+    if (fFinishing !== "all" && FIN_CFG[r.finishingStatus].label !== fFinishing) return false;
+    return true;
+  };
+
+  const counts = useMemo(() => {
+    const c = {} as Record<TabKey, number>;
+    (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding"] as TabKey[])
+      .forEach(t => {
+        c[t] = rows.filter(r => inTab(r, t) && passesFilters(r) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
+      });
+    return c;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, dateFilter, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing]);
+
+  const visible = rows
+    .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
+    .sort((a, b) => {
+      const da = tabDate(a, tab), db = tabDate(b, tab);
+      if (da && db) return new Date(db).getTime() - new Date(da).getTime();
+      return a.sareeId.localeCompare(b.sareeId);
+    });
+
+  const TABS: { key: TabKey; label: string; color: string }[] = [
+    { key: "assigned", label: "Assigned", color: T.royalBurgundy },
+    { key: "produced", label: "Produced", color: T.luxuryBrown },
+    { key: "qcpassed", label: "QC Passed", color: T.green },
+    { key: "semi", label: "Semi-Approved", color: T.antiqueGold },
+    { key: "defective", label: "Defective", color: T.crimson },
+    { key: "finishing", label: "Finishing Completed", color: T.purple },
+    { key: "sold", label: "Sold", color: T.blue },
+    { key: "outstanding", label: "Outstanding", color: T.orange },
+  ];
+
+  const filtersActive = fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
+    || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all" || dateFilter.mode !== "all";
+
+  const resetFilters = () => {
+    setFBatch("all"); setFLoom("all"); setFOrder("all");
+    setFType("all"); setFColor("all"); setFQc("all"); setFFinishing("all");
+    setDateFilter(DEFAULT_DATE_FILTER);
+  };
+
+  // Which optional columns this tab shows
+  const showMoney = tab === "produced" || tab === "sold" || tab === "outstanding";
+  const showQcMoney = tab === "semi" || tab === "defective";
+  const dateHeader =
+    tab === "assigned" ? "Assigned On"
+      : tab === "produced" ? "Received On"
+        : tab === "qcpassed" ? "QC Passed On"
+          : tab === "semi" ? "Semi-Approved On"
+            : tab === "defective" ? "Marked Defective On"
+              : tab === "finishing" ? "Finishing Completed On"
+                : tab === "sold" ? "Sold On"
+                  : "In Stock Since";
+
+  return (
+    <div>
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {TABS.map(t => {
+          const on = tab === t.key;
+          return (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
+                padding: "8px 16px", borderRadius: 99, fontFamily: F.ui, fontSize: 13, fontWeight: 700,
+                background: on ? t.color : "#FFFFFF", color: on ? "#FFFDF9" : T.taupe,
+                border: on ? "none" : `1.5px solid ${T.borderDef}`, transition: "all 0.16s",
+              }}>
+              {t.label}
+              <span style={{
+                fontFamily: F.mono, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
+                background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
+                color: on ? "#FFFDF9" : t.color,
+              }}>{counts[t.key]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Date range */}
+      <div style={{ marginBottom: 12 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
+
+      {/* Attribute filters */}
+      <div style={{
+        display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 14,
+        background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px",
+      }}>
+        <Select label="Batch" value={fBatch} options={opts.batch} onChange={setFBatch} />
+        {!isLoom && <Select label="Loom" value={fLoom} options={opts.loom} onChange={setFLoom} />}
+        <Select label="Bulk Order" value={fOrder} options={opts.order} onChange={setFOrder} />
+        <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
+        <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
+        <Select label="QC Status" value={fQc} options={opts.qc} onChange={setFQc} />
+        <Select label="Finishing" value={fFinishing} options={opts.finishing} onChange={setFFinishing} />
+        {filtersActive && (
+          <button onClick={resetFilters}
+            style={{
+              height: 36, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
+              border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui,
+              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+            }}>
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      {visible.length === 0 ? (
+        <div style={{
+          background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe,
+          fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}`,
+        }}>
+          No sarees match this view{filtersActive ? " with the current filters." : "."}
+        </div>
+      ) : (
+        <div style={{
+          overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
+          background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
+        }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
+            <thead>
+              <tr style={{ background: T.warmCream }}>
+                <th style={th}>Saree ID</th>
+                <th style={th}>Batch</th>
+                {!isLoom && <th style={th}>Loom</th>}
+                <th style={th}>Saree Type</th>
+                <th style={th}>Colour</th>
+                <th style={th}>Bulk Order</th>
+                <th style={th}>{dateHeader}</th>
+                {tab === "sold" && <><th style={th}>Channel</th><th style={th}>Customer</th></>}
+                {tab === "outstanding" && <th style={th}>Days In Stock</th>}
+                {(tab === "semi" || tab === "defective") && <th style={th}>Defects</th>}
+                <th style={th}>QC Status</th>
+                <th style={th}>Finishing</th>
+                <th style={th}>Finishing Completed</th>
+                {showQcMoney && <>
+                  <th style={{ ...th, textAlign: "right" }}>Making Charge</th>
+                  <th style={{ ...th, textAlign: "right" }}>Deducted</th>
+                  <th style={{ ...th, textAlign: "right" }}>Weaver Earns</th>
+                </>}
+                {showMoney && <>
+                  <th style={{ ...th, textAlign: "right" }}>Cost</th>
+                  <th style={{ ...th, textAlign: "right" }}>{tab === "sold" ? "Sold For" : "Sell Price"}</th>
+                </>}
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((r, idx) => {
+                const qc = QC_CFG[r.qcStatus];
+                const fin = FIN_CFG[r.finishingStatus];
+                const typeLabel = r.sareeTypeCode
+                  ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}`
+                  : "—";
+                return (
+                  <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
+                    <td style={tdMono}>{r.sareeId}</td>
+                    <td style={tdMono}>{r.batchId || "—"}</td>
+                    {!isLoom && (
+                      <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700 }}>
+                        {r.loomNumber != null ? `L${r.loomNumber}` : "—"}
+                      </td>
+                    )}
+                    <td style={td}>{typeLabel}</td>
+                    <td style={td}>
+                      {r.color
+                        ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                            <span style={{ width: 12, height: 12, borderRadius: 3, background: COLOR_SWATCH[r.color] || "#B9A48A", border: "1px solid rgba(0,0,0,0.14)", flexShrink: 0 }} />
+                            {r.color}
+                          </span>
+                        : <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}
+                    </td>
+                    <td style={{ ...td, color: r.bulkOrderLabel ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                      {r.bulkOrderLabel || "General Stock"}
+                    </td>
+                    <td style={td}>{fmtDate(tabDate(r, tab))}</td>
+
+                    {tab === "sold" && <>
+                      <td style={td}>
+                        {r.stock?.sale
+                          ? <Chip label={r.stock.sale.channel === "retail" ? "Retail" : "Wholesale"}
+                              color={r.stock.sale.channel === "retail" ? T.blue : T.purple} />
+                          : "—"}
+                      </td>
+                      <td style={td}>{r.stock?.sale?.customer || "—"}</td>
+                    </>}
+
+                    {tab === "outstanding" && (
+                      <td style={td}>
+                        {r.stock
+                          ? <Chip label={`${r.stock.ageDays} days`} color={AGE_COLOR[ageBucket(r.stock.ageDays)]} />
+                          : "—"}
+                      </td>
+                    )}
+
+                    {(tab === "semi" || tab === "defective") && (
+                      <td style={td}>
+                        {r.defects.length > 0
+                          ? <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap" }}>
+                              {r.defects.map(d => (
+                                <span key={d} style={{
+                                  fontFamily: F.ui, fontSize: 10.5, fontWeight: 600, color: qc.color,
+                                  background: `${qc.color}1A`, borderRadius: 5, padding: "2px 7px",
+                                }}>{d}</span>
+                              ))}
+                            </span>
+                          : "—"}
+                      </td>
+                    )}
+
+                    <td style={td}><Chip label={qc.label} color={qc.color} /></td>
+                    <td style={td}>
+                      {r.finishingStatus === "none"
+                        ? <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>
+                        : <Chip label={fin.label} color={fin.color} />}
+                    </td>
+                    <td style={td}>{fmtDate(r.finishingCompletedDate)}</td>
+
+                    {showQcMoney && <>
+                      <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                        {r.makingCharge != null ? inr(r.makingCharge) : "—"}
+                      </td>
+                      <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, color: T.crimson, fontWeight: 700 }}>
+                        {r.deduction != null ? `− ${inr(r.deduction)}` : "—"}
+                      </td>
+                      <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.payable ? T.green : T.crimson }}>
+                        {r.payable != null ? inr(r.payable) : "—"}
+                      </td>
+                    </>}
+
+                    {showMoney && <>
+                      <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                        {r.stock ? inr(r.stock.costPrice) : "—"}
+                      </td>
+                      <td style={{
+                        ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700,
+                        color: tab === "sold" ? T.green : T.royalBurgundy,
+                      }}>
+                        {r.stock ? inr(tab === "sold" ? (r.stock.sale?.amount || 0) : r.stock.finalAmount) : "—"}
+                      </td>
+                    </>}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Payment impact summary for the QC-deduction tabs */}
+      {(tab === "semi" || tab === "defective") && visible.length > 0 && (
+        <div style={{
+          marginTop: 12, display: "flex", gap: 20, flexWrap: "wrap",
+          background: tab === "defective" ? "rgba(192,57,43,0.06)" : "rgba(200,155,71,0.08)",
+          border: `1px solid ${tab === "defective" ? "rgba(192,57,43,0.20)" : T.borderGold}`,
+          borderRadius: 12, padding: "14px 18px",
+        }}>
+          {[
+            { l: "Sarees", v: String(visible.length), c: T.luxuryBrown },
+            { l: "Making charge", v: inr(visible.reduce((a, r) => a + (r.makingCharge || 0), 0)), c: T.luxuryBrown },
+            { l: "Deducted", v: inr(visible.reduce((a, r) => a + (r.deduction || 0), 0)), c: T.crimson },
+            { l: "Weaver earns", v: inr(visible.reduce((a, r) => a + (r.payable || 0), 0)), c: T.green },
+          ].map(s => (
+            <div key={s.l}>
+              <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>{s.l}</div>
+              <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: s.c, marginTop: 3 }}>{s.v}</div>
+            </div>
+          ))}
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center", maxWidth: 320, lineHeight: 1.5 }}>
+            {tab === "defective"
+              ? (isLoom
+                  ? `Defective sarees from ${weaverName} carry no making-charge credit — the full charge is written off.`
+                  : `${weaverName} is not paid for defective sarees — the full making charge is withheld.`)
+              : `Semi-approved sarees carry the deduction entered by worker staff at QC.`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
