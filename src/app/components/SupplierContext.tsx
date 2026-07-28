@@ -11,9 +11,11 @@ export interface SareeTag {
   date: string;
   sareeType: string;
   color: string;
-  price: number;        // cost price
+  price: number;        // cost price, per piece
   sellPercent: number;  // markup %
-  finalAmount: number;  // price + price * sellPercent / 100
+  /** Pieces bought under this line. Defaults to 1 for older records. */
+  quantity?: number;
+  finalAmount: number;  // (price + price * sellPercent / 100) * quantity
   notes: string;
   /** Optional photo of the saree, stored as a data URL. */
   imageUrl?: string;
@@ -114,8 +116,14 @@ export function buildSareeCode(supplier: string, serial: number, invoiceNumber: 
   return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${inv}`;
 }
 
-export function computeFinalAmount(price: number, sellPercent: number): number {
-  return price + (price * sellPercent) / 100;
+export function computeFinalAmount(price: number, sellPercent: number, quantity = 1): number {
+  const qty = quantity > 0 ? quantity : 1;
+  return (price + (price * sellPercent) / 100) * qty;
+}
+
+/** Total pieces across saree lines — each line may cover more than one piece. */
+export function totalPieces(sarees: SareeTag[]): number {
+  return sarees.reduce((sum, s) => sum + (Number(s.quantity) || 1), 0);
 }
 
 export function initialsOf(name: string): string {
@@ -153,7 +161,8 @@ function generateSarees(count: number, date: string, sareeType: string, supplier
       color: SEED_COLORS[i % SEED_COLORS.length],
       price,
       sellPercent,
-      finalAmount: computeFinalAmount(price, sellPercent),
+      quantity: 1,
+      finalAmount: computeFinalAmount(price, sellPercent, 1),
       notes: "",
     };
   });

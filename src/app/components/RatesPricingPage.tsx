@@ -60,6 +60,46 @@ const labelStyle: React.CSSProperties = {
   display: "block",
 };
 
+/**
+ * Jari quantity input. The stored value is always reels; the operator can key
+ * it in as reels or buns (1 reel = 4 buns) and always sees the gram equivalent.
+ */
+function JariWeightField({ reels, onChange }: { reels: string; onChange: (reels: string) => void }) {
+  const [unit, setUnit] = useState<JariUnit>("reels");
+  const reelsNum = parseFloat(reels) || 0;
+  const shown = reels === "" ? "" : trimNum(jariFromReels(reelsNum, unit));
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <label style={{ ...labelStyle, marginBottom: 3 }}>Jari ({unit})</label>
+        <div style={{ display: "flex", background: "rgba(110,15,45,0.06)", borderRadius: 999, padding: 2, marginBottom: 3 }}>
+          {(["reels", "buns"] as JariUnit[]).map(u => (
+            <button key={u} type="button" onClick={() => setUnit(u)}
+              style={{
+                border: "none", borderRadius: 999, padding: "3px 10px", cursor: "pointer",
+                fontFamily: F.ui, fontSize: 10, fontWeight: 600, textTransform: "capitalize",
+                background: unit === u ? T.luxuryBrown : "transparent",
+                color: unit === u ? "#FFF" : T.taupe,
+              }}>
+              {u}
+            </button>
+          ))}
+        </div>
+      </div>
+      <input type="number" value={shown} placeholder="0"
+        onChange={e => {
+          const v = e.target.value;
+          onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));
+        }}
+        style={inputStyle} />
+      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 4 }}>
+        {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns · {trimNum(jariGrams(reelsNum), 0)}g
+      </div>
+    </div>
+  );
+}
+
 function SectionTitle({ children, link }: { children: React.ReactNode; link?: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -130,6 +170,27 @@ export const INITIAL_RATES: SareeTypeRecord[] = [
   { code: "BS-004", type: "Bridal Special", description: "Premium bridal collection with intricate work",     charge: "1200",  retail: "22000", wholesale: "19500", stdWeight: "1050", warpWeight: "580", reshamWeight: "340", jariWeight: "14", changed: "1 month ago" },
   { code: "LC-005", type: "Light Cotton",   description: "Lightweight cotton blend for everyday use",         charge: "220",   retail: "4200",  wholesale: "3600",  stdWeight: "680",  warpWeight: "400", reshamWeight: "180", jariWeight: "0",  changed: "1 month ago" },
 ];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JARI UNITS — stored canonically as reels; 1 reel = 4 buns = 230 grams
+// ═══════════════════════════════════════════════════════════════════════════
+export const JARI_BUNS_PER_REEL = 4;
+export const JARI_GRAMS_PER_REEL = 230;
+export type JariUnit = "reels" | "buns";
+
+export function jariToReels(value: number, unit: JariUnit): number {
+  return unit === "reels" ? value : value / JARI_BUNS_PER_REEL;
+}
+export function jariFromReels(reels: number, unit: JariUnit): number {
+  return unit === "reels" ? reels : reels * JARI_BUNS_PER_REEL;
+}
+export function jariGrams(reels: number): number {
+  return reels * JARI_GRAMS_PER_REEL;
+}
+/** Trim trailing zeros so 8.50 → "8.5" and 16.00 → "16". */
+export function trimNum(n: number, dp = 2): string {
+  return parseFloat(n.toFixed(dp)).toString();
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LOOKUP HELPERS — resolve saree type records by code/name from other pages
@@ -222,11 +283,15 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
               {[
                 { label: "Warp", value: sareeType.warpWeight, unit: "g" },
                 { label: "Resham", value: sareeType.reshamWeight, unit: "g" },
-                { label: "Jari", value: sareeType.jariWeight, unit: " reels" },
-              ].map(({ label, value, unit }) => (
+                {
+                  label: "Jari", value: sareeType.jariWeight, unit: " reels",
+                  sub: `${trimNum(jariFromReels(parseFloat(sareeType.jariWeight) || 0, "buns"))} buns · ${trimNum(jariGrams(parseFloat(sareeType.jariWeight) || 0), 0)}g`,
+                },
+              ].map(({ label, value, unit, sub }: { label: string; value: string; unit: string; sub?: string }) => (
                 <div key={label} style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
                   <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.08em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{value || "—"}{value ? unit : ""}</div>
+                  {sub && value && <div style={{ fontFamily: F.mono, fontSize: 9.5, color: T.taupe, marginTop: 3 }}>{sub}</div>}
                 </div>
               ))}
             </div>
@@ -617,10 +682,10 @@ export function RatesPricingPage() {
                                         <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
                                         <input type="number" value={editVals.reshamWeight ?? row.reshamWeight} onChange={e => setEditVals(p => ({ ...p, reshamWeight: e.target.value }))} style={inputStyle} />
                                       </div>
-                                      <div>
-                                        <label style={{ ...labelStyle, marginBottom: 3 }}>Jari (Reels)</label>
-                                        <input type="number" value={editVals.jariWeight ?? row.jariWeight} onChange={e => setEditVals(p => ({ ...p, jariWeight: e.target.value }))} style={inputStyle} />
-                                      </div>
+                                      <JariWeightField
+                                        reels={editVals.jariWeight ?? row.jariWeight}
+                                        onChange={v => setEditVals(p => ({ ...p, jariWeight: v }))}
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -742,10 +807,10 @@ export function RatesPricingPage() {
                           <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
                           <input type="number" value={newVals.reshamWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, reshamWeight: e.target.value }))} style={inputStyle} placeholder="0" />
                         </div>
-                        <div>
-                          <label style={{ ...labelStyle, marginBottom: 3 }}>Jari (Reels)</label>
-                          <input type="number" value={newVals.jariWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, jariWeight: e.target.value }))} style={inputStyle} placeholder="0" />
-                        </div>
+                        <JariWeightField
+                          reels={newVals.jariWeight ?? ""}
+                          onChange={v => setNewVals(p => ({ ...p, jariWeight: v }))}
+                        />
                       </div>
                     </div>
                   </div>

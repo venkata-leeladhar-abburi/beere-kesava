@@ -19,7 +19,7 @@ import { SariTagPrintModal } from "./SariTagPrintModal";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import {
   useSuppliers, Supplier, SareeTag, Purchase,
-  formatINR, supplierPrefix, buildSareeCode, computeFinalAmount,
+  formatINR, supplierPrefix, buildSareeCode, computeFinalAmount, totalPieces,
 } from "./SupplierContext";
 
 const F = {
@@ -175,6 +175,7 @@ export function PurchaseFormModal({
         color: "",
         price: 0,
         sellPercent: 20,
+        quantity: 1,
         finalAmount: 0,
         notes: "",
         imageUrl: undefined,
@@ -192,6 +193,12 @@ export function PurchaseFormModal({
     if (file) set("invoiceFileName", file.name);
   };
 
+  const pieceCount = sareeDetails.reduce((sum, s) => sum + (Number(s.quantity) || 1), 0);
+  const sareeTotal = sareeDetails.reduce(
+    (sum, s) => sum + computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
+    0,
+  );
+
   const valid =
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
@@ -203,6 +210,7 @@ export function PurchaseFormModal({
     sareeDetails.map((s, idx) => {
       const price = Number(s.price) || 0;
       const sellPercent = Number(s.sellPercent) || 0;
+      const quantity = Number(s.quantity) || 1;
       return {
         id: buildSareeCode(form.supplier, idx + 1, form.invoiceNumber),
         weight: s.weight,
@@ -211,7 +219,8 @@ export function PurchaseFormModal({
         color: s.color,
         price,
         sellPercent,
-        finalAmount: computeFinalAmount(price, sellPercent),
+        quantity,
+        finalAmount: computeFinalAmount(price, sellPercent, quantity),
         notes: s.notes,
         imageUrl: s.imageUrl,
       };
@@ -378,7 +387,7 @@ export function PurchaseFormModal({
               <div>
                 <label style={labelStyle}>Number of Sarees</label>
                 <div style={{ ...inputStyle, display: "flex", alignItems: "center", color: T.taupe, background: T.cream }}>
-                  {sareeDetails.length} saree{sareeDetails.length !== 1 ? "s" : ""} added below
+                  {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetails.length} line{sareeDetails.length !== 1 ? "s" : ""} below
                 </div>
               </div>
               <div>
@@ -500,7 +509,7 @@ export function PurchaseFormModal({
             <div style={{ marginTop: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
-                  Saree Details ({sareeDetails.length})
+                  Saree Details ({sareeDetails.length} line{sareeDetails.length !== 1 ? "s" : ""} · {pieceCount} pc)
                 </span>
                 <button
                   onClick={addSareeRow}
@@ -544,7 +553,8 @@ export function PurchaseFormModal({
                 {sareeDetails.map((s, idx) => {
                   const price = Number(s.price) || 0;
                   const sellPercent = Number(s.sellPercent) || 0;
-                  const finalAmount = computeFinalAmount(price, sellPercent);
+                  const quantity = Number(s.quantity) || 1;
+                  const finalAmount = computeFinalAmount(price, sellPercent, quantity);
                   const code = buildSareeCode(form.supplier, idx + 1, form.invoiceNumber);
                   return (
                     <div
@@ -557,12 +567,20 @@ export function PurchaseFormModal({
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                        <span
-                          title="Auto-generated: supplier prefix + serial number + invoice number"
-                          style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(200,155,71,0.13)", border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}
-                        >
-                          {code}
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span
+                            title="Serial number in this purchase"
+                            style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 11, color: "#FFF", background: T.royalBurgundy, borderRadius: 6, padding: "3px 8px" }}
+                          >
+                            #{idx + 1}
+                          </span>
+                          <span
+                            title="Auto-generated: supplier prefix + serial number + invoice number"
+                            style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, background: "rgba(200,155,71,0.13)", border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px" }}
+                          >
+                            {code}
+                          </span>
+                        </div>
                         <button
                           onClick={() => removeSareeRow(s._uid)}
                           style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center" }}
@@ -601,15 +619,26 @@ export function PurchaseFormModal({
                           />
                         </div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 0.7fr 1fr 1.1fr", gap: 10, marginBottom: 10 }}>
                         <div>
-                          <label style={labelStyle}>Price (₹)</label>
+                          <label style={labelStyle}>Price (₹) / pc</label>
                           <input
                             type="number"
                             style={{ ...inputStyle, height: 36, fontSize: 12 }}
                             value={s.price || ""}
                             onChange={(e) => updateSareeRow(s._uid, { price: Number(e.target.value) })}
                             placeholder="e.g. 600"
+                          />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Quantity</label>
+                          <input
+                            type="number"
+                            min={1}
+                            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+                            value={s.quantity ?? 1}
+                            onChange={(e) => updateSareeRow(s._uid, { quantity: Math.max(1, Number(e.target.value) || 1) })}
+                            placeholder="1"
                           />
                         </div>
                         <div>
@@ -626,6 +655,9 @@ export function PurchaseFormModal({
                           <label style={labelStyle}>Final Amount</label>
                           <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
                             {formatINR(finalAmount)}
+                          </div>
+                          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+                            {formatINR(computeFinalAmount(price, sellPercent))} × {quantity} pc
                           </div>
                         </div>
                       </div>
@@ -678,6 +710,17 @@ export function PurchaseFormModal({
                   );
                 })}
               </div>
+
+              {sareeDetails.length > 0 && (
+                <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px" }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>
+                    Total — {pieceCount} piece{pieceCount !== 1 ? "s" : ""}
+                  </span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: T.royalBurgundy }}>
+                    {formatINR(sareeTotal)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -825,7 +868,7 @@ function SareeListModal({
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: T.silkCream }}>
-                  {["Saree Code", "Saree Type", "Colour", "Weight", "Price", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
+                  {["S.No", "Saree Code", "Saree Type", "Colour", "Weight", "Price / pc", "Qty", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -849,6 +892,9 @@ function SareeListModal({
               <tbody>
                 {purchase.sarees.map((s, i) => (
                   <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                      {i + 1}
+                    </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>
                       {s.id}
                     </td>
@@ -863,6 +909,9 @@ function SareeListModal({
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
                       {formatINR(s.price)}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                      {s.quantity ?? 1}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
                       {s.sellPercent}%
@@ -991,7 +1040,7 @@ export function ExternalPurchasesPage() {
       supplier: form.supplier,
       location: form.location,
       date: form.date || "—",
-      sareeCount: sarees.length,
+      sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
       billAmount: form.billAmount || "₹0",
@@ -1009,7 +1058,7 @@ export function ExternalPurchasesPage() {
       supplier: form.supplier,
       location: form.location,
       date: form.date || undefined,
-      sareeCount: sarees.length,
+      sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
       billAmount: form.billAmount,

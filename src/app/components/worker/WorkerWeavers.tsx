@@ -6,12 +6,139 @@ import {
 } from "lucide-react";
 import { C, F, card, inputStyle, btnPrimary, btnGhost } from "./tokens";
 import { useMaterialIssue } from "../MaterialIssueContext";
+import {
+  getSareeTypeByCode, INITIAL_RATES, jariFromReels, jariGrams, jariToReels, trimNum,
+  type JariUnit, type SareeTypeRecord,
+} from "../RatesPricingPage";
 
 type WeaversPage = "menu" | "design" | "issue" | "receive";
 type IssueSource = "own" | "outsourced" | null;
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 5 }}>{children}</div>;
+}
+
+// ─── Material weight split (warp / resham / jari) ────────────────────────────
+// Proportions come from the Rates & Pricing page: each saree type carries a
+// standard weight plus its warp / resham / jari breakdown. The actual saree
+// weight entered at receipt is scaled against that standard.
+export type MatSplit = { warp: string; resham: string; jari: string };
+
+function autoMaterialSplit(typeCode: string | undefined, weightStr: string):
+  (MatSplit & { factor: number; rate: SareeTypeRecord }) | null {
+  const rate = typeCode ? getSareeTypeByCode(typeCode) : undefined;
+  const weight = parseFloat(weightStr);
+  const std = rate ? parseFloat(rate.stdWeight) : NaN;
+  if (!rate || !weight || !std) return null;
+  const f = weight / std;
+  const g = (v: string) => ((parseFloat(v) || 0) * f).toFixed(0);
+  return {
+    rate, factor: f,
+    warp: g(rate.warpWeight),
+    resham: g(rate.reshamWeight),
+    jari: (((parseFloat(rate.jariWeight) || 0) * f).toFixed(1)).replace(/\.0$/, ""),
+  };
+}
+
+interface MaterialSplitPanelProps {
+  typeCode?: string;
+  weight: string;
+  edits: Partial<MatSplit>;
+  onEdit: (next: Partial<MatSplit>) => void;
+}
+
+export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: MaterialSplitPanelProps) {
+  const [jariUnit, setJariUnit] = useState<JariUnit>("reels");
+  const auto = autoMaterialSplit(typeCode, weight);
+
+  if (!auto) {
+    return (
+      <div style={{ background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
+          {typeCode && getSareeTypeByCode(typeCode)
+            ? "Enter the saree weight to split it into warp, resham and jari."
+            : "No rate card found for this saree type — material split unavailable."}
+        </span>
+      </div>
+    );
+  }
+
+  const keys: (keyof MatSplit)[] = ["warp", "resham", "jari"];
+  const val = (k: keyof MatSplit) => edits[k] ?? auto[k];
+  const dirty = keys.some(k => edits[k] !== undefined && edits[k] !== auto[k]);
+  const jariReels = parseFloat(val("jari")) || 0;
+  const jariG = jariGrams(jariReels);
+  const total = (parseFloat(val("warp")) || 0) + (parseFloat(val("resham")) || 0) + jariG;
+  const diff = (parseFloat(weight) || 0) - total;
+
+  return (
+    <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text }}>Material Weights</span>
+          <span style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "2px 6px" }}>
+            {auto.rate.code} · std {auto.rate.stdWeight}g
+          </span>
+          <span style={{ fontFamily: F.u, fontSize: 10, color: dirty ? C.gold : C.green }}>
+            {dirty ? "Edited manually" : `Auto · ×${auto.factor.toFixed(2)}`}
+          </span>
+        </div>
+        {dirty && (
+          <button onClick={() => onEdit({})}
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.u, fontSize: 10.5, color: C.burg, textDecoration: "underline" }}>
+            Reset to auto
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        {([{ key: "warp", label: "Warp" }, { key: "resham", label: "Resham" }] as const).map(f => (
+          <div key={f.key}>
+            <div style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+              {f.label} (g)
+            </div>
+            <input type="number" value={val(f.key)}
+              onChange={e => onEdit({ ...edits, [f.key]: e.target.value })}
+              style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
+            <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3 }}>auto {auto[f.key]}g</div>
+          </div>
+        ))}
+
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginBottom: 4 }}>
+            <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Jari ({jariUnit})
+            </span>
+            <div style={{ display: "flex", background: "rgba(107,26,42,0.06)", borderRadius: 999, padding: 2 }}>
+              {(["reels", "buns"] as JariUnit[]).map(u => (
+                <button key={u} type="button" onClick={() => setJariUnit(u)}
+                  style={{
+                    border: "none", borderRadius: 999, padding: "2px 8px", cursor: "pointer",
+                    fontFamily: F.u, fontSize: 9.5, fontWeight: 600, textTransform: "capitalize",
+                    background: jariUnit === u ? C.burg : "transparent",
+                    color: jariUnit === u ? "#FFF" : C.muted,
+                  }}>
+                  {u}
+                </button>
+              ))}
+            </div>
+          </div>
+          <input type="number" value={trimNum(jariFromReels(jariReels, jariUnit))}
+            onChange={e => onEdit({ ...edits, jari: trimNum(jariToReels(parseFloat(e.target.value) || 0, jariUnit)) })}
+            style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
+          <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3 }}>
+            {trimNum(jariReels)} reels · {trimNum(jariFromReels(jariReels, "buns"))} buns · {trimNum(jariG, 0)}g
+            <span style={{ marginLeft: 4 }}>· auto {auto.jari} reels</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 8, fontFamily: F.u, fontSize: 10.5, color: Math.abs(diff) > 5 ? C.gold : C.muted }}>
+        Warp + Resham + Jari = {total.toFixed(0)}g of {parseFloat(weight) || 0}g saree weight
+        {Math.abs(diff) > 5 ? ` · ${Math.abs(diff).toFixed(0)}g ${diff > 0 ? "unaccounted" : "over"}` : ""}
+      </div>
+    </div>
+  );
 }
 
 function SectionLabel({ step, title }: { step: number; title: string }) {
@@ -156,7 +283,7 @@ const WEAVERS = [
 
 // ─── Weaver Batches (for Receive Sarees) ─────────────────────────────────────
 type SareeStatus = "pending" | "received" | "defective";
-interface BatchSaree { no: number; status: SareeStatus; color?: string; weight?: string; }
+interface BatchSaree { no: number; status: SareeStatus; color?: string; weight?: string; warp?: string; resham?: string; jari?: string; }
 interface WeaverBatchData { id: string; total: number; sareeTypeCode: string; bulkOrderLabel?: string; sarees: BatchSaree[]; }
 
 function makeBatch(id: string, total: number, doneCount: number, sareeTypeCode: string, bulkOrderLabel?: string): WeaverBatchData {
@@ -761,6 +888,9 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
   const [hasPhoto, setHasPhoto] = useState(false);
+  const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
+  const [ownMatEdits, setOwnMatEdits] = useState<Partial<MatSplit>>({});
+  const [ownTypeCode, setOwnTypeCode] = useState(INITIAL_RATES[0].code);
   const [sareeCount, setSareeCount] = useState(4);
   const [showTagPrint, setShowTagPrint] = useState(false);
   const [loomNum, setLoomNum] = useState("");
@@ -796,20 +926,20 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
     setSelectedSareeNo(null);
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const pickBatch = (batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNo(null);
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const selectSareeSlot = (no: number) => {
     const s = currentBatch?.sarees.find(s => s.no === no);
     if (!s || s.status !== "pending") return;
     setSelectedSareeNo(prev => prev === no ? null : no);
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const canSaveSaree = !!sareeColor && !!sareeWeight && hasPhoto;
@@ -821,6 +951,12 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
       const b = next[selectedWeaver.code].find(b => b.id === currentBatch.id)!;
       const s = b.sarees.find(s => s.no === selectedSareeNo)!;
       s.status = "received"; s.color = sareeColor; s.weight = sareeWeight;
+      const split = autoMaterialSplit(currentBatch.sareeTypeCode, sareeWeight);
+      if (split) {
+        s.warp = matEdits.warp ?? split.warp;
+        s.resham = matEdits.resham ?? split.resham;
+        s.jari = matEdits.jari ?? split.jari;
+      }
       return next;
     });
     onSareeReceived?.({
@@ -828,7 +964,7 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
       weight: `${sareeWeight}g`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
       color: sareeColor, status: "Pending QC",
     });
-    setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+    setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   if (showTagPrint) {
@@ -1069,6 +1205,13 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
                   </div>
                 </div>
 
+                <MaterialSplitPanel
+                  typeCode={currentBatch.sareeTypeCode}
+                  weight={sareeWeight}
+                  edits={matEdits}
+                  onEdit={setMatEdits}
+                />
+
                 {sareeColor && sareeWeight && hasPhoto && (
                   <div style={{ textAlign: "center", marginBottom: 10 }}>
                     <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginBottom: 2 }}>Saree ID</div>
@@ -1128,7 +1271,7 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
                   }
                   setShowDefectPrompt(false);
                   setSelectedSareeNo(null);
-                  setSareeColor(""); setSareeWeight(""); setHasPhoto(false);
+                  setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
                 }}
               />
             )}
@@ -1235,6 +1378,21 @@ function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; on
                   </div>
                 </div>
               </div>
+
+              <div style={{ marginBottom: 10 }}>
+                <FieldLabel>Saree Type</FieldLabel>
+                <select value={ownTypeCode} onChange={e => { setOwnTypeCode(e.target.value); setOwnMatEdits({}); }}
+                  style={{ ...inputStyle, height: 44, appearance: "none", cursor: "pointer" }}>
+                  {INITIAL_RATES.map(r => <option key={r.code} value={r.code}>{r.code} · {r.type}</option>)}
+                </select>
+              </div>
+
+              <MaterialSplitPanel
+                typeCode={ownTypeCode}
+                weight={ownWeight}
+                edits={ownMatEdits}
+                onEdit={setOwnMatEdits}
+              />
 
               {ownWeight && ownPhoto && loomNum && (
                 <div style={{ textAlign: "center", marginBottom: 10 }}>
