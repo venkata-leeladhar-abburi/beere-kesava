@@ -1,13 +1,19 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
-import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound } from "lucide-react";
+import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useResponsive } from "./useResponsive";
 import { PaymentsPage } from "./PaymentsPage";
 import { FirmsPage } from "./FirmsPage";
 import { ReportsPage } from "./ReportsPage";
 import { RatesPricingPage } from "./RatesPricingPage";
+import { WeaversPage } from "./WeaversPage";
+import { CustomersPage } from "./CustomersPage";
+import { VendorsPage } from "./VendorsPage";
+import { SuppliersPage } from "./SuppliersPage";
+import { FactoryLoomPage } from "./FactoryLoomPage";
+import { DownloadAccessProvider } from "./DownloadAccess";
 import { UserProfileModal } from "./BeereDashboard";
 import { imgBKLogo } from "../constants/weaverImages";
 
@@ -31,10 +37,15 @@ const MAIN_NAV_H = 68;
 type NavItem = { key: string; label: string; slug: string; icon: React.ComponentType<{ size?: number; color?: string }> };
 
 const NAV: NavItem[] = [
-  { key: "Payments", label: "Payments",        slug: "payments", icon: IndianRupee },
-  { key: "Firms",    label: "Firms",           slug: "firms",    icon: Building2 },
-  { key: "Reports",  label: "Reports",         slug: "reports",  icon: FileBarChart2 },
-  { key: "Rates",    label: "Rates & Pricing", slug: "rates",    icon: Tags },
+  { key: "Payments",  label: "Payments",        slug: "payments",  icon: IndianRupee },
+  { key: "Firms",     label: "Firms",           slug: "firms",     icon: Building2 },
+  { key: "Reports",   label: "Reports",         slug: "reports",   icon: FileBarChart2 },
+  { key: "Rates",     label: "Rates & Pricing", slug: "rates",     icon: Tags },
+  { key: "Weavers",   label: "Weavers",         slug: "weavers",   icon: Users },
+  { key: "Customers", label: "Customers",       slug: "customers", icon: UserIcon },
+  { key: "Vendors",   label: "Vendors",         slug: "vendors",   icon: Truck },
+  { key: "Suppliers", label: "Suppliers",       slug: "suppliers", icon: Store },
+  { key: "Looms",     label: "Factory Looms",   slug: "looms",     icon: Factory },
 ];
 
 const SLUG_TO_KEY: Record<string, string> = NAV.reduce((acc, n) => { acc[n.slug] = n.key; return acc; }, {} as Record<string, string>);
@@ -160,17 +171,31 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
         onLogout={handleLogout}
         onProfile={() => setShowProfileModal(true)}
       />
-      {active === "Payments" ? (
-        <PaymentsPage />
-      ) : active === "Firms" ? (
-        <FirmsPage />
-      ) : active === "Reports" ? (
-        <ReportsPage />
-      ) : active === "Rates" ? (
-        <RatesPricingPage />
-      ) : (
-        <PaymentsPage />
-      )}
+      {/* Accountants read everything but export nothing — every download and
+          export control inside these pages is hidden by this provider. */}
+      <DownloadAccessProvider allowed={false}>
+        {active === "Payments" ? (
+          <PaymentsPage />
+        ) : active === "Firms" ? (
+          <FirmsPage />
+        ) : active === "Reports" ? (
+          <ReportsPage />
+        ) : active === "Rates" ? (
+          <RatesPricingPage />
+        ) : active === "Weavers" ? (
+          <WeaversPage />
+        ) : active === "Customers" ? (
+          <CustomersPage />
+        ) : active === "Vendors" ? (
+          <VendorsPage />
+        ) : active === "Suppliers" ? (
+          <SuppliersPage />
+        ) : active === "Looms" ? (
+          <FactoryLoomPage />
+        ) : (
+          <PaymentsPage />
+        )}
+      </DownloadAccessProvider>
 
       {showProfileModal && (
         <UserProfileModal onClose={() => setShowProfileModal(false)} role="admin" />

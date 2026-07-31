@@ -30,6 +30,11 @@ export interface BulkOrder {
   visitingCardUrl?: string;
   visitingCardName?: string;
   photoUrls?: string[];
+  notes?: string;
+  /** Set once someone has physically counted the sarees against this order. */
+  tallied?: boolean;
+  talliedBy?: string;
+  talliedDate?: string;
 }
 
 // ─── Initial Data (from ProductionPage BULK_ORDERS) ───────────────────────────
@@ -50,6 +55,7 @@ interface BulkOrderContextValue {
   nextOrderRef: string;
   markDispatched: (ref: string, invoiceId?: string) => void;
   recordPayment: (ref: string, amount: number) => void;
+  tallyOrder: (ref: string, by: string) => void;
 }
 
 const BulkOrderContext = createContext<BulkOrderContextValue | null>(null);
@@ -95,6 +101,16 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const tallyOrder = useCallback((ref: string, by: string) => {
+    setBulkOrders(prev =>
+      prev.map(o =>
+        o.ref === ref
+          ? { ...o, tallied: true, talliedBy: by, talliedDate: new Date().toISOString().split("T")[0] }
+          : o
+      )
+    );
+  }, []);
+
   // Compute next order ref
   const allNums = bulkOrders
     .map(o => {
@@ -106,7 +122,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const nextOrderRef = `ORD-2026-${String(maxNum + 1).padStart(3, "0")}`;
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment }}>
+    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder }}>
       {children}
     </BulkOrderContext.Provider>
   );

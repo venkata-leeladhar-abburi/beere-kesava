@@ -15,6 +15,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { imgShowroom } from "../constants/weaverImages";
 import { useBulkOrders } from "./BulkOrderContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -159,6 +160,10 @@ function Pill({ active, children, onClick }: { active: boolean, children: React.
 }
 
 function SectionTitle({ title, sub, action, onAction }: { title: string, sub: string, action: string, onAction?: () => void }) {
+  // Section actions on this page are all downloads/exports, so they follow the
+  // portal's download permission.
+  const dlAllowed = useDownloadsAllowed();
+  const isDownloadAction = /download|export/i.test(action);
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
       <div style={{ display: "flex", gap: 12 }}>
@@ -168,15 +173,17 @@ function SectionTitle({ title, sub, action, onAction }: { title: string, sub: st
           <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0, maxWidth: 600, lineHeight: 1.5 }}>{sub}</p>
         </div>
       </div>
-      <button 
-        onClick={onAction}
-        style={{ 
-          background: "transparent", border: "none", color: T.antiqueGold, 
-          fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 6
-        }}>
-        {action}
-      </button>
+      {(!isDownloadAction || dlAllowed) && (
+        <button
+          onClick={onAction}
+          style={{
+            background: "transparent", border: "none", color: T.antiqueGold,
+            fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 6
+          }}>
+          {action}
+        </button>
+      )}
     </div>
   );
 }
@@ -256,6 +263,7 @@ export function CustomersPage() {
   const [wholesaleOrderDateFilter, setWholesaleOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [wholesalePaymentDateFilter, setWholesalePaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [retailPurchaseDateFilter, setRetailPurchaseDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [analyticsDateFilter, setAnalyticsDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [modalWholesale, setModalWholesale] = useState<any>(null);
   const [modalRetail, setModalRetail] = useState<any>(null);
   const [downloadConfirmRetail, setDownloadConfirmRetail] = useState<any>(null);
@@ -822,10 +830,8 @@ export function CustomersPage() {
           action="Download Analytics Report →"
         />
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 32 }}>
-          {["This Month", "Last 3 Months", "Last 6 Months", "This Year", "All Time"].map((p, i) => (
-            <Pill key={i} active={i === 0}>{p}</Pill>
-          ))}
+        <div style={{ marginBottom: 32 }}>
+          <DateFilterBar filter={analyticsDateFilter} onChange={setAnalyticsDateFilter} />
         </div>
 
         {/* Charts Row 1 — equal 3 columns */}
@@ -843,13 +849,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Wholesale and retail combined</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (₹)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
                 title="Download CSV"
                 style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
             {/* Summary strip */}
             <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -908,13 +914,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue from each sales channel</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], revenueSplit.map(item => [item.name, item.value]))}
                 title="Download CSV"
                 style={{ background: "rgba(110,15,45,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.royalBurgundy, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
             <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
               <ResponsiveContainer key="rc-2" width="100%" height="100%">
@@ -953,13 +959,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Last 6 months trend</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("new_vs_returning.csv", ["Month", "New Customers", "Returning Customers"], newVsReturning.map(item => [item.month, item.new, item.returning]))}
                 title="Download CSV"
                 style={{ background: "rgba(30,102,64,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
             <div style={{ flex: 1, minHeight: 280 }}>
               <ResponsiveContainer key="rc-3" width="100%" height="100%">
@@ -992,13 +998,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases — all time</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("frequent_buyers.csv", ["Rank", "Customer Name", "Orders Count", "Frequency"], frequentBuyers.map((fb, i) => [i + 1, fb.name, fb.count, fb.freq]))}
                 title="Download CSV"
                 style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
               {frequentBuyers.map((fb, i) => (
@@ -1033,13 +1039,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months — consider reaching out</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("inactive_customers.csv", ["Customer Name", "Type", "Last Purchase Date"], inactiveAlerts.map(al => [al.name, al.type, al.time]))}
                 title="Download CSV"
                 style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.crimson, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
               {inactiveAlerts.map((al, i) => (
@@ -1079,13 +1085,13 @@ export function CustomersPage() {
                   <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
                 </div>
               </div>
-              <button 
+              <DownloadGate><button 
                 onClick={() => downloadDataAsCSV("customer_locations.csv", ["State", "Customers Count", "Percentage Share"], [["Andhra Pradesh", 18, "37%"], ["Telangana", 14, "29%"], ["Tamil Nadu", 8, "17%"], ["Karnataka", 5, "10%"], ["Others", 3, "6%"]])}
                 title="Download CSV"
                 style={{ background: "rgba(45,145,88,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
               >
                 <Download size={14} />
-              </button>
+              </button></DownloadGate>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -1112,13 +1118,15 @@ export function CustomersPage() {
               ))}
             </div>
 
-            <button style={{
-              marginTop: 32, padding: "11px 22px", borderRadius: 9, border: `1px solid ${T.antiqueGold}`,
-              background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 14, fontWeight: 600,
-              display: "flex", alignItems: "center", gap: 9, cursor: "pointer"
-            }}>
-              <Download size={16} /> Download Customer List with Locations
-            </button>
+            <DownloadGate>
+              <button style={{
+                marginTop: 32, padding: "11px 22px", borderRadius: 9, border: `1px solid ${T.antiqueGold}`,
+                background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 14, fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 9, cursor: "pointer"
+              }}>
+                <Download size={16} /> Download Customer List with Locations
+              </button>
+            </DownloadGate>
           </div>
 
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "28px 24px", minHeight: 300 }}>
@@ -1271,7 +1279,9 @@ export function CustomersPage() {
               <button onClick={() => setWholesaleView("list")} style={{ padding: "9px 13px", background: wholesaleView === "list" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><AlignJustify size={18} color={wholesaleView === "list" ? T.royalBurgundy : T.taupe} /></button>
               <button onClick={() => setWholesaleView("table")} style={{ padding: "9px 13px", background: wholesaleView === "table" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><TableIcon size={18} color={wholesaleView === "table" ? T.royalBurgundy : T.taupe} /></button>
             </div>
-            <button style={{ padding: "9px 18px", borderRadius: 8, border: `1px solid ${T.antiqueGold}`, background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}><Download size={14} /> Download</button>
+            <DownloadGate>
+              <button style={{ padding: "9px 18px", borderRadius: 8, border: `1px solid ${T.antiqueGold}`, background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}><Download size={14} /> Download</button>
+            </DownloadGate>
           </div>
         </div>
 
@@ -1550,13 +1560,15 @@ export function CustomersPage() {
                   <button onClick={() => setModalRetail(r)} style={{ flex: 1, height: 42, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 7 }}>
                     <Eye size={16} /> View Purchase History
                   </button>
-                  <button
-                    onClick={() => setDownloadConfirmRetail(r)}
-                    style={{ height: 42, padding: "0 14px", background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 9, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, whiteSpace: "nowrap" as const }}
-                    title="Download Data"
-                  >
-                    <Download size={15} /> Download
-                  </button>
+                  <DownloadGate>
+                    <button
+                      onClick={() => setDownloadConfirmRetail(r)}
+                      style={{ height: 42, padding: "0 14px", background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 9, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, whiteSpace: "nowrap" as const }}
+                      title="Download Data"
+                    >
+                      <Download size={15} /> Download
+                    </button>
+                  </DownloadGate>
                 </div>
               </div>
             ))}

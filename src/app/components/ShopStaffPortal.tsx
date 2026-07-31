@@ -357,6 +357,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
 
 // ─── PAGE 02 — NEW RETAIL SALE ───────────────────────────────────────────────
 function NewSaleFlow() {
+  const canSeePrices = useCanSeePrices();
   const { isMobile, isTablet } = useResponsive();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | "success">(1);
   const [sareeFound, setSareeFound] = useState(false);
@@ -958,20 +959,24 @@ function NewSaleFlow() {
                   <span style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: C.text, textAlign: "right" as const, maxWidth: "60%" }}>{value}</span>
                 </div>
               ))}
-              {soldPrice !== originalPrice && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Original Price</span>
-                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalPrice)}</span>
-                </div>
-              )}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sold For</span>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: C.burg }}>{fmtPrice(soldPrice)}</span>
-              </div>
-              {priceDiscount > 0 && (
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                  <Chip label={`Discount: ${fmtPrice(priceDiscount)}`} color="#8B6018" bg="rgba(196,146,58,0.15)" />
-                </div>
+              {canSeePrices && (
+                <>
+                  {soldPrice !== originalPrice && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Original Price</span>
+                      <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalPrice)}</span>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
+                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sold For</span>
+                    <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: C.burg }}>{fmtPrice(soldPrice)}</span>
+                  </div>
+                  {priceDiscount > 0 && (
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                      <Chip label={`Discount: ${fmtPrice(priceDiscount)}`} color="#8B6018" bg="rgba(196,146,58,0.15)" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </Card>
@@ -1179,6 +1184,7 @@ type ReturnStep = "type" | 1 | 2 | 3 | "success";
 type ReturnType = "retail" | "wholesale" | null;
 
 function ProcessReturn({ onBack }: { onBack: () => void }) {
+  const canSeePrices = useCanSeePrices();
   const [returnType, setReturnType] = useState<ReturnType>(null);
   const [step, setStep] = useState<ReturnStep>("type");
   const [returnLog, setReturnLog] = useState<ReturnRecord[]>([
@@ -1264,7 +1270,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             <span style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 10, color: C.muted }}>{r.date}</span>
           </div>
           {r.type === "retail" ? (
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.customer} · {r.originalSaleId} · {r.reason} · <span style={{ color: C.gold, fontWeight: 600 }}>{r.amount}</span></div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.customer} · {r.originalSaleId} · {r.reason}{canSeePrices && <> · <span style={{ color: C.gold, fontWeight: 600 }}>{r.amount}</span></>}</div>
           ) : (
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor} · {r.design} · {r.color} · {r.weight} · {r.wsReason}</div>
           )}
@@ -1872,11 +1878,19 @@ function CustomerProfiles() {
           <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.text, lineHeight: 1.2 }}>+14</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>June 2026</div>
         </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>Top Spender</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.burg, lineHeight: 1.2 }}>₹1,84,000</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
-        </div>
+        {canSeePrices ? (
+          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>Top Spender</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.burg, lineHeight: 1.2 }}>₹1,84,000</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
+          </div>
+        ) : (
+          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>Most Frequent</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.burg, lineHeight: 1.2 }}>18 visits</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
+          </div>
+        )}
       </div>
 
       {/* Search + Filter */}
@@ -2307,9 +2321,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   const isTablet = bp === "tablet";
   const { pathname } = useLocation();
   const routerNavigate = useNavigate();
-  const { logout, selectRole, role } = useAuth();
-  // Admin and superadmin can always see monetary values; shop staff cannot.
-  const canSeePrices = role === "admin" || role === "superadmin";
+  const { logout, selectRole, role, adminViewingAs } = useAuth();
+  // Money is owner-only. A real shop-staff login never sees it.
+  // The route guard forces role === "shop" inside this portal, so an owner
+  // looking in from their dashboard is identified by `adminViewingAs`, which is
+  // set when they enter from the Staff Portals menu — not by `role`.
+  const canSeePrices = role === "admin" || role === "superadmin" || adminViewingAs !== null;
 
   const handleLogout = () => {
     logout();
@@ -3197,7 +3214,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
                           </div>
                           <div>
                             <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg, marginBottom: 3 }}>RAVI-L2-007</div>
-                            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Smt. Meenakshi · ₹12,000</div>
+                            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
                             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Wrong Design · 9:10 AM</div>
                           </div>
                         </div>

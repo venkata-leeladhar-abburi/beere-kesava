@@ -12,11 +12,30 @@ interface AuthContextValue extends AuthState {
   login: (phone: string) => void;
   selectRole: (role: Role | null) => void;
   logout: () => void;
+  /**
+   * The admin/superadmin role a user *came from* when they opened a staff
+   * portal from their own dashboard. Null for a genuine staff login.
+   * Portals use this to decide what an owner may see that staff may not.
+   */
+  adminViewingAs: Role | null;
+  /** Drops the admin-viewing flag — used when a role is chosen fresh. */
+  clearAdminView: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "bk_auth_state";
+/** Written by the admin/superadmin dashboards just before entering a staff portal. */
+export const ADMIN_VIEW_KEY = "bk_original_admin_role";
+
+function readAdminView(): Role | null {
+  try {
+    const v = localStorage.getItem(ADMIN_VIEW_KEY);
+    return v === "admin" || v === "superadmin" ? v : null;
+  } catch {
+    return null;
+  }
+}
 
 function loadState(): AuthState {
   try {
@@ -41,26 +60,40 @@ function saveState(state: AuthState) {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>(loadState);
+  const [adminViewingAs, setAdminViewingAs] = useState<Role | null>(readAdminView);
 
   useEffect(() => {
     saveState(state);
   }, [state]);
 
+  const clearAdminView = useCallback(() => {
+    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    setAdminViewingAs(null);
+  }, []);
+
   const login = useCallback((phone: string) => {
+    // A fresh login is never a continuation of somebody's admin session.
+    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    setAdminViewingAs(null);
     setState({ isAuthenticated: true, role: null, phone });
   }, []);
 
+  // Entering or leaving a staff portal always writes the flag and then calls
+  // selectRole, so re-reading here keeps the state in step with the dashboards.
   const selectRole = useCallback((role: Role | null) => {
     setState(prev => ({ ...prev, role }));
+    setAdminViewingAs(readAdminView());
   }, []);
 
   const logout = useCallback(() => {
     setState({ isAuthenticated: false, role: null, phone: null });
     localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    setAdminViewingAs(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, selectRole, logout }}>
+    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView }}>
       {children}
     </AuthContext.Provider>
   );

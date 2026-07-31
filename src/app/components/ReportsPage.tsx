@@ -20,6 +20,7 @@ import { useWeaverPayments } from "./WeaverPaymentsContext";
 import { useBulkOrders } from "./BulkOrderContext";
 import { OutstandingPage } from "./OutstandingPage";
 import { useFirms } from "./FirmsContext";
+import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -174,14 +175,16 @@ function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { period?
           {compared && <> · Compared with: <span style={{ fontFamily: F.display, fontWeight: 700, color: T.antiqueGold }}>{compared}</span></>}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#FFFFFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-          <FileText size={14} />Download PDF
-        </button>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
-          <Download size={14} />Download Excel
-        </button>
-      </div>
+      <DownloadGate>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#FFFFFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+            <FileText size={14} />Download PDF
+          </button>
+          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
+            <Download size={14} />Download Excel
+          </button>
+        </div>
+      </DownloadGate>
     </div>
   );
 }
@@ -652,18 +655,20 @@ function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActivePeriod, 
           )}
         </div>
 
-        {/* Divider */}
-        <div style={{ width: 1, height: 32, background: T.borderDef, flexShrink: 0 }} />
+        <DownloadGate>
+          {/* Divider */}
+          <div style={{ width: 1, height: 32, background: T.borderDef, flexShrink: 0 }} />
 
-        {/* Download buttons */}
-        <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-          <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-            <FileText size={16} />Download PDF
-          </button>
-          <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: "none", borderRadius: 10, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: "#FFFDF9", cursor: "pointer", boxShadow: "0 2px 10px rgba(110,15,45,0.30)" }}>
-            <Download size={16} />Download Excel
-          </button>
-        </div>
+          {/* Download buttons */}
+          <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
+            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+              <FileText size={16} />Download PDF
+            </button>
+            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: "none", borderRadius: 10, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: "#FFFDF9", cursor: "pointer", boxShadow: "0 2px 10px rgba(110,15,45,0.30)" }}>
+              <Download size={16} />Download Excel
+            </button>
+          </div>
+        </DownloadGate>
       </div>
     </div>
   );
@@ -1850,11 +1855,13 @@ function ProfitLossReport() {
             </tbody>
           </table>
 
-          <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
-            <FileText size={13} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download this report as PDF for your monthly records and year-end accounting.</span>
-            <button style={{ marginLeft: "auto", padding: "6px 14px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>Download PDF</button>
-          </div>
+          <DownloadGate>
+            <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
+              <FileText size={13} color={T.antiqueGold} />
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download this report as PDF for your monthly records and year-end accounting.</span>
+              <button style={{ marginLeft: "auto", padding: "6px 14px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>Download PDF</button>
+            </div>
+          </DownloadGate>
         </div>
       </FadeUp>
 
@@ -2095,10 +2102,12 @@ function CustomerReport() {
                     </>
                   )}
                 </div>
-                <button onClick={() => downloadCustomerData(r)}
-                  style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
-                  ↓ Download Data
-                </button>
+                <DownloadGate>
+                  <button onClick={() => downloadCustomerData(r)}
+                    style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
+                    ↓ Download Data
+                  </button>
+                </DownloadGate>
               </div>
             ))}
           </div>
@@ -2475,6 +2484,9 @@ const DL_HISTORY = [
 ];
 
 function DownloadHistorySection() {
+  // The whole section is a download archive — nothing to show where exporting
+  // isn't permitted.
+  if (!useDownloadsAllowed()) return null;
   const dlIconMap: Record<string, React.ReactNode> = {
     "Weaver Payment Report":  <Users size={24} color={T.antiqueGold} />,
     "Production Report":      <Scissors size={24} color={T.antiqueGold} />,

@@ -24,6 +24,7 @@ import { useMaterialIssue } from "./MaterialIssueContext";
 import { useBatches } from "./BatchContext";
 import { useBulkOrders } from "./BulkOrderContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
 import { useDesignLibrary, DispatchRecord } from "./DesignLibraryContext";
 import { DispatchDetailsModal } from "./BatchCreationPage";
 import { PaperPlaneTilt } from "@phosphor-icons/react";
@@ -1916,9 +1917,11 @@ function LeaderboardAndQC({ onActivities, onNavigate }: { onActivities: () => vo
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Rankings by sarees produced · Quality check results</div>
               </div>
             </div>
-            <motion.button onClick={() => setReportOpen(true)} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.22)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-              <Download size={16} /> Download Full Report
-            </motion.button>
+            <DownloadGate>
+              <motion.button onClick={() => setReportOpen(true)} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.22)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                <Download size={16} /> Download Full Report
+              </motion.button>
+            </DownloadGate>
           </div>
 
           {/* Two-column body */}

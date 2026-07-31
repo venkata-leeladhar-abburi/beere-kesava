@@ -172,7 +172,7 @@ function PortalCard({
 
 // ── RoleSelectPage ─────────────────────────────────────────────────────────────
 export function RoleSelectPage() {
-  const { isAuthenticated, role: currentRole, selectRole, logout } = useAuth();
+  const { isAuthenticated, role: currentRole, selectRole, logout, clearAdminView } = useAuth();
   const navigate = useNavigate();
   const { isMobile, isTablet } = useResponsive();
   const [hovered, setHovered] = useState<Role | null>(null);
@@ -186,6 +186,10 @@ export function RoleSelectPage() {
   const stacked = isMobile || isTablet;
 
   function handleRoleSelect(role: Role) {
+    // Choosing a portal here is a first-hand login, not an admin looking in on
+    // a staff portal — drop any leftover flag so shop staff can't inherit an
+    // earlier admin session's money visibility on a shared device.
+    clearAdminView();
     selectRole(role);
     navigate(ROLE_ROUTES[role]);
   }

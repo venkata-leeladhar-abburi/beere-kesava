@@ -28,6 +28,7 @@ import { INVOICES } from "./PaymentsPage";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 import { WeaverSareesSection } from "./WeaverSareesSection";
+import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
 const imgSaree    = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgShowroom = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgWarp     = "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
@@ -217,7 +218,10 @@ export interface BulkOrder {
   amountDue?: number;
   amountPaid?: number;
   photoUrls?: string[];
+  notes?: string;
+  tallied?: boolean;
   talliedBy?: string;
+  talliedDate?: string;
 }
 export const BULK_ORDERS: BulkOrder[] = [
   { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",    design: "BKB-045", done: 76, total: 80,              paymentStatus: "partial", amountDue: 250000, amountPaid: 150000 },
@@ -247,14 +251,10 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
   const pct = o.total > 0 ? Math.round((o.done / o.total) * 100) : 0;
   const remaining = o.total - o.done;
   const PhStatusIcon = cfg.PhIcon as React.ElementType;
-  const [tallied, setTallied] = useState(!!o.talliedBy);
-  const [talliedBy, setTalliedBy] = useState(o.talliedBy);
-
-  const handleTally = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setTallied(true);
-    setTalliedBy("Admin User");
-  };
+  // Tally state now lives on the order itself (BulkOrderContext) so it survives
+  // navigating away to the full order page and back.
+  const tallied = !!o.tallied;
+  const talliedBy = o.talliedBy;
 
   return (
     <motion.div
@@ -388,8 +388,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
   );
 }
 
-function BulkOrdersSection({ onNavigate, superadmin = false }: { onNavigate?: (tab: string) => void; superadmin?: boolean }) {
-  const [dialog, setDialog] = useState<{ mode: "view" | "slip"; order: BulkOrder } | null>(null);
+function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder }: { onNavigate?: (tab: string) => void; superadmin?: boolean; onOpenOrder: (order: BulkOrder, tab: "overview" | "payments") => void }) {
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
   const { bulkOrders, addBulkOrder, nextOrderRef } = useBulkOrders();
@@ -449,14 +448,13 @@ function BulkOrdersSection({ onNavigate, superadmin = false }: { onNavigate?: (t
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, padding: "20px 28px 28px", alignItems: "stretch" }}>
             {bulkOrders.map((o, i) => (
               <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
-                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => setDialog({ mode: "view", order })} onSlip={(order) => setDialog({ mode: "slip", order })} />
+                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => onOpenOrder(order, "overview")} onSlip={(order) => onOpenOrder(order, "payments")} />
               </FadeUp>
             ))}
           </div>
 
         </div>
       </FadeUp>
-      <AnimatePresence>{dialog && <ProductionDialog open={!!dialog} title={dialog.mode === "view" ? "Order Details" : "Payment Details"} onClose={() => setDialog(null)}><OrderDialogContent order={dialog.order} mode={dialog.mode} /></ProductionDialog>}</AnimatePresence>
       <BulkOrderCreateModal
         open={showCreate}
         onClose={() => setShowCreate(false)}
@@ -2397,6 +2395,20 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
+  // "View Order" / "Payment" replace the whole page with the bulk order's own
+  // full page — the same pattern the Weavers page uses for a weaver's profile —
+  // rather than a cramped modal.
+  const [viewingOrder, setViewingOrder] = useState<{ order: BulkOrder; tab: "overview" | "payments" } | null>(null);
+
+  if (viewingOrder) {
+    return (
+      <BulkOrderDetailPage
+        order={viewingOrder.order}
+        initialTab={viewingOrder.tab}
+        onBack={() => setViewingOrder(null)}
+      />
+    );
+  }
 
   return (
     <div style={{ fontFamily: F.ui }}>
@@ -2404,7 +2416,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
       <StatsStrip />
       <AllSareesSection />
       <div style={{ background: T.silkCream, paddingBottom: 0 }}>
-        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} />
+        <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => setViewingOrder({ order, tab })} />
         <ActiveBatchesSection onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <ProductionAnalyticsSection />

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
 const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
   Edit2, Plus, Check, X, AlertTriangle, ChevronRight,
@@ -1321,7 +1322,7 @@ export function RatesPricingPage() {
       {/* ══════════════════════════════════════════════════════════════════ */}
       <div style={{ padding: "48px 56px" }}>
         <SectionTitle link={
-          <GoldLink><Download size={13} /> Download History →</GoldLink>
+          <DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>
         }>
           Rate Change History
         </SectionTitle>

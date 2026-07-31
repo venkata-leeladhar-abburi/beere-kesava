@@ -8,6 +8,7 @@ import {
   useSales, UnifiedSaree, SareeOrigin, SellerRank,
   isOutstanding, isSold, ageBucket, rankSellers, purchaseOutstanding,
 } from "./SalesContext";
+import { useDownloadsAllowed } from "./DownloadAccess";
 
 // ── Design tokens (same palette as the rest of the app) ──────────────────────
 const T = {
@@ -125,6 +126,8 @@ function exportCsv(filename: string, rows: (string | number)[][]) {
 }
 
 function ExportBtn({ onClick }: { onClick: () => void }) {
+  // Single choke point for every CSV export on this page.
+  if (!useDownloadsAllowed()) return null;
   return (
     <motion.button onClick={onClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
       style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 16px", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>

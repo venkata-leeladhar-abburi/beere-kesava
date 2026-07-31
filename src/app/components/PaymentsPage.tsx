@@ -11,6 +11,7 @@ import { usePO, PurchaseOrder } from "./POContext";
 import { PODocumentModal } from "./PODocumentModal";
 import { useFinishing } from "./FinishingContext";
 import { useMaterialIssue } from "./MaterialIssueContext";
+import { DownloadGate } from "./DownloadAccess";
 import {
   Download, TrendingUp, TrendingDown, AlertTriangle,
   UploadCloud, Search, ChevronDown, Eye, LayoutGrid, LayoutList, AlignJustify,
@@ -320,10 +321,12 @@ function FinancialSummarySection() {
               A clear view of all money coming in and going out this month.
             </p>
           </div>
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-            <Download size={15} />Download Report
-          </motion.button>
+          <DownloadGate>
+            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              <Download size={15} />Download Report
+            </motion.button>
+          </DownloadGate>
         </div>
 
         {/* Compact info-card grid — 4 stat cards side by side */}
@@ -1330,14 +1333,16 @@ function WeaverMakingChargesSection() {
                 Clear Selection ({selectedIds.size})
               </motion.button>
             )}
-            <motion.button whileHover={{ scale: 1.03 }} onClick={downloadExcelTemplate}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
-              <Download size={15} />Export Ledger Template
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
-              <Download size={15} />Download Weaver Payment Report
-            </motion.button>
+            <DownloadGate>
+              <motion.button whileHover={{ scale: 1.03 }} onClick={downloadExcelTemplate}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
+                <Download size={15} />Export Ledger Template
+              </motion.button>
+              <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+                <Download size={15} />Download Weaver Payment Report
+              </motion.button>
+            </DownloadGate>
           </div>
         </div>
 
@@ -2320,10 +2325,12 @@ function WholesaleCollectionsSection() {
               Track all outstanding and collected payments from wholesale customers.
             </p>
           </div>
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-            <Download size={15} />Download Collections Report
-          </motion.button>
+          <DownloadGate>
+            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              <Download size={15} />Download Collections Report
+            </motion.button>
+          </DownloadGate>
         </div>
 
         {/* ── 4 stat cards ────────────────────────────────────── */}
@@ -3614,10 +3621,12 @@ function VendorPaymentsSection() {
               Track payments made to raw material and thread suppliers. Record and verify all vendor bills.
             </p>
           </div>
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-            <Download size={15} />Download Vendor Payment Report
-          </motion.button>
+          <DownloadGate>
+            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              <Download size={15} />Download Vendor Payment Report
+            </motion.button>
+          </DownloadGate>
         </div>
 
         {/* ── 4 stat cards ───────────────────────────────────── */}
@@ -4027,19 +4036,21 @@ function PaymentAnalyticsSection() {
               Visual breakdown of cash flow, customer compliance, and top weaver earnings.
             </p>
           </div>
-          <button
-            style={{
-              display: "flex", alignItems: "center", gap: 7, padding: "10px 18px",
-              background: "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))",
-              border: `1.5px solid ${T.borderGold}`, borderRadius: 10, cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.22), rgba(200,155,71,0.08))"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))"; }}
-          >
-            <Download size={15} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
-          </button>
+          <DownloadGate>
+            <button
+              style={{
+                display: "flex", alignItems: "center", gap: 7, padding: "10px 18px",
+                background: "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))",
+                border: `1.5px solid ${T.borderGold}`, borderRadius: 10, cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.22), rgba(200,155,71,0.08))"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))"; }}
+            >
+              <Download size={15} color={T.antiqueGold} />
+              <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
+            </button>
+          </DownloadGate>
         </div>
 
         {/* ── 4 summary stat cards ───────────────────────────── */}
@@ -4429,9 +4440,11 @@ function PaymentHistorySection() {
               Complete history of all payments made and received. Use filters to find specific transactions.
             </p>
           </div>
-          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-            <Download size={15} color={T.antiqueGold} />Download All Transactions
-          </button>
+          <DownloadGate>
+            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              <Download size={15} color={T.antiqueGold} />Download All Transactions
+            </button>
+          </DownloadGate>
         </div>
 
         {/* ── 4 Summary stat cards ───────────────────────────── */}
