@@ -19,7 +19,7 @@ import {
   LayoutDashboard, ShoppingCart, Scissors, Factory, Package, CreditCard, BarChart as BarChartIcon, UserRound,
   Globe, Mail, Phone,
   ArrowDownCircle, ArrowUpCircle, Scale, UserCheck, Wallet, MinusCircle, BadgeCheck,
-  MapPin, Receipt, CircleAlert, CalendarClock,
+  MapPin, Receipt, CircleAlert, CalendarClock, ShoppingBag,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -1916,8 +1916,8 @@ function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkO
               {[
                 ["LR Number", dispatch?.lrNumber || "—"],
                 ["Transport", dispatch?.transportCompany || "—"],
-                ["Vehicle", dispatch?.vehicleNo || "—"],
-                ["Date", dispatch?.date || inv.invoiceDate],
+                ["Vehicle", dispatch?.vehicleNumber || "—"],
+                ["Date", dispatch?.dispatchDate || inv.invoiceDate],
               ].map(([k, v]) => (
                 <div key={k}>
                   <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{k}: </span>

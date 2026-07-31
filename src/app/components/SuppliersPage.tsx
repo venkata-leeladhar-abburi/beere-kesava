@@ -13,6 +13,7 @@ import {
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import {
   useSuppliers, Supplier, Purchase, SareeTag, formatINR, parseINR, initialsOf,
+  lineProfit, purchaseTotals, expandSareePieces,
 } from "./SupplierContext";
 import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "./ExternalPurchasesPage";
 
@@ -351,6 +352,8 @@ function AddSupplierModal({ onSave, onCancel, nextId }: {
 
 function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string; invoiceNumber: string })[] }) {
   const [preview, setPreview] = useState<string | null>(null);
+  // A line bought in bulk becomes one row per physical saree, each with its own code.
+  const pieces = expandSareePieces(rows);
 
   if (rows.length === 0) {
     return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees match this filter.</div>;
@@ -362,13 +365,13 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
           <thead>
             <tr style={{ background: T.silkCream }}>
-              {["Photo", "Saree ID", "Purchase Order", "Type", "Colour", "Weight", "Purchase Date", "Cost", "Sell %", "Final Amount"].map(h => (
+              {["Photo", "Saree ID", "Line Serial", "Purchase Order", "Type", "Colour", "Weight", "Purchase Date", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
                 <th key={h} style={{ padding: "11px 14px", fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((s, i) => (
+            {pieces.map((s, i) => (
               <tr key={`${s.purchaseId}-${s.id}-${i}`} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.45)" }}>
                 <td style={{ padding: "10px 14px" }}>
                   {s.imageUrl ? (
@@ -381,6 +384,10 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
                   )}
                 </td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.royalBurgundy }}>{s.id}</td>
+                <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.lineCode}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginLeft: 6 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
+                </td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.purchaseId}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.sareeType || "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.color || "—"}</td>
@@ -389,6 +396,7 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{formatINR(s.finalAmount)}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</td>
               </tr>
             ))}
           </tbody>
@@ -423,7 +431,7 @@ function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
         <tr style={{ background: T.silkCream }}>
-          {["Purchase Ref", "Invoice", "Sarees", "Bill Amount", "Payment", ""].map(h => (
+          {["Purchase Ref", "Invoice", "Sarees", "Buying Price", "Selling Price", "Profit", "Bill Amount", "Payment", ""].map(h => (
             <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
           ))}
         </tr>
@@ -446,6 +454,16 @@ function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
                 )}
               </td>
               <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{p.sareeCount}</td>
+              {(() => {
+                const t = purchaseTotals(p.sarees);
+                return (
+                  <>
+                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatINR(t.buying)}</td>
+                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatINR(t.selling)}</td>
+                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatINR(t.profit)}</td>
+                  </>
+                );
+              })()}
               <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</td>
               <td style={{ padding: "14px 16px" }}><PayStatusPill status={p.status} /></td>
               <td style={{ padding: "14px 16px", textAlign: "right" }}>
@@ -457,7 +475,7 @@ function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
             </tr>
             {expanded === p.id && (
               <tr>
-                <td colSpan={6} style={{ padding: 0, background: "rgba(247,242,234,0.7)", borderTop: `1px solid ${T.borderDef}` }}>
+                <td colSpan={9} style={{ padding: 0, background: "rgba(247,242,234,0.7)", borderTop: `1px solid ${T.borderDef}` }}>
                   <div style={{ padding: "6px 16px 16px" }}>
                     <SareeInventoryTable rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber }))} />
                   </div>
@@ -739,6 +757,26 @@ function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
                       {filteredSarees.length} saree{filteredSarees.length !== 1 ? "s" : ""}
                     </div>
                   </div>
+
+                  {/* Buying / selling / profit across the sarees currently listed */}
+                  {filteredSarees.length > 0 && (() => {
+                    const t = purchaseTotals(filteredSarees);
+                    return (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
+                        {[
+                          { label: "Pieces", text: String(t.pieces), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+                          { label: "Buying Price", text: formatINR(t.buying), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+                          { label: "Selling Price", text: formatINR(t.selling), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
+                          { label: "Profit", text: formatINR(t.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+                        ].map(({ label, text, color, bg, border }) => (
+                          <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
+                            <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+                            <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color }}>{text}</div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                     <div style={{ position: "relative", flex: "1 1 240px" }}>
                       <Search size={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
@@ -1425,17 +1463,27 @@ export function SuppliersPage() {
 
   const handleRaiseRequest = (form: PurchaseFormState, sarees: SareeTag[], request?: { urgency: "Normal" | "Urgent"; reason: string }) => {
     const s = suppliers.find(x => x.id === form.supplierId);
-    const estimated = parseINR(form.billAmount) || sarees.reduce((sum, x) => sum + x.finalAmount, 0);
+    const totals = purchaseTotals(sarees);
+    const estimated = parseINR(form.billAmount) || totals.selling;
     raiseRequest({
       supplierId: form.supplierId,
       supplierName: s?.name ?? form.supplier,
       requestedBy: "Admin",
       requestedDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
       sareeType: sarees[0]?.sareeType || s?.specialty || "—",
-      quantity: sarees.length,
+      quantity: totals.pieces,
       estimatedAmount: estimated,
       urgency: request?.urgency ?? "Normal",
       reason: request?.reason ?? "",
+      // Full purchase payload so the superadmin approves the real thing.
+      location: form.location,
+      gstNumber: form.gstNumber,
+      invoiceNumber: form.invoiceNumber,
+      purchaseDate: form.date,
+      billAmount: form.billAmount,
+      notes: form.notes,
+      invoiceFileName: form.invoiceFileName || undefined,
+      sarees,
     });
     setRequestFor(null);
     setToast(`Purchase request sent to superadmin for ${s?.name ?? form.supplier}`);

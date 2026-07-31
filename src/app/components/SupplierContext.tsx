@@ -66,6 +66,23 @@ export interface PurchaseRequest {
   decidedBy?: string;
   decidedDate?: string;
   decisionNote?: string;
+
+  // ── Full external-purchase payload ──────────────────────────────────────
+  // The admin fills in a complete purchase; the superadmin reviews exactly
+  // what will be created, and approving turns it into a real purchase.
+  /** Supplier city/state as captured on the request. */
+  location?: string;
+  gstNumber?: string;
+  invoiceNumber?: string;
+  /** Purchase date the admin entered, as typed. */
+  purchaseDate?: string;
+  billAmount?: string;
+  notes?: string;
+  invoiceFileName?: string;
+  /** Every saree line on the request, with pricing and quantity. */
+  sarees?: SareeTag[];
+  /** Purchase created when the request was approved. */
+  createdPurchaseId?: string;
 }
 
 export interface Supplier {
@@ -116,6 +133,28 @@ export function buildSareeCode(supplier: string, serial: number, invoiceNumber: 
   return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${inv}`;
 }
 
+/**
+ * Code for one physical saree inside a purchase line.
+ *
+ * A line is bought as N pieces of the same type under one serial number, but
+ * every piece is tagged individually, so the piece number is spliced into the
+ * line code just before the invoice segment:
+ *   line  RAVI-001-INV-RS-2026-118
+ *   piece RAVI-001-0001-INV-RS-2026-118
+ */
+export function buildSareePieceCode(supplier: string, serial: number, pieceNo: number, invoiceNumber: string): string {
+  const inv = (invoiceNumber || "").trim() || "NOINV";
+  return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${String(pieceNo).padStart(4, "0")}-${inv}`;
+}
+
+/** Same splice, but starting from an already-built line code. */
+export function pieceCodeFromLineCode(lineCode: string, pieceNo: number): string {
+  const parts = lineCode.split("-");
+  if (parts.length < 3) return `${lineCode}-${String(pieceNo).padStart(4, "0")}`;
+  const [prefix, serial, ...invParts] = parts;
+  return `${prefix}-${serial}-${String(pieceNo).padStart(4, "0")}-${invParts.join("-")}`;
+}
+
 export function computeFinalAmount(price: number, sellPercent: number, quantity = 1): number {
   const qty = quantity > 0 ? quantity : 1;
   return (price + (price * sellPercent) / 100) * qty;
@@ -124,6 +163,73 @@ export function computeFinalAmount(price: number, sellPercent: number, quantity 
 /** Total pieces across saree lines — each line may cover more than one piece. */
 export function totalPieces(sarees: SareeTag[]): number {
   return sarees.reduce((sum, s) => sum + (Number(s.quantity) || 1), 0);
+}
+
+/** What the line cost us: buying price per piece × pieces. */
+export function lineBuying(s: Pick<SareeTag, "price" | "quantity">): number {
+  return (Number(s.price) || 0) * (Number(s.quantity) || 1);
+}
+
+/** What the line should sell for — buying plus markup, across all pieces. */
+export function lineSelling(s: Pick<SareeTag, "price" | "sellPercent" | "quantity">): number {
+  return computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1);
+}
+
+export function lineProfit(s: Pick<SareeTag, "price" | "sellPercent" | "quantity">): number {
+  return lineSelling(s) - lineBuying(s);
+}
+
+/** One physical saree, expanded out of a purchase line. */
+export interface SareePiece extends SareeTag {
+  /** The line's own serial code, e.g. RAVI-001-INV-RS-2026-118. */
+  lineCode: string;
+  /** 1-based position of this piece within its line. */
+  pieceNo: number;
+  /** How many pieces the parent line covers. */
+  lineQuantity: number;
+}
+
+/**
+ * Expand purchase lines into individual sarees — one row per physical piece,
+ * each with its own code. Money is stated per piece.
+ */
+export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePiece)[] {
+  return sarees.flatMap(s => {
+    const qty = Number(s.quantity) || 1;
+    const price = Number(s.price) || 0;
+    const sellPercent = Number(s.sellPercent) || 0;
+    return Array.from({ length: qty }, (_, i) => ({
+      ...s,
+      id: pieceCodeFromLineCode(s.id, i + 1),
+      lineCode: s.id,
+      pieceNo: i + 1,
+      lineQuantity: qty,
+      quantity: 1,
+      price,
+      finalAmount: computeFinalAmount(price, sellPercent, 1),
+    }));
+  });
+}
+
+export interface PurchaseTotals {
+  pieces: number;
+  buying: number;
+  selling: number;
+  profit: number;
+}
+
+/** Roll a set of saree lines up into buying / selling / profit totals. */
+export function purchaseTotals(sarees: Pick<SareeTag, "price" | "sellPercent" | "quantity">[]): PurchaseTotals {
+  return sarees.reduce<PurchaseTotals>(
+    (acc, s) => {
+      acc.pieces += Number(s.quantity) || 1;
+      acc.buying += lineBuying(s);
+      acc.selling += lineSelling(s);
+      acc.profit += lineProfit(s);
+      return acc;
+    },
+    { pieces: 0, buying: 0, selling: 0, profit: 0 },
+  );
 }
 
 export function initialsOf(name: string): string {
@@ -194,8 +300,36 @@ const SEED_PAYMENTS: SupplierPayment[] = [
   { id: "SPY-006", supplierId: "SUP-005", date: "13 Jun 2026", amount: 22500,  mode: "Cash",          reference: "CASH-0091",  purchaseId: "EXT-2026-0005", notes: "Paid on delivery" },
 ];
 
+/** Saree lines for a seeded request, priced like a real submission. */
+function requestSarees(supplier: string, invoice: string, date: string, sareeType: string, lines: { qty: number; price: number; sell: number; color: string; weight: string }[]): SareeTag[] {
+  return lines.map((l, i) => ({
+    id: buildSareeCode(supplier, i + 1, invoice),
+    weight: l.weight,
+    date,
+    sareeType,
+    color: l.color,
+    price: l.price,
+    sellPercent: l.sell,
+    quantity: l.qty,
+    finalAmount: computeFinalAmount(l.price, l.sell, l.qty),
+    notes: "",
+  }));
+}
+
 const SEED_REQUESTS: PurchaseRequest[] = [
-  { id: "EPR-001", supplierId: "SUP-004", supplierName: "Kanchipuram House", requestedBy: "Admin", requestedDate: "20 Jul 2026", sareeType: "Kanjivaram", quantity: 20, estimatedAmount: 240000, urgency: "Urgent", reason: "Bridal season stock running low.", status: "pending" },
+  {
+    id: "EPR-001", supplierId: "SUP-004", supplierName: "Kanchipuram House", requestedBy: "Admin",
+    requestedDate: "20 Jul 2026", sareeType: "Kanjivaram", quantity: 20, estimatedAmount: 240000,
+    urgency: "Urgent", reason: "Bridal season stock running low.", status: "pending",
+    location: "Kanchipuram, TN", gstNumber: "33KNCH3456M1Z1", invoiceNumber: "INV-KH-2026-244",
+    purchaseDate: "20 Jul 2026", billAmount: "₹2,40,000",
+    notes: "Bridal collection for the festive window. Confirm delivery before 10 Aug.",
+    sarees: requestSarees("Kanchipuram House", "INV-KH-2026-244", "20 Jul 2026", "Kanjivaram", [
+      { qty: 8, price: 9000,  sell: 28, color: "Maroon", weight: "890g" },
+      { qty: 7, price: 10500, sell: 25, color: "Gold",   weight: "915g" },
+      { qty: 5, price: 12000, sell: 30, color: "Red",    weight: "940g" },
+    ]),
+  },
   { id: "EPR-002", supplierId: "SUP-006", supplierName: "Pochampally Coop",  requestedBy: "Admin", requestedDate: "12 Jul 2026", sareeType: "Patola",     quantity: 12, estimatedAmount: 96000,  urgency: "Normal", reason: "Replenish Ikat range for the shop floor.", status: "approved", decidedBy: "Superadmin", decidedDate: "14 Jul 2026" },
 ];
 
@@ -296,9 +430,32 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const decideRequest = useCallback((id: string, status: "approved" | "rejected", decidedBy: string, note?: string) => {
     const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    setRequests(prev => prev.map(r =>
-      r.id === id ? { ...r, status, decidedBy, decidedDate: today, decisionNote: note } : r
-    ));
+    setRequests(prev => prev.map(r => {
+      if (r.id !== id) return r;
+      let createdPurchaseId: string | undefined;
+      // Approving a request turns it into a real external purchase, exactly as
+      // the admin submitted it — nothing to re-key on the superadmin's side.
+      if (status === "approved" && r.status === "pending" && r.sarees && r.sarees.length > 0) {
+        createdPurchaseId = `EXT-2026-${String(Date.now()).slice(-4)}`;
+        const purchase: Purchase = {
+          id: createdPurchaseId,
+          supplierId: r.supplierId || undefined,
+          supplier: r.supplierName,
+          location: r.location ?? "—",
+          date: r.purchaseDate || r.requestedDate,
+          sareeCount: totalPieces(r.sarees),
+          gstNumber: r.gstNumber ?? "",
+          invoiceNumber: r.invoiceNumber ?? "",
+          billAmount: r.billAmount || `₹${Math.round(purchaseTotals(r.sarees).selling).toLocaleString("en-IN")}`,
+          status: "Pending",
+          notes: r.notes ?? "",
+          invoiceFileName: r.invoiceFileName,
+          sarees: r.sarees,
+        };
+        setPurchases(prevP => [purchase, ...prevP]);
+      }
+      return { ...r, status, decidedBy, decidedDate: today, decisionNote: note, createdPurchaseId };
+    }));
   }, []);
 
   const statsFor = useCallback((supplierId: string) => {

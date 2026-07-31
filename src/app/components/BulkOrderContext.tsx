@@ -23,6 +23,7 @@ export interface BulkOrder {
   paymentStatus?: "pending" | "partial" | "paid";
   amountDue?: number;
   amountPaid?: number;
+  batches?: string[];
   address?: string;
   phone?: string;
   gstCode?: string;

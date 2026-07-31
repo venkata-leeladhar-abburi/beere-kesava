@@ -20,6 +20,8 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import {
   useSuppliers, Supplier, SareeTag, Purchase,
   formatINR, supplierPrefix, buildSareeCode, computeFinalAmount, totalPieces,
+  lineBuying, lineSelling, lineProfit, purchaseTotals,
+  expandSareePieces, pieceCodeFromLineCode,
 } from "./SupplierContext";
 
 const F = {
@@ -193,11 +195,8 @@ export function PurchaseFormModal({
     if (file) set("invoiceFileName", file.name);
   };
 
-  const pieceCount = sareeDetails.reduce((sum, s) => sum + (Number(s.quantity) || 1), 0);
-  const sareeTotal = sareeDetails.reduce(
-    (sum, s) => sum + computeFinalAmount(Number(s.price) || 0, Number(s.sellPercent) || 0, Number(s.quantity) || 1),
-    0,
-  );
+  const totals = purchaseTotals(sareeDetails);
+  const pieceCount = totals.pieces;
 
   const valid =
     form.supplier.trim() !== "" &&
@@ -549,12 +548,32 @@ export function PurchaseFormModal({
                 </div>
               )}
 
+              {/* Overall stats for every saree in this purchase */}
+              {sareeDetails.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 12 }}>
+                  {[
+                    { label: "Total Buying", value: totals.buying, color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+                    { label: "Total Selling", value: totals.selling, color: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },
+                    { label: "Total Profit", value: totals.profit, color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+                  ].map(({ label, value, color, bg, border }) => (
+                    <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>
+                        {label}
+                      </div>
+                      <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color }}>{formatINR(value)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {sareeDetails.map((s, idx) => {
                   const price = Number(s.price) || 0;
                   const sellPercent = Number(s.sellPercent) || 0;
                   const quantity = Number(s.quantity) || 1;
-                  const finalAmount = computeFinalAmount(price, sellPercent, quantity);
+                  const buying = lineBuying(s);
+                  const selling = lineSelling(s);
+                  const profit = lineProfit(s);
                   const code = buildSareeCode(form.supplier, idx + 1, form.invoiceNumber);
                   return (
                     <div
@@ -619,9 +638,10 @@ export function PurchaseFormModal({
                           />
                         </div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 0.7fr 1fr 1.1fr", gap: 10, marginBottom: 10 }}>
+                      {/* Price per quantity × quantity = buying price */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
                         <div>
-                          <label style={labelStyle}>Price (₹) / pc</label>
+                          <label style={labelStyle}>Price / Quantity (₹)</label>
                           <input
                             type="number"
                             style={{ ...inputStyle, height: 36, fontSize: 12 }}
@@ -642,6 +662,19 @@ export function PurchaseFormModal({
                           />
                         </div>
                         <div>
+                          <label style={labelStyle}>Buying Price</label>
+                          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
+                            {formatINR(buying)}
+                          </div>
+                          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+                            {formatINR(price)} × {quantity}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Markup drives selling price and profit */}
+                      <div style={{ display: "grid", gridTemplateColumns: "0.75fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                        <div>
                           <label style={labelStyle}>Sell % (markup)</label>
                           <input
                             type="number"
@@ -652,15 +685,43 @@ export function PurchaseFormModal({
                           />
                         </div>
                         <div>
-                          <label style={labelStyle}>Final Amount</label>
+                          <label style={labelStyle}>Selling Price</label>
                           <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
-                            {formatINR(finalAmount)}
+                            {formatINR(selling)}
                           </div>
                           <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
-                            {formatINR(computeFinalAmount(price, sellPercent))} × {quantity} pc
+                            {formatINR(computeFinalAmount(price, sellPercent))} × {quantity}
+                          </div>
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Profit</label>
+                          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
+                            {formatINR(profit)}
+                          </div>
+                          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+                            selling − buying
                           </div>
                         </div>
                       </div>
+                      {/* Every piece under this serial gets its own tag code */}
+                      <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "9px 11px", marginBottom: 10 }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 6 }}>
+                          Saree codes ({quantity})
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                          {Array.from({ length: Math.min(quantity, 24) }, (_, p) => (
+                            <span key={p} style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "#FFF", border: `1px solid ${T.borderGold}`, borderRadius: 5, padding: "2px 7px" }}>
+                              {pieceCodeFromLineCode(code, p + 1)}
+                            </span>
+                          ))}
+                          {quantity > 24 && (
+                            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, alignSelf: "center" }}>
+                              +{quantity - 24} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 10 }}>
                         <div>
                           <label style={labelStyle}>Notes (optional)</label>
@@ -716,8 +777,10 @@ export function PurchaseFormModal({
                   <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>
                     Total — {pieceCount} piece{pieceCount !== 1 ? "s" : ""}
                   </span>
-                  <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: T.royalBurgundy }}>
-                    {formatINR(sareeTotal)}
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                    buying {formatINR(totals.buying)} · selling{" "}
+                    <strong style={{ color: T.royalBurgundy }}>{formatINR(totals.selling)}</strong> · profit{" "}
+                    <strong style={{ color: T.green }}>{formatINR(totals.profit)}</strong>
                   </span>
                 </div>
               )}
@@ -791,6 +854,8 @@ function SareeListModal({
   onPrint: (saree: SareeTag) => void;
   onPrintAll: () => void;
 }) {
+  // One row per physical saree — a line bought in bulk is tagged piece by piece.
+  const pieces = expandSareePieces(purchase.sarees);
   return (
     <AnimatePresence>
       <div
@@ -868,7 +933,7 @@ function SareeListModal({
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: T.silkCream }}>
-                  {["S.No", "Saree Code", "Saree Type", "Colour", "Weight", "Price / pc", "Qty", "Sell %", "Final Amount", "Notes", "Barcode"].map((h) => (
+                  {["S.No", "Saree Code", "Line Serial", "Saree Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit", "Notes", "Barcode"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -890,13 +955,19 @@ function SareeListModal({
                 </tr>
               </thead>
               <tbody>
-                {purchase.sarees.map((s, i) => (
+                {pieces.map((s, i) => (
                   <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                       {i + 1}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>
                       {s.id}
+                    </td>
+                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" as const }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.lineCode}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginLeft: 6 }}>
+                        pc {s.pieceNo}/{s.lineQuantity}
+                      </span>
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.sareeType || "—"}
@@ -907,17 +978,17 @@ function SareeListModal({
                     <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.weight}
                     </td>
-                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
-                      {formatINR(s.price)}
-                    </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
-                      {s.quantity ?? 1}
+                      {formatINR(s.price)}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>
                       {s.sellPercent}%
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>
                       {formatINR(s.finalAmount)}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>
+                      {formatINR(lineProfit(s))}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200 }}>
                       {s.notes || "—"}
@@ -948,6 +1019,23 @@ function SareeListModal({
                   </tr>
                 ))}
               </tbody>
+              {(() => {
+                const t = purchaseTotals(purchase.sarees);
+                return (
+                  <tfoot>
+                    <tr style={{ background: T.silkCream, borderTop: `1px solid ${T.borderDef}` }}>
+                      <td colSpan={6} style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+                        Totals — {t.pieces} piece{t.pieces !== 1 ? "s" : ""}
+                      </td>
+                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatINR(t.buying)}</td>
+                      <td style={{ padding: "10px 14px" }} />
+                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatINR(t.selling)}</td>
+                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>{formatINR(t.profit)}</td>
+                      <td colSpan={2} style={{ padding: "10px 14px" }} />
+                    </tr>
+                  </tfoot>
+                );
+              })()}
             </table>
           </div>
 
@@ -1472,6 +1560,9 @@ export function ExternalPurchasesPage() {
                   "Sarees",
                   "GST Number",
                   "Invoice Number",
+                  "Buying Price",
+                  "Selling Price",
+                  "Profit",
                   "Bill Amount",
                   "Payment Status",
                   "Actions",
@@ -1562,6 +1653,22 @@ export function ExternalPurchasesPage() {
                       {row.invoiceNumber || "—"}
                     </span>
                   </td>
+                  {(() => {
+                    const t = purchaseTotals(row.sarees);
+                    return (
+                      <>
+                        <td style={{ padding: "14px 16px" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatINR(t.buying)}</span>
+                        </td>
+                        <td style={{ padding: "14px 16px" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatINR(t.selling)}</span>
+                        </td>
+                        <td style={{ padding: "14px 16px" }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatINR(t.profit)}</span>
+                        </td>
+                      </>
+                    );
+                  })()}
                   <td style={{ padding: "14px 16px" }}>
                     <span
                       style={{
@@ -1641,7 +1748,7 @@ export function ExternalPurchasesPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={13}
                     style={{
                       padding: "40px 16px",
                       textAlign: "center",
@@ -1828,7 +1935,7 @@ export function ExternalPurchasesPage() {
 
                 <div>
                   <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, marginBottom: 8 }}>
-                    Saree Barcodes ({detailRow.sarees.length})
+                    Saree Barcodes ({totalPieces(detailRow.sarees)})
                   </div>
                   <button
                     onClick={() => setSareeListPurchase(detailRow)}
