@@ -6,6 +6,10 @@ import {
 } from "lucide-react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../constants/weaverImages";
 import { usePO, PurchaseOrder } from "./POContext";
+import {
+  useSuppliers, PurchaseRequest, formatINR,
+  purchaseTotals, expandSareePieces, lineProfit,
+} from "./SupplierContext";
 import { PODocumentModal } from "./PODocumentModal";
 import { toast } from "sonner";
 
@@ -614,6 +618,196 @@ function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onAction: (id
   );
 }
 
+// ─── External purchase request card ───────────────────────────────────────────
+// Shows the whole purchase the admin filled in — supplier, invoice, and every
+// saree line with its codes and pricing — so the superadmin approves the exact
+// entry that will be created.
+function ExternalPurchaseCard({
+  req,
+  onApprove,
+  onReject,
+}: {
+  req: PurchaseRequest;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const sarees = req.sarees ?? [];
+  const totals = purchaseTotals(sarees);
+  const pieces = expandSareePieces(sarees);
+  const urgent = req.urgency === "Urgent";
+
+  const meta: { label: string; value: string }[] = [
+    { label: "Supplier ID", value: req.supplierId || "—" },
+    { label: "Location", value: req.location || "—" },
+    { label: "GST Number", value: req.gstNumber || "—" },
+    { label: "Invoice Number", value: req.invoiceNumber || "—" },
+    { label: "Purchase Date", value: req.purchaseDate || req.requestedDate },
+    { label: "Bill Amount", value: req.billAmount || "—" },
+    { label: "Raised By", value: req.requestedBy },
+    { label: "Raised On", value: req.requestedDate },
+  ];
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      style={{
+        background: "#FFF", borderRadius: 16,
+        border: "1px solid " + T.borderDef,
+        borderLeft: `4px solid ${urgent ? T.crimson : T.antiqueGold}`,
+        boxShadow: "0 2px 12px rgba(44,24,16,0.07)",
+        padding: "20px 24px",
+        display: "flex", flexDirection: "column", gap: 14,
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 6, padding: "3px 9px" }}>
+              {req.id}
+            </span>
+            {urgent && (
+              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: "#FFF", background: T.crimson, borderRadius: 6, padding: "3px 8px" }}>
+                URGENT
+              </span>
+            )}
+            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: T.cream, borderRadius: 6, padding: "3px 8px" }}>
+              External Purchase
+            </span>
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>
+            <Package size={15} color={T.antiqueGold} /> {req.supplierName}
+          </div>
+          <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+            {req.location || "—"} · {totals.pieces} saree{totals.pieces !== 1 ? "s" : ""} · {sarees.length} line{sarees.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, letterSpacing: 1.2, marginBottom: 4 }}>ESTIMATED VALUE</div>
+          <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.antiqueGold }}>
+            {formatINR(req.estimatedAmount)}
+          </div>
+        </div>
+      </div>
+
+      {/* Money summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
+        {[
+          { label: "Pieces", text: String(totals.pieces), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+          { label: "Buying Price", text: formatINR(totals.buying), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+          { label: "Selling Price", text: formatINR(totals.selling), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
+          { label: "Profit", text: formatINR(totals.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+        ].map(({ label, text, color, bg, border }) => (
+          <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, letterSpacing: 0.6, marginBottom: 4 }}>
+              {label.toUpperCase()}
+            </div>
+            <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color }}>{text}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Purchase meta */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px" }}>
+        {meta.map(({ label, value }) => (
+          <div key={label}>
+            <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, letterSpacing: 0.8, marginBottom: 3 }}>{label.toUpperCase()}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, wordBreak: "break-word" }}>{value}</div>
+          </div>
+        ))}
+      </div>
+
+      {req.reason && (
+        <div style={{ background: T.cream, borderRadius: 10, padding: "10px 14px" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe }}>REASON · </span>
+          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{req.reason}</span>
+        </div>
+      )}
+      {req.notes && (
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+          <strong style={{ color: T.luxuryBrown }}>Notes:</strong> {req.notes}
+        </div>
+      )}
+
+      {/* Saree lines */}
+      {sarees.length > 0 && (
+        <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden" }}>
+          <button
+            onClick={() => setOpen(o => !o)}
+            style={{
+              width: "100%", background: T.silkCream, border: "none", cursor: "pointer",
+              padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between",
+              fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown,
+            }}
+          >
+            <span>Saree details — {totals.pieces} saree{totals.pieces !== 1 ? "s" : ""} to be tagged</span>
+            <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.royalBurgundy }}>
+              {open ? "Hide" : "View all"}
+            </span>
+          </button>
+          {open && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
+                <thead>
+                  <tr style={{ background: T.warmIvory }}>
+                    {["S.No", "Saree Code", "Line Serial", "Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
+                      <th key={h} style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: 0.7, whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                        {h.toUpperCase()}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {pieces.map((s, i) => (
+                    <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{i + 1}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{s.id}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 10.5, color: T.taupe, whiteSpace: "nowrap" }}>
+                        {s.lineCode} <span style={{ fontSize: 9.5 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
+                      </td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{s.sareeType || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.weight || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.sellPercent}%</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.antiqueGold }}>{formatINR(s.finalAmount)}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: T.silkCream }}>
+                    <td colSpan={6} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>
+                      Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
+                    </td>
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>{formatINR(totals.buying)}</td>
+                    <td />
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.antiqueGold }}>{formatINR(totals.selling)}</td>
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.green }}>{formatINR(totals.profit)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+        <GreenBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onApprove(req.id)}>
+          <Check size={14} /> Approve &amp; Create Purchase
+        </GreenBtn>
+        <CrimsonBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onReject(req.id)}>
+          <X size={14} /> Reject
+        </CrimsonBtn>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── History type pill ────────────────────────────────────────────────────────
 function TypePill({ type, typeColor }: { type: string; typeColor: string }) {
   const isPO = type === "Purchase Order";
@@ -633,7 +827,7 @@ function TypePill({ type, typeColor }: { type: string; typeColor: string }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ApprovalsPage() {
-  const [activeTab, setActiveTab] = useState<"po" | "warp" | "rate">("po");
+  const [activeTab, setActiveTab] = useState<"po" | "ext" | "warp" | "rate">("po");
   const [poList, setPoList]       = useState(PO_DATA);
   const [warpList, setWarpList]   = useState(WARP_DATA);
   const [rateList, setRateList]   = useState(RATE_DATA);
@@ -642,6 +836,18 @@ export function ApprovalsPage() {
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
 
   const { pos, approvePO, rejectPO } = usePO();
+  const { requests, decideRequest } = useSuppliers();
+  const pendingRequests = requests.filter(r => r.status === "pending");
+
+  const decideExternal = (id: string, status: "approved" | "rejected") => {
+    decideRequest(id, status, "Superadmin");
+    const req = requests.find(r => r.id === id);
+    toast[status === "approved" ? "success" : "info"](
+      status === "approved"
+        ? `Approved — external purchase created for ${req?.supplierName ?? "supplier"}`
+        : `Rejected the purchase request from ${req?.supplierName ?? "supplier"}`
+    );
+  };
 
   // Build combined PO list: context pending POs first, then static ones not duplicated
   const contextPendingIds = new Set(pos.filter(p => p.status === "pending").map(p => p.id));
@@ -668,15 +874,16 @@ export function ApprovalsPage() {
     ? pos.find(p => p.id === viewDocPOId) ?? null
     : null;
 
-  const allEmpty = combinedPOList.length === 0 && warpList.length === 0 && rateList.length === 0;
+  const allEmpty = combinedPOList.length === 0 && warpList.length === 0 && rateList.length === 0 && pendingRequests.length === 0;
 
   const HIST_FILTERS = ["All History", "Purchase Orders", "Warp Requests", "Rate Changes", "Approved Only", "Rejected Only"];
   const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];
 
-  const tabs: { key: "po" | "warp" | "rate"; label: string; count: number }[] = [
-    { key: "po",   label: "Purchase Orders", count: combinedPOList.length },
-    { key: "warp", label: "Warp Requests",   count: warpList.length },
-    { key: "rate", label: "Rate Changes",    count: rateList.length },
+  const tabs: { key: "po" | "ext" | "warp" | "rate"; label: string; count: number }[] = [
+    { key: "po",   label: "Purchase Orders",   count: combinedPOList.length },
+    { key: "ext",  label: "External Purchases", count: pendingRequests.length },
+    { key: "warp", label: "Warp Requests",     count: warpList.length },
+    { key: "rate", label: "Rate Changes",      count: rateList.length },
   ];
 
   return (
@@ -719,7 +926,7 @@ export function ApprovalsPage() {
               &amp; Pending Actions
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, lineHeight: 1.6 }}>
-              Review and action purchase orders, warp material requests, and rate change proposals from your admin team.
+              Review and action purchase orders, external purchase requests, warp material requests, and rate change proposals from your admin team.
             </div>
           </div>
 
@@ -732,7 +939,16 @@ export function ApprovalsPage() {
               color: "#FFF", display: "flex", alignItems: "center", gap: 8,
             }}>
               <ShoppingCart size={14} color={T.antiqueGold} />
-              3 Purchase Orders Pending
+              {combinedPOList.length} Purchase Order{combinedPOList.length !== 1 ? "s" : ""} Pending
+            </div>
+            <div style={{
+              background: "rgba(200,155,71,0.18)", backdropFilter: "blur(12px)",
+              border: "1px solid rgba(200,155,71,0.30)", borderRadius: 12,
+              padding: "10px 18px", fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+              color: "#FFF", display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <Package size={14} color={T.goldLight} />
+              {pendingRequests.length} External Purchase{pendingRequests.length !== 1 ? "s" : ""} Pending
             </div>
             <div style={{
               background: "rgba(192,57,43,0.15)", backdropFilter: "blur(12px)",
@@ -765,7 +981,7 @@ export function ApprovalsPage() {
         zIndex: 20,
         position: "relative",
         display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr 1fr",
+        gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
         boxShadow: "0 8px 32px rgba(44,9,19,0.32)",
       }}>
         {/* Col 1 */}
@@ -773,7 +989,9 @@ export function ApprovalsPage() {
           <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
             TOTAL PENDING
           </div>
-          <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>8</div>
+          <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>
+            {combinedPOList.length + pendingRequests.length + warpList.length + rateList.length}
+          </div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
             Require your action today
           </div>
@@ -784,9 +1002,20 @@ export function ApprovalsPage() {
           <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
             PURCHASE ORDERS
           </div>
-          <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>3</div>
+          <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{combinedPOList.length}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
             From admin · Awaiting approval
+          </div>
+        </div>
+
+        {/* Col — external purchase requests */}
+        <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+            EXTERNAL PURCHASES
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{pendingRequests.length}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
+            {formatINR(pendingRequests.reduce((sum, r) => sum + r.estimatedAmount, 0))} to approve
           </div>
         </div>
 
@@ -888,6 +1117,41 @@ export function ApprovalsPage() {
                           onApprove={id => approvePO(id)}
                           onReject={id => rejectPO(id)}
                           onViewDoc={pos.some(p => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
+
+          {/* — External Purchase Requests — */}
+          {activeTab === "ext" && (
+            <motion.div
+              key="ext"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {pendingRequests.length === 0 ? (
+                <EmptyState message="No pending external purchase requests" />
+              ) : (
+                <>
+                  <BulkActionStrip
+                    count={pendingRequests.length}
+                    noun="external purchase requests"
+                    onApproveAll={() => pendingRequests.forEach(r => decideExternal(r.id, "approved"))}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <AnimatePresence>
+                      {pendingRequests.map(req => (
+                        <ExternalPurchaseCard
+                          key={req.id}
+                          req={req}
+                          onApprove={id => decideExternal(id, "approved")}
+                          onReject={id => decideExternal(id, "rejected")}
                         />
                       ))}
                     </AnimatePresence>

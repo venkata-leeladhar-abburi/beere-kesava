@@ -1531,9 +1531,11 @@ function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null; onClos
 function POTrackerSection({
   onCreatePO,
   onViewPO,
+  onNavigate,
 }: {
   onCreatePO: () => void;
   onViewPO: (po: PurchaseOrder) => void;
+  onNavigate?: (tab: string, ctx?: any) => void;
 }) {
   const { px } = useContext(MobileCtx);
   const { pos } = usePO();
@@ -3155,6 +3157,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           <POTrackerSection
             onCreatePO={() => setShowCreatePO(true)}
             onViewPO={(po) => setViewPO(po)}
+            onNavigate={onNavigate}
           />
           <StockOverview onSeeFullReports={() => setShowFullReports(true)} />
           <IssuedThisMonthCard onNavigate={onNavigate} />
