@@ -3,11 +3,12 @@ import { motion, useInView, AnimatePresence } from "motion/react";
 import {
   Search, Plus, Eye, MapPin, Phone, Building2, Package, IndianRupee,
   AlertTriangle, CheckCircle2, ArrowLeft, FileText, TrendingUp, Star,
-  X, Send, Clock, Wallet, Image as ImageIcon,
+  X, Send, Clock, Wallet, Image as ImageIcon, Trophy, Percent, Layers,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
+  RadialBarChart, RadialBar,
 } from "recharts";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import {
@@ -924,6 +925,449 @@ function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 // Main page
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Supplier analytics — every chart reads the real purchase / saree-line /
+// payment records, scoped by one shared timeline control.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const TYPE_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "#2D6B6B", "#8A2440"];
+const MODE_FILLS: Record<string, string> = {
+  "Bank Transfer": T.royalBurgundy, "UPI": T.antiqueGold, "Cash": T.green, "Cheque": "#5A3E6B",
+};
+const BILL_STATUS_META: Record<string, { color: string; bg: string }> = {
+  Paid: { color: T.greenMid, bg: T.greenBg },
+  Partial: { color: "#E67E22", bg: "rgba(230,126,34,0.12)" },
+  Pending: { color: T.crimson, bg: T.crimsonBg },
+};
+
+function SupplierAnalytics() {
+  const { suppliers, purchases, payments } = useSuppliers();
+  const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+
+  const buys = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
+  const pays = useMemo(() => payments.filter(p => matchesDateFilter(p.date, filter)), [payments, filter]);
+
+  const periodLabel = useMemo(() => {
+    if (filter.mode === "day" && filter.day) return new Date(filter.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
+    if (filter.mode === "month" && filter.month) { const [y, m] = filter.month.split("-"); return `${MONTH_ABBR[+m - 1]} ${y}`; }
+    if (filter.mode === "year" && filter.year) return filter.year;
+    return "All time";
+  }, [filter]);
+
+  const billed = buys.reduce((a, p) => a + parseINR(p.billAmount), 0);
+  const settled = pays.reduce((a, p) => a + p.amount, 0);
+  const pieces = buys.reduce((a, p) => a + (p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount), 0);
+  const settlementRate = billed ? Math.min(100, Math.round((settled / billed) * 100)) : 0;
+
+  // Cost vs expected retail across every saree line — the real margin picture.
+  const margin = useMemo(() => {
+    let cost = 0, retail = 0;
+    buys.forEach(p => p.sarees.forEach(s => {
+      const qty = Number(s.quantity) || 1;
+      cost += s.price * qty;
+      retail += s.finalAmount;
+    }));
+    return { cost, retail, gross: retail - cost, pct: cost ? ((retail - cost) / cost) * 100 : 0 };
+  }, [buys]);
+
+  const monthly = useMemo(() => {
+    const m = new Map<string, { spend: number; pieces: number; orders: number }>();
+    buys.forEach(p => {
+      const d = new Date(p.date);
+      if (isNaN(d.getTime())) return;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const e = m.get(key) || { spend: 0, pieces: 0, orders: 0 };
+      e.spend += parseINR(p.billAmount);
+      e.pieces += p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount;
+      e.orders += 1;
+      m.set(key, e);
+    });
+    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, v]) => ({ month: `${MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`, ...v }));
+  }, [buys]);
+
+  const trendDelta = useMemo(() => {
+    if (monthly.length < 2) return null;
+    const a = monthly[monthly.length - 1].spend, b = monthly[monthly.length - 2].spend;
+    return b ? Math.round(((a - b) / b) * 100) : null;
+  }, [monthly]);
+
+  // Purchase value + margin per saree type, from the individual saree lines.
+  const byType = useMemo(() => {
+    const m = new Map<string, { cost: number; retail: number; qty: number }>();
+    buys.forEach(p => p.sarees.forEach(s => {
+      const qty = Number(s.quantity) || 1;
+      const e = m.get(s.sareeType) || { cost: 0, retail: 0, qty: 0 };
+      e.cost += s.price * qty; e.retail += s.finalAmount; e.qty += qty;
+      m.set(s.sareeType, e);
+    }));
+    return [...m.entries()]
+      .map(([type, v], i) => ({
+        type, ...v,
+        markup: v.cost ? Math.round(((v.retail - v.cost) / v.cost) * 100) : 0,
+        avgCost: v.qty ? Math.round(v.cost / v.qty) : 0,
+        fill: TYPE_FILLS[i % TYPE_FILLS.length],
+      }))
+      .sort((a, b) => b.cost - a.cost);
+  }, [buys]);
+
+  const perSupplier = useMemo(() => {
+    const m = new Map<string, { billed: number; pieces: number; orders: number; paid: number }>();
+    const touch = (id: string) => {
+      if (!m.has(id)) m.set(id, { billed: 0, pieces: 0, orders: 0, paid: 0 });
+      return m.get(id)!;
+    };
+    buys.forEach(p => {
+      const id = p.supplierId ?? suppliers.find(s => s.name === p.supplier)?.id;
+      if (!id) return;
+      const e = touch(id);
+      e.billed += parseINR(p.billAmount);
+      e.pieces += p.sarees.length ? p.sarees.reduce((s, x) => s + (Number(x.quantity) || 1), 0) : p.sareeCount;
+      e.orders += 1;
+    });
+    pays.forEach(p => { if (m.has(p.supplierId)) touch(p.supplierId).paid += p.amount; });
+    return [...m.entries()].map(([id, v]) => {
+      const s = suppliers.find(x => x.id === id);
+      return {
+        id,
+        name: s?.name ?? id,
+        short: (s?.name ?? id).length > 17 ? (s!.name).slice(0, 16) + "…" : (s?.name ?? id),
+        initials: s?.initials ?? "??",
+        specialty: s?.specialty ?? "—",
+        terms: s?.terms ?? "—",
+        rating: s?.rating ?? 0,
+        ...v,
+        outstanding: Math.max(0, v.billed - v.paid),
+        avgPiece: v.pieces ? Math.round(v.billed / v.pieces) : 0,
+      };
+    }).sort((a, b) => b.billed - a.billed);
+  }, [buys, pays, suppliers]);
+
+  const topSuppliers = perSupplier.slice(0, 5);
+  const top5Share = billed ? Math.round((topSuppliers.reduce((a, s) => a + s.billed, 0) / billed) * 100) : 0;
+  const dueList = perSupplier.filter(s => s.outstanding > 0);
+  const totalDue = dueList.reduce((a, s) => a + s.outstanding, 0);
+
+  const billStatus = useMemo(() => ["Paid", "Partial", "Pending"]
+    .map(st => ({
+      status: st,
+      count: buys.filter(p => p.status === st).length,
+      value: buys.filter(p => p.status === st).reduce((a, p) => a + parseINR(p.billAmount), 0),
+    }))
+    .filter(d => d.count > 0), [buys]);
+
+  const byMode = useMemo(() => {
+    const m = new Map<string, number>();
+    pays.forEach(p => m.set(p.mode, (m.get(p.mode) || 0) + p.amount));
+    return [...m.entries()]
+      .map(([mode, amount]) => ({ mode, amount, fill: MODE_FILLS[mode] ?? T.taupe }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [pays]);
+
+  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  const card: React.CSSProperties = {
+    background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`,
+    padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+  };
+  const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown };
+  const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
+  const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
+
+  return (
+    <div style={{ padding: "48px 56px 0" }}>
+      <FadeUp>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
+          <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Supplier Analytics</h2>
+          <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+        </div>
+
+        {/* Timeline scope — drives every chart in this section */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <DateFilterBar filter={filter} onChange={setFilter} />
+          <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
+            {[
+              { label: "PURCHASED", value: L(billed), color: T.royalBurgundy },
+              { label: "SAREES IN", value: String(pieces), color: T.luxuryBrown },
+              { label: "EXPECTED MARGIN", value: `${margin.pct.toFixed(0)}%`, color: T.greenMid },
+            ].map(k => (
+              <div key={k.label}>
+                <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </FadeUp>
+
+      {buys.length === 0 ? (
+        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+          <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
+          <div style={{ fontFamily: F.display, fontSize: 17, color: T.taupe }}>No supplier purchases recorded in this period.</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
+        </div>
+      ) : (
+        <>
+          {/* ── Row 1: purchase trend + saree type mix ── */}
+          <FadeUp delay={0.04}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+              <div style={card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div>
+                    <div style={cardTitle}>Purchase Value &amp; Volume</div>
+                    <div style={cardSub}>Billed amount against sarees received</div>
+                  </div>
+                  {trendDelta !== null && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: trendDelta >= 0 ? T.greenBg : T.crimsonBg, padding: "4px 10px", borderRadius: 20 }}>
+                      <TrendingUp size={13} color={trendDelta >= 0 ? T.greenMid : T.crimson} style={{ transform: trendDelta >= 0 ? "none" : "scaleY(-1)" }} />
+                      <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: trendDelta >= 0 ? T.greenMid : T.crimson }}>{trendDelta >= 0 ? "+" : ""}{trendDelta}% vs prev month</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontFamily: F.display, fontSize: 40, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "8px 0 2px" }}>{formatINR(billed)}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{buys.length} invoices · {pieces} sarees</div>
+                <ResponsiveContainer width="100%" height={205}>
+                  <ComposedChart data={monthly} barSize={26}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis yAxisId="l" hide />
+                    <YAxis yAxisId="r" orientation="right" hide />
+                    <RechartsTooltip contentStyle={tip}
+                      formatter={(v: any, n: any) => n === "Purchased" ? [formatINR(v), n] : [`${v} sarees`, n]} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
+                    <Bar yAxisId="l" name="Purchased" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                    <Line yAxisId="r" name="Sarees" dataKey="pieces" stroke={T.antiqueGold} strokeWidth={2.5} dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Layers size={16} color={T.royalBurgundy} />
+                  <div style={cardTitle}>Purchase Mix by Saree Type</div>
+                </div>
+                <div style={cardSub}>Where the sourcing budget goes</div>
+                <div style={{ position: "relative", marginTop: 10 }}>
+                  <ResponsiveContainer width="100%" height={168}>
+                    <PieChart>
+                      <Pie data={byType} dataKey="cost" nameKey="type" cx="50%" cy="50%" innerRadius={48} outerRadius={74} paddingAngle={3} stroke="none">
+                        {byType.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                      </Pie>
+                      <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.qty} pcs`, p.payload.type]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{byType.length}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>types</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
+                  {byType.map(d => (
+                    <div key={d.type} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: 3, background: d.fill, flexShrink: 0 }} />
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.type}</span>
+                      </div>
+                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.luxuryBrown, flexShrink: 0 }}>{d.qty} pcs</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* ── Row 2: top suppliers + outstanding ── */}
+          <FadeUp delay={0.08}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+              <div style={card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Trophy size={17} color={T.antiqueGold} />
+                    <div>
+                      <div style={cardTitle}>Top Suppliers by Purchase Value</div>
+                      <div style={cardSub}>Sourcing concentration across the network</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
+                    <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={210}>
+                  <BarChart data={topSuppliers} layout="vertical" barSize={20} margin={{ left: 6, right: 76 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 11.5, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                      formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.pieces} sarees · ₹${p.payload.avgPiece.toLocaleString("en-IN")}/pc`, p.payload.name]} />
+                    <Bar dataKey="billed" radius={[0, 6, 6, 0]}
+                      label={{ position: "right", formatter: (v: any) => formatINR(v), fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, fill: T.luxuryBrown }}>
+                      {topSuppliers.map((s, i) => (
+                        <Cell key={s.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
+                  {topSuppliers.map((s, i) => (
+                    <div key={s.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 11, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.luxuryBrown }}>{s.initials}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{billed ? Math.round((s.billed / billed) * 100) : 0}% share</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <AlertTriangle size={16} color={T.crimson} />
+                  <div style={cardTitle}>Outstanding by Supplier</div>
+                </div>
+                <div style={cardSub}>Billed minus settled in this period</div>
+                <div style={{ background: totalDue > 0 ? T.crimsonBg : T.greenBg, borderRadius: 14, padding: "16px 18px", margin: "16px 0" }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
+                  <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: totalDue > 0 ? T.crimson : T.green, lineHeight: 1 }}>{formatINR(totalDue)}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>{dueList.length} of {perSupplier.length} suppliers unsettled</div>
+                </div>
+                {dueList.length === 0 ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.greenMid }}>
+                    <CheckCircle2 size={14} /> Every bill in this period is settled.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {dueList.slice(0, 4).map(s => (
+                      <div key={s.id}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{s.name}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.crimson }}>{formatINR(s.outstanding)}</span>
+                        </div>
+                        <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
+                          <div style={{ width: `${(s.outstanding / (dueList[0].outstanding || 1)) * 100}%`, height: "100%", borderRadius: 4, background: "linear-gradient(90deg,#C0392B,#E74C3C)" }} />
+                        </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>Terms {s.terms} · {formatINR(s.paid)} of {formatINR(s.billed)} paid</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Bill status split */}
+                <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 16, paddingTop: 14, display: "flex", gap: 8 }}>
+                  {billStatus.map(b => {
+                    const meta = BILL_STATUS_META[b.status] ?? { color: T.taupe, bg: T.silkCream };
+                    return (
+                      <div key={b.status} style={{ flex: 1, background: meta.bg, borderRadius: 10, padding: "9px 10px", textAlign: "center" }}>
+                        <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: meta.color, lineHeight: 1 }}>{b.count}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 4 }}>{b.status}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* ── Row 3: margin, payment modes, settlement health ── */}
+          <FadeUp delay={0.12}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Percent size={16} color={T.royalBurgundy} />
+                  <div style={cardTitle}>Margin by Saree Type</div>
+                </div>
+                <div style={cardSub}>Markup over cost · blended {margin.pct.toFixed(1)}%</div>
+                <ResponsiveContainer width="100%" height={182}>
+                  <BarChart data={byType} barSize={22} margin={{ top: 16, left: -20, right: 6 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                    <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis unit="%" tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={40} />
+                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                      formatter={(v: any, _n: any, p: any) => [`${v}% markup · ₹${p.payload.avgCost.toLocaleString("en-IN")} avg cost`, p.payload.type]} />
+                    <Bar dataKey="markup" radius={[5, 5, 0, 0]}>
+                      {byType.map(d => <Cell key={d.type} fill={d.markup >= margin.pct ? T.greenMid : T.antiqueGold} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+                  <span>Cost {formatINR(margin.cost)}</span>
+                  <span style={{ color: T.greenMid, fontWeight: 700 }}>Gross {formatINR(margin.gross)}</span>
+                </div>
+              </div>
+
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Wallet size={16} color={T.royalBurgundy} />
+                  <div style={cardTitle}>Payments by Mode</div>
+                </div>
+                <div style={cardSub}>How suppliers were settled · {formatINR(settled)}</div>
+                {byMode.length === 0 ? (
+                  <div style={{ padding: "56px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
+                ) : (
+                  <>
+                    <ResponsiveContainer width="100%" height={168}>
+                      <PieChart>
+                        <Pie data={byMode} dataKey="amount" nameKey="mode" cx="50%" cy="50%" innerRadius={44} outerRadius={72} paddingAngle={3} stroke="none">
+                          {byMode.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                        </Pie>
+                        <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatINR(v), p.payload.mode]} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 8 }}>
+                      {byMode.map(d => (
+                        <div key={d.mode} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 10, height: 10, borderRadius: 3, background: d.fill }} />
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.mode}</span>
+                          </div>
+                          <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.luxuryBrown }}>
+                            {settled ? Math.round((d.amount / settled) * 100) : 0}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Clock size={16} color={T.royalBurgundy} />
+                  <div style={cardTitle}>Settlement Health</div>
+                </div>
+                <div style={cardSub}>Sourcing efficiency snapshot</div>
+                <ResponsiveContainer width="100%" height={140}>
+                  <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+                    data={[{ name: "Settled", value: settlementRate, fill: settlementRate >= 90 ? T.greenMid : settlementRate >= 70 ? T.antiqueGold : T.crimson }]}>
+                    <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+                    <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{settlementRate}%</text>
+                    <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }}>BILLS SETTLED</text>
+                  </RadialBarChart>
+                </ResponsiveContainer>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+                  {[
+                    { label: "Avg Cost / Saree", value: pieces ? `₹${Math.round(billed / pieces).toLocaleString("en-IN")}` : "—" },
+                    { label: "Invoices", value: String(buys.length) },
+                    { label: "Active Suppliers", value: String(perSupplier.length) },
+                    { label: "Avg Rating", value: perSupplier.length ? `${(perSupplier.reduce((a, s) => a + s.rating, 0) / perSupplier.length).toFixed(1)} / 5` : "—" },
+                  ].map(k => (
+                    <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" }}>{k.label}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function SuppliersPage() {
   const { suppliers, statsFor, addSupplier, raiseRequest, requests, nextSupplierId } = useSuppliers();
   const [selected, setSelected] = useState<Supplier | null>(null);
@@ -1080,6 +1524,8 @@ export function SuppliersPage() {
           ))}
         </div>
       </div>
+
+      <SupplierAnalytics />
 
       {/* Directory */}
       <div style={{ padding: "48px 56px 0" }}>

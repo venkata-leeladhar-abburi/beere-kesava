@@ -3,11 +3,12 @@ import { motion, useInView, AnimatePresence } from "motion/react";
 import {
   Search, Plus, Eye, MapPin, Phone, Building2, Package,
   IndianRupee, AlertTriangle, CheckCircle2, ArrowLeft, FileText,
-  TrendingUp, Star,
+  TrendingUp, Star, Trophy, Timer, Percent,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
+  RadialBarChart, RadialBar,
 } from "recharts";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
@@ -60,10 +61,52 @@ const INITIAL_VENDORS: Vendor[] = [
 const PAYMENT_TERMS = ["30 days", "15 days", "45 days", "60 days", "90 days", "Advance"];
 const STATES = ["Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Gujarat", "Uttar Pradesh", "Maharashtra", "Kerala"];
 const MATERIAL_TYPES = ["All Types", "Warp", "Resham", "Jari", "Warp / Resham", "Resham / Warp"];
-const spendByMonth = [
-  { month: "Jan", spend: 280000 }, { month: "Feb", spend: 340000 }, { month: "Mar", spend: 290000 },
-  { month: "Apr", spend: 420000 }, { month: "May", spend: 380000 }, { month: "Jun", spend: 450000 },
-];
+// ── Purchase ledger ────────────────────────────────────────────────────────
+// Every analytic on this page reads the ledger, so the date filter applies to
+// all of them at once. Each vendor's POs are spread across the trailing 18
+// months and then normalised so the "All Time" totals match the vendor cards.
+const LEDGER_END = new Date(2026, 5, 30); // Jun 2026
+const LEDGER_MONTHS = 18;
+
+export interface PurchaseTxn { vendorId: string; date: string; amount: number; material: string; }
+
+function buildLedger(list: { id: string; type: string; totalSpend: string; totalOrders: number }[]): PurchaseTxn[] {
+  const rows: PurchaseTxn[] = [];
+  list.forEach(v => {
+    const total = parseFloat(v.totalSpend.replace(/,/g, "")) || 0;
+    const n = Math.max(v.totalOrders, 0);
+    if (!n || !total) return;
+    const materials = v.type.split(" / ").map(s => s.trim()).filter(Boolean);
+    const seed = v.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    const weights: number[] = [];
+    for (let i = 0; i < n; i++) weights.push(0.6 + (Math.sin((i + 1) * 12.9898 + seed) * 0.5 + 0.5) * 0.8);
+    const sum = weights.reduce((a, w) => a + w, 0);
+    for (let i = 0; i < n; i++) {
+      const monthsBack = Math.floor((i / n) * LEDGER_MONTHS);
+      const d = new Date(LEDGER_END.getFullYear(), LEDGER_END.getMonth() - monthsBack, 1 + ((i * 7 + seed) % 27));
+      rows.push({
+        vendorId: v.id,
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        amount: Math.round((weights[i] / sum) * total),
+        material: materials[i % materials.length] || "Warp",
+      });
+    }
+  });
+  return rows;
+}
+
+const MATERIAL_FILL: Record<string, string> = { Warp: T.royalBurgundy, Resham: T.antiqueGold, Jari: T.green };
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// On-time delivery % per vendor id (from GRN receipts). Drives the reliability scatter.
+const DELIVERY_PERF: Record<string, { onTime: number; qualityRejects: number }> = {
+  "VEN-001": { onTime: 96, qualityRejects: 1.2 },
+  "VEN-002": { onTime: 91, qualityRejects: 2.4 },
+  "VEN-003": { onTime: 74, qualityRejects: 4.8 },
+  "VEN-004": { onTime: 94, qualityRejects: 1.8 },
+  "VEN-005": { onTime: 88, qualityRejects: 3.1 },
+  "VEN-006": { onTime: 68, qualityRejects: 6.2 },
+};
 const spendByType = [
   { name: "Warp", value: 2840000, fill: T.royalBurgundy },
   { name: "Resham", value: 1960000, fill: T.antiqueGold },
@@ -386,10 +429,148 @@ function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
   );
 }
 
+// ── Vendor billing & payment ledger ────────────────────────────────────────
+// Bills come from the vendor's purchase orders; payments settle them oldest
+// first, leaving exactly the vendor's recorded `outstanding` unpaid — so the
+// Order History, Payment History, and the directory card never disagree.
+
+interface VendorBill {
+  id: string; invoiceNo: string; date: string; dueDate: string;
+  amount: number; paid: number; balance: number;
+  status: "Paid" | "Partial" | "Pending" | "Overdue";
+  daysOverdue: number;
+}
+interface VendorPaymentTxn {
+  id: string; billId: string; date: string; amount: number;
+  mode: string; reference: string; firm: string; notes: string;
+}
+
+const PAY_MODES = ["Bank Transfer", "NEFT", "RTGS", "UPI", "Cheque", "Cash"];
+const PAY_MODE_FILL: Record<string, string> = {
+  "Bank Transfer": T.royalBurgundy, NEFT: "#8A2440", RTGS: T.antiqueGold,
+  UPI: T.goldLight, Cheque: T.green, Cash: "#5A3E6B",
+};
+const BILL_STATUS_CFG: Record<string, { bg: string; color: string }> = {
+  Paid:    { bg: "rgba(30,102,64,0.10)",  color: T.greenMid },
+  Partial: { bg: "rgba(200,155,71,0.13)", color: "#8B6018" },
+  Pending: { bg: "rgba(74,107,138,0.10)", color: "#2E5A8A" },
+  Overdue: { bg: "rgba(192,57,43,0.10)",  color: T.crimson },
+};
+
+/** Days in a payment term string — "Net 30" → 30, "Advance" → 0. */
+function termDays(terms: string): number {
+  const m = terms.match(/\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+function fmtDate(d: Date): string {
+  return `${String(d.getDate()).padStart(2, "0")} ${MONTH_ABBR[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function buildVendorOrders(vendor: Vendor) {
+  const t1 = vendor.type.split(" / ")[0] || "Warp";
+  const t2 = vendor.type.split(" / ")[1] || "Resham";
+  return [
+    { id: "PO-2026-041", invoiceNo: `INV-${vendor.initials}-2026-041`, date: "15 Jun 2026", status: "Delivered", grnId: "GRN-2026-MAY-814", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "20 May 2026", receiveStatus: "Match",
+      materials: [
+        { type: t1, description: "Premium quality raw threads", qty: "60 kg", invoiceAmount: "₹1,20,000" },
+        { type: t2, description: "Standard dye grade lot", qty: "60 kg", invoiceAmount: "₹1,20,000" },
+      ], totalAmount: "₹2,40,000", amount: 240000 },
+    { id: "PO-2026-028", invoiceNo: `INV-${vendor.initials}-2026-028`, date: "02 May 2026", status: "Delivered", grnId: "GRN-2026-MAY-011", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "17 May 2026", receiveStatus: "Short",
+      materials: [
+        { type: t1, description: "Red 30 kg", qty: "30 kg", invoiceAmount: "₹1,25,000" },
+        { type: t2, description: "Gold 24 kg", qty: "24 kg", invoiceAmount: "₹1,00,000" },
+      ], totalAmount: "₹2,25,000", amount: 225000 },
+    { id: "PO-2026-014", invoiceNo: `INV-${vendor.initials}-2026-014`, date: "10 Mar 2026", status: "Pending",
+      materials: [{ type: t1, description: "Polyester 2G Gold 6 Buns", qty: "6 Buns", invoiceAmount: "₹65,000" }],
+      totalAmount: "₹65,000", amount: 65000 },
+    { id: "PO-2026-005", invoiceNo: `INV-${vendor.initials}-2026-005`, date: "18 Jan 2026", status: "Approved",
+      materials: [{ type: t1, description: "Bulk replenishment stock", qty: "100 kg", invoiceAmount: "₹2,00,000" }],
+      totalAmount: "₹2,00,000", amount: 200000 },
+  ];
+}
+
+function buildVendorLedger(vendor: Vendor) {
+  const orders = buildVendorOrders(vendor);
+  const outstanding = parseFloat(vendor.outstanding.replace(/,/g, "")) || 0;
+  const totalBilled = orders.reduce((a, o) => a + o.amount, 0);
+  let budget = Math.max(0, totalBilled - outstanding); // rupees actually settled
+  const days = termDays(vendor.terms);
+  const today = new Date();
+
+  // Oldest bill first — that's the order money goes out in.
+  const chronological = [...orders].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const bills: VendorBill[] = [];
+  const txns: VendorPaymentTxn[] = [];
+  let seq = 1;
+
+  chronological.forEach((o, i) => {
+    const billDate = new Date(o.date);
+    const due = new Date(billDate);
+    due.setDate(due.getDate() + days);
+    const paid = Math.min(o.amount, budget);
+    budget -= paid;
+    const balance = o.amount - paid;
+    const overdueDays = balance > 0 ? Math.max(0, Math.ceil((today.getTime() - due.getTime()) / 86400000)) : 0;
+
+    bills.push({
+      id: o.id, invoiceNo: o.invoiceNo, date: o.date, dueDate: fmtDate(due),
+      amount: o.amount, paid, balance,
+      status: balance === 0 ? "Paid" : paid > 0 ? (overdueDays > 0 ? "Overdue" : "Partial") : (overdueDays > 0 ? "Overdue" : "Pending"),
+      daysOverdue: overdueDays,
+    });
+
+    if (paid > 0) {
+      // Full settlements clear on the due date; part payments go out earlier.
+      const payDate = new Date(billDate);
+      payDate.setDate(payDate.getDate() + (balance === 0 ? Math.max(3, days - 2) : Math.round(days / 2)));
+      const mode = PAY_MODES[(i + vendor.id.length) % PAY_MODES.length];
+      txns.push({
+        id: `VP-${vendor.id.slice(-3)}-${String(seq++).padStart(2, "0")}`,
+        billId: o.id,
+        date: fmtDate(payDate > today ? today : payDate),
+        amount: paid,
+        mode,
+        reference: mode === "Cash" ? `CASH-${o.id.slice(-4)}` : mode === "Cheque" ? `CHQ-${o.id.slice(-6)}` : `UTR${payDate.getFullYear()}${String(payDate.getMonth() + 1).padStart(2, "0")}${String(payDate.getDate()).padStart(2, "0")}${String(seq).padStart(3, "0")}`,
+        firm: "Beere Kesava Silks (Head Firm)",
+        notes: balance === 0 ? "Full settlement" : "Part payment",
+      });
+    }
+  });
+
+  bills.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return { orders, bills, txns, totalBilled, totalPaid: totalBilled - outstanding, outstanding };
+}
+
 function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
-  const [tab, setTab] = useState<"overview" | "orders" | "contact" | "edit">("overview");
-  const tabs = [{ key: "overview", label: "Overview" }, { key: "orders", label: "Order History" }, { key: "contact", label: "Contact Details" }, { key: "edit", label: "Edit Profile" }] as const;
+  const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+  const tabs = [
+    { key: "overview", label: "Overview" },
+    { key: "orders", label: "Order History" },
+    { key: "payments", label: "Payment History" },
+    { key: "contact", label: "Contact Details" },
+    { key: "edit", label: "Edit Profile" },
+  ] as const;
   const [orderDateFilter, setOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [payFilter, setPayFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+
+  const ledger = React.useMemo(() => buildVendorLedger(vendor), [vendor]);
+  const filteredBills = React.useMemo(
+    () => ledger.bills.filter(b => matchesDateFilter(b.date, payFilter)),
+    [ledger.bills, payFilter]
+  );
+  const filteredTxns = React.useMemo(
+    () => ledger.txns.filter(t => matchesDateFilter(t.date, payFilter)),
+    [ledger.txns, payFilter]
+  );
+  const paidInRange = filteredTxns.reduce((a, t) => a + t.amount, 0);
+  const overdueBills = ledger.bills.filter(b => b.status === "Overdue");
+  const modeSplit = React.useMemo(() => {
+    const m = new Map<string, number>();
+    filteredTxns.forEach(t => m.set(t.mode, (m.get(t.mode) || 0) + t.amount));
+    return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
+  }, [filteredTxns]);
+  const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
   
   const [form, setForm] = useState(vendor);
   const set = (k: keyof Vendor, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -407,45 +588,7 @@ function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: (
     color: T.luxuryBrown, display: "block", marginBottom: 6,
   };
   
-  const t1 = vendor.type.split(" / ")[0] || "Warp";
-  const t2 = vendor.type.split(" / ")[1] || "Resham";
-  
-  const mockOrders = [
-    { 
-      id: "PO-2026-041", date: "15 Jun 2026", 
-      status: "Delivered", grnId: "GRN-2026-MAY-814", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "20 May 2026", receiveStatus: "Match",
-      materials: [
-        { type: t1, description: "Premium quality raw threads", qty: "60 kg", invoiceAmount: "₹1,20,000" },
-        { type: t2, description: "Standard dye grade lot", qty: "60 kg", invoiceAmount: "₹1,20,000" }
-      ],
-      totalAmount: "₹2,40,000" 
-    },
-    { 
-      id: "PO-2026-028", date: "02 May 2026", 
-      status: "Delivered", grnId: "GRN-2026-MAY-011", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "17 May 2026", receiveStatus: "Short",
-      materials: [
-        { type: t1, description: "Red 30 kg", qty: "30 kg", invoiceAmount: "₹1,25,000" },
-        { type: t2, description: "Gold 24 kg", qty: "24 kg", invoiceAmount: "₹1,00,000" }
-      ],
-      totalAmount: "₹2,25,000" 
-    },
-    { 
-      id: "PO-2026-014", date: "10 Mar 2026", 
-      status: "Pending",
-      materials: [
-        { type: t1, description: "Polyester 2G Gold 6 Buns", qty: "6 Buns", invoiceAmount: "₹65,000" }
-      ],
-      totalAmount: "₹65,000" 
-    },
-    { 
-      id: "PO-2026-005", date: "18 Jan 2026", 
-      status: "Approved",
-      materials: [
-        { type: t1, description: "Bulk replenishment stock", qty: "100 kg", invoiceAmount: "₹2,00,000" }
-      ],
-      totalAmount: "₹2,00,000" 
-    },
-  ];
+  const mockOrders = ledger.orders;
   return (
     <div style={{ padding: "40px 56px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
@@ -531,6 +674,156 @@ function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: (
                 <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
               </div>
               <PurchaseOrderHistoryTable orders={mockOrders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
+            </div>
+          )}
+          {tab === "payments" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Money summary */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+                {[
+                  { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
+                  { label: "Paid All Time", value: inr(ledger.totalPaid), color: T.luxuryBrown, sub: `of ${inr(ledger.totalBilled)} billed` },
+                  { label: "Outstanding", value: inr(ledger.outstanding), color: ledger.outstanding > 0 ? T.crimson : T.green, sub: ledger.outstanding > 0 ? "Awaiting settlement" : "Fully settled" },
+                  { label: "Overdue Bills", value: String(overdueBills.length), color: overdueBills.length ? T.crimson : T.green, sub: `Terms ${vendor.terms}` },
+                ].map(s => (
+                  <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "18px 20px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 8 }}>{s.label}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 6 }}>{s.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Settlement progress */}
+              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>Settlement Progress</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+                    {ledger.totalBilled ? Math.round((ledger.totalPaid / ledger.totalBilled) * 100) : 0}% cleared
+                  </div>
+                </div>
+                <div style={{ height: 10, borderRadius: 5, background: T.silkCream, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                  <div style={{ width: `${ledger.totalBilled ? (ledger.totalPaid / ledger.totalBilled) * 100 : 0}%`, height: "100%", background: `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 8 }}>
+                  <span>Paid {inr(ledger.totalPaid)}</span>
+                  <span>Billed {inr(ledger.totalBilled)}</span>
+                </div>
+                {modeSplit.length > 0 && (
+                  <div style={{ display: "flex", gap: 8, marginTop: 16, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, flexWrap: "wrap" as const }}>
+                    {modeSplit.map(m => (
+                      <div key={m.mode} style={{ display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 20, padding: "6px 14px" }}>
+                        <div style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[m.mode] ?? T.taupe }} />
+                        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{m.mode}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>{inr(m.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Date scope for both tables below */}
+              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "16px 22px 2px" }}>
+                <DateFilterBar filter={payFilter} onChange={setPayFilter} />
+              </div>
+
+              {/* Bill-wise settlement */}
+              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
+                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Invoice-wise Settlement</div>
+                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Due dates from payment terms · {vendor.terms}</span>
+                </div>
+                {filteredBills.length === 0 ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No bills raised in this period.</div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: T.silkCream }}>
+                        {["PO / Invoice", "Bill Date", "Due Date", "Invoice Amount", "Paid", "Balance", "Status"].map(h => (
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredBills.map((b, i) => {
+                        const cfg = BILL_STATUS_CFG[b.status];
+                        return (
+                          <tr key={b.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
+                            <td style={{ padding: "13px 16px" }}>
+                              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
+                              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
+                            </td>
+                            <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{b.date}</td>
+                            <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: b.daysOverdue > 0 ? T.crimson : T.taupe, fontWeight: b.daysOverdue > 0 ? 700 : 400 }}>
+                              {b.dueDate}
+                              {b.daysOverdue > 0 && <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.crimson }}>{b.daysOverdue}d overdue</div>}
+                            </td>
+                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</td>
+                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</td>
+                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</td>
+                            <td style={{ padding: "13px 16px" }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, padding: "4px 11px", borderRadius: 20, background: cfg.bg, color: cfg.color, whiteSpace: "nowrap" as const }}>{b.status}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Payment transactions */}
+              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
+                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Payments Made</div>
+                  <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.greenMid }}>{inr(paidInRange)}</span>
+                </div>
+                {filteredTxns.length === 0 ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No payments in this period.</div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: T.silkCream }}>
+                        {["Payment Ref", "Date", "Against PO", "Mode", "UTR / Reference", "Paying Firm", "Amount"].map(h => (
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTxns.map((p, i) => (
+                        <tr key={p.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
+                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</td>
+                          <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{p.date}</td>
+                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{p.billId}</td>
+                          <td style={{ padding: "13px 16px" }}>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                              <span style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[p.mode] ?? T.taupe }} />{p.mode}
+                            </span>
+                          </td>
+                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{p.reference}</td>
+                          <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</td>
+                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Overdue callout */}
+              {overdueBills.length > 0 && (
+                <div style={{ background: T.crimsonBg, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 14, padding: "18px 22px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <AlertTriangle size={16} color={T.crimson} />
+                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>
+                      {overdueBills.length} bill{overdueBills.length > 1 ? "s" : ""} past the agreed {vendor.terms} terms
+                    </span>
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
+                    {overdueBills.map(b => `${b.id} — ${inr(b.balance)} (${b.daysOverdue}d)`).join(" · ")}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {tab === "contact" && (
@@ -654,35 +947,143 @@ export function VendorsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [analyticsFilter, setAnalyticsFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const totalSpendVal = React.useMemo(() => {
     const total = vendors.reduce((acc, v) => acc + (parseFloat(v.totalSpend.replace(/,/g, "")) || 0), 0);
     return `₹${(total / 100000).toFixed(1)}L`;
   }, [vendors]);
 
-  const spendByType = React.useMemo(() => {
-    let warp = 0;
-    let resham = 0;
-    let jari = 0;
-    vendors.forEach(v => {
-      const spend = parseFloat(v.totalSpend.replace(/,/g, "")) || 0;
-      const type = v.type.toLowerCase();
-      if (type.startsWith("warp")) {
-        warp += spend;
-      } else if (type.startsWith("resham")) {
-        resham += spend;
-      } else if (type.startsWith("jari")) {
-        jari += spend;
-      } else {
-        warp += spend;
-      }
+  // ---- Derived analytics -------------------------------------------------
+  const num = (s: string) => parseFloat(s.replace(/,/g, "")) || 0;
+
+  // Every chart below reads `rows`, so one timeline control drives them all.
+  const ledger = React.useMemo(() => buildLedger(vendors), [vendors]);
+  const rows = React.useMemo(
+    () => ledger.filter(r => matchesDateFilter(r.date, analyticsFilter)),
+    [ledger, analyticsFilter]
+  );
+
+  const periodLabel = React.useMemo(() => {
+    const f = analyticsFilter;
+    if (f.mode === "day" && f.day) return new Date(f.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    if (f.mode === "range") return `${f.from || "start"} → ${f.to || "today"}`;
+    if (f.mode === "month" && f.month) { const [y, m] = f.month.split("-"); return `${MONTH_ABBR[+m - 1]} ${y}`; }
+    if (f.mode === "year" && f.year) return f.year;
+    return "All time";
+  }, [analyticsFilter]);
+
+  const totalSpendRaw = React.useMemo(() => rows.reduce((a, r) => a + r.amount, 0), [rows]);
+  const totalOrdersInPeriod = rows.length;
+
+  const spendByMonth = React.useMemo(() => {
+    const m = new Map<string, { spend: number; orders: number }>();
+    rows.forEach(r => {
+      const key = r.date.slice(0, 7);
+      const e = m.get(key) || { spend: 0, orders: 0 };
+      e.spend += r.amount; e.orders += 1;
+      m.set(key, e);
     });
-    return [
-      { name: "Warp", value: warp, fill: T.royalBurgundy },
-      { name: "Resham", value: resham, fill: T.antiqueGold },
-      { name: "Jari", value: jari, fill: T.green },
-    ];
-  }, [vendors]);
+    const all = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, v]) => ({ month: `${MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`, ...v }));
+    // "All time" spans 18 months — keep the trend readable at 12.
+    return all.length > 12 ? all.slice(-12) : all;
+  }, [rows]);
+
+  const trendDelta = React.useMemo(() => {
+    if (spendByMonth.length < 2) return null;
+    const last = spendByMonth[spendByMonth.length - 1].spend;
+    const prev = spendByMonth[spendByMonth.length - 2].spend;
+    if (!prev) return null;
+    return Math.round(((last - prev) / prev) * 100);
+  }, [spendByMonth]);
+
+  const spendByType = React.useMemo(() => {
+    const m = new Map<string, number>();
+    rows.forEach(r => m.set(r.material, (m.get(r.material) || 0) + r.amount));
+    return ["Warp", "Resham", "Jari"]
+      .map(name => ({ name, value: m.get(name) || 0, fill: MATERIAL_FILL[name] }))
+      .filter(d => d.value > 0);
+  }, [rows]);
+
+  const topVendors = React.useMemo(() => {
+    const m = new Map<string, { spend: number; orders: number }>();
+    rows.forEach(r => {
+      const e = m.get(r.vendorId) || { spend: 0, orders: 0 };
+      e.spend += r.amount; e.orders += 1;
+      m.set(r.vendorId, e);
+    });
+    return [...m.entries()]
+      .map(([id, agg]) => {
+        const v = vendors.find(x => x.id === id)!;
+        return {
+          id, name: v.name,
+          short: v.name.length > 18 ? v.name.slice(0, 17) + "…" : v.name,
+          initials: v.initials, status: v.status, ...agg,
+        };
+      })
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 5);
+  }, [rows, vendors]);
+
+  // Share of wallet held by the top 5 — flags over-dependence on few suppliers.
+  const top5Share = totalSpendRaw
+    ? Math.round((topVendors.reduce((a, v) => a + v.spend, 0) / totalSpendRaw) * 100)
+    : 0;
+
+  const outstandingList = React.useMemo(
+    () => vendors
+      .filter(v => num(v.outstanding) > 0)
+      .map(v => ({ ...v, out: num(v.outstanding) }))
+      .sort((a, b) => b.out - a.out),
+    [vendors]
+  );
+  const totalOutstanding = outstandingList.reduce((a, v) => a + v.out, 0);
+
+  const spendByState = React.useMemo(() => {
+    const m = new Map<string, number>();
+    rows.forEach(r => {
+      const st = vendors.find(v => v.id === r.vendorId)?.state;
+      if (st) m.set(st, (m.get(st) || 0) + r.amount);
+    });
+    return [...m.entries()]
+      .map(([state, spend]) => ({ state, short: state.split(" ").map(w => w[0]).join(""), spend }))
+      .sort((a, b) => b.spend - a.spend);
+  }, [rows, vendors]);
+
+  // Vendors that actually transacted in the selected period.
+  const reliability = React.useMemo(() => {
+    const active = new Set(rows.map(r => r.vendorId));
+    return vendors
+      .filter(v => active.has(v.id))
+      .map(v => {
+        const p = DELIVERY_PERF[v.id] ?? { onTime: 85, qualityRejects: 3 };
+        const own = rows.filter(r => r.vendorId === v.id);
+        return { ...v, ...p, periodOrders: own.length, avgOrder: own.length ? own.reduce((a, r) => a + r.amount, 0) / own.length : 0 };
+      })
+      .sort((a, b) => b.onTime - a.onTime);
+  }, [rows, vendors]);
+
+  const avgOnTime = reliability.length
+    ? Math.round(reliability.reduce((a, v) => a + v.onTime, 0) / reliability.length)
+    : 0;
+  const avgOrderValue = totalOrdersInPeriod ? totalSpendRaw / totalOrdersInPeriod : 0;
+  const avgRating = reliability.length
+    ? reliability.reduce((a, v) => a + v.rating, 0) / reliability.length
+    : 0;
+
+  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  const cardStyle: React.CSSProperties = {
+    background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`,
+    padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+  };
+  const cardTitle: React.CSSProperties = {
+    fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown,
+  };
+  const tipStyle = {
+    fontFamily: F.ui, fontSize: 12, borderRadius: 10,
+    border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)",
+  };
 
   const nextId = `VEN-${String(vendors.length + 1).padStart(3, "0")}`;
   const filtered = vendors.filter(v => {
@@ -758,31 +1159,74 @@ export function VendorsPage() {
       {/* Analytics */}
       <div style={{ padding: "48px 56px 32px" }}>
         <FadeUp>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
             <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Analytics</h2>
+            <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
           </div>
+
+          {/* Timeline scope — drives every chart in this section */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const, marginBottom: 10 }}>
+            <DateFilterBar filter={analyticsFilter} onChange={setAnalyticsFilter} />
+            <div style={{ display: "flex", gap: 20, marginBottom: 16 }}>
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>SPEND IN PERIOD</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{L(totalSpendRaw)}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>PURCHASE ORDERS</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{totalOrdersInPeriod}</div>
+              </div>
+            </div>
+          </div>
+
+          {rows.length === 0 && (
+            <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+              <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
+              <div style={{ fontFamily: F.display, fontSize: 17, color: T.taupe }}>No vendor purchases recorded in this period.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
+            </div>
+          )}
+
+          {rows.length > 0 && <>
+          {/* Row 1 — spend trend + material mix */}
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
-            <div style={{ background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)" }}>
-              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Monthly Vendor Spend</div>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={spendByMonth} barSize={28}>
+            <div style={cardStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div>
+                  <div style={cardTitle}>Monthly Vendor Spend</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Purchase value against order count</div>
+                </div>
+                {trendDelta !== null && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, background: trendDelta >= 0 ? T.greenBg : T.crimsonBg, padding: "4px 10px", borderRadius: 20 }}>
+                    <TrendingUp size={13} color={trendDelta >= 0 ? T.greenMid : T.crimson} style={{ transform: trendDelta >= 0 ? "none" : "scaleY(-1)" }} />
+                    <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: trendDelta >= 0 ? T.greenMid : T.crimson }}>{trendDelta >= 0 ? "+" : ""}{trendDelta}% vs prev month</span>
+                  </div>
+                )}
+              </div>
+              <ResponsiveContainer width="100%" height={210}>
+                <ComposedChart data={spendByMonth} barSize={28}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis hide />
-                  <RechartsTooltip formatter={(v: any) => [`₹${(v/100000).toFixed(1)}L`, "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
-                  <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6,6,0,0]} />
-                </BarChart>
+                  <YAxis yAxisId="l" hide />
+                  <YAxis yAxisId="r" orientation="right" hide />
+                  <RechartsTooltip contentStyle={tipStyle}
+                    formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
+                  <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                  <Line yAxisId="r" name="Orders" dataKey="orders" stroke={T.antiqueGold} strokeWidth={2.5}
+                    dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <div style={{ background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)" }}>
-              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Spend by Material Type</div>
+            <div style={cardStyle}>
+              <div style={{ ...cardTitle, marginBottom: 20 }}>Spend by Material Type</div>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie data={spendByType} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
                     {spendByType.map((e, i) => <Cell key={i} fill={e.fill} />)}
                   </Pie>
-                  <RechartsTooltip formatter={(v: any) => [`₹${(v/100000).toFixed(1)}L`]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
+                  <RechartsTooltip formatter={(v: any) => [L(v)]} contentStyle={tipStyle} />
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
@@ -792,12 +1236,170 @@ export function VendorsPage() {
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: s.fill }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>₹{(s.value/100000).toFixed(1)}L</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{L(s.value)}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
+          {/* Row 2 — top 5 vendors + outstanding exposure */}
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginTop: 24 }}>
+            <div style={cardStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Trophy size={17} color={T.antiqueGold} />
+                  <div>
+                    <div style={cardTitle}>Top 5 Vendors by Spend</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Where the purchase budget actually goes</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
+                  <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={210}>
+                <BarChart data={topVendors} layout="vertical" barSize={20} margin={{ left: 8, right: 56 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 11.5, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
+                    formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
+                  <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 11, fontWeight: 700, fill: T.luxuryBrown }}>
+                    {topVendors.map((v, i) => (
+                      <Cell key={v.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
+                {topVendors.map((v, i) => (
+                  <div key={v.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 11, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.initials}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{totalSpendRaw ? Math.round((v.spend / totalSpendRaw) * 100) : 0}% share</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <AlertTriangle size={16} color={T.crimson} />
+                <div style={cardTitle}>Outstanding Exposure</div>
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>Unsettled dues by vendor · current balance, not period-scoped</div>
+              <div style={{ background: totalOutstanding > 0 ? T.crimsonBg : T.greenBg, borderRadius: 14, padding: "16px 18px", marginBottom: 16 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
+                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: totalOutstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{L(totalOutstanding)}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>
+                  {outstandingList.length} of {vendors.length} vendors pending settlement
+                </div>
+              </div>
+              {outstandingList.length === 0 ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.greenMid }}>
+                  <CheckCircle2 size={14} /> All vendor accounts are settled.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {outstandingList.slice(0, 4).map(v => (
+                    <div key={v.id}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{v.name}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.crimson }}>₹{v.outstanding}</span>
+                      </div>
+                      <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
+                        <div style={{ width: `${(v.out / (outstandingList[0].out || 1)) * 100}%`, height: "100%", borderRadius: 4, background: `linear-gradient(90deg,#C0392B,#E74C3C)` }} />
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>Terms {v.terms} · last order {v.lastOrder}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Row 3 — reliability, regional concentration, efficiency KPIs */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, marginTop: 24 }}>
+            <div style={cardStyle}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <Timer size={16} color={T.royalBurgundy} />
+                <div style={cardTitle}>Delivery Reliability</div>
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>On-time GRN receipts · fleet avg {avgOnTime}%</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+                {reliability.slice(0, 6).map(v => {
+                  const col = v.onTime >= 90 ? T.greenMid : v.onTime >= 80 ? T.antiqueGold : T.crimson;
+                  return (
+                    <div key={v.id}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{v.name}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: col }}>{v.onTime}%</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
+                        <div style={{ width: `${v.onTime}%`, height: "100%", borderRadius: 4, background: col }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <MapPin size={16} color={T.royalBurgundy} />
+                <div style={cardTitle}>Sourcing by Region</div>
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Geographic supply concentration</div>
+              <ResponsiveContainer width="100%" height={168}>
+                <BarChart data={spendByState} barSize={22}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                  <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
+                    formatter={(v: any, _n: any, p: any) => [L(v), p.payload.state]} />
+                  <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+                <span>{spendByState.length} states supplying</span>
+                <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {spendByState[0]?.state ?? "—"}</span>
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <Percent size={16} color={T.royalBurgundy} />
+                <div style={cardTitle}>Procurement Health</div>
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>Efficiency snapshot across all vendors</div>
+              <ResponsiveContainer width="100%" height={132}>
+                <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+                  data={[{ name: "On-time", value: avgOnTime, fill: avgOnTime >= 90 ? T.greenMid : avgOnTime >= 80 ? T.antiqueGold : T.crimson }]}>
+                  <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+                  <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgOnTime}%</text>
+                  <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }}>ON-TIME DELIVERY</text>
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+                {[
+                  { label: "Avg Order Value", value: L(avgOrderValue) },
+                  { label: "POs in Period", value: String(totalOrdersInPeriod) },
+                  { label: "Avg Rating", value: `${avgRating.toFixed(1)} / 5` },
+                  { label: "At-Risk Vendors", value: String(reliability.filter(v => v.onTime < 80).length) },
+                ].map(k => (
+                  <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4 }}>{k.label.toUpperCase()}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          </>}
         </FadeUp>
       </div>
 

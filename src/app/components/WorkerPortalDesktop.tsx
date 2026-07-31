@@ -4,19 +4,20 @@ import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import {
   User, Bell, ChevronDown, LogOut,
-  Home, Search, Users, Sparkles,
+  Home, Search, Users, Sparkles, Truck,
 } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { WorkerHomeDesktop } from "./worker/WorkerHomeDesktop";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
+import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { imgBKLogo } from "../constants/weaverImages";
 import {
   SectionNavigator, PAGE_SECTIONS, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H,
 } from "./SectionNavigator";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "profile";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
 
 interface WorkerPortalDesktopProps {
@@ -27,13 +28,14 @@ interface WorkerPortalDesktopProps {
 }
 
 // ─── Top Nav Tabs ───────────────────────────────────────────────────────────────
-type NavTab = "home" | "qc" | "weavers" | "finishing";
+type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
 
 const TOPNAV_ITEMS: { id: NavTab; Icon: React.ComponentType<{ size?: number; color?: string }>; label: string; badge?: number }[] = [
   { id: "home",      Icon: Home,     label: "Home" },
   { id: "qc",        Icon: Search,   label: "Quality Check", badge: 6 },
   { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
   { id: "finishing", Icon: Sparkles, label: "Finishing" },
+  { id: "dispatch",  Icon: Truck,    label: "Dispatch" },
 ];
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -407,6 +409,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
             )}
 
             {activeTab === "finishing" && <WorkerFinishing isDesktop={!isTablet} isTablet={isTablet} />}
+            {activeTab === "dispatch" && <WorkerDispatch isDesktop={!isTablet} />}
             {activeTab === "profile" && <DesktopProfile />}
           </motion.div>
         </AnimatePresence>

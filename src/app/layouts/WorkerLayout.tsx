@@ -5,16 +5,21 @@ import {
   BatchProvider,
   MaterialIssueProvider,
   DesignLibraryProvider,
+  FirmsProvider,
 } from "../../contexts";
 
 // FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
 // finishing data is shared across worker, admin, superadmin and accountant.
+// FirmsProvider is needed here too — the Dispatch Details page names the firm
+// each dispatch was raised under.
 function WorkerContexts({ children }: { children: React.ReactNode }) {
   return (
     <DesignLibraryProvider>
       <BatchProvider>
         <MaterialIssueProvider>
-          {children}
+          <FirmsProvider>
+            {children}
+          </FirmsProvider>
         </MaterialIssueProvider>
       </BatchProvider>
     </DesignLibraryProvider>

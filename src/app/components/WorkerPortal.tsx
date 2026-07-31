@@ -2,25 +2,27 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
-import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck } from "lucide-react";
+import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
+import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerPortalDesktop } from "./WorkerPortalDesktop";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, WORKER_SECTION_NAV_H,
 } from "./SectionNavigator";
 import { useResponsive } from "./useResponsive";
 
-type Tab = "home" | "qc" | "weavers" | "finishing" | "profile";
+type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 
 const TABS: { id: Tab; Icon: React.ComponentType<{ size: number; color: string }>; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
   { id: "weavers",   Icon: Package,    label: "Receive"       },
   { id: "finishing", Icon: Sparkles,   label: "Finishing", badge: "2" },
+  { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
 ];
 
 const PAGE_TITLES: Record<Tab, string> = {
@@ -28,6 +30,7 @@ const PAGE_TITLES: Record<Tab, string> = {
   qc:        "Quality Check",
   weavers:   "Receive Sarees",
   finishing: "Finishing",
+  dispatch:  "Dispatch Details",
   profile:   "My Profile",
 };
 
@@ -244,6 +247,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
             {activeTab === "qc"       && <WorkerQC />}
             {activeTab === "weavers"  && <WorkerWeavers />}
             {activeTab === "finishing"&& <WorkerFinishing />}
+            {activeTab === "dispatch" && <WorkerDispatch />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -313,6 +317,7 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
   if (pathname.includes("/qc")) activeTab = "qc";
   else if (pathname.includes("/weavers")) activeTab = "weavers";
   else if (pathname.includes("/finishing")) activeTab = "finishing";
+  else if (pathname.includes("/dispatch")) activeTab = "dispatch";
   else if (pathname.includes("/profile")) activeTab = "profile";
 
   const setActiveTab = (tab: Tab) => {
@@ -321,6 +326,7 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
       qc: "/worker/qc",
       weavers: "/worker/weavers",
       finishing: "/worker/finishing",
+      dispatch: "/worker/dispatch",
       profile: "/worker/profile",
     };
     const path = routeMap[tab] || "/worker/home";

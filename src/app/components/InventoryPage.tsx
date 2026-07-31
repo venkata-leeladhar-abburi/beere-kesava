@@ -499,17 +499,234 @@ function InvoiceGenerator({
   );
 }
 
-// ── Dispatch to Shop modal ────────────────────────────────────────────────────
-function DispatchShopModal({ sarees, onConfirm, onClose }: {
+// ── Row → dispatch-saree mapper ───────────────────────────────────────────────
+// One definition shared by the page and the in-modal picker so a saree looks the
+// same however it was added.
+function rowToDispatchSaree(r: WeaverSareeRow): FinishingReturn {
+  return {
+    id: r.sareeId,
+    assignmentId: "DIRECT-DISPATCH",
+    sareeId: r.sareeId,
+    designCode: r.designCode || "",
+    sareeTypeCode: r.sareeTypeCode,
+    sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
+    weaverName: r.ownerLabel || "—",
+    condition: "perfect",
+    receivedBy: "Admin",
+    receivedDate: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
+    inventoryStatus: "Ready for Dispatch",
+  };
+}
+
+// ── Saree picker (scan + pick from inventory) ─────────────────────────────────
+// "Select from Inventory" embeds the very same inventory table the page shows —
+// identical columns, tabs and filters — so nothing has to be learned twice.
+function SareePicker({ available, picked, onChange, label, onBrowseChange }: {
+  available: FinishingReturn[];
+  picked: FinishingReturn[];
+  onChange: (next: FinishingReturn[]) => void;
+  label: string;
+  onBrowseChange?: (open: boolean) => void;
+}) {
+  const [browse, setBrowse] = useState(false);
+  const [scanMsg, setScanMsg] = useState("");
+  const [rows, setRows] = useState<WeaverSareeRow[]>([]);
+
+  const pickedIds = useMemo(() => new Set(picked.map(s => s.sareeId || s.id)), [picked]);
+  // Before the table has been opened it has reported no rows, so the page's
+  // pool stands in for scanning.
+  const pool = rows.length ? rows.map(rowToDispatchSaree) : available;
+  const unpicked = pool.filter(s => !pickedIds.has(s.sareeId || s.id));
+
+  const toggleBrowse = () => setBrowse(b => { onBrowseChange?.(!b); return !b; });
+
+  const toggleRow = useCallback((sareeId: string) => {
+    if (pickedIds.has(sareeId)) { onChange(picked.filter(s => (s.sareeId || s.id) !== sareeId)); return; }
+    const row = rows.find(r => r.sareeId === sareeId);
+    const found = row ? rowToDispatchSaree(row) : available.find(s => (s.sareeId || s.id) === sareeId);
+    if (found) onChange([...picked, found]);
+  }, [pickedIds, picked, rows, available, onChange]);
+
+  const toggleAll = useCallback((ids: string[]) => {
+    const allOn = ids.length > 0 && ids.every(id => pickedIds.has(id));
+    if (allOn) { onChange(picked.filter(s => !ids.includes(s.sareeId || s.id))); return; }
+    const additions = ids
+      .filter(id => !pickedIds.has(id))
+      .map(id => {
+        const row = rows.find(r => r.sareeId === id);
+        return row ? rowToDispatchSaree(row) : available.find(s => (s.sareeId || s.id) === id);
+      })
+      .filter(Boolean) as FinishingReturn[];
+    onChange([...picked, ...additions]);
+  }, [pickedIds, picked, rows, available, onChange]);
+
+  // Mirrors the page's barcode simulation — grabs the next unpicked saree.
+  const scan = () => {
+    if (!unpicked.length) { setScanMsg("No more sarees available to scan."); setTimeout(() => setScanMsg(""), 2200); return; }
+    setScanMsg("Scanning…");
+    setTimeout(() => {
+      const s = unpicked[Math.floor(Math.random() * unpicked.length)];
+      onChange([...picked, s]);
+      setScanMsg(`Scanned: ${s.sareeId || s.id}`);
+      setTimeout(() => setScanMsg(""), 1800);
+    }, 450);
+  };
+
+  return (
+    <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em", flex: 1 }}>
+          {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
+        </span>
+        <button onClick={scan}
+          style={{ display: "flex", alignItems: "center", gap: 7, height: 38, padding: "0 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
+          <Scan size={15} /> Scan Saree
+        </button>
+        <button onClick={toggleBrowse}
+          style={{ display: "flex", alignItems: "center", gap: 7, height: 38, padding: "0 16px", background: browse ? T.royalBurgundy : "#FFF", border: `1.5px solid ${browse ? T.royalBurgundy : T.borderMed}`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: browse ? "#FFF" : T.royalBurgundy, cursor: "pointer" }}>
+          <Package size={15} /> Select from Inventory {browse ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </button>
+      </div>
+      {scanMsg && (
+        <div style={{ marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>
+      )}
+
+      {/* The page's own inventory table, with its tabs and filters intact */}
+      {browse && (
+        <div style={{ marginTop: 12, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 16, maxHeight: 460, overflowY: "auto" }}>
+          <WeaverSareesSection
+            ownerType="all"
+            selectable
+            selectedIds={pickedIds}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            onVisibleChange={setRows}
+          />
+        </div>
+      )}
+
+      {/* Picked chips */}
+      {picked.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, marginTop: 12 }}>
+          {picked.map(s => {
+            const sId = s.sareeId || s.id;
+            return (
+              <span key={sId} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", border: `1px solid ${T.borderMed}`, borderRadius: 999, padding: "5px 8px 5px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>
+                {sId}
+                <button onClick={() => remove(sId)} title="Remove"
+                  style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                  <X size={11} color={T.crimson} />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Saree review list (shared by the quotation / invoice review steps) ────────
+function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: {
   sarees: FinishingReturn[];
-  onConfirm: (transport: TransportData, opts?: { skipped?: boolean }) => void;
+  prices: Record<string, string>;
+  applyGst: boolean;
+  gstPct: string;
+  docLabel: string;
+}) {
+  const { batches } = useBatches();
+  const subtotal = sarees.reduce((sum, s) => sum + (parseFloat(prices[s.sareeId || s.id]) || 0), 0);
+  const gstAmount = applyGst ? subtotal * (parseFloat(gstPct) || 0) / 100 : 0;
+
+  return (
+    <div>
+      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>
+        {sarees.length} saree{sarees.length === 1 ? "" : "s"} on this {docLabel.toLowerCase()}, with the amounts entered.
+      </div>
+      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 130px", padding: "10px 16px", background: T.silkCream, borderBottom: `1px solid ${T.borderDef}` }}>
+          {["Saree", "Amount (₹)"].map((h, i) => (
+            <div key={h} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i ? "right" as const : "left" as const }}>{h}</div>
+          ))}
+        </div>
+        {sarees.map((s, i) => {
+          const sId = s.sareeId || s.id;
+          const bId = batches.find(b => b.rows.some(r => r.sareeId === sId))?.batchId;
+          const p = parseFloat(prices[sId]) || 0;
+          return (
+            <div key={sId} style={{ display: "grid", gridTemplateColumns: "1fr 130px", alignItems: "center", padding: "12px 16px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.45)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 7, flexWrap: "wrap" as const }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>{sId}</span>
+                    {bId && <span style={{ fontFamily: F.mono, fontSize: 9.5, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{bId}</span>}
+                    <StatusBadge status={s.inventoryStatus} />
+                  </div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+                    {s.sareeTypeCode || s.designCode} · {s.sareeType} · Weaver: {s.weaverName}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: p ? T.luxuryBrown : T.crimson, textAlign: "right" as const }}>
+                {p ? `₹${p.toLocaleString("en-IN")}` : "not priced"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 14, background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Subtotal ({sarees.length} sarees)</span>
+          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{subtotal.toLocaleString("en-IN")}</span>
+        </div>
+        {applyGst && (
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>GST ({gstPct}%)</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{gstAmount.toLocaleString("en-IN")}</span>
+          </div>
+        )}
+        <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderGold}`, paddingTop: 8, marginTop: 2 }}>
+          <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
+          <span style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: T.royalBurgundy }}>₹{(subtotal + gstAmount).toLocaleString("en-IN")}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Shown inside any dispatch flow opened before sarees were picked. The flow
+// stays browsable; only the committing actions are held back.
+function NoSareesNotice({ what }: { what: string }) {
+  return (
+    <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.35)`, borderRadius: 14, padding: "22px 24px", display: "flex", gap: 14, alignItems: "flex-start" }}>
+      <Package size={22} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 2 }} />
+      <div>
+        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 5 }}>No sarees selected yet</div>
+        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
+          Close this and tick the sarees you want to {what} in the inventory table — or use <strong style={{ color: T.luxuryBrown }}>Scan</strong> to pick one. You can look through the steps here in the meantime.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Dispatch to Shop modal ────────────────────────────────────────────────────
+function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
+  sarees: FinishingReturn[];
+  available: FinishingReturn[];
+  onConfirm: (transport: TransportData, opts: { skipped?: boolean; picked: FinishingReturn[] }) => void;
   onClose: () => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(1);
+  const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
+  const [browsing, setBrowsing] = useState(false);
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "" });
 
   const canNext2 = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
+  // Nothing can be dispatched until at least one saree is on the docket.
+  const noSarees = picked.length === 0;
 
   const STEPS = ["Sarees", "Transport & LR", "Upload Receipt", "Confirm"];
 
@@ -517,7 +734,7 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: 620, maxHeight: "88vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden" }}>
+        style={{ position: "relative", width: step === 1 && browsing ? 1180 : 620, maxWidth: "96vw", maxHeight: "88vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
 
         {/* Header */}
         <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
@@ -547,19 +764,32 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
         <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
           {step === 1 && (
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} selected for dispatch to shop.</div>
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                {sarees.map((s, i) => (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream }}>
-                    <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
-                    </div>
-                    <StatusBadge status={s.inventoryStatus} />
+              <SareePicker
+                available={available}
+                picked={picked}
+                onChange={setPicked}
+                onBrowseChange={setBrowsing}
+                label="Sarees going to the shop"
+              />
+              {noSarees ? (
+                <NoSareesNotice what="send to the shop" />
+              ) : (
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{picked.length} saree{picked.length > 1 ? "s" : ""} selected for dispatch to shop.</div>
+                  <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                    {picked.map((s, i) => (
+                      <div key={s.sareeId || s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < picked.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream }}>
+                        <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType} · {s.weaverName}</div>
+                        </div>
+                        <StatusBadge status={s.inventoryStatus} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -583,7 +813,7 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 16 }}>Review dispatch details before confirming.</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", background: T.silkCream, borderRadius: 12, padding: "16px 18px", marginBottom: 16 }}>
                 {[
-                  ["Sarees",    sarees.map(s => s.sareeId).join(", ")],
+                  ["Sarees",    picked.map(s => s.sareeId).join(", ")],
                   ["LR Number", transport.lrNumber],
                   ["Transport", transport.transportCompany],
                   ["Vehicle",   transport.vehicleNumber],
@@ -608,19 +838,24 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
             </button>
           )}
           {step < 4 && (
-            <button onClick={() => onConfirm(transport, { skipped: true })} title="Dispatch now — fill remaining details later from Dispatch History"
-              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#8B6018", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
+            <button onClick={() => onConfirm(transport, { skipped: true, picked })} disabled={noSarees}
+              title={noSarees ? "Select at least one saree first" : "Dispatch now — fill remaining details later from Dispatch History"}
+              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${noSarees ? T.borderMed : T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: noSarees ? T.taupe : "#8B6018", cursor: noSarees ? "not-allowed" : "pointer", opacity: noSarees ? 0.55 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
               <Zap size={14} /> Dispatch Now
             </button>
           )}
-          {step < 4 ? (
-            <button onClick={() => setStep(s => s + 1)} disabled={step === 2 && !canNext2}
-              style={{ flex: 1, height: 46, background: (step === 2 && !canNext2) ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: (step === 2 && !canNext2) ? T.taupe : "#FFF", cursor: (step === 2 && !canNext2) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-              Continue <ArrowRight size={15} />
-            </button>
-          ) : (
-            <button onClick={() => onConfirm(transport)}
-              style={{ flex: 1, height: 46, background: `linear-gradient(135deg, ${T.green} 0%, #145230 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: "0 4px 20px rgba(30,102,64,0.25)" }}>
+          {step < 4 ? (() => {
+            const blocked = noSarees || (step === 2 && !canNext2);
+            return (
+              <button onClick={() => setStep(s => s + 1)} disabled={blocked}
+                title={noSarees ? "Select at least one saree first" : undefined}
+                style={{ flex: 1, height: 46, background: blocked ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: blocked ? T.taupe : "#FFF", cursor: blocked ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                Continue <ArrowRight size={15} />
+              </button>
+            );
+          })() : (
+            <button onClick={() => onConfirm(transport, { picked })} disabled={noSarees}
+              style={{ flex: 1, height: 46, background: noSarees ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.green} 0%, #145230 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: noSarees ? T.taupe : "#FFF", cursor: noSarees ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: noSarees ? "none" : "0 4px 20px rgba(30,102,64,0.25)" }}>
               <CheckCircle2 size={16} /> Confirm Shop Dispatch
             </button>
           )}
@@ -631,9 +866,14 @@ function DispatchShopModal({ sarees, onConfirm, onClose }: {
 }
 
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
-function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
+// Customer → Quotation (optional) → Tax Invoice → Sarees → Transport → Receipt.
+// Picking a previously raised quotation pre-fills the invoice; everything stays
+// editable. Skipping it goes straight to a fresh invoice where sarees are added
+// by scan or from inventory.
+function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
   sarees: FinishingReturn[];
-  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean }) => void;
+  available: FinishingReturn[];
+  onConfirm: (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef: string | undefined, opts: { skipped?: boolean; picked: FinishingReturn[]; quotationRef?: string }) => void;
   onClose: () => void;
   initialBulkOrderRef?: string;
   initialCustomerId?: string;
@@ -645,26 +885,77 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
   const { bulkOrders } = useBulkOrders();
   const { batches } = useBatches();
+  const { quotations } = useFinishing();
+  const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
+  const [browsing, setBrowsing] = useState(false);
+  const [quotationId, setQuotationId] = useState<string>("");
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "", expectedDelivery: "", specialInstructions: "" });
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
   const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
   const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
 
+  // Quotations already raised for this customer and not yet dispatched.
+  const customerQuotations = useMemo(
+    () => quotations.filter(q => q.customerId === customerId && q.status !== "dispatched"),
+    [quotations, customerId]
+  );
+  const chosenQuotation = customerQuotations.find(q => q.id === quotationId) ?? null;
+
+  // Pull a quotation's sarees, prices, GST and firm into the invoice. Everything
+  // stays editable afterwards.
+  const applyQuotation = (qId: string) => {
+    const q = customerQuotations.find(x => x.id === qId);
+    setQuotationId(qId);
+    if (!q) return;
+    setPicked(q.sarees.map(s => ({
+      id: s.sareeId,
+      assignmentId: `QT:${q.quotationNumber}`,
+      sareeId: s.sareeId,
+      designCode: s.designCode,
+      sareeTypeCode: s.sareeTypeCode,
+      sareeType: s.sareeType,
+      weaverName: s.weaverName,
+      condition: "perfect" as const,
+      receivedBy: "Admin",
+      receivedDate: q.quotationDate,
+      inventoryStatus: "Ready for Dispatch" as const,
+      quotationRef: q.quotationNumber,
+    })));
+    setInv(prev => ({
+      ...prev,
+      prices: { ...q.prices },
+      applyGst: q.applyGst,
+      gstPct: q.gstPct,
+      firmId: q.firmId || prev.firmId,
+      invoiceNotes: q.notes || prev.invoiceNotes,
+    }));
+    if (q.bulkOrderRef) setBulkOrderRef(q.bulkOrderRef);
+  };
+
+  const clearQuotation = () => { setQuotationId(""); setPicked(sarees); };
+
   const canNext1 = !!customerId;
-  const canInvoice = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
+  const noSarees = picked.length === 0;
+  // Every picked saree must carry a price — an empty map would pass a length
+  // check on its own, so the count is guarded explicitly.
+  const pricesComplete = picked.every(s => parseFloat(inv.prices[s.sareeId || s.id]) > 0);
+  const canInvoice = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
   const canTransport = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
 
-  // Steps reordered: Tax Invoice is raised BEFORE transport & receipt.
-  const STEPS = ["Customer", "Sarees", "Tax Invoice", "Transport & LR", "Upload Receipt"];
+  const STEPS = ["Customer", "Quotation", "Tax Invoice", "Sarees", "Transport & LR", "Upload Receipt"];
+  const QUOTATION_STEP = 2;
   const INVOICE_STEP = 3;
-  const nextDisabled = (step === 1 && !canNext1) || (step === INVOICE_STEP && !canInvoice) || (step === 4 && !canTransport);
+  const REVIEW_STEP = 4;
+  const TRANSPORT_STEP = 5;
+  const nextDisabled = (step === 1 && !canNext1) || (step === INVOICE_STEP && !canInvoice) || (step === REVIEW_STEP && noSarees) || (step === TRANSPORT_STEP && !canTransport);
+  const confirmOpts = { picked, quotationRef: chosenQuotation?.quotationNumber };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: step === INVOICE_STEP ? 1100 : 680, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
+        style={{ position: "relative", width: step === INVOICE_STEP ? (browsing ? 1240 : 1100) : 680, maxWidth: "96vw", maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
 
         {/* Header */}
         <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
@@ -752,10 +1043,108 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
             </div>
           )}
 
-          {/* Step 2 — Sarees */}
-          {step === 2 && (
+          {/* Step 2 — Previously raised quotations (optional) */}
+          {step === QUOTATION_STEP && (
             <div>
-              {/* Linked bulk order banner */}
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>
+                Pick a quotation already raised for {selectedCustomer?.name} to carry its sarees and prices into the invoice — or continue without one and build the invoice from scratch.
+              </div>
+
+              {customerQuotations.length === 0 ? (
+                <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const }}>
+                  <FileText size={26} color={T.taupe} style={{ marginBottom: 10 }} />
+                  <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>No open quotations for this customer</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 5 }}>Continue to the tax invoice and add sarees there.</div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {customerQuotations.map(q => {
+                    const on = quotationId === q.id;
+                    return (
+                      <button key={q.id} onClick={() => (on ? clearQuotation() : applyQuotation(q.id))}
+                        style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", border: `1.5px solid ${on ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: on ? "rgba(110,15,45,0.04)" : "#FFF", cursor: "pointer", textAlign: "left" as const }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: on ? "rgba(110,15,45,0.12)" : T.silkCream, border: `1.5px solid ${on ? T.royalBurgundy : T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <FileText size={16} color={on ? T.royalBurgundy : T.taupe} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" as const }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, textTransform: "capitalize" as const, color: q.status === "received" ? T.green : "#8B6018", background: q.status === "received" ? T.greenBg : "rgba(200,155,71,0.14)", borderRadius: 20, padding: "2px 9px" }}>{q.status.replace(/-/g, " ")}</span>
+                            {q.bulkOrderRef && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 6px", borderRadius: 4 }}>{q.bulkOrderRef}</span>}
+                          </div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
+                            {q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                          <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>₹{q.grandTotal.toLocaleString("en-IN")}</div>
+                          {on && <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
+                        </div>
+                        {on && <CheckCircle2 size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {chosenQuotation && (
+                <div style={{ marginTop: 16, background: T.greenBg, border: `1px solid rgba(30,102,64,0.22)`, borderRadius: 12, padding: "14px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <CheckCircle2 size={17} color={T.green} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.6 }}>
+                    <strong>{chosenQuotation.quotationNumber}</strong> loaded — {chosenQuotation.sarees.length} saree{chosenQuotation.sarees.length === 1 ? "" : "s"} and their prices are carried into the tax invoice. You can add, remove or reprice anything on the next step.
+                  </div>
+                </div>
+              )}
+
+              {!chosenQuotation && customerQuotations.length > 0 && (
+                <button onClick={() => setStep(INVOICE_STEP)}
+                  style={{ marginTop: 16, width: "100%", height: 44, background: "transparent", border: `1.5px dashed ${T.borderMed}`, borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+                  Skip — raise a tax invoice without a quotation
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Step 3 — Tax Invoice (sarees are added here) */}
+          {step === INVOICE_STEP && (
+            <div>
+              {chosenQuotation && (
+                <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 10 }}>
+                  <FileText size={15} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                  <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                    Prefilled from quotation <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong> — edit freely.
+                  </span>
+                </div>
+              )}
+              <SareePicker
+                available={available}
+                picked={picked}
+                onChange={setPicked}
+                onBrowseChange={setBrowsing}
+                label="Sarees on this invoice"
+              />
+              {noSarees ? (
+                <NoSareesNotice what="send to wholesale" />
+              ) : (
+                <InvoiceGenerator
+                  sarees={picked}
+                  customer={selectedCustomer}
+                  transport={transport}
+                  data={inv}
+                  onChange={setInv}
+                  bulkOrderRef={bulkOrderRef || undefined}
+                  embedded
+                  onSend={() => {}}
+                  onDraft={() => {}}
+                  onCancel={onClose}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Step 4 — Sarees review */}
+          {step === REVIEW_STEP && (
+            <div>
               {bulkOrderRef && (() => {
                 const linked = bulkOrders.find(o => o.ref === bulkOrderRef);
                 return linked ? (
@@ -771,64 +1160,23 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
                   </div>
                 ) : null;
               })()}
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} will be dispatched to {selectedCustomer?.name}.</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {(() => {
-                  const grouped: Record<string, typeof sarees> = {};
-                  sarees.forEach(s => {
-                    const sId = s.sareeId || s.id;
-                    const bId = batches.find(b => b.rows.some(r => r.sareeId === sId))?.batchId || "No Batch";
-                    if (!grouped[bId]) grouped[bId] = [];
-                    grouped[bId].push(s);
-                  });
-                  return Object.entries(grouped).map(([bId, groupSarees]) => {
-                    const batchObj = batches.find(b => b.batchId === bId);
-                    return (
-                      <div key={bId} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                        <div style={{ padding: "10px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bId}</span>
-                            {batchObj && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{batchObj.quantity} sarees · {batchObj.weaverName}</span>}
-                          </div>
-                          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe }}>{groupSarees.length} selected</span>
-                        </div>
-                        {groupSarees.map((s, i) => (
-                          <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < groupSarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: "#FFF" }}>
-                            <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
-                            </div>
-                            <StatusBadge status={s.inventoryStatus} />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  });
-                })()}
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 12 }}>
+                Invoice <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{inv.invoiceNumber}</strong> for {selectedCustomer?.name}
+                {chosenQuotation && <> · from quotation <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong></>}
               </div>
+              <SareeReviewList
+                sarees={picked}
+                prices={inv.prices}
+                applyGst={inv.applyGst}
+                gstPct={inv.gstPct}
+                docLabel="Invoice"
+              />
             </div>
           )}
 
-          {/* Step 3 — Tax Invoice (raised before transport) */}
-          {step === INVOICE_STEP && (
-            <InvoiceGenerator
-              sarees={sarees}
-              customer={selectedCustomer}
-              transport={transport}
-              data={inv}
-              onChange={setInv}
-              bulkOrderRef={bulkOrderRef || undefined}
-              embedded
-              onSend={() => {}}
-              onDraft={() => {}}
-              onCancel={onClose}
-            />
-          )}
+          {step === TRANSPORT_STEP && <TransportForm data={transport} onChange={setTransport} wholesale />}
 
-          {step === 4 && <TransportForm data={transport} onChange={setTransport} wholesale />}
-
-          {step === 5 && (
+          {step === STEPS.length && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Upload the LR receipt document for this wholesale dispatch. You can skip this and upload later from Dispatch Records.</div>
               <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "40px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
@@ -847,10 +1195,10 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
               Back
             </button>
           )}
-          {step === INVOICE_STEP && (
-            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, { skipped: true })} disabled={!canInvoice}
-              title="Dispatch now — fill transport & receipt later from Dispatch History"
-              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: !canInvoice ? T.taupe : "#8B6018", cursor: !canInvoice ? "not-allowed" : "pointer", opacity: !canInvoice ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
+          {(step === INVOICE_STEP || step === REVIEW_STEP) && (
+            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, { ...confirmOpts, skipped: true })} disabled={!canInvoice}
+              title={canInvoice ? "Dispatch now — fill transport & receipt later from Dispatch History" : "Add sarees and prices first"}
+              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${!canInvoice ? T.borderMed : T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: !canInvoice ? T.taupe : "#8B6018", cursor: !canInvoice ? "not-allowed" : "pointer", opacity: !canInvoice ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
               <Zap size={14} /> Dispatch Now
             </button>
           )}
@@ -860,8 +1208,8 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
               Continue <ArrowRight size={15} />
             </button>
           ) : (
-            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined)}
-              style={{ flex: 1, height: 46, background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
+            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, confirmOpts)} disabled={!canInvoice}
+              style={{ flex: 1, height: 46, background: !canInvoice ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canInvoice ? T.taupe : "#FFF", cursor: !canInvoice ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !canInvoice ? "none" : "0 4px 20px rgba(110,15,45,0.25)" }}>
               <Truck size={16} /> Confirm &amp; Dispatch
             </button>
           )}
@@ -873,10 +1221,13 @@ function DispatchWholesaleModal({ sarees, onConfirm, onClose, initialBulkOrderRe
 
 
 
-// ── Raise Quotation modal (Customer → Sarees → Quotation) ─────────────────────
-function RaiseQuotationModal({ sarees, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
+// ── Raise Quotation modal (Customer → Quotation → Sarees) ─────────────────────
+// Sarees are added inside the Quotation step — by scan or from inventory — so
+// the flow works whether or not anything was ticked on the page first.
+function RaiseQuotationModal({ sarees, available, onConfirm, onClose, initialBulkOrderRef, initialCustomerId }: {
   sarees: FinishingReturn[];
-  onConfirm: (inv: InvoiceData, customerId: string, bulkOrderRef?: string) => void;
+  available: FinishingReturn[];
+  onConfirm: (inv: InvoiceData, customerId: string, bulkOrderRef: string | undefined, picked: FinishingReturn[]) => void;
   onClose: () => void;
   initialBulkOrderRef?: string;
   initialCustomerId?: string;
@@ -887,23 +1238,29 @@ function RaiseQuotationModal({ sarees, onConfirm, onClose, initialBulkOrderRef, 
   const [customerSearch, setCustomerSearch] = useState("");
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
   const { bulkOrders } = useBulkOrders();
-  const { batches } = useBatches();
+  const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
+  const [browsing, setBrowsing] = useState(false);
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `QT-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
   const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
   const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
 
   const canNext1 = !!customerId;
-  const canQuote = inv.invoiceNumber.trim() && inv.firmId && Object.keys(inv.prices).length === sarees.length && Object.values(inv.prices).every(p => parseFloat(p) > 0);
+  const noSarees = picked.length === 0;
+  // Every picked saree must carry a price — an empty map would pass the length
+  // check on its own, so the count is guarded explicitly.
+  const pricesComplete = picked.every(s => parseFloat(inv.prices[s.sareeId || s.id]) > 0);
+  const canQuote = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
 
-  const STEPS = ["Customer", "Sarees", "Quotation"];
-  const nextDisabled = step === 1 && !canNext1;
+  const STEPS = ["Customer", "Quotation", "Sarees"];
+  const QUOTE_STEP = 2;
+  const nextDisabled = (step === 1 && !canNext1) || (step === QUOTE_STEP && !canQuote);
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: step === 3 ? 1100 : 680, maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
+        style={{ position: "relative", width: step === QUOTE_STEP ? (browsing ? 1240 : 1100) : 680, maxWidth: "96vw", maxHeight: "92vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
 
         {/* Header */}
         <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
@@ -967,39 +1324,44 @@ function RaiseQuotationModal({ sarees, onConfirm, onClose, initialBulkOrderRef, 
             </div>
           )}
 
-          {/* Step 2 — Sarees */}
-          {step === 2 && (
+          {/* Step 2 — Quotation (sarees are added here) */}
+          {step === QUOTE_STEP && (
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>{sarees.length} saree{sarees.length > 1 ? "s" : ""} will be included in this quotation for {selectedCustomer?.name}.</div>
-              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                {sarees.map((s, i) => (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < sarees.length - 1 ? `1px solid ${T.borderDef}` : "none", background: "#FFF" }}>
-                    <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
-                    </div>
-                    <StatusBadge status={s.inventoryStatus} />
-                  </div>
-                ))}
-              </div>
+              <SareePicker
+                available={available}
+                picked={picked}
+                onChange={setPicked}
+                onBrowseChange={setBrowsing}
+                label="Sarees on this quotation"
+              />
+              {noSarees ? (
+                <NoSareesNotice what="quote for" />
+              ) : (
+                <InvoiceGenerator
+                  sarees={picked}
+                  customer={selectedCustomer}
+                  transport={{ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: "", notes: "" }}
+                  data={inv}
+                  onChange={setInv}
+                  bulkOrderRef={bulkOrderRef || undefined}
+                  mode="quotation"
+                  embedded
+                  onSend={() => {}}
+                  onDraft={() => {}}
+                  onCancel={onClose}
+                />
+              )}
             </div>
           )}
 
-          {/* Step 3 — Quotation */}
+          {/* Step 3 — Sarees review */}
           {step === 3 && (
-            <InvoiceGenerator
-              sarees={sarees}
-              customer={selectedCustomer}
-              transport={{ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: "", notes: "" }}
-              data={inv}
-              onChange={setInv}
-              bulkOrderRef={bulkOrderRef || undefined}
-              mode="quotation"
-              embedded
-              onSend={() => {}}
-              onDraft={() => {}}
-              onCancel={onClose}
+            <SareeReviewList
+              sarees={picked}
+              prices={inv.prices}
+              applyGst={inv.applyGst}
+              gstPct={inv.gstPct}
+              docLabel="Quotation"
             />
           )}
         </div>
@@ -1017,7 +1379,7 @@ function RaiseQuotationModal({ sarees, onConfirm, onClose, initialBulkOrderRef, 
               Continue <ArrowRight size={15} />
             </button>
           ) : (
-            <button onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined)} disabled={!canQuote}
+            <button onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined, picked)} disabled={!canQuote}
               style={{ flex: 1, height: 46, background: !canQuote ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canQuote ? T.taupe : "#FFF", cursor: !canQuote ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
               <Send size={16} /> Raise Quotation
             </button>
@@ -1040,7 +1402,9 @@ function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
 }
 
 // ── Resume (complete pending) dispatch modal ──────────────────────────────────
-function ResumeDispatchModal({ record, onSave, onClose }: {
+// Exported so the Worker Staff portal can complete dispatch details with the
+// exact same form, rather than a copy that would drift.
+export function ResumeDispatchModal({ record, onSave, onClose }: {
   record: DispatchRecord;
   onSave: (patch: Partial<DispatchRecord>) => void;
   onClose: () => void;
@@ -1098,7 +1462,9 @@ function ResumeDispatchModal({ record, onSave, onClose }: {
 }
 
 // ── Dispatch History section ──────────────────────────────────────────────────
-function DispatchHistorySection({ dispatches, firms, onResume }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void }) {
+// Exported for the Worker Staff portal — same component, same markup, so the two
+// screens cannot fall out of step.
+export function DispatchHistorySection({ dispatches, firms, onResume }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void }) {
   const [tab, setTab] = useState<"all" | "shop" | "wholesale">("all");
   const rows = useMemo(() =>
     [...dispatches]
@@ -1388,6 +1754,15 @@ export function InventoryPage() {
     }));
   }, [mirroredRows, selected]);
 
+  // Whole inventory table as dispatch-shaped rows — the pool the modals' scan
+  // and "select from inventory" controls draw from.
+  const availableSarees = useMemo<FinishingReturn[]>(() => mirroredRows.map(rowToDispatchSaree), [mirroredRows]);
+
+  const selectedSarees = useMemo(
+    () => availableSarees.filter(s => selected.has(s.sareeId)),
+    [availableSarees, selected]
+  );
+
   const toggleSareeRow = useCallback((id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
@@ -1419,8 +1794,11 @@ export function InventoryPage() {
     }, 800);
   }, [mirroredRows, selected]);
 
-  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean }) => {
-    const sareeIds = dispatchableSelected.map(r => r.id);
+  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[] }) => {
+    // The modal owns the list once sarees can be scanned or picked inside it.
+    const sareeIds = opts?.picked?.length
+      ? opts.picked.map(s => s.sareeId || s.id)
+      : dispatchableSelected.map(r => r.id);
     dispatchSarees(sareeIds, {
       type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
       lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
@@ -1440,18 +1818,28 @@ export function InventoryPage() {
     return returns.filter(r => r.quotationRef === quotationDispatch.quotationNumber && r.inventoryStatus === "Ready for Dispatch");
   }, [quotationDispatch, returns]);
 
-  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean }) => {
-    const sareeIds = quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
+  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean; picked?: FinishingReturn[]; quotationRef?: string }) => {
+    // The modal owns the saree list now (scanned / picked / pulled from a
+    // quotation), so it is the source of truth when it supplies one.
+    const sareeIds = opts?.picked?.length
+      ? opts.picked.map(s => s.sareeId || s.id)
+      : quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
     const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+    const subtotal = sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0);
+    const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
     const dispatchId = dispatchSarees(sareeIds, {
       type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
       lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
       customerId, customerName: customer?.name, customerPhone: customer?.phone,
       expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
-      invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate, pricePerSaree: parseFloat(inv.pricePerSaree) || 0,
-      gstPct: parseFloat(inv.gstPct) || 0, firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
+      invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate,
+      pricePerSaree: sareeIds.length ? Math.round(subtotal / sareeIds.length) : 0,
+      totalAmount: subtotal,
+      gstPct: inv.applyGst ? parseFloat(inv.gstPct) || 0 : 0,
+      grandTotal: subtotal + gstAmount,
+      firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
       bulkOrderRef,
-      quotationRef: quotationDispatch?.quotationNumber,
+      quotationRef: opts?.quotationRef ?? quotationDispatch?.quotationNumber,
       pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
       pendingReceipt: !!opts?.skipped,
     });
@@ -1469,9 +1857,16 @@ export function InventoryPage() {
       : `Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
   };
 
-  const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string) => {
+  const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
     const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
-    const quoteSarees = dispatchableSelected;
+    // The modal's own list wins — sarees may have been scanned or picked there.
+    const quoteSarees = (picked?.length ? picked : selectedSarees).map(s => ({
+      id: s.sareeId || s.id,
+      designCode: s.designCode,
+      sareeTypeCode: s.sareeTypeCode,
+      sareeType: s.sareeType,
+      weaverName: s.weaverName,
+    }));
     const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]) || 0), 0);
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
     const firm = firms.find(f => f.id === inv.firmId);
@@ -1488,6 +1883,7 @@ export function InventoryPage() {
       sarees: quoteSarees.map(r => ({
         sareeId: r.id,
         designCode: r.designCode,
+        sareeTypeCode: r.sareeTypeCode,
         sareeType: r.sareeType,
         weaverName: r.weaverName,
         finishingStatus: "pending" as const,
@@ -1606,33 +2002,39 @@ export function InventoryPage() {
               )}
             </div>
 
-            {/* Action bar */}
-            <AnimatePresence>
-              {selected.size > 0 && (
-                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2, ease: EASE }}
-                  style={{ background: T.deepWine, borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(61,14,26,0.20)" }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: 1 }}>
+            {/* Action bar — always visible so the dispatch routes are discoverable
+                before any saree is picked. The modals themselves gate on selection. */}
+            <motion.div layout transition={{ duration: 0.2, ease: EASE }}
+              style={{ background: T.deepWine, borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(61,14,26,0.20)" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: 1 }}>
+                {selected.size > 0 ? (
+                  <>
                     <strong style={{ color: "#FFF" }}>{selected.size}</strong> selected
                     {dispatchableSelected.length !== selected.size && ` (${dispatchableSelected.length} ready for dispatch)`}
-                  </span>
-                  <button onClick={() => setModal("shop")} disabled={!dispatchableSelected.length}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: T.antiqueGold, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.deepWine, cursor: dispatchableSelected.length ? "pointer" : "not-allowed", opacity: dispatchableSelected.length ? 1 : 0.5 }}>
-                    <ShoppingBag size={15} /> Dispatch to Shop
-                  </button>
-                  <button onClick={() => setModal("wholesale")} disabled={!dispatchableSelected.length}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: dispatchableSelected.length ? "pointer" : "not-allowed", opacity: dispatchableSelected.length ? 1 : 0.5 }}>
-                    <Users size={15} /> Dispatch to Wholesale
-                  </button>
-                  <button onClick={() => setModal("quotation")} disabled={!dispatchableSelected.length}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: dispatchableSelected.length ? "pointer" : "not-allowed", opacity: dispatchableSelected.length ? 1 : 0.5 }}>
-                    <FileText size={15} /> Raise Quotation
-                  </button>
-                  <button onClick={() => setSelected(new Set())} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                    <X size={14} color="#FFF" />
-                  </button>
-                </motion.div>
+                  </>
+                ) : (
+                  <>No sarees selected — <span style={{ color: "rgba(255,255,255,0.62)" }}>pick sarees from the table below, or open an action to start</span></>
+                )}
+              </span>
+              <button onClick={() => setModal("shop")}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: T.antiqueGold, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.deepWine, cursor: "pointer" }}>
+                <ShoppingBag size={15} /> Dispatch to Shop
+              </button>
+              <button onClick={() => setModal("wholesale")}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}>
+                <Users size={15} /> Dispatch to Wholesale
+              </button>
+              <button onClick={() => setModal("quotation")}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
+                <FileText size={15} /> Raise Quotation
+              </button>
+              {selected.size > 0 && (
+                <button onClick={() => setSelected(new Set())} title="Clear selection"
+                  style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                  <X size={14} color="#FFF" />
+                </button>
               )}
-            </AnimatePresence>
+            </motion.div>
 
             {/* All Sarees Inventory — same table used on the Production page */}
             <div style={{ ...card, borderRadius: 16, padding: 20 }}>
@@ -1653,17 +2055,19 @@ export function InventoryPage() {
             <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 14 }}>Quick Dispatch</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button onClick={() => setModal(selected.size > 0 ? "shop" : null)}
+                <button onClick={() => setModal("shop")}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left" as const }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <ShoppingBag size={18} color="#FFF" />
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF" }}>Dispatch to Shop</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>Select sarees first</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
+                      {selected.size > 0 ? `${selected.size} saree${selected.size > 1 ? "s" : ""} ready` : "Select sarees first"}
+                    </div>
                   </div>
                 </button>
-                <button onClick={() => setModal(selected.size > 0 ? "wholesale" : null)}
+                <button onClick={() => setModal("wholesale")}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Users size={18} color={T.royalBurgundy} />
@@ -1673,7 +2077,7 @@ export function InventoryPage() {
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
                   </div>
                 </button>
-                <button onClick={() => setModal(selected.size > 0 ? "quotation" : null)}
+                <button onClick={() => setModal("quotation")}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <FileText size={18} color={T.antiqueGold} />
@@ -1728,21 +2132,11 @@ export function InventoryPage() {
 
       {/* ── MODALS ──────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {modal === "shop" && dispatchableSelected.length > 0 && (
+        {modal === "shop" && (
           <DispatchShopModal
             key="shop-modal"
-            sarees={dispatchableSelected.map(r => ({
-              id: r.originalId,
-              assignmentId: "DIRECT-DISPATCH",
-              sareeId: r.id,
-              designCode: r.designCode,
-              sareeType: r.sareeType,
-              weaverName: r.weaverName,
-              condition: "perfect" as const,
-              receivedBy: "Admin",
-              receivedDate: r.date,
-              inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
-            }))}
+            sarees={selectedSarees}
+            available={availableSarees}
             onConfirm={handleShopConfirm}
             onClose={() => setModal(null)}
           />
@@ -1751,13 +2145,15 @@ export function InventoryPage() {
           <DispatchWholesaleModal
             key="wholesale-modal-quotation"
             sarees={quotationDispatchSarees}
+            available={availableSarees}
             initialCustomerId={quotationDispatch.customerId}
             initialBulkOrderRef={quotationDispatch.bulkOrderRef}
             onConfirm={handleWholesaleConfirm}
             onClose={() => { setModal(null); setQuotationDispatch(null); }}
           />
         )}
-        {modal === "wholesale" && !quotationDispatch && dispatchableSelected.length > 0 && (() => {
+        {/* Opens with or without a prior selection — sarees can be added inside. */}
+        {modal === "wholesale" && !quotationDispatch && (() => {
           // Auto-detect bulk order from selected sarees
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
@@ -1769,18 +2165,8 @@ export function InventoryPage() {
           return (
             <DispatchWholesaleModal
               key="wholesale-modal"
-              sarees={dispatchableSelected.map(r => ({
-                id: r.originalId,
-                assignmentId: "DIRECT-DISPATCH",
-                sareeId: r.id,
-                designCode: r.designCode,
-                sareeType: r.sareeType,
-                weaverName: r.weaverName,
-                condition: "perfect" as const,
-                receivedBy: "Admin",
-                receivedDate: r.date,
-                inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
-              }))}
+              sarees={selectedSarees}
+              available={availableSarees}
               initialBulkOrderRef={detectedRef}
               initialCustomerId={detectedCustomerId}
               onConfirm={handleWholesaleConfirm}
@@ -1788,7 +2174,7 @@ export function InventoryPage() {
             />
           );
         })()}
-        {modal === "quotation" && dispatchableSelected.length > 0 && (() => {
+        {modal === "quotation" && (() => {
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
           const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
@@ -1798,18 +2184,8 @@ export function InventoryPage() {
           return (
             <RaiseQuotationModal
               key="quotation-modal"
-              sarees={dispatchableSelected.map(r => ({
-                id: r.originalId,
-                assignmentId: "QUOTATION",
-                sareeId: r.id,
-                designCode: r.designCode,
-                sareeType: r.sareeType,
-                weaverName: r.weaverName,
-                condition: "perfect" as const,
-                receivedBy: "Admin",
-                receivedDate: r.date,
-                inventoryStatus: r.status === "Finishing complete" ? "Ready for Dispatch" : (r.status === "QC Passed" ? "Ready for Dispatch" : r.status as any)
-              }))}
+              sarees={selectedSarees}
+              available={availableSarees}
               initialBulkOrderRef={detectedRef}
               initialCustomerId={detectedCustomerId}
               onConfirm={handleRaiseQuotation}
