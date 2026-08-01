@@ -463,6 +463,12 @@ export function BatchCreationPage() {
   // ── Sort control
   const [sortBy, setSortBy] = useState<"serial" | "weaver" | "factoryLoom">("serial");
 
+  // ── Filters
+  const [searchFilter, setSearchFilter] = useState("");
+  const [weaverFilter, setWeaverFilter] = useState("All");
+  const [orderFilter, setOrderFilter] = useState("All");
+  const [sareeTypeFilter, setSareeTypeFilter] = useState("All");
+
   const { issueRecords } = useMaterialIssue();
 
   // ── Saved feedback
@@ -653,6 +659,32 @@ export function BatchCreationPage() {
     }, 2000);
   }
 
+  // ── Sorted and filtered view of rows (does not mutate underlying row order/serials)
+  const weaverOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.weaverName || r.factoryLoomNumber).filter(Boolean)))].sort(), [rows]);
+  const orderOptions = React.useMemo(() => ["All", "General Stock", ...Array.from(new Set(rows.map(r => r.bulkOrderLabel).filter(Boolean)))].sort(), [rows]);
+  const sareeTypeOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.sareeTypeCode).filter(Boolean)))].sort(), [rows]);
+
+  const displayRows = [...rows].filter(r => {
+    const q = searchFilter.toLowerCase();
+    const mSearch = !q || r.sareeId?.toLowerCase().includes(q) || r.weaverName?.toLowerCase().includes(q) || r.factoryLoomNumber?.toLowerCase().includes(q);
+    const wName = r.weaverName || r.factoryLoomNumber;
+    const mWeaver = weaverFilter === "All" || wName === weaverFilter;
+    const orderLabel = r.bulkOrderLabel || "General Stock";
+    const mOrder = orderFilter === "All" || orderLabel === orderFilter;
+    const mType = sareeTypeFilter === "All" || r.sareeTypeCode === sareeTypeFilter;
+    return mSearch && mWeaver && mOrder && mType;
+  }).sort((a, b) => {
+    if (sortBy === "weaver") {
+      const an = a.weaverName || "", bn = b.weaverName || "";
+      return an.localeCompare(bn) || a.serial - b.serial;
+    }
+    if (sortBy === "factoryLoom") {
+      const an = a.factoryLoomNumber || "", bn = b.factoryLoomNumber || "";
+      return an.localeCompare(bn) || a.serial - b.serial;
+    }
+    return a.serial - b.serial;
+  });
+
   // ── Open a draft for editing
   function openDraft(b: BatchRecord) {
     setEditingBatchId(b.batchId);
@@ -696,19 +728,6 @@ export function BatchCreationPage() {
 
   const drafts = batches.filter(b => b.status === "draft");
   const active = batches.filter(b => b.status === "active");
-
-  // ── Sorted view of rows (does not mutate underlying row order/serials)
-  const displayRows = [...rows].sort((a, b) => {
-    if (sortBy === "weaver") {
-      const an = a.weaverName || "￿", bn = b.weaverName || "￿";
-      return an.localeCompare(bn) || a.serial - b.serial;
-    }
-    if (sortBy === "factoryLoom") {
-      const an = a.factoryLoomNumber || "￿", bn = b.factoryLoomNumber || "￿";
-      return an.localeCompare(bn) || a.serial - b.serial;
-    }
-    return a.serial - b.serial;
-  });
 
   // ── Merge "Materials Given" cell across consecutive rows for the same weaver/factory loom
   const materialsCellSpan: Record<number, number> = {}; // serial -> rowSpan (only set for the first row of a run)
@@ -928,6 +947,23 @@ export function BatchCreationPage() {
                     </motion.button>
                   </div>
                 )}
+              </div>
+
+              {/* Filters */}
+              <div style={{ padding: "12px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ position: "relative", flex: "1 1 200px" }}>
+                  <MagnifyingGlass size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
+                  <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, boxSizing: "border-box" }} />
+                </div>
+                <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                  {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
+                </select>
+                <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                  {sareeTypeOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</option>)}
+                </select>
+                <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                  {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
+                </select>
               </div>
 
               {/* Table */}

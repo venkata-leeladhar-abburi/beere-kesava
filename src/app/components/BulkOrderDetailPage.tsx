@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, MapPin, Phone, Package, IndianRupee, AlertTriangle,
   CheckCircle2, Search, Truck, FileText, X, ClipboardCheck,
-  Send,
+  Send, ArrowRight,
 } from "lucide-react";
 import type { BulkOrder } from "./BulkOrderContext";
 import { useBulkOrders } from "./BulkOrderContext";
@@ -138,6 +138,8 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const [statusFilter, setStatusFilter] = useState("All");
   const [batchFilter, setBatchFilter] = useState("All");
   const [dispatchFilter, setDispatchFilter] = useState("All");
+  const [weaverFilter, setWeaverFilter] = useState("All");
+  const [sareeTypeFilter, setSareeTypeFilter] = useState("All");
   const [dispatchPanel, setDispatchPanel] = useState<DispatchRecord | null>(null);
   const [tallyPrompt, setTallyPrompt] = useState(false);
   const [tallyName, setTallyName] = useState("");
@@ -200,6 +202,8 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   }, [readySarees, returns, bulkOrders, live.ref, batches, linkedQuotations, dispatches]);
 
   const batchOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.batchId).filter(Boolean) as string[]))], [linkedSarees]);
+  const weaverOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.weaverName).filter(Boolean)))].sort(), [linkedSarees]);
+  const sareeTypeOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.sareeType).filter(Boolean)))].sort(), [linkedSarees]);
 
   const filteredSarees = linkedSarees.filter(s => {
     const q = search.toLowerCase();
@@ -207,7 +211,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     const mStatus = statusFilter === "All" || s.status === statusFilter;
     const mBatch = batchFilter === "All" || s.batchId === batchFilter;
     const mDispatch = dispatchFilter === "All" || (dispatchFilter === "Dispatched" ? !!s.dispatch : !s.dispatch);
-    return mSearch && mStatus && mBatch && mDispatch;
+    const mWeaver = weaverFilter === "All" || s.weaverName === weaverFilter;
+    const mSareeType = sareeTypeFilter === "All" || s.sareeType === sareeTypeFilter;
+    return mSearch && mStatus && mBatch && mDispatch && mWeaver && mSareeType;
   });
 
   const dispatchedCount = linkedSarees.filter(s => s.dispatch).length;
@@ -252,7 +258,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               {live.phone && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Phone size={13} color={T.antiqueGold} />{live.phone}</span>}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}>
-              <Package size={13} color={T.antiqueGold} />{live.sareeType} · {live.design}
+              <Package size={13} color={T.antiqueGold} />{live.sareeType}
             </div>
           </div>
           <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap" as const }}>
@@ -327,7 +333,6 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                   <div style={card}>
                     <div style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>ORDER DETAILS</div>
                     {[
-                      ["Design Code", live.design],
                       ["Saree Type", live.sareeType],
                       ["Created", live.createdDate || "—"],
                       ["Delivery Deadline", live.due],
@@ -383,13 +388,19 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                       style={{ width: "100%", padding: "9px 12px 9px 36px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" as const }} />
                   </div>
                   <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-                    {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <option key={s} value={s}>{s}</option>)}
+                    {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <option key={s} value={s}>{s === "All" ? "All Statuses" : s}</option>)}
                   </select>
                   <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
                     {batchOptions.map(b => <option key={b} value={b}>{b === "All" ? "All Batches" : b}</option>)}
                   </select>
                   <select value={dispatchFilter} onChange={e => setDispatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-                    {["All", "Dispatched", "Not Dispatched"].map(s => <option key={s} value={s}>{s}</option>)}
+                    {["All", "Dispatched", "Not Dispatched"].map(s => <option key={s} value={s}>{s === "All" ? "All Dispatch" : s}</option>)}
+                  </select>
+                  <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+                    {weaverOptions.map(w => <option key={w} value={w}>{w === "All" ? "All Weavers" : w}</option>)}
+                  </select>
+                  <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+                    {sareeTypeOptions.map(t => <option key={t} value={t}>{t === "All" ? "All Saree Types" : t}</option>)}
                   </select>
                 </div>
 
@@ -559,15 +570,28 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 16px" }}>
                 Confirms the physical saree count for {live.ref} matches the {linkedSarees.length} saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
               </p>
-              <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Tallied by</label>
-              <input value={tallyName} onChange={e => setTallyName(e.target.value)} placeholder="Your name"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14, marginBottom: 20, boxSizing: "border-box" as const }} />
-              <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setTallyPrompt(false)} style={{ flex: 1, padding: "11px 0", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 10, color: T.taupe, fontFamily: F.ui, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-                <button onClick={() => { tallyOrder(live.ref, tallyName.trim() || "Admin"); setTallyPrompt(false); setTallyName(""); }}
-                  style={{ flex: 1, padding: "11px 0", background: T.royalBurgundy, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}>
-                  Confirm Tally
-                </button>
+              <div style={{ position: "relative", width: "100%", height: 50, background: "rgba(110,15,45,0.06)", borderRadius: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe }}>
+                  Swipe to confirm tally
+                </span>
+                <motion.div
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 318 }}
+                  dragElastic={0}
+                  onDragEnd={(e, info) => {
+                    if (info.offset.x > 250) {
+                      tallyOrder(live.ref, "Admin");
+                      setTallyPrompt(false);
+                    }
+                  }}
+                  style={{
+                    position: "absolute", left: 0, top: 0, bottom: 0, width: 50, background: T.royalBurgundy, borderRadius: 12,
+                    display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab"
+                  }}
+                  whileTap={{ cursor: "grabbing" }}
+                >
+                  <ArrowRight size={20} color="#FFF" />
+                </motion.div>
               </div>
             </motion.div>
           </div>

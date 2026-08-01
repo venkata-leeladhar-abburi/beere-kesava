@@ -23,12 +23,14 @@ import { imgBKLogo as imgBKBLogo, imgSaree as imgSareeHero } from "../constants/
 import { useBulkOrders } from "./BulkOrderContext";
 import { BulkOrderCreateModal } from "./BulkOrderCreateModal";
 import { useBatches, BatchRecord, SareeRow } from "./BatchContext";
+import { useMaterialIssue, ReceivedSareeRecord } from "./MaterialIssueContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { INVOICES } from "./PaymentsPage";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 import { WeaverSareesSection } from "./WeaverSareesSection";
 import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 const imgSaree    = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgShowroom = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgWarp     = "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
@@ -502,11 +504,8 @@ const BATCHES: Batch[] = [
   { id: "BATCH-093", stage: "finishing", sareeCode: "BS-004", sareeTypeName: "Bridal Special", rate: 1200, design: "BKB-019", designName: "Red Bridal Zari",       weavers: [{ name: "Lakshmi D.",   id: "WV-018", initials: "LD", bg: "#C4923A"       }], materials: "Warp: 5 kg · Resham: Red 800g, Gold 400g · Jari: SF-4G-Gold 350g",        started: "08 May 2026", expected: "18 May 2026",                       done: 5, total: 5, qcPassed: 5, finishingDone: 3 },
 ];
 
-function SwipeToTally({ onConfirm }: { onConfirm?: () => void }) {
-  const [phase, setPhase] = useState<"idle" | "swipe" | "done">("idle");
-  const trackRef = useRef<HTMLDivElement>(null);
-  
-  if (phase === "done") {
+function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
+  if (tallied) {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(30,102,64,0.1)", color: T.green, border: `1.5px solid rgba(30,102,64,0.2)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
         <CheckCircle size={16} weight="fill" /> Tallied
@@ -514,35 +513,97 @@ function SwipeToTally({ onConfirm }: { onConfirm?: () => void }) {
     );
   }
 
-  if (phase === "swipe") {
-    return (
-      <div ref={trackRef} style={{ flex: 1, position: "relative", background: "rgba(110,15,45,0.06)", borderRadius: 10, height: 40, overflow: "hidden", border: `1px solid rgba(110,15,45,0.15)` }} onClick={e => e.stopPropagation()}>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, pointerEvents: "none", paddingLeft: 20 }}>
-          Swipe to confirm
-        </div>
-        <motion.div
-          drag="x"
-          dragConstraints={trackRef}
-          dragElastic={0.05}
-          dragSnapToOrigin={true}
-          onDragEnd={(e, info) => {
-            if (trackRef.current && info.offset.x > trackRef.current.offsetWidth - 55) {
-              setPhase("done");
-              if (onConfirm) setTimeout(onConfirm, 500);
-            }
-          }}
-          style={{ width: 48, height: 38, position: "absolute", left: 0, top: 0, background: T.royalBurgundy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", color: "#fff", zIndex: 2 }}
-        >
-          <PhCaretRight size={18} weight="bold" />
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <motion.button onClick={(e) => { e.stopPropagation(); setPhase("swipe"); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(200,155,71,0.08)", color: T.antiqueGold, border: `1.5px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+    <motion.button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(200,155,71,0.08)", color: T.antiqueGold, border: `1.5px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
       <CheckCircle size={16} weight="bold" /> Tally
     </motion.button>
+  );
+}
+
+// ── Tally Dialog: shows received series (color, worker weight) for a batch and
+// lets the admin enter the final weight, which reduces the weaver's outstanding.
+function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string; onClose: () => void; onConfirmed: () => void }) {
+  const { getReceivedForBatch, finalizeReceivedWeight } = useMaterialIssue();
+  const series = getReceivedForBatch(batchId);
+  const [weights, setWeights] = useState<Record<string, string>>(() =>
+    Object.fromEntries(series.map(s => [s.id, String(((s.finalWeightGrams ?? s.weightGrams) / 1000).toFixed(3))]))
+  );
+  const [confirming, setConfirming] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const handleConfirm = () => {
+    series.forEach(s => {
+      const kg = parseFloat(weights[s.id]);
+      if (!isNaN(kg) && kg >= 0) finalizeReceivedWeight(s.id, Math.round(kg * 1000));
+    });
+    onConfirmed();
+  };
+
+  return (
+    <ProductionDialog open title={`Tally — ${batchId}`} onClose={onClose}>
+      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>
+        Series received for this batch, weighed at receipt by worker staff. Enter the final weight for each series — this becomes the weight used against the weaver's outstanding material.
+      </div>
+      {series.length === 0 ? (
+        <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe, padding: "20px 0", textAlign: "center" }}>
+          No series have been received for this batch yet.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20, maxHeight: 340, overflowY: "auto" }}>
+          {series.map(s => (
+            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 14px" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: (s.color || "#ccc").toLowerCase(), border: "1px solid rgba(0,0,0,0.15)" }} />
+                    {s.color || "—"}
+                  </span>
+                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>· Worker entry: {(s.weightGrams / 1000).toFixed(3)} kg</span>
+                  {s.tallied && <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green }}>· Tallied</span>}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
+                <input
+                  type="number" min={0} step={0.001}
+                  value={weights[s.id] ?? ""}
+                  onChange={e => setWeights(prev => ({ ...prev, [s.id]: e.target.value }))}
+                  style={{ width: 84, padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${T.borderDef}`, fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {series.length > 0 && (
+        confirming ? (
+          <div ref={trackRef} style={{ position: "relative", background: "rgba(110,15,45,0.06)", borderRadius: 10, height: 44, overflow: "hidden", border: `1px solid rgba(110,15,45,0.15)` }}>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, pointerEvents: "none", paddingLeft: 20 }}>
+              Swipe to confirm tally
+            </div>
+            <motion.div
+              drag="x"
+              dragConstraints={trackRef}
+              dragElastic={0.05}
+              dragSnapToOrigin={true}
+              onDragEnd={(e, info) => {
+                if (trackRef.current && info.offset.x > trackRef.current.offsetWidth - 55) {
+                  handleConfirm();
+                }
+              }}
+              style={{ width: 52, height: 42, position: "absolute", left: 0, top: 0, background: T.royalBurgundy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", color: "#fff", zIndex: 2 }}
+            >
+              <PhCaretRight size={18} weight="bold" />
+            </motion.div>
+          </div>
+        ) : (
+          <motion.button onClick={() => setConfirming(true)} whileHover={{ scale: 1.02 }} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: T.antiqueGold, color: "#fff", border: "none", borderRadius: 10, padding: "12px 0", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            <CheckCircle size={16} weight="bold" /> Confirm Final Weights
+          </motion.button>
+        )
+      )}
+    </ProductionDialog>
   );
 }
 
@@ -551,6 +612,10 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
   const pct = Math.round((b.done / b.total) * 100);
   const est = b.total * b.rate;
   const isExpanded = expandedId === b.id;
+  const { getReceivedForBatch } = useMaterialIssue();
+  const [tallyOpen, setTallyOpen] = useState(false);
+  const batchSeries = getReceivedForBatch(b.id);
+  const isTallied = batchSeries.length > 0 && batchSeries.every(s => s.tallied);
 
   const sarees = Array.from({ length: b.done }, (_, i) => ({
     id: `S-${b.id.split("-")[1]}-${String(i + 1).padStart(2, "0")}`,
@@ -673,9 +738,12 @@ function BatchCard({ b, expandedId, setExpandedId, onView, onSlip, onEdit }: { b
           <motion.button onClick={(e) => { e.stopPropagation(); onView?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             <PhEye size={16} /> Open Batch
           </motion.button>
-          <SwipeToTally />
+          <SwipeToTally tallied={isTallied} onOpen={() => setTallyOpen(true)} />
         </div>
       </div>
+      {tallyOpen && (
+        <TallyDialog batchId={b.id} onClose={() => setTallyOpen(false)} onConfirmed={() => setTallyOpen(false)} />
+      )}
     </motion.div>
   );
 }
@@ -972,6 +1040,24 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
   const weavers = weaverBreakdown(b.rows);
   const orders = bulkOrderBreakdown(b.rows);
 
+  const [search, setSearch] = useState("");
+  const [weaverFilter, setWeaverFilter] = useState("All");
+  const [orderFilter, setOrderFilter] = useState("All");
+  const [qcFilter, setQcFilter] = useState("All");
+
+  const weaverOptions = React.useMemo(() => ["All", ...Array.from(new Set(b.rows.map(r => r.weaverName).filter(Boolean)))].sort(), [b.rows]);
+  const orderOptions = React.useMemo(() => ["All", "General Stock", ...Array.from(new Set(b.rows.map(r => r.bulkOrderLabel).filter(Boolean)))].sort(), [b.rows]);
+
+  const filteredRows = b.rows.filter(r => {
+    const q = search.toLowerCase();
+    const mSearch = !q || r.sareeId?.toLowerCase().includes(q) || r.weaverName?.toLowerCase().includes(q);
+    const mWeaver = weaverFilter === "All" || r.weaverName === weaverFilter;
+    const orderLabel = r.bulkOrderLabel || "General Stock";
+    const mOrder = orderFilter === "All" || orderLabel === orderFilter;
+    const mQc = qcFilter === "All" || (qcFilter === "QC Passed" ? r.qcPassed : !r.qcPassed);
+    return mSearch && mWeaver && mOrder && mQc;
+  });
+
   const { getDesign } = useDesignLibrary();
   const firstRow = b.rows[0];
   const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
@@ -1063,11 +1149,30 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
 
           {/* Individual Sarees List */}
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>
-              Saree Row Allocations ({b.rows.length})
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Saree Row Allocations ({filteredRows.length})
+              </div>
             </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+              <div style={{ position: "relative", flex: "1 1 200px" }}>
+                <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, boxSizing: "border-box" }} />
+              </div>
+              <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
+              </select>
+              <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
+              </select>
+              <select value={qcFilter} onChange={e => setQcFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+                {["All", "QC Passed", "In Progress"].map(q => <option key={q} value={q}>{q === "All" ? "All QC Status" : q}</option>)}
+              </select>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {b.rows.map(row => (
+              {filteredRows.map(row => (
                 <div key={row.serial} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1094,6 +1199,9 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
                   </span>
                 </div>
               ))}
+              {filteredRows.length === 0 && (
+                <div style={{ textAlign: "center", padding: "20px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>No sarees match these filters.</div>
+              )}
             </div>
           </div>
         </div>
@@ -1119,7 +1227,8 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
   const [view,   setView]   = useState("card");
   const [filter, setFilter] = useState<BatchStage | null>(null);
   const [search, setSearch] = useState("");
-  const [period, setPeriod] = useState("Active Batches");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [activeOnly, setActiveOnly] = useState(true);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Most Recent First");
   const [batchDialog, setBatchDialog] = useState<{ mode: "view" | "slip"; batch?: Batch } | null>(null);
@@ -1199,7 +1308,11 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
     if (filter && b.stage !== filter) return false;
 
     // Period filter
-    if (period === "Active Batches" && (b.stage === "qc-passed" || b.stage === "finishing") && !filter) return false;
+    const rawBatch = batches.find(br => br.batchId === b.id);
+    if (rawBatch && !matchesDateFilter(dateFilter, rawBatch.createdAt)) return false;
+    
+    // Active only filter
+    if (activeOnly && (b.stage === "qc-passed" || b.stage === "finishing") && !filter) return false;
 
     if (search) {
       const q = search.toLowerCase();
@@ -1266,14 +1379,13 @@ function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => vo
           <div style={{ position: "relative" }}><motion.button onClick={() => setSortOpen(!sortOpen)} whileHover={{ scale: 1.02 }} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, cursor: "pointer" }}>
             Sort By: {sortBy} <PhCaretDown size={14} weight="bold" />
           </motion.button>{sortOpen && <div style={{ position: "absolute", top: 44, right: 0, zIndex: 20, background: "#fff", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 30px rgba(0,0,0,0.12)", overflow: "hidden", minWidth: 190 }}>{["Most Recent First", "Most Complete", "Least Complete"].map(v => <button key={v} onClick={() => { setSortBy(v); setSortOpen(false); }} style={{ display: "block", width: "100%", padding: "11px 14px", background: v === sortBy ? T.warmCream : "#fff", border: "none", textAlign: "left", fontFamily: F.ui, color: T.luxuryBrown, cursor: "pointer" }}>{v}</button>)}</div>}</div>
-          {/* Period filter */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {PERIODS.map(p => (
-              <motion.button key={p} onClick={() => setPeriod(p)} whileHover={{ scale: 1.02 }}
-                style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 99, cursor: "pointer", background: period === p ? T.royalBurgundy : "transparent", color: period === p ? "#FFFDF9" : T.taupe, border: period === p ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}>
-                {p}
-              </motion.button>
-            ))}
+          {/* Date filter */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+            <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>
+              <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} style={{ cursor: "pointer" }} />
+              Active Only
+            </label>
           </div>
         </div>
 

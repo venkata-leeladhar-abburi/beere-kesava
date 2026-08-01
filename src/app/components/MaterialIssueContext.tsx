@@ -196,7 +196,9 @@ export interface ReceivedSareeRecord {
   id: string;          // Saree ID e.g. "RAVI-L2-004"
   weaverId: string;
   batchId?: string;
-  weightGrams: number; // weight entered by worker staff at receipt
+  weightGrams: number;        // provisional weight entered by worker staff at receipt
+  finalWeightGrams?: number;  // final weight entered by admin during tally
+  tallied?: boolean;          // true once admin has confirmed the tally for this series
   receivedAt: string;  // ISO date-time
   color?: string;
   status: "received" | "defective";
@@ -235,7 +237,7 @@ function summarize(records: MaterialIssueRecord[], received: ReceivedSareeRecord
         : (m.quantity || 0);
     }
   }));
-  const receivedGrams = received.reduce((sum, r) => sum + (r.weightGrams || 0), 0);
+  const receivedGrams = received.reduce((sum, r) => sum + (r.finalWeightGrams ?? r.weightGrams ?? 0), 0);
   return {
     issuedGrams,
     receivedGrams,
@@ -253,9 +255,11 @@ interface MaterialIssueContextValue {
   addReceivedSaree: (rec: ReceivedSareeRecord) => void;
   getRecordsForWeaver: (weaverId: string) => MaterialIssueRecord[];
   getReceivedForWeaver: (weaverId: string) => ReceivedSareeRecord[];
+  getReceivedForBatch: (batchId: string) => ReceivedSareeRecord[];
   getMaterialSummaryForWeaver: (weaverId: string) => WeaverMaterialSummary;
   getMaterialSummaryByBatch: (weaverId: string) => BatchMaterialSummary[];
   updateSignatureStatus: (recordId: string, method: "here" | "remote") => void;
+  finalizeReceivedWeight: (id: string, finalWeightGrams: number) => void;
 }
 
 const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(null);
@@ -291,6 +295,16 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const getReceivedForWeaver = useCallback((weaverId: string) => {
     return receivedSarees.filter(r => r.weaverId === weaverId);
   }, [receivedSarees]);
+
+  const getReceivedForBatch = useCallback((batchId: string) => {
+    return receivedSarees.filter(r => r.batchId === batchId);
+  }, [receivedSarees]);
+
+  const finalizeReceivedWeight = useCallback((id: string, finalWeightGrams: number) => {
+    setReceivedSarees(prev =>
+      prev.map(r => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
+    );
+  }, []);
 
   const getMaterialSummaryForWeaver = useCallback((weaverId: string): WeaverMaterialSummary => {
     return summarize(
@@ -330,7 +344,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   }, []);
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight }}>
       {children}
     </MaterialIssueContext.Provider>
   );
