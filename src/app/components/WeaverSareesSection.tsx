@@ -30,6 +30,14 @@ const F = {
 
 const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 
+/** External saree IDs follow SupplierContext.buildSareeCode: PREFIX-###-INVOICE.
+ *  Pulls out the 3-digit serial so it reads as its own field rather than being
+ *  buried inside the compound saree ID. */
+function externalSerialOf(sareeId: string): string | null {
+  const m = sareeId.match(/^[A-Za-z]+-(\d{3,4})-/);
+  return m ? m[1] : null;
+}
+
 const AGE_COLOR: Record<string, string> = {
   "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
 };
@@ -195,6 +203,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const [fOwnerWeaver, setFOwnerWeaver] = useState("all");
   const [fOwnerLoom, setFOwnerLoom] = useState("all");
   const [fSupplier, setFSupplier] = useState("all");
+  const [fPurchaseOrder, setFPurchaseOrder] = useState("all");
+  const [fSerial, setFSerial] = useState("all");
 
   const isExternalTab = tab === "external";
 
@@ -346,8 +356,28 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       ownerWeaver: uniq(rows.filter(r => r.ownerKind === "weaver").map(r => r.ownerLabel)),
       ownerLoom: uniq(rows.filter(r => r.ownerKind === "loom").map(r => r.ownerLabel)),
       supplier: uniq(rows.filter(r => r.stock?.origin === "external").map(r => r.stock?.supplier ?? null)),
+      purchaseOrder: uniq(rows.filter(r => r.stock?.origin === "external").map(r => r.stock?.purchaseId ?? null)),
     };
   }, [rows]);
+
+  // Purchase orders belonging only to the currently selected supplier (cascading filter).
+  const supplierPoOpts = useMemo(() => {
+    const uniq = (vals: (string | null)[]) =>
+      ["all", ...Array.from(new Set(vals.filter((v): v is string => !!v))).sort()];
+    if (fSupplier === "all") return opts.purchaseOrder;
+    return uniq(rows.filter(r => r.stock?.origin === "external" && r.stock?.supplier === fSupplier)
+      .map(r => r.stock?.purchaseId ?? null));
+  }, [rows, fSupplier, opts.purchaseOrder]);
+
+  // Serial numbers within the selected purchase order — only meaningful once a
+  // single PO is chosen, so the dropdown itself only appears then.
+  const poSerialOpts = useMemo(() => {
+    if (fPurchaseOrder === "all") return ["all"];
+    const uniq = (vals: (string | null)[]) =>
+      ["all", ...Array.from(new Set(vals.filter((v): v is string => !!v))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))];
+    return uniq(rows.filter(r => r.stock?.origin === "external" && r.stock?.purchaseId === fPurchaseOrder)
+      .map(r => externalSerialOf(r.sareeId)));
+  }, [rows, fPurchaseOrder]);
 
   // Loom numbers belonging only to the currently selected weaver (for the cascading loom filter).
   const weaverLoomOpts = useMemo(() => {
@@ -363,7 +393,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     if (!q) return true;
     const hay = [
       r.sareeId, r.batchId, r.sareeTypeCode, r.sareeTypeName, r.color, r.bulkOrderLabel, r.ownerLabel,
-      r.stock?.supplier, r.stock?.supplierLocation, r.stock?.invoiceNumber,
+      r.stock?.supplier, r.stock?.supplierLocation, r.stock?.invoiceNumber, r.stock?.purchaseId,
+      r.stock?.origin === "external" ? externalSerialOf(r.sareeId) : null,
     ].filter(Boolean).join(" ").toLowerCase();
     return hay.includes(q);
   };
@@ -383,6 +414,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     if (isAll && fOwnerWeaver !== "all" && (r.ownerKind !== "weaver" || r.ownerLabel !== fOwnerWeaver)) return false;
     if (isAll && fOwnerLoom !== "all" && (r.ownerKind !== "loom" || r.ownerLabel !== fOwnerLoom)) return false;
     if (fSupplier !== "all" && r.stock?.supplier !== fSupplier) return false;
+    if (fPurchaseOrder !== "all" && r.stock?.purchaseId !== fPurchaseOrder) return false;
+    if (fPurchaseOrder !== "all" && fSerial !== "all" && externalSerialOf(r.sareeId) !== fSerial) return false;
     return true;
   };
 
@@ -394,7 +427,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier]);
+  }, [rows, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   const visible = useMemo(() => rows
     .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
@@ -404,7 +437,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier]);
+    [rows, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
   const onVisibleChangeRef = useRef(onVisibleChange);
@@ -428,13 +461,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
 
   const filtersActive = search.trim() !== "" || fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
     || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all"
-    || fOwnerWeaver !== "all" || fOwnerLoom !== "all" || fSupplier !== "all" || dateFilter.mode !== "all";
+    || fOwnerWeaver !== "all" || fOwnerLoom !== "all" || fSupplier !== "all" || fPurchaseOrder !== "all"
+    || fSerial !== "all" || dateFilter.mode !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setFBatch("all"); setFLoom("all"); setFOrder("all");
     setFType("all"); setFColor("all"); setFQc("all"); setFFinishing("all");
-    setFOwnerWeaver("all"); setFOwnerLoom("all"); setFSupplier("all");
+    setFOwnerWeaver("all"); setFOwnerLoom("all"); setFSupplier("all"); setFPurchaseOrder("all"); setFSerial("all");
     setDateFilter(DEFAULT_DATE_FILTER);
   };
 
@@ -503,7 +537,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
 
         {isExternalTab ? (
           <>
-            <Select label="Supplier" value={fSupplier} options={opts.supplier} onChange={setFSupplier} />
+            <Select label="Supplier" value={fSupplier} options={opts.supplier}
+              onChange={v => { setFSupplier(v); setFPurchaseOrder("all"); }} />
+            <Select label="Purchase Order" value={fPurchaseOrder} options={supplierPoOpts}
+              onChange={v => { setFPurchaseOrder(v); setFSerial("all"); }} />
+            {fPurchaseOrder !== "all" && (
+              <Select label="Serial No." value={fSerial} options={poSerialOpts} onChange={setFSerial} />
+            )}
             <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
             <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
           </>
@@ -552,11 +592,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
           background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
         }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1080 }}>
             <thead>
               <tr style={{ background: T.warmCream }}>
                 <th style={th}>Saree ID</th>
+                <th style={th}>Serial No.</th>
                 <th style={th}>Supplier</th>
+                <th style={th}>Purchase Order</th>
                 <th style={th}>Location</th>
                 <th style={th}>Saree Type</th>
                 <th style={th}>Colour</th>
@@ -571,7 +613,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               {visible.map((r, idx) => (
                 <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
                   <td style={tdMono}>{r.sareeId}</td>
+                  <td style={{ ...td, fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>
+                    {externalSerialOf(r.sareeId) || "—"}
+                  </td>
                   <td style={{ ...td, fontWeight: 600, color: T.royalBurgundy }}>{r.stock?.supplier || "—"}</td>
+                  <td style={{ ...td, fontFamily: F.mono, fontSize: 12 }}>{r.stock?.purchaseId || "—"}</td>
                   <td style={td}>{r.stock?.supplierLocation || "—"}</td>
                   <td style={td}>{r.sareeTypeName || "—"}</td>
                   <td style={td}>{r.color || <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}</td>

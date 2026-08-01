@@ -4,7 +4,7 @@ import {
   Search, ChevronDown, Download, Eye, Edit, Plus, UserPlus,
   LayoutGrid, AlignJustify, Table as TableIcon, MapPin,
   Phone, Calendar, Star, IndianRupee, X, Mail, Globe,
-  Map, MoreHorizontal, ArrowUpRight, Building2, Users, AlertTriangle,
+  MoreHorizontal, ArrowUpRight, Building2, Users, AlertTriangle,
   ShoppingBag, Check
 } from "lucide-react";
 import {
@@ -13,9 +13,12 @@ import {
 } from "recharts";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { imgShowroom } from "../constants/weaverImages";
-import { useBulkOrders } from "./BulkOrderContext";
+import { useBulkOrders, BulkOrder } from "./BulkOrderContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
+import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
+import { resolveOrderMoney } from "./BulkOrderLinking";
+import { INVOICES } from "./PaymentsPage";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -270,6 +273,9 @@ export function CustomersPage() {
   const [retailModalTab, setRetailModalTab] = useState<"history" | "profile">("history");
   const [viewingCard, setViewingCard] = useState<string | null>(null);
   const { bulkOrders } = useBulkOrders();
+  // Opening a bulk order from a customer's page hands off to the same full order
+  // page used from Production / All Orders, so there is one place order details live.
+  const [viewingBulkOrder, setViewingBulkOrder] = useState<{ order: BulkOrder; tab: "overview" | "sarees" | "payments" | "quotations" } | null>(null);
   const [retailTab, setRetailTab] = useState<"inventory"|"external">("inventory");
   const [showExtDrawer, setShowExtDrawer] = useState(false);
   const [extForm, setExtForm] = useState({
@@ -286,6 +292,48 @@ export function CustomersPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const headerBgImage = imgShowroom;
+
+  // ── Bulk orders belonging to the open wholesale customer ───────────────────
+  // Matched on customerId where the order carries one, else on business name.
+  const custOrders = React.useMemo(() => {
+    if (!selectedWholesaleCust) return [] as BulkOrder[];
+    return bulkOrders.filter(o =>
+      (o.customerId && o.customerId === selectedWholesaleCust.id) ||
+      o.customer.toLowerCase() === String(selectedWholesaleCust.name).toLowerCase()
+    );
+  }, [bulkOrders, selectedWholesaleCust]);
+
+  const custOrderMoney = React.useMemo(
+    () => new Map(custOrders.map(o => [o.ref, resolveOrderMoney(o, INVOICES)])),
+    [custOrders]
+  );
+  const custBilled = custOrders.reduce((a, o) => a + (custOrderMoney.get(o.ref)?.amountDue ?? 0), 0);
+  const custPaid = custOrders.reduce((a, o) => a + (custOrderMoney.get(o.ref)?.amountPaid ?? 0), 0);
+  const custOutstanding = Math.max(0, custBilled - custPaid);
+  const custSareesOrdered = custOrders.reduce((a, o) => a + o.total, 0);
+  const custSareesDone = custOrders.reduce((a, o) => a + o.done, 0);
+  const custActiveOrders = custOrders.filter(o => o.done < o.total);
+  const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+    "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
+    "at-risk": { label: "At Risk", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
+    "overdue": { label: "Overdue", color: T.crimson, bg: T.crimsonBg },
+  };
+  const PAY_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+    paid: { label: "Paid", color: T.green, bg: T.greenBg },
+    partial: { label: "Partial", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
+    pending: { label: "Pending", color: T.crimson, bg: T.crimsonBg },
+  };
+  const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
+  if (viewingBulkOrder) {
+    return (
+      <BulkOrderDetailPage
+        order={viewingBulkOrder.order}
+        initialTab={viewingBulkOrder.tab}
+        onBack={() => setViewingBulkOrder(null)}
+      />
+    );
+  }
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 100 }}>
@@ -457,9 +505,9 @@ export function CustomersPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
                   {[
-                    { label: "Total Orders Ever", value: selectedWholesaleCust.orders, color: T.luxuryBrown },
-                    { label: "Total Spend", value: `₹${selectedWholesaleCust.spend}`, color: T.antiqueGold },
-                    { label: "Outstanding Balance", value: `₹${selectedWholesaleCust.out}`, color: selectedWholesaleCust.out === "0" ? T.greenMid : T.crimson },
+                    { label: "Bulk Orders Placed", value: String(custOrders.length), color: T.luxuryBrown },
+                    { label: "Sarees Ordered", value: `${custSareesDone}/${custSareesOrdered}`, color: T.antiqueGold },
+                    { label: "Outstanding Balance", value: inr(custOutstanding), color: custOutstanding === 0 ? T.greenMid : T.crimson },
                     { label: "Payment Terms", value: selectedWholesaleCust.terms, color: T.luxuryBrown, isMono: true },
                   ].map((s, idx) => (
                     <div key={idx} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
@@ -469,84 +517,183 @@ export function CustomersPage() {
                   ))}
                 </div>
 
-                {selectedWholesaleCust.activeOrder && (
+                {/* Live production progress on every open bulk order */}
+                {custActiveOrders.length > 0 && (
                   <div style={{ background: T.darkBurgundy, padding: 28, borderRadius: 16, color: "#FFF" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 6, fontWeight: 500 }}>Active Order in Production</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 20, color: T.goldLight, marginBottom: 16, fontWeight: 700 }}>{selectedWholesaleCust.activeOrder} · 80 sarees</div>
-                    <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 99, overflow: "hidden" }}>
-                      <div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 99 }} />
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 18, fontWeight: 500 }}>
+                      Active Orders in Production ({custActiveOrders.length})
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                      {custActiveOrders.map(o => {
+                        const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
+                        const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
+                        return (
+                          <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => setViewingBulkOrder({ order: o, tab: "overview" })}>
+                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                                <span style={{ fontFamily: F.mono, fontSize: 17, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{o.done} of {o.total} sarees · {o.sareeType}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, background: meta.bg, color: meta.color, padding: "2px 9px", borderRadius: 20 }}>{meta.label}</span>
+                              </div>
+                              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>Due {o.due}</span>
+                            </div>
+                            <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 99, overflow: "hidden" }}>
+                              <div style={{ width: `${pct}%`, height: "100%", background: T.antiqueGold, borderRadius: 99 }} />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
-                
+
                 <div>
-                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Recent Invoices &amp; Activity</h3>
-                  <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                          {["Invoice No", "Date", "Description", "Amount", "Status"].map(h => (
-                            <th key={h} style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          { inv: "INV-2026-104", date: "28 Apr 2026", desc: "80x Heavy Zari Sarees (ORD-2026-041)", amt: "₹1,80,000", status: "Unpaid" },
-                          { inv: "INV-2026-085", date: "15 Mar 2026", desc: "120x Self Brocade Sarees (ORD-2026-028)", amt: "₹2,60,000", status: "Paid" },
-                        ].map((act, aIdx) => (
-                          <tr key={aIdx} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                            <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{act.inv}</td>
-                            <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{act.date}</td>
-                            <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{act.desc}</td>
-                            <td style={{ padding: "12px 14px", fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{act.amt}</td>
-                            <td style={{ padding: "12px 14px" }}>
-                              <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 11, fontWeight: 700, background: act.status === "Paid" ? T.greenBg : T.crimsonBg, color: act.status === "Paid" ? T.green : T.crimson }}>{act.status}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+                    <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Bulk Orders &amp; Invoices</h3>
+                    {custOrders.length > 0 && (
+                      <button onClick={() => setWholesaleTab("Order History")}
+                        style={{ background: "transparent", border: "none", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+                        View Full Order History →
+                      </button>
+                    )}
                   </div>
+                  {custOrders.length === 0 ? (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "36px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>
+                      No bulk orders have been created for this customer yet.
+                    </div>
+                  ) : (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
+                            {["Order Ref", "Invoice No", "Deadline", "Description", "Order Value", "Payment"].map(h => (
+                              <th key={h} style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {custOrders.slice(0, 4).map(o => {
+                            const m = custOrderMoney.get(o.ref)!;
+                            const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+                            return (
+                              <tr key={o.ref} onClick={() => setViewingBulkOrder({ order: o, tab: "payments" })}
+                                style={{ borderBottom: `1px solid ${T.borderDef}`, cursor: "pointer" }}>
+                                <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</td>
+                                <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12.5, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</td>
+                                <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</td>
+                                <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.total}× {o.sareeType} · {o.design}</td>
+                                <td style={{ padding: "12px 14px", fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{m.amountDue ? inr(m.amountDue) : "—"}</td>
+                                <td style={{ padding: "12px 14px" }}>
+                                  <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 11, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {wholesaleTab === "Order History" && (
-              <div>
-                <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Purchase &amp; Order History</h3>
-                <DateFilterBar filter={wholesaleOrderDateFilter} onChange={setWholesaleOrderDateFilter} />
-                <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-                        {["Order ID", "Date", "Saree Type", "Quantity", "Total Value", "Status"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
+            {wholesaleTab === "Order History" && (() => {
+              const rows = custOrders.filter(o => matchesDateFilter(o.due, wholesaleOrderDateFilter));
+              const rowsOrdered = rows.reduce((a, o) => a + o.total, 0);
+              const rowsDone = rows.reduce((a, o) => a + o.done, 0);
+              const rowsValue = rows.reduce((a, o) => a + (custOrderMoney.get(o.ref)?.amountDue ?? 0), 0);
+              const rowsDue = rows.reduce((a, o) => a + (custOrderMoney.get(o.ref)?.balance ?? 0), 0);
+              return (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+                    <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Bulk Order History</h3>
+                    <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
                       {[
-                        { id: "ORD-2026-041", date: "28 Apr 2026", type: "Heavy Zari", qty: 80, val: "₹1,80,000", status: "In Production" },
-                        { id: "ORD-2026-028", date: "15 Mar 2026", type: "Self Brocade", qty: 120, val: "₹2,60,000", status: "Delivered" },
-                        { id: "ORD-2025-095", date: "10 Dec 2025", type: "Bridal Special", qty: 40, val: "₹1,20,000", status: "Delivered" },
-                      ].filter(o => matchesDateFilter(o.date, wholesaleOrderDateFilter)).map(o => (
-                        <tr key={o.id} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.id}</td>
-                          <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{o.date}</td>
-                          <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>{o.type}</td>
-                          <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13.5, color: T.luxuryBrown }}>{o.qty} sarees</td>
-                          <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.antiqueGold }}>{o.val}</td>
-                          <td style={{ padding: "14px 16px" }}>
-                            <span style={{ background: o.status === "Delivered" ? T.greenBg : "rgba(200,155,71,0.09)", color: o.status === "Delivered" ? T.green : T.antiqueGold, padding: "3px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>{o.status}</span>
-                          </td>
-                        </tr>
+                        { label: "ORDERS", value: String(rows.length) },
+                        { label: "SAREES", value: `${rowsDone}/${rowsOrdered}` },
+                        { label: "ORDER VALUE", value: inr(rowsValue) },
+                        { label: "OUTSTANDING", value: inr(rowsDue) },
+                      ].map(k => (
+                        <div key={k.label}>
+                          <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+                          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  </div>
+                  <DateFilterBar filter={wholesaleOrderDateFilter} onChange={setWholesaleOrderDateFilter} />
+                  {rows.length === 0 ? (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>
+                      {custOrders.length === 0
+                        ? "No bulk orders have been created for this customer yet."
+                        : "No bulk orders fall in this period. Widen the timeline to see more."}
+                    </div>
+                  ) : (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
+                            {["Order Ref", "Deadline", "Saree Type / Design", "Progress", "Order Value", "Outstanding", "Status", "Payment", ""].map(h => (
+                              <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map(o => {
+                            const m = custOrderMoney.get(o.ref)!;
+                            const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
+                            const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
+                            const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+                            return (
+                              <tr key={o.ref} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                                <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>
+                                  {o.ref}
+                                  {o.tallied && <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.green, marginTop: 3 }}>✓ Tallied</div>}
+                                </td>
+                                <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{o.due}</td>
+                                <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+                                  {o.sareeType}
+                                  <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 2 }}>{o.design}</div>
+                                </td>
+                                <td style={{ padding: "14px 16px", minWidth: 130 }}>
+                                  <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, marginBottom: 5 }}>{o.done}/{o.total} · {pct}%</div>
+                                  <div style={{ height: 6, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
+                                    <div style={{ width: `${pct}%`, height: "100%", background: meta.color, borderRadius: 4 }} />
+                                  </div>
+                                  {(o.shortage ?? 0) > 0 && (
+                                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.crimson, marginTop: 4 }}>Shortage {o.shortage}</div>
+                                  )}
+                                </td>
+                                <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.antiqueGold }}>{m.amountDue ? inr(m.amountDue) : "—"}</td>
+                                <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: m.balance > 0 ? T.crimson : T.taupe }}>{m.balance > 0 ? inr(m.balance) : "—"}</td>
+                                <td style={{ padding: "14px 16px" }}>
+                                  <span style={{ background: meta.bg, color: meta.color, padding: "3px 9px", borderRadius: 6, fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap" as const }}>{meta.label}</span>
+                                </td>
+                                <td style={{ padding: "14px 16px" }}>
+                                  <span style={{ background: pay.bg, color: pay.color, padding: "3px 9px", borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>{pay.label}</span>
+                                </td>
+                                <td style={{ padding: "14px 16px" }}>
+                                  <div style={{ display: "flex", gap: 8, whiteSpace: "nowrap" as const }}>
+                                    <button onClick={() => setViewingBulkOrder({ order: o, tab: "overview" })}
+                                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
+                                      <Eye size={13} /> View Order
+                                    </button>
+                                    <button onClick={() => setViewingBulkOrder({ order: o, tab: "sarees" })}
+                                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                                      <ShoppingBag size={13} /> Sarees
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {wholesaleTab === "Payment History" && (
               <div>
