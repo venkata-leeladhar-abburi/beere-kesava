@@ -29,6 +29,21 @@ const F = {
   ui: "'Inter', sans-serif",
   mono: "'JetBrains Mono', monospace",
 };
+
+function Select({ value, options, onChange }: {
+  value: string; options: string[]; onChange: (v: string) => void;
+}) {
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)}
+      style={{
+        height: 44, padding: "0 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
+        background: "#FFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", outline: "none"
+      }}>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
 const T = {
   silkCream: "#F7F2EA",
   warmIvory: "#FFFDF9",
@@ -147,11 +162,11 @@ export function PurchaseFormModal({
   onClose,
   onSubmit,
 }: {
-  mode: "add" | "edit" | "request";
+  mode: "add" | "edit";
   initial: FormState;
   initialSarees: SareeTag[];
   onClose: () => void;
-  onSubmit: (data: FormState, sarees: SareeTag[], request?: { urgency: "Normal" | "Urgent"; reason: string }) => void;
+  onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
   const { suppliers } = useSuppliers();
   const [form, setForm] = useState<FormState>(initial);
@@ -160,7 +175,6 @@ export function PurchaseFormModal({
   const [reason, setReason] = useState("");
 
   const selectedSupplier = suppliers.find((s) => s.id === form.supplierId) ?? null;
-  const isRequest = mode === "request";
 
   const set = (key: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -202,8 +216,7 @@ export function PurchaseFormModal({
     form.supplier.trim() !== "" &&
     form.location.trim() !== "" &&
     form.date.trim() !== "" &&
-    sareeDetails.length > 0 &&
-    (!isRequest || reason.trim() !== "");
+    sareeDetails.length > 0;
 
   const buildFinalSarees = (): SareeTag[] =>
     sareeDetails.map((s, idx) => {
@@ -278,7 +291,7 @@ export function PurchaseFormModal({
             }}
           >
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>
-              {mode === "add" ? "Add External Purchase" : mode === "edit" ? `Edit Purchase — ${initial.supplier}` : "Raise Purchase Request"}
+              {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
             </div>
             <button
               onClick={onClose}
@@ -300,11 +313,6 @@ export function PurchaseFormModal({
           </div>
 
           <div style={{ padding: "22px 26px", overflowY: "auto", flex: 1 }}>
-            {isRequest && (
-              <div style={{ marginBottom: 16, background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
-                This goes to the superadmin for approval before it becomes an external purchase. Fill it in exactly like a real purchase — supplier, invoice and saree details — so it's ready to convert once approved.
-              </div>
-            )}
             {/* Supplier selector — picking a registered supplier fills in every
                 detail below; "Other" leaves the fields free for a one-off buy. */}
             <div style={{ marginBottom: 14 }}>
@@ -475,34 +483,6 @@ export function PurchaseFormModal({
                 style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }}
               />
             </div>
-
-            {isRequest && (
-              <>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
-                  <div>
-                    <label style={labelStyle}>Urgency</label>
-                    <select
-                      style={{ ...inputStyle, cursor: "pointer" }}
-                      value={urgency}
-                      onChange={(e) => setUrgency(e.target.value as "Normal" | "Urgent")}
-                    >
-                      <option value="Normal">Normal</option>
-                      <option value="Urgent">Urgent</option>
-                    </select>
-                  </div>
-                </div>
-                <div style={{ marginTop: 14 }}>
-                  <label style={labelStyle}>Reason for Request *</label>
-                  <textarea
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    rows={2}
-                    placeholder="Why is this purchase needed?"
-                    style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }}
-                  />
-                </div>
-              </>
-            )}
 
             {/* Saree Details — per-saree entry */}
             <div style={{ marginTop: 20 }}>
@@ -798,7 +778,7 @@ export function PurchaseFormModal({
           >
             <button
               disabled={!valid}
-              onClick={() => valid && onSubmit(form, buildFinalSarees(), isRequest ? { urgency, reason } : undefined)}
+              onClick={() => valid && onSubmit(form, buildFinalSarees())}
               style={{
                 flex: 1,
                 background: valid ? T.royalBurgundy : "rgba(110,15,45,0.30)",
@@ -816,8 +796,8 @@ export function PurchaseFormModal({
                 gap: 8,
               }}
             >
-              {isRequest ? <Send size={15} /> : <Save size={15} />}
-              {mode === "add" ? "Add Purchase & Generate Barcodes" : mode === "edit" ? "Save Changes" : "Send to Superadmin"}
+              <Save size={15} />
+              {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
             </button>
             <button
               onClick={onClose}
@@ -1109,6 +1089,45 @@ export function ExternalPurchasesPage() {
   const [printSaree, setPrintSaree] = useState<SareeTag | null>(null);
   const [printSareeSupplier, setPrintSareeSupplier] = useState<string>("");
 
+  const [fSupplier, setFSupplier] = useState("All Suppliers");
+  const [fPurchaseOrder, setFPurchaseOrder] = useState("All Purchase Orders");
+  const [fSerial, setFSerial] = useState("All Serial No.s");
+  const [fType, setFType] = useState("All Saree Types");
+  const [fColor, setFColor] = useState("All Colours");
+
+  const opts = useMemo(() => {
+    const s = new Set<string>();
+    const po = new Set<string>();
+    const types = new Set<string>();
+    const colors = new Set<string>();
+    purchases.forEach(p => {
+      if (p.supplier) s.add(p.supplier);
+      if (p.id) po.add(p.id);
+      p.sarees.forEach(saree => {
+        if (saree.sareeType) types.add(saree.sareeType);
+        if (saree.color) colors.add(saree.color);
+      });
+    });
+    return {
+      supplier: ["All Suppliers", ...Array.from(s).sort()],
+      po: ["All Purchase Orders", ...Array.from(po).sort()],
+      type: ["All Saree Types", ...Array.from(types).sort()],
+      color: ["All Colours", ...Array.from(colors).sort()],
+    };
+  }, [purchases]);
+
+  const poSerialOpts = useMemo(() => {
+    if (fPurchaseOrder === "All Purchase Orders") return ["All Serial No.s"];
+    const p = purchases.find(x => x.id === fPurchaseOrder);
+    if (!p) return ["All Serial No.s"];
+    const s = new Set<string>();
+    p.sarees.forEach(x => {
+      const serial = x.id.match(/^[A-Za-z]+-(\d{3,4})-/)?.[1];
+      if (serial) s.add(serial);
+    });
+    return ["All Serial No.s", ...Array.from(s).sort()];
+  }, [purchases, fPurchaseOrder]);
+
   const filtered = purchases.filter((p) => {
     const matchSearch =
       search === "" ||
@@ -1119,8 +1138,32 @@ export function ExternalPurchasesPage() {
       p.invoiceNumber.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All Status" || p.status === statusFilter;
     const matchDate = matchesDateFilter(p.date, dateFilter);
-    return matchSearch && matchStatus && matchDate;
+    const matchSupplier = fSupplier === "All Suppliers" || p.supplier === fSupplier;
+    const matchPO = fPurchaseOrder === "All Purchase Orders" || p.id === fPurchaseOrder;
+    const matchType = fType === "All Saree Types" || p.sarees.some(s => s.sareeType === fType);
+    const matchColor = fColor === "All Colours" || p.sarees.some(s => s.color === fColor);
+    const matchSerial = fSerial === "All Serial No.s" || p.sarees.some(s => {
+      const serial = s.id.match(/^[A-Za-z]+-(\d{3,4})-/)?.[1];
+      return serial === fSerial;
+    });
+
+    return matchSearch && matchStatus && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;
   });
+
+  const filtersActive = search !== "" || statusFilter !== "All Status" || dateFilter.mode !== "all" 
+    || fSupplier !== "All Suppliers" || fPurchaseOrder !== "All Purchase Orders"
+    || fSerial !== "All Serial No.s" || fType !== "All Saree Types" || fColor !== "All Colours";
+
+  const clearFilters = () => {
+    setSearch("");
+    setStatusFilter("All Status");
+    setDateFilter(DEFAULT_DATE_FILTER);
+    setFSupplier("All Suppliers");
+    setFPurchaseOrder("All Purchase Orders");
+    setFSerial("All Serial No.s");
+    setFType("All Saree Types");
+    setFColor("All Colours");
+  };
 
   const handleAddSubmit = (form: FormState, sarees: SareeTag[]) => {
     addPurchase({
@@ -1134,6 +1177,7 @@ export function ExternalPurchasesPage() {
       billAmount: form.billAmount || "₹0",
       status: form.status,
       notes: form.notes,
+      addedBy: "Admin",
       invoiceFileName: form.invoiceFileName || undefined,
       sarees,
     });
@@ -1428,27 +1472,25 @@ export function ExternalPurchasesPage() {
 
       {/* FILTER BAR */}
       <div style={{ padding: "48px 56px 0" }}>
-        <div
-          style={{
-            background: "white",
-            borderRadius: 14,
-            border: `1px solid ${T.borderDef}`,
-            boxShadow: "0 2px 12px rgba(44,24,16,0.05)",
-            padding: "16px 20px",
-            marginBottom: 24,
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr auto auto",
-            gap: 12,
-            alignItems: "center",
-          }}
-        >
-          <div style={{ position: "relative" }}>
+        <div style={{
+          background: "white",
+          borderRadius: 18,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 4px 20px rgba(74,6,27,0.07)",
+          padding: "18px 22px",
+          marginBottom: 24,
+          display: "flex",
+          gap: 14,
+          alignItems: "center",
+          flexWrap: "wrap"
+        }}>
+          <div style={{ position: "relative", flex: "1 1 280px" }}>
             <Search
-              size={15}
+              size={16}
               color={T.taupe}
               style={{
                 position: "absolute",
-                left: 12,
+                left: 14,
                 top: "50%",
                 transform: "translateY(-50%)",
                 pointerEvents: "none",
@@ -1460,14 +1502,14 @@ export function ExternalPurchasesPage() {
               placeholder="Search by supplier, ID, location, GST, invoice…"
               style={{
                 width: "100%",
-                height: 40,
-                borderRadius: 10,
-                border: `1px solid ${T.borderDef}`,
-                background: "#FFF8F0",
+                height: 44,
+                borderRadius: 12,
+                border: `1.5px solid ${T.borderDef}`,
+                background: T.silkCream,
                 fontFamily: F.ui,
-                fontSize: 13,
-                paddingLeft: 36,
-                paddingRight: 12,
+                fontSize: 14,
+                paddingLeft: 44,
+                paddingRight: 14,
                 color: T.luxuryBrown,
                 outline: "none",
                 boxSizing: "border-box",
@@ -1475,64 +1517,57 @@ export function ExternalPurchasesPage() {
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{
-              height: 40,
-              borderRadius: 10,
-              border: `1px solid ${T.borderDef}`,
-              background: "#FFF8F0",
-              fontFamily: F.ui,
-              fontSize: 13,
-              padding: "0 10px",
-              color: T.luxuryBrown,
-              cursor: "pointer",
-            }}
-          >
-            <option>All Status</option>
-            <option>Paid</option>
-            <option>Pending</option>
-            <option>Partial</option>
-          </select>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { key: "All Status", label: "All Status" },
+              { key: "Paid", label: "Paid" },
+              { key: "Pending", label: "Pending" },
+              { key: "Partial", label: "Partial" },
+            ].map(f => (
+              <motion.button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                whileHover={{ scale: 1.03 }}
+                style={{
+                  fontFamily: F.ui,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: "9px 18px",
+                  borderRadius: 99,
+                  cursor: "pointer",
+                  background: statusFilter === f.key ? T.royalBurgundy : "transparent",
+                  color: statusFilter === f.key ? "#FFFDF9" : T.taupe,
+                  border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
+                  transition: "all 0.18s"
+                }}
+              >
+                {f.label}
+              </motion.button>
+            ))}
+          </div>
+          
+          <Select value={fSupplier} options={opts.supplier}
+            onChange={v => { setFSupplier(v); setFPurchaseOrder("All Purchase Orders"); setFSerial("All Serial No.s"); }} />
+          
+          <Select value={fPurchaseOrder} options={opts.po}
+            onChange={v => { setFPurchaseOrder(v); setFSerial("All Serial No.s"); }} />
+          
+          <Select value={fSerial} options={poSerialOpts} onChange={setFSerial} />
+          
+          <Select value={fType} options={opts.type} onChange={setFType} />
+          
+          <Select value={fColor} options={opts.color} onChange={setFColor} />
 
-          <button
-            style={{
-              height: 40,
-              background: T.royalBurgundy,
-              color: "white",
-              border: "none",
-              borderRadius: 10,
-              padding: "0 18px",
-              fontFamily: F.ui,
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            Apply
-          </button>
-
-          <button
-            onClick={() => {
-              setSearch("");
-              setStatusFilter("All Status");
-              setDateFilter(DEFAULT_DATE_FILTER);
-            }}
-            style={{
-              height: 40,
-              background: "transparent",
-              color: T.taupe,
-              border: "none",
-              borderRadius: 10,
-              padding: "0 14px",
-              fontFamily: F.ui,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            Clear
-          </button>
+          {filtersActive && (
+            <button onClick={clearFilters}
+              style={{
+                height: 44, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
+                border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui,
+                fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto"
+              }}>
+              Clear filters
+            </button>
+          )}
         </div>
 
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
@@ -1565,6 +1600,7 @@ export function ExternalPurchasesPage() {
                   "Profit",
                   "Bill Amount",
                   "Payment Status",
+                  "Added By",
                   "Actions",
                 ].map((h) => (
                   <th
@@ -1686,6 +1722,11 @@ export function ExternalPurchasesPage() {
                     <StatusPill status={row.status} />
                   </td>
                   <td style={{ padding: "14px 16px" }}>
+                    <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>
+                      {row.addedBy || "—"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
                     <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => setDetailRow(row)}

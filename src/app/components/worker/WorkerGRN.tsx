@@ -155,6 +155,7 @@ export function WorkerGRN({
   const [receivedUnit, setReceivedUnit] = useState<Record<number, "kg" | "g" | "Reels" | "Buns">>({});
   const [itemApproval, setItemApproval] = useState<Record<number, "approved" | "rejected">>({});
   const [itemRejectReason, setItemRejectReason] = useState<Record<number, string>>({});
+  const [notifySuperadmin, setNotifySuperadmin] = useState<Record<number, boolean>>({});
   const [confirmedReceived, setConfirmedReceived] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const [historyPage, setHistoryPage] = useState(1);
@@ -167,6 +168,7 @@ export function WorkerGRN({
     setReceivedQty({});
     setItemApproval({});
     setItemRejectReason({});
+    setNotifySuperadmin({});
     setConfirmedReceived(false);
 
     // Initialize units
@@ -337,7 +339,7 @@ export function WorkerGRN({
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
               <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
               <div style={{ display: "flex", gap: 8 }}>
@@ -660,6 +662,10 @@ export function WorkerGRN({
                         <>
                           <AlertTriangle size={13} color={C.gold} />
                           <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
+                          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
+                            <input type="checkbox" checked={notifySuperadmin[i] || false} onChange={e => setNotifySuperadmin(prev => ({ ...prev, [i]: e.target.checked }))} style={{ accentColor: C.burg, cursor: "pointer" }} />
+                            <span style={{ fontFamily: F.u, fontSize: 10, color: C.text }}>Notify Superadmin</span>
+                          </label>
                         </>
                       ) : (
                         <>
@@ -801,7 +807,7 @@ export function WorkerGRN({
                   </tbody>
                 </table>
               </div>
-              {totalPages > 1 && (
+              {totalPages > 0 && (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderTop: `1px solid ${C.bdr}` }}>
                   <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
                   <div style={{ display: "flex", gap: 6 }}>

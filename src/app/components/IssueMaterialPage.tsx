@@ -1051,7 +1051,7 @@ export function IssueMaterialPage() {
             </table>
           </div>
 
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginTop: 20 }}>
               <button disabled={histPage === 1} onClick={() => setHistPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", cursor: histPage === 1 ? "not-allowed" : "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, opacity: histPage === 1 ? 0.5 : 1 }}>← Prev</button>
               <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Page {histPage} of {totalPages}</span>

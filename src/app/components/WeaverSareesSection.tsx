@@ -7,6 +7,7 @@ import { useDesignLibrary } from "./DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import { Pagination, usePagination } from "./Pagination";
 import { useCanSeeMoney } from "./MoneyAccess";
+import { Search } from "lucide-react";
 
 // ── Design tokens (matches WeaversPage) ──────────────────────────────────────
 const T = {
@@ -155,17 +156,13 @@ function Select({ label, value, options, onChange }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>{label}</span>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        style={{
-          height: 36, minWidth: 130, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`,
-          borderRadius: 9, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown,
-          cursor: "pointer", outline: "none",
-        }}>
-        {options.map(o => <option key={o} value={o}>{o === "all" ? `All ${label}` : o}</option>)}
-      </select>
-    </label>
+    <select value={value} onChange={e => onChange(e.target.value)}
+      style={{
+        height: 38, padding: "0 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
+        background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none"
+      }}>
+      {options.map(o => <option key={o} value={o}>{o === "all" ? (label === "Finishing" || label === "QC Status" ? `All ${label}` : `All ${label}s`) : o}</option>)}
+    </select>
   );
 }
 
@@ -529,21 +526,19 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
 
       {/* Attribute filters */}
       <div style={{
-        display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 14,
-        background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px",
+        background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px",
+        marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap",
+        boxShadow: "0 2px 10px rgba(74,6,27,0.05)"
       }}>
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: "1 1 220px", minWidth: 200 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Search</span>
+        <div style={{ position: "relative", flex: "1 1 280px" }}>
+          <Search size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Saree ID, batch, type, colour, weaver, supplier…"
-            style={{
-              height: 36, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`,
-              borderRadius: 9, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, outline: "none",
-            }}
+            placeholder="Search Saree ID, batch, type, colour, weaver…"
+            style={{ width: "100%", padding: "9px 12px 9px 38px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" }}
           />
-        </label>
+        </div>
 
         {isExternalTab ? (
           <>
@@ -580,9 +575,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         {filtersActive && (
           <button onClick={resetFilters}
             style={{
-              height: 36, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
-              border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui,
-              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+              height: 38, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
+              border: `1px solid ${T.borderDef}`, borderRadius: 10, fontFamily: F.ui,
+              fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto"
             }}>
             Clear filters
           </button>

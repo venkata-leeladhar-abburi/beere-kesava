@@ -8,7 +8,6 @@ import {
 } from "@phosphor-icons/react";
 
 import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
-import { useBatches } from "./BatchContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 
 // ─── Design tokens (match app-wide palette) ──────────────────────────────────
@@ -333,13 +332,6 @@ function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; onView:
         <div style={{ height: 1, background: T.borderDef, marginBottom: 12, marginTop: "auto" }} />
 
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: d.batches > 0 ? "rgba(30,102,64,0.07)" : "rgba(139,112,96,0.07)", borderRadius: 10, padding: "10px 12px" }}>
-            <Stack size={18} color={d.batches > 0 ? T.green : T.taupe} weight="duotone" />
-            <div>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: d.batches > 0 ? T.green : T.taupe, lineHeight: 1 }}>{d.batches}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>batch{d.batches !== 1 ? "es" : ""} active</div>
-            </div>
-          </div>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", borderRadius: 10, padding: "10px 12px" }}>
             <Package size={18} color={T.royalBurgundy} weight="duotone" />
             <div>
@@ -548,7 +540,6 @@ const WEAVERS_LIST = [
 
 export function DesignLibraryPage() {
   const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch } = useDesignLibrary();
-  const { batches } = useBatches();
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState("All Designs");
   const [showAdd, setShowAdd] = useState(false);
@@ -559,7 +550,6 @@ export function DesignLibraryPage() {
   const [dispWeaverId, setDispWeaverId] = useState(WEAVERS_LIST[0].id);
   const [dispLoomNum, setDispLoomNum] = useState<number>(1);
   const [dispInstructions, setDispInstructions] = useState("");
-  const [dispBatches, setDispBatches] = useState<string[]>([]);
   
   // Custom file upload previews (mock states)
   const [uploadedSlip, setUploadedSlip] = useState<string | null>(null);
@@ -574,22 +564,6 @@ export function DesignLibraryPage() {
 
   const selectedWeaver = WEAVERS_LIST.find(w => w.id === dispWeaverId);
 
-  // Filter batches based on weaver/loom rows
-  const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
-  const filteredBatches = activeBatches.filter(b => {
-    if (dispRecipientType === "weaver") {
-      return b.rows.some(r => r.weaverId === dispWeaverId);
-    } else {
-      return b.rows.some(r => r.weaverLoom === dispLoomNum);
-    }
-  });
-
-  const batchListToDisplay = filteredBatches.length > 0 ? filteredBatches : activeBatches;
-
-  const toggleDispBatch = (id: string) => {
-    setDispBatches(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
   const handleSendDispatch = () => {
     const rName = dispRecipientType === "weaver" ? (selectedWeaver?.name || "Weaver") : `Loom ${dispLoomNum}`;
     const rId = dispRecipientType === "weaver" ? dispWeaverId : `Loom ${dispLoomNum}`;
@@ -598,7 +572,7 @@ export function DesignLibraryPage() {
       recipientType: dispRecipientType,
       recipientId: rId,
       recipientName: rName,
-      batches: dispBatches,
+      batches: [],
       instructions: dispInstructions,
       colorSlipImage: uploadedSlip,
       designGraphImage: uploadedGraph,
@@ -608,7 +582,6 @@ export function DesignLibraryPage() {
 
     // Reset form fields
     setDispInstructions("");
-    setDispBatches([]);
     setUploadedSlip(null);
     setUploadedGraph(null);
   };
@@ -722,29 +695,7 @@ export function DesignLibraryPage() {
                       </div>
                     )}
 
-                    {/* Dynamic Batch Checklist */}
-                    <div>
-                      <label style={labelStyle}>
-                        Select Batches
-                        <span style={{ fontWeight: 400, color: T.taupe, marginLeft: 4 }}>
-                          ({filteredBatches.length > 0 ? "associated with selected recipient" : "fallback list of active batches"})
-                        </span>
-                      </label>
-                      <div style={{ maxHeight: 130, overflowY: "auto", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, padding: "8px 12px", background: T.warmIvory, display: "flex", flexDirection: "column", gap: 8 }}>
-                        {batchListToDisplay.map(b => (
-                          <label key={b.batchId} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}>
-                            <input type="checkbox" checked={dispBatches.includes(b.batchId)} onChange={() => toggleDispBatch(b.batchId)} style={{ cursor: "pointer" }} />
-                            <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
-                            <span style={{ color: T.taupe }}>({b.totalCount} sarees · Due: {b.dueDate || "—"})</span>
-                          </label>
-                        ))}
-                        {batchListToDisplay.length === 0 && (
-                          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "10px 0" }}>
-                            No active batches found in system.
-                          </div>
-                        )}
-                      </div>
-                    </div>
+
 
                     {/* Instruction field */}
                     <div>
@@ -812,20 +763,7 @@ export function DesignLibraryPage() {
                           </span>
                         </div>
 
-                        {h.batches.length > 0 ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                            <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontWeight: 600 }}>Linked Batches:</span>
-                            {h.batches.map(b => (
-                              <span key={b} style={{ fontFamily: F.mono, fontSize: 10.5, color: T.luxuryBrown, background: T.warmCream, border: `1px solid ${T.borderDef}`, borderRadius: 5, padding: "2px 6px" }}>
-                                {b}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontStyle: "italic" }}>
-                            No specific batch linked.
-                          </div>
-                        )}
+
 
                         <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
                           <strong>Instructions:</strong> {h.instructions}

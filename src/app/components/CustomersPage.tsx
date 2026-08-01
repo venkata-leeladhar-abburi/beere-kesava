@@ -143,6 +143,69 @@ const inactiveData = [
   { name: "Smt. Bharati", type: "Retail", city: "Vijayawada, AP", last: "9 months ago", spend: "8,500" },
 ];
 
+const top10RetailCustomers = [
+  { name: "Smt. Annapurna Devi", spend: 184000 },
+  { name: "Smt. Lakshmi Bai", spend: 162000 },
+  { name: "Smt. Saraswathi", spend: 84000 },
+  { name: "Smt. Padmavathi", spend: 48000 },
+  { name: "Smt. Meenakshi", spend: 42000 },
+  { name: "Smt. Rajeshwari", spend: 28000 },
+  { name: "Smt. Kamakshi", spend: 16500 },
+  { name: "Sri Ramesh K.", spend: 12500 },
+  { name: "Smt. Bharati", spend: 8500 },
+  { name: "Smt. Radhika", spend: 4200 },
+];
+
+const retailCategorySplit = [
+  { name: "Heavy Zari", value: 184000, fill: T.royalBurgundy },
+  { name: "Plain Silk", value: 82000, fill: T.antiqueGold },
+  { name: "Bridal Special", value: 154000, fill: T.greenMid },
+];
+
+const frequentRetailBuyers = [
+  { name: "Smt. Annapurna", count: 18, freq: "Avg 1.5 per month" },
+  { name: "Smt. Lakshmi", count: 12, freq: "Avg 1 per month" },
+  { name: "Smt. Saraswathi", count: 7, freq: "Avg 0.6 per month" },
+];
+
+const inactiveRetailAlerts = [
+  { name: "Smt. Rajeshwari", type: "Retail", time: "6 months ago" },
+  { name: "Smt. Kamakshi", type: "Retail", time: "7 months ago" },
+  { name: "Smt. Meenakshi", type: "Retail", time: "6 months ago" },
+];
+
+const newVsReturningRetail = [
+  { month: "Dec", new: 4, returning: 12 },
+  { month: "Jan", new: 6, returning: 15 },
+  { month: "Feb", new: 3, returning: 10 },
+  { month: "Mar", new: 8, returning: 18 },
+  { month: "Apr", new: 5, returning: 14 },
+  { month: "May", new: 10, returning: 22 },
+];
+
+// Sale/visit dates in this data are a mix of real dates ("15 May 2026") and
+// relative labels ("6 months ago", "Today", "Yesterday") — this normalizes
+// either form into an approximate "months since" number so sort/filter/timeline
+// controls can work across both without re-authoring the demo data.
+function monthsSinceLabel(label: string | undefined | null): number {
+  if (!label) return 999;
+  const s = label.trim().toLowerCase();
+  if (s === "today") return 0;
+  if (s === "yesterday") return 0;
+  const monthsMatch = s.match(/(\d+)\s*month/);
+  if (monthsMatch) return parseInt(monthsMatch[1], 10);
+  const daysMatch = s.match(/(\d+)\s*day/);
+  if (daysMatch) return parseInt(daysMatch[1], 10) / 30;
+  const weeksMatch = s.match(/(\d+)\s*week/);
+  if (weeksMatch) return (parseInt(weeksMatch[1], 10) * 7) / 30;
+  const d = new Date(label);
+  if (!isNaN(d.getTime())) {
+    const diffMs = Date.now() - d.getTime();
+    return Math.max(0, diffMs / (1000 * 60 * 60 * 24 * 30));
+  }
+  return 999;
+}
+
 // ── Components ─────────────────────────────────────────────────────────────────
 
 function Pill({ active, children, onClick }: { active: boolean, children: React.ReactNode, onClick?: () => void }) {
@@ -272,24 +335,52 @@ export function CustomersPage() {
   const [downloadConfirmRetail, setDownloadConfirmRetail] = useState<any>(null);
   const [retailModalTab, setRetailModalTab] = useState<"history" | "profile">("history");
   const [viewingCard, setViewingCard] = useState<string | null>(null);
+  const [retailOverviewDateFilter, setRetailOverviewDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [retailSearch, setRetailSearch] = useState("");
+  const [retailStatusFilter, setRetailStatusFilter] = useState<"all" | "regular" | "inactive">("all");
+  const [retailCityFilter, setRetailCityFilter] = useState<"all" | string>("all");
+  const [retailSort, setRetailSort] = useState<"spend" | "purchases" | "recent">("spend");
+  const [inactiveSearch, setInactiveSearch] = useState("");
+  const [inactiveTypeFilter, setInactiveTypeFilter] = useState<"all" | "Wholesale" | "Retail">("all");
+  const [inactiveCityFilter, setInactiveCityFilter] = useState<"all" | string>("all");
+  const [inactiveTimelineFilter, setInactiveTimelineFilter] = useState<"all" | "6" | "8" | "10" | "12">("all");
   const { bulkOrders } = useBulkOrders();
   // Opening a bulk order from a customer's page hands off to the same full order
   // page used from Production / All Orders, so there is one place order details live.
   const [viewingBulkOrder, setViewingBulkOrder] = useState<{ order: BulkOrder; tab: "overview" | "sarees" | "payments" | "quotations" } | null>(null);
-  const [retailTab, setRetailTab] = useState<"inventory"|"external">("inventory");
-  const [showExtDrawer, setShowExtDrawer] = useState(false);
-  const [extForm, setExtForm] = useState({
-    supplier: "", serial: "", source: "Wholesale Supplier",
-    location: "", date: new Date().toISOString().slice(0,10),
-    quantity: 1, pricePerSaree: "", paymentStatus: "Paid",
-    invoice: "", notes: "",
-  });
-  const [extPurchases, setExtPurchases] = useState([
-    { serial: "EXT-2026-0001", supplier: "Ravi Silks", source: "Local Weaver", date: "01 Jun 2026", qty: 4, price: "8,500", total: "34,000", status: "Paid" },
-    { serial: "EXT-2026-0002", supplier: "Mysore Sarees", source: "Wholesale Supplier", date: "05 Jun 2026", qty: 12, price: "6,200", total: "74,400", status: "Pending" },
-    { serial: "EXT-2026-0003", supplier: "Chennai Silks", source: "Auction Purchase", date: "08 Jun 2026", qty: 6, price: "11,000", total: "66,000", status: "Partial" },
-  ]);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const retailCities = React.useMemo(() => Array.from(new Set(retailData.map(r => r.city))).sort(), []);
+  const filteredRetail = React.useMemo(() => {
+    return retailData
+      .filter(r => {
+        const q = retailSearch.trim().toLowerCase();
+        const matchSearch = q === "" || r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+        const matchStatus = retailStatusFilter === "all" || (retailStatusFilter === "regular" ? r.regular : r.inactive);
+        const matchCity = retailCityFilter === "all" || r.city === retailCityFilter;
+        return matchSearch && matchStatus && matchCity;
+      })
+      .sort((a, b) => {
+        if (retailSort === "purchases") return b.purchases - a.purchases;
+        if (retailSort === "recent") return monthsSinceLabel(a.lastVisit) - monthsSinceLabel(b.lastVisit);
+        return parseInt(b.spend.replace(/,/g, ""), 10) - parseInt(a.spend.replace(/,/g, ""), 10);
+      });
+  }, [retailSearch, retailStatusFilter, retailCityFilter, retailSort]);
+
+  const inactiveCities = React.useMemo(() => Array.from(new Set(inactiveData.map(r => r.city))).sort(), []);
+  const filteredInactive = React.useMemo(() => {
+    return inactiveData
+      .filter(r => {
+        const q = inactiveSearch.trim().toLowerCase();
+        const matchSearch = q === "" || r.name.toLowerCase().includes(q);
+        const matchType = inactiveTypeFilter === "all" || r.type === inactiveTypeFilter;
+        const matchCity = inactiveCityFilter === "all" || r.city === inactiveCityFilter;
+        const months = monthsSinceLabel(r.last);
+        const matchTimeline = inactiveTimelineFilter === "all" || months >= parseInt(inactiveTimelineFilter, 10);
+        return matchSearch && matchType && matchCity && matchTimeline;
+      })
+      .sort((a, b) => monthsSinceLabel(b.last) - monthsSinceLabel(a.last));
+  }, [inactiveSearch, inactiveTypeFilter, inactiveCityFilter, inactiveTimelineFilter]);
 
   const headerBgImage = imgShowroom;
 
@@ -913,23 +1004,29 @@ export function CustomersPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                      {["Sale Date", "Saree ID", "Saree Type", "Price Paid", "Return"].map(h => (
+                      {["Sale Date", "Sarees (ID & Type)", "Price Paid", "Return"].map(h => (
                         <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { date: modalRetail.lastVisit, id: "RAVI-L2-008", type: "Heavy Zari",       price: "₹14,500" },
-                      { date: "12 Feb 2026",         id: "PADMA-L1-012", type: "Plain Silk",       price: "₹22,000" },
-                      { date: "08 Jan 2026",         id: "BKB-L3-004",   type: "Self Brocade",     price: "₹9,800" },
-                      { date: "14 Dec 2025",         id: "SURESH-L2-007", type: "Bridal Special", price: "₹38,500" },
-                      { date: "02 Nov 2025",         id: "RAVI-L2-003",  type: "Heavy Zari",      price: "₹16,200" },
+                      { date: modalRetail.lastVisit, items: [{id: "RAVI-L2-008", type: "Heavy Zari"}], price: "₹14,500" },
+                      { date: "12 Feb 2026",         items: [{id: "PADMA-L1-012", type: "Plain Silk"}, {id: "PADMA-L1-013", type: "Plain Silk"}], price: "₹44,000" },
+                      { date: "08 Jan 2026",         items: [{id: "BKB-L3-004", type: "Self Brocade"}], price: "₹9,800" },
+                      { date: "14 Dec 2025",         items: [{id: "SURESH-L2-007", type: "Bridal Special"}], price: "₹38,500" },
+                      { date: "02 Nov 2025",         items: [{id: "RAVI-L2-003", type: "Heavy Zari"}], price: "₹16,200" },
                     ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter)).map((row, i) => (
                       <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                         <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
-                        <td style={{ padding: "14px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.id}</td>
-                        <td style={{ padding: "14px 14px", color: T.luxuryBrown }}>{row.type}</td>
+                        <td style={{ padding: "14px 14px" }}>
+                          {row.items.map((item, idx) => (
+                            <div key={idx} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
+                              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
+                              <span style={{ color: T.luxuryBrown, fontSize: 12.5 }}>{item.type}</span>
+                            </div>
+                          ))}
+                        </td>
                         <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
                         <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
                       </tr>
@@ -949,20 +1046,16 @@ export function CustomersPage() {
                   <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>City / Location</div>
                   <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{modalRetail.city || "Hyderabad, TG"}</div>
                 </div>
-                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Favorite Category</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.antiqueGold }}>Heavy Zari / Self Brocade</div>
-                </div>
-                <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Status</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.greenMid }}>{modalRetail.regular ? "★ Preferred Regular Client" : "Regular Client"}</div>
-                </div>
               </div>
               <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Relationship Manager Notes</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5, marginTop: 4 }}>
-                  Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops.
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Relationship Manager Notes</span>
+                  <button style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 12 }}>Save</button>
                 </div>
+                <textarea 
+                  defaultValue="Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops."
+                  style={{ width: "100%", minHeight: 80, padding: 12, borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFF", resize: "vertical", outline: "none" }}
+                />
               </div>
             </div>
           )}
@@ -1009,7 +1102,7 @@ export function CustomersPage() {
               {[
                 { label: "Top Spender", val: "₹12.4L", color: T.royalBurgundy },
                 { label: "Combined Value", val: "₹79.5L", color: T.antiqueGold },
-                { label: "Wholesale", val: "8 of 10", color: T.greenMid },
+                { label: "Avg Spend", val: "₹7.95L", color: T.greenMid },
               ].map((s, i) => (
                 <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
@@ -1591,15 +1684,10 @@ export function CustomersPage() {
           action="📥 Download Retail Customer List →"
         />
 
-        {/* Tab switcher */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <div style={{ display: "flex", background: "#FFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            {[["inventory","Stock Inventory"],["external","External Purchases"]].map(([key,label]) => (
-              <button key={key} onClick={() => setRetailTab(key as any)} style={{ padding: "9px 20px", border: "none", borderRight: key === "inventory" ? `1px solid ${T.borderDef}` : "none", background: retailTab === key ? T.royalBurgundy : "transparent", color: retailTab === key ? "#FFF" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                {label}
-              </button>
-            ))}
-          </div>
+        {/* Tab switcher - Removed as requested */}
+
+        <div style={{ marginBottom: 24 }}>
+          <DateFilterBar filter={retailOverviewDateFilter} onChange={setRetailOverviewDateFilter} />
         </div>
 
         {/* Retail stat cards */}
@@ -1623,30 +1711,236 @@ export function CustomersPage() {
           ))}
         </div>
 
+        {/* Retail Charts Row 1 — equal 3 columns */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 22, alignItems: "stretch" }}>
+          {/* Chart 1: Top Retail Customers */}
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", height: 380, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+                  <Star size={24} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Retail Customers</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By purchase value</p>
+                </div>
+              </div>
+            </div>
+            {/* Custom ranked bar rows */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+              {top10RetailCustomers.slice(0, 5).map((c, i) => {
+                const maxSpend = top10RetailCustomers[0].spend;
+                const pct = Math.round((c.spend / maxSpend) * 100);
+                const isTop = i === 0;
+                const barBg = i === 0 ? `linear-gradient(90deg, ${T.royalBurgundy}, #A01535)` : i === 1 ? `linear-gradient(90deg, ${T.antiqueGold}, #E7C983)` : i === 2 ? `linear-gradient(90deg, ${T.greenMid}, #3BA86A)` : `linear-gradient(90deg, rgba(200,155,71,0.40), rgba(200,155,71,0.20))`;
+                const rankBg = i === 0 ? T.royalBurgundy : i === 1 ? "rgba(200,155,71,0.22)" : i === 2 ? T.greenBg : T.silkCream;
+                const rankColor = i === 0 ? "#FFF" : i === 1 ? T.antiqueGold : i === 2 ? T.greenMid : T.taupe;
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
+                    <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: "50%", background: rankBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: rankColor }}>{i + 1}</span>
+                    </div>
+                    <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12.5, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {c.name}
+                    </div>
+                    <div style={{ flex: 1, height: 7, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", backgroundImage: barBg, borderRadius: 4 }} />
+                    </div>
+                    <div style={{ width: 44, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
+                      {c.spend >= 100000 ? `${(c.spend / 100000).toFixed(1)}L` : `${Math.round(c.spend / 1000)}K`}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 14, textAlign: "right" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 600, cursor: "pointer" }}>View Full List →</span>
+            </div>
+          </div>
+
+          {/* Chart 2: Category Split */}
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", height: 380, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(110,15,45,0.08)" }}>
+                  <ShoppingBag size={24} color={T.royalBurgundy} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Category Split</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue by saree type</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ position: "relative", height: 200, flexShrink: 0 }}>
+              <ResponsiveContainer key="rc-rt-2" width="100%" height="100%">
+                <PieChart key="pie-chart-rt" id="retail-category-pie-chart">
+                  <Pie key="rt-pie" id="rt-pie" data={retailCategorySplit} innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" nameKey="name" stroke="none">
+                    {retailCategorySplit.map((entry, index) => (
+                      <Cell key={`cell-pie-rt-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>₹4.2L</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Total Retail</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 18, flexWrap: "wrap" as const }}>
+              {retailCategorySplit.map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.fill }} />
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Chart 3: New vs Returning */}
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", height: 380, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(30,102,64,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
+                  <Users size={24} color={T.greenMid} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Retail customers</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ height: 200, flexShrink: 0 }}>
+              <ResponsiveContainer key="rc-rt-3" width="100%" height="100%">
+                <BarChart key="bar-chart-rt-new" id="retail-new-vs-returning-chart" data={newVsReturningRetail} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid key="grid-rt" strokeDasharray="3 3" vertical={false} stroke={T.borderDef} />
+                  <XAxis key="x-axis-rt-2" id="x-axis-rt-2" dataKey="month" axisLine={false} tickLine={false} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} dy={10} />
+                  <YAxis key="y-axis-rt-2" id="y-axis-rt-2" axisLine={false} tickLine={false} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} />
+                  <RechartsTooltip key="tooltip-rt-2" cursor={{fill: 'rgba(110,15,45,0.04)'}} contentStyle={{fontFamily: F.ui, fontSize: 13, borderRadius: 8, border: `1px solid ${T.borderDef}`}} />
+                  <Legend key="legend-rt" iconType="circle" wrapperStyle={{ fontFamily: F.ui, fontSize: 12 }} />
+                  <Bar key="bar-rt-new" id="bar-rt-new" dataKey="new" name="New" fill={T.royalBurgundy} radius={[4, 4, 0, 0]} barSize={10} />
+                  <Bar key="bar-rt-returning" id="bar-rt-returning" dataKey="returning" name="Returning" fill={T.antiqueGold} radius={[4, 4, 0, 0]} barSize={10} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Retail Charts Row 2 — equal 2 columns */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, marginBottom: 32, alignItems: "stretch" }}>
+          {/* Chart 4: Frequent Buyers */}
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(200,155,71,0.12)" }}>
+                  <Calendar size={24} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Frequent Retail Buyers</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
+              {frequentRetailBuyers.map((fb, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
+                  </div>
+                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
+                  <div style={{ flex: 2 }}>
+                    <div style={{ height: 10, background: "rgba(200,155,71,0.13)", borderRadius: 5 }}>
+                      <div style={{ width: `${(fb.count/20)*100}%`, height: "100%", background: i === 0 ? T.royalBurgundy : T.antiqueGold, borderRadius: 5 }} />
+                    </div>
+                  </div>
+                  <div style={{ width: 120, textAlign: "right" }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Chart 5: Inactive Customers */}
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(192,57,43,0.08)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(192,57,43,0.10)" }}>
+                  <AlertTriangle size={24} color={T.crimson} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Inactive Retail Customers</h3>
+                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+              {inactiveRetailAlerts.map((al, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
+                      {al.name.replace("Smt. ", "").substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{al.name}</span>
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Last purchase: {al.time}</div>
+                    </div>
+                  </div>
+                  <button style={{ background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 7, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "7px 16px" }}>Reach Out</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Toolbar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
             <div style={{ display: "flex", alignItems: "center", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "9px 16px", width: 300 }}>
               <Search size={16} color={T.taupe} />
-              <input type="text" placeholder="Search by customer name or phone..." style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }} />
+              <input
+                type="text" value={retailSearch} onChange={e => setRetailSearch(e.target.value)}
+                placeholder="Search by customer name or phone..."
+                style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }}
+              />
             </div>
-            <Pill active={true}>All Retail (1,284)</Pill>
-            <Pill active={false}>Regular Buyers</Pill>
-            <Pill active={false}>New This Month</Pill>
+            <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({retailData.length})</Pill>
+            <Pill active={retailStatusFilter === "regular"} onClick={() => setRetailStatusFilter("regular")}>Regular Buyers ({retailData.filter(r => r.regular).length})</Pill>
+            <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({retailData.filter(r => r.inactive).length})</Pill>
           </div>
-          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Total Spend <ChevronDown size={14} /></span>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
+            <select
+              value={retailCityFilter} onChange={e => setRetailCityFilter(e.target.value)}
+              style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
+            >
+              <option value="all">All Cities</option>
+              {retailCities.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select
+              value={retailSort} onChange={e => setRetailSort(e.target.value as any)}
+              style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
+            >
+              <option value="spend">Sort: Total Spend</option>
+              <option value="purchases">Sort: Total Purchases</option>
+              <option value="recent">Sort: Most Recent Visit</option>
+            </select>
             <div style={{ display: "flex", background: "#FFF", borderRadius: 8, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               <button onClick={() => setRetailView("card")} style={{ padding: "9px 13px", background: retailView === "card" ? T.silkCream : "transparent", border: "none", cursor: "pointer" }}><LayoutGrid size={18} color={retailView === "card" ? T.royalBurgundy : T.taupe} /></button>
               <button onClick={() => setRetailView("list")} style={{ padding: "9px 13px", background: retailView === "list" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><AlignJustify size={18} color={retailView === "list" ? T.royalBurgundy : T.taupe} /></button>
             </div>
           </div>
         </div>
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 18 }}>{filteredRetail.length} customer{filteredRetail.length !== 1 ? "s" : ""} found</div>
 
         {/* Retail Cards View */}
         {retailView === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-            {retailData.map((r, i) => (
+            {filteredRetail.length === 0 && (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 20px", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</div>
+            )}
+            {filteredRetail.map((r, i) => (
               <div key={i} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
                 {/* Top accent line */}
                 <div style={{ height: 4, background: r.regular ? T.antiqueGold : r.inactive ? T.taupe : T.royalBurgundy }} />
@@ -1734,7 +2028,10 @@ export function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {retailData.map((r, i) => (
+                {filteredRetail.length === 0 && (
+                  <tr><td colSpan={8} style={{ padding: "40px 18px", textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</td></tr>
+                )}
+                {filteredRetail.map((r, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                     <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{r.name}</td>
                     <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.taupe, fontSize: 13 }}>{r.phone}</td>
@@ -1752,55 +2049,61 @@ export function CustomersPage() {
         )}
       </div>
 
-      {/* External Purchases Tab */}
-      {retailTab === "external" && (
-        <div style={{ marginTop: 24, padding: "0 56px" }}>
-          <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,6,27,0.04)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}` }}>
-                  {["Serial Number","Supplier Name","Source Type","Purchase Date","Sarees","Price/Saree","Total","Payment Status","Actions"].map(h => (
-                    <th key={h} style={{ padding: "13px 16px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px", textAlign: "left" as const }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {extPurchases.map((row, i) => (
-                  <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy }}>{row.serial}</td>
-                    <td style={{ padding: "14px 16px", fontWeight: 600, color: T.luxuryBrown }}>{row.supplier}</td>
-                    <td style={{ padding: "14px 16px", color: T.taupe }}>{row.source}</td>
-                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</td>
-                    <td style={{ padding: "14px 16px", color: T.luxuryBrown, fontWeight: 600 }}>{row.qty}</td>
-                    <td style={{ padding: "14px 16px", fontFamily: F.mono, color: T.antiqueGold, fontWeight: 600 }}>₹{row.price}</td>
-                    <td style={{ padding: "14px 16px", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>₹{row.total}</td>
-                    <td style={{ padding: "14px 16px" }}>
-                      <span style={{ padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: row.status === "Paid" ? "rgba(30,102,64,0.10)" : row.status === "Pending" ? "rgba(200,155,71,0.12)" : "rgba(192,57,43,0.09)", color: row.status === "Paid" ? T.green : row.status === "Pending" ? "#7A5E1C" : T.crimson }}>
-                        {row.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: "14px 16px" }}>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button style={{ background: "rgba(110,15,45,0.06)", border: "none", color: T.royalBurgundy, borderRadius: 6, padding: "5px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>View</button>
-                        <button style={{ background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe, borderRadius: 6, padding: "5px 10px", fontFamily: F.ui, fontSize: 11, cursor: "pointer" }}>Edit</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* External Purchases Tab - Removed as requested */}
 
       {/* ── SECTION 6: INACTIVE CUSTOMERS ──────────────────────────────────── */}
       <div style={{ padding: "0 56px 64px 56px" }}>
-        <SectionTitle 
-          title="Inactive Customers — No Purchase in 6 Months" 
+        <SectionTitle
+          title="Inactive Customers — No Purchase in 6 Months"
           sub="These customers have not placed any order or visited the shop in the last 6 months. Consider reaching out to bring them back."
-          action="Download Inactive List →" 
+          action="Download Inactive List →"
         />
-        
+
+        {/* Filters + timeline */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
+            <div style={{ display: "flex", alignItems: "center", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "9px 16px", width: 260 }}>
+              <Search size={16} color={T.taupe} />
+              <input
+                type="text" value={inactiveSearch} onChange={e => setInactiveSearch(e.target.value)}
+                placeholder="Search by customer name..."
+                style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }}
+              />
+            </div>
+            <Pill active={inactiveTypeFilter === "all"} onClick={() => setInactiveTypeFilter("all")}>All ({inactiveData.length})</Pill>
+            <Pill active={inactiveTypeFilter === "Wholesale"} onClick={() => setInactiveTypeFilter("Wholesale")}>Wholesale ({inactiveData.filter(r => r.type === "Wholesale").length})</Pill>
+            <Pill active={inactiveTypeFilter === "Retail"} onClick={() => setInactiveTypeFilter("Retail")}>Retail ({inactiveData.filter(r => r.type === "Retail").length})</Pill>
+          </div>
+          <select
+            value={inactiveCityFilter} onChange={e => setInactiveCityFilter(e.target.value)}
+            style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
+          >
+            <option value="all">All Cities</option>
+            {inactiveCities.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        {/* Timeline filter — how long inactive */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20, flexWrap: "wrap" as const }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontWeight: 600, marginRight: 4 }}>Inactive for:</span>
+          {([
+            { key: "all", label: "Any length" },
+            { key: "6", label: "6+ months" },
+            { key: "8", label: "8+ months" },
+            { key: "10", label: "10+ months" },
+            { key: "12", label: "12+ months" },
+          ] as const).map(t => (
+            <button
+              key={t.key} onClick={() => setInactiveTimelineFilter(t.key)}
+              style={{ padding: "7px 16px", borderRadius: 20, cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 600, background: inactiveTimelineFilter === t.key ? T.crimson : "transparent", border: `1px solid ${inactiveTimelineFilter === t.key ? T.crimson : T.borderDef}`, color: inactiveTimelineFilter === t.key ? "#FFF" : T.taupe }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 12 }}>{filteredInactive.length} customer{filteredInactive.length !== 1 ? "s" : ""} found</div>
+
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 14 }}>
             <thead>
@@ -1808,27 +2111,43 @@ export function CustomersPage() {
                 <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Customer Name</th>
                 <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Type</th>
                 <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>City</th>
-                <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Last Purchase</th>
+                <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Inactive Since</th>
                 <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Total Spend Ever</th>
                 <th style={{ padding: "16px 24px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>Action</th>
               </tr>
             </thead>
             <tbody>
-              {inactiveData.map((row, i) => (
-                <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={{ padding: "16px 24px", fontWeight: 600, color: T.luxuryBrown }}>{row.name}</td>
-                  <td style={{ padding: "16px 24px" }}><span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 11, borderRadius: 4, fontWeight: 600 }}>{row.type}</span></td>
-                  <td style={{ padding: "16px 24px", color: T.taupe }}>{row.city}</td>
-                  <td style={{ padding: "16px 24px", color: T.crimson, fontWeight: 500 }}>{row.last}</td>
-                  <td style={{ padding: "16px 24px", color: T.luxuryBrown, fontFamily: F.mono }}>₹{row.spend}</td>
-                  <td style={{ padding: "16px 24px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <button style={{ background: "transparent", border: "none", color: T.antiqueGold, fontWeight: 600, cursor: "pointer", fontFamily: F.ui, fontSize: 13 }}>Mark as Inactive</button>
-                      <span style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredInactive.length === 0 && (
+                <tr><td colSpan={6} style={{ padding: "40px 24px", textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No customers match these filters.</td></tr>
+              )}
+              {filteredInactive.map((row, i) => {
+                const months = Math.round(monthsSinceLabel(row.last));
+                const severity = months >= 12 ? { color: T.crimson, bg: T.crimsonBg, label: "Critical" } : months >= 9 ? { color: "#B5651D", bg: "rgba(181,101,29,0.10)", label: "High" } : { color: T.antiqueGold, bg: "rgba(200,155,71,0.12)", label: "Moderate" };
+                const pct = Math.min(100, Math.round((months / 12) * 100));
+                return (
+                  <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+                    <td style={{ padding: "16px 24px", fontWeight: 600, color: T.luxuryBrown }}>{row.name}</td>
+                    <td style={{ padding: "16px 24px" }}><span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 11, borderRadius: 4, fontWeight: 600 }}>{row.type}</span></td>
+                    <td style={{ padding: "16px 24px", color: T.taupe }}>{row.city}</td>
+                    <td style={{ padding: "16px 24px", minWidth: 180 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                        <span style={{ fontWeight: 600, color: severity.color }}>{row.last}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px" }}>{severity.label}</span>
+                      </div>
+                      <div style={{ height: 4, background: T.silkCream, borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${pct}%`, height: "100%", background: severity.color, borderRadius: 2 }} />
+                      </div>
+                    </td>
+                    <td style={{ padding: "16px 24px", color: T.luxuryBrown, fontFamily: F.mono }}>₹{row.spend}</td>
+                    <td style={{ padding: "16px 24px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <button style={{ background: "transparent", border: "none", color: T.antiqueGold, fontWeight: 600, cursor: "pointer", fontFamily: F.ui, fontSize: 13 }}>Mark as Inactive</button>
+                        <span style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1906,96 +2225,7 @@ export function CustomersPage() {
 
       </AnimatePresence>
 
-      {/* ── EXTERNAL PURCHASE DRAWER ───────────────────────────────── */}
-      {showExtDrawer && (
-        <>
-          {/* Overlay */}
-          <div onClick={() => setShowExtDrawer(false)} style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(27,12,8,0.40)", backdropFilter: "blur(3px)" }} />
-          {/* Drawer */}
-          <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 480, zIndex: 501, background: "#FFF", boxShadow: "-8px 0 40px rgba(44,24,16,0.18)", display: "flex", flexDirection: "column" }}>
-            {/* Drawer header */}
-            <div style={{ padding: "22px 28px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>Add External Purchase</div>
-              <button onClick={() => setShowExtDrawer(false)} style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X size={16} color={T.taupe} />
-              </button>
-            </div>
-            {/* Drawer body */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px", display: "flex", flexDirection: "column", gap: 18 }}>
-              {[
-                { label: "Supplier Short Name", key: "supplier", type: "text", placeholder: "e.g. Ravi Silks", mono: false },
-                { label: "Serial Number", key: "serial", type: "text", placeholder: "e.g. EXT-2024-0045", mono: true },
-              ].map(field => (
-                <div key={field.key}>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>{field.label}</label>
-                  <input type={field.type} placeholder={field.placeholder} value={(extForm as any)[field.key]} onChange={e => setExtForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: field.mono ? F.mono : F.ui, fontSize: 13, padding: "0 12px", background: "#FFF8F0", outline: "none" }} />
-                </div>
-              ))}
-              <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Source / Industry Type</label>
-                <select value={extForm.source} onChange={e => setExtForm(prev => ({ ...prev, source: e.target.value }))} style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.ui, fontSize: 13, padding: "0 12px", background: "#FFF8F0", outline: "none", cursor: "pointer" }}>
-                  {["Wholesale Supplier","Local Weaver","Auction Purchase","Sister Store Transfer","Other"].map(o => <option key={o}>{o}</option>)}
-                </select>
-              </div>
-              {[
-                { label: "Supplier Location", key: "location", placeholder: "City, State", mono: false },
-                { label: "Invoice / Reference Number", key: "invoice", placeholder: "Optional", mono: false },
-              ].map(field => (
-                <div key={field.key}>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>{field.label}</label>
-                  <input type="text" placeholder={field.placeholder} value={(extForm as any)[field.key]} onChange={e => setExtForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.ui, fontSize: 13, padding: "0 12px", background: "#FFF8F0", outline: "none" }} />
-                </div>
-              ))}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Purchase Date</label>
-                  <input type="date" value={extForm.date} onChange={e => setExtForm(prev => ({ ...prev, date: e.target.value }))} style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.mono, fontSize: 13, padding: "0 10px", background: "#FFF8F0", outline: "none" }} />
-                </div>
-                <div>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Number of Sarees</label>
-                  <input type="number" min={1} value={extForm.quantity} onChange={e => setExtForm(prev => ({ ...prev, quantity: Number(e.target.value) }))} style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.mono, fontSize: 14, padding: "0 12px", background: "#FFF8F0", outline: "none" }} />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Price Per Saree (₹)</label>
-                <input type="text" placeholder="0.00" value={extForm.pricePerSaree} onChange={e => setExtForm(prev => ({ ...prev, pricePerSaree: e.target.value }))} style={{ width: "100%", height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.mono, fontSize: 14, padding: "0 12px", background: "#FFF8F0", outline: "none" }} />
-              </div>
-              <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Total Amount (auto)</label>
-                <div style={{ height: 40, borderRadius: 8, border: "1px solid rgba(110,15,45,0.10)", fontFamily: F.mono, fontSize: 14, padding: "0 12px", background: "#F0EDE8", color: T.antiqueGold, fontWeight: 700, display: "flex", alignItems: "center" }}>
-                  ₹{extForm.pricePerSaree ? (extForm.quantity * Number(String(extForm.pricePerSaree).replace(/,/g,""))).toLocaleString("en-IN") : "0"}
-                </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 10 }}>Payment Status</label>
-                <div style={{ display: "flex", gap: 16 }}>
-                  {["Paid","Pending","Partial"].map(opt => (
-                    <label key={opt} style={{ display: "flex", alignItems: "center", gap: 7, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                      <input type="radio" name="payStatus" value={opt} checked={extForm.paymentStatus === opt} onChange={() => setExtForm(prev => ({ ...prev, paymentStatus: opt }))} style={{ accentColor: "#6E0F2D" }} />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Notes</label>
-                <textarea placeholder="Any additional details about this purchase" rows={3} value={extForm.notes} onChange={e => setExtForm(prev => ({ ...prev, notes: e.target.value }))} style={{ width: "100%", borderRadius: 8, border: "1px solid rgba(110,15,45,0.18)", fontFamily: F.ui, fontSize: 13, padding: "10px 12px", background: "#FFF8F0", outline: "none", resize: "vertical" as const }} />
-              </div>
-            </div>
-            {/* Drawer footer */}
-            <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column" as const, gap: 10 }}>
-              <button onClick={() => { setExtPurchases(prev => [{ serial: extForm.serial || `EXT-2026-00${prev.length+4}`, supplier: extForm.supplier || "New Supplier", source: extForm.source, date: new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}), qty: extForm.quantity, price: extForm.pricePerSaree || "0", total: String(extForm.quantity * Number(String(extForm.pricePerSaree).replace(/,/g,""))), status: extForm.paymentStatus }, ...prev]); setShowExtDrawer(false); setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3500); }} style={{ width: "100%", height: 44, background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                Save Purchase
-              </button>
-              <button onClick={() => setShowExtDrawer(false)} style={{ width: "100%", height: 36, background: "transparent", border: "none", color: T.taupe, fontFamily: F.ui, fontSize: 13, cursor: "pointer" }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* EXTERNAL PURCHASE DRAWER REMOVED */}
       {/* Success toast */}
       {saveSuccess && (
         <div style={{ position: "fixed", top: 24, right: 24, zIndex: 600, background: "#1E6640", color: "#FFF", padding: "14px 20px", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 24px rgba(30,102,64,0.30)", display: "flex", alignItems: "center", gap: 10 }}>

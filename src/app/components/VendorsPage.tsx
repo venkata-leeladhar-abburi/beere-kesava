@@ -186,8 +186,9 @@ function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => v
   const [form, setForm] = useState({
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
-    gstCode: "", type: "Warp", terms: "30 days",
+    gstCode: "", types: ["Warp"], terms: "30 days",
     bankName: "", accountNo: "", notes: "", visitingCard: "",
+    rating: 3,
   });
   const [cardPreview, setCardPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -217,11 +218,11 @@ function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => v
       id: nextId, name: form.name, initials,
       contactName: form.contactName, phone: form.phone,
       whatsapp: form.whatsapp, city: form.city, state: form.state,
-      address: form.address, gstCode: form.gstCode, type: form.type,
+      address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
       terms: form.terms, bankName: form.bankName, accountNo: form.accountNo,
       notes: form.notes, visitingCard: cardPreview || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
-      outstanding: "0", lastOrder: "—", rating: 3,
+      outstanding: "0", lastOrder: "—", rating: form.rating,
     } as any);
   };
 
@@ -295,16 +296,32 @@ function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => v
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
-                <label style={lbl}>Material Type</label>
-                <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
-                  {MATERIAL_TYPES.filter(t => t !== "All Types").map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <label style={lbl}>Material Types</label>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: "10px 0" }}>
+                  {["Warp", "Resham", "Jari"].map(t => (
+                    <label key={t} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                      <input type="checkbox" checked={form.types.includes(t)} onChange={e => {
+                        const newTypes = e.target.checked ? [...form.types, t] : form.types.filter(x => x !== t);
+                        setForm(p => ({ ...p, types: newTypes }));
+                      }} style={{ accentColor: T.royalBurgundy, width: 15, height: 15 }} />
+                      {t}
+                    </label>
+                  ))}
+                </div>
               </div>
               <div>
                 <label style={lbl}>Payment Terms *</label>
-                <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+                <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
                   {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
+                <label style={lbl}>Vendor Rating</label>
+                <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} onClick={() => setForm(p => ({ ...p, rating: i }))}>
+                      <Star size={20} fill={i <= form.rating ? T.antiqueGold : "none"} color={i <= form.rating ? T.antiqueGold : T.taupe} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -893,16 +910,38 @@ function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: (
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                     <div>
-                      <label style={lbl}>Material Type</label>
-                      <select value={form.type} onChange={e => set("type", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
-                        {MATERIAL_TYPES.filter(t => t !== "All Types").map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                      <label style={lbl}>Material Types</label>
+                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: "10px 0" }}>
+                        {["Warp", "Resham", "Jari"].map(t => {
+                          const typesArr = form.type ? form.type.split(" / ").map(s => s.trim()).filter(Boolean) : [];
+                          return (
+                            <label key={t} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                              <input type="checkbox" checked={typesArr.includes(t)} onChange={e => {
+                                const newTypes = e.target.checked ? [...typesArr, t] : typesArr.filter(x => x !== t);
+                                set("type", newTypes.join(" / "));
+                              }} style={{ accentColor: T.royalBurgundy, width: 15, height: 15 }} />
+                              {t}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div>
                       <label style={lbl}>Payment Terms *</label>
-                      <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+                      <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
                         {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
+                      <label style={lbl}>Vendor Rating</label>
+                      <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
+                        {[1, 2, 3, 4, 5].map(i => {
+                          const ratingVal = (form as any).rating || 3;
+                          return (
+                            <div key={i} onClick={() => set("rating", i as any)}>
+                              <Star size={20} fill={i <= ratingVal ? T.antiqueGold : "none"} color={i <= ratingVal ? T.antiqueGold : T.taupe} />
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -947,6 +986,7 @@ export function VendorsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [ratingFilter, setRatingFilter] = useState("All Ratings");
   const [analyticsFilter, setAnalyticsFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const totalSpendVal = React.useMemo(() => {
@@ -1091,7 +1131,9 @@ export function VendorsPage() {
     const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || v.id.toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
     const mType = typeFilter === "All Types" || v.type.includes(typeFilter);
     const mStatus = statusFilter === "All" || v.status === statusFilter.toLowerCase();
-    return mSearch && mType && mStatus;
+    const vendorRating = (v as any).rating || 3;
+    const mRating = ratingFilter === "All Ratings" || vendorRating === parseInt(ratingFilter, 10);
+    return mSearch && mType && mStatus && mRating;
   });
 
   if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={(v) => { setVendors(prev => prev.map(old => old.id === v.id ? v : old)); setSelectedVendor(v); }} />;
@@ -1430,6 +1472,14 @@ export function VendorsPage() {
             </div>
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
               {MATERIAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select value={ratingFilter} onChange={e => setRatingFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
+              <option value="All Ratings">All Ratings</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
             </select>
           </div>
 

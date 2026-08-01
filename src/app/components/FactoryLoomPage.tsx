@@ -571,33 +571,67 @@ function LoomDetailPage({ loom, onBack, onEdit }: {
                   if (!m.has(key)) m.set(key, [] as typeof materialRecords);
                   m.get(key)!.push(r);
                   return m;
-                }, new Map<string, typeof materialRecords>()).entries()).map(([batchId, recs]) => (
-                  <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{batchId}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
-                    </div>
-                    {recs.map(r => (
-                      <div key={r.id} style={{ marginBottom: 12 }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap" as const, gap: 8 }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.id}</span>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                          {r.materials.map((m, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
-                              <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.materialType}</span>
-                              {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
-                              <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                              <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Issued by {r.issuedBy}</div>
+                }, new Map<string, typeof materialRecords>()).entries()).map(([batchId, recs]) => {
+                  let warpKg = 0;
+                  let reshamKg = 0;
+                  let jariReels = 0;
+                  recs.forEach(r => r.materials.forEach(mat => {
+                    const qty = mat.quantity || 0;
+                    if (mat.materialType === "Warp") {
+                      warpKg += (mat.unit || "").toLowerCase() === "kg" ? qty : qty / 1000;
+                    } else if (mat.materialType === "Resham") {
+                      reshamKg += (mat.unit || "").toLowerCase() === "kg" ? qty : qty / 1000;
+                    } else if (mat.materialType === "Jari") {
+                      jariReels += (mat.unit || "").toLowerCase().startsWith("bun") ? qty * 4 : qty;
+                    }
+                  }));
+
+                  return (
+                    <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${T.borderDef}` }}>
+                        {[
+                          { label: "Warp Outstanding", value: `${warpKg.toFixed(2)} kg`, color: T.royalBurgundy },
+                          { label: "Resham Outstanding", value: `${reshamKg.toFixed(2)} kg`, color: "#7A5E1C" },
+                          { label: "Jari Outstanding", value: `${jariReels} reels`, color: T.green },
+                        ].map((s, i) => (
+                          <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                            <div style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column" as const, gap: 12 }}>
+                        {recs.map(r => (
+                          <div key={r.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap" as const, gap: 8 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px" }}>{r.id}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                              {r.materials.map((m, i) => (
+                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
+                                  <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.materialType}</span>
+                                  {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
+                                  <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
+                                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 10 }}>Issued by {r.issuedBy}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -726,9 +760,11 @@ function LoomAnalytics({ looms, batches, materials, sarees }: {
   const activeLooms = looms.filter(l => l.status === "active").length;
   const utilRate = looms.length ? Math.round((activeLooms / looms.length) * 100) : 0;
 
+  const allDoneSarees = React.useMemo(() => sarees.filter(s => s.status === "complete"), [sarees]);
+
   const monthly = React.useMemo(() => {
     const m = new Map<string, { produced: number; passed: number }>();
-    doneSarees.forEach(s => {
+    allDoneSarees.forEach(s => {
       const d = new Date(s.completedDate!);
       if (isNaN(d.getTime())) return;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -742,7 +778,7 @@ function LoomAnalytics({ looms, batches, materials, sarees }: {
       ...v,
       rate: v.produced ? Math.round((v.passed / v.produced) * 100) : 0,
     }));
-  }, [doneSarees]);
+  }, [allDoneSarees]);
 
   const perLoom = React.useMemo(() => looms.map(l => {
     const mine = doneSarees.filter(s => s.loomId === l.id);
@@ -803,18 +839,18 @@ function LoomAnalytics({ looms, batches, materials, sarees }: {
   }, [periodMaterials]);
   const warpKg = periodMaterials.filter(m => m.materialType === "Warp" && m.unit === "kg").reduce((a, m) => a + m.quantity, 0);
 
-  const byFloor = React.useMemo(() => {
+  const byDesign = React.useMemo(() => {
     const m = new Map<string, { produced: number; looms: number; active: number }>();
-    perLoom.forEach(l => {
-      const e = m.get(l.location) || { produced: 0, looms: 0, active: 0 };
-      e.produced += l.produced; e.looms += 1;
-      if (l.status === "active") e.active += 1;
-      m.set(l.location, e);
+    doneSarees.forEach(s => {
+      const e = m.get(s.sareeType) || { produced: 0, looms: 1, active: 1 };
+      e.produced += 1;
+      m.set(s.sareeType, e);
     });
     return [...m.entries()]
-      .map(([floor, v], i) => ({ floor, short: floor.replace("Factory Floor ", "Floor "), ...v, fill: FLOOR_FILLS[i % FLOOR_FILLS.length] }))
-      .sort((a, b) => b.produced - a.produced);
-  }, [perLoom]);
+      .map(([type, v], i) => ({ type, short: type, ...v, fill: FLOOR_FILLS[i % FLOOR_FILLS.length] }))
+      .sort((a, b) => b.produced - a.produced)
+      .slice(0, 5); // top 5 designs
+  }, [doneSarees]);
 
   const card: React.CSSProperties = {
     background: "#FFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
@@ -1050,24 +1086,24 @@ function LoomAnalytics({ looms, batches, materials, sarees }: {
           <div style={card}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Package size={16} color={T.royalBurgundy} />
-              <div style={cardTitle}>Output by Floor</div>
+              <div style={cardTitle}>Output by Design</div>
             </div>
-            <div style={cardSub}>Which sections carry production</div>
+            <div style={cardSub}>Top producing saree types</div>
             <ResponsiveContainer width="100%" height={186}>
-              <BarChart data={byFloor} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
+              <BarChart data={byDesign} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
                 <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
                 <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                  formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.active}/${p.payload.looms} looms running`, p.payload.floor]} />
+                  formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
                 <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
-                  {byFloor.map(d => <Cell key={d.floor} fill={d.fill} />)}
+                  {byDesign.map(d => <Cell key={d.type} fill={d.fill} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
             <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-              <span>{byFloor.length} floors</span>
-              <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byFloor[0]?.floor ?? "—"}</span>
+              <span>{byDesign.length} designs</span>
+              <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byDesign[0]?.type ?? "—"}</span>
             </div>
           </div>
 

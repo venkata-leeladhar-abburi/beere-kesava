@@ -34,6 +34,7 @@ export interface Purchase {
   billAmount: string;
   status: string;       // Paid | Pending | Partial
   notes: string;
+  addedBy?: string;
   invoiceFileName?: string;
   sarees: SareeTag[];
 }
@@ -275,14 +276,14 @@ function generateSarees(count: number, date: string, sareeType: string, supplier
 }
 
 const SEED_PURCHASE_RAW = [
-  { id: "EXT-2026-0001", supplierId: "SUP-001", supplier: "Ravi Silks",              location: "Dharmavaram, AP", date: "01 Jun 2026", seedType: "Plain Silk",  sareeCount: 4,  gstNumber: "37ABCRS1234F1Z5", invoiceNumber: "INV-RS-2026-118", billAmount: "₹34,000",    status: "Paid",    notes: "Fresh stock for summer season" },
-  { id: "EXT-2026-0002", supplierId: "SUP-002", supplier: "Mysore Sarees",           location: "Mysore, KA",      date: "05 Jun 2026", seedType: "Mysore Silk", sareeCount: 12, gstNumber: "29MYSRS5678K1Z2", invoiceNumber: "INV-MS-2026-552", billAmount: "₹74,400",    status: "Pending", notes: "Awaiting full payment" },
-  { id: "EXT-2026-0003", supplierId: "SUP-003", supplier: "Chennai Silks",           location: "Chennai, TN",     date: "08 Jun 2026", seedType: "Kanjivaram",  sareeCount: 6,  gstNumber: "33CHNSK9012L1Z8", invoiceNumber: "INV-CS-2026-073", billAmount: "₹66,000",    status: "Partial", notes: "First instalment paid" },
-  { id: "EXT-2026-0004", supplierId: "SUP-004", supplier: "Kanchipuram House",       location: "Kanchipuram, TN", date: "10 Jun 2026", seedType: "Kanjivaram",  sareeCount: 8,  gstNumber: "33KNCH3456M1Z1", invoiceNumber: "INV-KH-2026-209", billAmount: "₹88,000",    status: "Paid",    notes: "" },
-  { id: "EXT-2026-0005", supplierId: "SUP-005", supplier: "Venkateshwara Handlooms", location: "Ongole, AP",      date: "11 Jun 2026", seedType: "Plain Silk",  sareeCount: 3,  gstNumber: "37VENK7890N1Z6", invoiceNumber: "INV-VH-2026-014", billAmount: "₹22,500",    status: "Paid",    notes: "Trial batch" },
-  { id: "EXT-2026-0006", supplierId: "SUP-006", supplier: "Pochampally Coop",        location: "Pochampally, TG", date: "11 Jun 2026", seedType: "Patola",      sareeCount: 15, gstNumber: "36POCH2345P1Z9", invoiceNumber: "INV-PC-2026-301", billAmount: "₹1,20,000", status: "Pending", notes: "Inter-branch transfer" },
-  { id: "EXT-2026-0007", supplierId: "SUP-001", supplier: "Ravi Silks",              location: "Dharmavaram, AP", date: "18 Apr 2026", seedType: "Plain Silk",  sareeCount: 7,  gstNumber: "37ABCRS1234F1Z5", invoiceNumber: "INV-RS-2026-092", billAmount: "₹52,500",    status: "Paid",    notes: "Repeat order" },
-  { id: "EXT-2026-0008", supplierId: "SUP-003", supplier: "Chennai Silks",           location: "Chennai, TN",     date: "02 Mar 2026", seedType: "Kanjivaram",  sareeCount: 10, gstNumber: "33CHNSK9012L1Z8", invoiceNumber: "INV-CS-2026-018", billAmount: "₹1,10,000", status: "Paid",    notes: "Festive season stock" },
+  { id: "EXT-2026-0001", supplierId: "SUP-001", supplier: "Ravi Silks",              location: "Dharmavaram, AP", date: "01 Jun 2026", seedType: "Plain Silk",  sareeCount: 4,  gstNumber: "37ABCRS1234F1Z5", invoiceNumber: "INV-RS-2026-118", billAmount: "₹34,000",    status: "Paid",    notes: "Fresh stock for summer season", addedBy: "Admin" },
+  { id: "EXT-2026-0002", supplierId: "SUP-002", supplier: "Mysore Sarees",           location: "Mysore, KA",      date: "05 Jun 2026", seedType: "Mysore Silk", sareeCount: 12, gstNumber: "29MYSRS5678K1Z2", invoiceNumber: "INV-MS-2026-552", billAmount: "₹74,400",    status: "Pending", notes: "Awaiting full payment", addedBy: "Superadmin" },
+  { id: "EXT-2026-0003", supplierId: "SUP-003", supplier: "Chennai Silks",           location: "Chennai, TN",     date: "08 Jun 2026", seedType: "Kanjivaram",  sareeCount: 6,  gstNumber: "33CHNSK9012L1Z8", invoiceNumber: "INV-CS-2026-073", billAmount: "₹66,000",    status: "Partial", notes: "First instalment paid", addedBy: "Admin" },
+  { id: "EXT-2026-0004", supplierId: "SUP-004", supplier: "Kanchipuram House",       location: "Kanchipuram, TN", date: "10 Jun 2026", seedType: "Kanjivaram",  sareeCount: 8,  gstNumber: "33KNCH3456M1Z1", invoiceNumber: "INV-KH-2026-209", billAmount: "₹88,000",    status: "Paid",    notes: "", addedBy: "Admin" },
+  { id: "EXT-2026-0005", supplierId: "SUP-005", supplier: "Venkateshwara Handlooms", location: "Ongole, AP",      date: "11 Jun 2026", seedType: "Plain Silk",  sareeCount: 3,  gstNumber: "37VENK7890N1Z6", invoiceNumber: "INV-VH-2026-014", billAmount: "₹22,500",    status: "Paid",    notes: "Trial batch", addedBy: "Admin" },
+  { id: "EXT-2026-0006", supplierId: "SUP-006", supplier: "Pochampally Coop",        location: "Pochampally, TG", date: "11 Jun 2026", seedType: "Patola",      sareeCount: 15, gstNumber: "36POCH2345P1Z9", invoiceNumber: "INV-PC-2026-301", billAmount: "₹1,20,000", status: "Pending", notes: "Inter-branch transfer", addedBy: "Superadmin" },
+  { id: "EXT-2026-0007", supplierId: "SUP-001", supplier: "Ravi Silks",              location: "Dharmavaram, AP", date: "18 Apr 2026", seedType: "Plain Silk",  sareeCount: 7,  gstNumber: "37ABCRS1234F1Z5", invoiceNumber: "INV-RS-2026-092", billAmount: "₹52,500",    status: "Paid",    notes: "Repeat order", addedBy: "Admin" },
+  { id: "EXT-2026-0008", supplierId: "SUP-003", supplier: "Chennai Silks",           location: "Chennai, TN",     date: "02 Mar 2026", seedType: "Kanjivaram",  sareeCount: 10, gstNumber: "33CHNSK9012L1Z8", invoiceNumber: "INV-CS-2026-018", billAmount: "₹1,10,000", status: "Paid",    notes: "Festive season stock", addedBy: "Superadmin" },
 ];
 
 const SEED_PURCHASES: Purchase[] = SEED_PURCHASE_RAW.map(({ seedType, sareeCount, ...p }) => ({

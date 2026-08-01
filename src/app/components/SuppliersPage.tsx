@@ -162,14 +162,14 @@ interface SupplierFormValues {
   name: string; contactName: string; phone: string; whatsapp: string;
   city: string; state: string; address: string; terms: string;
   bankName: string; accountNo: string; gstCode: string;
-  specialty: string; notes: string;
+  rating?: number; notes: string;
 }
 
 function emptyForm(): SupplierFormValues {
   return {
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "", terms: "30 days",
-    bankName: "", accountNo: "", gstCode: "", specialty: "Plain Silk", notes: "",
+    bankName: "", accountNo: "", gstCode: "", rating: 3, notes: "",
   };
 }
 
@@ -231,10 +231,14 @@ function SupplierFormFields({
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div>
-            <label style={lbl}>Supplies (Saree Type)</label>
-            <select value={form.specialty} onChange={e => set("specialty", e.target.value)} style={{ ...inp, cursor: "pointer" }}>
-              {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <label style={lbl}>Supplier Rating</label>
+            <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} onClick={() => set("rating", i as any)}>
+                  <Star size={20} fill={i <= (form.rating || 3) ? T.antiqueGold : "none"} color={i <= (form.rating || 3) ? T.antiqueGold : T.taupe} />
+                </div>
+              ))}
+            </div>
           </div>
           <div>
             <label style={lbl}>Payment Terms *</label>
@@ -352,8 +356,6 @@ function AddSupplierModal({ onSave, onCancel, nextId }: {
 
 function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string; invoiceNumber: string })[] }) {
   const [preview, setPreview] = useState<string | null>(null);
-  // A line bought in bulk becomes one row per physical saree, each with its own code.
-  const pieces = expandSareePieces(rows);
 
   if (rows.length === 0) {
     return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees match this filter.</div>;
@@ -365,13 +367,13 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
           <thead>
             <tr style={{ background: T.silkCream }}>
-              {["Photo", "Saree ID", "Line Serial", "Purchase Order", "Type", "Colour", "Weight", "Purchase Date", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
+              {["Photo", "Saree ID", "Serial No.", "Purchase Order", "Quantity", "Type", "Colour", "Weight", "Purchase Date", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
                 <th key={h} style={{ padding: "11px 14px", fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {pieces.map((s, i) => (
+            {rows.map((s, i) => (
               <tr key={`${s.purchaseId}-${s.id}-${i}`} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.45)" }}>
                 <td style={{ padding: "10px 14px" }}>
                   {s.imageUrl ? (
@@ -384,11 +386,9 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
                   )}
                 </td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.royalBurgundy }}>{s.id}</td>
-                <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.lineCode}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginLeft: 6 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
-                </td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>{s.id.includes("-INV-") ? s.id.split("-")[1] : "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.purchaseId}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{s.quantity} pcs</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.sareeType || "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.color || "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.weight || "—"}</td>
@@ -396,7 +396,7 @@ function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: string;
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{formatINR(s.finalAmount)}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.green }}>{formatINR((s.finalAmount - s.price) * s.quantity)}</td>
               </tr>
             ))}
           </tbody>
@@ -586,7 +586,7 @@ function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
     whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
     address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
     accountNo: supplier.accountNo || "", gstCode: supplier.gstCode,
-    specialty: supplier.specialty, notes: supplier.notes || "",
+    rating: supplier.rating || 3, notes: supplier.notes || "",
   });
   const [cardPreview, setCardPreview] = useState<string | null>(supplier.visitingCard || null);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -597,7 +597,7 @@ function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
       address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
       accountNo: supplier.accountNo || "", gstCode: supplier.gstCode,
-      specialty: supplier.specialty, notes: supplier.notes || "",
+      rating: supplier.rating || 3, notes: supplier.notes || "",
     });
     setCardPreview(supplier.visitingCard || null);
   }, [supplier]);
@@ -1313,25 +1313,30 @@ function SupplierAnalytics() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Percent size={16} color={T.royalBurgundy} />
-                  <div style={cardTitle}>Margin by Saree Type</div>
+                  <Star size={16} color={T.royalBurgundy} />
+                  <div style={cardTitle}>Suppliers by Rating</div>
                 </div>
-                <div style={cardSub}>Markup over cost · blended {margin.pct.toFixed(1)}%</div>
+                <div style={cardSub}>Distribution of supplier quality</div>
                 <ResponsiveContainer width="100%" height={182}>
-                  <BarChart data={byType} barSize={22} margin={{ top: 16, left: -20, right: 6 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                    <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis unit="%" tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={40} />
+                  <BarChart data={
+                    Object.entries(suppliers.reduce((acc, s) => {
+                      const r = Math.round(s.rating || 3);
+                      acc[r] = (acc[r] || 0) + 1;
+                      return acc;
+                    }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<number, number>))
+                    .map(([k, v]) => ({ rating: `${k} Stars`, count: v }))
+                    .reverse()
+                  } layout="vertical" margin={{ top: 16, left: 10, right: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                    <XAxis type="number" tick={{ fontFamily: F.ui, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="rating" type="category" tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={50} />
                     <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${v}% markup · ₹${p.payload.avgCost.toLocaleString("en-IN")} avg cost`, p.payload.type]} />
-                    <Bar dataKey="markup" radius={[5, 5, 0, 0]}>
-                      {byType.map(d => <Cell key={d.type} fill={d.markup >= margin.pct ? T.greenMid : T.antiqueGold} />)}
-                    </Bar>
+                      formatter={(v: any, _n: any, p: any) => [`${v} suppliers`, p.payload.rating]} />
+                    <Bar dataKey="count" fill={T.antiqueGold} radius={[0, 5, 5, 0]} barSize={16} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-                  <span>Cost {formatINR(margin.cost)}</span>
-                  <span style={{ color: T.greenMid, fontWeight: 700 }}>Gross {formatINR(margin.gross)}</span>
+                  <span>Total Suppliers {suppliers.length}</span>
                 </div>
               </div>
 
@@ -1407,13 +1412,12 @@ function SupplierAnalytics() {
 }
 
 export function SuppliersPage() {
-  const { suppliers, statsFor, addSupplier, raiseRequest, requests, nextSupplierId } = useSuppliers();
+  const { suppliers, statsFor, addSupplier, raiseRequest, requests, purchases, addPurchase, nextSupplierId } = useSuppliers();
   const [selected, setSelected] = useState<Supplier | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [specialtyFilter, setSpecialtyFilter] = useState("All Types");
   const [toast, setToast] = useState("");
 
   // Keep the open profile in step with edits made from the Edit Profile tab.
@@ -1431,17 +1435,23 @@ export function SuppliersPage() {
     return { purchased, paid, outstanding, sarees };
   }, [suppliers, statsFor]);
 
-  const specialties = useMemo(
-    () => ["All Types", ...Array.from(new Set(suppliers.map(s => s.specialty)))],
-    [suppliers]
-  );
+  const [ratingFilter, setRatingFilter] = useState("All Ratings");
 
   const filtered = suppliers.filter(s => {
     const q = search.toLowerCase();
     const mSearch = !q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || s.contactName.toLowerCase().includes(q);
     const mStatus = statusFilter === "All" || s.status === statusFilter.toLowerCase();
-    const mSpec   = specialtyFilter === "All Types" || s.specialty === specialtyFilter;
-    return mSearch && mStatus && mSpec;
+    
+    let mRating = true;
+    if (ratingFilter !== "All Ratings") {
+      const match = ratingFilter.match(/(\d)/);
+      if (match) {
+        const r = parseInt(match[1]);
+        mRating = Math.round(s.rating || 3) === r;
+      }
+    }
+    
+    return mSearch && mStatus && mRating;
   });
 
   const pendingRequests = requests.filter(r => r.status === "pending").length;
@@ -1461,32 +1471,23 @@ export function SuppliersPage() {
     };
   };
 
-  const handleRaiseRequest = (form: PurchaseFormState, sarees: SareeTag[], request?: { urgency: "Normal" | "Urgent"; reason: string }) => {
-    const s = suppliers.find(x => x.id === form.supplierId);
-    const totals = purchaseTotals(sarees);
-    const estimated = parseINR(form.billAmount) || totals.selling;
-    raiseRequest({
-      supplierId: form.supplierId,
-      supplierName: s?.name ?? form.supplier,
-      requestedBy: "Admin",
-      requestedDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-      sareeType: sarees[0]?.sareeType || s?.specialty || "—",
-      quantity: totals.pieces,
-      estimatedAmount: estimated,
-      urgency: request?.urgency ?? "Normal",
-      reason: request?.reason ?? "",
-      // Full purchase payload so the superadmin approves the real thing.
+  const handleRaiseRequest = (form: PurchaseFormState, sarees: SareeTag[]) => {
+    addPurchase({
+      supplierId: form.supplierId || undefined,
+      supplier: form.supplier,
       location: form.location,
+      date: form.date || "—",
+      sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
-      purchaseDate: form.date,
-      billAmount: form.billAmount,
+      billAmount: form.billAmount || "₹0",
+      status: form.status || "Pending",
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
       sarees,
     });
     setRequestFor(null);
-    setToast(`Purchase request sent to superadmin for ${s?.name ?? form.supplier}`);
+    setToast(`External purchase added for ${form.supplier}`);
     setTimeout(() => setToast(""), 3200);
   };
 
@@ -1501,7 +1502,7 @@ export function SuppliersPage() {
         <AnimatePresence>
           {requestFor && (
             <PurchaseFormModal
-              mode="request"
+              mode="add"
               initial={initialPurchaseFormFor(requestFor)}
               initialSarees={[]}
               onClose={() => setRequestFor(null)}
@@ -1537,7 +1538,7 @@ export function SuppliersPage() {
           <div style={{ display: "flex", gap: 12, alignSelf: "flex-start", flexShrink: 0 }}>
             <motion.button onClick={() => setRequestFor(suppliers[0]?.id ?? "")} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               style={{ padding: "13px 22px", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(200,155,71,0.4)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.goldLight, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Send size={15} /> Raise Purchase Request
+              <Send size={15} /> Add External Purchase
             </motion.button>
             <motion.button onClick={() => setShowAdd(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               style={{ padding: "13px 24px", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.darkBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(200,155,71,0.35)" }}>
@@ -1556,7 +1557,7 @@ export function SuppliersPage() {
             { icon: IndianRupee,   label: "Total Purchased",   value: `₹${(totals.purchased / 100000).toFixed(1)}L`,            sub: "Billed by all suppliers",    hi: true  },
             { icon: CheckCircle2,  label: "Total Paid",        value: `₹${(totals.paid / 100000).toFixed(1)}L`,                 sub: "Settled to suppliers",       hi: false },
             { icon: AlertTriangle, label: "Outstanding",       value: `₹${(totals.outstanding / 100000).toFixed(1)}L`,          sub: "Yet to be paid",             hi: false },
-            { icon: TrendingUp,    label: "Pending Requests",  value: String(pendingRequests),                                  sub: "Awaiting superadmin",        hi: false },
+            { icon: TrendingUp,    label: "Pending Purchases",  value: String(purchases.filter(p => p.status === "Pending").length), sub: "Awaiting payment",        hi: false },
           ].map((m, i, arr) => (
             <div key={m.label} style={{ flex: 1, padding: "26px 18px", background: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none", borderRight: i < arr.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
               {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
@@ -1601,9 +1602,9 @@ export function SuppliersPage() {
                   style={{ padding: "8px 16px", borderRadius: 20, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer", background: statusFilter === s ? T.royalBurgundy : "transparent", color: statusFilter === s ? "#FFF" : T.taupe, border: statusFilter === s ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.15s" }}>{s}</button>
               ))}
             </div>
-            <select value={specialtyFilter} onChange={e => setSpecialtyFilter(e.target.value)}
+            <select value={ratingFilter} onChange={e => setRatingFilter(e.target.value)}
               style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
-              {specialties.map(t => <option key={t} value={t}>{t}</option>)}
+              {["All Ratings", "5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"].map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
@@ -1628,37 +1629,35 @@ export function SuppliersPage() {
         <FadeUp>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Purchase Requests</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>External Purchase History</h2>
           </div>
           <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-            {requests.length === 0 ? (
-              <div style={{ padding: "44px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No purchase requests raised yet.</div>
+            {purchases.length === 0 ? (
+              <div style={{ padding: "44px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No external purchases recorded yet.</div>
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: T.silkCream }}>
-                    {["Request", "Supplier", "Items", "Estimated", "Urgency", "Raised", "Status"].map(h => (
+                    {["Purchase Ref", "Supplier", "Invoice", "Sarees", "Bill Amount", "Date", "Status"].map(h => (
                       <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((r, i) => (
-                    <tr key={r.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                      <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{r.id}</td>
-                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.supplierName}</td>
-                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{r.quantity} × {r.sareeType}</td>
-                      <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{formatINR(r.estimatedAmount)}</td>
-                      <td style={{ padding: "13px 16px" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: r.urgency === "Urgent" ? T.crimsonBg : "rgba(139,112,96,0.10)", color: r.urgency === "Urgent" ? T.crimson : T.taupe }}>{r.urgency}</span>
-                      </td>
-                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.requestedDate}</td>
+                  {purchases.map((p, i) => (
+                    <tr key={p.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
+                      <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</td>
+                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{p.supplier}</td>
+                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</td>
+                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{p.sareeCount} pcs</td>
+                      <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</td>
+                      <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</td>
                       <td style={{ padding: "13px 16px" }}>
                         <span style={{
                           fontFamily: F.ui, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
-                          background: r.status === "approved" ? "rgba(30,102,64,0.09)" : r.status === "rejected" ? T.crimsonBg : "rgba(230,126,34,0.12)",
-                          color: r.status === "approved" ? T.greenMid : r.status === "rejected" ? T.crimson : "rgba(230,126,34,1)",
-                        }}>{r.status}</span>
+                          background: p.status === "Paid" ? "rgba(30,102,64,0.09)" : "rgba(230,126,34,0.12)",
+                          color: p.status === "Paid" ? T.greenMid : "rgba(230,126,34,1)",
+                        }}>{p.status}</span>
                       </td>
                     </tr>
                   ))}

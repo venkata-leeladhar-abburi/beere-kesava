@@ -7,9 +7,10 @@ import {
   CheckCircle2, XCircle, Archive, FileText, QrCode, Boxes, Layers, Tag,
   Sparkles, Clock, Palette, ClipboardList, UserCheck, Timer, X, Plus,
   Download, BarChart2, History, Filter, Check, ChevronUp, IndianRupee,
-  ChevronLeft, PackageCheck,
+  ChevronLeft, PackageCheck, Calculator, Users,
 } from "lucide-react";
 import { usePO, PurchaseOrder } from "./POContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "./DateFilterBar";
 import { POCreateModal } from "./POCreateModal";
 import { PODocumentModal } from "./PODocumentModal";
 import { toast } from "sonner";
@@ -1235,20 +1236,15 @@ function MetricsBar() {
 // SECTION 3 — STOCK ALERTS CARD
 // ═══════════════════════════════════════════════════════════════════════════════
 const ALERTS = [
-  { type: "JARI",   subtype: "Polyester · 1G · Silver", batchId: "JRI-PLY-1G-SLV-20260501-002", current: "4 Buns (16 Reels)",  minimum: "20 Buns (80 Reels)",  pct: 20 },
-  { type: "RESHAM", subtype: "Silk · Green",            batchId: "RSM-GRN-20260428-001",         current: "2 kg",  minimum: "8 kg",  pct: 25 },
-  { type: "WARP",   subtype: "Cotton / Silk",           batchId: "WRP-20260428-003",             current: "4 kg",  minimum: "10 kg", pct: 40 },
-];
-
-const JARI_STOCK_TYPES = [
-  { key: "poly-2g-gold", label: "Polyester 2G Gold", buns: 4, reels: 16 },
-  { key: "silkfast-2g-gold", label: "Silk Fast 2G Gold", buns: 2, reels: 8 },
+  { type: "WARP",   current: "4 kg",  minimum: "10 kg", pct: 40 },
+  { type: "RESHAM", current: "2 kg",  minimum: "8 kg",  pct: 25 },
+  { type: "JARI",   current: "4 Buns (16 Reels)",  minimum: "20 Buns (80 Reels)",  pct: 20 },
 ];
 
 function ThresholdsModal({ open, onClose, thresholds, onSave }: {
   open: boolean; onClose: () => void;
-  thresholds: { warp: number; resham: number; jari: Record<string, { qty: number; unit: "Buns" | "Reels" }> };
-  onSave: (t: { warp: number; resham: number; jari: Record<string, { qty: number; unit: "Buns" | "Reels" }> }) => void;
+  thresholds: { warp: number; resham: number; jari: { qty: number; unit: "Buns" | "Reels" } };
+  onSave: (t: { warp: number; resham: number; jari: { qty: number; unit: "Buns" | "Reels" } }) => void;
 }) {
   const [warp, setWarp] = useState(thresholds.warp);
   const [resham, setResham] = useState(thresholds.resham);
@@ -1268,37 +1264,32 @@ function ThresholdsModal({ open, onClose, thresholds, onSave }: {
       <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={rowStyle}>
           <span style={chipStyle(T.royalBurgundy, "rgba(110,15,45,0.09)")}>Warp</span>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, flex: 1 }}>Cotton / Silk</span>
+          <div style={{ flex: 1 }} />
           <input type="number" value={warp} onChange={e => setWarp(parseFloat(e.target.value) || 0)} style={inputStyle} />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
           <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 4 kg</span>
         </div>
         <div style={rowStyle}>
           <span style={chipStyle("#7A5E1C", "rgba(200,155,71,0.13)")}>Resham</span>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, flex: 1 }}>Silk · Green</span>
+          <div style={{ flex: 1 }} />
           <input type="number" value={resham} onChange={e => setResham(parseFloat(e.target.value) || 0)} style={inputStyle} />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
           <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 2 kg</span>
         </div>
-        {JARI_STOCK_TYPES.map(jt => {
-          const val = jari[jt.key] || { qty: 0, unit: "Buns" as const };
-          return (
-            <div key={jt.key} style={rowStyle}>
-              <span style={chipStyle(T.luxuryBrown, "rgba(59,35,20,0.09)")}>Jari</span>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, flex: 1 }}>{jt.label}</span>
-              <input type="number" value={val.qty} onChange={e => setJari(prev => ({ ...prev, [jt.key]: { ...val, qty: parseFloat(e.target.value) || 0 } }))} style={inputStyle} />
-              <div style={{ display: "flex", border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, overflow: "hidden" }}>
-                {(["Buns", "Reels"] as const).map(u => (
-                  <button key={u} onClick={() => setJari(prev => ({ ...prev, [jt.key]: { ...val, unit: u } }))}
-                    style={{ padding: "7px 12px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, cursor: "pointer", border: "none", background: val.unit === u ? T.royalBurgundy : "#FFFFFF", color: val.unit === u ? "#FFFDF9" : T.taupe }}>
-                    {u}
-                  </button>
-                ))}
-              </div>
-              <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: {jt.buns} Buns / {jt.reels} Reels</span>
-            </div>
-          );
-        })}
+        <div style={rowStyle}>
+          <span style={chipStyle(T.luxuryBrown, "rgba(59,35,20,0.09)")}>Jari</span>
+          <div style={{ flex: 1 }} />
+          <input type="number" value={jari.qty} onChange={e => setJari(prev => ({ ...prev, qty: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
+          <div style={{ display: "flex", border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, overflow: "hidden" }}>
+            {(["Buns", "Reels"] as const).map(u => (
+              <button key={u} onClick={() => setJari(prev => ({ ...prev, unit: u }))}
+                style={{ padding: "7px 12px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, cursor: "pointer", border: "none", background: jari.unit === u ? T.royalBurgundy : "#FFFFFF", color: jari.unit === u ? "#FFFDF9" : T.taupe }}>
+                {u}
+              </button>
+            ))}
+          </div>
+          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 6 Buns / 24 Reels</span>
+        </div>
         <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
           <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
@@ -1317,8 +1308,8 @@ function ThresholdsModal({ open, onClose, thresholds, onSave }: {
 function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
   const { px } = useContext(MobileCtx);
   const [thresholdsOpen, setThresholdsOpen] = useState(false);
-  const [thresholds, setThresholds] = useState<{ warp: number; resham: number; jari: Record<string, { qty: number; unit: "Buns" | "Reels" }> }>({
-    warp: 10, resham: 8, jari: { "poly-2g-gold": { qty: 5, unit: "Buns" }, "silkfast-2g-gold": { qty: 3, unit: "Buns" } },
+  const [thresholds, setThresholds] = useState<{ warp: number; resham: number; jari: { qty: number; unit: "Buns" | "Reels" } }>({
+    warp: 10, resham: 8, jari: { qty: 20, unit: "Buns" }
   });
   return (
     <FadeUp id="mat-alerts" style={{ padding: `28px ${px}px 0` }}>
@@ -1348,17 +1339,15 @@ function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           {ALERTS.map((a, i) => (
             <motion.div
-              key={a.batchId}
+              key={a.type}
               initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
               style={{ background: "#FFFFFF", border: "1px solid rgba(192,57,43,0.14)", borderLeft: `3px solid ${T.crimson}`, borderRadius: 10, padding: "18px 20px", minWidth: 240, flex: "1 1 240px", maxWidth: 300, boxShadow: "0 2px 10px rgba(192,57,43,0.05)" }}
             >
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 500, color: T.taupe, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 6 }}>{a.type}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 16, color: T.luxuryBrown, marginBottom: 4 }}>{a.subtype}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, marginBottom: 12, letterSpacing: "0.3px" }}>{a.batchId}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 500, color: T.taupe, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 12 }}>{a.type}</div>
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 28, color: T.crimson, lineHeight: 1, marginBottom: 6 }}>{a.current}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, marginBottom: 14 }}>
-                Minimum set: {a.type === "WARP" ? `${thresholds.warp} kg` : a.type === "RESHAM" ? `${thresholds.resham} kg` : a.minimum}
+                Minimum set: {a.type === "WARP" ? `${thresholds.warp} kg` : a.type === "RESHAM" ? `${thresholds.resham} kg` : `${thresholds.jari.qty} ${thresholds.jari.unit}`}
               </div>
               <div style={{ marginBottom: 16 }}><AnimatedBar pct={a.pct} color={T.crimson} height={6} trackBg="rgba(192,57,43,0.10)" /></div>
               <motion.button
@@ -1540,6 +1529,7 @@ function POTrackerSection({
   const { px } = useContext(MobileCtx);
   const { pos } = usePO();
   const [filter, setFilter] = useState<POFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
     Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },
@@ -1587,6 +1577,9 @@ function POTrackerSection({
       </div>
 
       {/* Filter pills */}
+      <div style={{ marginBottom: 16 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         {PILL_LABELS.map(p => (
           <motion.button
@@ -2263,6 +2256,7 @@ function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow
 function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [view, setView] = useState<"table" | "card">(isMobile ? "card" : "table");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [matFilter, setMatFilter] = useState("All Materials");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [search, setSearch] = useState("");
@@ -2289,6 +2283,10 @@ function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void }) {
       <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, margin: "0 0 20px", lineHeight: 1.6 }}>
         Each batch is one delivery of material received from a vendor. Every batch has its own unique barcode for tracking.
       </p>
+
+      <div style={{ marginBottom: 16 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
 
       {/* Controls row */}
       <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "stretch" : "center", marginBottom: 16, gap: 12 }}>
@@ -2458,13 +2456,9 @@ const SPEND_DATA = [
   { name: "Jari",   pct: 43, value: "₹24,48,000", color: T.luxuryBrown   },
 ];
 
-const PURCHASE_PERIOD_FILTERS = ["All Time", "This Month", "Last 3 Months", "This Year"];
-
 function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
-  const [period, setPeriod] = useState("All Time");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   return (
     <section id="mat-purchase-history" style={{ padding: `44px ${px}px 0` }}>
@@ -2481,83 +2475,20 @@ function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => 
 
       {/* Filter Panel */}
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", marginBottom: 24, overflow: "visible" }}>
-          <div style={{ background: `linear-gradient(100deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "16px 24px", display: "flex", alignItems: "center", gap: 12, borderTopLeftRadius: 17, borderTopRightRadius: 17 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <SlidersHorizontal size={17} color="#FFFDF9" strokeWidth={2} />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: "#FFFDF9", letterSpacing: "-0.1px" }}>Filter Purchase History</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12.5, color: "rgba(255,253,249,0.65)", marginTop: 1 }}>Select a quick range or set a custom date window</div>
-            </div>
-          </div>
-
-          <div style={{ padding: "22px 24px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
-            <div>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 500, color: T.taupe, letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>Quick Range</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {PURCHASE_PERIOD_FILTERS.map(f => (
-                  <motion.button
-                    key={f}
-                    onClick={() => setPeriod(f)}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                    style={{
-                      fontFamily: F.ui, fontWeight: 600, fontSize: 13.5,
-                      padding: "9px 20px", borderRadius: 99, cursor: "pointer",
-                      background: period === f ? T.royalBurgundy : T.warmIvory,
-                      color: period === f ? "#FFFDF9" : T.luxuryBrown,
-                      border: period === f ? `1px solid ${T.royalBurgundy}` : `1px solid rgba(110,15,45,0.16)`,
-                      boxShadow: period === f ? "0 4px 14px rgba(110,15,45,0.22)" : "none",
-                      transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
-                    }}
-                  >
-                    {f}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, height: 1, background: "rgba(110,15,45,0.08)" }} />
-              <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "2px", textTransform: "uppercase" }}>or custom date range</span>
-              <div style={{ flex: 1, height: 1, background: "rgba(110,15,45,0.08)" }} />
-            </div>
-
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
-              <DatePickerInput value={fromDate} onChange={setFromDate} label="From Date" />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "50%", background: T.warmCream, flexShrink: 0, marginBottom: 2 }}>
-                <ArrowRight size={15} color={T.taupe} strokeWidth={2} />
-              </div>
-              <DatePickerInput value={toDate} onChange={setToDate} label="To Date" />
-            </div>
-            {(fromDate || toDate) && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 500 }}>
-                Selected range: {fromDate ? new Date(fromDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "start"} → {toDate ? new Date(toDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "end"}
-              </div>
-            )}
-
-            <motion.button
-              whileHover={{ scale: 1.015, boxShadow: "0 8px 28px rgba(110,15,45,0.32)" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.18 }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: `linear-gradient(100deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "14px 24px", fontFamily: F.ui, fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 18px rgba(110,15,45,0.22)", letterSpacing: "-0.1px" }}
-            >
-              <SlidersHorizontal size={17} strokeWidth={2} />
-              Apply Filter
-            </motion.button>
-          </div>
+        <div style={{ marginBottom: 24 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
       </FadeUp>
 
-      {/* 4 stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: isMobile ? 12 : 18, marginBottom: 26, alignItems: "stretch" }}>
+      {/* 6 stat cards */}
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(6, 1fr)", gap: isMobile ? 12 : 18, marginBottom: 26, alignItems: "stretch" }}>
         {[
-          { Icon: Layers,      label: "Total Warp Purchased",   amount: "2,840 kg", cost: "₹14,20,000", sub: "From 4 vendors · Since system started",    dark: false },
-          { Icon: Tag,         label: "Total Resham Purchased", amount: "1,240 kg", cost: "₹18,60,000", sub: "From 3 vendors · All colors combined",       dark: false },
-          { Icon: Sparkles,    label: "Total Jari Purchased",   amount: "680 Reels (170 Buns)", cost: "₹24,48,000", sub: "From 2 vendors · All types and grades",      dark: false },
-          { Icon: IndianRupee, label: "TOTAL AMOUNT SPENT",     amount: "₹57,28,000", cost: "", sub: "On all raw materials since system started", dark: true  },
+          { Icon: Layers,      label: "Total Warp Purchased",   amount: "2,840 kg", cost: "₹14,20,000", sub: "From 4 vendors", dark: false },
+          { Icon: Tag,         label: "Total Resham Purchased", amount: "1,240 kg", cost: "₹18,60,000", sub: "From 3 vendors", dark: false },
+          { Icon: Sparkles,    label: "Total Jari Purchased",   amount: "680 Reels", cost: "₹24,48,000", sub: "From 2 vendors", dark: false },
+          { Icon: Calculator,  label: "Average Order Value",    amount: "₹1,24,000", cost: "", sub: "Average value per PO", dark: false },
+          { Icon: Users,       label: "Active Vendors",         amount: "8 Vendors", cost: "", sub: "Vendors with history", dark: false },
+          { Icon: IndianRupee, label: "TOTAL AMOUNT SPENT",     amount: "₹57,28,000", cost: "", sub: "Total raw materials", dark: true  },
         ].map((card, i) => (
           <FadeUp key={card.label} delay={i * 0.09} style={{ height: "100%" }}>
             <div style={{ background: card.dark ? T.darkBurgundy : "#FFFFFF", borderRadius: 16, border: `1px solid ${card.dark ? "transparent" : T.borderDef}`, padding: "22px 22px 20px", boxShadow: card.dark ? "0 8px 32px rgba(61,14,26,0.30)" : "0 2px 12px rgba(74,6,27,0.06)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
@@ -2871,11 +2802,9 @@ const MOVE_CHART_DATA = [
   { label: "26 Mar–2 Apr", received: 70, given: 22 },
 ];
 
-const PERIOD_PILLS = ["Last 7 Days", "Last 30 Days", "Last 3 Months", "Choose Your Own Dates"];
-
 function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMovementReport: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
-  const [period, setPeriod] = useState("Last 30 Days");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   return (
     <section id="mat-movement" style={{ padding: `44px ${px}px 0` }}>
@@ -2890,19 +2819,8 @@ function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMoveme
         Every time material came into the factory from a vendor, or was given out to a weaver — it is recorded here.
       </p>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 26, flexWrap: "wrap" }}>
-        {PERIOD_PILLS.map(p => (
-          <motion.button
-            key={p}
-            onClick={() => setPeriod(p)}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.15 }}
-            style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: period === p ? T.royalBurgundy : "#FFFFFF", color: period === p ? "#FFFDF9" : T.luxuryBrown, border: period === p ? `1px solid ${T.royalBurgundy}` : `1px solid rgba(110,15,45,0.18)`, boxShadow: period === p ? "0 4px 14px rgba(110,15,45,0.22)" : "none", transition: "background 0.2s, color 0.2s, box-shadow 0.2s" }}
-          >
-            {p}
-          </motion.button>
-        ))}
+      <div style={{ marginBottom: 26 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
       <FadeUp>
@@ -2912,7 +2830,6 @@ function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMoveme
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 22, color: T.luxuryBrown, marginBottom: 4 }}>Stock Coming In vs Going Out</div>
               <div style={{ fontFamily: F.ui, fontSize: 14.5, color: T.taupe }}>How much material was received from vendors vs given out to weavers each week</div>
             </div>
-            <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 500, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.22)", borderRadius: 8, padding: "5px 13px", letterSpacing: "0.5px" }}>{period}</span>
           </div>
 
           <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: isMobile ? "column" : "row", gap: 32, alignItems: "stretch" }}>
@@ -2971,33 +2888,33 @@ function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMoveme
             {MOVEMENT_ENTRIES.map((entry, i) => (
               <motion.div
                 key={entry.ref}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 5 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.05, ease: EASE }}
-                style={{ display: "flex", gap: 18, paddingBottom: i < MOVEMENT_ENTRIES.length - 1 ? 22 : 0, position: "relative" }}
+                transition={{ duration: 0.3, delay: i * 0.03, ease: EASE }}
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 16, 
+                  padding: "12px 16px",
+                  borderBottom: i < MOVEMENT_ENTRIES.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                  background: i % 2 === 0 ? "transparent" : T.silkCream,
+                }}
               >
-                {i < MOVEMENT_ENTRIES.length - 1 && (
-                  <div style={{ position: "absolute", left: 22, top: 46, bottom: 0, width: 2, background: "rgba(110,15,45,0.07)", zIndex: 0 }} />
-                )}
-                <div style={{ flexShrink: 0, zIndex: 1 }}>
-                  <div style={{ width: 46, height: 46, borderRadius: "50%", background: entry.type === "in" ? "rgba(30,102,64,0.11)" : "rgba(192,57,43,0.09)", border: `2px solid ${entry.type === "in" ? "rgba(30,102,64,0.32)" : "rgba(192,57,43,0.28)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: entry.type === "in" ? T.green : T.crimson }} />
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: entry.type === "in" ? T.green : T.crimson, flexShrink: 0 }} />
+                
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.luxuryBrown }}>{entry.desc}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      {entry.type === "in" ? "Received" : "Given"}
+                    </span>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{entry.time}</span>
                   </div>
                 </div>
-                <div style={{ flex: 1, background: entry.type === "in" ? "rgba(30,102,64,0.03)" : "rgba(192,57,43,0.02)", borderRadius: 14, border: `1px solid ${entry.type === "in" ? "rgba(30,102,64,0.12)" : "rgba(192,57,43,0.10)"}`, padding: "16px 22px", boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: entry.type === "in" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.09)", color: entry.type === "in" ? T.green : T.crimson, fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, padding: "6px 14px", borderRadius: 8 }}>
-                      {entry.type === "in"
-                        ? <PackageCheck size={15} />
-                        : <ArrowRight size={15} />
-                      }
-                      {entry.type === "in" ? "Received from Vendor" : "Given to Weaver"}
-                    </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe, whiteSpace: "nowrap" }}>{entry.time}</span>
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.6, marginBottom: 8 }}>{entry.desc}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{entry.ref}</div>
+                
+                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, letterSpacing: "0.5px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, flexShrink: 0 }}>
+                  {entry.ref}
                 </div>
               </motion.div>
             ))}
