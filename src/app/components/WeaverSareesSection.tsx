@@ -6,6 +6,7 @@ import { useSales, UnifiedSaree, isSold, isOutstanding, ageBucket } from "./Sale
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
 import { Pagination, usePagination } from "./Pagination";
+import { useCanSeeMoney } from "./MoneyAccess";
 
 // ── Design tokens (matches WeaversPage) ──────────────────────────────────────
 const T = {
@@ -481,8 +482,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   };
 
   // Which optional columns this tab shows
-  const showMoney = tab === "produced" || tab === "sold" || tab === "outstanding";
-  const showQcMoney = tab === "semi" || tab === "defective";
+  const canSeeMoney = useCanSeeMoney();
+  const showMoney = canSeeMoney && (tab === "produced" || tab === "sold" || tab === "outstanding");
+  const showQcMoney = canSeeMoney && (tab === "semi" || tab === "defective");
   const dateHeader =
     tab === "assigned" ? "Assigned On"
       : tab === "produced" ? "Received On"
@@ -610,9 +612,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                 <th style={th}>Colour</th>
                 <th style={th}>Weight</th>
                 <th style={th}>Purchase Date</th>
-                <th style={{ ...th, textAlign: "right" }}>Cost Price</th>
-                <th style={{ ...th, textAlign: "right" }}>Sell %</th>
-                <th style={{ ...th, textAlign: "right" }}>Final Amount</th>
+                {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Cost Price</th>}
+                {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Sell %</th>}
+                {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Final Amount</th>}
               </tr>
             </thead>
             <tbody>
@@ -629,15 +631,21 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                   <td style={td}>{r.color || <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}</td>
                   <td style={td}>{r.stock?.weight || "—"}</td>
                   <td style={td}>{fmtDate(r.stock?.purchaseDate)}</td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
-                    {r.stock ? inr(r.stock.costPrice) : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
-                    {r.stock ? `${r.stock.sellPercent}%` : "—"}
-                  </td>
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
-                    {r.stock ? inr(r.stock.finalAmount) : "—"}
-                  </td>
+                  {canSeeMoney && (
+                    <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                      {r.stock ? inr(r.stock.costPrice) : "—"}
+                    </td>
+                  )}
+                  {canSeeMoney && (
+                    <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
+                      {r.stock ? `${r.stock.sellPercent}%` : "—"}
+                    </td>
+                  )}
+                  {canSeeMoney && (
+                    <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+                      {r.stock ? inr(r.stock.finalAmount) : "—"}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -797,7 +805,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       )}
 
       {/* Payment impact summary for the QC-deduction tabs */}
-      {(tab === "semi" || tab === "defective") && visible.length > 0 && (
+      {canSeeMoney && (tab === "semi" || tab === "defective") && visible.length > 0 && (
         <div style={{
           marginTop: 12, display: "flex", gap: 20, flexWrap: "wrap",
           background: tab === "defective" ? "rgba(192,57,43,0.06)" : "rgba(200,155,71,0.08)",

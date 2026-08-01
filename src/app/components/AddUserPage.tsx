@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Search, ChevronDown, UserPlus, CheckCircle2, Edit2, ShieldOff,
   Users, Shield, X, ChevronLeft, ChevronRight, Phone, Mail,
-  Briefcase, Lock, FileText, Eye, Sparkles,
+  Briefcase, Lock, FileText, Eye, Sparkles, Layers, ShoppingBag,
+  ShieldCheck, ShieldHalf, XCircle, Hash, Calculator,
 } from "lucide-react";
 import { useFinishingStaff, FinishingStaffMember } from "./FinishingStaffContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
@@ -83,6 +84,7 @@ const ROLE_TO_PORTAL: Record<string, string> = {
   "Finishing Staff":  "Finishing Staff (No Portal)",
   "Weaver":           "Weaver Portal",
   "Shop Staff":       "Shop Staff Portal",
+  "Accountant":       "Accountant Portal",
 };
 
 const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -91,20 +93,66 @@ const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   "Finishing Staff": { bg: "rgba(44,74,139,0.09)",    text: "#2C4A8B",   border: "rgba(44,74,139,0.15)"   },
   "Weaver":          { bg: "rgba(200,155,71,0.14)",   text: "#7A5E1C",   border: "rgba(200,155,71,0.22)"  },
   "Shop Staff":      { bg: "rgba(59,35,20,0.08)",     text: "#3B2314",   border: "rgba(59,35,20,0.14)"    },
+  "Accountant":      { bg: "rgba(30,102,64,0.11)",    text: "#0F5C3F",   border: "rgba(30,102,64,0.20)"   },
 };
 
-const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Weaver", "Shop Staff"];
+const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Weaver", "Shop Staff", "Accountant"];
+
+// Admins carry an access level on top of their role — Full Access accounts can
+// manage everything, Semi Access accounts get a restricted view (no user
+// management, no finance). Only meaningful for role === "Admin".
+const ACCESS_LEVELS = ["Full Access", "Semi Access"] as const;
+type AccessLevel = typeof ACCESS_LEVELS[number];
+
+const ACCESS_LEVEL_META: Record<AccessLevel, { color: string; bg: string; border: string; desc: string }> = {
+  "Full Access": { color: T.green,   bg: T.greenBg,             border: "rgba(30,102,64,0.18)",  desc: "Complete control — users, finance, settings, every portal section." },
+  "Semi Access": { color: "#8B6018", bg: "rgba(200,155,71,0.14)", border: "rgba(200,155,71,0.28)", desc: "Restricted — day-to-day operations only. No user management or finance." },
+};
+
+const ROLE_ICONS: Record<string, React.ElementType> = {
+  "Admin": Shield,
+  "Worker Staff": Briefcase,
+  "Finishing Staff": Sparkles,
+  "Weaver": Layers,
+  "Shop Staff": ShoppingBag,
+  "Accountant": Calculator,
+};
 
 // Static rows for non-finishing staff (finishing staff comes from context)
 const STATIC_USERS = [
-  { empId: "EMP-001", firstName: "Ravi",    lastName: "Kumar",    role: "Admin",        mobile: "+91 98765 43210", portal: "Admin Portal",    dateAdded: "01 Jun 2026", status: "Active"   },
-  { empId: "EMP-002", firstName: "Meena",   lastName: "Krishnan", role: "Admin",        mobile: "+91 87654 32109", portal: "Admin Portal",    dateAdded: "01 Jun 2026", status: "Active"   },
+  { empId: "EMP-001", firstName: "Ravi",    lastName: "Kumar",    role: "Admin",        mobile: "+91 98765 43210", portal: "Admin Portal",    dateAdded: "01 Jun 2026", status: "Active",   accessLevel: "Full Access" as AccessLevel },
+  { empId: "EMP-002", firstName: "Meena",   lastName: "Krishnan", role: "Admin",        mobile: "+91 87654 32109", portal: "Admin Portal",    dateAdded: "01 Jun 2026", status: "Active",   accessLevel: "Semi Access" as AccessLevel },
   { empId: "EMP-003", firstName: "Suresh",  lastName: "Murti",    role: "Worker Staff", mobile: "+91 76543 21098", portal: "Worker Portal",   dateAdded: "02 Jun 2026", status: "Active"   },
   { empId: "EMP-004", firstName: "Padma",   lastName: "Veni",     role: "Weaver",       mobile: "+91 65432 10987", portal: "Weaver Portal",   dateAdded: "02 Jun 2026", status: "Active"   },
+  { empId: "EMP-005", firstName: "Anjali",  lastName: "Rao",      role: "Admin",        mobile: "+91 54321 09876", portal: "Admin Portal",    dateAdded: "03 Jun 2026", status: "Active",   accessLevel: "Semi Access" as AccessLevel },
   { empId: "EMP-006", firstName: "Kavitha", lastName: "Devi",     role: "Shop Staff",   mobile: "+91 43210 98765", portal: "Shop Portal",     dateAdded: "03 Jun 2026", status: "Active"   },
   { empId: "EMP-007", firstName: "Ramesh",  lastName: "Babu",     role: "Worker Staff", mobile: "+91 32109 87654", portal: "Worker Portal",   dateAdded: "05 Jun 2026", status: "Active"   },
-  { empId: "EMP-008", firstName: "Lakshmi", lastName: "Patel",    role: "Admin",        mobile: "+91 21098 76543", portal: "Admin Portal",    dateAdded: "08 Jun 2026", status: "Inactive" },
+  { empId: "EMP-008", firstName: "Lakshmi", lastName: "Patel",    role: "Admin",        mobile: "+91 21098 76543", portal: "Admin Portal",    dateAdded: "08 Jun 2026", status: "Inactive", accessLevel: "Full Access" as AccessLevel },
+  { empId: "EMP-009", firstName: "Deepak",  lastName: "Iyer",     role: "Accountant",   mobile: "+91 90876 54321", portal: "Accountant Portal", dateAdded: "10 Jun 2026", status: "Active" },
 ];
+
+/** Next sequential EMP-### id, based on the highest numeric suffix seen so far
+ *  across every user record (static, finishing-staff, and newly created). */
+function nextEmployeeId(existingIds: string[]): string {
+  const maxNum = existingIds.reduce((max, id) => {
+    const m = id.match(/(\d+)\s*$/);
+    return m ? Math.max(max, parseInt(m[1], 10)) : max;
+  }, 0);
+  return `EMP-${String(maxNum + 1).padStart(3, "0")}`;
+}
+
+function todayFormatted(): string {
+  return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// One row of the "All Users" table — static seed rows, locally-created rows,
+// and finishing-staff rows (from the shared context) all normalize to this shape.
+type TableRow = {
+  empId: string; firstName: string; lastName: string; role: string;
+  mobile: string; portal: string; dateAdded: string; status: string;
+  accessLevel?: AccessLevel;
+  finishingMember?: FinishingStaffMember;
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SHARED ATOMS
@@ -126,6 +174,16 @@ function RoleBadge({ role }: { role: string }) {
   return (
     <span style={{ display: "inline-block", background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" as const }}>
       {role}
+    </span>
+  );
+}
+
+function AccessBadge({ level }: { level: AccessLevel }) {
+  const m = ACCESS_LEVEL_META[level];
+  const Icon = level === "Full Access" ? ShieldCheck : ShieldHalf;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: m.bg, color: m.color, border: `1px solid ${m.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" as const }}>
+      <Icon size={11} /> {level}
     </span>
   );
 }
@@ -336,11 +394,14 @@ export function AddUserPage() {
   const [mobile,         setMobile]         = useState("");
   const [email,          setEmail]          = useState("");
   const [role,           setRole]           = useState("");
-  const [empId,          setEmpId]          = useState("");
+  const [accessLevel,    setAccessLevel]    = useState<AccessLevel>("Full Access");
   const [specialisation, setSpecialisation] = useState("");
   const [notes,          setNotes]          = useState("");
   const [showSuccess,    setShowSuccess]    = useState(false);
-  const [createdUser,    setCreatedUser]    = useState<{ name: string; role: string; mobile: string } | null>(null);
+  const [createdUser,    setCreatedUser]    = useState<{ name: string; role: string; mobile: string; empId: string; accessLevel?: AccessLevel } | null>(null);
+  // Non-finishing users created here (Admin / Worker / Weaver / Shop Staff) —
+  // finishing staff persist through FinishingStaffContext instead.
+  const [customUsers,    setCustomUsers]    = useState<TableRow[]>([]);
 
   // ── Table state ─────────────────────────────────────────────────────────
   const [searchQ,        setSearchQ]        = useState("");
@@ -355,42 +416,50 @@ export function AddUserPage() {
 
   const portal = role ? ROLE_TO_PORTAL[role] ?? "" : "";
   const isFinishing = role === "Finishing Staff";
+  const isAdmin = role === "Admin";
   const canSubmit = firstName.trim() && lastName.trim() && mobile.trim() && role;
 
-  function handleSubmit() {
-    if (!canSubmit) return;
-    if (isFinishing) {
-      addMember({ empId, firstName, lastName, mobile, email, specialisation, notes, status: "Active" });
-    }
-    setCreatedUser({ name: `${firstName} ${lastName}`, role, mobile });
-    setShowSuccess(true);
-    resetForm();
-  }
-
-  function resetForm() {
-    setFirstName(""); setLastName(""); setMobile(""); setEmail("");
-    setRole(""); setEmpId(""); setSpecialisation(""); setNotes("");
-  }
-
-  function handleCancel() { resetForm(); setShowSuccess(false); }
-
   // ── Build unified table rows ─────────────────────────────────────────────
-  // Static non-finishing rows + finishing staff from context
-  type TableRow = {
-    empId: string; firstName: string; lastName: string; role: string;
-    mobile: string; portal: string; dateAdded: string; status: string;
-    finishingMember?: FinishingStaffMember;
-  };
-
+  // Static non-finishing rows + locally-created non-finishing rows + finishing
+  // staff from the shared context.
   const allRows: TableRow[] = useMemo(() => [
     ...STATIC_USERS.map(u => ({ ...u })),
+    ...customUsers,
     ...members.map(m => ({
       empId: m.empId, firstName: m.firstName, lastName: m.lastName,
       role: "Finishing Staff", mobile: m.mobile,
       portal: "Finishing Staff (No Portal)", dateAdded: m.dateAdded,
       status: m.status, finishingMember: m,
     })),
-  ], [members]);
+  ], [members, customUsers]);
+
+  // The Employee ID field is never typed — it's always one past the highest
+  // EMP-### seen across every existing user record.
+  const autoEmpId = useMemo(() => nextEmployeeId(allRows.map(u => u.empId)), [allRows]);
+
+  function handleSubmit() {
+    if (!canSubmit) return;
+    const empId = autoEmpId;
+    if (isFinishing) {
+      addMember({ empId, firstName, lastName, mobile, email, specialisation, notes, status: "Active" });
+    } else {
+      setCustomUsers(prev => [...prev, {
+        empId, firstName, lastName, role, mobile,
+        portal: ROLE_TO_PORTAL[role] ?? "", dateAdded: todayFormatted(), status: "Active",
+        ...(isAdmin ? { accessLevel } : {}),
+      }]);
+    }
+    setCreatedUser({ name: `${firstName} ${lastName}`, role, mobile, empId, accessLevel: isAdmin ? accessLevel : undefined });
+    setShowSuccess(true);
+    resetForm();
+  }
+
+  function resetForm() {
+    setFirstName(""); setLastName(""); setMobile(""); setEmail("");
+    setRole(""); setAccessLevel("Full Access"); setSpecialisation(""); setNotes("");
+  }
+
+  function handleCancel() { resetForm(); setShowSuccess(false); }
 
   const filtered = useMemo(() => allRows.filter(u => {
     const q = searchQ.toLowerCase();
@@ -403,8 +472,23 @@ export function AddUserPage() {
   const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE);
   const pagedRows  = filtered.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
 
-  const totalFinishing = members.length;
-  const totalAll       = STATIC_USERS.length + members.length;
+  // ── Stats — computed live off allRows so every role/status/access figure
+  // reflects users actually on record, not a hardcoded snapshot. ─────────────
+  const totalAll      = allRows.length;
+  const totalActive   = allRows.filter(u => u.status === "Active").length;
+  const totalInactive = totalAll - totalActive;
+
+  const roleStats = useMemo(() => ROLES.map(r => {
+    const rows = allRows.filter(u => u.role === r);
+    const stat: { role: string; count: number; active: number; fullAccess?: number; semiAccess?: number } = {
+      role: r, count: rows.length, active: rows.filter(u => u.status === "Active").length,
+    };
+    if (r === "Admin") {
+      stat.fullAccess = rows.filter(u => u.accessLevel === "Full Access").length;
+      stat.semiAccess = rows.filter(u => u.accessLevel === "Semi Access").length;
+    }
+    return stat;
+  }), [allRows]);
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
@@ -453,17 +537,16 @@ export function AddUserPage() {
       {/* ── BODY ─────────────────────────────────────────────────────────────── */}
       <div style={{ padding: "40px 56px 80px", maxWidth: 1400, margin: "0 auto" }}>
 
-        {/* STAT STRIP */}
+        {/* STAT STRIP — overview */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 40 }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 20 }}
         >
           {[
-            { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),        label: "Total Users",      sub: "Across all portals",      accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)",   border: T.borderDef },
-            { icon: <Shield size={20} color={T.antiqueGold} />,   val: "7",                     label: "Admins",           sub: "Full-access accounts",    accent: T.antiqueGold,   bg: T.bgGold,                 border: T.borderGold },
-            { icon: <Briefcase size={20} color={T.green} />,      val: "2",                     label: "Worker Staff",     sub: "Operations team",         accent: T.green,         bg: T.greenBg,                border: "rgba(30,102,64,0.16)" },
-            { icon: <Sparkles size={20} color={T.blue} />,        val: String(totalFinishing),  label: "Finishing Staff",  sub: "Assigned + managed here", accent: T.blue,          bg: "rgba(44,74,139,0.07)",   border: "rgba(44,74,139,0.15)" },
+            { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),      label: "Total Users",    sub: "Across all portals",     accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },
+            { icon: <CheckCircle2 size={20} color={T.green} />,   val: String(totalActive),   label: "Active Users",   sub: "Currently able to log in", accent: T.green,        bg: T.greenBg,               border: "rgba(30,102,64,0.16)" },
+            { icon: <XCircle size={20} color={T.crimson} />,      val: String(totalInactive), label: "Inactive Users", sub: "Deactivated accounts",    accent: T.crimson,       bg: T.crimsonBg,             border: "rgba(192,57,43,0.16)" },
           ].map((s, i) => (
             <div key={i} style={{ background: "#fff", border: `1px solid ${s.border}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: s.bg, border: `1px solid ${s.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -476,6 +559,36 @@ export function AddUserPage() {
               </div>
             </div>
           ))}
+        </motion.div>
+
+        {/* STAT STRIP — staff by role, computed live from allRows */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.14, ease: EASE }}
+          style={{ display: "grid", gridTemplateColumns: `repeat(${ROLES.length}, 1fr)`, gap: 16, marginBottom: 40 }}
+        >
+          {roleStats.map((s, i) => {
+            const c = ROLE_COLORS[s.role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };
+            const Icon = ROLE_ICONS[s.role] ?? Users;
+            return (
+              <div key={s.role} style={{ background: "#fff", border: `1px solid ${c.border}`, borderRadius: 16, padding: "20px 20px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon size={18} color={c.text} />
+                  </div>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 28, color: c.text, lineHeight: 1 }}>{s.count}</div>
+                </div>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.luxuryBrown }}>{s.role}</div>
+                {s.role === "Admin" ? (
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+                    {s.fullAccess} Full · {s.semiAccess} Semi
+                  </div>
+                ) : (
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.active} active</div>
+                )}
+              </div>
+            );
+          })}
         </motion.div>
 
         {/* ── ADD NEW USER FORM ─────────────────────────────────────────────── */}
@@ -498,9 +611,11 @@ export function AddUserPage() {
                         <CheckCircle2 size={32} color={T.green} />
                       </div>
                       <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>User Account Created</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 600, color: T.royalBurgundy, marginBottom: 16 }}>{createdUser?.name}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{createdUser?.name}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 16 }}>{createdUser?.empId}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" as const }}>
                         {createdUser && <RoleBadge role={createdUser.role} />}
+                        {createdUser?.accessLevel && <AccessBadge level={createdUser.accessLevel} />}
                         <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Portal: {createdUser && ROLE_TO_PORTAL[createdUser.role]}</span>
                       </div>
                       <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0, lineHeight: 1.65 }}>
@@ -596,11 +711,44 @@ export function AddUserPage() {
                           </div>
                         </div>
 
-                        {/* Employee ID */}
+                        {/* Employee ID — auto-generated, never typed */}
                         <div>
-                          <label style={labelStyle}>Employee ID <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-                          <input value={empId} onChange={e => setEmpId(e.target.value)} placeholder="e.g. EMP-009" style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
+                          <label style={labelStyle}>Employee ID <span style={{ color: T.taupe, fontWeight: 400 }}>— Auto-generated</span></label>
+                          <div style={{ position: "relative" }}>
+                            <Hash size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+                            <input readOnly value={autoEmpId} style={{ ...inputStyle, paddingLeft: 36, background: "rgba(245,232,208,0.40)", color: T.royalBurgundy, cursor: "default", fontFamily: F.mono, fontWeight: 600 }} />
+                          </div>
+                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 5 }}>Assigned automatically as the next ID in sequence.</div>
                         </div>
+
+                        {/* Access Level — Admin only */}
+                        <AnimatePresence>
+                          {isAdmin && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.22, ease: EASE }}
+                              style={{ overflow: "hidden" }}
+                            >
+                              <label style={labelStyle}>Admin Access Level <span style={{ color: T.crimson }}>*</span></label>
+                              <div style={{ display: "flex", gap: 8 }}>
+                                {ACCESS_LEVELS.map(lvl => {
+                                  const on = accessLevel === lvl;
+                                  const m = ACCESS_LEVEL_META[lvl];
+                                  const Icon = lvl === "Full Access" ? ShieldCheck : ShieldHalf;
+                                  return (
+                                    <button key={lvl} type="button" onClick={() => setAccessLevel(lvl)}
+                                      style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "9px 12px", borderRadius: 10, cursor: "pointer", background: on ? m.bg : "#FFF8F0", border: `1.5px solid ${on ? m.border : "rgba(110,15,45,0.14)"}`, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: on ? m.color : T.taupe, transition: "all 0.15s" }}>
+                                      <Icon size={14} color={on ? m.color : T.taupe} /> {lvl}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 6, lineHeight: 1.5 }}>{ACCESS_LEVEL_META[accessLevel].desc}</div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
 
                         {/* Specialisation — Finishing Staff only */}
                         <AnimatePresence>
@@ -701,8 +849,8 @@ export function AddUserPage() {
             {/* Table */}
             <div style={{ overflowX: "auto" as const }}>
               {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 160px 1fr 110px 90px 170px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderTop: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, minWidth: 980 }}>
-                {["Emp ID", "Full Name", "Role", "Mobile Number", "Portal Access", "Date Added", "Status", "Actions"].map(col => (
+              <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 170px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderTop: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, minWidth: 980 }}>
+                {["Emp ID", "Full Name", "Role", "Access", "Mobile Number", "Portal Access", "Date Added", "Status", "Actions"].map(col => (
                   <div key={col} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{col}</div>
                 ))}
               </div>
@@ -714,7 +862,7 @@ export function AddUserPage() {
                 const fm = u.finishingMember;
                 return (
                   <div key={u.empId + i}
-                    style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 160px 1fr 110px 90px 170px", gap: 0, padding: "15px 28px", borderBottom: i < pagedRows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)", alignItems: "center", minWidth: 980, transition: "background 0.15s" }}
+                    style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 170px", gap: 0, padding: "15px 28px", borderBottom: i < pagedRows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)", alignItems: "center", minWidth: 980, transition: "background 0.15s" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.025)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)"; }}
                   >
@@ -733,6 +881,7 @@ export function AddUserPage() {
                     </div>
 
                     <div><RoleBadge role={u.role} /></div>
+                    <div>{u.accessLevel ? <AccessBadge level={u.accessLevel} /> : <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(139,112,96,0.45)" }}>—</span>}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{u.mobile}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{u.portal}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{u.dateAdded}</div>
@@ -749,9 +898,16 @@ export function AddUserPage() {
                         <Edit2 size={11} color={T.royalBurgundy} /> Edit
                       </button>
                       <button
-                        onClick={() => fm && toggleStatus(fm.id)}
-                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.crimson, cursor: fm ? "pointer" : "default", opacity: fm ? 1 : 0.5 }}
-                        onMouseEnter={e => { if (fm) (e.currentTarget as HTMLButtonElement).style.background = T.crimsonBg; }}
+                        onClick={() => {
+                          if (fm) { toggleStatus(fm.id); return; }
+                          // Static seed rows aren't backed by any store — only
+                          // locally-created users can actually be toggled.
+                          if (customUsers.some(c => c.empId === u.empId)) {
+                            setCustomUsers(prev => prev.map(c => c.empId === u.empId ? { ...c, status: c.status === "Active" ? "Inactive" : "Active" } : c));
+                          }
+                        }}
+                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.crimson, cursor: "pointer" }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = T.crimsonBg; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                       >
                         <ShieldOff size={11} /> {u.status === "Active" ? "Deactivate" : "Activate"}

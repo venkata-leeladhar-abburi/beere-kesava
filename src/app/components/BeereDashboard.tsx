@@ -2982,7 +2982,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ) : mobileTab === "Weavers" ? (
         <WeaversPage onNavigate={navigateMobile} />
       ) : mobileTab === "AllWeavers" ? (
-        <AllWeaversPage />
+        <AllWeaversPage onNavigate={navigateMobile} />
       ) : mobileTab === "AllStock" ? (
         <AllStockPage onBack={() => navigateMobile("Production")} />
       ) : mobileTab === "Production" ? (
@@ -3035,7 +3035,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ) : nav === "Weavers" ? (
         <WeaversPage onNavigate={navigate} />
       ) : nav === "AllWeavers" ? (
-        <AllWeaversPage />
+        <AllWeaversPage onNavigate={navigate} />
       ) : nav === "AllStock" ? (
         <AllStockPage onBack={() => navigate("Production")} />
       ) : nav === "Production" ? (

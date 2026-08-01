@@ -16,6 +16,7 @@ import { getSareeTypeByCode } from "./RatesPricingPage";
 import { SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, SHOP_MOBILE_HEADER_H } from "./SectionNavigator";
 import { useResponsive } from "./useResponsive";
 import { imgBKLogo } from "../constants/weaverImages";
+import { InventoryPage as AdminInventoryPage } from "./InventoryPage";
 
 // ─── Price Visibility Context ────────────────────────────────────────────────
 // Shop staff (role="shop") cannot see monetary values.
@@ -2400,7 +2401,14 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     switch (active) {
       case "home": return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else setActive(t as TabId); }} />;
       case "sale": return <NewSaleFlow />;
-      case "inventory": return <ShopInventory />;
+      case "inventory": return (
+        // Same Inventory page the admin portal uses — quotations and wholesale
+        // dispatch (both inherently about pricing) stay off the shop floor, and
+        // every money figure follows the same canSeePrices rule as the rest of
+        // this portal, so an admin/superadmin previewing the shop portal still
+        // sees real figures while genuine shop staff never do.
+        <AdminInventoryPage canRaiseQuotation={false} canDispatchWholesale={false} canDispatchShop={false} canSeeMoney={canSeePrices} showQuickDispatch={false} showCategorySplit={false} showQuotationsSection={false} showDispatchHistory={false} />
+      );
       case "customers": return <CustomerProfiles />;
       case "reports": return <SalesReport />;
     }
@@ -2814,157 +2822,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
             )}
 
             {/* ════ INVENTORY ════ */}
+            {/* Same InventoryPage component the admin portal uses — see the
+                mobile-layout "inventory" case above for the reasoning on the
+                props (no quotations/wholesale dispatch on the shop floor, money
+                follows the same canSeePrices rule as the rest of this portal). */}
             {!showReturn && active === "inventory" && (
-              <>
-                <ShopDesktopHero
-                  bp={bp}
-                  breadcrumb="SINCE 1999 · SHOP STAFF PORTAL · INVENTORY"
-                  titleMain="Shop Inventory"
-                  titleSub="& Current Stock"
-                  description="All sarees currently in the retail shop — from factory dispatch and external purchases. Track availability, reserve status, and pricing."
-                  pills={[{ text: "84 Total Sarees" }, { text: "76 Available for Sale", color: C.gold }, { text: "6 Reserved" }, { text: "2 External Suppliers" }]}
-                  stats={[
-                    { label: "TOTAL SAREES IN SHOP", val: "84", sub: "All sarees in stock" },
-                    { label: "AVAILABLE FOR SALE", val: "76", sub: "Ready for customers", highlight: true },
-                    { label: "RESERVED SAREES", val: "6", sub: "Customer holds" },
-                    { label: "LOW STOCK ALERT", val: "⚠ Active", sub: "Threshold: below 15", crimson: true },
-                  ]}
-                  bgUrl={SHOP_BG}
-                />
-                <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
-                  {/* Search + filter */}
-                  <div style={{ display: "flex", flexDirection: "column" as const, gap: 16, marginBottom: 28 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                      <div style={{ flex: 1, position: "relative" as const }}>
-                        <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-                        <input value={deskInvSearch} onChange={e => setDeskInvSearch(e.target.value)} placeholder="Search by Saree ID, design code, color, weaver or loom..." style={{ width: "100%", height: 48, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
-                      </div>
-                      {["All Sarees", "From Factory", "External", "Available", "Reserved"].map(f => (
-                        <button key={f} onClick={() => setDeskInvFilter(f)} style={{ padding: "10px 18px", borderRadius: 999, border: `1px solid ${deskInvFilter === f ? C.burg : C.bdr}`, background: deskInvFilter === f ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: deskInvFilter === f ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: deskInvFilter === f ? 600 : 400, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", transition: "all 0.15s" }}>{f}</button>
-                      ))}
-                    </div>
-                    {/* Loom + Weaver filters as button pills */}
-                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
-                        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted, minWidth: 60 }}>Loom:</span>
-                        {["All Looms", ...looms].map(l => {
-                          const isSel = l === "All Looms" ? deskInvLoomFilter.length === 0 : deskInvLoomFilter.includes(l);
-                          return (
-                            <button key={l} onClick={() => toggleDeskLoomFilter(l)} style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "#FFF", fontFamily: F.u, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: isSel ? 600 : 400, transition: "all 0.15s" }}>
-                              {l === "All Looms" ? "All Looms" : `Loom ${l}`}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
-                        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted, minWidth: 60 }}>Weaver:</span>
-                        {["All Weavers", ...weavers].map(w => {
-                          const isSel = w === "All Weavers" ? deskInvWeaverFilter.length === 0 : deskInvWeaverFilter.includes(w);
-                          return (
-                            <button key={w} onClick={() => toggleDeskWeaverFilter(w)} style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "#FFF", fontFamily: F.u, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: isSel ? 600 : 400, transition: "all 0.15s" }}>
-                              {w}
-                            </button>
-                          );
-                        })}
-                        {(deskInvSearch || deskInvFilter !== "All Sarees" || deskInvLoomFilter.length > 0 || deskInvWeaverFilter.length > 0) && (
-                          <button onClick={() => { setDeskInvSearch(""); setDeskInvFilter("All Sarees"); setDeskInvLoomFilter([]); setDeskInvWeaverFilter([]); }} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 999, border: `1px solid rgba(192,57,43,0.3)`, background: "rgba(192,57,43,0.05)", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, cursor: "pointer" }}>
-                            ✕ Clear Filters
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 300px", gap: isTablet ? 24 : 32, alignItems: "start" }}>
-                    {/* Table */}
-                    <div>
-                      <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(44,24,16,0.08)" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: `180px 1fr 120px${canSeePrices ? " 100px" : ""} 120px 100px`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                          {["Saree ID", "Design & Name", "Color / Type", ...(canSeePrices ? ["Price"] : []), "Source", "Status"].map(h => (
-                            <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
-                          ))}
-                        </div>
-                        {filteredInventory.map((s, i) => (
-                          <div key={i} style={{ display: "grid", gridTemplateColumns: `180px 1fr 120px${canSeePrices ? " 100px" : ""} 120px 100px`, padding: "20px 24px", borderBottom: i < filteredInventory.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                              <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, flexShrink: 0 }} />
-                              <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{s.id}</span>
-                            </div>
-                            <div>
-                              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 3 }}>{s.name}</div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                                {s.design !== "External" && <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.design}</span>}
-                                {s.weaver && <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, background: "rgba(107,26,42,0.06)", padding: "2px 8px", borderRadius: 4 }}>🧵 {s.weaver} (Loom {s.loom})</span>}
-                                {s.supplier && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Supplier: {s.supplier}</div>}
-                              </div>
-                            </div>
-                            <div>
-                              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{s.sareeColor}</div>
-                              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.type}</div>
-                            </div>
-                            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 17, color: C.gold }}>{s.price}</div>}
-                            <div>
-                              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: s.src === "factory" ? C.green : C.gold, background: s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", padding: "4px 10px", borderRadius: 999 }}>
-                                {s.src === "factory" ? "Factory" : "External"}
-                              </span>
-                            </div>
-                            <div>
-                              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: s.status === "available" ? C.green : C.gold, background: s.status === "available" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", padding: "4px 10px", borderRadius: 999 }}>
-                                {s.status === "available" ? "✓ Available" : "Reserved"}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 14 }}>Showing {filteredInventory.length} sarees · {filteredInventory.filter(s => s.status === "available").length} available · {filteredInventory.filter(s => s.status === "reserved").length} reserved</div>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div style={{ display: "flex", flexDirection: "column" as const, gap: 20 }}>
-                      <div style={{ background: C.dark, borderRadius: 18, padding: "24px", boxShadow: "0 4px 22px rgba(61,14,26,0.18)" }}>
-                        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 16 }}>STOCK BY SOURCE</div>
-                        {[
-                          { label: "Factory Sarees", count: 4, pct: 67 },
-                          { label: "External Purchases", count: 2, pct: 33 },
-                        ].map(b => (
-                          <div key={b.label} style={{ marginBottom: 16 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                              <span style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.70)" }}>{b.label}</span>
-                              <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.gold }}>{b.count}</span>
-                            </div>
-                            <div style={{ height: 8, background: "rgba(255,255,255,0.10)", borderRadius: 999 }}>
-                              <div style={{ width: `${b.pct}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ background: "rgba(192,57,43,0.06)", border: `2px solid rgba(192,57,43,0.28)`, borderRadius: 16, padding: "22px 22px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                          <AlertTriangle size={20} color={C.crim} />
-                          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 17, color: C.crim }}>Low Stock Warning</div>
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 15, color: C.text, marginBottom: 6 }}>84 sarees remaining — below alert threshold.</div>
-                        <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18 }}>Contact admin to arrange factory dispatch.</div>
-                        <button style={{ width: "100%", height: 48, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                          <Send size={16} /> Report to Admin
-                        </button>
-                      </div>
-                      <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "22px" }}>
-                        <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 14 }}>Received This Week</div>
-                        {[{ date: "10 Jun", count: 3, type: "Factory" }, { date: "09 Jun", count: 1, type: "Factory" }, { date: "05 Jun", count: 2, type: "External" }].map((r, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
-                            <div>
-                              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</div>
-                              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{r.count} sarees</div>
-                            </div>
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: r.type === "Factory" ? C.green : C.gold, background: r.type === "Factory" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", padding: "3px 10px", borderRadius: 999 }}>{r.type}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <AdminInventoryPage canRaiseQuotation={false} canDispatchWholesale={false} canDispatchShop={false} canSeeMoney={canSeePrices} showQuickDispatch={false} showCategorySplit={false} showQuotationsSection={false} showDispatchHistory={false} />
             )}
 
             {/* ════ CUSTOMERS ════ */}

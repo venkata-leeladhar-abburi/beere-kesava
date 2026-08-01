@@ -1371,7 +1371,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     switch (nav) {
       case "Materials": return <MaterialsPage onNavigate={navigate} />;
       case "Weavers": return <WeaversPage onNavigate={navigate} />;
-      case "AllWeavers": return <AllWeaversPage />;
+      case "AllWeavers": return <AllWeaversPage onNavigate={navigate} />;
       case "AllStock": return <AllStockPage onBack={() => navigate("Production")} />;
       case "Production": return <ProductionPage superadmin onNavigate={navigate} />;
       case "AllOrders": return <AllOrdersPage superadmin={true} onBack={() => navigate("Production")} />;

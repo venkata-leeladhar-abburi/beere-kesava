@@ -16,7 +16,7 @@ import {
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line, Legend,
-  ScatterChart, Scatter, ZAxis, RadialBarChart, RadialBar,
+  RadialBarChart, RadialBar,
 } from "recharts";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../constants/weaverImages";
 import { useWeaverPayments } from "./WeaverPaymentsContext";
@@ -29,6 +29,8 @@ import { useDesignLibrary, DispatchRecord } from "./DesignLibraryContext";
 import { DispatchDetailsModal } from "./BatchCreationPage";
 import { PaperPlaneTilt } from "@phosphor-icons/react";
 import { WeaverSareesSection } from "./WeaverSareesSection";
+import * as XLSX from "xlsx";
+import { UploadSimple } from "@phosphor-icons/react";
 const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo as imgBKBLogo } from "../constants/weaverImages";
 
@@ -134,12 +136,16 @@ const QC_DATA = [
   { name: "Passed", value: 238, color: T.green },
   { name: "Rejected", value: 10, color: T.crimson },
 ];
+// Each row is one thing that happened. `needsAction` marks the ones that sit
+// in your queue rather than just being FYI — that's the distinction that was
+// missing before: everything looked the same regardless of whether it wanted
+// a decision from you or was just a record of something already finished.
 const ACTIVITIES = [
-  { icon: "📦", action: "New batch issued", detail: "BATCH-089 given to Ravi Kumar (WV-001) — Extra sarees for Lakshmi Silks order", time: "2 hours ago" },
-  { icon: "✅", action: "Quality check submitted", detail: "Padma Veni (WV-002) submitted 18 sarees — 17 passed quality check", time: "Yesterday" },
-  { icon: "⚠️", action: "Material request pending", detail: "Suresh Murti (WV-007) requested 4 kg Warp — awaiting approval from admin", time: "Today" },
-  { icon: "💰", action: "Payment processed", detail: "Monthly making charges disbursed to 84 weavers — ₹4.2L total paid this month", time: "2 days ago" },
-  { icon: "🔄", action: "Batch completed", detail: "Kamala B. (WV-031) completed BATCH-084 — 14 sarees woven, all passed quality check", time: "3 days ago" },
+  { icon: "⚠️", category: "Material", action: "Material request pending", detail: "Suresh Murti (WV-007) requested 4 kg Warp — awaiting your approval", time: "Today", needsAction: true, weaverId: "WV-007" },
+  { icon: "✅", category: "Quality Check", action: "Quality check submitted", detail: "Padma Veni (WV-002) submitted 18 sarees — 17 passed, 1 rejected", time: "Yesterday", needsAction: false, weaverId: "WV-002" },
+  { icon: "📦", category: "Batch", action: "New batch issued", detail: "BATCH-089 given to Ravi Kumar (WV-001) — extra sarees for the Lakshmi Silks order", time: "2 hours ago", needsAction: false, weaverId: "WV-001" },
+  { icon: "🔄", category: "Batch", action: "Batch completed", detail: "Kamala B. (WV-031) completed BATCH-084 — 14 sarees woven, all passed quality check", time: "3 days ago", needsAction: false, weaverId: "WV-031" },
+  { icon: "💰", category: "Payment", action: "Payment processed", detail: "Monthly making charges disbursed to 84 weavers — ₹4.2L total paid this month", time: "2 days ago", needsAction: false },
 ];
 const BATCH_HISTORY = [
   { batch: "BATCH-072", design: "BKB-040", produced: 6, passed: 6, date: "15 Apr 2026" },
@@ -426,8 +432,8 @@ const VIEW_OPTIONS = [
   { key: "list", label: "List", PhIcon: PhList },
   { key: "table", label: "Table", PhIcon: PhTable },
 ];
-function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll }: {
-  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void;
+function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, onImport }: {
+  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void;
 }) {
   return (
     <div id="weav-all-weavers" style={{ padding: "40px 48px 0" }}>
@@ -450,6 +456,13 @@ function AllWeaversControls({ view, setView, filter, setFilter, search, setSearc
             style={{ display: "flex", alignItems: "center", gap: 10, backgroundColor: "#FFFFFF", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 14, padding: "14px 22px", fontFamily: F.ui, fontSize: 16, fontWeight: 700, cursor: "pointer" }}
           >
             <Users size={20} /> View All Weavers
+          </motion.button><motion.button
+            onClick={onImport}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            style={{ display: "flex", alignItems: "center", gap: 10, backgroundColor: "#FFFFFF", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 14, padding: "14px 22px", fontFamily: F.ui, fontSize: 16, fontWeight: 700, cursor: "pointer" }}
+          >
+            <UploadSimple size={20} /> Import from Excel
           </motion.button><motion.button
             onClick={onAddWeaver}
             whileHover={{ scale: 1.03, backgroundColor: T.deepWine }}
@@ -516,9 +529,10 @@ function AllWeaversControls({ view, setView, filter, setFilter, search, setSearc
 // ══════════════════════════════════════════════════════════════════════════
 // SECTION 5 — WEAVER DIRECTORY
 // ══════════════════════════════════════════════════════════════════════════
-function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
+function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
   const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? WEAVERS : WEAVERS.slice(0, 4);
+  const allWeavers = [...WEAVERS, ...extraWeavers];
+  const visible = showAll ? allWeavers : allWeavers.slice(0, 4);
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
@@ -670,9 +684,10 @@ function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof 
     </div>
   );
 }
-function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void }) {
+function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
   const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? WEAVERS : WEAVERS.slice(0, 5);
+  const allWeavers = [...WEAVERS, ...extraWeavers];
+  const visible = showAll ? allWeavers : allWeavers.slice(0, 5);
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       {/* Header row */}
@@ -822,13 +837,13 @@ function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
     </div>
   );
 }
-function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
+function WeaverDirectory({ view, onSelect, onEdit, onBatches, extraWeavers = [] }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
   return (
     <div style={{ padding: "24px 48px 0" }}>
       <FadeUp>
-        {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
-        {view === "list" && <WeaverListView onSelect={onSelect} />}
-        {view === "table" && <WeaverTableView onSelect={id => { const w = WEAVERS.find(x => x.id === id); if (w) onSelect(w); }} />}
+        {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
+        {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
+        {view === "table" && <WeaverTableView onSelect={id => { const w = [...WEAVERS, ...extraWeavers].find(x => x.id === id); if (w) onSelect(w); }} />}
       </FadeUp>
     </div>
   );
@@ -1594,11 +1609,14 @@ function WeaverAnalytics() {
   );
   const avgPerLoom = totalLooms ? totalProduced / totalLooms : 0;
 
-  // Output vs quality — the top-left quadrant is where retraining pays off.
-  const scatter = React.useMemo(
-    () => perWeaver.map(w => ({ x: w.produced, y: w.periodPassRate, z: w.looms, name: w.name, id: w.id })),
+  // Output vs quality — ranked bars beat a scatter plot here: a longer bar is
+  // simply more sarees, and the colour alone tells you the quality band, so
+  // there's nothing to decode across two axes plus a bubble size.
+  const qualityVsOutput = React.useMemo(
+    () => [...perWeaver].sort((a, b) => b.produced - a.produced).slice(0, 8),
     [perWeaver]
   );
+  const maxOutput = Math.max(1, ...qualityVsOutput.map(w => w.produced));
   const atRisk = perWeaver.filter(w => w.periodPassRate < 92).length;
   const idleCount = perWeaver.filter(w => w.status === "idle").length;
 
@@ -1810,23 +1828,38 @@ function WeaverAnalytics() {
                   <Gauge size={18} color={T.royalBurgundy} weight="fill" />
                   <div style={cardTitle}>Quality vs Output</div>
                 </div>
-                <div style={cardSub}>High output with low pass rate needs attention</div>
-                <ResponsiveContainer width="100%" height={210}>
-                  <ScatterChart margin={{ top: 16, right: 12, bottom: 6, left: -14 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" />
-                    <XAxis type="number" dataKey="x" name="Sarees" tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis type="number" dataKey="y" name="Pass rate" domain={[80, 100]} unit="%" tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <ZAxis type="number" dataKey="z" range={[60, 240]} name="Looms" />
-                    <RechartsTooltip cursor={{ strokeDasharray: "3 3" }} contentStyle={tip}
-                      formatter={(v: any, n: any) => n === "Pass rate" ? [`${v}%`, n] : n === "Looms" ? [`${v} looms`, n] : [`${v} sarees`, n]}
-                      labelFormatter={() => ""} />
-                    <Scatter data={scatter} fill={T.royalBurgundy} fillOpacity={0.62} />
-                  </ScatterChart>
-                </ResponsiveContainer>
-                <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderDef}`, paddingTop: 12, marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  <span>Bubble size = looms</span>
-                  <span style={{ color: atRisk ? T.crimson : T.green, fontWeight: 700 }}>{atRisk} below 92% pass</span>
+                <div style={cardSub}>Longer bar = more sarees woven · colour = quality</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 14 }}>
+                  {qualityVsOutput.map(w => {
+                    const tier = w.periodPassRate >= 95 ? { color: T.green, label: "Excellent" }
+                      : w.periodPassRate >= 92 ? { color: T.antiqueGold, label: "Good" }
+                      : { color: T.crimson, label: "Needs attention" };
+                    const pct = Math.max(6, Math.round((w.produced / maxOutput) * 100));
+                    return (
+                      <div key={w.id}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>{w.name}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: tier.color, flexShrink: 0 }}>{w.produced} sarees · {w.periodPassRate}%</span>
+                        </div>
+                        <div style={{ height: 9, borderRadius: 5, background: "rgba(110,15,45,0.06)", overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", borderRadius: 5, background: tier.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.borderDef}`, paddingTop: 12, marginTop: 14, fontFamily: F.ui, fontSize: 11.5 }}>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {[{ c: T.green, t: "Excellent ≥95%" }, { c: T.antiqueGold, t: "Good 92–94%" }, { c: T.crimson, t: "Needs attention <92%" }].map(g => (
+                      <span key={g.t} style={{ display: "flex", alignItems: "center", gap: 4, color: T.taupe }}>
+                        <span style={{ width: 8, height: 8, borderRadius: 3, background: g.c, display: "inline-block" }} /> {g.t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {atRisk > 0 && (
+                  <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 11.5, color: T.crimson, fontWeight: 700 }}>{atRisk} weaver{atRisk === 1 ? "" : "s"} below 92% pass rate</div>
+                )}
               </div>
 
               <div style={card}>
@@ -1899,6 +1932,7 @@ const ACTIVITY_ICONS: Record<string, { PhIcon: React.ElementType; bg: string; co
 
 function LeaderboardAndQC({ onActivities, onNavigate }: { onActivities: () => void; onNavigate?: (tab: string) => void }) {
   const [reportOpen, setReportOpen] = useState(false);
+  const activitiesNeedingAction = ACTIVITIES.filter(a => a.needsAction).length;
   return (
     <div style={{ padding: "36px 48px 0" }}>
 
@@ -2074,52 +2108,77 @@ function LeaderboardAndQC({ onActivities, onNavigate }: { onActivities: () => vo
         <div id="weav-activities" style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.07)", overflow: "hidden" }}>
 
           {/* Header bar */}
-          <div style={{ background: `linear-gradient(100deg, ${T.luxuryBrown} 0%, #5A3220 100%)`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ background: `linear-gradient(100deg, ${T.luxuryBrown} 0%, #5A3220 100%)`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <ChartBar size={24} color="#FFFDF9" weight="fill" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>Weaver Activities</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.60)", marginTop: 2 }}>Recent actions, batch updates, and payment events</div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.60)", marginTop: 2 }}>
+                  What's happened, and what's waiting on you
+                </div>
               </div>
             </div>
-            <motion.button onClick={onActivities} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.20)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-              <Bell size={16} /> View All Activities
-            </motion.button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {activitiesNeedingAction > 0 && (
+                <span style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.18)", color: T.goldLight, border: "1px solid rgba(200,155,71,0.40)", borderRadius: 999, padding: "7px 14px", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
+                  <Bell size={14} /> {activitiesNeedingAction} need{activitiesNeedingAction === 1 ? "s" : ""} your action
+                </span>
+              )}
+              <motion.button onClick={onActivities} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.20)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                <Bell size={16} /> View All Activities
+              </motion.button>
+            </div>
           </div>
 
-          {/* Activities grid — 5 columns, one per activity */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0 }}>
+          {/* Activity feed — one row per event, full detail always visible,
+              actionable items called out with an amber rail + a way to act on
+              them right there rather than needing to guess what to do next. */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {ACTIVITIES.map((a, i) => {
               const cfg = ACTIVITY_ICONS[a.icon] ?? { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.taupe };
               const PhIcon = cfg.PhIcon as React.ElementType;
               return (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                  whileHover={{ background: "rgba(247,242,234,0.70)" }}
+                  transition={{ duration: 0.4, delay: i * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+                  whileHover={{ background: "rgba(247,242,234,0.55)" }}
                   style={{
-                    padding: "28px 26px",
-                    borderRight: i < ACTIVITIES.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none",
-                    display: "flex", flexDirection: "column", gap: 14,
-                    background: i % 2 === 1 ? "rgba(247,242,234,0.30)" : "#FFFFFF",
-                    cursor: "default",
+                    padding: "20px 32px",
+                    borderBottom: i < ACTIVITIES.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                    borderLeft: a.needsAction ? `3px solid ${T.antiqueGold}` : "3px solid transparent",
+                    display: "flex", alignItems: "flex-start", gap: 16,
+                    background: a.needsAction ? "rgba(200,155,71,0.05)" : "#FFFFFF",
                   }}
                 >
-                  {/* Icon box + time */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 12, background: cfg.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <PhIcon size={22} color={cfg.color} weight="fill" />
-                    </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, paddingTop: 4 }}>{a.time}</span>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: cfg.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <PhIcon size={22} color={cfg.color} weight="fill" />
                   </div>
 
-                  {/* Action title */}
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, lineHeight: 1.3, flex: 1 }}>{a.action}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 4 }}>
+                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{a.action}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const, color: T.taupe, background: T.silkCream, borderRadius: 999, padding: "2px 8px" }}>{a.category}</span>
+                      {a.needsAction && (
+                        <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.18)", borderRadius: 999, padding: "2px 9px" }}>Needs action</span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>{a.detail}</div>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
+                    {a.needsAction && (
+                      <button onClick={onActivities}
+                        style={{ display: "flex", alignItems: "center", gap: 5, background: T.royalBurgundy, color: "#FFF", border: "none", borderRadius: 8, padding: "6px 13px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                        Review →
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
               );
             })}
@@ -2306,6 +2365,197 @@ function Footer() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// IMPORT WEAVERS FROM EXCEL
+// ══════════════════════════════════════════════════════════════════════════
+type ImportedWeaver = typeof WEAVERS[0];
+
+interface ParsedWeaverRow {
+  name: string; village: string; mobile: string; looms: number; status: Status;
+}
+
+function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
+  open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [valid, setValid] = useState<ParsedWeaverRow[]>([]);
+  const [invalid, setInvalid] = useState<{ row: number; reason: string }[]>([]);
+  const [parsing, setParsing] = useState(false);
+
+  const normalize = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const HEADER_MAP: Record<string, keyof ParsedWeaverRow> = {
+    name: "name", weavername: "name", fullname: "name",
+    village: "village", villagearea: "village", area: "village",
+    mobile: "mobile", mobilenumber: "mobile", phone: "mobile", contact: "mobile",
+    looms: "looms", numberoflooms: "looms", noofooms: "looms",
+    status: "status",
+  };
+
+  const reset = () => { setFileName(null); setError(null); setValid([]); setInvalid([]); };
+
+  const parseFile = (file: File) => {
+    setParsing(true);
+    setError(null);
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target!.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+        if (raw.length === 0) { setError("The uploaded file is empty or has no data rows."); setParsing(false); return; }
+
+        const firstRowKeys = Object.keys(raw[0]);
+        const colMap: Record<string, keyof ParsedWeaverRow> = {};
+        firstRowKeys.forEach(k => {
+          const norm = normalize(k);
+          if (HEADER_MAP[norm]) colMap[k] = HEADER_MAP[norm];
+        });
+
+        const required: (keyof ParsedWeaverRow)[] = ["name", "village", "mobile"];
+        const missing = required.filter(k => !Object.values(colMap).includes(k));
+        if (missing.length > 0) {
+          setError(`Missing required columns: ${missing.map(k => k === "name" ? "Name" : k === "village" ? "Village" : "Mobile").join(", ")}. Expected Name, Village, Mobile (Looms and Status are optional).`);
+          setParsing(false);
+          return;
+        }
+
+        const okRows: ParsedWeaverRow[] = [];
+        const badRows: { row: number; reason: string }[] = [];
+
+        raw.forEach((r, i) => {
+          const out: Partial<ParsedWeaverRow> = { looms: 1, status: "active" as Status };
+          Object.entries(colMap).forEach(([col, key]) => {
+            if (key === "looms") out.looms = parseInt(String(r[col]).replace(/[^\d]/g, ""), 10) || 1;
+            else if (key === "status") {
+              const s = normalize(r[col]);
+              out.status = s.includes("qc") ? "qc" : s.includes("idle") ? "idle" : "active";
+            } else {
+              (out as Record<string, unknown>)[key] = String(r[col] ?? "").trim();
+            }
+          });
+          if (!out.name) badRows.push({ row: i + 2, reason: "Missing name" });
+          else if (!out.village) badRows.push({ row: i + 2, reason: "Missing village" });
+          else if (!out.mobile) badRows.push({ row: i + 2, reason: "Missing mobile number" });
+          else okRows.push(out as ParsedWeaverRow);
+        });
+
+        setValid(okRows);
+        setInvalid(badRows);
+        setParsing(false);
+      } catch {
+        setError("Could not read this file. Please upload a valid .xlsx or .csv file.");
+        setParsing(false);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleConfirm = () => {
+    const initialsOf = (name: string) => name.split(" ").filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase() ?? "").join("") || "WV";
+    const palette = ["#5A3E6B", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040", "#6B4A2A"];
+    const rows: ImportedWeaver[] = valid.map((v, i) => ({
+      id: `WV-${String(nextIdStart + i).padStart(3, "0")}`,
+      name: v.name, village: v.village, photo: null,
+      initials: initialsOf(v.name), bg: palette[(nextIdStart + i) % palette.length],
+      status: v.status, thisMonth: 0, passRate: 0, totalEver: 0,
+      looms: v.looms, batch: null, design: null, mobile: v.mobile,
+      totalPaid: "₹0", lastActive: "Just imported",
+    }));
+    onImport(rows);
+    reset();
+    onClose();
+  };
+
+  if (!open) return null;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(26,10,15,0.42)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => { reset(); onClose(); }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        onClick={e => e.stopPropagation()}
+        style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: 32, width: "100%", maxWidth: 640, maxHeight: "88vh", overflowY: "auto", boxShadow: "0 30px 90px rgba(0,0,0,0.25)" }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
+          <button onClick={() => { reset(); onClose(); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe }}><X size={22} /></button>
+        </div>
+        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
+          Upload a .xlsx or .csv file with columns <b>Name</b>, <b>Village</b>, <b>Mobile</b>, and optionally <b>Looms</b> and <b>Status</b>.
+        </p>
+
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          style={{ border: `2px dashed rgba(110,15,45,0.25)`, background: "rgba(110,15,45,0.03)", borderRadius: 14, padding: "32px 20px", textAlign: "center", cursor: "pointer" }}
+        >
+          <UploadSimple size={28} color={T.royalBurgundy} style={{ marginBottom: 10 }} />
+          <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>
+            {fileName ? fileName : "Click to choose a file"}
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
+          <input
+            ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f); }}
+          />
+        </div>
+
+        {parsing && <div style={{ marginTop: 16, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Reading file…</div>}
+
+        {error && (
+          <div style={{ marginTop: 16, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: "#C0392B" }}>
+            {error}
+          </div>
+        )}
+
+        {!error && !parsing && (valid.length > 0 || invalid.length > 0) && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.10)", borderRadius: 99, padding: "5px 14px" }}>{valid.length} ready to import</span>
+              {invalid.length > 0 && (
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B", background: "rgba(192,57,43,0.10)", borderRadius: 99, padding: "5px 14px" }}>{invalid.length} skipped</span>
+              )}
+            </div>
+
+            {valid.length > 0 && (
+              <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", marginBottom: invalid.length > 0 ? 14 : 0 }}>
+                <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                  {valid.map((v, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, fontWeight: 600 }}>{v.name}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {invalid.length > 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "#C0392B" }}>
+                {invalid.map((b, i) => <div key={i}>Row {b.row}: {b.reason}</div>)}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 28, borderTop: `1px solid ${T.borderDef}`, paddingTop: 20 }}>
+          <button onClick={() => { reset(); onClose(); }} style={{ padding: "12px 22px", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "transparent", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <motion.button
+            disabled={valid.length === 0} onClick={handleConfirm}
+            whileHover={valid.length > 0 ? { scale: 1.02 } : {}}
+            style={{ padding: "12px 26px", borderRadius: 10, border: "none", background: valid.length > 0 ? T.royalBurgundy : "rgba(110,15,45,0.25)", color: "#FFFDF9", fontFamily: F.ui, fontSize: 14.5, fontWeight: 700, cursor: valid.length > 0 ? "pointer" : "not-allowed" }}
+          >
+            Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ══════════════════════════════════════════════════════════════════════════
 export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
@@ -2320,6 +2570,8 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
+  const [extraWeavers, setExtraWeavers] = useState<typeof WEAVERS>([]);
+  const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
 
   if (selectedWeaver) {
@@ -2333,11 +2585,17 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
       <PageHeader />
       <StatsStrip />
       <WarpRequestsSection />
-      <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} />
-      <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
+      <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)} />
+      <WeaverDirectory view={view} extraWeavers={extraWeavers} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
       <WeaverAnalytics />
       <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} />
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
+      <ImportWeaversModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        nextIdStart={WEAVERS.length + extraWeavers.length + 1}
+        onImport={(rows) => setExtraWeavers(prev => [...prev, ...rows])}
+      />
       <Footer />
 
       <AnimatePresence>

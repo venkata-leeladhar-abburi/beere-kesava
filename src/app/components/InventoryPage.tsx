@@ -15,6 +15,7 @@ import { useBatches } from "./BatchContext";
 import { DesignCodeCard } from "./DesignLibraryPage";
 import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "./RatesPricingPage";
 import { WeaverSareesSection, WeaverSareeRow } from "./WeaverSareesSection";
+import { MoneyAccessProvider } from "./MoneyAccess";
 
 // ── Design tokens (matches Admin portal) ──────────────────────────────────────
 const T = {
@@ -1653,7 +1654,24 @@ export const getSareeColor = (id: string): string => {
   return colors[index];
 };
 
-export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?: boolean } = {}) {
+export function InventoryPage({
+  canRaiseQuotation = true, canDispatchWholesale = true, canDispatchShop = true, canSeeMoney = true,
+  showQuickDispatch = true, showCategorySplit = true, showQuotationsSection = true, showDispatchHistory = true,
+}: {
+  canRaiseQuotation?: boolean;
+  /** Wholesale dispatch always involves per-saree pricing and GST, so it's tied
+   *  to money visibility rather than gated separately. */
+  canDispatchWholesale?: boolean;
+  canDispatchShop?: boolean;
+  canSeeMoney?: boolean;
+  /** Sidebar "Quick Dispatch" card — same three actions as the action bar, just
+   *  a second entry point. Independent of the action bar so it can be hidden
+   *  even when at least one dispatch action remains available. */
+  showQuickDispatch?: boolean;
+  showCategorySplit?: boolean;
+  showQuotationsSection?: boolean;
+  showDispatchHistory?: boolean;
+} = {}) {
   const { returns, dispatches, dispatchSarees, updateDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
@@ -1675,6 +1693,9 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
   const [scanMsg,  setScanMsg]                = useState("");
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
   const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
+  // Nothing to select for if every dispatch route is closed off — the action
+  // bar and the table's checkboxes fold away together in that case.
+  const hasAnyDispatchAction = canDispatchShop || canDispatchWholesale || canRaiseQuotation;
 
   // ── Unified Records ────────────────────────────────────────────────────────
   const allRecords = useMemo(() => {
@@ -1905,6 +1926,7 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
   };
 
   return (
+    <MoneyAccessProvider allowed={canSeeMoney}>
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
@@ -2003,46 +2025,53 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
             </div>
 
             {/* Action bar — always visible so the dispatch routes are discoverable
-                before any saree is picked. The modals themselves gate on selection. */}
-            <motion.div layout transition={{ duration: 0.2, ease: EASE }}
-              style={{ background: T.deepWine, borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(61,14,26,0.20)" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: 1 }}>
-                {selected.size > 0 ? (
-                  <>
-                    <strong style={{ color: "#FFF" }}>{selected.size}</strong> selected
-                    {dispatchableSelected.length !== selected.size && ` (${dispatchableSelected.length} ready for dispatch)`}
-                  </>
-                ) : (
-                  <>No sarees selected — <span style={{ color: "rgba(255,255,255,0.62)" }}>pick sarees from the table below, or open an action to start</span></>
+                before any saree is picked. The modals themselves gate on selection.
+                Folds away entirely once every dispatch route is closed off. */}
+            {hasAnyDispatchAction && (
+              <motion.div layout transition={{ duration: 0.2, ease: EASE }}
+                style={{ background: T.deepWine, borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(61,14,26,0.20)" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: 1 }}>
+                  {selected.size > 0 ? (
+                    <>
+                      <strong style={{ color: "#FFF" }}>{selected.size}</strong> selected
+                      {dispatchableSelected.length !== selected.size && ` (${dispatchableSelected.length} ready for dispatch)`}
+                    </>
+                  ) : (
+                    <>No sarees selected — <span style={{ color: "rgba(255,255,255,0.62)" }}>pick sarees from the table below, or open an action to start</span></>
+                  )}
+                </span>
+                {canDispatchShop && (
+                  <button onClick={() => setModal("shop")}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: T.antiqueGold, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.deepWine, cursor: "pointer" }}>
+                    <ShoppingBag size={15} /> Dispatch to Shop
+                  </button>
                 )}
-              </span>
-              <button onClick={() => setModal("shop")}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: T.antiqueGold, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.deepWine, cursor: "pointer" }}>
-                <ShoppingBag size={15} /> Dispatch to Shop
-              </button>
-              <button onClick={() => setModal("wholesale")}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}>
-                <Users size={15} /> Dispatch to Wholesale
-              </button>
-              {canRaiseQuotation && (
-                <button onClick={() => setModal("quotation")}
-                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
-                  <FileText size={15} /> Raise Quotation
-                </button>
-              )}
-              {selected.size > 0 && (
-                <button onClick={() => setSelected(new Set())} title="Clear selection"
-                  style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                  <X size={14} color="#FFF" />
-                </button>
-              )}
-            </motion.div>
+                {canDispatchWholesale && (
+                  <button onClick={() => setModal("wholesale")}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}>
+                    <Users size={15} /> Dispatch to Wholesale
+                  </button>
+                )}
+                {canRaiseQuotation && (
+                  <button onClick={() => setModal("quotation")}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
+                    <FileText size={15} /> Raise Quotation
+                  </button>
+                )}
+                {selected.size > 0 && (
+                  <button onClick={() => setSelected(new Set())} title="Clear selection"
+                    style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <X size={14} color="#FFF" />
+                  </button>
+                )}
+              </motion.div>
+            )}
 
             {/* All Sarees Inventory — same table used on the Production page */}
             <div style={{ ...card, borderRadius: 16, padding: 20 }}>
               <WeaverSareesSection
                 ownerType="all"
-                selectable
+                selectable={hasAnyDispatchAction}
                 selectedIds={selected}
                 onToggleRow={toggleSareeRow}
                 onToggleAll={toggleAllVisible}
@@ -2052,33 +2081,39 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
           </div>
 
           {/* ── QUICK ACTIONS SIDEBAR ───────────────────────────────────── */}
+          {(showQuickDispatch || showCategorySplit) && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 100 }}>
             {/* Dispatch buttons */}
+            {showQuickDispatch && (
             <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 14 }}>Quick Dispatch</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button onClick={() => setModal("shop")}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left" as const }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <ShoppingBag size={18} color="#FFF" />
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF" }}>Dispatch to Shop</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
-                      {selected.size > 0 ? `${selected.size} saree${selected.size > 1 ? "s" : ""} ready` : "Select sarees first"}
+                {canDispatchShop && (
+                  <button onClick={() => setModal("shop")}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left" as const }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <ShoppingBag size={18} color="#FFF" />
                     </div>
-                  </div>
-                </button>
-                <button onClick={() => setModal("wholesale")}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Users size={18} color={T.royalBurgundy} />
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Dispatch to Wholesale</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
-                  </div>
-                </button>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF" }}>Dispatch to Shop</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
+                        {selected.size > 0 ? `${selected.size} saree${selected.size > 1 ? "s" : ""} ready` : "Select sarees first"}
+                      </div>
+                    </div>
+                  </button>
+                )}
+                {canDispatchWholesale && (
+                  <button onClick={() => setModal("wholesale")}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Users size={18} color={T.royalBurgundy} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Dispatch to Wholesale</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
+                    </div>
+                  </button>
+                )}
                 {canRaiseQuotation && (
                   <button onClick={() => setModal("quotation")}
                     style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
@@ -2093,8 +2128,10 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
                 )}
               </div>
             </div>
+            )}
 
             {/* Category split */}
+            {showCategorySplit && (
             <div style={{ ...card, padding: "20px 20px", borderRadius: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 16 }}>Category Split</div>
               {[
@@ -2117,22 +2154,28 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
                 );
               })}
             </div>
+            )}
           </div>
+          )}
         </div>
       </div>
 
       {/* ── QUOTATIONS ───────────────────────────────────────────────────── */}
-      <div style={{ padding: "0 48px", marginTop: 40 }}>
-        <QuotationsSection
-          quotations={quotations}
-          onDispatch={q => { setQuotationDispatch(q); setModal("wholesale"); }}
-        />
-      </div>
+      {showQuotationsSection && (
+        <div style={{ padding: "0 48px", marginTop: 40 }}>
+          <QuotationsSection
+            quotations={quotations}
+            onDispatch={q => { setQuotationDispatch(q); setModal("wholesale"); }}
+          />
+        </div>
+      )}
 
       {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
-      <div style={{ padding: "0 48px 80px", marginTop: 24 }}>
-        <DispatchHistorySection dispatches={dispatches} firms={firms} onResume={setResumeDispatch} />
-      </div>
+      {showDispatchHistory && (
+        <div style={{ padding: "0 48px 80px", marginTop: 24 }}>
+          <DispatchHistorySection dispatches={dispatches} firms={firms} onResume={setResumeDispatch} />
+        </div>
+      )}
 
       {/* ── MODALS ──────────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -2145,7 +2188,7 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
             onClose={() => setModal(null)}
           />
         )}
-        {modal === "wholesale" && quotationDispatch && (
+        {modal === "wholesale" && canDispatchWholesale && quotationDispatch && (
           <DispatchWholesaleModal
             key="wholesale-modal-quotation"
             sarees={quotationDispatchSarees}
@@ -2157,7 +2200,7 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
           />
         )}
         {/* Opens with or without a prior selection — sarees can be added inside. */}
-        {modal === "wholesale" && !quotationDispatch && (() => {
+        {modal === "wholesale" && canDispatchWholesale && !quotationDispatch && (() => {
           // Auto-detect bulk order from selected sarees
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
@@ -2229,6 +2272,7 @@ export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
     </div>
+    </MoneyAccessProvider>
   );
 }
 
