@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
-import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory } from "lucide-react";
+import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useResponsive } from "./useResponsive";
 import { PaymentsPage } from "./PaymentsPage";
@@ -13,6 +13,7 @@ import { CustomersPage } from "./CustomersPage";
 import { VendorsPage } from "./VendorsPage";
 import { SuppliersPage } from "./SuppliersPage";
 import { FactoryLoomPage } from "./FactoryLoomPage";
+import { InventoryPage } from "./InventoryPage";
 import { DownloadAccessProvider } from "./DownloadAccess";
 import { UserProfileModal } from "./BeereDashboard";
 import { imgBKLogo } from "../constants/weaverImages";
@@ -46,6 +47,7 @@ const NAV: NavItem[] = [
   { key: "Vendors",   label: "Vendors",         slug: "vendors",   icon: Truck },
   { key: "Suppliers", label: "Suppliers",       slug: "suppliers", icon: Store },
   { key: "Looms",     label: "Factory Looms",   slug: "looms",     icon: Factory },
+  { key: "Inventory", label: "Inventory",       slug: "inventory", icon: Package },
 ];
 
 const SLUG_TO_KEY: Record<string, string> = NAV.reduce((acc, n) => { acc[n.slug] = n.key; return acc; }, {} as Record<string, string>);
@@ -192,6 +194,8 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
           <SuppliersPage />
         ) : active === "Looms" ? (
           <FactoryLoomPage />
+        ) : active === "Inventory" ? (
+          <InventoryPage canRaiseQuotation={false} />
         ) : (
           <PaymentsPage />
         )}

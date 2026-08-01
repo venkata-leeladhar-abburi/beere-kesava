@@ -1653,7 +1653,7 @@ export const getSareeColor = (id: string): string => {
   return colors[index];
 };
 
-export function InventoryPage() {
+export function InventoryPage({ canRaiseQuotation = true }: { canRaiseQuotation?: boolean } = {}) {
   const { returns, dispatches, dispatchSarees, updateDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
@@ -2024,10 +2024,12 @@ export function InventoryPage() {
                 style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}>
                 <Users size={15} /> Dispatch to Wholesale
               </button>
-              <button onClick={() => setModal("quotation")}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
-                <FileText size={15} /> Raise Quotation
-              </button>
+              {canRaiseQuotation && (
+                <button onClick={() => setModal("quotation")}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 18px", height: 40, background: "transparent", border: `1px solid rgba(255,255,255,0.35)`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
+                  <FileText size={15} /> Raise Quotation
+                </button>
+              )}
               {selected.size > 0 && (
                 <button onClick={() => setSelected(new Set())} title="Clear selection"
                   style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -2077,16 +2079,18 @@ export function InventoryPage() {
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>With tax invoice generation</div>
                   </div>
                 </button>
-                <button onClick={() => setModal("quotation")}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <FileText size={18} color={T.antiqueGold} />
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Raise Quotation</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Send to finishing before dispatch</div>
-                  </div>
-                </button>
+                {canRaiseQuotation && (
+                  <button onClick={() => setModal("quotation")}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", textAlign: "left" as const, boxShadow: "0 1px 6px rgba(44,24,16,0.06)" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <FileText size={18} color={T.antiqueGold} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Raise Quotation</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Send to finishing before dispatch</div>
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2174,7 +2178,7 @@ export function InventoryPage() {
             />
           );
         })()}
-        {modal === "quotation" && (() => {
+        {modal === "quotation" && canRaiseQuotation && (() => {
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
           const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;

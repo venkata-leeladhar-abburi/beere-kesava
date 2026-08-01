@@ -5,6 +5,7 @@ import { useFinishing } from "./FinishingContext";
 import { useSales, UnifiedSaree, isSold, isOutstanding, ageBucket } from "./SalesContext";
 import { useDesignLibrary } from "./DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { Pagination, usePagination } from "./Pagination";
 
 // ── Design tokens (matches WeaversPage) ──────────────────────────────────────
 const T = {
@@ -439,6 +440,13 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rows, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
+  // Pagination applies only to what's rendered — `visible` itself stays the full
+  // filtered set so select-all and the parent's onVisibleChange (scan / bulk
+  // actions) keep working across every matching row, not just the current page.
+  const pag = usePagination(visible, 25);
+  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+  const pageRows = pag.pageItems;
+
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
   const onVisibleChangeRef = useRef(onVisibleChange);
   onVisibleChangeRef.current = onVisibleChange;
@@ -588,10 +596,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           No sarees match this view{filtersActive ? " with the current filters." : "."}
         </div>
       ) : isExternalTab ? (
-        <div style={{
-          overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
-          background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
-        }}>
+        <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1080 }}>
             <thead>
               <tr style={{ background: T.warmCream }}>
@@ -610,7 +616,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               </tr>
             </thead>
             <tbody>
-              {visible.map((r, idx) => (
+              {pageRows.map((r, idx) => (
                 <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
                   <td style={tdMono}>{r.sareeId}</td>
                   <td style={{ ...td, fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>
@@ -637,11 +643,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             </tbody>
           </table>
         </div>
+          <div style={{ padding: "0 14px" }}>
+            <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+          </div>
+        </div>
       ) : (
-        <div style={{
-          overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 12,
-          background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)",
-        }}>
+        <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
             <thead>
               <tr style={{ background: T.warmCream }}>
@@ -676,7 +685,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               </tr>
             </thead>
             <tbody>
-              {visible.map((r, idx) => {
+              {pageRows.map((r, idx) => {
                 const qc = QC_CFG[r.qcStatus];
                 const fin = FIN_CFG[r.finishingStatus];
                 const typeLabel = r.sareeTypeCode
@@ -779,6 +788,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               })}
             </tbody>
           </table>
+        </div>
+          <div style={{ padding: "0 14px" }}>
+            <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+          </div>
         </div>
       )}
 
