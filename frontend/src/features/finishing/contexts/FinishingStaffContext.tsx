@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface FinishingStaffMember {
   id: string;
@@ -30,23 +31,58 @@ const SEED: FinishingStaffMember[] = [
   { id: "fs-seed-004", empId: "EMP-011", firstName: "Meena",  lastName: "Bai",   mobile: "+91 22109 87653", email: "", specialisation: "",                notes: "",            dateAdded: "07 Jun 2026", status: "Inactive" },
 ];
 
+const QUERY_KEY = ["finishingStaff"] as const;
+
+/**
+ * SEED is the queryFn's return value today, standing in for a real GET
+ * until a backend exists. `initialData: SEED` means the first render never
+ * shows a loading state — behavior is identical to the old useState version.
+ * When a real API lands, only the queryFn/mutationFn bodies below change;
+ * every consumer of useFinishingStaff() is unaffected because the returned
+ * shape ({ members, addMember, updateMember, toggleStatus, activeMembers })
+ * stays the same.
+ */
 export function FinishingStaffProvider({ children }: { children: React.ReactNode }) {
-  const [members, setMembers] = useState<FinishingStaffMember[]>(SEED);
+  const queryClient = useQueryClient();
 
-  const addMember = useCallback((m: Omit<FinishingStaffMember, "id" | "dateAdded">) => {
-    const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).replace(",", "");
-    setMembers(prev => [{ ...m, id: `fs-${Date.now()}`, dateAdded: today }, ...prev]);
-  }, []);
+  const { data: members = SEED } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(SEED),
+    initialData: SEED,
+  });
 
-  const updateMember = useCallback((id: string, updates: Partial<FinishingStaffMember>) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-  }, []);
+  const addMemberMutation = useMutation({
+    mutationFn: (m: Omit<FinishingStaffMember, "id" | "dateAdded">) => {
+      const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).replace(",", "");
+      const newMember: FinishingStaffMember = { ...m, id: `fs-${Date.now()}`, dateAdded: today };
+      return Promise.resolve(newMember);
+    },
+    onSuccess: (newMember) => {
+      queryClient.setQueryData<FinishingStaffMember[]>(QUERY_KEY, prev => [newMember, ...(prev ?? [])]);
+    },
+  });
 
-  const toggleStatus = useCallback((id: string) => {
-    setMembers(prev => prev.map(m =>
-      m.id === id ? { ...m, status: m.status === "Active" ? "Inactive" : "Active" } : m
-    ));
-  }, []);
+  const updateMemberMutation = useMutation({
+    mutationFn: (args: { id: string; updates: Partial<FinishingStaffMember> }) => Promise.resolve(args),
+    onSuccess: ({ id, updates }) => {
+      queryClient.setQueryData<FinishingStaffMember[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(m => m.id === id ? { ...m, ...updates } : m)
+      );
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: (id: string) => Promise.resolve(id),
+    onSuccess: (id) => {
+      queryClient.setQueryData<FinishingStaffMember[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(m => m.id === id ? { ...m, status: m.status === "Active" ? "Inactive" : "Active" } : m)
+      );
+    },
+  });
+
+  const addMember = (m: Omit<FinishingStaffMember, "id" | "dateAdded">) => addMemberMutation.mutate(m);
+  const updateMember = (id: string, updates: Partial<FinishingStaffMember>) => updateMemberMutation.mutate({ id, updates });
+  const toggleStatus = (id: string) => toggleStatusMutation.mutate(id);
 
   const activeMembers = useMemo(() => members.filter(m => m.status === "Active"), [members]);
 

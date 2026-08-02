@@ -83,13 +83,274 @@ export default tseslint.config(
       "import/no-restricted-paths": [
         "warn",
         {
+          // Per-feature zones: files under a feature (target) may not deep-import
+          // another feature's internals (from) — only its barrel (index.ts) is a
+          // clean import. `!(X)` excludes the feature's own subtree so intra-feature
+          // imports are unaffected. Generated for all features under src/features/.
           zones: [
             {
-              target: "./src/features/*/",
-              from: "./src/features/*/",
-              // a feature may only reach into ITS OWN subtree, not a sibling
+              target: "./src/features/audit/**",
+              from: [
+                "./src/features/!(audit)/components/**",
+                "./src/features/!(audit)/contexts/**",
+                "./src/features/!(audit)/data/**",
+                "./src/features/!(audit)/utils/**",
+              ],
               message:
-                "Cross-feature import detected. Route shared code through src/shared or src/lib instead of reaching into another feature's internals.",
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/auth/**",
+              from: [
+                "./src/features/!(auth)/components/**",
+                "./src/features/!(auth)/contexts/**",
+                "./src/features/!(auth)/data/**",
+                "./src/features/!(auth)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/bulk-orders/**",
+              from: [
+                "./src/features/!(bulk-orders)/components/**",
+                "./src/features/!(bulk-orders)/contexts/**",
+                "./src/features/!(bulk-orders)/data/**",
+                "./src/features/!(bulk-orders)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/customers/**",
+              from: [
+                "./src/features/!(customers)/components/**",
+                "./src/features/!(customers)/contexts/**",
+                "./src/features/!(customers)/data/**",
+                "./src/features/!(customers)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/dashboards/**",
+              from: [
+                "./src/features/!(dashboards)/components/**",
+                "./src/features/!(dashboards)/contexts/**",
+                "./src/features/!(dashboards)/data/**",
+                "./src/features/!(dashboards)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/design-library/**",
+              from: [
+                "./src/features/!(design-library)/components/**",
+                "./src/features/!(design-library)/contexts/**",
+                "./src/features/!(design-library)/data/**",
+                "./src/features/!(design-library)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/finishing/**",
+              from: [
+                "./src/features/!(finishing)/components/**",
+                "./src/features/!(finishing)/contexts/**",
+                "./src/features/!(finishing)/data/**",
+                "./src/features/!(finishing)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/firms/**",
+              from: [
+                "./src/features/!(firms)/components/**",
+                "./src/features/!(firms)/contexts/**",
+                "./src/features/!(firms)/data/**",
+                "./src/features/!(firms)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/inventory/**",
+              from: [
+                "./src/features/!(inventory)/components/**",
+                "./src/features/!(inventory)/contexts/**",
+                "./src/features/!(inventory)/data/**",
+                "./src/features/!(inventory)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/materials/**",
+              from: [
+                "./src/features/!(materials)/components/**",
+                "./src/features/!(materials)/contexts/**",
+                "./src/features/!(materials)/data/**",
+                "./src/features/!(materials)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/notifications/**",
+              from: [
+                "./src/features/!(notifications)/components/**",
+                "./src/features/!(notifications)/contexts/**",
+                "./src/features/!(notifications)/data/**",
+                "./src/features/!(notifications)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/payments/**",
+              from: [
+                "./src/features/!(payments)/components/**",
+                "./src/features/!(payments)/contexts/**",
+                "./src/features/!(payments)/data/**",
+                "./src/features/!(payments)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/portals/**",
+              from: [
+                "./src/features/!(portals)/components/**",
+                "./src/features/!(portals)/contexts/**",
+                "./src/features/!(portals)/data/**",
+                "./src/features/!(portals)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/pricing/**",
+              from: [
+                "./src/features/!(pricing)/components/**",
+                "./src/features/!(pricing)/contexts/**",
+                "./src/features/!(pricing)/data/**",
+                "./src/features/!(pricing)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/production/**",
+              from: [
+                "./src/features/!(production)/components/**",
+                "./src/features/!(production)/contexts/**",
+                "./src/features/!(production)/data/**",
+                "./src/features/!(production)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/purchasing/**",
+              from: [
+                "./src/features/!(purchasing)/components/**",
+                "./src/features/!(purchasing)/contexts/**",
+                "./src/features/!(purchasing)/data/**",
+                "./src/features/!(purchasing)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/qc/**",
+              from: [
+                "./src/features/!(qc)/components/**",
+                "./src/features/!(qc)/contexts/**",
+                "./src/features/!(qc)/data/**",
+                "./src/features/!(qc)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/reports/**",
+              from: [
+                "./src/features/!(reports)/components/**",
+                "./src/features/!(reports)/contexts/**",
+                "./src/features/!(reports)/data/**",
+                "./src/features/!(reports)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/scanning/**",
+              from: [
+                "./src/features/!(scanning)/components/**",
+                "./src/features/!(scanning)/contexts/**",
+                "./src/features/!(scanning)/data/**",
+                "./src/features/!(scanning)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/settings/**",
+              from: [
+                "./src/features/!(settings)/components/**",
+                "./src/features/!(settings)/contexts/**",
+                "./src/features/!(settings)/data/**",
+                "./src/features/!(settings)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/suppliers/**",
+              from: [
+                "./src/features/!(suppliers)/components/**",
+                "./src/features/!(suppliers)/contexts/**",
+                "./src/features/!(suppliers)/data/**",
+                "./src/features/!(suppliers)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/users/**",
+              from: [
+                "./src/features/!(users)/components/**",
+                "./src/features/!(users)/contexts/**",
+                "./src/features/!(users)/data/**",
+                "./src/features/!(users)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/vendors/**",
+              from: [
+                "./src/features/!(vendors)/components/**",
+                "./src/features/!(vendors)/contexts/**",
+                "./src/features/!(vendors)/data/**",
+                "./src/features/!(vendors)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
+            },
+            {
+              target: "./src/features/weavers/**",
+              from: [
+                "./src/features/!(weavers)/components/**",
+                "./src/features/!(weavers)/contexts/**",
+                "./src/features/!(weavers)/data/**",
+                "./src/features/!(weavers)/utils/**",
+              ],
+              message:
+                "Cross-feature import reaches past the feature's public barrel. Import from the feature root instead of its internals — see src/features/<feature>/index.ts.",
             },
           ],
         },

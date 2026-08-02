@@ -1,0 +1,163 @@
+import { motion, AnimatePresence } from "motion/react";
+import { X, Download, Check } from "lucide-react";
+import { T, F } from "../theme";
+import { WholesaleCustomer, RetailCustomer } from "../types";
+import { downloadCustomerCSV } from "../utils";
+
+export interface CustomerModalsProps {
+  modalWholesale: WholesaleCustomer | null;
+  setModalWholesale: (w: WholesaleCustomer | null) => void;
+  downloadConfirmRetail: RetailCustomer | null;
+  setDownloadConfirmRetail: (r: RetailCustomer | null) => void;
+  viewingCard: string | null;
+  setViewingCard: (url: string | null) => void;
+  saveSuccess: boolean;
+}
+
+// ── MODALS ───────────────────────────────────────────────────────────────────
+export function CustomerModals({
+  modalWholesale, setModalWholesale, downloadConfirmRetail, setDownloadConfirmRetail,
+  viewingCard, setViewingCard, saveSuccess,
+}: CustomerModalsProps) {
+  return (
+    <>
+      {saveSuccess && (
+        <div style={{ position: "fixed", bottom: 40, right: 40, background: T.greenMid, color: "#FFF", padding: "16px 28px", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 10, zIndex: 9999 }}>
+          <Check size={18} />
+          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>Profile updated successfully!</span>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {modalWholesale && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModalWholesale(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: "100%", maxWidth: 780, background: "#FFF", borderRadius: 24, overflow: "hidden", position: "relative", zIndex: 10, boxShadow: "0 20px 60px rgba(44,24,16,0.20)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+              <div style={{ background: T.darkBurgundy, padding: "24px 32px", display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.antiqueGold, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700, flexShrink: 0, boxShadow: "0 0 0 3px rgba(200,155,71,0.30)" }}>{modalWholesale.code}</div>
+                <div>
+                  <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFF", margin: "0 0 6px 0" }}>{modalWholesale.name}</h2>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
+                  </div>
+                </div>
+                <button onClick={() => setModalWholesale(null)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.10)", border: "none", color: "#FFF", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}><X size={18} /></button>
+              </div>
+              <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
+                {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
+                  <div key={i} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
+                ))}
+              </div>
+              <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>
+                <div style={{ flex: "55%" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 28, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
+                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 28, color: T.antiqueGold, fontWeight: 700 }}>₹{modalWholesale.spend}</div></div>
+                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 28, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>₹{modalWholesale.out}</div></div>
+                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: F.mono, fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
+                  </div>
+                  {modalWholesale.activeOrder && (
+                    <div style={{ background: T.luxuryBrown, padding: 20, borderRadius: 12, color: "#FFF" }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Active Order in Production</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, marginBottom: 12 }}>{modalWholesale.activeOrder} · 80 sarees</div>
+                      <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }}><div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 2 }}/></div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: "45%", borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 32 }}>
+                  <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Contact Details</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div><div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Owner</div><div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Ramesh Rao</div></div>
+                    <div><div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Phone</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>+91 98480 12345</div></div>
+                    <div><div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>City & State</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.city}</div></div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Bank Details</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>HDFC Bank · 4872 1938 8901</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Special Terms / Credit Notes</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Extended 45-day terms approved · FY2026</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EXTERNAL PURCHASE DRAWER REMOVED */}
+      {/* Success toast — preserved from the original: this reuses `saveSuccess`
+          and fires alongside the "Profile updated" toast above whenever a
+          wholesale profile is saved, even though the copy references an
+          "external purchase". Kept as-is for parity with the pre-split page. */}
+      {saveSuccess && (
+        <div style={{ position: "fixed", top: 24, right: 24, zIndex: 600, background: "#1E6640", color: "#FFF", padding: "14px 20px", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 24px rgba(30,102,64,0.30)", display: "flex", alignItems: "center", gap: 10 }}>
+          ✓ External purchase recorded successfully
+        </div>
+      )}
+
+      {/* Retail customer — Download confirmation modal */}
+      <AnimatePresence>
+        {downloadConfirmRetail && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 2100, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDownloadConfirmRetail(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 420, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 28 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <Download size={22} color={T.antiqueGold} />
+              </div>
+              <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 8px 0" }}>Download Customer Data?</h3>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px 0", lineHeight: 1.5 }}>
+                This will download a CSV file with {downloadConfirmRetail.name}'s profile and purchase summary.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setDownloadConfirmRetail(null)} style={{ flex: 1, height: 42, background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    downloadCustomerCSV(downloadConfirmRetail.name, [
+                      ["Customer Name", downloadConfirmRetail.name],
+                      ["Phone", downloadConfirmRetail.phone],
+                      ["City", downloadConfirmRetail.city],
+                      ["Total Purchases", String(downloadConfirmRetail.purchases)],
+                      ["Total Spend", downloadConfirmRetail.spend],
+                      ["Last Visit", downloadConfirmRetail.lastVisit],
+                      ["Regular Buyer", downloadConfirmRetail.regular ? "Yes" : "No"],
+                      ["Inactive", downloadConfirmRetail.inactive ? "Yes" : "No"],
+                    ]);
+                    setDownloadConfirmRetail(null);
+                  }}
+                  style={{ flex: 1, height: 42, background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <Download size={15} /> Download
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Visiting Card Viewer Modal */}
+      <AnimatePresence>
+        {viewingCard && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewingCard(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.75)", backdropFilter: "blur(4px)" }} />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} onClick={e => e.stopPropagation()} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 480, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Visiting Card</span>
+                <button onClick={() => setViewingCard(null)} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center" }}>
+                  <X size={18} />
+                </button>
+              </div>
+              <img src={viewingCard} alt="Visiting card" style={{ width: "100%", borderRadius: 12, border: `1px solid ${T.borderDef}`, display: "block" }} />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}

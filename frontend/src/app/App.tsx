@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "../lib/queryClient";
 import { AuthProvider } from "../contexts/AuthContext";
 import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -33,6 +35,7 @@ import "../styles/mobile.css";
 
 export default function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       {/* Shared across every portal (worker, admin, superadmin, accountant) so finishing
           assignments/returns/quotations raised in one show up identically in the others. */}
@@ -102,5 +105,6 @@ export default function App() {
       </FinishingStaffProvider>
       <Toaster position="top-right" richColors />
     </AuthProvider>
+    </QueryClientProvider>
   );
 }

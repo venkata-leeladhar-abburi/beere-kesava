@@ -1,0 +1,70 @@
+// Supplier directory card — summary tile with a "View Profile" action.
+
+import React, { useState } from "react";
+import { motion } from "motion/react";
+import { MapPin, Phone, Package, Eye } from "lucide-react";
+import { T, F } from "../theme";
+import { StatusPill, StarRating } from "../common/primitives";
+import { useSuppliers, Supplier, formatINR } from "../../contexts/SupplierContext";
+
+export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView: (s: Supplier) => void }) {
+  const { statsFor } = useSuppliers();
+  const stats = statsFor(supplier.id);
+  const [hov, setHov] = useState(false);
+
+  return (
+    <motion.div whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(74,6,27,0.14)" }} transition={{ duration: 0.22 }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ background: "#FFF", borderRadius: 20, border: `1.5px solid ${hov ? "rgba(110,15,45,0.22)" : T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 2px 12px rgba(74,6,27,0.05)", transition: "border-color 0.2s" }}>
+      <div style={{ height: 6, background: supplier.status === "overdue" ? "linear-gradient(90deg,#C0392B,#E74C3C)" : supplier.status === "inactive" ? `linear-gradient(90deg,${T.taupe},#B0A090)` : `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
+      <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,${T.darkBurgundy},${T.royalBurgundy})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 800, color: "#FFF" }}>{supplier.initials}</span>
+            </div>
+            <div>
+              <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{supplier.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{supplier.id}</span>
+                <StatusPill status={supplier.status} />
+              </div>
+            </div>
+          </div>
+          <StarRating rating={supplier.rating} />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><MapPin size={13} color={T.royalBurgundy} />{supplier.city}, {supplier.state}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><Phone size={13} color={T.royalBurgundy} />{supplier.phone}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{supplier.specialty}</div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+          {[
+            { label: "Purchases", value: String(stats.purchases.length) },
+            { label: "Sarees",    value: String(stats.sareeCount) },
+            { label: "Outstanding", value: formatINR(stats.outstanding), alert: stats.outstanding > 0 },
+          ].map((s, i) => (
+            <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: (s as any).alert ? T.crimson : T.luxuryBrown }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Terms: <strong style={{ color: T.luxuryBrown }}>{supplier.terms}</strong></span>
+          <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Last: {stats.lastPurchaseDate}</span>
+        </div>
+
+        <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
+          <motion.button onClick={() => onView(supplier)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            style={{ width: "100%", padding: "9px 0", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <Eye size={13} /> View Profile
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}

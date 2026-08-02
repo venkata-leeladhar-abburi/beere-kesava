@@ -1,4 +1,3 @@
-import { VendorDetailModal } from "../components/vendor/VendorDetailModal";
 import { VendorPayment } from "../types";
 
 export const VENDOR_PAYMENTS: VendorPayment[] = [
