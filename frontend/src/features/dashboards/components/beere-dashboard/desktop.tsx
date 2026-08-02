@@ -1,14 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
+import {
   ChevronLeft, ChevronRight, ChevronDown, ArrowRight,
   Bell, Search, TrendingUp, SlidersHorizontal, Moon,
   Facebook, Instagram, Youtube, Linkedin, Menu,
   LogOut, UserRound, AlertTriangle, CheckCircle2, AlertCircle,
   Package, LayoutDashboard, Factory, IndianRupee, Users, Settings2,
   Activity, MapPin, Phone, Eye, Edit3, Layers3, ShoppingCart, Layers, X
-, Flower2 as Lotus } from 'lucide-react';
+  , Flower2 as Lotus
+} from 'lucide-react';
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import { ImageWithFallback } from "../../../../app/components/figma/ImageWithFallback";
 import { useNavigate } from 'react-router';
@@ -16,17 +17,19 @@ import { useInView } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useResponsive } from '../../../../app/components/useResponsive';
 import { imgBKLogo, imgSareeFooter } from '../../../../app/constants/weaverImages';
-import { SectionNavigator, SHOP_MOBILE_HEADER_H as MAIN_NAV_H } from '../../../../app/components/SectionNavigator';
+import { SectionNavigator, MAIN_NAV_H } from '../../../../app/components/SectionNavigator';
 import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
+// @ts-ignore
 import { METRICS, WEAVERS, WEAVER_RATES, MATS, ACT } from './data';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
+// @ts-ignore
+import imgHero from '../../../../imports/hero.png';
 
 
-const SUB_NAV_H = 48;
-const imgHero = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+const SUB_NAV_H = 60;
 
-const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-const imgShowroom    = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+const imgSaree = imgHero;
+const imgShowroom = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; onLogout?: () => void; sections?: import("../../../../app/components/SectionNavigator").SectionNavItem[]; onProfile?: () => void }) {
   const navigate = useNavigate();
@@ -97,7 +100,7 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
 
         {/* Group nav — scrolls internally if the viewport is too narrow to fit every group, so it
             can never force the page itself to overflow horizontally. */}
-        <div className="admin-topnav-groups" style={{ display: "flex", height: "100%", alignItems: "stretch", gap: 0, overflowX: "auto", overflowY: "visible", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
+        <div className="admin-topnav-groups" style={{ display: "flex", height: "100%", alignItems: "stretch", gap: 12, overflowX: "auto", overflowY: "visible", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
           <style>{`.admin-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
           {NAV_GROUPS.map((g, i) => {
             const isActive = activeGroup.key === g.key;
@@ -120,7 +123,7 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
                   transition={{ duration: 0.4, delay: 0.1 + i * 0.05, ease: EASE }}
                   whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
                   style={{
-                    height: "100%", padding: compact ? "0 12px" : "0 20px", flexShrink: 0,
+                    height: "100%", padding: compact ? "0 8px" : "0 12px", flexShrink: 0,
                     border: "none", backgroundColor: "rgba(0,0,0,0)", cursor: "pointer",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                   }}
@@ -169,7 +172,7 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
             const alignRight = NAV_GROUPS.indexOf(g) >= NAV_GROUPS.length - 2;
             const left = rect ? (alignRight ? undefined : rect.left) : 0;
             const right = rect && alignRight ? window.innerWidth - rect.right : undefined;
-            const top  = rect ? rect.bottom - 8 : MAIN_NAV_H - 8;
+            const top = rect ? rect.bottom - 8 : MAIN_NAV_H - 8;
             return (
               <motion.div
                 key={`dd-${g.key}`}
@@ -222,14 +225,14 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
         {/* Right actions */}
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
           {!compact && (
-          <motion.button
-            initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
-            whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
-            whileTap={{ scale: 0.94 }}
-            style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid rgba(245,232,208,0.14)`, backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <Search size={15} color="rgba(245,232,208,0.75)" />
-          </motion.button>
+            <motion.button
+              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
+              whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
+              whileTap={{ scale: 0.94 }}
+              style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid rgba(245,232,208,0.14)`, backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <Search size={15} color="rgba(245,232,208,0.75)" />
+            </motion.button>
           )}
           <div style={{ position: "relative" }}>
             <motion.button
@@ -256,8 +259,8 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
                 {/* Quick preview items */}
                 {[
                   { Icon: AlertTriangle, iconColor: "#B91C1C", iconBg: "rgba(185,28,28,0.10)", title: "Low Stock Alert", body: "Only 12 sarees remaining in shop", time: "Just now", urgent: true },
-                  { Icon: CheckCircle2,  iconColor: "#1E6640",  iconBg: "rgba(30,102,64,0.10)",  title: "Batch 089 Completed", body: "Ravi Kumar completed 3 sarees", time: "2h ago", urgent: false },
-                  { Icon: AlertCircle,  iconColor: "#B45309",  iconBg: "rgba(180,83,9,0.10)",   title: "Jari Stock Low", body: "Below minimum threshold — 8 kg remaining", time: "4h ago", urgent: true },
+                  { Icon: CheckCircle2, iconColor: "#1E6640", iconBg: "rgba(30,102,64,0.10)", title: "Batch 089 Completed", body: "Ravi Kumar completed 3 sarees", time: "2h ago", urgent: false },
+                  { Icon: AlertCircle, iconColor: "#B45309", iconBg: "rgba(180,83,9,0.10)", title: "Jari Stock Low", body: "Below minimum threshold — 8 kg remaining", time: "4h ago", urgent: true },
                 ].map((n, i) => (
                   <div key={i} onClick={() => { setShowNotif(false); set("Notifications"); }} style={{ padding: "12px 20px", background: n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)", borderBottom: `1px solid rgba(110,15,45,0.06)`, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)")}
@@ -312,23 +315,23 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
                     <UserRound size={15} color={T.taupe} /> View Profile
                   </button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-                  
+
                   <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-                  <button onClick={() => { 
-                    setShowProfile(false); 
+                  <button onClick={() => {
+                    setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("shop");
-                    navigate("/shop"); 
+                    navigate("/shop");
                   }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
                   </button>
-                  <button onClick={() => { 
-                    setShowProfile(false); 
+                  <button onClick={() => {
+                    setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("worker");
-                    navigate("/worker"); 
+                    navigate("/worker");
                   }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
@@ -359,13 +362,13 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
         <div
           style={{
             height: SUB_NAV_H,
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24,
-            padding: compact ? "0 20px" : "0 56px",
-            background: T.warmIvory,
+            display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
+            padding: compact ? "0 16px" : "0 28px",
+            background: "#FFFDF9",
             borderBottom: `1px solid ${T.borderDef}`,
           }}
         >
-          <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 6, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
+          <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
             {activeGroup.pages.map(p => {
               const isActive = active === p.key;
               return (
@@ -374,11 +377,11 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
                   onClick={() => set(p.key)}
                   style={{
                     position: "relative",
-                    fontFamily: F.ui, fontWeight: isActive ? 600 : 500, fontSize: 14,
+                    fontFamily: F.ui, fontWeight: isActive ? 600 : 500, fontSize: 13.5,
                     color: isActive ? "#FFFFFF" : T.luxuryBrown,
                     background: "transparent",
                     border: "none", borderRadius: 10,
-                    padding: "12px 26px", cursor: "pointer",
+                    padding: "9px 22px", cursor: "pointer",
                     whiteSpace: "nowrap",
                     transition: "color 0.15s",
                   }}
@@ -400,7 +403,7 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
 
           {sections && (
             <>
-              <div style={{ width: 1, height: 28, background: T.borderDef, flexShrink: 0 }} />
+              <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
               <SectionNavigator inline sections={sections} />
             </>
           )}
@@ -416,7 +419,7 @@ function TopNav({ active, set, onBack, onLogout, sections, onProfile }: { active
 // ═══════════════════════════════════════════════════════════════════════════════
 function Hero() {
   return (
-    <section style={{ position: "relative", height: "calc(100vh - 90px - 160px)", minHeight: 380, overflow: "hidden", background: "#0D0207" }}>
+    <section style={{ position: "relative", height: "calc(100vh - 90px - 100px)", minHeight: 500, overflow: "hidden", background: "#0D0207" }}>
       {/* Ken Burns hero image — actual Beere Kesava showroom */}
       <motion.img
         src={imgHero}
@@ -442,7 +445,7 @@ function Hero() {
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 140, background: "linear-gradient(to top, rgba(13,2,7,0.7) 0%, rgba(13,2,7,0) 100%)", pointerEvents: "none", zIndex: 2 }} />
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.022) 60px, rgba(200,155,71,0.022) 61px)` }} />
 
-      <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "0 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
+      <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "40px 56px 100px 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
         {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, x: -24 }}
@@ -459,9 +462,9 @@ function Hero() {
         {/* Headline lines — staggered clip reveal */}
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
-            { text: "Weaving",          italic: false, color: T.warmCream,   delay: 0.5  },
-            { text: "Heritage",         italic: true,  color: T.antiqueGold, delay: 0.68 },
-            { text: "Into Every Thread", italic: false, color: T.warmCream,   delay: 0.86 },
+            { text: "Weaving", italic: false, color: T.warmCream, delay: 0.5 },
+            { text: "Heritage", italic: true, color: T.antiqueGold, delay: 0.68 },
+            { text: "Into Every Thread", italic: false, color: T.warmCream, delay: 0.86 },
           ].map(({ text, italic, color, delay }) => (
             <div key={text} style={{ overflow: "hidden", lineHeight: "1.12" }}>
               <motion.div
@@ -561,7 +564,7 @@ function MetricsBar() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
-      style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      style={{ padding: "0 48px", marginTop: -56, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {METRICS.map((m, i) => (
@@ -621,8 +624,8 @@ function MetricsBar() {
 // ═══════════════════════════════════════════════════════════════════════════════
 const PROG_BARS = [
   { label: "Production", pct: 72, color: "#6B1A2A" },
-  { label: "Inventory",  pct: 84, color: "#C4923A" },
-  { label: "Payments",   pct: 46, color: "#A0506A" },
+  { label: "Inventory", pct: 84, color: "#C4923A" },
+  { label: "Payments", pct: 46, color: "#A0506A" },
 ];
 
 function ProductionProgress() {
@@ -634,7 +637,7 @@ function ProductionProgress() {
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 16, letterSpacing: "0.1px" }}>
         Real-time weaving & supply
       </div>
-      
+
       {/* Centered large progress chart taking up remaining space */}
       <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200, margin: "10px 0 20px" }}>
         <Donut />
@@ -666,7 +669,7 @@ function SareesProduced({ compact }: { compact?: boolean }) {
           Sarees Produced
         </span>
         <div style={{ display: "flex", gap: 4 }}>
-          {["Week","Month","Quarter"].map(p => (
+          {["Week", "Month", "Quarter"].map(p => (
             <motion.button
               key={p}
               onClick={() => setPeriod(p)}
@@ -716,17 +719,17 @@ function FeaturedProduct({ compact }: { compact?: boolean }) {
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
         {[
-          { label: "Weavers",  val: "6 active",   vc: T.luxuryBrown,  rb: true,  bb: true  },
-          { label: "Saree Codes",  val: "24 codes",   vc: T.luxuryBrown,  rb: false, bb: true  },
-          { label: "QC Pass",  val: "96%",        vc: T.green,        rb: true,  bb: true  },
-          { label: "Overdue",  val: "2 invoices", vc: "#C0392B",      rb: false, bb: true, alert: true },
-          { label: "Inventory",val: "1,240 pcs",  vc: T.luxuryBrown,  rb: true,  bb: false },
-          { label: "Dispatch", val: "18 today",   vc: T.antiqueGold,  rb: false, bb: false },
+          { label: "Weavers", val: "6 active", vc: T.luxuryBrown, rb: true, bb: true },
+          { label: "Saree Codes", val: "24 codes", vc: T.luxuryBrown, rb: false, bb: true },
+          { label: "QC Pass", val: "96%", vc: T.green, rb: true, bb: true },
+          { label: "Overdue", val: "2 invoices", vc: "#C0392B", rb: false, bb: true, alert: true },
+          { label: "Inventory", val: "1,240 pcs", vc: T.luxuryBrown, rb: true, bb: false },
+          { label: "Dispatch", val: "18 today", vc: T.antiqueGold, rb: false, bb: false },
         ].map((s, idx) => (
-          <div key={s.label} style={{ 
+          <div key={s.label} style={{
             display: "flex", flexDirection: "column", justifyContent: "center",
-            padding: compact ? "16px 20px" : "24px 32px", 
-            borderRight: s.rb ? `1px solid ${T.borderDef}` : "none", 
+            padding: compact ? "16px 20px" : "24px 32px",
+            borderRight: s.rb ? `1px solid ${T.borderDef}` : "none",
             borderBottom: s.bb ? `1px solid ${T.borderDef}` : "none",
             background: idx % 2 === 0 ? "transparent" : "rgba(110,15,45,0.01)" // subtle alternating bg
           }}>
@@ -1084,7 +1087,7 @@ function Footer() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 32 }}>
-            {["About Us","Our Legacy","Sustainability","Careers","Contact Us"].map(l => (
+            {["About Us", "Our Legacy", "Sustainability", "Careers", "Contact Us"].map(l => (
               <motion.span
                 key={l}
                 whileHover={{ opacity: 1 }}
