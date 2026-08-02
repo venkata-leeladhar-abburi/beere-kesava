@@ -1,0 +1,145 @@
+import React, { useEffect, useState } from "react";
+import { CalendarClock, X } from "lucide-react";
+import { motion } from "motion/react";
+import { toast } from "sonner";
+
+import { EASE, F, T } from "../../theme";
+import { Invoice } from "../../types";
+
+// ── Payment Reminders Modal ───────────────────────────────────────────────────
+export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
+  const [sending, setSending] = useState(false);
+  const [channels, setChannels] = useState({ whatsapp: true });
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(overdueInvoices[0]?.id || "");
+  const [scheduleType, setScheduleType] = useState("immediate");
+
+  useEffect(() => {
+    if (overdueInvoices.length > 0 && !selectedInvoiceId) {
+      setSelectedInvoiceId(overdueInvoices[0].id);
+    }
+  }, [overdueInvoices, selectedInvoiceId]);
+
+  if (!open) return null;
+
+  const currentInvoice = overdueInvoices.find(i => i.id === selectedInvoiceId) || overdueInvoices[0];
+
+  const handleSend = () => {
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      toast.success(`Successfully sent payment reminders to ${overdueInvoices.length} customers!`);
+      onClose();
+    }, 1200);
+  };
+
+  const getPreviewText = (inv: Invoice) => {
+    if (!inv) return "";
+    const balance = inv.total - inv.paid;
+    return `Dear ${inv.customer},\n\nThis is a friendly reminder from Beere Kesava & Brothers Silks. Your invoice ${inv.id} for ₹${balance.toLocaleString("en-IN")} was due on ${inv.dueDate} (${inv.daysOverdue || 0} days overdue).\n\nPlease process the payment at your earliest convenience. If already paid, please share the UTR reference.\n\nRegards,\nAccounts Team\nBeere Kesava & Brothers Silks`;
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 450, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
+        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
+        style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
+      >
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
+          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", display: "flex", alignItems: "center", gap: 10 }}>
+            <CalendarClock size={22} color={T.antiqueGold} />
+            Set Payment Reminders
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
+            Configure and schedule alerts for {overdueInvoices.length} overdue invoices
+          </div>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Overdue Invoices List Selection */}
+          <div>
+            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</label>
+            <select value={selectedInvoiceId} onChange={e => setSelectedInvoiceId(e.target.value)}
+              style={{ width: "100%", height: 40, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
+              {overdueInvoices.map(i => (
+                <option key={i.id} value={i.id}>
+                  {i.customer} ({i.id}) — ₹{(i.total - i.paid).toLocaleString("en-IN")} ({i.daysOverdue}d late)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reminder Preview Box */}
+          {currentInvoice && (
+            <div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Reminder Message Preview</div>
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", whiteSpace: "pre-wrap" as const, fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5, maxHeight: 180, overflowY: "auto" }}>
+                {getPreviewText(currentInvoice)}
+              </div>
+            </div>
+          )}
+
+          {/* Channels Choice */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Notification Channels</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+              {[
+                { key: "whatsapp", label: "WhatsApp Chat", sub: "Auto-send message" }
+              ].map(ch => (
+                <label key={ch.key} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "12px 14px", background: "#FFFFFF", border: `1.5px solid ${channels[ch.key as keyof typeof channels] ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, cursor: "pointer", position: "relative" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={channels[ch.key as keyof typeof channels]}
+                      onChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
+                      style={{ accentColor: T.royalBurgundy }}
+                    />
+                    <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
+                  </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginLeft: 22 }}>{ch.sub}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Alert Schedule options */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Reminder Schedule</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {[
+                { key: "immediate", label: "Send Immediately", desc: "One-time broadcast" },
+                { key: "daily", label: "Daily (Until Paid)", desc: "Gentle nudge daily" },
+                { key: "weekly", label: "Weekly (Every Mon)", desc: "Structured reminder" }
+              ].map(s => (
+                <button
+                  key={s.key}
+                  onClick={() => setScheduleType(s.key)}
+                  style={{
+                    flex: 1, padding: "12px 10px", borderRadius: 10,
+                    background: scheduleType === s.key ? "rgba(110,15,45,0.05)" : "#FFFFFF",
+                    border: `1.5px solid ${scheduleType === s.key ? T.royalBurgundy : T.borderDef}`,
+                    fontFamily: F.ui, textAlign: "center" as const, cursor: "pointer",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: scheduleType === s.key ? T.royalBurgundy : T.luxuryBrown }}>{s.label}</div>
+                  <div style={{ fontSize: 10.5, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: "18px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSend} disabled={sending} style={{ height: 42, padding: "0 28px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+            {sending ? "Sending..." : "Confirm & Send"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
