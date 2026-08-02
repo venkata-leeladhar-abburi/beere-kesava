@@ -6,8 +6,8 @@ import {
   Briefcase, Lock, FileText, Eye, Sparkles, Layers, ShoppingBag,
   ShieldCheck, ShieldHalf, XCircle, Hash, Calculator,
 } from "lucide-react";
-import { useFinishingStaff, FinishingStaffMember } from "./FinishingStaffContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { useFinishingStaff, FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS

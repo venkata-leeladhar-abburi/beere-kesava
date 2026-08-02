@@ -5,8 +5,8 @@ import {
   FileText, LayoutGrid, BookOpen, CreditCard, Grid2X2,
   TriangleAlert, CheckCircle2, Loader2, ExternalLink,
 } from "lucide-react";
-import { ImageWithFallback } from "../../../app/components/figma/ImageWithFallback";
-import { imgBKLogo } from "../../../app/constants/weaverImages";
+import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {

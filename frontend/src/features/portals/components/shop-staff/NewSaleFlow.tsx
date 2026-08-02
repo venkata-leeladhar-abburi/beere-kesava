@@ -11,8 +11,8 @@ import {
   UserPlus, Camera, Check, ChevronLeft, Flower2, MessageSquare, PhoneCall, Pencil
 } from 'lucide-react';
 
-import { getSareeTypeByCode } from '../../../../app/components/RatesPricingPage';
-import { useResponsive } from '../../../../app/components/useResponsive';
+import { getSareeTypeByCode } from '../../../pricing/components/RatesPricingPage';
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { C, F, TEAL, Card, Btn, Chip, ShopPriceContext, useCanSeePrices, HeroHeader } from './theme';
 function NewSaleFlow() {
   const canSeePrices = useCanSeePrices();
@@ -119,7 +119,7 @@ function NewSaleFlow() {
                 </div>
               ))}
             </div>
-            {useCanSeePrices() && (
+            {canSeePrices && (
               <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
                 <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount:</span>
                 <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.gold }}>{fmtPrice(soldPrice)}</span>
@@ -515,7 +515,7 @@ function NewSaleFlow() {
                       ))}
                     </div>
                   </div>
-                  {useCanSeePrices() && (
+                  {canSeePrices && (
                     <div style={{ borderTop: isMobile ? `1px solid ${C.bdr}` : "none", borderLeft: isMobile ? "none" : `1px solid ${C.bdr}`, paddingTop: isMobile ? 14 : 0, marginTop: isMobile ? 16 : 0, paddingLeft: isMobile ? 0 : 24, width: isMobile ? undefined : 220, flexShrink: 0 }}>
                       <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price (₹)</label>
                       <div style={{ position: "relative" as const }}>

@@ -6,16 +6,17 @@ import {
   User, Bell, ChevronDown, LogOut,
   Home, Search, Users, Sparkles, Truck,
 } from "lucide-react";
-import { C, F } from "../../../app/components/worker/tokens";
-import { WorkerHomeDesktop } from "../../../app/components/worker/WorkerHomeDesktop";
-import { WorkerWeavers } from "../../../app/components/worker/WorkerWeavers";
-import { WorkerQC } from "../../../app/components/worker/WorkerQC";
-import { WorkerFinishing } from "../../../app/components/worker/WorkerFinishing";
-import { WorkerDispatch } from "../../../app/components/worker/WorkerDispatch";
-import { imgBKLogo } from "../../../app/constants/weaverImages";
+import { C, F } from "./worker/tokens";
+import { WorkerHomeDesktop } from "./worker/WorkerHomeDesktop";
+import { WorkerWeavers } from "./worker/WorkerWeavers";
+import { WorkerQC } from "./worker/WorkerQC";
+import { WorkerFinishing } from "./worker/WorkerFinishing";
+import { WorkerDispatch } from "./worker/WorkerDispatch";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import {
   SectionNavigator, PAGE_SECTIONS, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H,
-} from "../../../app/components/SectionNavigator";
+} from "../../../shared/ui/SectionNavigator";
+import type { IconComponent } from "../../../lib/icon";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -30,7 +31,7 @@ interface WorkerPortalDesktopProps {
 // ─── Top Nav Tabs ───────────────────────────────────────────────────────────────
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
 
-const TOPNAV_ITEMS: { id: NavTab; Icon: React.ComponentType<{ size?: number; color?: string }>; label: string; badge?: number }[] = [
+const TOPNAV_ITEMS: { id: NavTab; Icon: IconComponent; label: string; badge?: number }[] = [
   { id: "home",      Icon: Home,     label: "Home" },
   { id: "qc",        Icon: Search,   label: "Quality Check", badge: 6 },
   { id: "weavers",   Icon: Users,    label: "Receive Sarees" },

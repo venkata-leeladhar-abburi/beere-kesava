@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../../app/constants/imageData";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../app/constants/weaverImages";
+import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../../shared/constants/imageData";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
 
 const T = {
   silkCream:      "#F7F2EA",

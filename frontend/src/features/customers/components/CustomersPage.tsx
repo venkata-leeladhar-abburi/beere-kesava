@@ -11,11 +11,11 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from "recharts";
-import { ImageWithFallback } from "../../../app/components/figma/ImageWithFallback";
-import { imgShowroom } from "../../../app/constants/weaverImages";
+import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
+import { imgShowroom } from "../../../shared/constants/weaverImages";
 import { useBulkOrders, BulkOrder } from "../../bulk-orders/contexts/BulkOrderContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
-import { DownloadGate, useDownloadsAllowed } from "../../../app/components/DownloadAccess";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { DownloadGate, useDownloadsAllowed } from "../../../shared/ui/DownloadAccess";
 import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
 import { resolveOrderMoney } from "../../bulk-orders/utils/BulkOrderLinking";
 import { INVOICES } from "../../payments/data/invoices";

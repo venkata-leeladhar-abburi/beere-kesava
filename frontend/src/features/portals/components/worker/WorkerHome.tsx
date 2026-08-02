@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronRight, Package, Shield, Sparkles } from "lucide-react";
 import { C, F } from "./tokens";
-import { useResponsive } from "../useResponsive";
+import { useResponsive } from "../../../../hooks/useResponsive";
 
 type Tab = "home" | "qc" | "weavers" | "finishing";
 

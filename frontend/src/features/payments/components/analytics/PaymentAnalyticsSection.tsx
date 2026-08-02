@@ -3,7 +3,7 @@ import { CheckCircle2, CircleAlert, Download, IndianRupee, Scissors, TrendingUp,
 import { motion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { DownloadGate } from "../../../../app/components/DownloadAccess";
+import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { CASH_FLOW_DATA, COMPLIANCE_DATA, TOTAL_TOP5, WEAVER_DIST_DATA } from "../../data/analytics";
 import { INVOICES } from "../../data/invoices";
 import { EASE, F, T } from "../../theme";

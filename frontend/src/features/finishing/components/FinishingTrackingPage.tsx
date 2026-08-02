@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Search, ChevronDown, ChevronRight, Users, Package, Camera, Building2, UserRound,
 } from "lucide-react";
-import { useFinishing, FinishingAssignment, FinishingReturn, Quotation } from "./FinishingContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { useFinishing, FinishingAssignment, FinishingReturn, Quotation } from "../contexts/FinishingContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 /**
  * Read-only view for admin / superadmin of what WorkerFinishing already tracks:

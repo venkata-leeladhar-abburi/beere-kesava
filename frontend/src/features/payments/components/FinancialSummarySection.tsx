@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet } from "lucide-react";
 import { motion } from "motion/react";
 
-import { DownloadGate } from "../../../app/components/DownloadAccess";
+import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 import { COMING_IN, GOING_OUT, IF_ALL, NET, TOTAL_IN, TOTAL_OUT } from "../data/summary";
 import { F, T } from "../theme";
 import { formatINR } from "../utils/format";

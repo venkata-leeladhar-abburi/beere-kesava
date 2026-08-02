@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { useResponsive } from '../../../../app/components/useResponsive';
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 

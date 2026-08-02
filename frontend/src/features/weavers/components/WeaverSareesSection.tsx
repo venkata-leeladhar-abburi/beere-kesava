@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useBatches } from "../../features/production/contexts/BatchContext";
-import { useQc, QcResult } from "./QcContext";
-import { useFinishing } from "./FinishingContext";
-import { useSales, UnifiedSaree, isSold, isOutstanding, ageBucket } from "../../features/customers/contexts/SalesContext";
-import { useDesignLibrary } from "./DesignLibraryContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
-import { Pagination, usePagination } from "./Pagination";
-import { useCanSeeMoney } from "./MoneyAccess";
+import { useBatches } from "../../production/contexts/BatchContext";
+import { useQc, QcResult } from "../../qc/contexts/QcContext";
+import { useFinishing } from "../../finishing/contexts/FinishingContext";
+import { useSales, UnifiedSaree, isSold, isOutstanding, ageBucket } from "../../customers/contexts/SalesContext";
+import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
+import { useCanSeeMoney } from "../../../shared/ui/MoneyAccess";
 import { Search } from "lucide-react";
 
 // ── Design tokens (matches WeaversPage) ──────────────────────────────────────

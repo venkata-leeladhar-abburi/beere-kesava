@@ -115,7 +115,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const allNums = bulkOrders
     .map(o => {
       const m = o.ref.match(/ORD-\d{4}-(\d+)/);
-      return m ? parseInt(m[1], 10) : 0;
+      return m ? parseInt(m[1] ?? "0", 10) : 0;
     })
     .filter(n => n > 0);
   const maxNum = allNums.length > 0 ? Math.max(...allNums) : 41;

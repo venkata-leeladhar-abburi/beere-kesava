@@ -32,7 +32,9 @@ export interface BatchRecord {
 // ─── Saree ID generation ──────────────────────────────────────────────────────
 // Format: {FIRSTNAME_UPPER}-L{LOOM}-{SEQ_3DIGIT}  e.g. RAVI-L2-001
 export function generateSareeId(weaverName: string, loom: number, seq: number): string {
-  const first = weaverName.split(/[\s.]+/)[0].toUpperCase();
+  // split() on a non-empty separator regex always yields at least one
+  // element, but the type system can't see that — narrow explicitly.
+  const first = (weaverName.split(/[\s.]+/)[0] ?? weaverName).toUpperCase();
   return `${first}-L${loom}-${String(seq).padStart(3, "0")}`;
 }
 
@@ -194,7 +196,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const allNums = batches
-    .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1], 10) : 0; })
+    .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
     .filter(n => n > 0);
   const maxNum = allNums.length > 0 ? Math.max(...allNums) : 93;
   const nextBatchId = `BATCH-${String(maxNum + 1).padStart(3, "0")}`;

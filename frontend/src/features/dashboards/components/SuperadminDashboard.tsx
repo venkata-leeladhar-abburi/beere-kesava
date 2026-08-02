@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useIsMobile } from "../../../hooks/useResponsive";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Search, Bell, ChevronDown, ChevronRight, ChevronLeft, TrendingUp,
@@ -13,15 +14,15 @@ import {
   Activity, MapPin, Phone, Edit3, Layers3, X,
 } from "lucide-react";
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
-import { useResponsive } from "../../../app/components/useResponsive";
-import { RatesPricingPage } from "../../../app/components/RatesPricingPage";
-import { DesignLibraryPage } from "../../../app/components/DesignLibraryPage";
-import { BatchCreationPage } from "../../../app/components/BatchCreationPage";
+import { useResponsive } from "../../../hooks/useResponsive";
+import { RatesPricingPage } from "../../pricing/components/RatesPricingPage";
+import { DesignLibraryPage } from "../../design-library/components/DesignLibraryPage";
+import { BatchCreationPage } from "../../production/components/BatchCreationPage";
 import { ApprovalsPage } from "../../purchasing/components/ApprovalsPage";
-import { AuditLogPage } from "../../../app/components/AuditLogPage";
-import { LabelSettingsPage } from "../../../app/components/LabelSettingsPage";
+import { AuditLogPage } from "../../audit/components/AuditLogPage";
+import { LabelSettingsPage } from "../../settings/components/LabelSettingsPage";
 import { ExternalPurchasesPage } from "../../inventory/components/ExternalPurchasesPage";
-import { AddUserPage } from "../../../app/components/AddUserPage";
+import { AddUserPage } from "../../users/components/AddUserPage";
 import { IssueMaterialPage } from "../../materials/components/IssueMaterialPage";
 import { MaterialsPage } from "../../materials/components/MaterialsPage";
 import { WeaversPage } from "../../weavers/components/WeaversPage";
@@ -31,34 +32,25 @@ import { ReportsPage } from "../../reports/components/ReportsPage";
 import { CustomersPage } from "../../customers/components/CustomersPage";
 import { VendorsPage } from "../../vendors/components/VendorsPage";
 import { SuppliersPage } from "../../suppliers/components/SuppliersPage";
-import { FactoryLoomPage } from "../../../app/components/FactoryLoomPage";
-import { FirmsPage } from "../../../app/components/FirmsPage";
+import { FactoryLoomPage } from "../../production/components/FactoryLoomPage";
+import { FirmsPage } from "../../firms/components/FirmsPage";
 import { InventoryPage } from "../../inventory/components/InventoryPage";
-import { QcHistoryPage } from "../../../app/components/QcHistoryPage";
-import { NotificationsPage } from "../../../app/components/NotificationsPage";
-import { WorkerGRN } from "../../../app/components/worker/WorkerGRN";
-import { AllWeaversPage } from "../../../app/components/AllWeaversPage";
+import { QcHistoryPage } from "../../qc/components/QcHistoryPage";
+import { NotificationsPage } from "../../notifications/components/NotificationsPage";
+import { WorkerGRN } from "../../portals/components/worker/WorkerGRN";
+import { AllWeaversPage } from "../../weavers/components/AllWeaversPage";
 import { AllStockPage } from "../../inventory/components/AllStockPage";
 import { AllOrdersPage } from "../../bulk-orders/components/AllOrdersPage";
 import { ProductionHistoryPage } from "../../production/components/ProductionHistoryPage";
-import { FinishingTrackingPage } from "../../../app/components/FinishingTrackingPage";
+import { FinishingTrackingPage } from "../../finishing/components/FinishingTrackingPage";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
-} from "../../../app/components/SectionNavigator";
-import { imgBKLogo, imgSareeFooter, imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../app/constants/weaverImages";
-import { imgHero, imgWarp, imgResham, imgJari } from "../../../app/constants/imageData";
-import { ImageWithFallback } from "../../../app/components/figma/ImageWithFallback";
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-  return isMobile;
-}
+} from "../../../shared/ui/SectionNavigator";
+import { imgBKLogo, imgSareeFooter, imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
+import { imgHero, imgWarp, imgResham, imgJari } from "../../../shared/constants/imageData";
+import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
+import type { IconComponent } from "../../../lib/icon";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS (mirroring BeereDashboard)
@@ -269,7 +261,7 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 // SA TOP NAV — grouped (mirrors BeereDashboard's Admin TopNav, + gold accent)
 // ═══════════════════════════════════════════════════════════════════════════════
 type NavPage = { key: string; label: string; sa?: boolean };
-type NavGroup = { key: string; label: string; icon: React.ComponentType<{ size?: number; color?: string }>; pages: NavPage[] };
+type NavGroup = { key: string; label: string; icon: IconComponent; pages: NavPage[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {

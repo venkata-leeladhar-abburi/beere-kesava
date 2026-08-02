@@ -3,21 +3,22 @@ import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
-import { C, F } from "../../../app/components/worker/tokens";
-import { WorkerHome } from "../../../app/components/worker/WorkerHome";
-import { WorkerWeavers } from "../../../app/components/worker/WorkerWeavers";
-import { WorkerQC } from "../../../app/components/worker/WorkerQC";
-import { WorkerFinishing } from "../../../app/components/worker/WorkerFinishing";
-import { WorkerDispatch } from "../../../app/components/worker/WorkerDispatch";
+import { C, F } from "./worker/tokens";
+import { WorkerHome } from "./worker/WorkerHome";
+import { WorkerWeavers } from "./worker/WorkerWeavers";
+import { WorkerQC } from "./worker/WorkerQC";
+import { WorkerFinishing } from "./worker/WorkerFinishing";
+import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerPortalDesktop } from "./WorkerPortalDesktop";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, WORKER_SECTION_NAV_H,
-} from "../../../app/components/SectionNavigator";
-import { useResponsive } from "../../../app/components/useResponsive";
+} from "../../../shared/ui/SectionNavigator";
+import { useResponsive } from "../../../hooks/useResponsive";
+import type { IconComponent } from "../../../lib/icon";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 
-const TABS: { id: Tab; Icon: React.ComponentType<{ size: number; color: string }>; label: string; badge?: string }[] = [
+const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
   { id: "weavers",   Icon: Package,    label: "Receive"       },

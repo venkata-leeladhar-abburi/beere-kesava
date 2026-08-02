@@ -7,8 +7,8 @@ import {
   PaperPlaneTilt, CalendarCheck, User, Buildings, FileText, SlidersHorizontal,
 } from "@phosphor-icons/react";
 
-import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { useDesignLibrary, DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 // ─── Design tokens (match app-wide palette) ──────────────────────────────────
 const T = {

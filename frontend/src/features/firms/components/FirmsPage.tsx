@@ -12,7 +12,7 @@ import {
   useFirms, Firm,
   FinancialEntry, MiscEntry,
   IncomeCategory, ExpenseCategory, MiscType,
-} from "./FirmsContext";
+} from "../contexts/FirmsContext";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {

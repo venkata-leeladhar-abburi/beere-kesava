@@ -15,8 +15,8 @@ import {
   UploadCloud,
   Send,
 } from "lucide-react";
-import { SariTagPrintModal } from "../../../app/components/SariTagPrintModal";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
+import { SariTagPrintModal } from "../../production/components/SariTagPrintModal";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import {
   useSuppliers, Supplier, SareeTag, Purchase,
   formatINR, supplierPrefix, buildSareeCode, computeFinalAmount, totalPieces,

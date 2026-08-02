@@ -11,18 +11,18 @@ import {
   , Flower2 as Lotus
 } from 'lucide-react';
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
-import { ImageWithFallback } from "../../../../app/components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
 import { useNavigate } from 'react-router';
 import { useInView } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { useResponsive } from '../../../../app/components/useResponsive';
-import { imgBKLogo, imgSareeFooter } from '../../../../app/constants/weaverImages';
-import { SectionNavigator, MAIN_NAV_H } from '../../../../app/components/SectionNavigator';
+import { useResponsive } from "../../../../hooks/useResponsive";
+import { imgBKLogo, imgSareeFooter } from '../../../../shared/constants/weaverImages';
+import { SectionNavigator, MAIN_NAV_H } from '../../../../shared/ui/SectionNavigator';
 import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
 import { METRICS, WEAVERS, WEAVER_RATES, MATS, ACT } from './data.tsx';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
 // @ts-ignore
-import imgHero from '../../../../imports/hero.png';
+import imgHero from '../../../../assets/hero.png';
 import { TopNav } from './components/TopNav';
 import { Hero } from './components/Hero';
 

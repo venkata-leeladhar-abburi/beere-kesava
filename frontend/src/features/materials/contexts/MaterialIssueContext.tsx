@@ -272,7 +272,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const allNums = issueRecords
     .map(r => {
       const m = r.id.match(/MIR-\d{4}-(\d+)/);
-      return m ? parseInt(m[1], 10) : 0;
+      return m ? parseInt(m[1] ?? "0", 10) : 0;
     })
     .filter(n => n > 0);
   const maxNum = allNums.length > 0 ? Math.max(...allNums) : 3;

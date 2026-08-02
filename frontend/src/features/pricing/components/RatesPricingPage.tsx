@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
-import { DownloadGate, useDownloadsAllowed } from "./DownloadAccess";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
   Edit2, Plus, Check, X, AlertTriangle, ChevronRight,
   Clock, Download, Lock, Package, Layers, Tag,
-  ChevronLeft, BarChart2, Settings, Eye,
+  ChevronLeft, BarChart2, Eye,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════════════════════

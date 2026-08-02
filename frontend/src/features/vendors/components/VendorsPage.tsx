@@ -10,7 +10,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 const T = {
   silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",

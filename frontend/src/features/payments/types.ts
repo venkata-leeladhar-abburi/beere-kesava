@@ -25,7 +25,7 @@ export interface ExcelRow {
 
 export interface MatchedPayment extends ExcelRow { weaverRecord: WeaverRecord; }
 
-export interface UnmatchedRow   extends ExcelRow {}
+export type UnmatchedRow = ExcelRow;
 
 export interface UploadResult {
   fileName: string;
@@ -68,7 +68,7 @@ export interface VendorExcelRow {
 
 export interface VendorMatchedRow extends VendorExcelRow { vendorPayment: VendorPayment; }
 
-export interface VendorUnmatchedRow extends VendorExcelRow {}
+export type VendorUnmatchedRow = VendorExcelRow;
 
 export interface VendorUploadResult {
   fileName: string; totalRows: number; matched: VendorMatchedRow[]; unmatched: VendorUnmatchedRow[];

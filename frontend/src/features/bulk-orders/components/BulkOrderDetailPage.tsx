@@ -7,9 +7,9 @@ import {
 } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
-import { useFinishing, DispatchRecord, Quotation } from "../../../app/components/FinishingContext";
+import { useFinishing, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
 import { useBatches } from "../../production/contexts/BatchContext";
-import { useFirms } from "../../../app/components/FirmsContext";
+import { useFirms } from "../../firms/contexts/FirmsContext";
 import { INVOICES } from "../../payments/data/invoices";
 import { resolveBulkOrderRef, resolveOrderMoney } from "../utils/BulkOrderLinking";
 

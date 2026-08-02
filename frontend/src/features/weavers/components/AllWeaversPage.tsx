@@ -5,7 +5,7 @@ import {
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
 import { Rows } from "@phosphor-icons/react";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../constants/weaverImages";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {

@@ -2,12 +2,12 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
-import { useResponsive } from "../../../app/components/useResponsive";
+import { useResponsive } from "../../../hooks/useResponsive";
 import { useBatches, SareeRow } from "../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../app/components/DesignLibraryContext";
-import { DesignCodeCard } from "../../../app/components/DesignLibraryPage";
+import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
+import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../app/components/WeaverPaymentsContext";
+import { useWeaverPayments } from "../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
@@ -20,7 +20,7 @@ import {
   CheckCircle2, History, ListChecks,
   AlertTriangle, Inbox, Zap,
 } from "lucide-react";
-import { imgBKLogo } from "../../../app/constants/weaverImages";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 

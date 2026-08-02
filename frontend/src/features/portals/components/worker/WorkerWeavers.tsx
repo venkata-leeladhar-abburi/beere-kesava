@@ -5,11 +5,11 @@ import {
   Building2, Users, PenLine, Send, Clock, X, Palette,
 } from "lucide-react";
 import { C, F, card, inputStyle, btnPrimary, btnGhost } from "./tokens";
-import { useMaterialIssue } from "../../../features/materials/contexts/MaterialIssueContext";
+import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import {
   getSareeTypeByCode, INITIAL_RATES, jariFromReels, jariGrams, jariToReels, trimNum,
   type JariUnit, type SareeTypeRecord,
-} from "../RatesPricingPage";
+} from "../../../pricing/components/RatesPricingPage";
 
 type WeaversPage = "menu" | "design" | "issue" | "receive";
 type IssueSource = "own" | "outsourced" | null;

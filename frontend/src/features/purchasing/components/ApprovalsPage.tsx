@@ -4,7 +4,7 @@ import {
   Check, X, Package, AlertTriangle, TrendingUp, Download,
   ChevronRight, Bell, Clock, Users, ShoppingCart, Settings,
 } from "lucide-react";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../app/constants/weaverImages";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 import { usePO, PurchaseOrder } from "../contexts/POContext";
 import {
   useSuppliers, PurchaseRequest, formatINR,

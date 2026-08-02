@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'motion/react';
 import { T, F, NUM, G, EASE , DARK_MAROON } from './theme';
+import type { IconComponent } from "../../../../lib/icon";
+import { useIsMobile } from "../../../../hooks/useResponsive";
 
 function FadeUp({
   children, delay = 0, style,
@@ -384,16 +386,6 @@ function BarChart() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // RESPONSIVE HOOK
 // ═══════════════════════════════════════════════════════════════════════════════
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-  return isMobile;
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHARED DATA
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -486,7 +478,7 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 // DESKTOP — TOP NAV (grouped)
 // ═══════════════════════════════════════════════════════════════════════════════
 type NavPage  = { key: string; label: string };
-type NavGroup = { key: string; label: string; icon: React.ComponentType<{ size?: number; color?: string }>; pages: NavPage[] };
+type NavGroup = { key: string; label: string; icon: IconComponent; pages: NavPage[] };
 
 
 export { FadeUp, FadeIn, AnimatedBar, AnimatedNumber, IcoRawMaterial, IcoYarnInventory, IcoFabricRoll, IcoQualityCheck, IcoTruck, IcoInvoice, IcoResourceMgmt, IcoWarehouse, IcoHandshake, IcoProductionPlan, Lotus, Donut, BarChart, Label, Body, SectionHeader, Card };

@@ -2,12 +2,12 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
-import { useResponsive } from "../../../../app/components/useResponsive";
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../../app/components/DesignLibraryContext";
-import { DesignCodeCard } from "../../../../app/components/DesignLibraryPage";
+import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
+import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../../app/components/WeaverPaymentsContext";
+import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
@@ -20,7 +20,7 @@ import {
   CheckCircle2, History, ListChecks,
   AlertTriangle, Inbox, Zap,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../app/constants/weaverImages";
+import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
@@ -214,7 +214,11 @@ export function NotificationsPage() {
 
                             {/* Read/unread toggle */}
                             <motion.button
-                              onClick={e => { e.stopPropagation(); isRead ? setReadIds(prev => { const s = new Set(prev); s.delete(n.id); return s; }) : markRead(n.id); }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                if (isRead) setReadIds(prev => { const s = new Set(prev); s.delete(n.id); return s; });
+                                else markRead(n.id);
+                              }}
                               whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.93 }}
                               title={isRead ? "Mark unread" : "Mark read"}
                               style={{ width: 30, height: 30, borderRadius: "50%", border: `1.5px solid ${isRead ? WN_T.borderDef : pcfg.color}`, background: isRead ? "rgba(0,0,0,0)" : pcfg.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginTop: 2 }}>

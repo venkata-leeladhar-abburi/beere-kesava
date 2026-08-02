@@ -155,7 +155,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   const allNums = pos
     .map(p => {
       const m = p.poNumber.match(/PO-\d{4}-(\d+)/);
-      return m ? parseInt(m[1], 10) : 0;
+      return m ? parseInt(m[1] ?? "0", 10) : 0;
     })
     .filter(n => n > 0);
   const maxNum = allNums.length > 0 ? Math.max(...allNums) : 22;

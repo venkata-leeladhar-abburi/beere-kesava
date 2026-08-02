@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Facebook, Instagram, Youtube, Linkedin, Flower2 as Lotus } from 'lucide-react';
-import { imgBKLogo, imgSareeFooter } from '../../../../../app/constants/weaverImages';
+import { imgBKLogo, imgSareeFooter } from '../../../../../shared/constants/weaverImages';
 import { T, F, G } from '../theme';
 import { FadeUp } from '../ui';
 

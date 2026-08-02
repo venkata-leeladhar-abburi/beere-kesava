@@ -3,7 +3,7 @@ import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, F
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 
-import { DownloadGate } from "../../../../app/components/DownloadAccess";
+import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
 import { PODocumentModal } from "../../../purchasing/components/PODocumentModal";
 import { VENDOR_PAYMENTS } from "../../data/vendors";
@@ -18,6 +18,9 @@ import { VendorCard } from "./VendorCard";
 import { VendorDetailModal } from "./VendorDetailModal";
 import { VendorPayNowModal } from "./VendorPayNowModal";
 import { VendorUploadPanel } from "./VendorUploadPanel";
+
+/** Overdue-vendor banner is built but intentionally not shown yet. */
+const SHOW_OVERDUE_ALERT = false;
 
 export function VendorPaymentsSection() {
   const { pos } = usePO();
@@ -167,7 +170,7 @@ export function VendorPaymentsSection() {
         </div>
 
         {/* ── Overdue alert (Hidden) ───────────────────────────── */}
-        {false && overdueVendors.length > 0 && (
+        {SHOW_OVERDUE_ALERT && overdueVendors.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.22)", borderLeft: `4px solid ${T.crimson}`, borderRadius: 10, padding: "14px 20px", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />

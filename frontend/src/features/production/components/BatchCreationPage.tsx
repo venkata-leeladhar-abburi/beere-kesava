@@ -6,14 +6,14 @@ import {
   WarningCircle, CheckSquare, Square, ArrowRight,
   MagnifyingGlass, Stack, Package, Graph, PaperPlaneTilt,
 } from "@phosphor-icons/react";
-import { useBatches, SareeRow, BatchRecord, generateSareeId } from "../../features/production/contexts/BatchContext";
-import { useBulkOrders } from "../../features/bulk-orders/contexts/BulkOrderContext";
-import { useDesignLibrary, DesignEntry, DispatchRecord } from "./DesignLibraryContext";
-import { DesignCodeCard } from "./DesignLibraryPage";
-import { SareeTypeCard, SareeTypeRecord } from "./RatesPricingPage";
+import { useBatches, SareeRow, BatchRecord, generateSareeId } from "../contexts/BatchContext";
+import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
+import { useDesignLibrary, DesignEntry, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
+import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
 import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
-import { useMaterialIssue } from "../../features/materials/contexts/MaterialIssueContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -499,7 +499,7 @@ export function BatchCreationPage() {
   const allSelected = rows.length > 0 && selected.size === rows.length;
   function toggleAll() { setSelected(allSelected ? new Set() : new Set(rows.map(r => r.serial))); }
   function toggleRow(serial: number) {
-    setSelected(prev => { const n = new Set(prev); n.has(serial) ? n.delete(serial) : n.add(serial); return n; });
+    setSelected(prev => { const n = new Set(prev); if (n.has(serial)) n.delete(serial); else n.add(serial); return n; });
   }
 
   // ── Apply weaver to selected rows

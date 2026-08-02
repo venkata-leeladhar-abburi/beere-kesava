@@ -6,16 +6,16 @@ import {
   ChevronDown, ChevronUp, X, CheckCircle2, AlertTriangle, Clock, FileText,
   Upload, Eye, Send, Save, ArrowRight, Building2, Hash, Filter, Zap,
 } from "lucide-react";
-import { useFinishing, FinishingReturn, DispatchRecord, Quotation } from "../../../app/components/FinishingContext";
-import { useFirms } from "../../../app/components/FirmsContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
-import { useDesignLibrary } from "../../../app/components/DesignLibraryContext";
+import { useFinishing, FinishingReturn, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
+import { useFirms } from "../../firms/contexts/FirmsContext";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { useBatches } from "../../production/contexts/BatchContext";
-import { DesignCodeCard } from "../../../app/components/DesignLibraryPage";
-import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "../../../app/components/RatesPricingPage";
-import { WeaverSareesSection, WeaverSareeRow } from "../../../app/components/WeaverSareesSection";
-import { MoneyAccessProvider } from "../../../app/components/MoneyAccess";
+import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
+import { SareeTypeCard, getSareeTypeByCode, getSareeTypeByName } from "../../pricing/components/RatesPricingPage";
+import { WeaverSareesSection, WeaverSareeRow } from "../../weavers/components/WeaverSareesSection";
+import { MoneyAccessProvider } from "../../../shared/ui/MoneyAccess";
 
 // ── Design tokens (matches Admin portal) ──────────────────────────────────────
 const T = {
@@ -1787,7 +1787,8 @@ export function InventoryPage({
   const toggleSareeRow = useCallback((id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);

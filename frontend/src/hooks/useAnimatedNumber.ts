@@ -14,20 +14,21 @@ export function useAnimatedNumber(raw: string, duration = 1600) {
   const inView = useInView(ref, { once: true });
 
   const getInitial = () => {
-    const m = raw.match(/(\d+(?:\.\d+)?)/);
-    if (!m) return raw;
-    const isFloat = m[1].includes(".");
-    return raw.replace(m[1], isFloat ? "0.0" : "0");
+    // A regex match succeeds but its capture group is still optional to the
+    // type system, so narrow on the group itself rather than on the match.
+    const numStr = raw.match(/(\d+(?:\.\d+)?)/)?.[1];
+    if (!numStr) return raw;
+    const isFloat = numStr.includes(".");
+    return raw.replace(numStr, isFloat ? "0.0" : "0");
   };
 
   const [displayed, setDisplayed] = useState(getInitial);
 
   useEffect(() => {
     if (!inView) return;
-    const match = raw.match(/(\d+(?:\.\d+)?)/);
-    if (!match) { setDisplayed(raw); return; }
+    const numStr = raw.match(/(\d+(?:\.\d+)?)/)?.[1];
+    if (!numStr) { setDisplayed(raw); return; }
 
-    const numStr  = match[1];
     const target  = parseFloat(numStr);
     const isFloat = numStr.includes(".");
     const idx = raw.indexOf(numStr);

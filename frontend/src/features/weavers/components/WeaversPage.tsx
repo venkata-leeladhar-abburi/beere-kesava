@@ -18,21 +18,21 @@ import {
   Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line, Legend,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../app/constants/weaverImages";
-import { useWeaverPayments } from "../../../app/components/WeaverPaymentsContext";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
+import { useWeaverPayments } from "../contexts/WeaverPaymentsContext";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { useBatches } from "../../production/contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
-import { DownloadGate, useDownloadsAllowed } from "../../../app/components/DownloadAccess";
-import { useDesignLibrary, DispatchRecord } from "../../../app/components/DesignLibraryContext";
-import { DispatchDetailsModal } from "../../../app/components/BatchCreationPage";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { DownloadGate, useDownloadsAllowed } from "../../../shared/ui/DownloadAccess";
+import { useDesignLibrary, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { DispatchDetailsModal } from "../../production/components/BatchCreationPage";
 import { PaperPlaneTilt } from "@phosphor-icons/react";
-import { WeaverSareesSection } from "../../../app/components/WeaverSareesSection";
+import { WeaverSareesSection } from "./WeaverSareesSection";
 import * as XLSX from "xlsx";
 import { UploadSimple } from "@phosphor-icons/react";
 const imgHeaderBg = "https://images.unsplash.com/photo-1669556289350-0e2480fe190e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-import { imgBKLogo as imgBKBLogo } from "../../../app/constants/weaverImages";
+import { imgBKLogo as imgBKBLogo } from "../../../shared/constants/weaverImages";
 
 // ── Design Tokens ──────────────────────────────────────────────────────────
 const T = {

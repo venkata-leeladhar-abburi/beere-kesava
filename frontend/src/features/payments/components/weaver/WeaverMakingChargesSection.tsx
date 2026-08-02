@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
-import { DownloadGate } from "../../../../app/components/DownloadAccess";
+import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { WEAVERS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";

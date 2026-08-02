@@ -265,7 +265,7 @@ function generateSarees(count: number, date: string, sareeType: string, supplier
       weight: weightFor(i),
       date,
       sareeType,
-      color: SEED_COLORS[i % SEED_COLORS.length],
+      color: SEED_COLORS[i % SEED_COLORS.length] ?? "Cream",
       price,
       sellPercent,
       quantity: 1,

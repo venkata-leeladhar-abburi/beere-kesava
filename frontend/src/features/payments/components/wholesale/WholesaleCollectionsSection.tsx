@@ -3,8 +3,8 @@ import { AlignJustify, BadgeCheck, CircleAlert, Download, Eye, LayoutGrid, Layou
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 
-import { DownloadGate } from "../../../../app/components/DownloadAccess";
-import { useFinishing } from "../../../../app/components/FinishingContext";
+import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
 import { INVOICES } from "../../data/invoices";
 import { EASE, F, T, useBulkOrders, BulkOrder, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice } from "../../types";

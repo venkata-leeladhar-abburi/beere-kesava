@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Truck, Clock, CheckCircle2, Package } from "lucide-react";
 import { C, F } from "./tokens";
-import { useFinishing, DispatchRecord } from "../FinishingContext";
-import { useFirms } from "../FirmsContext";
+import { useFinishing, DispatchRecord } from "../../../finishing/contexts/FinishingContext";
+import { useFirms } from "../../../firms/contexts/FirmsContext";
 // The admin Inventory page's own section and form — reused as-is so the worker
 // screen stays identical to what admin sees.
-import { DispatchHistorySection, ResumeDispatchModal } from "../../../features/inventory/components/InventoryPage";
+import { DispatchHistorySection, ResumeDispatchModal } from "../../../inventory/components/InventoryPage";
 
 export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
   const { dispatches, updateDispatch } = useFinishing();

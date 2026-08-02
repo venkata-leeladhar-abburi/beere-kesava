@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams, Outlet } from "react-router";
-import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../app/constants/imageData";
+import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useResponsive } from "../../../app/components/useResponsive";
+import { useResponsive } from "../../../hooks/useResponsive";
 import { MaterialsPage }  from "../../materials/components/MaterialsPage";
 import { WeaversPage }    from "../../weavers/components/WeaversPage";
 import { ProductionPage } from "../../production/components/ProductionPage";
@@ -11,30 +11,30 @@ import { PaymentsPage }   from "../../payments/components/PaymentsPage";
 import { ReportsPage }    from "../../reports/components/ReportsPage";
 import { CustomersPage }  from "../../customers/components/CustomersPage";
 import { ProductionHistoryPage } from "../../production/components/ProductionHistoryPage";
-import { FinishingTrackingPage } from "../../../app/components/FinishingTrackingPage";
-import { NotificationsPage } from "../../../app/components/NotificationsPage";
-import { AllWeaversPage }   from "../../../app/components/AllWeaversPage";
+import { FinishingTrackingPage } from "../../finishing/components/FinishingTrackingPage";
+import { NotificationsPage } from "../../notifications/components/NotificationsPage";
+import { AllWeaversPage }   from "../../weavers/components/AllWeaversPage";
 import { AllStockPage }    from "../../inventory/components/AllStockPage";
 import { AllOrdersPage } from "../../bulk-orders/components/AllOrdersPage";
-import { QcHistoryPage } from "../../../app/components/QcHistoryPage";
+import { QcHistoryPage } from "../../qc/components/QcHistoryPage";
 import { ExternalPurchasesPage } from "../../inventory/components/ExternalPurchasesPage";
-import { AddUserPage } from "../../../app/components/AddUserPage";
-import { FirmsPage } from "../../../app/components/FirmsPage";
-import { RatesPricingPage } from "../../../app/components/RatesPricingPage";
-import { DesignLibraryPage } from "../../../app/components/DesignLibraryPage";
-import { BatchCreationPage } from "../../../app/components/BatchCreationPage";
+import { AddUserPage } from "../../users/components/AddUserPage";
+import { FirmsPage } from "../../firms/components/FirmsPage";
+import { RatesPricingPage } from "../../pricing/components/RatesPricingPage";
+import { DesignLibraryPage } from "../../design-library/components/DesignLibraryPage";
+import { BatchCreationPage } from "../../production/components/BatchCreationPage";
 import { IssueMaterialPage } from "../../materials/components/IssueMaterialPage";
 import { InventoryPage } from "../../inventory/components/InventoryPage";
 import { VendorsPage } from "../../vendors/components/VendorsPage";
 import { SuppliersPage } from "../../suppliers/components/SuppliersPage";
-import { FactoryLoomPage } from "../../../app/components/FactoryLoomPage";
-import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../../app/components/worker/WorkerGRN";
+import { FactoryLoomPage } from "../../production/components/FactoryLoomPage";
+import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../portals/components/worker/WorkerGRN";
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
-} from "../../../app/components/SectionNavigator";
+} from "../../../shared/ui/SectionNavigator";
 import { motion, useInView, AnimatePresence } from "motion/react";
-import { ImageWithFallback } from "../../../app/components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
 import {
   ChevronLeft, ChevronRight, ChevronDown, ArrowRight,
   Bell, Search, TrendingUp, SlidersHorizontal, Moon,
@@ -44,15 +44,15 @@ import {
   Activity, MapPin, Phone, Eye, Edit3, Layers3, ShoppingCart, Layers, X,
 } from "lucide-react";
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../app/constants/weaverImages";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 
 const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgShowroom    = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgWarp        = _imgWarpLocal;
 const imgResham      = _imgReshamLocal;
 const imgJari        = _imgJariLocal;
-import { imgBKLogo } from "../../../app/constants/weaverImages";
-import { imgSareeFooter } from "../../../app/constants/weaverImages";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
+import { imgSareeFooter } from "../../../shared/constants/weaverImages";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS

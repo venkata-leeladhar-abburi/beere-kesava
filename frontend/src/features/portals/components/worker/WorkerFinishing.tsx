@@ -6,8 +6,8 @@ import {
   FileText, Building2,
 } from "lucide-react";
 import { C, F, card, btnPrimary, btnGhost, inputStyle } from "./tokens";
-import { useFinishing, FinishingAssignment, Quotation } from "../FinishingContext";
-import { useFinishingStaff } from "../FinishingStaffContext";
+import { useFinishing, FinishingAssignment, Quotation } from "../../../finishing/contexts/FinishingContext";
+import { useFinishingStaff } from "../../../finishing/contexts/FinishingStaffContext";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const WORKER_NAME = "Ravi Kumar (WK-042)";
@@ -416,7 +416,8 @@ function SectionA({ isMobile }: { isMobile?: boolean }) {
   const toggleRow = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -560,7 +561,8 @@ function SectionB({ isMobile }: { isMobile?: boolean }) {
   const toggleRow = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -968,7 +970,7 @@ function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
   });
 
   const toggleRow = (id: string) => {
-    setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
   const toggleAll = () => {

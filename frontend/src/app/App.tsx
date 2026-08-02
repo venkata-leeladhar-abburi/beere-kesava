@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "../contexts/AuthContext";
 import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { Toaster } from "./components/ui/sonner";
+import { Toaster } from "../shared/ui/sonner";
 
 // Layouts (for Context scope and Auth guards)
 import { AdminLayout }      from "./layouts/AdminLayout";
@@ -26,7 +26,7 @@ import { ShopHomePage }            from "./pages/shop/HomePage";
 import { AccountantHomePage }      from "./pages/accountant/HomePage";
 
 // Other views
-import { MobileScanView } from "./components/MobileScanView";
+import { MobileScanView } from "../features/scanning/components/MobileScanView";
 
 // @ts-ignore
 import "../styles/mobile.css";

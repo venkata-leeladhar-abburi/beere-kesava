@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, CircleAlert, FileText, IndianRupee, Upload
 import { motion } from "motion/react";
 import * as XLSX from "xlsx";
 
-import { WeaverPaymentRecord, useWeaverPayments } from "../../../../app/components/WeaverPaymentsContext";
+import { WeaverPaymentRecord, useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { WEAVERS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";
 import { ExcelRow, MatchedPayment, UnmatchedRow, UploadResult } from "../../types";

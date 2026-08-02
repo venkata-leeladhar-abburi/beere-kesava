@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { todayISO } from "../../../lib/date";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -199,7 +200,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const addFirm = useCallback((data: Omit<Firm, "id" | "createdAt">) => {
     const id = `FIRM-${String(nextNum).padStart(3, "0")}`;
     setNextNum(n => n + 1);
-    setFirms(prev => [{ ...data, id, createdAt: new Date().toISOString().split("T")[0] }, ...prev]);
+    setFirms(prev => [{ ...data, id, createdAt: todayISO() }, ...prev]);
     setFinancials(prev => [...prev, { firmId: id, income: [], expenses: [], misc: [] }]);
   }, [nextNum]);
 

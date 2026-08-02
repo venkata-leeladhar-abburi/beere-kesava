@@ -3,20 +3,21 @@ import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useResponsive } from "../../../app/components/useResponsive";
+import { useResponsive } from "../../../hooks/useResponsive";
 import { PaymentsPage } from "../../payments/components/PaymentsPage";
-import { FirmsPage } from "../../../app/components/FirmsPage";
+import { FirmsPage } from "../../firms/components/FirmsPage";
 import { ReportsPage } from "../../reports/components/ReportsPage";
-import { RatesPricingPage } from "../../../app/components/RatesPricingPage";
+import { RatesPricingPage } from "../../pricing/components/RatesPricingPage";
 import { WeaversPage } from "../../weavers/components/WeaversPage";
 import { CustomersPage } from "../../customers/components/CustomersPage";
 import { VendorsPage } from "../../vendors/components/VendorsPage";
 import { SuppliersPage } from "../../suppliers/components/SuppliersPage";
-import { FactoryLoomPage } from "../../../app/components/FactoryLoomPage";
+import { FactoryLoomPage } from "../../production/components/FactoryLoomPage";
 import { InventoryPage } from "../../inventory/components/InventoryPage";
-import { DownloadAccessProvider } from "../../../app/components/DownloadAccess";
+import { DownloadAccessProvider } from "../../../shared/ui/DownloadAccess";
 import { UserProfileModal } from "./BeereDashboard";
-import { imgBKLogo } from "../../../app/constants/weaverImages";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
+import type { IconComponent } from "../../../lib/icon";
 
 // ── Design tokens (aligned with the rest of the app) ────────────────────────────
 const T = {
@@ -35,7 +36,7 @@ const F = {
 const MAIN_NAV_H = 68;
 
 // ── Nav definition ──────────────────────────────────────────────────────────────
-type NavItem = { key: string; label: string; slug: string; icon: React.ComponentType<{ size?: number; color?: string }> };
+type NavItem = { key: string; label: string; slug: string; icon: IconComponent };
 
 const NAV: NavItem[] = [
   { key: "Payments",  label: "Payments",        slug: "payments",  icon: IndianRupee },

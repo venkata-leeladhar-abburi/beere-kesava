@@ -6,7 +6,7 @@ import {
   ArrowRight, Check, X,
   Inbox, AlertCircle, Zap
 } from "lucide-react";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 const imgNotifHero = "https://images.unsplash.com/photo-1633613286991-611fe299c4be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 // Reconstructs an absolute date from the app's relative time labels ("10 min ago", "Yesterday", "3 days ago", "8:15 AM")

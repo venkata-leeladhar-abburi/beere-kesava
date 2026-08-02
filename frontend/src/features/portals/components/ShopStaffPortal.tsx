@@ -13,10 +13,10 @@ import {
   QrCode, Clock as ClockIcon, CheckCircle2, Building2,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from "recharts";
-import { getSareeTypeByCode } from "../../../app/components/RatesPricingPage";
-import { SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, SHOP_MOBILE_HEADER_H } from "../../../app/components/SectionNavigator";
-import { useResponsive } from "../../../app/components/useResponsive";
-import { imgBKLogo } from "../../../app/constants/weaverImages";
+import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
+import { SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, SHOP_MOBILE_HEADER_H } from "../../../shared/ui/SectionNavigator";
+import { useResponsive } from "../../../hooks/useResponsive";
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import { InventoryPage as AdminInventoryPage } from "../../inventory/components/InventoryPage";
 
 // ─── Price Visibility Context ────────────────────────────────────────────────

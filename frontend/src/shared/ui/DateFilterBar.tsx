@@ -1,4 +1,3 @@
-import React from "react";
 
 // ── Shared date filter (All Time / Date Range / Monthly / Yearly) ──────────
 // Used across Weavers, Batches, Weaver Dispatcher, Goods Receipt, Material
@@ -37,7 +36,7 @@ export function matchesDateFilter(dateStr: string | undefined | null, filter: Da
   }
   if (filter.mode === "month") {
     if (!filter.month) return true;
-    const [y, m] = filter.month.split("-");
+    const [y = "", m = ""] = filter.month.split("-");
     return d.getFullYear() === parseInt(y, 10) && d.getMonth() + 1 === parseInt(m, 10);
   }
   if (filter.mode === "year") {

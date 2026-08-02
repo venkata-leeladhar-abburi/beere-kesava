@@ -11,13 +11,13 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { useBatches } from "../../features/production/contexts/BatchContext";
-import { useDesignLibrary, DispatchRecord } from "./DesignLibraryContext";
-import { useMaterialIssue } from "../../features/materials/contexts/MaterialIssueContext";
-import { useQc } from "./QcContext";
+import { useBatches } from "../contexts/BatchContext";
+import { useDesignLibrary, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
+import { useQc } from "../../qc/contexts/QcContext";
 import { DispatchDetailsModal } from "./BatchCreationPage";
-import { WeaverSareesSection } from "./WeaverSareesSection";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "./DateFilterBar";
+import { WeaverSareesSection } from "../../weavers/components/WeaverSareesSection";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 // ── Design Tokens ───────────────────────────────────────────────────────────
 const T = {
@@ -258,7 +258,7 @@ function LoomDetailPage({ loom, onBack, onEdit }: {
 
   const getBatchNum = (id: string) => {
     const m = id.match(/BATCH-(\d+)/);
-    return m ? parseInt(m[1], 10) : 0;
+    return m ? parseInt(m[1] ?? "0", 10) : 0;
   };
 
   // ── Batches this loom is working on ────────────────────────────────────────

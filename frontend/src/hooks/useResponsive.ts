@@ -35,3 +35,25 @@ export function useResponsive(): Responsive {
 
   return { bp, isMobile, isTablet, isDesktop, w, px, cols };
 }
+
+/**
+ * Bare `< 768` boolean, for the many call sites that only need the mobile/not
+ * split and not the full {@link Responsive} shape. Was independently
+ * reimplemented (byte-for-byte identical) in MaterialsPage.tsx,
+ * SuperadminDashboard.tsx, and beere-dashboard/ui.tsx — consolidated here.
+ *
+ * Not the same as `app/components/ui/use-mobile.ts`: that one is the
+ * shadcn/ui-generated primitive (matchMedia-based, its own breakpoint
+ * constant) backing the sidebar component and is left as-is.
+ */
+export function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return isMobile;
+}

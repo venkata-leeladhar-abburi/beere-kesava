@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Plus, Trash2, Package, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder, POItem } from "../contexts/POContext";
-import { useFirms } from "../../../app/components/FirmsContext";
+import { useFirms } from "../../firms/contexts/FirmsContext";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {

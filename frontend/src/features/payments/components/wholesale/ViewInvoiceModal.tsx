@@ -2,7 +2,7 @@ import React from "react";
 import { ShoppingBag, X } from "lucide-react";
 import { motion } from "motion/react";
 
-import { useFinishing } from "../../../../app/components/FinishingContext";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
 import { F, T, BulkOrder, useFirms } from "../../theme";
 import { Invoice } from "../../types";
 

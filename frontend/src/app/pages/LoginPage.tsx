@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, Navigate } from "react-router";
-import { LoginPage as LoginPageComponent } from "../components/LoginPage";
+import { LoginPage as LoginPageComponent } from "../../features/auth/components/LoginPage";
 import { useAuth } from "../../contexts/AuthContext";
 
 export function LoginPage() {

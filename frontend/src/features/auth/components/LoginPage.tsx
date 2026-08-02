@@ -4,9 +4,9 @@ import {
   Phone, Shield, Clock, Check, X, Bell,
   MessageSquare, RefreshCcw, ChevronRight,
 } from "lucide-react";
-import { imgShowroom } from "../constants/weaverImages";
+import { imgShowroom } from "../../../shared/constants/weaverImages";
 // @ts-ignore
-import logo from "../../imports/logo.png";
+import logo from "../../../assets/logo.png";
 
 // ── Design Tokens ──────────────────────────────────────────────────────────────
 const C = {

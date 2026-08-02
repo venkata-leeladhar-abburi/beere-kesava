@@ -7,9 +7,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../../../contexts/AuthContext';
-import { useResponsive } from '../../../../../app/components/useResponsive';
-import { imgBKLogo } from '../../../../../app/constants/weaverImages';
-import { SectionNavigator, MAIN_NAV_H } from '../../../../../app/components/SectionNavigator';
+import { useResponsive } from "../../../../../hooks/useResponsive";
+import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
+import { SectionNavigator, MAIN_NAV_H } from '../../../../../shared/ui/SectionNavigator';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
 
 const SUB_NAV_H = 60;
@@ -26,7 +26,7 @@ export function TopNav({
   set: (v: string) => void;
   onBack?: () => void;
   onLogout?: () => void;
-  sections?: import("../../../../../app/components/SectionNavigator").SectionNavItem[];
+  sections?: import("../../../../../shared/ui/SectionNavigator").SectionNavItem[];
   onProfile?: () => void;
 }) {
   const navigate = useNavigate();

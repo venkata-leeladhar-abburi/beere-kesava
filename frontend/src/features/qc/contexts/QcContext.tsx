@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { INITIAL_RATES } from "./RatesPricingPage";
+import { INITIAL_RATES } from "../../pricing/components/RatesPricingPage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 /**

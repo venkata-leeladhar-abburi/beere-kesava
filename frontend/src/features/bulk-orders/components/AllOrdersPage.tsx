@@ -12,7 +12,7 @@ import {
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { BulkOrder, BulkOrderCard } from "../../production/components/ProductionPage";
 import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../app/components/DateFilterBar";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { INVOICES } from "../../payments/data/invoices";
 

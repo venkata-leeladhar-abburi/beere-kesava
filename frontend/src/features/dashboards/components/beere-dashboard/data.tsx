@@ -1,8 +1,8 @@
 import React from 'react';
 import { T, F } from './theme';
 import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck, IcoWarehouse, IcoYarnInventory, IcoHandshake } from './ui';
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../app/constants/weaverImages";
-import { imgWarp as imgWarp, imgResham as imgResham, imgJari as imgJari } from "../../../../app/constants/imageData";
+import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
+import { imgWarp as imgWarp, imgResham as imgResham, imgJari as imgJari } from "../../../../shared/constants/imageData";
 
 export const METRICS = [
   { ico: <IcoResourceMgmt sz={22} col={T.warmCream} />, label: "Active Weavers",   val: "9",     sub: "↑ 12% vs last month", hi: false },

@@ -15,12 +15,13 @@ import {
 } from "recharts";
 
 const imgHeaderBg = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-import { imgBKLogo, imgSaree } from "../../../app/constants/weaverImages";
-import { useWeaverPayments } from "../../../app/components/WeaverPaymentsContext";
+import { imgBKLogo, imgSaree } from "../../../shared/constants/weaverImages";
+import { useWeaverPayments } from "../../weavers/contexts/WeaverPaymentsContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { OutstandingPage } from "../../../app/components/OutstandingPage";
-import { useFirms } from "../../../app/components/FirmsContext";
-import { DownloadGate, useDownloadsAllowed } from "../../../app/components/DownloadAccess";
+import { OutstandingPage } from "../../payments/components/OutstandingPage";
+import { useFirms } from "../../firms/contexts/FirmsContext";
+import { DownloadGate, useDownloadsAllowed } from "../../../shared/ui/DownloadAccess";
+import type { IconComponent } from "../../../lib/icon";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -472,7 +473,7 @@ type ReportTabKey = "raw-material" | "production" | "outstanding" | "weaver-paym
 
 interface ReportTab {
   key: ReportTabKey;
-  Icon: React.ComponentType<{ size?: number; color?: string }>;
+  Icon: IconComponent;
   label: string;
   desc: string;
   iconColor: string;
@@ -2339,11 +2340,11 @@ function ScheduledReportsSection() {
   const [scheduleStates, setScheduleStates] = useState(SCHEDULES.map(s => s.active));
 
   const scheduleIcons: React.ReactNode[] = [
-    <Users size={26} color={T.antiqueGold} />,
-    <Scissors size={26} color={T.antiqueGold} />,
-    <BarChart3 size={26} color={T.antiqueGold} />,
-    <BellRing size={26} color={T.antiqueGold} />,
-    <UsersRound size={26} color={T.antiqueGold} />,
+    <Users key="users" size={26} color={T.antiqueGold} />,
+    <Scissors key="scissors" size={26} color={T.antiqueGold} />,
+    <BarChart3 key="bar-chart" size={26} color={T.antiqueGold} />,
+    <BellRing key="bell-ring" size={26} color={T.antiqueGold} />,
+    <UsersRound key="users-round" size={26} color={T.antiqueGold} />,
   ];
 
   return (

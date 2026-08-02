@@ -149,7 +149,13 @@ function rnd(seed: number): number {
   const x = Math.sin(seed * 12.9898) * 43758.5453;
   return x - Math.floor(x);
 }
-function pick<T>(arr: T[], seed: number): T { return arr[Math.floor(rnd(seed) * arr.length) % arr.length]; }
+function pick<T>(arr: readonly T[], seed: number): T {
+  // arr is always non-empty at every call site, but noUncheckedIndexedAccess
+  // can't verify that from the index expression — assert the invariant.
+  const item = arr[Math.floor(rnd(seed) * arr.length) % arr.length];
+  if (item === undefined) throw new Error("pick() called with an empty array");
+  return item;
+}
 function dateFor(seed: number): string {
   const d = 1 + Math.floor(rnd(seed) * 27);
   return `${String(d).padStart(2, "0")} ${pick(MONTHS, seed * 3)} 2026`;
@@ -203,7 +209,7 @@ function buildDataset(): UnifiedSaree[] {
   WEAVERS.forEach((w, wi) => {
     const count = 6 + Math.floor(rnd(wi * 3.1) * 8);   // 6–13 sarees each
     for (let n = 1; n <= count; n++, i++) {
-      const first = w.weaverName.split(/[\s.]+/)[0].toUpperCase();
+      const first = (w.weaverName.split(/[\s.]+/)[0] ?? w.weaverName).toUpperCase();
       out.push(buildSaree(i, {
         sareeId: `${first}-L${w.weaverLoom}-${String(n).padStart(3, "0")}`,
         origin: "weaver",

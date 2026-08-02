@@ -1,5 +1,5 @@
 import { useCanSeePrices } from "./theme";
-import { useResponsive } from "../../../../app/components/useResponsive";
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { Send } from "lucide-react";
 
 

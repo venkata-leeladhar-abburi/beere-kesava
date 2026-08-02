@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, LayoutGrid, LayoutList, Receipt, Search, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
 
-import { DownloadGate } from "../../../../app/components/DownloadAccess";
+import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { PAY_HISTORY } from "../../data/history";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice } from "../../types";

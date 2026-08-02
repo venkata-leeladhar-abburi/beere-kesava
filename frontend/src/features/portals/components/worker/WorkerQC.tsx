@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { useBatches } from "../../../features/production/contexts/BatchContext";
-import { useFinishing } from "../FinishingContext";
-import { useDesignLibrary } from "../DesignLibraryContext";
-import { useQc, makingChargeFor, computeQcPayment } from "../QcContext";
-import { DesignCodeCard } from "../DesignLibraryPage";
-import { SareeTypeCard, getSareeTypeByName, getSareeTypeByCode } from "../RatesPricingPage";
+import { useBatches } from "../../../production/contexts/BatchContext";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
+import { useQc, makingChargeFor, computeQcPayment } from "../../../qc/contexts/QcContext";
+import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
+import { SareeTypeCard, getSareeTypeByName, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
 import { motion, AnimatePresence } from "motion/react";
 
 // Splits a "CODE · Type Name" combined design string into its parts.

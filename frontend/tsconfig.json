@@ -13,8 +13,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
 
-    /* Linting */
+    /* Baseline rules — every file in the repo must satisfy these.
+       Strict mode is applied incrementally via tsconfig.strict.json;
+       see docs/TYPE_MIGRATION.md for the ratchet process. */
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

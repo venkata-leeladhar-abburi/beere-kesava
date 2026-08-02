@@ -3,9 +3,9 @@ import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary } from "../../../../app/components/DesignLibraryContext";
-import { SareeTypeCard, getSareeTypeByCode } from "../../../../app/components/RatesPricingPage";
-import { useWeaverPayments } from "../../../../app/components/WeaverPaymentsContext";
+import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
+import { SareeTypeCard, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
+import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { RATE_ROWS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";

@@ -1,5 +1,5 @@
 import { XAxis, YAxis, Tooltip, Cell } from "recharts";
-import { SectionNavigator, PAGE_SECTIONS } from "../../../../app/components/SectionNavigator";
+import { SectionNavigator, PAGE_SECTIONS } from "../../../../shared/ui/SectionNavigator";
 const SHOP_MOBILE_HEADER_H = 60;
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { SectionTitle } from "./theme";

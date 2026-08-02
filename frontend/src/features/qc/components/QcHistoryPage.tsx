@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, ClipboardCheck } from "lucide-react";
-import { ProductionDialog } from "../../features/production/components/ProductionPage";
+import { ProductionDialog } from "../../production/components/ProductionPage";
 const T = { silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D", deepWine: "#4A061B", luxuryBrown: "#3B2314", taupe: "#8B7060", green: "#1E6640", crimson: "#C0392B", borderDef: "rgba(110,15,45,0.10)" };
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 const QC_QUEUE = [

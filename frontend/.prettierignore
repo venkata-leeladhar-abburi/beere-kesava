@@ -1,0 +1,4 @@
+dist
+node_modules
+src/imports/pasted_text
+src/imports/MainAppWindow

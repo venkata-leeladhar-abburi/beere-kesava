@@ -7,8 +7,9 @@ import {
 import {
   useSales, UnifiedSaree, SareeOrigin, SellerRank,
   isOutstanding, isSold, ageBucket, rankSellers, purchaseOutstanding,
-} from "../../features/customers/contexts/SalesContext";
-import { useDownloadsAllowed } from "./DownloadAccess";
+} from "../../customers/contexts/SalesContext";
+import { useDownloadsAllowed } from "../../../shared/ui/DownloadAccess";
+import type { IconComponent } from "../../../lib/icon";
 
 // ── Design tokens (same palette as the rest of the app) ──────────────────────
 const T = {
@@ -859,7 +860,7 @@ function FilterBar({
 // ── Main page ────────────────────────────────────────────────────────────────
 type OutTab = "weaver" | "factoryLoom" | "external" | "batch" | "ranking";
 
-const OUT_TABS: { key: OutTab; label: string; desc: string; Icon: React.ComponentType<{ size?: number; color?: string }> }[] = [
+const OUT_TABS: { key: OutTab; label: string; desc: string; Icon: IconComponent }[] = [
   { key: "weaver",      label: "In-House · Weavers",       desc: "Unsold from our weavers",  Icon: Users },
   { key: "factoryLoom", label: "In-House · Factory Looms", desc: "Unsold from our looms",    Icon: Factory },
   { key: "external",    label: "External Purchases",       desc: "Purchase-wise + returns",  Icon: Truck },
