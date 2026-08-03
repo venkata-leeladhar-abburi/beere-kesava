@@ -1,428 +1,31 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  FloppyDisk, CheckCircle,
-  Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
-  WarningCircle, CheckSquare, Square, ArrowRight,
-  MagnifyingGlass, Stack, Package, Graph, PaperPlaneTilt,
-} from "@phosphor-icons/react";
+import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { FloppyDisk, CheckCircle, WarningCircle } from "@phosphor-icons/react";
 import { useBatches, SareeRow, BatchRecord, generateSareeId } from "../contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { useDesignLibrary, DesignEntry, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
 import { FACTORY_LOOMS_LIST } from "../data/factoryLooms";
 import { DispatchDetailsModal } from "./DispatchDetailsModal";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
-const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
-  royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
-  darkBurgundy:  "#3D0E1A",
-  antiqueGold:   "#C89B47",
-  goldLight:     "#E7C983",
-  luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
-  green:         "#1E6640",
-  red:           "#C0392B",
-  amber:         "#B7791F",
-  borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
-};
-const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
-};
-const G = {
-  button:  "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-  header:  "linear-gradient(135deg, #3D0E1A 0%, #4A061B 60%, #6E0F2D 100%)",
-  green:   "linear-gradient(135deg, #1E6640 0%, #145230 100%)",
-};
-
-// ─── Weavers ──────────────────────────────────────────────────────────────────
-const WEAVERS = [
-  { id: "WV-001", name: "Ravi Kumar",   initials: "RK", loom: 2, bg: "#6E0F2D" },
-  { id: "WV-002", name: "Padma Veni",   initials: "PV", loom: 1, bg: "#C4923A" },
-  { id: "WV-003", name: "Suresh Murti", initials: "SM", loom: 2, bg: "#8B7060" },
-  { id: "WV-005", name: "Anand K.",     initials: "AK", loom: 1, bg: "#4A061B" },
-  { id: "WV-012", name: "Meena R.",     initials: "MR", loom: 3, bg: "#A05080" },
-  { id: "WV-018", name: "Lakshmi D.",   initials: "LD", loom: 1, bg: "#C4923A" },
-  { id: "WV-024", name: "Venkat Rao",   initials: "VR", loom: 1, bg: "#1E6640" },
-  { id: "WV-031", name: "Kamala B.",    initials: "KB", loom: 1, bg: "#3D0E1A" },
-];
-
-// ─── Saree types (mirrors RatesPricingPage seed) ─────────────────────────────
-const SAREE_TYPES_BRIEF: { code: string; name: string }[] = [
-  { code: "HZ-003", name: "Heavy Zari"     },
-  { code: "SB-001", name: "Self Brocade"   },
-  { code: "PS-002", name: "Plain Silk"     },
-  { code: "BS-004", name: "Bridal Special" },
-  { code: "LC-005", name: "Light Cotton"   },
-];
-
-// Minimal SareeTypeRecord for card view
-const SAREE_TYPE_RECORDS: SareeTypeRecord[] = [
-  { code:"HZ-003", type:"Heavy Zari",     description:"Heavy gold zari woven silk, traditional motifs",        charge:"680",  retail:"4800", wholesale:"3600", stdWeight:"720", warpWeight:"380", reshamWeight:"180", jariWeight:"160", changed:"01 Jun 2026" },
-  { code:"SB-001", type:"Self Brocade",   description:"Self-coloured brocade weave, intricate self patterns",  charge:"450",  retail:"3200", wholesale:"2400", stdWeight:"640", warpWeight:"320", reshamWeight:"200", jariWeight:"120", changed:"28 May 2026" },
-  { code:"PS-002", type:"Plain Silk",     description:"Lightweight plain silk, minimal embellishment",         charge:"280",  retail:"2200", wholesale:"1600", stdWeight:"520", warpWeight:"340", reshamWeight:"120", jariWeight:"60",  changed:"20 May 2026" },
-  { code:"BS-004", type:"Bridal Special", description:"Premium bridal saree with heavy zari and stone work",   charge:"1200", retail:"9500", wholesale:"7200", stdWeight:"900", warpWeight:"460", reshamWeight:"240", jariWeight:"200", changed:"15 Jun 2026" },
-  { code:"LC-005", type:"Light Cotton",   description:"Everyday lightweight cotton, summer collection",        charge:"180",  retail:"1400", wholesale:"1000", stdWeight:"420", warpWeight:"280", reshamWeight:"80",  jariWeight:"60",  changed:"10 May 2026" },
-];
-
-// ─── Helper: field style ──────────────────────────────────────────────────────
-const fld: React.CSSProperties = {
-  width: "100%", height: 44, padding: "0 14px",
-  fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown,
-  background: T.warmIvory, border: `1.5px solid ${T.borderDef}`,
-  borderRadius: 10, outline: "none", boxSizing: "border-box",
-};
-const lbl: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-  color: T.luxuryBrown, display: "block", marginBottom: 6,
-};
-
-// ─── Row completeness ─────────────────────────────────────────────────────────
-function rowComplete(r: SareeRow) {
-  return !!((r.weaverId || r.factoryLoomId) && r.sareeId && r.sareeTypeCode);
-}
-function rowEmpty(r: SareeRow) {
-  return !r.weaverId && !r.factoryLoomId && !r.sareeTypeCode;
-}
-
-// ─── Pip avatar ───────────────────────────────────────────────────────────────
-function Pip({ initials, bg, size = 28 }: { initials: string; bg: string; size?: number }) {
-  return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span style={{ fontFamily: F.mono, fontSize: size * 0.38, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>{initials}</span>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PICKER MODALS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ── Weaver Picker ─────────────────────────────────────────────────────────────
-function WeaverPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (w: typeof WEAVERS[0]) => void }) {
-  const [sel, setSel] = useState<string | null>(null);
-  return (
-    <PickerShell title="Assign Weaver" onClose={onClose}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px" }}>
-        {WEAVERS.map(w => (
-          <button key={w.id} onClick={() => setSel(w.id)}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", border: `2px solid ${sel === w.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === w.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-            <Pip initials={w.initials} bg={w.bg} size={34} />
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{w.id} · L{w.loom}</div>
-            </div>
-          </button>
-        ))}
-      </div>
-      <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const w = WEAVERS.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
-          whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
-          Assign Weaver
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ── Bulk Order Picker ─────────────────────────────────────────────────────────
-function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (ref: string | null, label: string) => void }) {
-  const { bulkOrders } = useBulkOrders();
-  const [sel, setSel] = useState<string | "general" | null>(null);
-  return (
-    <PickerShell title="Assign Bulk Order" onClose={onClose}>
-      <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 340, overflowY: "auto" }}>
-        {/* General Stock */}
-        <button onClick={() => setSel("general")}
-          style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", border: `2px solid ${sel === "general" ? T.green : T.borderDef}`, borderRadius: 12, background: sel === "general" ? "rgba(30,102,64,0.06)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Package size={18} color="#fff" weight="duotone" />
-          </div>
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>General Stock</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not linked to any bulk order</div>
-          </div>
-        </button>
-        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", margin: "4px 0 2px" }}>Active Bulk Orders</div>
-        {bulkOrders.map(o => (
-          <button key={o.ref} onClick={() => setSel(o.ref)}
-            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: `2px solid ${sel === o.ref ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === o.ref ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ShoppingBag size={16} color={T.royalBurgundy} weight="duotone" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.customer} · {o.sareeType}</div>
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
-          </button>
-        ))}
-      </div>
-      <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => {
-          if (sel === "general") { onSelect(null, "General Stock"); }
-          else if (sel) { const o = bulkOrders.find(x => x.ref === sel); if (o) onSelect(o.ref, `${o.ref} · ${o.customer}`); }
-        }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
-          Assign
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ── Design Code Picker ────────────────────────────────────────────────────────
-function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (code: string) => void }) {
-  const { designs, addDesign } = useDesignLibrary();
-  const [q, setQ] = useState("");
-  const [sel, setSel] = useState<string | null>(null);
-  const [mode, setMode] = useState<"search" | "new">("search");
-  const [newCode, setNewCode] = useState("");
-  const [newWeaver, setNewWeaver] = useState("");
-  const [newNotes, setNewNotes] = useState("");
-
-  const filtered = designs.filter(d =>
-    d.code.toLowerCase().includes(q.toLowerCase()) ||
-    (d.name && d.name.toLowerCase().includes(q.toLowerCase()))
-  );
-
-  function handleSaveNew() {
-    if (!newCode.trim()) return;
-    const entry: DesignEntry = {
-      code: newCode.trim(), name: "", typeCode: "", typeName: "",
-      desc: "", color: "", weaverName: newWeaver.trim(), notesForWeaver: newNotes.trim(),
-      colorSlipPhoto: null, designGraph: null,
-      batches: 0, total: 0, hasColorSlip: false, hasGraph: false,
-    };
-    addDesign(entry);
-    onSelect(newCode.trim());
-  }
-
-  return (
-    <PickerShell title="Assign Design Code" onClose={onClose} width={540}>
-      {/* Mode toggle */}
-      <div style={{ padding: "0 24px 16px", display: "flex", gap: 8 }}>
-        {(["search", "new"] as const).map(m => (
-          <button key={m} onClick={() => setMode(m)}
-            style={{ flex: 1, height: 38, border: `1.5px solid ${mode === m ? T.royalBurgundy : T.borderDef}`, borderRadius: 10, background: mode === m ? T.royalBurgundy : "transparent", color: mode === m ? "#fff" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            {m === "search" ? "Select Existing" : "+ Create New"}
-          </button>
-        ))}
-      </div>
-
-      {mode === "search" ? (
-        <>
-          <div style={{ padding: "0 24px 12px", position: "relative" }}>
-            <MagnifyingGlass size={16} color={T.taupe} style={{ position: "absolute", left: 38, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…"
-              style={{ ...fld, paddingLeft: 40 }} autoFocus />
-          </div>
-          <div style={{ padding: "0 24px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
-            {filtered.map(d => (
-              <button key={d.code} onClick={() => setSel(d.code)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", border: `2px solid ${sel === d.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 11, background: sel === d.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 10px", flexShrink: 0 }}>{d.code}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  {d.name && <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>}
-                  {d.weaverName && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Weaver: {d.weaverName}</div>}
-                </div>
-                {(d.hasGraph || d.hasColorSlip) && (
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {d.hasColorSlip && <span style={{ fontFamily: F.ui, fontSize: 10, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Slip</span>}
-                    {d.hasGraph && <span style={{ fontFamily: F.ui, fontSize: 10, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Graph</span>}
-                  </div>
-                )}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div style={{ textAlign: "center", padding: "24px 0", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                No designs match "{q}".<br />
-                <button onClick={() => { setMode("new"); setNewCode(q); }} style={{ marginTop: 10, fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy, background: "none", border: "none", cursor: "pointer", fontWeight: 700, textDecoration: "underline" }}>
-                  Create "{q}" as new design code →
-                </button>
-              </div>
-            )}
-          </div>
-          <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-            <motion.button onClick={() => { if (sel) onSelect(sel); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-              style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
-              Assign Design Code
-            </motion.button>
-            <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-          </div>
-        </>
-      ) : (
-        <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div>
-            <label style={lbl}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <input value={newCode} onChange={e => setNewCode(e.target.value)} style={fld} placeholder="e.g. BKB-099" autoFocus />
-          </div>
-          <div>
-            <label style={lbl}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <input value={newWeaver} onChange={e => setNewWeaver(e.target.value)} style={fld} placeholder="Assign a weaver later if needed" />
-          </div>
-          <div>
-            <label style={lbl}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…"
-              style={{ width: "100%", padding: "12px 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", resize: "none", lineHeight: 1.6, boxSizing: "border-box" }} />
-          </div>
-          <div style={{ background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <WarningCircle size={15} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
-              This design code will be saved to the master Design Library immediately and will appear there with full detail.
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <motion.button onClick={handleSaveNew} disabled={!newCode.trim()} whileHover={newCode.trim() ? { scale: 1.02 } : undefined}
-              style={{ flex: 2, height: 46, background: newCode.trim() ? T.green : T.taupe, opacity: newCode.trim() ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: newCode.trim() ? "pointer" : "not-allowed" }}>
-              Save to Library & Assign
-            </motion.button>
-            <button onClick={() => setMode("search")} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Back</button>
-          </div>
-        </div>
-      )}
-    </PickerShell>
-  );
-}
-
-// ── Saree Type Picker ─────────────────────────────────────────────────────────
-function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (code: string, name: string) => void }) {
-  const [sel, setSel] = useState<string | null>(null);
-  return (
-    <PickerShell title="Assign Saree Type" onClose={onClose}>
-      <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {SAREE_TYPES_BRIEF.map(t => (
-          <button key={t.code} onClick={() => setSel(t.code)}
-            style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", border: `2px solid ${sel === t.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === t.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
-            </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{t.code}</div>
-            </div>
-          </button>
-        ))}
-      </div>
-      <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const t = SAREE_TYPES_BRIEF.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
-          Assign Saree Type
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ── Per-weaver Loom Picker (capped to that weaver's own loom count) ──────────
-function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
-  weaver: typeof WEAVERS[0]; current: number | null; onClose: () => void; onSelect: (loomNum: number) => void;
-}) {
-  const [sel, setSel] = useState<number | null>(current);
-  const LOOMS = Array.from({ length: weaver.loom }, (_, i) => i + 1);
-  return (
-    <PickerShell title={`Select Loom for ${weaver.name}`} onClose={onClose} width={400}>
-      <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-        {weaver.name} operates {weaver.loom} loom{weaver.loom !== 1 ? "s" : ""}.
-      </div>
-      <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-        {LOOMS.map(loom => (
-          <button key={loom} onClick={() => setSel(loom)}
-            style={{
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "16px 12px",
-              border: `2px solid ${sel === loom ? T.royalBurgundy : T.borderDef}`, borderRadius: 12,
-              background: sel === loom ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer"
-            }}>
-            <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
-              L{loom}
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500 }}>
-              Loom {loom}
-            </div>
-          </button>
-        ))}
-      </div>
-      <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} whileHover={sel !== null ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel !== null ? T.royalBurgundy : T.taupe, opacity: sel !== null ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel !== null ? "pointer" : "not-allowed" }}>
-          Assign Loom
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ── Factory Loom Picker (assigns a factory loom instead of a weaver) ─────────
-function FactoryLoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (loom: typeof FACTORY_LOOMS_LIST[0]) => void }) {
-  const [sel, setSel] = useState<string | null>(null);
-  const statusColor = (s: string) => s === "active" ? T.green : s === "maintenance" ? T.red : T.taupe;
-  return (
-    <PickerShell title="Assign Factory Loom" onClose={onClose}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 24px" }}>
-        {FACTORY_LOOMS_LIST.map(l => (
-          <button key={l.id} onClick={() => setSel(l.id)}
-            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `2px solid ${sel === l.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === l.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Factory size={17} color={T.royalBurgundy} weight="duotone" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{l.id} · {l.location}</div>
-            </div>
-            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status}</span>
-          </button>
-        ))}
-      </div>
-      <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const l = FACTORY_LOOMS_LIST.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
-          whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
-          Assign Factory Loom
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ── Generic picker shell ──────────────────────────────────────────────────────
-function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
-  return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 800, background: "rgba(30,10,20,0.5)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <motion.div onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.94, y: 18 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.2 }}
-        style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
-        <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, fontSize: 20, lineHeight: 1 }}>×</button>
-        </div>
-        <div style={{ paddingTop: 16 }}>{children}</div>
-      </motion.div>
-    </div>
-  );
-}
+import { T, F, G, WEAVERS, SAREE_TYPE_RECORDS, fld, lbl, rowComplete } from "./batch-creation/constants";
+import type { ActivePicker } from "./batch-creation/types";
+import {
+  WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
+  SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
+} from "./batch-creation/PickerModals";
+import {
+  WeaverDetailsModal, FactoryLoomDetailsModal, BulkOrderDetailsModal, SareeDetailsModal,
+} from "./batch-creation/DetailModals";
+import { BatchTable } from "./batch-creation/BatchTable";
+import { DraftsTab } from "./batch-creation/DraftsTab";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
-type ActivePicker = "weaver" | "bulkorder" | "factoryloom" | "saretype" | "design" | null;
-
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { designs, dispatches } = useDesignLibrary();
@@ -456,7 +59,7 @@ export function BatchCreationPage() {
   const [viewFactoryLoom, setViewFactoryLoom] = useState<typeof FACTORY_LOOMS_LIST[0] | null>(null);
   const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
-  const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
+  const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: any[] } | null>(null);
 
   // ── Per-row loom picker (scoped to that row's weaver's own loom count)
   const [loomPickerRow, setLoomPickerRow] = useState<SareeRow | null>(null);
@@ -647,7 +250,7 @@ export function BatchCreationPage() {
     saveDraft(record);
     finalizeBatch(batchId);
     setSavedMsg(`Batch ${batchId} finalized and active!`);
-    
+
     // Clear and reset the form state so the user can create the next batch
     setTimeout(() => {
       setSavedMsg(null);
@@ -709,43 +312,13 @@ export function BatchCreationPage() {
   }, [pendingOpenBatchId]);
 
   // ── Design/SareeType for card view
-  function openDesignCard(code: string) {
-    const d = designs.find(x => x.code === code);
-    if (d) setViewDesign(d);
-  }
   function openSareeTypeCard(code: string) {
     const r = SAREE_TYPE_RECORDS.find(x => x.code === code);
     if (r) setViewSareeType(r);
   }
 
-  // ── Status dot per row
-  function StatusDot({ row }: { row: SareeRow }) {
-    const complete = rowComplete(row);
-    const empty = rowEmpty(row);
-    const color = complete ? T.green : empty ? T.taupe : T.amber;
-    const title = complete ? "Complete" : empty ? "Not started" : "Partially filled";
-    return <div title={title} style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />;
-  }
-
   const drafts = batches.filter(b => b.status === "draft");
   const active = batches.filter(b => b.status === "active");
-
-  // ── Merge "Materials Given" cell across consecutive rows for the same weaver/factory loom
-  const materialsCellSpan: Record<number, number> = {}; // serial -> rowSpan (only set for the first row of a run)
-  {
-    let i = 0;
-    while (i < displayRows.length) {
-      const key = displayRows[i].weaverId || displayRows[i].factoryLoomId || null;
-      let span = 1;
-      if (key) {
-        while (i + span < displayRows.length && (displayRows[i + span].weaverId || displayRows[i + span].factoryLoomId) === key) {
-          span++;
-        }
-      }
-      materialsCellSpan[displayRows[i].serial] = span;
-      i += span;
-    }
-  }
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
@@ -900,205 +473,42 @@ export function BatchCreationPage() {
 
           {/* Step 2+3: Table */}
           {generated && rows.length > 0 && (
-            <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,6,27,0.05)", marginBottom: 20 }}>
-
-              {/* Table header + action bar */}
-              <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
-                    {rows.length} Sarees
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.08)", color: T.green, border: "1px solid rgba(30,102,64,0.20)", borderRadius: 20, padding: "3px 10px", fontWeight: 600 }}>
-                    {completeRows.length} complete
-                  </span>
-                  {incompleteRows.length > 0 && (
-                    <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(183,121,31,0.10)", color: T.amber, border: "1px solid rgba(183,121,31,0.25)", borderRadius: 20, padding: "3px 10px", fontWeight: 600 }}>
-                      {incompleteRows.length} incomplete
-                    </span>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
-                    <SortAscending size={14} color={T.taupe} weight="bold" />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sort by</span>
-                    <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
-                      style={{ height: 30, borderRadius: 8, border: `1.5px solid ${T.borderDef}`, padding: "0 8px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
-                      <option value="serial">Default (#)</option>
-                      <option value="weaver">Weaver</option>
-                      <option value="factoryLoom">Factory Loom</option>
-                    </select>
-                  </div>
-                </div>
-                {selected.size > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{selected.size} selected</span>
-                    {([
-                      { key: "weaver",     icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
-                      { key: "bulkorder",  icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
-                      { key: "factoryloom", icon: <Factory size={14} weight="bold" />,     label: "Assign Factory Loom" },
-                      { key: "saretype",   icon: <Tag size={14} weight="bold" />,          label: "Assign Saree Type" },
-                    ] as const).map(a => (
-                      <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
-                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                        style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        {a.icon} {a.label}
-                      </motion.button>
-                    ))}
-                    <motion.button onClick={removeSelected} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", background: "rgba(192,57,43,0.10)", color: T.red, border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                      <Trash size={14} weight="bold" /> Remove Row(s)
-                    </motion.button>
-                  </div>
-                )}
-              </div>
-
-              {/* Filters */}
-              <div style={{ padding: "12px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <div style={{ position: "relative", flex: "1 1 200px" }}>
-                  <MagnifyingGlass size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-                  <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, boxSizing: "border-box" }} />
-                </div>
-                <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
-                  {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
-                </select>
-                <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
-                  {sareeTypeOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</option>)}
-                </select>
-                <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
-                  {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
-                </select>
-              </div>
-
-              {/* Table */}
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
-                  <thead>
-                    <tr style={{ background: T.warmCream }}>
-                      <th style={th}>
-                        <button onClick={toggleAll} style={{ background: "none", border: "none", cursor: "pointer", color: T.royalBurgundy, display: "flex", alignItems: "center" }}>
-                          {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
-                        </button>
-                      </th>
-                      {["#", "Saree ID", "Weaver / Factory Loom", "Design Dispatch", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
-                        <th key={h} style={th}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayRows.map((row, idx) => {
-                      const isSelected = selected.has(row.serial);
-                      const complete = rowComplete(row);
-                      const weaverForRow = row.weaverId ? WEAVERS.find(x => x.id === row.weaverId) : undefined;
-                      const rowDispatches = row.weaverId
-                        ? dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === row.weaverId && d.batches.includes(batchId))
-                        : [];
-                      const materialsSummary = (row.weaverId || row.factoryLoomId)
-                        ? issueRecords
-                            .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
-                              row.weaverId ? r.weaverId === row.weaverId : r.factoryLoomId === row.factoryLoomId
-                            ))
-                            .flatMap(r => r.materials)
-                            .reduce((acc: Record<string, { qty: number; unit: string }>, m) => {
-                              if (!acc[m.materialType]) acc[m.materialType] = { qty: 0, unit: m.unit };
-                              acc[m.materialType].qty += m.quantity;
-                              return acc;
-                            }, {})
-                        : null;
-                      const materialsText = materialsSummary && Object.keys(materialsSummary).length > 0
-                        ? Object.entries(materialsSummary).map(([type, v]) => `${type}: ${v.qty}${v.unit}`).join(", ")
-                        : null;
-                      return (
-                        <tr key={row.serial}
-                          style={{ background: isSelected ? "rgba(110,15,45,0.04)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.5)", borderBottom: `1px solid ${T.borderDef}` }}>
-                          <td style={td}>
-                            <button onClick={() => toggleRow(row.serial)} style={{ background: "none", border: "none", cursor: "pointer", color: isSelected ? T.royalBurgundy : T.taupe, display: "flex", alignItems: "center" }}>
-                              {isSelected ? <CheckSquare size={15} weight="fill" /> : <Square size={15} />}
-                            </button>
-                          </td>
-                          <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
-                          <td style={{ ...td, minWidth: 120 }}>
-                            {row.sareeId ? (
-                              <button onClick={() => setViewSareeRow(row)}
-                                style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                {row.sareeId}
-                              </button>
-                            ) : (
-                              <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>— assign weaver</span>
-                            )}
-                          </td>
-                          <td style={{ ...td, minWidth: 150 }}>
-                            {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
-                              <button onClick={() => {
-                                const l = FACTORY_LOOMS_LIST.find(x => x.id === row.factoryLoomId);
-                                if (l) setViewFactoryLoom(l);
-                              }}
-                                style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
-                                <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                  <Factory size={12} color={T.royalBurgundy} weight="fill" />
-                                </div>
-                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
-                              </button>
-                            ) : row.weaverName ? (
-                              <button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
-                                style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
-                                <Pip initials={row.weaverInitials!} bg={weaverForRow?.bg || T.taupe} size={22} />
-                                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
-                          <td style={{ ...td, minWidth: 130 }}>
-                            {rowDispatches.length > 0 ? (
-                              <button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
-                                style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                <PaperPlaneTilt size={12} weight="bold" /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
-                          <td style={{ ...td, minWidth: 90 }}>
-                            {row.recipientType === "factoryLoom" ? (
-                              <EmptyCell />
-                            ) : row.weaverId ? (
-                              <button onClick={() => setLoomPickerRow(row)}
-                                style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                {row.weaverLoom ? `Loom ${row.weaverLoom}` : "— select loom"}
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
-
-                          <td style={{ ...td, minWidth: 110 }}>
-                            {row.sareeTypeCode ? (
-                              <button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
-                                style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                {row.sareeTypeCode}
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
-                          <td style={{ ...td, minWidth: 140 }}>
-                            {row.bulkOrderLabel ? (
-                              <button onClick={() => {
-                                const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
-                                if (bo) setViewBulkOrder(bo);
-                              }}
-                                style={{ border: "none", background: "none", cursor: "pointer", padding: 0, fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>
-                                {row.bulkOrderLabel}
-                              </button>
-                            ) : <EmptyCell />}
-                          </td>
-                          {materialsCellSpan[row.serial] !== undefined && (
-                            <td style={{ ...td, minWidth: 170, verticalAlign: "middle" }} rowSpan={materialsCellSpan[row.serial]}>
-                              {materialsText ? (
-                                <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{materialsText}</span>
-                              ) : <EmptyCell />}
-                            </td>
-                          )}
-                          <td style={{ ...td, width: 24 }}>
-                            <StatusDot row={row} />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <BatchTable
+              rows={rows}
+              displayRows={displayRows}
+              selected={selected}
+              toggleAll={toggleAll}
+              toggleRow={toggleRow}
+              allSelected={allSelected}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              searchFilter={searchFilter}
+              setSearchFilter={setSearchFilter}
+              weaverFilter={weaverFilter}
+              setWeaverFilter={setWeaverFilter}
+              sareeTypeFilter={sareeTypeFilter}
+              setSareeTypeFilter={setSareeTypeFilter}
+              orderFilter={orderFilter}
+              setOrderFilter={setOrderFilter}
+              weaverOptions={weaverOptions}
+              orderOptions={orderOptions}
+              sareeTypeOptions={sareeTypeOptions}
+              completeRows={completeRows}
+              incompleteRows={incompleteRows}
+              setPicker={setPicker}
+              removeSelected={removeSelected}
+              batchId={batchId}
+              dispatches={dispatches}
+              issueRecords={issueRecords}
+              bulkOrders={bulkOrders}
+              setViewSareeRow={setViewSareeRow}
+              setViewFactoryLoom={setViewFactoryLoom}
+              setViewWeaver={setViewWeaver}
+              setViewDispatches={setViewDispatches}
+              setViewBulkOrder={setViewBulkOrder}
+              setLoomPickerRow={setLoomPickerRow}
+              openSareeTypeCard={openSareeTypeCard}
+            />
           )}
 
           {/* Step 5: Incomplete rows warning */}
@@ -1138,58 +548,13 @@ export function BatchCreationPage() {
 
       {/* ════════════════════ TAB: DRAFTS ════════════════════ */}
       {tab === "drafts" && (
-        <div style={{ padding: "28px 56px 64px" }}>
-          {batches.length === 0 ? (
-            <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>
-              <Stack size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12 }} />
-              <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No batches yet.</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 6 }}>Create a batch to get started.</div>
-              <motion.button onClick={() => setTab("new")} whileHover={{ scale: 1.02 }} style={{ marginTop: 20, height: 44, padding: "0 24px", background: G.button, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                Create New Batch
-              </motion.button>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <DateFilterBar filter={batchDateFilter} onChange={setBatchDateFilter} />
-              {batches.filter(b => matchesDateFilter(b.createdAt, batchDateFilter)).map(b => {
-                const done = b.rows.filter(rowComplete).length;
-                const pct = b.totalCount > 0 ? Math.round((done / b.totalCount) * 100) : 0;
-                const isDraft = b.status === "draft";
-                const isActive = b.status === "active";
-                const isCompleted = b.status === "completed";
-                const accentColor = isDraft ? T.royalBurgundy : isActive ? T.green : T.taupe;
-                const chipBg = isDraft ? "rgba(110,15,45,0.08)" : isActive ? "rgba(30,102,64,0.09)" : "rgba(139,112,96,0.10)";
-                const chipLabel = isDraft ? "DRAFT" : isActive ? "ACTIVE" : "COMPLETED";
-                return (
-                  <div key={b.batchId} style={{ background: "#fff", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${accentColor}`, padding: "20px 24px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)", display: "flex", alignItems: "center", gap: 20 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: accentColor }}>{b.batchId}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, background: chipBg, color: accentColor, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>{chipLabel}</span>
-                        {b.dueDate && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Due: {b.dueDate}</span>}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{b.totalCount} sarees total</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>{done} complete</span>
-                        {b.totalCount - done > 0 && <span style={{ fontFamily: F.ui, fontSize: 13, color: T.amber, fontWeight: 600 }}>{b.totalCount - done} incomplete</span>}
-                      </div>
-                      <div style={{ height: 6, background: "rgba(110,15,45,0.10)", borderRadius: 99, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? T.green : accentColor, borderRadius: 99, transition: "width 0.3s" }} />
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>{pct}% complete · Updated {new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
-                    </div>
-                    {!isCompleted && (
-                      <motion.button onClick={() => openDraft(b)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 20px", background: G.button, color: "#fff", border: "none", borderRadius: 11, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
-                        {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} weight="bold" />
-                      </motion.button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <DraftsTab
+          batches={batches}
+          batchDateFilter={batchDateFilter}
+          setBatchDateFilter={setBatchDateFilter}
+          setTab={setTab}
+          openDraft={openDraft}
+        />
       )}
 
       {/* ── Picker modals ── */}
@@ -1218,258 +583,3 @@ export function BatchCreationPage() {
     </div>
   );
 }
-
-
-// ── Detail Modals ────────────────────────────────────────────────────────────
-function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; onClose: () => void }) {
-  const { batches } = useBatches();
-  const weaverBatches = batches.filter(b => b.rows.some(r => r.weaverId === weaver.id));
-  const activeBatch = weaverBatches.find(b => b.status === "active");
-  const isWeaving = !!activeBatch;
-  const totalSarees = weaverBatches.reduce((sum, b) => sum + b.rows.filter(r => r.weaverId === weaver.id).length, 0);
-  const completedSarees = weaverBatches.reduce((sum, b) => sum + b.rows.filter(r => r.weaverId === weaver.id && r.qcPassed === true).length, 0);
-  const completedBatches = weaverBatches.filter(b => b.status === "completed").length;
-
-  return (
-    <PickerShell title="Weaver Details" onClose={onClose} width={420}>
-      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Pip initials={weaver.initials} bg={weaver.bg} size={48} />
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{weaver.name}</span>
-                {activeBatch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "2px 8px" }}>{activeBatch.batchId}</span>
-                )}
-              </div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>ID: {weaver.id}</div>
-            </div>
-          </div>
-          <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: isWeaving ? T.green : T.taupe, background: isWeaving ? "rgba(30,102,64,0.10)" : "rgba(139,112,96,0.10)", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: isWeaving ? T.green : T.taupe }} />
-            {isWeaving ? "Currently Weaving" : "Idle"}
-          </span>
-        </div>
-        <div style={{ height: 1, background: T.borderDef }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Looms Owned</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{weaver.loom} Loom{weaver.loom !== 1 ? "s" : ""}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Experience</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>Master Weaver</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Sarees Woven</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{totalSarees} <span style={{ fontSize: 12, fontWeight: 500, color: T.taupe }}>({completedSarees} passed)</span></div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Batches Completed</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green, marginTop: 3 }}>{completedBatches}</div>
-          </div>
-        </div>
-      </div>
-    </PickerShell>
-  );
-}
-
-function FactoryLoomDetailsModal({ loom, onClose }: { loom: typeof FACTORY_LOOMS_LIST[0]; onClose: () => void }) {
-  const { batches } = useBatches();
-  const statusColor = loom.status === "active" ? T.green : loom.status === "maintenance" ? T.red : T.taupe;
-  const statusBg = loom.status === "active" ? "rgba(30,102,64,0.10)" : loom.status === "maintenance" ? "rgba(192,57,43,0.09)" : "rgba(139,112,96,0.10)";
-  const loomBatches = batches.filter(b => b.rows.some(r => r.factoryLoomId === loom.id));
-  const activeBatchesCount = loomBatches.filter(b => b.status === "active").length;
-  const totalBatchesCount = loomBatches.length;
-  const shareesDone = loomBatches.reduce((sum, b) => sum + b.rows.filter(r => r.factoryLoomId === loom.id && r.qcPassed === true).length, 0);
-
-  return (
-    <PickerShell title="Factory Loom Details" onClose={onClose} width={420}>
-      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Factory size={24} color={T.royalBurgundy} weight="duotone" />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{loom.id}</div>
-            </div>
-          </div>
-          <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor, background: statusBg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const, textTransform: "capitalize" as const }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor }} />
-            {loom.status}
-          </span>
-        </div>
-        <div style={{ height: 1, background: T.borderDef }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Location</div>
-            <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{loom.location}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Operator</div>
-            <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{loom.operatorName}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Phone</div>
-            <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{loom.operatorPhone}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Installed</div>
-            <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{loom.installedYear}</div>
-          </div>
-        </div>
-
-        {/* Stat tiles */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          <div style={{ background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: "12px 8px", textAlign: "center" as const }}>
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.royalBurgundy }}>{activeBatchesCount}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>Active Batches</div>
-          </div>
-          <div style={{ background: "rgba(30,102,64,0.07)", borderRadius: 12, padding: "12px 8px", textAlign: "center" as const }}>
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.green }}>{shareesDone}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>Sarees Done</div>
-          </div>
-          <div style={{ background: "rgba(200,155,71,0.10)", borderRadius: 12, padding: "12px 8px", textAlign: "center" as const }}>
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.antiqueGold }}>{totalBatchesCount}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>Total Batches</div>
-          </div>
-        </div>
-
-        {loom.notes && (
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-            {loom.notes}
-          </div>
-        )}
-      </div>
-    </PickerShell>
-  );
-}
-
-function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose: () => void }) {
-  const priority = order.status === "overdue" ? "Urgent" : order.status === "at-risk" ? "High" : "Normal";
-  const priorityColor = priority === "Urgent" ? T.red : priority === "High" ? T.amber : T.green;
-  const estimatedValue = order.amountDue !== undefined ? order.amountDue : undefined;
-
-  return (
-    <PickerShell title="Order Details" onClose={onClose} width={450}>
-      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "14px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Pip initials={(order.customer || "?").charAt(0)} bg={T.royalBurgundy} size={40} />
-            <div>
-              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{order.customer}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{order.ref}</div>
-            </div>
-          </div>
-          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const, color: order.status === "completed" ? T.green : order.status === "overdue" ? T.red : T.amber, whiteSpace: "nowrap" as const }}>
-            {order.status}
-          </span>
-        </div>
-
-        {/* Order photos */}
-        <div>
-          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 8 }}>Order Photos</div>
-          {order.photoUrls && order.photoUrls.length > 0 ? (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
-              {order.photoUrls.map((url: string, i: number) => (
-                <img key={i} src={url} alt={`Order photo ${i + 1}`} style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
-              ))}
-            </div>
-          ) : (
-            <div style={{ width: 96, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: T.warmIvory, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-              No photos
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Quantity (Sarees)</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{order.total}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Delivery Deadline</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{order.due}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Estimated Value (₹)</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginTop: 3 }}>{estimatedValue !== undefined ? `₹${estimatedValue.toLocaleString("en-IN")}` : "—"}</div>
-          </div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Priority</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: priorityColor, marginTop: 3 }}>{priority}</div>
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 8 }}>Special Instructions</div>
-          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.ui, fontSize: 12.5, color: order.instructions ? T.luxuryBrown : T.taupe, fontStyle: order.instructions ? "normal" : "italic" }}>
-            {order.instructions || "No special instructions provided."}
-          </div>
-        </div>
-      </div>
-    </PickerShell>
-  );
-}
-
-function SareeDetailsModal({ row, onClose }: { row: SareeRow; onClose: () => void }) {
-  return (
-    <PickerShell title="Saree Item Details" onClose={onClose} width={450}>
-      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
-            {row.sareeId || "UNASSIGNED"}
-          </span>
-          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>
-            Serial #{row.serial}
-          </span>
-        </div>
-        <div style={{ height: 1, background: T.borderDef }} />
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {row.recipientType === "factoryLoom" ? (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Factory Loom</span>
-              <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.factoryLoomNumber || "Not assigned"}</span>
-            </div>
-          ) : (
-            <>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Weaver Name</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverName || "Not assigned"}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loom Assigned</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.weaverLoom ? `Loom ${row.weaverLoom}` : "Not assigned"}</span>
-              </div>
-            </>
-          )}
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Saree Type</span>
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{row.sareeTypeName || "Not assigned"} ({row.sareeTypeCode || "N/A"})</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Bulk Order Link</span>
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.royalBurgundy }}>{row.bulkOrderLabel || "General Stock"}</span>
-          </div>
-        </div>
-      </div>
-    </PickerShell>
-  );
-}
-
-// ─── Small helpers ────────────────────────────────────────────────────────────
-function EmptyCell() {
-  return <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 13, fontFamily: F.mono }}>—</span>;
-}
-
-const th: React.CSSProperties = {
-  padding: "10px 14px", textAlign: "left", fontFamily: F.ui, fontSize: 11,
-  fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px",
-  borderBottom: `1px solid ${T.borderDef}`,
-};
-const td: React.CSSProperties = {
-  padding: "11px 14px", verticalAlign: "middle",
-};
