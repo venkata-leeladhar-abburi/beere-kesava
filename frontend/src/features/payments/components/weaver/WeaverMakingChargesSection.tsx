@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, Search, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
@@ -52,7 +51,7 @@ export function WeaverMakingChargesSection() {
     });
   };
 
-  const downloadExcelTemplate = () => {
+  const downloadExcelTemplate = async () => {
     const weaversToExport = selectedIds.size > 0 
       ? weaversList.filter(w => selectedIds.has(w.id))
       : filtered;
@@ -119,6 +118,7 @@ export function WeaverMakingChargesSection() {
       };
     });
 
+    const XLSX = await import("xlsx");
     const worksheet = XLSX.utils.json_to_sheet(dataRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "PaymentLedger");

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef } from "react";
-import * as XLSX from "xlsx";
 import { motion, AnimatePresence } from "motion/react";
 const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
@@ -247,8 +246,9 @@ function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<FinancialEnt
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = evt => {
+    reader.onload = async evt => {
       try {
+        const XLSX = await import("xlsx");
         const wb = XLSX.read(evt.target?.result, { type: "binary" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: Record<string, string>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });

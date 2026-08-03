@@ -1,7 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileText, UploadCloud, X } from "lucide-react";
 import { motion } from "motion/react";
-import * as XLSX from "xlsx";
 
 import { EASE, F, T } from "../../theme";
 import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, VendorUploadResult } from "../../types";
@@ -24,8 +23,9 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
     setResult(null);
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const XLSX = await import("xlsx");
         const data = new Uint8Array(e.target!.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];

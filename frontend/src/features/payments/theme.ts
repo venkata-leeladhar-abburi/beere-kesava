@@ -17,6 +17,7 @@ export const T = {
   greenMid:      "#2D9158",
   crimson:       "#C0392B",
   crimsonBg:     "rgba(192,57,43,0.08)",
+  orange:        "#E67E22",
   borderDef:     "rgba(110,15,45,0.10)",
   borderGold:    "rgba(200,155,71,0.22)",
 };
