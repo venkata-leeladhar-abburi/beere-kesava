@@ -1,0 +1,189 @@
+import React from "react";
+import { Check, CheckCircle2, Clock } from "lucide-react";
+import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary } from "../../../../materials/contexts/MaterialIssueContext";
+import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
+import { DesktopHero } from "./DesktopHero";
+
+function DSectionHeader({ label }: { label: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
+        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+export function ConfirmSection({
+  bp, isTablet, pendingMaterialRecord, confirmed, confirmedRecord,
+  matByBatch, matSummary, weaverMaterialRecords,
+  setActive, setConfirmed, setConfirmedRecord, setSigMethod, setHasSig, setRequestSent,
+}: {
+  bp: "tablet" | "desktop"; isTablet: boolean;
+  pendingMaterialRecord: MaterialIssueRecord | null;
+  confirmed: boolean;
+  confirmedRecord: MaterialIssueRecord | null;
+  matByBatch: BatchMaterialSummary[];
+  matSummary: WeaverMaterialSummary;
+  weaverMaterialRecords: MaterialIssueRecord[];
+  setActive: (t: Tab5) => void;
+  setConfirmed: (v: boolean) => void;
+  setConfirmedRecord: (v: MaterialIssueRecord | null) => void;
+  setSigMethod: (v: "none" | "here" | "remote") => void;
+  setHasSig: (v: boolean) => void;
+  setRequestSent: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <DesktopHero
+        bp={bp}
+        breadcrumb="SINCE 1999 · WEAVER PORTAL · MATERIAL RECEIPT"
+        titleMain="Confirm Materials"
+        titleSub="& Open Your Batch"
+        description="Review all materials issued to you, check the color slip, and sign to officially open your batch and start weaving."
+        pills={pendingMaterialRecord ? [
+          { text: `${pendingMaterialRecord.id} · Awaiting Signature`, color: C.gold },
+          { text: `${pendingMaterialRecord.materials.length} Material${pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to Review` },
+        ] : [{ text: "No pending materials" }]}
+        alertBadge={pendingMaterialRecord ? "New Materials Issued" : undefined}
+        bgUrl={FABRIC_BG}
+      />
+      <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
+        {confirmed && confirmedRecord ? (
+          <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
+            <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
+              <Check size={52} color={C.green} />
+            </div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: C.text, marginBottom: 16 }}>Materials Confirmed!</div>
+            <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
+            <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "10px 24px", fontFamily: F.m, fontSize: 18, marginBottom: 36 }}>{confirmedRecord.id}</div>
+            <button onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }} style={{ display: "block", width: "100%", height: 60, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF", cursor: "pointer" }}>
+              ← Back to My Batches
+            </button>
+          </div>
+        ) : !pendingMaterialRecord ? (
+          <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
+            <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
+              <Check size={52} color={C.green} />
+            </div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 16 }}>No pending material receipt</div>
+            <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>All material receipts are confirmed. Nothing pending.</div>
+            <button onClick={() => setActive("batches")} style={{ display: "block", width: "100%", height: 56, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", cursor: "pointer" }}>
+              ← Go to My Batches
+            </button>
+          </div>
+        ) : (
+          <div style={{ background: "rgba(196,146,58,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>RK</span>
+              </div>
+              <div>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Ravi Kumar, your materials are ready</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+                  <span style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{pendingMaterialRecord.id}</span>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.muted, display: "inline-block" }} />
+                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Issued {new Date(pendingMaterialRecord.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.7 }}>
+              The admin has issued your materials. Review the list below in Materials Received History, then sign to confirm receipt.
+            </div>
+            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+              <div style={{ background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                <CheckCircle2 size={14} color={C.green} />
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>{pendingMaterialRecord.materials.length} material{pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to confirm</span>
+              </div>
+              <div style={{ background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                <Clock size={14} color={C.muted} />
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Signature required</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Outstanding Material still with the weaver */}
+        {matByBatch.length > 0 && (() => {
+          const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;
+          const outColor = matSummary.outstandingGrams > 0 ? C.crim : C.green;
+          return (
+            <div style={{ marginTop: 48 }}>
+              <DSectionHeader label="Material Still With You" />
+              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>
+                Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
+              </div>
+
+              {/* Totals */}
+              <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr 1fr" : "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+                {[
+                  { label: "Issued", value: fmtKg(matSummary.issuedGrams), sub: `incl. ${matSummary.jariReels} jari reels`, color: C.text },
+                  { label: "Submitted", value: fmtKg(matSummary.receivedGrams), sub: `${matSummary.sareesReceived} sarees`, color: C.green },
+                  { label: "Outstanding", value: fmtKg(matSummary.outstandingGrams), sub: "still with you", color: outColor },
+                ].map(s => (
+                  <div key={s.label} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "20px 22px" }}>
+                    <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>{s.label}</div>
+                    <div style={{ fontFamily: F.d, fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 5 }}>{s.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Batch wise — combined with the handovers that make up each batch */}
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 20 }}>
+                {(() => {
+                  const recordsByBatch = new Map<string, typeof weaverMaterialRecords>();
+                  weaverMaterialRecords.forEach(r => {
+                    const key = r.batchId || "Unassigned";
+                    if (!recordsByBatch.has(key)) recordsByBatch.set(key, []);
+                    recordsByBatch.get(key)!.push(r);
+                  });
+                  return matByBatch.map(b => {
+                    const records = (recordsByBatch.get(b.batchId) ?? []).slice()
+                      .sort((a, c) => new Date(c.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+                    return (
+                      <div key={b.batchId} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 8 }}>
+                          <span style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
+                          <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${C.bdr}` }}>
+                          {[
+                            { label: "Issued", value: fmtKg(b.issuedGrams), sub: b.jariReels > 0 ? `incl. ${b.jariReels} jari reels` : undefined, color: C.text },
+                            { label: "Submitted", value: fmtKg(b.receivedGrams), sub: undefined, color: C.green },
+                            { label: "Outstanding", value: fmtKg(b.outstandingGrams), sub: undefined, color: b.outstandingGrams > 0 ? C.crim : C.green },
+                          ].map((s, i) => (
+                            <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+                              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                              <div style={{ fontFamily: F.m, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                              {s.sub && <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 3 }}>{s.sub}</div>}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column" as const, gap: 16 }}>
+                          {records.map(r => (
+                            <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          );
+        })()}
+
+        {matByBatch.length === 0 && (
+          <div style={{ marginTop: 48 }}>
+            <DSectionHeader label="Materials Received History" />
+            <div style={{ padding: "40px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>
+              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>No materials have been issued to you yet.</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
