@@ -17,6 +17,8 @@ const F = { ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
+export type UsePaginationReturn = ReturnType<typeof usePagination>;
+
 /** Slices `items` to the current page and resets to page 1 whenever the
  *  underlying list (after filtering/sorting) shrinks below the current page. */
 export function usePagination<T>(items: T[], initialPageSize = 25) {

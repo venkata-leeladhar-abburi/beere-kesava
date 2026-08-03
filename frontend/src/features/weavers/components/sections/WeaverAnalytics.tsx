@@ -1,16 +1,16 @@
-// ── Weaver production analytics (trend, cluster, quality vs output) ────────
 import React, { useState } from "react";
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line, Legend,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { ChartBar, Gauge, Yarn, Medal, MapPin as PhMapPin, CheckCircle } from "@phosphor-icons/react";
+import { ChartBar, Gauge, Yarn, CheckCircle } from "@phosphor-icons/react";
 import { T, F } from "../theme";
 import { Status } from "../types";
 import { ANALYTICS_WEAVERS, PRODUCTION_LEDGER, STATUS_MIX_META, CLUSTER_FILLS, WA_MONTH_ABBR } from "../data";
-import { FadeUp, Avatar, qcColor } from "../common/primitives";
+import { FadeUp, qcColor } from "../common/primitives";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 
 export function WeaverAnalytics() {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -28,7 +28,6 @@ export function WeaverAnalytics() {
     return "All time";
   }, [filter]);
 
-  // Per-weaver rollup for the selected period.
   const perWeaver = React.useMemo(() => {
     const m = new Map<string, { produced: number; passed: number; payout: number }>();
     rows.forEach(r => {
@@ -107,9 +106,6 @@ export function WeaverAnalytics() {
   );
   const avgPerLoom = totalLooms ? totalProduced / totalLooms : 0;
 
-  // Output vs quality — ranked bars beat a scatter plot here: a longer bar is
-  // simply more sarees, and the colour alone tells you the quality band, so
-  // there's nothing to decode across two axes plus a bubble size.
   const qualityVsOutput = React.useMemo(
     () => [...perWeaver].sort((a, b) => b.produced - a.produced).slice(0, 8),
     [perWeaver]
@@ -130,14 +126,12 @@ export function WeaverAnalytics() {
   return (
     <div style={{ padding: "36px 48px 0" }}>
       <FadeUp>
-        {/* Section heading */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
           <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Weaver Analytics</h2>
           <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         </div>
 
-        {/* Timeline scope — drives every chart below */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
@@ -163,7 +157,6 @@ export function WeaverAnalytics() {
         </div>
       ) : (
         <>
-          {/* ── Row 1: production trend + workforce status ── */}
           <FadeUp delay={0.04}>
             <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
               <div style={card}>
@@ -233,92 +226,15 @@ export function WeaverAnalytics() {
             </div>
           </FadeUp>
 
-          {/* ── Row 2: top 10 leaderboard + cluster contribution ── */}
           <FadeUp delay={0.08}>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
-              <div style={card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Medal size={20} color={T.antiqueGold} weight="fill" />
-                    </div>
-                    <div>
-                      <div style={cardTitle}>Top 10 Weavers by Output</div>
-                      <div style={cardSub}>Sarees woven in {periodLabel.toLowerCase()} · bar colour shows QC pass rate</div>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    {[{ c: T.green, t: "≥95%" }, { c: "#8B6018", t: "85–94%" }, { c: T.crimson, t: "<85%" }].map(g => (
-                      <div key={g.t} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <div style={{ width: 9, height: 9, borderRadius: 3, background: g.c }} />
-                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{g.t}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <ResponsiveContainer width="100%" height={330}>
-                  <BarChart data={top10} layout="vertical" barSize={19} margin={{ left: 4, right: 62 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-                    <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="short" width={116} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass · ${L(p.payload.payout)} earned`, p.payload.name]} />
-                    <Bar dataKey="produced" radius={[0, 6, 6, 0]}
-                      label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, fill: T.luxuryBrown }}>
-                      {top10.map(w => <Cell key={w.id} fill={qcColor(w.periodPassRate)} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                {/* Podium strip */}
-                <div style={{ display: "flex", gap: 10, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, marginTop: 6 }}>
-                  {top10.slice(0, 3).map((w, i) => (
-                    <div key={w.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: i === 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 ? T.borderGold : T.borderDef}`, borderRadius: 14, padding: "12px 14px" }}>
-                      <div style={{ width: 30, height: 30, borderRadius: 10, flexShrink: 0, background: i === 0 ? "linear-gradient(135deg,#C89B47,#E7C983)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 15, fontWeight: 700, color: i === 0 ? "#FFF" : T.taupe }}>{i + 1}</div>
-                      <Avatar photo={w.photo} initials={w.initials} bg={w.bg} size={36} />
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{w.produced} sarees · {totalProduced ? Math.round((w.produced / totalProduced) * 100) : 0}% of output</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <PhMapPin size={18} color={T.royalBurgundy} weight="fill" />
-                  <div style={cardTitle}>Output by Cluster</div>
-                </div>
-                <div style={cardSub}>Which weaving villages carry production</div>
-                <ResponsiveContainer width="100%" height={186}>
-                  <PieChart>
-                    <Pie data={byCluster} dataKey="produced" nameKey="cluster" cx="50%" cy="50%" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="none">
-                      {byCluster.map((d, i) => <Cell key={i} fill={d.fill} />)}
-                    </Pie>
-                    <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.weavers} weavers`, p.payload.cluster]} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 8 }}>
-                  {byCluster.map(c => (
-                    <div key={c.cluster}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                          <div style={{ width: 10, height: 10, borderRadius: 3, background: c.fill, flexShrink: 0 }} />
-                          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.cluster}</span>
-                        </div>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, flexShrink: 0 }}>{totalProduced ? Math.round((c.produced / totalProduced) * 100) : 0}%</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 4, background: "rgba(110,15,45,0.06)", overflow: "hidden" }}>
-                        <div style={{ width: `${totalProduced ? (c.produced / totalProduced) * 100 : 0}%`, height: "100%", background: c.fill, borderRadius: 4 }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <WeaverLeaderboardClusterRow
+              top10={top10}
+              periodLabel={periodLabel}
+              totalProduced={totalProduced}
+              byCluster={byCluster}
+            />
           </FadeUp>
 
-          {/* ── Row 3: quality vs output, loom productivity, health gauge ── */}
           <FadeUp delay={0.12}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
               <div style={card}>
@@ -419,4 +335,3 @@ export function WeaverAnalytics() {
     </div>
   );
 }
-

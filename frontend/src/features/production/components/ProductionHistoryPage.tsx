@@ -1,12 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Search, ChevronDown, Eye, Calendar, Users, Download,
-  Facebook, Instagram, Youtube, Linkedin, Phone,
-  FileText, LayoutGrid, BookOpen, CreditCard, Grid2X2,
-  TriangleAlert, CheckCircle2, Loader2, ExternalLink,
+  CheckCircle2, Loader2, TriangleAlert,
 } from "lucide-react";
-import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
-import { imgBKLogo } from "../../../shared/constants/weaverImages";
+import { ProductionHistoryFooter } from "./ProductionHistoryFooter";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -18,7 +15,6 @@ const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  warmCream:     "#F5E8D0",
   taupe:         "#8B7060",
   green:         "#1E6640",
   greenBg:       "#DCFCE7",
@@ -27,7 +23,6 @@ const T = {
   blue:          "#1E3A8A",
   blueBg:        "#DBEAFE",
   borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
 };
 
 const F = {
@@ -135,7 +130,6 @@ function PageHeader() {
   return (
     <header style={{ background: T.darkBurgundy, padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        {/* Loom icon — simple SVG */}
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="8" fill="rgba(200,155,71,0.18)" />
           <rect x="8" y="10" width="20" height="3" rx="1.5" fill={T.antiqueGold} />
@@ -177,7 +171,6 @@ function FilterBar() {
       borderBottom: `1px solid ${T.borderDef}`,
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
     }}>
-      {/* Date range */}
       <DropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
       <DropBtn label="All Saree Types" />
       <DropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
@@ -273,19 +266,14 @@ function TableSection() {
           <tbody>
             {BATCHES.map((b, i) => (
               <tr key={b.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#F8F4EF" }}>
-                {/* Batch Number */}
                 <td style={TD}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
                     {b.id}
                   </span>
                 </td>
-
-                {/* Design Code */}
                 <td style={TD}>
                   <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{b.designCode}</span>
                 </td>
-
-                {/* Saree Type */}
                 <td style={TD}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -296,15 +284,11 @@ function TableSection() {
                     <span style={{ fontSize: 12.5, fontWeight: 500 }}>{b.sareeType}</span>
                   </div>
                 </td>
-
-                {/* Batch Size */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <BatchSquares size={b.batchSize} />
                   </div>
                 </td>
-
-                {/* Weavers */}
                 <td style={TD}>
                   <div style={{ display: "flex", gap: -4 }}>
                     {b.weavers.map((w, wi) => (
@@ -314,18 +298,12 @@ function TableSection() {
                     ))}
                   </div>
                 </td>
-
-                {/* Completion */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>
                 </td>
-
-                {/* All Pieces */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>
                 </td>
-
-                {/* OK / Found */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   {b.okPieces !== null ? (
                     <span style={{ fontFamily: F.mono, fontSize: 12.5 }}>
@@ -337,23 +315,15 @@ function TableSection() {
                     <span style={{ color: T.taupe, fontSize: 12 }}>—</span>
                   )}
                 </td>
-
-                {/* Status */}
                 <td style={TD}>
                   <StatusBadge status={b.status} />
                 </td>
-
-                {/* Making Charges */}
                 <td style={{ ...TD, textAlign: "right" }}>
                   <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>
                 </td>
-
-                {/* Completed On */}
                 <td style={TD}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>
                 </td>
-
-                {/* Bulk Order */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   {b.bulkOrder ? (
                     <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
@@ -361,8 +331,6 @@ function TableSection() {
                     <span style={{ color: "#D1C5BC", fontSize: 12 }}>—</span>
                   )}
                 </td>
-
-                {/* Actions */}
                 <td style={{ ...TD, textAlign: "center" }}>
                   <button style={{
                     width: 30, height: 30, borderRadius: 6,
@@ -379,7 +347,6 @@ function TableSection() {
         </table>
       </div>
 
-      {/* Pagination */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0 24px" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
           Showing 1 to 10 of 25 entries
@@ -406,113 +373,6 @@ function TableSection() {
   );
 }
 
-// ── Section 5: Footer ─────────────────────────────────────────────────────────
-const QUICK_LINKS = ["Dashboard", "Weavers", "Saree / Inventory", "Payments", "Design Library"];
-const PROD_SHORTCUTS = ["Create New Batch", "Assign Saree Types", "Assign Weavers", "Setup Printing Plans", "Upload New Design", "Design Library"];
-const NEED_HELP = ["User Guide", "Support Center", "Quality Process"];
-const COMMITMENTS = ["200+ Skilled Weavers", "Authentic Banarasi Patterns", "Premium Quality Assurance", "Traditional Silk Heritage"];
-
-function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ flex: 1, minWidth: 150 }}>
-      <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 800, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", marginBottom: 14, borderBottom: `1px solid rgba(200,155,71,0.20)`, paddingBottom: 8 }}>
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function FooterLink({ label }: { label: string }) {
-  return (
-    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,253,249,0.65)", marginBottom: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "color 0.2s" }}>
-      <ChevronDown size={10} style={{ transform: "rotate(-90deg)", color: T.antiqueGold, flexShrink: 0 }} />
-      {label}
-    </div>
-  );
-}
-
-function Footer() {
-  return (
-    <footer style={{ background: T.darkBurgundy, paddingTop: 48, borderTop: `3px solid ${T.antiqueGold}` }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
-        <div style={{ display: "flex", gap: 48, flexWrap: "wrap", paddingBottom: 40, borderBottom: "1px solid rgba(200,155,71,0.15)" }}>
-          {/* Brand column */}
-          <div style={{ flex: "0 0 240px", maxWidth: 240 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-              <ImageWithFallback
-                src={imgBKLogo}
-                alt="Beers Keshara & Brothers Silks logo"
-                style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", border: `2px solid ${T.antiqueGold}` }}
-              />
-              <div>
-                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.2 }}>Beers Keshara</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
-              </div>
-            </div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, letterSpacing: "2px", marginBottom: 10 }}>SINCE 1944</div>
-            <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.55)", lineHeight: 1.7, marginBottom: 20 }}>
-              Generating self-employment, we are traditional banarasi silk weaving manufacturers.
-            </p>
-            <div style={{ display: "flex", gap: 10 }}>
-              {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-                <button key={i} style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold }}>
-                  <Icon size={14} />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <FooterCol title="Quick Links">
-            {QUICK_LINKS.map((l) => <FooterLink key={l} label={l} />)}
-          </FooterCol>
-
-          {/* Production Shortcuts */}
-          <FooterCol title="Production Shortcut">
-            {PROD_SHORTCUTS.map((l) => <FooterLink key={l} label={l} />)}
-          </FooterCol>
-
-          {/* Need Help */}
-          <FooterCol title="Need Help">
-            {NEED_HELP.map((l) => <FooterLink key={l} label={l} />)}
-            <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 7 }}>
-              <Phone size={13} style={{ color: T.antiqueGold }} />
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>+91 98400 32045</span>
-            </div>
-          </FooterCol>
-
-          {/* Our Commitment */}
-          <FooterCol title="Our Commitment">
-            {COMMITMENTS.map((c) => (
-              <div key={c} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9 }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0, marginTop: 5 }} />
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", lineHeight: 1.6 }}>{c}</span>
-              </div>
-            ))}
-          </FooterCol>
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", flexWrap: "wrap", gap: 12 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 11.5, color: "rgba(255,253,249,0.40)" }}>
-            © 2025 Beers Keshara &amp; Brothers Silks. All rights reserved.
-          </span>
-          <span style={{ fontFamily: F.display, fontSize: 13, fontStyle: "italic", color: T.antiqueGold, opacity: 0.8 }}>
-            Tradition Woven From Quality Creates Legacy
-          </span>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-              <Icon key={i} size={13} style={{ color: "rgba(255,253,249,0.30)", cursor: "pointer" }} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-// ── Main export ───────────────────────────────────────────────────────────────
 export function ProductionHistoryPage() {
   return (
     <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
@@ -520,7 +380,7 @@ export function ProductionHistoryPage() {
       <FilterBar />
       <StatsBar />
       <TableSection />
-      <Footer />
+      <ProductionHistoryFooter />
     </div>
   );
 }

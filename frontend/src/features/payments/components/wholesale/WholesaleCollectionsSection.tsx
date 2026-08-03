@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlignJustify, BadgeCheck, CircleAlert, Download, Eye, LayoutGrid, LayoutList, MapPin, Receipt, Search, TrendingUp } from "lucide-react";
+import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, Search, TrendingUp } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 
@@ -11,10 +11,10 @@ import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn } from "../common/primitives";
 import { CustomerCard } from "./CustomerCard";
-import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { PaymentRemindersModal } from "./PaymentRemindersModal";
 import { RecordPaymentModal } from "./RecordPaymentModal";
 import { ViewInvoiceModal } from "./ViewInvoiceModal";
+import { WholesaleTableView } from "./WholesaleTableView";
 
 export function WholesaleCollectionsSection() {
   const { dispatches } = useFinishing();
@@ -34,7 +34,6 @@ export function WholesaleCollectionsSection() {
   const [filterType, setFilterType] = useState("All Invoice Types");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
-  // Synchronize dispatches
   useEffect(() => {
     setInvoices(prev => {
       const updated = [...prev];
@@ -60,7 +59,6 @@ export function WholesaleCollectionsSection() {
     });
   }, [dispatches]);
 
-  // Match invoice ID (INV-2026-XXX) to bulk order ref (ORD-2026-XXX) by trailing number
   const matchBulkOrder = (invId: string): BulkOrder | undefined => {
     const suffix = invId.split("-").pop();
     return bulkOrders.find(o => o.ref.split("-").pop() === suffix);
@@ -69,14 +67,13 @@ export function WholesaleCollectionsSection() {
   const handleSavePayment = (amount: number, firmId: string, utr: string, date: string, method: string) => {
     if (!recordPayment) return;
     const firm = firms.find(f => f.id === firmId);
-    const firmName = firm ? firm.firmName : "Surat Zari Works";
 
     setInvoices(prev => prev.map(i => {
       if (i.id === recordPayment.id) {
         const newPaid = Math.min(i.total, i.paid + amount);
         const newPayments = [
           ...(i.payments || []),
-          { amount, date, utr, method, firmName }
+          { amount, date, utr, method, firmName: firm ? firm.firmName : "Surat Zari Works" }
         ];
         return {
           ...i,
@@ -97,7 +94,7 @@ export function WholesaleCollectionsSection() {
 
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.customer.toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase());
-    const matchState = filterState === "All States" || inv.city === filterState; // close enough
+    const matchState = filterState === "All States" || inv.city === filterState;
     const matchDate = matchesDateFilter(inv.invoiceDate, dateFilter);
     return matchSearch && matchState && matchDate;
   });
@@ -108,13 +105,9 @@ export function WholesaleCollectionsSection() {
     { key: "table", Icon: AlignJustify, label: "Table View" },
   ] as const;
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-
   return (
     <div id="pay-wholesale" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        {/* ── Section header ──────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
@@ -135,7 +128,6 @@ export function WholesaleCollectionsSection() {
           </DownloadGate>
         </div>
 
-        {/* ── 4 stat cards ────────────────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
@@ -187,7 +179,6 @@ export function WholesaleCollectionsSection() {
           ))}
         </div>
 
-        {/* ── Day 45 alert rule info ───────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(200,155,71,0.07)", border: "1px solid rgba(200,155,71,0.25)", borderLeft: `4px solid ${T.antiqueGold}`, borderRadius: 10, padding: "12px 20px", marginBottom: 14 }}>
           <CircleAlert size={16} style={{ color: T.antiqueGold, flexShrink: 0 }} />
           <span style={{ fontFamily: F.ui, fontSize: 13, color: "#8B6018", lineHeight: 1.55 }}>
@@ -195,7 +186,6 @@ export function WholesaleCollectionsSection() {
           </span>
         </div>
 
-        {/* ── Overdue alert banner ─────────────────────────────── */}
         {overdueInvs.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.22)", borderLeft: `4px solid ${T.crimson}`, borderRadius: 10, padding: "14px 20px", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -211,7 +201,6 @@ export function WholesaleCollectionsSection() {
           </div>
         )}
 
-        {/* ── Filter + view toggle ─────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
@@ -235,7 +224,6 @@ export function WholesaleCollectionsSection() {
 
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
-        {/* ── Card grid ────────────────────────────────────────── */}
         {view === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
             {filtered.map((inv, i) => {
@@ -249,168 +237,13 @@ export function WholesaleCollectionsSection() {
           </div>
         )}
 
-        {/* ── List view ────────────────────────────────────────── */}
-        {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
-            {filtered.map((inv, i) => {
-              const rem = inv.total - inv.paid;
-              return (
-                <div
-                  key={inv.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 16, padding: "14px 20px",
-                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
-                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
-                    borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}`,
-                    transition: "background-color 0.15s ease",
-                  }}
-                >
-                  <div style={{ flex: "0 0 130px" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
-                  </div>
-                  <div style={{ flex: "0 0 230px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                      <MapPin size={12} />{inv.city}
-                    </div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>₹{inv.total.toLocaleString("en-IN")}</div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
-                      {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
-                    </div>
-                  </div>
-                  <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 500 }}>{inv.dueDate}</div>
-                  </div>
-                  <div style={{ flex: "0 0 150px" }}>
-                    <InvBadge status={inv.status} />
-                  </div>
-                  <button
-                    onClick={() => setViewInvoice(inv)}
-                    style={{
-                      padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                      background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                      color: T.royalBurgundy, cursor: "pointer",
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                  >
-                    View
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ── Table view ───────────────────────────────────────── */}
-        {view === "table" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-                <thead>
-                  <tr>
-                    <th style={TH}>Invoice ID</th>
-                    <th style={TH}>Customer</th>
-                    <th style={TH}>City</th>
-                    <th style={TH}>Invoice Date</th>
-                    <th style={TH}>Due Date</th>
-                    <th style={{ ...TH, textAlign: "right" as const }}>Total Amount</th>
-                    <th style={{ ...TH, textAlign: "right" as const }}>Paid Amount</th>
-                    <th style={{ ...TH, textAlign: "right" as const }}>Remaining Due</th>
-                    <th style={{ ...TH, textAlign: "center" as const }}>Status</th>
-                    <th style={{ ...TH, textAlign: "center" as const }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((inv, i) => {
-                    const rem = inv.total - inv.paid;
-                    return (
-                      <tr key={inv.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${INV_STATUS_CFG[inv.status].color}` }}>
-                        <td style={TD}>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>
-                        </td>
-                        <td style={TD}>
-                          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</span>
-                        </td>
-                        <td style={TD}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.taupe, fontSize: 13 }}>
-                            <MapPin size={12} />{inv.city}
-                          </div>
-                        </td>
-                        <td style={TD}>{inv.invoiceDate}</td>
-                        <td style={{ ...TD, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 400 }}>
-                          {inv.dueDate}
-                          {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 11, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
-                        </td>
-                        <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{inv.total.toLocaleString("en-IN")}</td>
-                        <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</td>
-                        <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                          {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
-                        </td>
-                        <td style={{ ...TD, textAlign: "center" as const }}><InvBadge status={inv.status} /></td>
-                        <td style={{ ...TD, textAlign: "center" as const }}>
-                          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                            <button
-                              onClick={() => setViewInvoice(inv)}
-                              style={{
-                                padding: "6px 12px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                                background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                                color: T.royalBurgundy, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-                                transition: "all 0.15s ease",
-                              }}
-                              onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                            >
-                              <Eye size={12} /> View
-                            </button>
-                            {inv.status !== "Paid" && (
-                              <button
-                                onClick={() => setRecordPayment(inv)}
-                                style={{
-                                  padding: "6px 14px", background: T.royalBurgundy, color: "#FFFDF9",
-                                  border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                                  cursor: "pointer", transition: "all 0.2s ease"
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
-                              >
-                                Pay
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-                    <td colSpan={5} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, fontSize: 13 }}>
-                      Totals — {filtered.length} invoice{filtered.length !== 1 ? "s" : ""}
-                    </td>
-                    <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
-                      ₹{filtered.reduce((s, inv) => s + inv.total, 0).toLocaleString("en-IN")}
-                    </td>
-                    <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.green }}>
-                      ₹{filtered.reduce((s, inv) => s + inv.paid, 0).toLocaleString("en-IN")}
-                    </td>
-                    <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.crimson }}>
-                      ₹{filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0).toLocaleString("en-IN")}
-                    </td>
-                    <td colSpan={2} />
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
+        {(view === "list" || view === "table") && (
+          <WholesaleTableView
+            view={view}
+            filtered={filtered}
+            setViewInvoice={setViewInvoice}
+            setRecordPayment={setRecordPayment}
+          />
         )}
 
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Collections Report" desc="Generate and download the wholesale customer collections report." actionLabel="Download" icon={Download} />

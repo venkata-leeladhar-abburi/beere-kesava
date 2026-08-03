@@ -1,21 +1,16 @@
 import React, { useState } from "react";
 import {
-  Factory, Layers, Package, TrendingUp, Trophy, Percent, Timer,
+  TrendingUp, Trophy, Timer,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
-  RadialBarChart, RadialBar,
+  ResponsiveContainer, Cell,
 } from "recharts";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, FadeUp } from "./theme";
 import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, STATUS_CFG } from "./types";
-
-// ── Analytics ────────────────────────────────────────────────────────────────
-// Reads the loom / batch / material / saree records directly, scoped by one
-// shared timeline control. Sarees are dated by completion, materials by issue
-// date, batches by start date.
+import { LoomThroughputAndAvailability, LoomMaterialDesignRow } from "./LoomAnalyticsCharts";
 
 const LA_MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const UTIL_META: Record<string, { label: string; color: string }> = {
@@ -53,7 +48,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   const failed = doneSarees.filter(s => s.qualityStatus === "fail").length;
   const passRate = produced ? Math.round((passed / produced) * 100) : 0;
 
-  // Loom availability is current state, not period-scoped.
   const utilisation = React.useMemo(() => (["active", "idle", "maintenance"] as const)
     .map(k => ({ key: k, name: UTIL_META[k].label, value: looms.filter(l => l.status === k).length, color: UTIL_META[k].color }))
     .filter(d => d.value > 0), [looms]);
@@ -103,7 +97,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
     [perLoom]
   );
 
-  // Active batches with their delivery risk — the operational hot list.
   const today = new Date();
   const batchProgress = React.useMemo(() => batches
     .filter(b => b.status === "active")
@@ -124,7 +117,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   const overdueCount = batchProgress.filter(b => b.overdue).length;
   const pipeline = batches.filter(b => b.status === "active").reduce((a, b) => a + (b.sareeCount - b.completedCount), 0);
 
-  // Warp and Resham are kg; Jari comes in Reels or Buns — so units are never mixed.
   const byMaterial = React.useMemo(() => {
     const m = new Map<string, { qty: number; type: string; unit: string }>();
     periodMaterials.forEach(x => {
@@ -149,7 +141,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
     return [...m.entries()]
       .map(([type, v], i) => ({ type, short: type, ...v, fill: FLOOR_FILLS[i % FLOOR_FILLS.length] }))
       .sort((a, b) => b.produced - a.produced)
-      .slice(0, 5); // top 5 designs
+      .slice(0, 5);
   }, [doneSarees]);
 
   const card: React.CSSProperties = {
@@ -169,7 +161,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
           <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         </div>
 
-        {/* Timeline scope — drives every chart in this section */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
@@ -187,81 +178,21 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
         </div>
       </FadeUp>
 
-      {/* ── Row 1: throughput + loom availability ── */}
+      {/* Row 1: Throughput + Loom Availability */}
       <FadeUp delay={0.04}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
-          <div style={card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <div style={cardTitle}>Factory Throughput</div>
-                <div style={cardSub}>Sarees completed against quality-check outcomes</div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: passRate >= 90 ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", padding: "4px 10px", borderRadius: 20 }}>
-                <TrendingUp size={13} color={passRate >= 90 ? T.green : T.crimson} />
-                <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: passRate >= 90 ? T.green : T.crimson }}>{failed} rejected</span>
-              </div>
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 42, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "10px 0 2px" }}>{produced}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{pipeline} sarees still in the pipeline across active batches</div>
-            {monthly.length === 0 ? (
-              <div style={{ padding: "60px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees completed in this period.</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={208}>
-                <ComposedChart data={monthly} barSize={26}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
-                  <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
-                  <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
-                  <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-                  <Bar name="Passed QC" dataKey="passed" fill={T.goldLight} radius={[5, 5, 0, 0]} />
-                  <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-
-          <div style={card}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Factory size={16} color={T.royalBurgundy} />
-              <div style={cardTitle}>Loom Availability</div>
-            </div>
-            <div style={cardSub}>Current floor state · idle looms are lost capacity</div>
-            <div style={{ position: "relative" as const, marginTop: 12 }}>
-              <ResponsiveContainer width="100%" height={172}>
-                <PieChart>
-                  <Pie data={utilisation} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                    {utilisation.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} looms`, p.payload.name]} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
-                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{utilRate}%</div>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>running</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
-              {utilisation.map(d => (
-                <div key={d.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{d.name}</span>
-                  </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 14, paddingTop: 14, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-              <span>Sarees in progress</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{perLoom.reduce((a, l) => a + l.wip, 0)}</span>
-            </div>
-          </div>
-        </div>
+        <LoomThroughputAndAvailability
+          produced={produced}
+          passRate={passRate}
+          failed={failed}
+          pipeline={pipeline}
+          monthly={monthly}
+          utilisation={utilisation}
+          utilRate={utilRate}
+          perLoom={perLoom}
+        />
       </FadeUp>
 
-      {/* ── Row 2: output per loom + batch delivery risk ── */}
+      {/* Row 2: Output by Loom + Batch Delivery Risk */}
       <FadeUp delay={0.08}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
           <div style={card}>
@@ -295,7 +226,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            {/* Operator strip */}
             <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, marginTop: 6 }}>
               {rankedLooms.slice(0, 4).map((l, i) => {
                 const sc = STATUS_CFG[l.status];
@@ -348,94 +278,19 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
         </div>
       </FadeUp>
 
-      {/* ── Row 3: material draw, floor comparison, factory health ── */}
+      {/* Row 3: Material draw, floor comparison, factory health */}
       <FadeUp delay={0.12}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, paddingBottom: 8 }}>
-          <div style={card}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Layers size={16} color={T.royalBurgundy} />
-              <div style={cardTitle}>Material Consumption</div>
-            </div>
-            <div style={cardSub}>Issued to looms · units kept separate</div>
-            {byMaterial.length === 0 ? (
-              <div style={{ padding: "62px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No material issued in this period.</div>
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height={186}>
-                  <BarChart data={byMaterial} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 9.5, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
-                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${v} ${p.payload.unit}`, p.payload.type]} />
-                    <Bar dataKey="qty" radius={[5, 5, 0, 0]}>
-                      {byMaterial.map(d => <Cell key={d.label} fill={d.fill} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-                  <span>Warp drawn {warpKg.toFixed(1)} kg</span>
-                  <span style={{ color: T.luxuryBrown, fontWeight: 700 }}>
-                    {produced ? `${(warpKg / produced).toFixed(2)} kg/saree` : "—"}
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div style={card}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Package size={16} color={T.royalBurgundy} />
-              <div style={cardTitle}>Output by Design</div>
-            </div>
-            <div style={cardSub}>Top producing saree types</div>
-            <ResponsiveContainer width="100%" height={186}>
-              <BarChart data={byDesign} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
-                <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                  formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
-                <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
-                  {byDesign.map(d => <Cell key={d.type} fill={d.fill} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
-              <span>{byDesign.length} designs</span>
-              <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byDesign[0]?.type ?? "—"}</span>
-            </div>
-          </div>
-
-          <div style={card}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Percent size={16} color={T.royalBurgundy} />
-              <div style={cardTitle}>Factory Health</div>
-            </div>
-            <div style={cardSub}>Quality and capacity snapshot</div>
-            <ResponsiveContainer width="100%" height={142}>
-              <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-                data={[{ name: "Pass", value: passRate, fill: laQcColor(passRate) }]}>
-                <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-                <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{passRate}%</text>
-                <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }}>QC PASS RATE</text>
-              </RadialBarChart>
-            </ResponsiveContainer>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
-              {[
-                { label: "Rejected", value: `${failed} pcs` },
-                { label: "Avg / Loom", value: `${activeLooms ? Math.round(produced / activeLooms) : 0} pcs` },
-                { label: "Open Pipeline", value: `${pipeline} pcs` },
-                { label: "Looms Down", value: String(looms.filter(l => l.status === "maintenance").length) },
-              ].map(k => (
-                <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <LoomMaterialDesignRow
+          byMaterial={byMaterial}
+          warpKg={warpKg}
+          produced={produced}
+          byDesign={byDesign}
+          passRate={passRate}
+          failed={failed}
+          activeLooms={activeLooms}
+          pipeline={pipeline}
+          looms={looms}
+        />
       </FadeUp>
     </div>
   );

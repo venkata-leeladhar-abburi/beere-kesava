@@ -1,30 +1,18 @@
 import React, { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
-import {
-  Search, ChevronLeft, Package, CheckCircle2,
-  Printer as LucidePrinter, Tag, X,
-} from "lucide-react";
-import {
-  CheckCircle, WarningCircle, ArrowLeft, Hash, Palette,
-  User as PhUser, CalendarBlank, Scales, ShoppingBag, Stack,
-} from "@phosphor-icons/react";
+import { Search, Package } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react";
+import { StockCard, StockSaree, StockStatus, StockSource } from "./StockCard";
+import { ViewStockDialog } from "./ViewStockDialog";
 
-// ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
   silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
   royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
-  darkBurgundy:  "#3D0E1A",
   antiqueGold:   "#C89B47",
-  goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
   taupe:         "#8B7060",
-  crimson:       "#C0392B",
-  green:         "#1E6640",
   borderDef:     "rgba(110,15,45,0.10)",
-  borderGold:    "rgba(200,155,71,0.22)",
 };
 const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -32,10 +20,8 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 const G = {
-  card:   "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+  card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
 };
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -51,37 +37,17 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
   );
 }
 
-// ── Stock data ──────────────────────────────────────────────────────────────
-type StockStatus = "available" | "sold" | "wholesale";
-/** factory = our own looms · outsourced = our weavers · external = bought from a supplier */
-type StockSource = "factory" | "outsourced" | "external";
-interface StockSaree {
-  id: string; source: StockSource;
-  weaver: string | null; weaverCode: string | null;
-  loom: number; weight: string; qcDate: string;
-  design: string; sareeType: string; status: StockStatus;
-  saleRef: string | null; customer: string | null;
-  assignedBy: string | null; assignedAt: string | null;
-  initials?: string; avatarBg?: string;
-  // ── external source only (fields match ExternalPurchasesPage) ──
-  supplier?: string | null;
-  supplierLocation?: string | null;
-  purchaseId?: string | null;
-  invoiceNumber?: string | null;
-}
-
 const ALL_STOCK: StockSaree[] = [
   { id: "RAVI-L2-001",   source: "outsourced", weaver: "Ravi Kumar",   weaverCode: "WV-001", loom: 2, weight: "842g", qcDate: "08 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "RK", avatarBg: "#5A3E6B" },
   { id: "PADMA-L1-001",  source: "outsourced", weaver: "Padma Veni",   weaverCode: "WV-002", loom: 1, weight: "786g", qcDate: "07 Jun 2026", design: "BKB-022", sareeType: "PS-002 · Plain Silk",   status: "sold",       saleRef: "SAL-2026-041", customer: "Mrs. Kamala Reddy", assignedBy: "shop",  assignedAt: "Today · 11:42 AM",    initials: "PV", avatarBg: T.royalBurgundy },
-  { id: "BKB-L3-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 3, weight: "910g", qcDate: "09 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "BK", avatarBg: T.darkBurgundy },
+  { id: "BKB-L3-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 3, weight: "910g", qcDate: "09 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "BK", avatarBg: "#3D0E1A" },
   { id: "SURESH-L2-001", source: "outsourced", weaver: "Suresh Murti", weaverCode: "WV-003", loom: 2, weight: "798g", qcDate: "06 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "sold",       saleRef: "SAL-2026-038", customer: "Mrs. Anita Sharma", assignedBy: "admin", assignedAt: "Today · 10:15 AM",    initials: "SM", avatarBg: "#2D6B6B" },
-  { id: "BKB-L1-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 1, weight: "864g", qcDate: "05 Jun 2026", design: "BKB-031", sareeType: "HZ-003 · Heavy Zari",   status: "wholesale",  saleRef: "ORD-2026-041", customer: "Lakshmi Silks",     assignedBy: "admin", assignedAt: "Yesterday · 3:20 PM", initials: "BK", avatarBg: T.deepWine },
+  { id: "BKB-L1-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 1, weight: "864g", qcDate: "05 Jun 2026", design: "BKB-031", sareeType: "HZ-003 · Heavy Zari",   status: "wholesale",  saleRef: "ORD-2026-041", customer: "Lakshmi Silks",     assignedBy: "admin", assignedAt: "Yesterday · 3:20 PM", initials: "BK", avatarBg: "#4A061B" },
   { id: "ANAND-L1-001",  source: "outsourced", weaver: "Anand K.",     weaverCode: "WV-005", loom: 1, weight: "752g", qcDate: "10 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "AK", avatarBg: "#4A6B4A" },
   { id: "KAMALA-L2-001", source: "outsourced", weaver: "Kamala B.",    weaverCode: "WV-031", loom: 2, weight: "876g", qcDate: "04 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "KB", avatarBg: "#7A2040" },
   { id: "MEENA-L1-001",  source: "outsourced", weaver: "Meena R.",     weaverCode: "WV-012", loom: 1, weight: "820g", qcDate: "03 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "MR", avatarBg: "#9B6B8A" },
-  { id: "BKB-L2-002",    source: "factory",    weaver: null,           weaverCode: null,     loom: 2, weight: "934g", qcDate: "02 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "wholesale",  saleRef: "ORD-2026-038", customer: "Padmavathi Textiles",assignedBy: "admin", assignedAt: "Yesterday · 1:10 PM", initials: "BK", avatarBg: T.darkBurgundy },
+  { id: "BKB-L2-002",    source: "factory",    weaver: null,           weaverCode: null,     loom: 2, weight: "934g", qcDate: "02 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "wholesale",  saleRef: "ORD-2026-038", customer: "Padmavathi Textiles",assignedBy: "admin", assignedAt: "Yesterday · 1:10 PM", initials: "BK", avatarBg: "#3D0E1A" },
 
-  // ── Externally purchased sarees (ids follow ExternalPurchasesPage: PREFIX-SERIAL-INVOICE) ──
   { id: "RAVI-001-INV-RS-2026-118", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "717g", qcDate: "01 Jun 2026", design: "BKB-022", sareeType: "Plain Silk",   status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "RS", avatarBg: "#6B4A2D", supplier: "Ravi Silks",              supplierLocation: "Dharmavaram, AP", purchaseId: "EXT-2026-0001", invoiceNumber: "INV-RS-2026-118" },
   { id: "MYSO-003-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "726g", qcDate: "05 Jun 2026", design: "BKB-038", sareeType: "Mysore Silk",  status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
   { id: "MYSO-007-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "800g", qcDate: "05 Jun 2026", design: "BKB-045", sareeType: "Mysore Silk",  status: "sold",      saleRef: "SAL-2026-052", customer: "Mrs. Sujatha Rao",  assignedBy: "shop", assignedAt: "Today · 12:05 PM", initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
@@ -90,199 +56,6 @@ const ALL_STOCK: StockSaree[] = [
   { id: "POCH-004-INV-PC-2026-301", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "791g", qcDate: "11 Jun 2026", design: "BKB-031", sareeType: "Patola",       status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "PC", avatarBg: "#6B3D6B", supplier: "Pochampally Coop",        supplierLocation: "Pochampally, TG", purchaseId: "EXT-2026-0006", invoiceNumber: "INV-PC-2026-301" },
 ];
 
-const STATUS_CFG: Record<StockStatus, { label: string; color: string; bg: string; border: string; topAccent: string }> = {
-  available: { label: "In Stock — Available",    color: T.green,       bg: "rgba(30,102,64,0.09)",  border: "rgba(30,102,64,0.22)", topAccent: T.green       },
-  sold:      { label: "Sold — Assign Finishing", color: "#8B6018",     bg: "rgba(200,155,71,0.12)", border: "rgba(200,155,71,0.30)", topAccent: T.antiqueGold },
-  wholesale: { label: "Wholesale Batch",         color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)", border: "rgba(110,15,45,0.22)", topAccent: T.royalBurgundy },
-};
-
-// ── Stock Card ───────────────────────────────────────────────────────────────
-function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree) => void }) {
-  const cfg = STATUS_CFG[s.status];
-  return (
-    <motion.div
-      whileHover={{ y: -5, boxShadow: "0 20px 52px rgba(74,6,27,0.14)" }}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 20,
-        border: `1.5px solid ${T.borderDef}`,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        boxShadow: "0 4px 18px rgba(74,6,27,0.07)",
-      }}
-    >
-      {/* Top accent */}
-      <div style={{ height: 4, background: cfg.topAccent }} />
-
-      {/* Header */}
-      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Avatar */}
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: s.avatarBg || T.taupe, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(0,0,0,0.18)" }}>
-            <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: "#FFFDF9" }}>{s.initials}</span>
-          </div>
-          <div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-              {s.source === "factory"  ? `🏭 Factory · Loom ${s.loom}`
-             : s.source === "external" ? `🚚 ${s.supplier} · ${s.invoiceNumber}`
-             :                           `🪡 ${s.weaver} · ${s.weaverCode}`}
-            </div>
-          </div>
-        </div>
-        {/* Status badge */}
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 99, padding: "5px 12px", flexShrink: 0 }}>
-          {s.status === "available"
-            ? <CheckCircle size={13} color={cfg.color} weight="fill" />
-            : s.status === "sold"
-            ? <ShoppingBag size={13} color={cfg.color} weight="fill" />
-            : <Stack size={13} color={cfg.color} weight="fill" />
-          }
-          <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div style={{ height: 1, background: "rgba(110,15,45,0.07)", margin: "0 20px" }} />
-
-      {/* Info grid */}
-      <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, flex: 1 }}>
-        {[
-          { label: "Weight",   val: s.weight,   icon: <Scales size={13} color={T.taupe} /> },
-          { label: s.source === "external" ? "Received" : "QC Date", val: s.qcDate, icon: <CalendarBlank size={13} color={T.taupe} /> },
-          { label: "Design",   val: s.design,   icon: <Palette size={13} color={T.taupe} />, mono: true },
-          { label: "Type",     val: s.sareeType, icon: <Tag size={13} color={T.taupe} /> },
-        ].map(r => (
-          <div key={r.label}>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}>
-              {r.icon}
-              <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</span>
-            </div>
-            <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Customer / Order info */}
-      {(s.status === "sold" || s.status === "wholesale") && s.customer && (
-        <div style={{ margin: "0 20px 14px", background: "rgba(200,155,71,0.07)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px" }}>
-          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.7px" }}>
-            {s.status === "sold" ? "Sold To" : "Wholesale Order"}
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{s.customer}</div>
-          {s.saleRef && <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.royalBurgundy, marginTop: 2 }}>{s.saleRef}</div>}
-          {s.assignedAt && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>Assigned: {s.assignedAt}</div>}
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div style={{ display: "flex", gap: 8, padding: "0 20px 20px" }}>
-        <motion.button
-          onClick={() => onView(s)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: G.button, color: "#FFFDF9", border: "none", borderRadius: 11, padding: "11px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 10px rgba(110,15,45,0.20)" }}>
-          View Details
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ width: 42, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 11, cursor: "pointer" }}>
-          <LucidePrinter size={16} />
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── View Saree Dialog ────────────────────────────────────────────────────────
-function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () => void }) {
-  const cfg = STATUS_CFG[saree.status];
-  return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 1400, background: "rgba(26,10,15,0.50)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
-    >
-      <motion.div
-        initial={{ y: 20, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.96 }}
-        onClick={e => e.stopPropagation()}
-        style={{ width: 520, maxWidth: "100%", background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.28)", overflow: "hidden" }}
-      >
-        {/* Header */}
-        <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{saree.id}</div>
-          </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-        </div>
-        {/* Body */}
-        <div style={{ padding: 24 }}>
-          {/* Status */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 11, padding: "12px 16px", marginBottom: 20 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: `${cfg.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <CheckCircle size={20} color={cfg.color} weight="fill" />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.color }}>{cfg.label}</div>
-              {saree.assignedAt && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
-            </div>
-          </div>
-          {/* Details grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
-            {[
-              { label: "Saree ID",   val: saree.id,       mono: true  },
-              { label: "Design",     val: saree.design,   mono: true  },
-              { label: "Saree Type", val: saree.sareeType, mono: false },
-              { label: "Weight",     val: saree.weight,   mono: true  },
-              { label: "QC Date",    val: saree.qcDate,   mono: false },
-              saree.source === "external"
-                ? { label: "Invoice No.", val: saree.invoiceNumber || "—", mono: true }
-                : { label: "Loom No.",    val: `Loom ${saree.loom}`,       mono: true },
-            ].map(r => (
-              <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
-                <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
-              </div>
-            ))}
-          </div>
-          {/* Source */}
-          <div style={{ background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-              {saree.source === "factory"  ? `Own Factory · Loom ${saree.loom}`
-             : saree.source === "external" ? `External Purchase · ${saree.supplier} (${saree.supplierLocation}) · ${saree.purchaseId}`
-             :                               `${saree.weaver} (${saree.weaverCode}) · Loom ${saree.loom}`}
-            </div>
-          </div>
-          {/* Customer info if any */}
-          {saree.customer && (
-            <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>
-                {saree.status === "sold" ? "Sold To" : "Assigned Wholesale Order"}
-              </div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{saree.customer}</div>
-              {saree.saleRef && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 3 }}>{saree.saleRef}</div>}
-            </div>
-          )}
-          {/* Close */}
-          <motion.button
-            onClick={onClose}
-            whileHover={{ scale: 1.02 }}
-            style={{ width: "100%", height: 46, background: G.button, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-            Close
-          </motion.button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ── Main Page ────────────────────────────────────────────────────────────────
 export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StockStatus>("all");
@@ -307,19 +80,16 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
       {/* ── HERO ── */}
       <section style={{ background: G.card, padding: "52px 56px 0", position: "relative", overflow: "hidden" }}>
-        {/* Decorative silk lines */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to top, rgba(247,242,234,0.08), transparent)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", zIndex: 2 }}>
-          {/* Back button */}
           {onBack && (
             <motion.button onClick={onBack} whileHover={{ x: -3 }} style={{ display: "flex", alignItems: "center", gap: 7, color: "rgba(255,253,249,0.60)", fontFamily: F.ui, fontSize: 13, fontWeight: 500, background: "none", border: "none", cursor: "pointer", marginBottom: 24, padding: 0 }}>
               <ArrowLeft size={15} /> Back to Production
             </motion.button>
           )}
 
-          {/* Title */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
@@ -335,7 +105,6 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
             </div>
           </div>
 
-          {/* Stats chips */}
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", paddingBottom: 36 }}>
             {[
               { label: "Total In Stock",    value: String(ALL_STOCK.length), gold: false, greenAccent: false },
@@ -357,7 +126,6 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       <section style={{ padding: "28px 56px 0" }}>
         <FadeUp>
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "18px 22px", boxShadow: "0 4px 20px rgba(74,6,27,0.07)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-            {/* Search */}
             <div style={{ position: "relative", flex: "1 1 280px" }}>
               <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
               <input
@@ -367,7 +135,6 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 style={{ width: "100%", height: 44, paddingLeft: 44, paddingRight: 14, fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" }}
               />
             </div>
-            {/* Filter pills */}
             <div style={{ display: "flex", gap: 8 }}>
               {[
                 { key: "all",       label: "All Stock"       },
@@ -385,7 +152,6 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 </motion.button>
               ))}
             </div>
-            {/* Source pills */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Source</span>
               {[
@@ -404,7 +170,6 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 </motion.button>
               ))}
             </div>
-            {/* Count badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
               <Package size={15} color={T.taupe} />
               <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filtered.length} saree{filtered.length !== 1 ? "s" : ""}</span>

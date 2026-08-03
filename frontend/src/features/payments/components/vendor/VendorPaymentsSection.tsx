@@ -8,7 +8,7 @@ import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
 import { PODocumentModal } from "../../../purchasing/components/PODocumentModal";
 import { VENDOR_PAYMENTS } from "../../data/vendors";
 import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
-import { Invoice, VendorMatchedRow, VendorPayment } from "../../types";
+import { VendorMatchedRow, VendorPayment } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn } from "../common/primitives";
 import { AddVendorInvoiceModal } from "./AddVendorInvoiceModal";
@@ -18,8 +18,8 @@ import { VendorCard } from "./VendorCard";
 import { VendorDetailModal } from "./VendorDetailModal";
 import { VendorPayNowModal } from "./VendorPayNowModal";
 import { VendorUploadPanel } from "./VendorUploadPanel";
+import { RecordVendorPaymentSidebar } from "./RecordVendorPaymentSidebar";
 
-/** Overdue-vendor banner is built but intentionally not shown yet. */
 const SHOW_OVERDUE_ALERT = false;
 
 export function VendorPaymentsSection() {
@@ -90,13 +90,10 @@ export function VendorPaymentsSection() {
 
   const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const fieldStyle: React.CSSProperties = { width: "100%", height: 38, padding: "0 12px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 8, outline: "none", boxSizing: "border-box" as const };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 };
 
   return (
     <div id="pay-vendor" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        {/* ── Section header ─────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
@@ -117,7 +114,6 @@ export function VendorPaymentsSection() {
           </DownloadGate>
         </div>
 
-        {/* ── 4 stat cards ───────────────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
@@ -169,7 +165,6 @@ export function VendorPaymentsSection() {
           ))}
         </div>
 
-        {/* ── Overdue alert (Hidden) ───────────────────────────── */}
         {SHOW_OVERDUE_ALERT && overdueVendors.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.22)", borderLeft: `4px solid ${T.crimson}`, borderRadius: 10, padding: "14px 20px", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -185,12 +180,9 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
-        {/* ── Upload Vendor Payment File panel ─────────────────── */}
         <VendorUploadPanel vendorPayments={vendorPayments} onMatched={handleExcelMatched} />
 
-        {/* ── View toggle + Filter bar ─────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          {/* View toggle */}
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <motion.button key={key} onClick={() => setView(key as any)}
@@ -215,7 +207,6 @@ export function VendorPaymentsSection() {
 
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 
-        {/* ── Card View ────────────────────────────────────────── */}
         {view === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
             {filtered.map((vp, i) => (
@@ -226,7 +217,6 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
-        {/* ── List View ────────────────────────────────────────── */}
         {view === "list" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32 }}>
             {filtered.map((vp, i) => {
@@ -257,10 +247,8 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
-        {/* ── Table View + Record Payment sidebar ──────────────── */}
         {view === "table" && (
           <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-            {/* Table */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }}>
@@ -331,79 +319,22 @@ export function VendorPaymentsSection() {
               </div>
             </div>
 
-            {/* Record Vendor Payment sidebar */}
-            <div style={{ flex: "0 0 272px", background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.07)" }}>
-              <div style={{ background: T.darkBurgundy, padding: "16px 20px" }}>
-                <div style={{ fontFamily: F.display, fontSize: 18, color: "#FFFDF9" }}>Record Vendor Payment</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.55)", marginTop: 3 }}>Mark payment made to a vendor</div>
-              </div>
-              <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-                <div>
-                  <label style={labelStyle}>Select Vendor</label>
-                  <select value={selVendor} onChange={e => { setSelVendor(e.target.value); setPayAmount(""); }} style={{ ...fieldStyle }}>
-                    {vendorPayments.filter(v => v.status !== "Paid").map(v => (
-                      <option key={v.id} value={v.id}>{v.vendor}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* Auto-filled info */}
-                <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 7 }}>
-                  {[
-                    { label: "PO Number",     val: selVP.poNumber,                         color: T.royalBurgundy },
-                    { label: "Invoice Total",  val: `₹${selVP.invoiceAmt.toLocaleString("en-IN")}`, color: T.luxuryBrown },
-                    { label: "Previous Paid",  val: `₹${selVP.paidAmt.toLocaleString("en-IN")}`,   color: T.green },
-                  ].map(row => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{row.label}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12.5, color: row.color, fontWeight: 700 }}>{row.val}</span>
-                    </div>
-                  ))}
-                  <div style={{ height: 1, background: T.borderDef, margin: "2px 0" }} />
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>Balance Due</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 15, color: T.crimson, fontWeight: 700 }}>₹{selBalance.toLocaleString("en-IN")}</span>
-                  </div>
-                </div>
-                <div>
-                  <label style={labelStyle}>Payment Amount</label>
-                  <div style={{ position: "relative" }}>
-                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 14, color: T.taupe }}>₹</span>
-                    <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} placeholder="Enter amount paid"
-                      style={{ ...fieldStyle, paddingLeft: 26 }} />
-                  </div>
-                </div>
-                <div>
-                  <label style={labelStyle}>Payment Date</label>
-                  <input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} style={{ ...fieldStyle }} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Payment Method</label>
-                  <select value={payMethod} onChange={e => setPayMethod(e.target.value)} style={{ ...fieldStyle }}>
-                    {["Bank Transfer","Cash","Cheque","NEFT/RTGS","UPI"].map(m => <option key={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>UTR Number</label>
-                  <input value={utrNumber} onChange={e => setUtrNumber(e.target.value)} placeholder="Bank transaction reference..."
-                    style={{ ...fieldStyle }} />
-                </div>
-                {payAmount && (
-                  <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, padding: "12px 14px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Balance After This Payment</div>
-                    <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: afterPay <= 0 ? T.green : T.royalBurgundy }}>
-                      {afterPay <= 0 ? "Fully Paid ✓" : `₹${afterPay.toLocaleString("en-IN")}`}
-                    </div>
-                  </div>
-                )}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button style={{ flex: 1, padding: "9px 0", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-                  <motion.button whileHover={{ scale: 1.02 }} initial={{ backgroundColor: T.royalBurgundy }} animate={{ backgroundColor: T.royalBurgundy }}
-                    style={{ flex: 2, padding: "9px 0", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
-                    Save Payment
-                  </motion.button>
-                </div>
-              </div>
-            </div>
+            <RecordVendorPaymentSidebar
+              vendorPayments={vendorPayments}
+              selVendor={selVendor}
+              setSelVendor={setSelVendor}
+              payAmount={payAmount}
+              setPayAmount={setPayAmount}
+              payDate={payDate}
+              setPayDate={setPayDate}
+              payMethod={payMethod}
+              setPayMethod={setPayMethod}
+              utrNumber={utrNumber}
+              setUtrNumber={setUtrNumber}
+              selVP={selVP}
+              selBalance={selBalance}
+              afterPay={afterPay}
+            />
           </div>
         )}
 

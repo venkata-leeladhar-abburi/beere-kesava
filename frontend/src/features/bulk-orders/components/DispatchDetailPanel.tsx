@@ -1,0 +1,80 @@
+import React from "react";
+import { motion } from "motion/react";
+import { Truck, X, AlertTriangle } from "lucide-react";
+import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
+
+const T = {
+  royalBurgundy: "#6E0F2D",
+  deepWine: "#4A061B",
+  luxuryBrown: "#3B2314",
+  taupe: "#8B7060",
+  antiqueGold: "#C89B47",
+  borderDef: "rgba(110,15,45,0.10)",
+  borderGold: "rgba(200,155,71,0.22)",
+};
+const F = {
+  display: "'Plus Jakarta Sans', sans-serif",
+  ui: "'Inter', sans-serif",
+  mono: "'JetBrains Mono', monospace",
+};
+
+interface DispatchDetailPanelProps {
+  dispatch: DispatchRecord;
+  onClose: () => void;
+}
+
+export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelProps) {
+  const rows: [string, string][] = [
+    ["Dispatch Type", dispatch.type === "wholesale" ? "Wholesale" : "To Shop"],
+    ["Dispatch Date", dispatch.dispatchDate || "—"],
+    ["LR Number", dispatch.lrNumber || "—"],
+    ["Transport Company", dispatch.transportCompany || "—"],
+    ["Vehicle Number", dispatch.vehicleNumber || "—"],
+    ["Driver", dispatch.driverName || "—"],
+    ["Invoice Number", dispatch.invoiceNumber || "—"],
+    ["Invoice Date", dispatch.invoiceDate || "—"],
+    ["Firm", dispatch.firmName || "—"],
+    ["Customer", dispatch.customerName || "—"],
+    ["Total Amount", dispatch.totalAmount ? `₹${dispatch.totalAmount.toLocaleString("en-IN")}` : "—"],
+    ["Grand Total", dispatch.grandTotal ? `₹${dispatch.grandTotal.toLocaleString("en-IN")}` : "—"],
+    ["Expected Delivery", dispatch.expectedDelivery || "—"],
+    ["Payment Due Date", dispatch.paymentDueDate || "—"],
+  ];
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", justifyContent: "flex-end" }} onClick={onClose}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(30,10,20,0.50)", backdropFilter: "blur(3px)" }} />
+      <motion.div initial={{ x: 420 }} animate={{ x: 0 }} exit={{ x: 420 }} transition={{ duration: 0.24 }}
+        onClick={e => e.stopPropagation()}
+        style={{ position: "relative", width: 420, maxWidth: "92vw", height: "100%", background: "#FFF", boxShadow: "-16px 0 60px rgba(0,0,0,0.20)", display: "flex", flexDirection: "column" }}>
+        <div style={{ background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Truck size={18} color={T.antiqueGold} />
+            <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
+          </div>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.14)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: "pointer", color: "#FFF" }}><X size={14} /></button>
+        </div>
+        {(dispatch.pendingTransport || dispatch.pendingReceipt) && (
+          <div style={{ margin: "16px 20px 0", background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", gap: 8 }}>
+            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> Some details are still pending completion from Dispatch History.
+          </div>
+        )}
+        <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
+          {rows.map(([k, v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderBottom: `1px solid ${T.borderDef}` }}>
+              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, flexShrink: 0 }}>{k}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, textAlign: "right" as const, wordBreak: "break-word" as const }}>{v}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Sarees on this dispatch ({dispatch.sareeIds.length})</div>
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+              {dispatch.sareeIds.map(id => (
+                <span key={id} style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{id}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

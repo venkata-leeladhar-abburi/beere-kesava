@@ -1,22 +1,15 @@
 import React, { useState } from "react";
-import {
-  ChevronDown, Camera, UploadCloud, CheckCircle2, AlertTriangle, TrendingUp,
-  Printer, Search,
-} from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary, btnGhost } from "./tokens";
+import { ChevronDown, CheckCircle2 } from "lucide-react";
+import { C, F, card, inputStyle, btnPrimary } from "./tokens";
 import { usePO, PurchaseOrder, POItem } from "../../../purchasing/contexts/POContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { ReceiptHistoryTable, ReceiptRecord } from "./ReceiptHistoryTable";
+import { GRNSuccessView, GRNPrintView } from "./GRNSuccessPrint";
+import { GRNItemVerificationCard } from "./GRNItemVerificationCard";
+import { GRNPODropdown } from "./GRNPODropdown";
 
 type GRNStep = "form" | "success" | "print";
 
 const STEPS = ["Select PO", "Batch ID", "Quantities"];
-
-const MAT_TAG: Record<string, { col: string; bg: string }> = {
-  Warp:   { col: "#7A5010", bg: "rgba(196,146,58,0.14)" },
-  Resham: { col: "#7A5E1C", bg: "rgba(200,155,71,0.13)" },
-  Jari:   { col: C.burg,    bg: "rgba(107,26,42,0.08)" },
-};
-
 const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
 function generateGrnId(seq: number): string {
@@ -24,17 +17,6 @@ function generateGrnId(seq: number): string {
   const y = now.getFullYear();
   const m = MONTHS[now.getMonth()];
   return `GRN-${y}-${m}-${String(seq).padStart(3, "0")}`;
-}
-
-interface ReceiptRecord {
-  grnId: string;
-  poRef: string;
-  vendor: string;
-  firmName: string;
-  dateReceived: string;
-  materialsSummary: string;
-  receivedBy: string;
-  status: "Match" | "Short" | "Excess";
 }
 
 export const INITIAL_HISTORY: ReceiptRecord[] = [
@@ -81,53 +63,6 @@ function SectionLabel({ step, title }: { step: number; title: string }) {
   );
 }
 
-function MatChip({ type }: { type: string }) {
-  const cfg = MAT_TAG[type] ?? { col: C.text, bg: C.inp };
-  return (
-    <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: cfg.col, background: cfg.bg, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
-      {type}
-    </span>
-  );
-}
-
-function materialsSummaryFor(materials: POItem[], receivedQty: Record<number, string>): string {
-  return materials.map((m, i) => `${m.materialType} ${receivedQty[i] || m.quantity}${m.unit}`).join(", ");
-}
-
-function renderMaterialsSummary(summary: string) {
-  if (!summary) return null;
-  const parts = summary.split(", ");
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      {parts.map((p, idx) => {
-        const matchDesc = p.match(/^([^-]+)\s*-\s*([^(]+)\s*\(([^)]+)\)$/);
-        if (matchDesc) {
-          const type = matchDesc[1].trim();
-          const desc = matchDesc[2].trim();
-          const qty = matchDesc[3].trim();
-          return (
-            <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ 
-                fontFamily: F.u, fontSize: 9.5, fontWeight: 700,
-                color: type === "Warp" ? "#7A5010" : type === "Resham" ? "#7A5E1C" : C.burg, 
-                background: type === "Warp" ? "rgba(196,146,58,0.14)" : type === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(107,26,42,0.08)",
-                padding: "2px 6px", borderRadius: 4 
-              }}>{type}</span>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{desc}</span>
-              <span style={{ fontFamily: F.m, fontSize: 11.5, fontWeight: 700, color: C.burg }}>{qty}</span>
-            </div>
-          );
-        }
-        return (
-          <div key={idx} style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>
-            {p}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function WorkerGRN({ 
   mode = "all", 
   history: externalHistory, 
@@ -157,10 +92,6 @@ export function WorkerGRN({
   const [itemRejectReason, setItemRejectReason] = useState<Record<number, string>>({});
   const [notifySuperadmin, setNotifySuperadmin] = useState<Record<number, boolean>>({});
   const [confirmedReceived, setConfirmedReceived] = useState(false);
-  const [historySearch, setHistorySearch] = useState("");
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const PAGE_SIZE = 10;
 
   const handleSelectPO = (po: PurchaseOrder) => {
     setSelectedPO(po);
@@ -171,7 +102,6 @@ export function WorkerGRN({
     setNotifySuperadmin({});
     setConfirmedReceived(false);
 
-    // Initialize units
     const initialUnits: Record<number, "kg" | "g" | "Reels" | "Buns"> = {};
     po.materials.forEach((m, idx) => {
       if (m.materialType === "Jari") {
@@ -193,7 +123,6 @@ export function WorkerGRN({
     }
   }, [initialPOId]);
 
-
   const getQtyInOrderedUnit = (idx: number, m: POItem) => {
     const qtyStr = receivedQty[idx] || "";
     if (!qtyStr) return 0;
@@ -203,13 +132,13 @@ export function WorkerGRN({
     if (m.materialType === "Jari") {
       if (m.unit === "Buns") {
         return unitSel === "Buns" ? qtyVal : qtyVal / 4;
-      } else { // Reels
+      } else {
         return unitSel === "Reels" ? qtyVal : qtyVal * 4;
       }
     } else {
       if (m.unit.toLowerCase() === "kg") {
         return unitSel === "kg" ? qtyVal : qtyVal / 1000;
-      } else { // g
+      } else {
         return unitSel === "g" ? qtyVal : qtyVal * 1000;
       }
     }
@@ -278,137 +207,16 @@ export function WorkerGRN({
     setGrnBatchId(generateGrnId(receiptHistory.length + 1));
   };
 
-  const filteredHistory = receiptHistory
-    .slice(0, 20)
-    .filter(r => {
-      if (!matchesDateFilter(r.dateReceived, historyDateFilter)) return false;
-      if (!historySearch) return true;
-      const q = historySearch.toLowerCase();
-      return r.grnId.toLowerCase().includes(q) || r.poRef.toLowerCase().includes(q) || r.vendor.toLowerCase().includes(q);
-    });
-  const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
-  const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
-
-  const HIST_STATUS_CFG: Record<ReceiptRecord["status"], { color: string; bg: string }> = {
-    Match:  { color: C.green, bg: "rgba(30,102,64,0.10)" },
-    Short:  { color: C.gold,  bg: "rgba(196,146,58,0.14)" },
-    Excess: { color: "#1565C0", bg: "rgba(21,101,192,0.10)" },
-  };
-
   if (mode === "history") {
-    return (
-      <div style={{ padding: "8px 0" }}>
-        <div style={{ position: "relative", marginBottom: 12 }}>
-          <Search size={14} color={C.muted} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={historySearch} onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }} placeholder="Search by GRN ID, PO number, or vendor..."
-            style={{ ...inputStyle, height: 42, paddingLeft: 34, fontSize: 13.5 }} />
-        </div>
-
-        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
-
-        <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-              <thead>
-                <tr style={{ background: C.inp }}>
-                  {["GRN Batch ID", "PO Reference", "Vendor", "Firm Name", "Date Received", "Materials", "Received By", "Status"].map(h => (
-                    <th key={h} style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "left", padding: "12px 14px", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pagedHistory.length === 0 ? (
-                  <tr><td colSpan={8} style={{ padding: "24px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No receipts found.</td></tr>
-                ) : pagedHistory.map((r, i) => {
-                  const sc = HIST_STATUS_CFG[r.status];
-                  return (
-                    <tr key={i} style={{ borderTop: `1px solid ${C.bdr}`, background: i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.3)" }}>
-                      <td style={{ padding: "12px 14px", fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.m, fontSize: 12, color: C.text }}>{r.poRef}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.u, fontSize: 12.5, color: C.muted }}>{r.firmName}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.u, fontSize: 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</td>
-                      <td style={{ padding: "12px 14px" }}>{renderMaterialsSummary(r.materialsSummary)}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.u, fontSize: 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</td>
-                      <td style={{ padding: "12px 14px" }}>
-                        <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: sc.color, background: sc.bg, padding: "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {totalPages > 0 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
-              <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setHistoryPage(p => Math.max(1, p - 1))} disabled={historyPage === 1}
-                  style={{ padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: 12, color: C.text, cursor: historyPage === 1 ? "default" : "pointer", opacity: historyPage === 1 ? 0.5 : 1 }}>Prev</button>
-                <button onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))} disabled={historyPage === totalPages}
-                  style={{ padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: 12, color: C.text, cursor: historyPage === totalPages ? "default" : "pointer", opacity: historyPage === totalPages ? 0.5 : 1 }}>Next</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+    return <ReceiptHistoryTable receiptHistory={receiptHistory} />;
   }
 
   if (step === "success") {
-    return (
-      <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 14, paddingTop: 40 }}>
-        <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <CheckCircle2 size={32} color={C.green} />
-        </div>
-        <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>GRN Created Successfully</div>
-        <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{grnBatchId}</div>
-        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center", lineHeight: 1.6 }}>
-          Barcodes are being generated — tap below to print labels
-        </div>
-        <button onClick={() => setStep("print")} style={{ ...btnPrimary, gap: 8 }}>
-          <Printer size={16} /> Print Barcode Labels
-        </button>
-        <button onClick={resetForm} style={{ ...btnGhost, marginTop: 2 }}>
-          Back to GRN
-        </button>
-      </div>
-    );
+    return <GRNSuccessView grnBatchId={grnBatchId} onPrint={() => setStep("print")} onReset={resetForm} />;
   }
 
   if (step === "print") {
-    const batches = (selectedPO?.materials ?? []).map((m, i) => {
-      const qtyText = `${receivedQty[i] || 0} ${receivedUnit[i] || m.unit}`;
-      return {
-        id: `BATCH-${selectedPO?.id.split("-").pop()}-00${i + 1}`,
-        type: m.materialType,
-        qty: qtyText,
-      };
-    });
-    return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ padding: "14px 20px 0", fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>Barcode Labels</div>
-        <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
-          {batches.map((b, i) => (
-            <div key={i} style={{ ...card, padding: 14 }}>
-              <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.id}</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 10 }}>{b.type} · {b.qty}</div>
-              <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
-                <span style={{ fontFamily: F.m, fontSize: 6, color: "#FFF", letterSpacing: 2 }}>||| | || ||| ||</span>
-              </div>
-              <button style={{ width: "100%", background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 7, padding: "5px 0", fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                <Printer size={11} /> Print
-              </button>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: "0 20px" }}>
-          <button style={{ ...btnPrimary, gap: 8, marginBottom: 10 }}><Printer size={16} /> Print All Labels</button>
-          <button onClick={resetForm} style={{ ...btnGhost }}>Done — Skip Printing</button>
-        </div>
-      </div>
-    );
+    return <GRNPrintView selectedPO={selectedPO} receivedQty={receivedQty} receivedUnit={receivedUnit} grnBatchId={grnBatchId} onReset={resetForm} />;
   }
 
   return (
@@ -423,126 +231,13 @@ export function WorkerGRN({
 
       {/* Step 1 — Select PO */}
       <SectionLabel step={1} title="Receiving Against Purchase Order" />
-      <div style={{ margin: "0 20px" }}>
-        <div style={{ position: "relative" }}>
-          <button onClick={() => setShowPODrop(p => !p)} style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", height: "auto", minHeight: 48, padding: "10px 14px" }}>
-            <div style={{ color: selectedPO ? C.text : C.muted, fontFamily: F.u, fontSize: 13.5, textAlign: "left", flex: 1 }}>
-              {selectedPO ? (
-                <div>
-                  <div style={{ fontWeight: 700, color: C.burg, marginBottom: 2 }}>{selectedPO.id} — {selectedPO.vendor}</div>
-                  <div style={{ fontSize: 11.5, color: C.muted, marginBottom: 4 }}>
-                    Firm: {selectedPO.firmName ?? "—"} · City: {selectedPO.vendorCity}
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
-                    {selectedPO.materials.map((m, idx) => (
-                      <span key={idx} style={{ 
-                        fontFamily: F.u, 
-                        fontSize: 9.5, 
-                        fontWeight: 700, 
-                        color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg, 
-                        background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(107,26,42,0.05)",
-                        padding: "2px 6px", 
-                        borderRadius: 4 
-                      }}>
-                        {m.materialType}: {m.quantity} {m.unit}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                "Select an approved purchase order..."
-              )}
-            </div>
-            <ChevronDown size={16} color={C.muted} style={{ flexShrink: 0, marginLeft: 8, transform: showPODrop ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
-          </button>
-          {showPODrop && (
-            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(107,26,42,0.12)", zIndex: 50, marginTop: 4, maxHeight: 280, overflowY: "auto" }}>
-              {approvedPOs.length === 0 && (
-                <div style={{ padding: "14px", fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center" }}>No approved purchase orders available.</div>
-              )}
-              {approvedPOs.map(po => (
-                <button key={po.id} onClick={() => handleSelectPO(po)} 
-                  style={{ 
-                    display: "block", 
-                    width: "100%", 
-                    padding: "14px 16px", 
-                    textAlign: "left", 
-                    background: "none", 
-                    border: "none", 
-                    borderBottom: `1px solid ${C.bdr}`, 
-                    cursor: "pointer",
-                    transition: "background-color 0.2s",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(107,26,42,0.03)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{po.id}</span>
-                    {po.urgency === "Urgent" && (
-                      <span style={{ fontFamily: F.u, fontSize: 9, background: "rgba(183,28,28,0.08)", color: "#B71C1C", padding: "1px 5px", borderRadius: 3, fontWeight: 700 }}>
-                        URGENT
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: C.text, marginBottom: 2 }}>
-                    {po.vendor} <span style={{ fontWeight: 400, color: C.muted }}>· {po.vendorCity}</span>
-                  </div>
-                  {po.firmName && (
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 5 }}>
-                      Firm: <span style={{ fontWeight: 500, color: C.text }}>{po.firmName}</span>
-                    </div>
-                  )}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
-                    {po.materials.map((m, idx) => (
-                      <span key={idx} style={{ 
-                        fontFamily: F.u, 
-                        fontSize: 9.5, 
-                        fontWeight: 700, 
-                        color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg, 
-                        background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(107,26,42,0.05)",
-                        padding: "1px 6px", 
-                        borderRadius: 4 
-                      }}>
-                        {m.materialType}: {m.quantity} {m.unit}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* PO Reference Panel — read-only */}
-        {selectedPO && (
-          <div style={{ ...card, marginTop: 10, padding: 14 }}>
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>PO Reference — What Was Ordered</div>
-            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 14, marginBottom: 10 }}>
-              <div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>PO Number</div>
-                <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{selectedPO.poNumber}</div>
-              </div>
-              <div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Vendor</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text }}>{selectedPO.vendor} · {selectedPO.vendorCity}</div>
-              </div>
-              <div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Firm Name</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text }}>{selectedPO.firmName ?? "—"}</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {selectedPO.materials.map((m, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: C.inp, borderRadius: 8, padding: "7px 10px" }}>
-                  <MatChip type={m.materialType} />
-                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, flex: 1 }}>{m.description || m.subtype}</span>
-                  <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.text }}>{m.quantity} {m.unit}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <GRNPODropdown
+        selectedPO={selectedPO}
+        approvedPOs={approvedPOs}
+        showPODrop={showPODrop}
+        setShowPODrop={setShowPODrop}
+        handleSelectPO={handleSelectPO}
+      />
 
       {/* Step 2 — GRN Batch ID */}
       {selectedPO && (
@@ -557,179 +252,28 @@ export function WorkerGRN({
           {/* Step 3 — Received Quantities (cross-check) */}
           <SectionLabel step={3} title="What We Actually Received" />
           <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {selectedPO.materials.map((m, i) => {
-              const cmp = comparisons[i];
-              const isKg = m.unit.toLowerCase() === "kg";
-              const matColor = m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg;
-              return (
-                <div key={i} style={{ ...card, padding: 14 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    {/* Ordered — read-only */}
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Ordered</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <MatChip type={m.materialType} />
-                      </div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, marginBottom: 4 }}>{m.description || m.subtype}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text }}>
-                        {m.quantity} {m.unit}
-                        {isKg && <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 1000)} g)</span>}
-                        {m.materialType === "Jari" && m.unit === "Buns" && <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 4)} Reels)</span>}
-                      </div>
-                    </div>
-                    {/* Received — editable */}
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Received</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        {/* Unit Selector Button Group */}
-                        <div style={{ display: "flex", gap: 4 }}>
-                          {m.materialType === "Jari" ? (
-                            (["Reels", "Buns"] as const).map(u => (
-                              <button
-                                key={u}
-                                type="button"
-                                onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                                style={{
-                                  flex: 1, padding: "5px 0", borderRadius: 6,
-                                  border: `1px solid ${receivedUnit[i] === u ? C.burg : C.bdr}`,
-                                  background: receivedUnit[i] === u ? C.burg : "#FFF",
-                                  color: receivedUnit[i] === u ? "#FFF" : C.text,
-                                  fontFamily: F.u, fontSize: 10.5, fontWeight: 600, cursor: "pointer"
-                                }}
-                              >
-                                {u}
-                              </button>
-                            ))
-                          ) : (
-                            (["kg", "g"] as const).map(u => (
-                              <button
-                                key={u}
-                                type="button"
-                                onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                                style={{
-                                  flex: 1, padding: "5px 0", borderRadius: 6,
-                                  border: `1px solid ${receivedUnit[i] === u ? C.burg : C.bdr}`,
-                                  background: receivedUnit[i] === u ? C.burg : "#FFF",
-                                  color: receivedUnit[i] === u ? "#FFF" : C.text,
-                                  fontFamily: F.u, fontSize: 10.5, fontWeight: 600, cursor: "pointer"
-                                }}
-                              >
-                                {u}
-                              </button>
-                            ))
-                          )}
-                        </div>
-
-                        {/* Input Field */}
-                        <div style={{ position: "relative" }}>
-                          <input
-                            type="number"
-                            value={receivedQty[i] ?? ""}
-                            onChange={e => setReceivedQty(prev => ({ ...prev, [i]: e.target.value }))}
-                            placeholder="0"
-                            style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 46, height: 40 }}
-                          />
-                          <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: matColor }}>
-                            {receivedUnit[i] || (m.materialType === "Jari" ? "Buns" : "kg")}
-                          </span>
-                        </div>
-
-                        {/* Auto conversion preview */}
-                        {receivedQty[i] && (
-                          <div style={{ fontFamily: F.u, fontSize: 10.5, color: matColor, fontWeight: 600 }}>
-                            {m.materialType === "Jari" ? (
-                              receivedUnit[i] === "Reels"
-                                ? `= ${(parseFloat(receivedQty[i]) / 4).toFixed(2)} Buns`
-                                : `= ${(parseFloat(receivedQty[i]) * 4).toFixed(0)} Reels`
-                            ) : (
-                              receivedUnit[i] === "kg"
-                                ? `= ${(parseFloat(receivedQty[i]) * 1000).toFixed(0)} g`
-                                : `= ${(parseFloat(receivedQty[i]) / 1000).toFixed(3)} kg`
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {cmp && (
-                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 5 }}>
-                      {cmp.diff === 0 ? (
-                        <>
-                          <CheckCircle2 size={13} color={C.green} />
-                          <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.green }}>✓ Match</span>
-                        </>
-                      ) : cmp.diff < 0 ? (
-                        <>
-                          <AlertTriangle size={13} color={C.gold} />
-                          <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
-                          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
-                            <input type="checkbox" checked={notifySuperadmin[i] || false} onChange={e => setNotifySuperadmin(prev => ({ ...prev, [i]: e.target.checked }))} style={{ accentColor: C.burg, cursor: "pointer" }} />
-                            <span style={{ fontFamily: F.u, fontSize: 10, color: C.text }}>Notify Superadmin</span>
-                          </label>
-                        </>
-                      ) : (
-                        <>
-                          <TrendingUp size={13} color="#1565C0" />
-                          <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#1565C0" }}>▲ Excess by {cmp.diff.toFixed(3)} {cmp.unit}</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Per-item approval */}
-                  <div style={{ marginTop: 12, borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>Confirm This Item</div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button
-                        type="button"
-                        onClick={() => { setItemApproval(prev => ({ ...prev, [i]: "approved" })); setItemRejectReason(prev => ({ ...prev, [i]: "" })); }}
-                        style={{
-                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
-                          border: `1.5px solid ${itemApproval[i] === "approved" ? C.green : C.bdr}`,
-                          background: itemApproval[i] === "approved" ? "rgba(30,102,64,0.09)" : "#FFF",
-                          color: itemApproval[i] === "approved" ? C.green : C.text,
-                          fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
-                        }}
-                      >
-                        <CheckCircle2 size={14} /> Approved
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setItemApproval(prev => ({ ...prev, [i]: "rejected" }))}
-                        style={{
-                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
-                          border: `1.5px solid ${itemApproval[i] === "rejected" ? "#C0392B" : C.bdr}`,
-                          background: itemApproval[i] === "rejected" ? "rgba(192,57,43,0.08)" : "#FFF",
-                          color: itemApproval[i] === "rejected" ? "#C0392B" : C.text,
-                          fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
-                        }}
-                      >
-                        <AlertTriangle size={14} /> Not Approved
-                      </button>
-                    </div>
-                    {itemApproval[i] === "rejected" && (
-                      <div style={{ marginTop: 8 }}>
-                        <textarea
-                          value={itemRejectReason[i] ?? ""}
-                          onChange={e => setItemRejectReason(prev => ({ ...prev, [i]: e.target.value }))}
-                          placeholder="Reason this item was not approved (e.g. damaged, wrong shade, torn packaging)…"
-                          rows={2}
-                          style={{ ...inputStyle, height: "auto", padding: "8px 10px", fontFamily: F.u, fontSize: 12.5, resize: "vertical" as const, borderColor: itemRejectReason[i]?.trim() ? C.bdr : "#C0392B" }}
-                        />
-                        {!itemRejectReason[i]?.trim() && (
-                          <div style={{ fontFamily: F.u, fontSize: 10.5, color: "#C0392B", marginTop: 4 }}>Reason is required for items marked Not Approved.</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {selectedPO.materials.map((m, i) => (
+              <GRNItemVerificationCard
+                key={i}
+                material={m}
+                index={i}
+                comparison={comparisons[i]}
+                receivedQty={receivedQty[i] ?? ""}
+                setReceivedQty={setReceivedQty}
+                receivedUnit={receivedUnit[i] || (m.materialType === "Jari" ? "Buns" : "kg")}
+                setReceivedUnit={setReceivedUnit}
+                notifySuperadmin={notifySuperadmin[i] || false}
+                setNotifySuperadmin={setNotifySuperadmin}
+                itemApproval={itemApproval[i]}
+                setItemApproval={setItemApproval}
+                itemRejectReason={itemRejectReason[i] ?? ""}
+                setItemRejectReason={setItemRejectReason}
+              />
+            ))}
           </div>
 
           {/* Confirm Block */}
           <div style={{ margin: "16px 20px 0", display: "flex", flexDirection: "column", gap: 10 }}>
-            {/* Checkbox confirmation */}
             <label style={{ display: "flex", alignItems: "center", gap: 10, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", cursor: "pointer" }}>
               <input
                 type="checkbox"
@@ -742,7 +286,6 @@ export function WorkerGRN({
               </span>
             </label>
 
-            {/* Confirm Button */}
             <button
               onClick={handleConfirm}
               disabled={!allFilled || !allApproved || !confirmedReceived}
@@ -763,62 +306,9 @@ export function WorkerGRN({
 
       {mode === "all" && (
         <>
-          {/* Receipt History */}
           <SectionLabel step={0} title="Receipt History" />
           <div style={{ margin: "0 20px" }}>
-            <div style={{ position: "relative", marginBottom: 10 }}>
-              <Search size={14} color={C.muted} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-              <input value={historySearch} onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }} placeholder="Search by GRN ID, PO number, or vendor..."
-                style={{ ...inputStyle, height: 40, paddingLeft: 34, fontSize: 13 }} />
-            </div>
-
-            <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
-
-            <div style={{ ...card, overflow: "hidden" }}>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-                  <thead>
-                    <tr style={{ background: C.inp }}>
-                      {["GRN Batch ID", "PO Reference", "Vendor", "Firm Name", "Date Received", "Materials", "Received By", "Status"].map(h => (
-                        <th key={h} style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 600, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "left", padding: "9px 12px", whiteSpace: "nowrap" as const }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedHistory.length === 0 ? (
-                      <tr><td colSpan={8} style={{ padding: "20px", textAlign: "center", fontFamily: F.u, fontSize: 12.5, color: C.muted }}>No receipts found.</td></tr>
-                    ) : pagedHistory.map((r, i) => {
-                      const sc = HIST_STATUS_CFG[r.status];
-                      return (
-                        <tr key={i} style={{ borderTop: `1px solid ${C.bdr}` }}>
-                          <td style={{ padding: "10px 12px", fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" as const }}>{r.grnId}</td>
-                          <td style={{ padding: "10px 12px", fontFamily: F.m, fontSize: 12, color: C.text }}>{r.poRef}</td>
-                          <td style={{ padding: "10px 12px", fontFamily: F.u, fontSize: 12.5, color: C.text }}>{r.vendor}</td>
-                          <td style={{ padding: "10px 12px", fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.firmName}</td>
-                          <td style={{ padding: "10px 12px", fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" as const }}>{r.dateReceived}</td>
-                          <td style={{ padding: "10px 12px" }}>{renderMaterialsSummary(r.materialsSummary)}</td>
-                          <td style={{ padding: "10px 12px", fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" as const }}>{r.receivedBy}</td>
-                          <td style={{ padding: "10px 12px" }}>
-                            <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: sc.color, background: sc.bg, padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap" as const }}>{r.status}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {totalPages > 0 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderTop: `1px solid ${C.bdr}` }}>
-                  <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => setHistoryPage(p => Math.max(1, p - 1))} disabled={historyPage === 1}
-                      style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: 11, color: C.text, cursor: historyPage === 1 ? "default" : "pointer", opacity: historyPage === 1 ? 0.5 : 1 }}>Prev</button>
-                    <button onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))} disabled={historyPage === totalPages}
-                      style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: 11, color: C.text, cursor: historyPage === totalPages ? "default" : "pointer", opacity: historyPage === totalPages ? 0.5 : 1 }}>Next</button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <ReceiptHistoryTable receiptHistory={receiptHistory} compact />
           </div>
         </>
       )}

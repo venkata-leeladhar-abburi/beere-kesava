@@ -1,145 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION NAVIGATOR — shared sticky "jump to section" pill bar for long pages
-// Used by both BeereDashboard (Admin) and SuperadminDashboard.
-// ═══════════════════════════════════════════════════════════════════════════════
-const T = {
-  royalBurgundy: "#6E0F2D",
-  taupe: "#8B7060",
-  borderDef: "rgba(110,15,45,0.10)",
-};
-const F = {
-  ui: "'Inter', sans-serif",
-};
+import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
+import type { SectionNavItem } from "./section-navigator-data";
+export { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
+export type { SectionNavItem } from "./section-navigator-data";
 
-// Sticky-stack layout constants — shared across both dashboards (identical navbars).
-export const MAIN_NAV_H = 90;
-export const SUB_NAV_H = 66;
-export const SECTION_NAV_H = 56;
-export const MOBILE_NAV_H = 60;
+const T = { royalBurgundy: "#6E0F2D", taupe: "#8B7060", borderDef: "rgba(110,15,45,0.10)" };
+const F = { ui: "'Inter', sans-serif" };
+function findScrollContainer(el: HTMLElement | null): HTMLElement {
+  if (!el) return document.documentElement;
+  let cur: HTMLElement | null = el.parentElement;
+  while (cur) {
+    const { overflow, overflowY } = window.getComputedStyle(cur);
+    if (/(auto|scroll)/.test(overflow + overflowY)) return cur;
+    cur = cur.parentElement;
+  }
+  return document.documentElement;
+}
 
-// Worker portal — different nav-bar heights, reuses this same component/pattern.
-export const WORKER_MOBILE_HEADER_H = 56;
-export const WORKER_TOPNAV_H = 72;
-export const WORKER_SECTION_NAV_H = 52;
-
-// Shop Staff portal — different nav-bar heights, reuses this same component/pattern.
-export const SHOP_MOBILE_HEADER_H = 56;
-export const SHOP_SECTION_NAV_H = 52;
-
-export interface SectionNavItem { id: string; label: string; }
-
-export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
-  Production: [
-    { id: "prod-bulk-orders", label: "Bulk Orders" },
-    { id: "prod-active-batches", label: "Active Batches" },
-    { id: "prod-defective", label: "Defective Sarees" },
-    { id: "prod-analytics", label: "Analytics" },
-    { id: "prod-history", label: "Production History" },
-  ],
-  Materials: [
-    { id: "mat-alerts", label: "Stock Alerts" },
-    { id: "mat-po-tracker", label: "Purchase Orders" },
-    { id: "mat-stock-overview", label: "Current Stock" },
-    { id: "mat-issued", label: "Issued to Weavers" },
-    { id: "mat-purchase-history", label: "Purchase History" },
-    { id: "mat-recent", label: "Recently Received" },
-    { id: "mat-movement", label: "Movement History" },
-  ],
-  Payments: [
-    { id: "pay-summary", label: "Financial Summary" },
-    { id: "pay-making-charges", label: "Making Charges" },
-    { id: "pay-wholesale", label: "Wholesale Collections" },
-    { id: "pay-vendor", label: "Vendor Payments" },
-    { id: "pay-analytics", label: "Analytics" },
-    { id: "pay-history", label: "Payment History" },
-  ],
-  Reports: [],
-  Weavers: [
-    { id: "weav-all-weavers", label: "All Weavers" },
-    { id: "weav-performance", label: "Performance" },
-    { id: "weav-activities", label: "Activities" },
-  ],
-  WorkerQC: [
-    { id: "wqc-pending", label: "Pending QC" },
-    { id: "wqc-completed", label: "Completed Today" },
-    { id: "wqc-defective", label: "Defective" },
-  ],
-  ShopSalesReport: [
-    { id: "shoprep-today-sales", label: "Today's Sales" },
-    { id: "shoprep-monthly-totals", label: "Monthly Totals" },
-    { id: "shoprep-top-customers", label: "Top Customers" },
-    { id: "shoprep-by-design", label: "Sales by Design" },
-    { id: "shoprep-returns", label: "Returns" },
-  ],
-};
-
-// Global CSS needed by SectionNavigator — render once per dashboard root.
-export const SECTION_NAV_GLOBAL_STYLE = `
-  .section-nav-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(110,15,45,0.32) transparent;
-  }
-  .section-nav-scroll::-webkit-scrollbar {
-    height: 4px;
-    display: block !important;
-  }
-  .section-nav-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .section-nav-scroll::-webkit-scrollbar-thumb {
-    background: rgba(110,15,45,0.32);
-    border-radius: 4px;
-  }
-  .section-nav-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(110,15,45,0.60);
-  }
-
-  /* scroll-margin-top: sticky navbars height + 16px breathing room so the
-     section heading always lands cleanly below the last sticky bar. */
-  [id^="prod-"], [id^="mat-"], [id^="pay-"], [id^="rep-"], [id^="weav-"] {
-    scroll-margin-top: ${MOBILE_NAV_H + SECTION_NAV_H + 16}px;
-  }
-  @media (min-width: 768px) {
-    [id^="prod-"], [id^="mat-"], [id^="pay-"], [id^="rep-"], [id^="weav-"] {
-      scroll-margin-top: ${MAIN_NAV_H + SUB_NAV_H + 16}px;
-    }
-  }
-
-  [id^="wqc-"] {
-    scroll-margin-top: ${WORKER_MOBILE_HEADER_H + WORKER_SECTION_NAV_H + 16}px;
-  }
-  @media (min-width: 768px) {
-    [id^="wqc-"] {
-      scroll-margin-top: ${WORKER_TOPNAV_H + WORKER_SECTION_NAV_H + 16}px;
-    }
-  }
-
-  [id^="shoprep-"] {
-    scroll-margin-top: ${SHOP_MOBILE_HEADER_H + SHOP_SECTION_NAV_H + 16}px;
-  }
-`;
-
-// Find the element that's actually doing the scrolling for this page. In
-// this app that's sometimes `document.body` rather than the window/
-// documentElement (window.scrollY stays 0 while body.scrollTop moves), so
-// window.scrollTo() alone silently does nothing. Walk up from the target
-// looking for the nearest ancestor whose content overflows its box.
-const findScrollContainer = (el: HTMLElement): HTMLElement | null => {
-  let node: HTMLElement | null = el.parentElement;
-  while (node) {
-    if (node.scrollHeight > node.clientHeight + 1) {
-      const { overflowY } = getComputedStyle(node);
-      if (overflowY === "auto" || overflowY === "scroll" || node === document.body) return node;
-    }
-    node = node.parentElement;
-  }
-  return document.scrollingElement as HTMLElement | null;
-};
 
 export function SectionNavigator({
+
   sections, stickyTop = 0, height = SECTION_NAV_H,
   activeColor = T.royalBurgundy, mutedColor = T.taupe, borderColor = T.borderDef,
   fontFamily = F.ui, padding = "0 40px", layoutId = "section-nav-active-pill",
@@ -259,7 +141,7 @@ export function SectionNavigator({
             // If we are at the very top of the page, force the active section to be the first one.
             const firstEl = document.getElementById(sections[0]?.id);
             const container = firstEl ? findScrollContainer(firstEl) : null;
-            const scrollTop = container ? container.scrollTop : (window.scrollY || document.documentElement.scrollTop);
+            const scrollTop = container ? container.scrollTop : 0;
             if (scrollTop < 80) {
               setActive(sections[0]?.id ?? "");
               return;

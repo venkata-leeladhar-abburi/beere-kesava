@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   MapPin, Phone, Building2, FileText,
-  IndianRupee, AlertTriangle, ArrowLeft, Package, Star,
+  IndianRupee, AlertTriangle, ArrowLeft, Package,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
-import { PAYMENT_TERMS, STATES, PAY_MODE_FILL, BILL_STATUS_CFG, buildVendorLedger } from "./data";
+import { PAY_MODE_FILL, BILL_STATUS_CFG, buildVendorLedger } from "./data";
 import { StatusPill, StarRating } from "./SharedBits";
 import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
+import { VendorEditFormTab } from "./VendorEditFormTab";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -41,22 +42,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
   }, [filteredTxns]);
   const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
-
-  const [form, setForm] = useState(vendor);
-  const set = (k: keyof Vendor, v: string) => setForm(p => ({ ...p, [k]: v }));
-
-  React.useEffect(() => { setForm(vendor); }, [vendor]);
-
-  const inp: React.CSSProperties = {
-    width: "100%", padding: "10px 12px", borderRadius: 6,
-    border: `1px solid rgba(110,15,45,0.12)`, fontFamily: F.ui,
-    fontSize: 14, color: T.luxuryBrown, background: "#FFF",
-    outline: "none", boxSizing: "border-box" as const,
-  };
-  const lbl: React.CSSProperties = {
-    fontFamily: F.ui, fontSize: 12, fontWeight: 600,
-    color: T.luxuryBrown, display: "block", marginBottom: 6,
-  };
 
   const mockOrders = ledger.orders;
   return (
@@ -148,7 +133,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
           )}
           {tab === "payments" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Money summary */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
                 {[
                   { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
@@ -164,7 +148,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 ))}
               </div>
 
-              {/* Settlement progress */}
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>Settlement Progress</div>
@@ -192,12 +175,10 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 )}
               </div>
 
-              {/* Date scope for both tables below */}
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "16px 22px 2px" }}>
                 <DateFilterBar filter={payFilter} onChange={setPayFilter} />
               </div>
 
-              {/* Bill-wise settlement */}
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Invoice-wise Settlement</div>
@@ -242,7 +223,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 )}
               </div>
 
-              {/* Payment transactions */}
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Payments Made</div>
@@ -280,7 +260,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 )}
               </div>
 
-              {/* Overdue callout */}
               {overdueBills.length > 0 && (
                 <div style={{ background: T.crimsonBg, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 14, padding: "18px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -324,107 +303,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
             </div>
           )}
           {tab === "edit" && (
-            <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>Edit Profile</div>
-                <button onClick={() => onUpdate?.(form)} style={{ padding: "8px 16px", background: T.royalBurgundy, color: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer", border: "none" }}>Save Changes</button>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div>
-                    <label style={lbl}>Business Name *</label>
-                    <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={inp} />
-                  </div>
-                  <div>
-                    <label style={lbl}>Owner / Contact Name *</label>
-                    <input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={inp} />
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <div>
-                      <label style={lbl}>Phone Number *</label>
-                      <input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={inp} />
-                    </div>
-                    <div>
-                      <label style={lbl}>WhatsApp Number</label>
-                      <input value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
-                    </div>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <div>
-                      <label style={lbl}>City *</label>
-                      <input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={inp} />
-                    </div>
-                    <div>
-                      <label style={lbl}>State *</label>
-                      <select value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
-                        {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <div>
-                      <label style={lbl}>Material Types</label>
-                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: "10px 0" }}>
-                        {["Warp", "Resham", "Jari"].map(t => {
-                          const typesArr = form.type ? form.type.split(" / ").map(s => s.trim()).filter(Boolean) : [];
-                          return (
-                            <label key={t} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                              <input type="checkbox" checked={typesArr.includes(t)} onChange={e => {
-                                const newTypes = e.target.checked ? [...typesArr, t] : typesArr.filter(x => x !== t);
-                                set("type", newTypes.join(" / "));
-                              }} style={{ accentColor: T.royalBurgundy, width: 15, height: 15 }} />
-                              {t}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <label style={lbl}>Payment Terms *</label>
-                      <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
-                        {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                      <label style={lbl}>Vendor Rating</label>
-                      <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
-                        {[1, 2, 3, 4, 5].map(i => {
-                          const ratingVal = (form as any).rating || 3;
-                          return (
-                            <div key={i} onClick={() => set("rating", i as any)}>
-                              <Star size={20} fill={i <= ratingVal ? T.antiqueGold : "none"} color={i <= ratingVal ? T.antiqueGold : T.taupe} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div>
-                    <label style={lbl}>Business Address</label>
-                    <textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <div>
-                      <label style={lbl}>Bank Name</label>
-                      <input value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
-                    </div>
-                    <div>
-                      <label style={lbl}>Account Number</label>
-                      <input value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={lbl}>GST Number</label>
-                    <input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={inp} />
-                  </div>
-                  <div>
-                    <label style={lbl}>Notes</label>
-                    <textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <VendorEditFormTab vendor={vendor} onUpdate={onUpdate} />
           )}
         </motion.div>
       </AnimatePresence>

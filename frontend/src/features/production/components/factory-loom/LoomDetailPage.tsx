@@ -14,6 +14,7 @@ import { FactoryLoom } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { STATUS_CFG } from "./types";
+import { LoomMaterialsTab } from "./LoomMaterialsTab";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -24,11 +25,6 @@ function SectionPill({ label }: { label: string }) {
   return <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
 }
 
-/**
- * Design dispatches are addressed by a free-form loom label ("Loom 3") in the
- * Design Library, while looms here are identified as FL-00X / "Loom F-01".
- * Accept any of those spellings so existing dispatches still resolve.
- */
 function loomDispatchAliases(loom: FactoryLoom): string[] {
   const digits = loom.loomNumber.replace(/[^0-9]/g, "").replace(/^0+/, "");
   return [loom.id, loom.loomNumber, digits ? `Loom ${digits}` : ""].filter(Boolean);
@@ -58,7 +54,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
     return m ? parseInt(m[1] ?? "0", 10) : 0;
   };
 
-  // ── Batches this loom is working on ────────────────────────────────────────
   const loomBatches = batches.filter(b => b.rows.some(r => r.factoryLoomId === loom.id));
   const sortedLoomBatches = [...loomBatches].sort((a, b) => {
     if (a.status === "active" && b.status !== "active") return -1;
@@ -71,10 +66,8 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   const assignedCount = loomBatches.reduce((n, b) => n + b.rows.filter(r => r.factoryLoomId === loom.id).length, 0);
   const qcPassedCount = qcRecords.filter(r => r.result === "passed").length;
 
-  // ── Materials issued to this loom ──────────────────────────────────────────
   const materialRecords = issueRecords.filter(r => r.factoryLoomId === loom.id && r.status !== "cancelled");
 
-  // ── Design dispatches sent to this loom, grouped by batch ──────────────────
   const loomDispatches = dispatches.filter(d =>
     d.recipientType === "loom" && aliases.includes(d.recipientId) && matchesDateFilter(d.sentAt, dispatchDateFilter));
   const dispatchGroups: { batchId: string; records: DispatchRecord[] }[] = [];
@@ -98,7 +91,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   return (
     <>
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100vh" }}>
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, top: 0, zIndex: 10 }}>
         <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 15, padding: "8px 4px" }}>
           <ArrowLeft size={18} /> Back to Factory Looms
@@ -106,7 +98,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
       </div>
 
-      {/* Identity strip */}
       <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
         <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" as const }}>
           <div style={{ width: 104, height: 104, borderRadius: 26, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -135,7 +126,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
         {TABS.map(t => (
           <button key={t.k} onClick={() => setTab(t.k as any)}
@@ -146,7 +136,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
       </div>
 
       <div style={{ padding: "40px 48px 80px", flex: 1 }}>
-        {/* ── OVERVIEW ── */}
         {tab === "overview" && (
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 36 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 18 }}>
@@ -211,7 +200,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
               </div>
             </div>
 
-            {/* Sarees — same section as the weaver profile */}
             <div>
               <SectionPill label="Sarees" />
               <WeaverSareesSection ownerType="loom" weaverId={loom.id} weaverName={loom.loomNumber} />
@@ -219,7 +207,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           </div>
         )}
 
-        {/* ── BATCH HISTORY ── */}
         {tab === "batches" && (
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 24 }}>
             <SectionPill label="All Batches & Assigned Sarees" />
@@ -301,7 +288,6 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           </div>
         )}
 
-        {/* ── DESIGN DISPATCHES ── */}
         {tab === "dispatches" && (
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 24 }}>
             <SectionPill label="Design Dispatches Sent to This Loom" />
@@ -353,89 +339,11 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           </div>
         )}
 
-        {/* ── MATERIALS RECEIVED ── */}
         {tab === "materials" && (
-          <div>
-            <SectionPill label="Materials Issued — Batch Wise" />
-            {materialRecords.length === 0 ? (
-              <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" as const, marginTop: 12 }}>
-                No materials issued to this loom yet. Use the Issue Material page to record material handovers.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 18, marginTop: 12 }}>
-                {Array.from(materialRecords.reduce((m, r) => {
-                  const key = r.batchId || "Unassigned";
-                  if (!m.has(key)) m.set(key, [] as typeof materialRecords);
-                  m.get(key)!.push(r);
-                  return m;
-                }, new Map<string, typeof materialRecords>()).entries()).map(([batchId, recs]) => {
-                  let warpKg = 0;
-                  let reshamKg = 0;
-                  let jariReels = 0;
-                  recs.forEach(r => r.materials.forEach(mat => {
-                    const qty = mat.quantity || 0;
-                    if (mat.materialType === "Warp") {
-                      warpKg += (mat.unit || "").toLowerCase() === "kg" ? qty : qty / 1000;
-                    } else if (mat.materialType === "Resham") {
-                      reshamKg += (mat.unit || "").toLowerCase() === "kg" ? qty : qty / 1000;
-                    } else if (mat.materialType === "Jari") {
-                      jariReels += (mat.unit || "").toLowerCase().startsWith("bun") ? qty * 4 : qty;
-                    }
-                  }));
-
-                  return (
-                    <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
-                      </div>
-
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {[
-                          { label: "Warp Outstanding", value: `${warpKg.toFixed(2)} kg`, color: T.royalBurgundy },
-                          { label: "Resham Outstanding", value: `${reshamKg.toFixed(2)} kg`, color: "#7A5E1C" },
-                          { label: "Jari Outstanding", value: `${jariReels} reels`, color: T.green },
-                        ].map((s, i) => (
-                          <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
-                            <div style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column" as const, gap: 12 }}>
-                        {recs.map(r => (
-                          <div key={r.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap" as const, gap: 8 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px" }}>{r.id}</span>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
-                              </div>
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                              {r.materials.map((m, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
-                                  <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.materialType}</span>
-                                  {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
-                                  <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
-                                </div>
-                              ))}
-                            </div>
-                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 10 }}>Issued by {r.issuedBy}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <LoomMaterialsTab materialRecords={materialRecords} />
         )}
       </div>
 
-      {/* Sticky edit bar — mirrors the weaver profile */}
       <div style={{ padding: "24px 32px", borderTop: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, bottom: 0, display: "flex", gap: 16 }}>
         <motion.button onClick={() => onEdit(loom)} whileHover={{ scale: 1.02 }}
           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "14px 0", fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>

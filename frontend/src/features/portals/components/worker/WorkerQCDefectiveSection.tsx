@@ -1,0 +1,61 @@
+import React from "react";
+import { Eye } from "lucide-react";
+import { T, F, baseCard, DefectiveLogItem } from "./WorkerQCTypes";
+
+interface WorkerQCDefectiveSectionProps {
+  defLog: DefectiveLogItem[];
+  defFilter: string;
+  setDefFilter: (filter: string) => void;
+  isDesktop?: boolean;
+  isTablet?: boolean;
+}
+
+export function WorkerQCDefectiveSection({
+  defLog,
+  defFilter,
+  setDefFilter,
+  isDesktop,
+  isTablet,
+}: WorkerQCDefectiveSectionProps) {
+  const defCols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(3, 1fr)" : "1fr 1fr";
+
+  return (
+    <>
+      <div id="wqc-defective" style={{ margin: isDesktop ? "20px 0 8px" : "20px 16px 8px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 18, background: T.crim, borderRadius: 2 }} />
+        <div style={{ fontFamily: F.u, fontSize: isDesktop ? 15 : 14, fontWeight: 700, color: T.brown }}>Defective Sarees</div>
+      </div>
+      <div style={{ margin: isDesktop ? "2px 0 10px" : "2px 16px 10px", fontFamily: F.u, fontSize: isDesktop ? 13 : 12, color: T.muted }}>
+        Failed quality check — stored separately.
+      </div>
+
+      <div style={{ display: "flex", gap: 6, padding: isDesktop ? "0 0 10px" : "0 16px 8px" }}>
+        {["Today", "This Week", "This Month", "All Time"].map(f => (
+          <button key={f} onClick={() => setDefFilter(f)} style={{ flexShrink: 0, padding: isDesktop ? "5px 14px" : "4px 10px", borderRadius: 999, border: `1px solid ${defFilter === f ? T.burg : T.bdr}`, background: defFilter === f ? T.burg : "#FFF", color: defFilter === f ? "#FFF" : T.muted, fontFamily: F.u, fontSize: isDesktop ? 13 : 11, fontWeight: defFilter === f ? 600 : 400, cursor: "pointer" }}>
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: defCols, gap: isDesktop ? 12 : 8, padding: isDesktop ? "0" : "0 16px" }}>
+        {defLog.map((d, i) => (
+          <div key={i} style={{ ...baseCard, padding: isDesktop ? "14px 16px" : "12px 12px", borderLeft: `3px solid ${T.crim}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+              <span style={{ fontFamily: F.m, fontSize: isDesktop ? 13 : 10, fontWeight: 700, color: T.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{d.id}</span>
+              <span style={{ fontFamily: F.m, fontSize: isDesktop ? 13 : 11, fontWeight: 700, color: T.crim, flexShrink: 0, marginLeft: 6 }}>{d.deduction}</span>
+            </div>
+            <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: T.muted, marginBottom: 7 }}>{d.weaver} · {d.date}</div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 10 }}>
+              {d.defects.map(df => (
+                <span key={df} style={{ fontFamily: F.u, fontSize: isDesktop ? 11 : 9, fontWeight: 600, color: T.crim, background: T.bgCrim, border: `1px solid rgba(192,57,43,0.15)`, padding: "2px 7px", borderRadius: 999 }}>{df}</span>
+              ))}
+            </div>
+            <button style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: `1px solid ${T.bdr}`, borderRadius: 7, padding: isDesktop ? "5px 10px" : "4px 8px", fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: T.muted, cursor: "pointer", width: "100%", justifyContent: "center" }}>
+              <Eye size={isDesktop ? 12 : 10} /> View Details
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}

@@ -1,32 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Search, ChevronDown, ChevronRight, Users, Package, Camera, Building2, UserRound,
-} from "lucide-react";
-import { useFinishing, FinishingAssignment, FinishingReturn, Quotation } from "../contexts/FinishingContext";
+import { Search, Users } from "lucide-react";
+import { useFinishing, FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { FinishingQuotationsSection } from "./FinishingQuotationsSection";
+import { FinishingStaffSection, StaffRow } from "./FinishingStaffSection";
 
-/**
- * Read-only view for admin / superadmin of what WorkerFinishing already tracks:
- * which sarees were sent to which finishing staff, and what came back and in
- * what condition. Data comes straight from FinishingContext — nothing new is
- * stored here, this just gives admin/superadmin the same visibility the
- * worker portal has.
- */
-
-// ── Design tokens (match Reports / Outstanding Stock) ─────────────────────────
 const T = {
   silkCream:     "#F7F2EA",
   royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
-  darkBurgundy:  "#3D0E1A",
   antiqueGold:   "#C89B47",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
   taupe:         "#8B7060",
-  crimson:       "#C0392B",
-  green:         "#1E6640",
-  orange:        "#E67E22",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 const F = {
@@ -48,112 +33,9 @@ function StatChip({ label, value, tone = "plain" }: { label: string; value: stri
   );
 }
 
-function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
-}
-
-function Card({ children, pad = 22 }: { children: React.ReactNode; pad?: number }) {
-  return <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: pad }}>{children}</div>;
-}
-
-function SectionTitle({ title, sub }: { title: string; sub?: string }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <h3 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: 0 }}>{title}</h3>
-      {sub && <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "5px 0 0" }}>{sub}</p>}
-    </div>
-  );
-}
-
-const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
-const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
-const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.royalBurgundy };
-
-function ScrollTable({ children }: { children: React.ReactNode }) {
-  return <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>{children}</table></div>;
-}
-
-function Empty({ msg }: { msg: string }) {
-  return (
-    <div style={{ padding: "48px 24px", textAlign: "center" }}>
-      <Package size={40} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
-      <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>{msg}</div>
-    </div>
-  );
-}
-
 function parseDMY(s: string): number {
   const t = Date.parse(s);
   return isNaN(t) ? 0 : t;
-}
-
-// ── Per-saree row: assignment + its return (if any) ──────────────────────────
-function AssignmentRow({ a, ret }: { a: FinishingAssignment; ret: FinishingReturn | undefined }) {
-  return (
-    <tr>
-      <td style={tdMono}>{a.sareeId}</td>
-      <td style={td}>
-        {a.quotationRef ? <Pill label={a.quotationRef} color="#8B6018" bg="rgba(200,146,58,0.14)" /> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-      <td style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</td>
-      <td style={td}>{a.weaverName}</td>
-      <td style={td}>{a.assignedDate}</td>
-      <td style={td}>{a.assignedBy}</td>
-      <td style={td}>
-        {!ret ? (
-          <Pill label="Awaiting Return" color={T.orange} bg="rgba(230,126,34,0.12)" />
-        ) : (
-          <div>
-            <Pill
-              label={ret.condition === "perfect" ? "Received · Perfect" : `Received · Damaged${ret.damageSeverity ? ` (${ret.damageSeverity})` : ""}`}
-              color={ret.condition === "perfect" ? T.green : T.crimson}
-              bg={ret.condition === "perfect" ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.10)"}
-            />
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>{ret.receivedDate} · by {ret.receivedBy}</div>
-            {ret.condition === "damaged" && ret.damageNotes && (
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson, marginTop: 2 }}>{ret.damageType || "Damage"}: {ret.damageNotes}</div>
-            )}
-          </div>
-        )}
-      </td>
-      <td style={td}>
-        {ret?.damagePhotoUrl ? (
-          <div style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Camera size={12} color="rgba(255,255,255,0.85)" />
-          </div>
-        ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-      <td style={td}>
-        {ret ? <Pill label={ret.inventoryStatus} color={ret.inventoryStatus === "Dispatched" ? T.green : ret.inventoryStatus.startsWith("Damaged") ? T.crimson : T.royalBurgundy}
-          bg={ret.inventoryStatus === "Dispatched" ? "rgba(30,102,64,0.09)" : ret.inventoryStatus.startsWith("Damaged") ? "rgba(192,57,43,0.10)" : "rgba(110,15,45,0.06)"} />
-          : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-    </tr>
-  );
-}
-
-// ── Quotations for Finishing (read-only mirror of the worker portal view) ────
-function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
-  const cfg: Record<Quotation["status"], { bg: string; color: string; label: string }> = {
-    "raised":              { bg: "rgba(200,146,58,0.14)", color: "#8B6018", label: "Awaiting Finishing" },
-    "in-finishing":        { bg: "rgba(248,140,0,0.12)",  color: "#B85C00", label: "With Finishing Staff" },
-    "partially-received":  { bg: "rgba(30,102,64,0.10)",  color: T.green,   label: "Partially Received" },
-    "received":            { bg: "rgba(30,102,64,0.12)",  color: T.green,   label: "Received — Ready to Dispatch" },
-    "dispatched":          { bg: "rgba(107,26,42,0.10)",  color: T.royalBurgundy, label: "Dispatched" },
-  };
-  const s = cfg[status];
-  return <Pill label={s.label} color={s.color} bg={s.bg} />;
-}
-
-interface StaffRow {
-  name: string;
-  assignments: FinishingAssignment[];
-  returns: FinishingReturn[];
-  perfect: number;
-  damaged: number;
-  pending: number;
-  lastAssignmentDate: string;
-  assignedByLabel: string;
 }
 
 function summarizeAssignedBy(list: FinishingAssignment[]): string {
@@ -253,7 +135,7 @@ export function FinishingTrackingPage() {
 
       <div style={{ padding: "22px 40px 48px", display: "flex", flexDirection: "column", gap: 20 }}>
         {/* Filters */}
-        <Card pad={16}>
+        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
           <div style={{ marginBottom: 14 }}>
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
@@ -282,153 +164,22 @@ export function FinishingTrackingPage() {
               <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Quotations for Finishing */}
-        <Card>
-          <SectionTitle
-            title="Quotations for Finishing"
-            sub="Bulk-order quotations routed through finishing before dispatch — who raised them, who they're assigned to, and how many sarees have come back so far."
-          />
-          {filteredQuotations.length === 0 ? <Empty msg="No quotations match the current filters." /> : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {filteredQuotations.map(qt => {
-                const isOpen = openQuotation === qt.id;
-                const received = qt.sarees.filter(s => s.finishingStatus === "received").length;
-                return (
-                  <div key={qt.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                    <button onClick={() => setOpenQuotation(isOpen ? null : qt.id)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
-                      {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{qt.quotationNumber}</span>
-                          <QuotationStatusBadge status={qt.status} />
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                          <Building2 size={12} color={T.taupe} /> {qt.customerName}{qt.customerCity ? ` · ${qt.customerCity}` : ""} · {qt.quotationDate}
-                        </div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
-                          <UserRound size={12} color={T.taupe} /> Raised by <strong style={{ color: T.luxuryBrown }}>{qt.raisedBy}</strong>
-                          {qt.finishingStaffName && <> · Assigned to <strong style={{ color: T.luxuryBrown }}>{qt.finishingStaffName}</strong></>}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: T.luxuryBrown, lineHeight: 1 }}>{received}/{qt.sarees.length}</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px", marginTop: 3 }}>Received</div>
-                      </div>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
-                          <div style={{ padding: "6px 18px 16px" }}>
-                            <ScrollTable>
-                              <thead>
-                                <tr>
-                                  <th style={th}>Saree Code</th>
-                                  <th style={th}>Saree Type</th>
-                                  <th style={th}>Weaver</th>
-                                  <th style={th}>Finishing Status</th>
-                                  <th style={th}>Finishing Staff</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qt.sarees.map(s => (
-                                  <tr key={s.sareeId}>
-                                    <td style={tdMono}>{s.sareeId}</td>
-                                    <td style={td}>{s.sareeTypeCode ? `${s.sareeTypeCode} · ` : ""}{s.sareeType}</td>
-                                    <td style={td}>{s.weaverName}</td>
-                                    <td style={td}>
-                                      <Pill
-                                        label={s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
-                                        color={s.finishingStatus === "received" ? T.green : s.finishingStatus === "in-finishing" ? T.orange : T.taupe}
-                                        bg={s.finishingStatus === "received" ? "rgba(30,102,64,0.09)" : s.finishingStatus === "in-finishing" ? "rgba(230,126,34,0.12)" : "rgba(139,112,96,0.10)"}
-                                      />
-                                    </td>
-                                    <td style={td}>{s.finishingStaffName || <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </ScrollTable>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
+        <FinishingQuotationsSection
+          filteredQuotations={filteredQuotations}
+          openQuotation={openQuotation}
+          setOpenQuotation={setOpenQuotation}
+        />
 
         {/* Staff-wise tracking */}
-        <Card>
-          <SectionTitle
-            title="Assignment History by Finishing Staff"
-            sub="Every finishing staff member, what has been assigned to them, and what they've returned so far."
-          />
-          {filteredRows.length === 0 ? <Empty msg="No finishing assignments match the current filters." /> : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {filteredRows.map(r => {
-                const isOpen = open === r.name;
-                return (
-                  <div key={r.name} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                    <button onClick={() => setOpen(isOpen ? null : r.name)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
-                      {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last assigned {r.lastAssignmentDate} · Assigned by {r.assignedByLabel}</div>
-                      </div>
-                      <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-                        {[
-                          { l: "Assigned", v: String(r.assignments.length), c: T.luxuryBrown },
-                          { l: "Returned", v: String(r.returns.length), c: T.royalBurgundy },
-                          { l: "Pending", v: String(r.pending), c: r.pending > 0 ? T.orange : T.green },
-                          { l: "Perfect", v: String(r.perfect), c: T.green },
-                          { l: "Damaged", v: String(r.damaged), c: r.damaged > 0 ? T.crimson : T.taupe },
-                        ].map(k => (
-                          <div key={k.l} style={{ textAlign: "right", minWidth: 58 }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
-                          <div style={{ padding: "6px 18px 16px" }}>
-                            <ScrollTable>
-                              <thead>
-                                <tr>
-                                  <th style={th}>Saree Code</th>
-                                  <th style={th}>Quotation</th>
-                                  <th style={th}>Saree Type</th>
-                                  <th style={th}>Weaver</th>
-                                  <th style={th}>Assigned On</th>
-                                  <th style={th}>Assigned By</th>
-                                  <th style={th}>Return Status</th>
-                                  <th style={th}>Photo</th>
-                                  <th style={th}>Inventory Status</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {r.visibleAssignments.map(a => (
-                                  <AssignmentRow key={a.id} a={a} ret={r.returns.find(rt => rt.sareeId === a.sareeId)} />
-                                ))}
-                              </tbody>
-                            </ScrollTable>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
+        <FinishingStaffSection
+          filteredRows={filteredRows}
+          open={open}
+          setOpen={setOpen}
+          returns={returns}
+        />
       </div>
     </div>
   );

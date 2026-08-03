@@ -1,19 +1,15 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import {
   Shield, Settings, ClipboardList, ChevronRight,
-  Edit3, Layers3, Eye, Activity, MapPin, Phone, AlertTriangle,
   CheckCircle2, Building2,
 } from "lucide-react";
 import { imgHero } from "../../../../shared/constants/imageData";
 import { T, F, G, NUM, EASE } from "./theme";
-import { SA_METRICS, WEAVERS, WEAVER_RATES, MATS } from "./data";
+import { SA_METRICS, MATS } from "./data";
 import { SectionHeader, AnimatedNumber } from "./atoms";
+import { SAWeaverSection } from "./SAWeaverSection";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA HERO
-// ═══════════════════════════════════════════════════════════════════════════════
 function SAHero() {
   return (
     <section style={{ position: "relative", height: "calc(100vh - 90px - 160px)", minHeight: 380, overflow: "hidden", background: "#0D0207" }}>
@@ -26,7 +22,6 @@ function SAHero() {
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #0D0207 0%, #0D0207 32%, rgba(13,2,7,0.97) 40%, rgba(13,2,7,0.88) 48%, rgba(13,2,7,0.55) 58%, rgba(13,2,7,0.18) 72%, rgba(13,2,7,0) 80%)", pointerEvents: "none", zIndex: 1 }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 140, background: "linear-gradient(to top, rgba(13,2,7,0.7) 0%, rgba(13,2,7,0) 100%)", pointerEvents: "none", zIndex: 2 }} />
 
-      {/* SA Badge top-right */}
       <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65, delay: 0.6, ease: EASE }}
         style={{ position: "absolute", top: 28, right: 28, zIndex: 10, display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 999, background: "rgba(196,146,58,0.18)", border: "1px solid rgba(196,146,58,0.42)", backdropFilter: "blur(12px)" }}
       >
@@ -64,7 +59,6 @@ function SAHero() {
         </motion.p>
       </div>
 
-      {/* Decorative rings */}
       {[180, 280, 380].map((sz, i) => (
         <motion.div key={i}
           initial={{ opacity: 0, scale: 0.7 }}
@@ -77,9 +71,6 @@ function SAHero() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA METRICS BAR
-// ═══════════════════════════════════════════════════════════════════════════════
 function SAMetricsBar() {
   return (
     <motion.div
@@ -124,9 +115,6 @@ function SAMetricsBar() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA OVERVIEW — ALERT STRIP
-// ═══════════════════════════════════════════════════════════════════════════════
 function SAAlertStrip() {
   return (
     <div style={{ margin: "36px 48px 0", padding: "14px 22px", borderRadius: 14, background: "rgba(196,146,58,0.10)", border: "none", borderLeft: "3px solid #C4923A", display: "flex", alignItems: "center", gap: 12 }}>
@@ -138,9 +126,6 @@ function SAAlertStrip() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA QUICK ACTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
 function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
   const actions = [
     { icon: <Settings size={22} color={T.antiqueGold} />, label: "Edit Rates & Pricing", sub: "Update making charge rates", nav: "Rates", color: T.antiqueGold, bg: "rgba(200,155,71,0.08)", border: "rgba(200,155,71,0.22)" },
@@ -185,190 +170,6 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA OVERVIEW — WEAVERS SECTION (simplified)
-// ═══════════════════════════════════════════════════════════════════════════════
-function SAWeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
-  return (
-    <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
-      <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
-      <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
-        {WEAVERS.map((w, i) => (
-          <motion.div
-            key={w.id}
-            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
-            initial={{ opacity: 0, y: 44, scale: 0.90, filter: "blur(7px)" }}
-            whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
-            whileHover={{ y: -9, scale: 1.012, boxShadow: "0px 32px 80px rgba(74,6,27,0.18)" }}
-            transition={{ type: "spring", stiffness: 240, damping: 22, delay: i * 0.12, opacity: { duration: 0.45 }, filter: { duration: 0.5 } }}
-            style={{ flex: 1, background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            {/* Header Banner - Full Image Height 170px */}
-            <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
-              {w.img ? (
-                <motion.img
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.5 }}
-                  src={w.img}
-                  alt={w.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
-                </div>
-              )}
-
-              {/* Dark gradient overlay for modern look */}
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
-
-              {/* Floating ID badge in top left */}
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                {w.id}
-              </div>
-
-              {/* Floating gentle status pill overlay at the bottom left of the image banner */}
-              <div style={{
-                position: "absolute",
-                bottom: 12,
-                left: 12,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 8px"
-              }}>
-                {w.status === "active" ? (
-                  <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
-                ) : w.status === "qc" ? (
-                  <PhClock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
-                ) : (
-                  <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
-                )}
-                <span style={{
-                  fontFamily: F.ui,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "#FFFFFF",
-                  textTransform: "uppercase" as const,
-                  letterSpacing: "0.5px",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.6)"
-                }}>
-                  {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
-                </span>
-              </div>
-            </div>
-
-            {/* Content Area */}
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
-              {/* Name and Batch beside it */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
-                <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
-                  {w.name}
-                </div>
-                {w.batch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
-                    {w.batch}
-                  </span>
-                )}
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.village}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.mobile}</span>
-                </div>
-              </div>
-
-              <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
-
-              {/* Dual Column Stats (Looms & Rate/Charge) */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-                {/* Looms block */}
-                <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Rows size={14} color={T.royalBurgundy} weight="fill" />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
-                  </div>
-                </div>
-
-                {/* Rate / Making Charge block */}
-                <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>₹</span>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Making Charge</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
-                      {WEAVER_RATES[w.id] ? WEAVER_RATES[w.id].rate.split("/")[0] : "—"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Design type detail strip */}
-              {WEAVER_RATES[w.id] && (
-                <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown }}>{WEAVER_RATES[w.id].type}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{WEAVER_RATES[w.id].code}</span>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Eye size={14} /> Details
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                >
-                  <Edit3 size={13} /> Edit
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Layers3 size={14} /> Batches
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <motion.div
-            onClick={() => onNavigate("AllWeavers")}
-            whileHover={{ scale: 1.12, boxShadow: "0px 10px 30px rgba(74,6,27,0.16)" }}
-            whileTap={{ scale: 0.93 }}
-            style={{ width: 44, height: 44, borderRadius: "50%", background: T.warmIvory, border: `1.5px solid ${T.borderGold}`, boxShadow: "0px 6px 20px rgba(74,6,27,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-          >
-            <ChevronRight size={18} color={T.royalBurgundy} />
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA OVERVIEW — RAW MATERIAL SECTION
-// ═══════════════════════════════════════════════════════════════════════════════
 function SARawMaterial() {
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
@@ -402,9 +203,6 @@ function SARawMaterial() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA OVERVIEW PAGE
-// ═══════════════════════════════════════════════════════════════════════════════
 export function SAOverviewPage({ setNav }: { setNav: (v: string) => void }) {
   return (
     <div style={{ background: T.silkCream }}>

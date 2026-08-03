@@ -1,33 +1,20 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
+import React, { useState, useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
+import { useBatches } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
-import { motion, AnimatePresence, useInView } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  Bell, Check,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
-// ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SectionTitle, Card, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, CURRENT_WEAVER_ID
 } from './theme';
-
+import { ReferenceHistorySection } from "./ReferenceHistorySection";
 
 export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
@@ -43,8 +30,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedRecord, setConfirmedRecord] = useState<MaterialIssueRecord | null>(null);
   const [requestSent, setRequestSent] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyTab, setHistoryTab] = useState<"materials" | "batches" | "sarees">("materials");
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
   const weaverRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
@@ -190,57 +175,54 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             Sign below to confirm you have received all materials listed above. This creates a permanent record.
           </div>
 
-          {/* Option A + Option B: side by side on tablet/desktop, stacked on mobile */}
           <div style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, gap: 12, margin: "0 20px 10px" }}>
-          <div style={{ flex: 1 }}>
-            <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{
-              width: "100%", background: C.white, border: `1px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
-              cursor: "pointer", textAlign: "left" as const,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20 }}>📱</span>
-                <div>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign here on this phone</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>If the worker is with you, sign directly below</div>
+            <div style={{ flex: 1 }}>
+              <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{
+                width: "100%", background: C.white, border: `1px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
+                cursor: "pointer", textAlign: "left" as const,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>📱</span>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign here on this phone</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>If the worker is with you, sign directly below</div>
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{
+                width: "100%", background: C.white, border: `1px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
+                cursor: "pointer", textAlign: "left" as const, marginBottom: sigMethod === "remote" ? 10 : 0,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>📲</span>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign on your own phone</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Worker will send you a notification to sign on your own device</div>
+                  </div>
+                </div>
+              </button>
+              <AnimatePresence>
+                {sigMethod === "remote" && (
+                  <motion.div key="remote" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    {requestSent ? (
+                      <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <Check size={16} color={C.green} />
+                        <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
+                      </div>
+                    ) : (
+                      <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 48, border: `1px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.gold, cursor: "pointer" }}>
+                        Send Signature Request
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Option B */}
-          <div style={{ flex: 1 }}>
-            <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{
-              width: "100%", background: C.white, border: `1px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
-              cursor: "pointer", textAlign: "left" as const, marginBottom: sigMethod === "remote" ? 10 : 0,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20 }}>📲</span>
-                <div>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign on your own phone</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Worker will send you a notification to sign on your own device</div>
-                </div>
-              </div>
-            </button>
-            <AnimatePresence>
-              {sigMethod === "remote" && (
-                <motion.div key="remote" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {requestSent ? (
-                    <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <Check size={16} color={C.green} />
-                      <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
-                    </div>
-                  ) : (
-                    <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 48, border: `1px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.gold, cursor: "pointer" }}>
-                      Send Signature Request
-                    </button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          </div>
-
-          {/* Signature Box (Option A) */}
           <AnimatePresence>
             {sigMethod === "here" && (
               <motion.div key="sigbox" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
@@ -251,7 +233,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             )}
           </AnimatePresence>
 
-          {/* Confirm Button */}
           <div style={{ margin: "0 20px" }}>
             <div style={{ background: C.cream, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>By signing and confirming, you agree that you have received all the materials listed above. This record is permanent.</span>
@@ -269,7 +250,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
           </div>
         </>
       ) : (
-        /* Empty state */
         <div style={{ margin: 20 }}>
           <Card style={{ padding: 32, textAlign: "center" as const }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
@@ -282,7 +262,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         </div>
       )}
 
-      {/* Outstanding Material with the weaver */}
+      {/* Outstanding Material */}
       {matByBatch.length > 0 && (() => {
         const fmtKg = (g: number) => `${(g / 1000).toFixed(2)} kg`;
         const outColor = matSummary.outstandingGrams > 0 ? C.crim : C.green;
@@ -293,7 +273,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
               Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
             </div>
 
-            {/* Totals */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "0 20px 14px" }}>
               {[
                 { label: "Issued", value: fmtKg(matSummary.issuedGrams), color: C.text },
@@ -307,7 +286,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
               ))}
             </div>
 
-            {/* Batch wise — combined with the handovers that make up each batch */}
             <div style={{ margin: "0 20px", display: "flex", flexDirection: "column" as const, gap: 16 }}>
               {(() => {
                 const recordsByBatch = new Map<string, typeof weaverRecords>();
@@ -352,188 +330,13 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
       })()}
 
       {/* Complete Reference History */}
-      <div style={{ marginTop: 28 }}>
-        <button onClick={() => setHistoryOpen(v => !v)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <SectionTitle title="Complete Reference History" />
-          <ChevronRight size={18} color={C.muted} style={{ transform: historyOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
-        </button>
-        <AnimatePresence>
-          {historyOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-              
-              {/* History Tabs Switcher */}
-              <div style={{ display: "flex", gap: 10, padding: "10px 20px 16px 20px", borderBottom: `1px solid ${C.bdr}` }}>
-                {[
-                  { id: "materials", label: "Material Receipts" },
-                  { id: "batches", label: "Weaving Batches" },
-                  { id: "sarees", label: "Saree Work Log" }
-                ].map(t => (
-                  <button key={t.id} onClick={() => setHistoryTab(t.id as any)} style={{
-                    padding: "8px 16px", borderRadius: 999, border: `1px solid ${historyTab === t.id ? C.burg : C.bdr}`,
-                    background: historyTab === t.id ? C.burg : "transparent",
-                    color: historyTab === t.id ? "#FFF" : C.muted,
-                    fontFamily: F.u, fontWeight: 600, fontSize: 12.5, cursor: "pointer"
-                  }}>{t.label}</button>
-                ))}
-              </div>
-
-              {/* TAB 1: Material Receipts */}
-              {historyTab === "materials" && (
-                signedRecords.length === 0 ? (
-                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No confirmed material receipts yet.</div>
-                  </div>
-                ) : isMobile ? (
-                  <div style={{ marginTop: 12 }}>
-                    {signedRecords.map(r => (
-                      <div key={r.id} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{r.id}</span>
-                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8, lineHeight: 1.5 }}>
-                          {r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}
-                        </div>
-                        {r.signatureTimestamp && (
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
-                            <Check size={12} /> Confirmed by you on {new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                    <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                        {["Date", "Materials", "MIR ID", "Status"].map(h => (
-                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                        ))}
-                      </div>
-                      {signedRecords.map(r => (
-                        <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</div>
-                          <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
-                            <Check size={12} /> Confirmed
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )}
-
-              {/* TAB 2: Weaving Batches */}
-              {historyTab === "batches" && (
-                myWeavingBatches.length === 0 ? (
-                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No weaving batches assigned yet.</div>
-                  </div>
-                ) : isMobile ? (
-                  <div style={{ marginTop: 12 }}>
-                    {myWeavingBatches.map(b => (
-                      <div key={b.batchId} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{b.batchId}</span>
-                          <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
-                            {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
-                          </span>
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8 }}>
-                          Progress: <strong>{b.passedCount}</strong> of <strong>{b.rowsCount}</strong> sarees passed QC
-                        </div>
-                        {b.dueDate && (
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
-                            Due Date: {b.dueDate}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                    <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                        {["Batch ID", "Status", "Progress", "Due Date"].map(h => (
-                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                        ))}
-                      </div>
-                      {myWeavingBatches.map(b => (
-                        <div key={b.batchId} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
-                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
-                            {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
-                          </div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
-                            {b.passedCount} / {b.rowsCount} wove & passed
-                          </div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{b.dueDate || "—"}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )}
-
-              {/* TAB 3: Saree Work Log */}
-              {historyTab === "sarees" && (
-                mySarees.length === 0 ? (
-                  <div style={{ margin: "16px 20px", background: C.cream, borderRadius: 12, padding: "18px 16px", textAlign: "center" as const }}>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No sarees logged yet.</div>
-                  </div>
-                ) : isMobile ? (
-                  <div style={{ marginTop: 12 }}>
-                    {mySarees.map((s, i) => (
-                      <div key={i} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</span>
-                          <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{s.batchId}</span>
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8 }}>
-                          Type: {s.sareeTypeCode} · Loom {s.loom}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>
-                            {s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective (QC Failed)" : "⏳ In Progress"}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                    <div style={{ minWidth: isTablet ? 640 : undefined }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                        {["Saree ID", "Batch ID", "Saree Type", "Loom", "QC Status"].map(h => (
-                          <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                        ))}
-                      </div>
-                      {mySarees.map((s, i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
-                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</div>
-                          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
-                            <strong>{s.sareeTypeCode}</strong> · {s.sareeTypeName}
-                          </div>
-                          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Loom {s.loom}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>
-                            {s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective" : "⏳ In Progress"}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )}
-
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <ReferenceHistorySection
+        signedRecords={signedRecords}
+        myWeavingBatches={myWeavingBatches}
+        mySarees={mySarees}
+        isMobile={isMobile}
+        isTablet={isTablet}
+      />
     </div>
   );
 }
-
-// ─── PAGE 04 — RAISE WARP REQUEST ─────────────────────────────────────────
