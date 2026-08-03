@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -175,31 +176,56 @@ const INITIAL_BATCHES: BatchRecord[] = [
   },
 ];
 
+const QUERY_KEY = ["batches"] as const;
+
 export function BatchProvider({ children }: { children: React.ReactNode }) {
-  const [batches, setBatches] = useState<BatchRecord[]>(INITIAL_BATCHES);
+  const queryClient = useQueryClient();
   const [pendingOpenBatchId, setPendingOpenBatchId] = useState<string | null>(null);
 
-  const saveDraft = useCallback((batch: BatchRecord) => {
-    setBatches(prev => {
-      const exists = prev.find(b => b.batchId === batch.batchId);
-      if (exists) return prev.map(b => b.batchId === batch.batchId ? { ...batch, updatedAt: new Date().toISOString() } : b);
-      return [{ ...batch, status: batch.status || "draft", updatedAt: new Date().toISOString() }, ...prev];
-    });
-  }, []);
+  const { data: batches = INITIAL_BATCHES } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(INITIAL_BATCHES),
+    initialData: INITIAL_BATCHES,
+  });
 
-  const updateBatch = useCallback((batchId: string, patch: Partial<BatchRecord>) => {
-    setBatches(prev => prev.map(b => b.batchId === batchId ? { ...b, ...patch, updatedAt: new Date().toISOString() } : b));
-  }, []);
+  const saveDraftMutation = useMutation({
+    mutationFn: (batch: BatchRecord) => Promise.resolve(batch),
+    onSuccess: (batch) =>
+      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev => {
+        const list = prev ?? [];
+        const exists = list.find(b => b.batchId === batch.batchId);
+        if (exists) return list.map(b => b.batchId === batch.batchId ? { ...batch, updatedAt: new Date().toISOString() } : b);
+        return [{ ...batch, status: batch.status || "draft", updatedAt: new Date().toISOString() }, ...list];
+      }),
+  });
 
-  const finalizeBatch = useCallback((batchId: string) => {
-    setBatches(prev => prev.map(b => b.batchId === batchId ? { ...b, status: "active", updatedAt: new Date().toISOString() } : b));
-  }, []);
+  const updateBatchMutation = useMutation({
+    mutationFn: (args: { batchId: string; patch: Partial<BatchRecord> }) => Promise.resolve(args),
+    onSuccess: ({ batchId, patch }) =>
+      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(b => b.batchId === batchId ? { ...b, ...patch, updatedAt: new Date().toISOString() } : b)
+      ),
+  });
 
-  const allNums = batches
-    .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
-    .filter(n => n > 0);
-  const maxNum = allNums.length > 0 ? Math.max(...allNums) : 93;
-  const nextBatchId = `BATCH-${String(maxNum + 1).padStart(3, "0")}`;
+  const finalizeBatchMutation = useMutation({
+    mutationFn: (batchId: string) => Promise.resolve(batchId),
+    onSuccess: (batchId) =>
+      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(b => b.batchId === batchId ? { ...b, status: "active", updatedAt: new Date().toISOString() } : b)
+      ),
+  });
+
+  const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutate(batch);
+  const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
+  const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutate(batchId);
+
+  const nextBatchId = useMemo(() => {
+    const allNums = batches
+      .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
+      .filter(n => n > 0);
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 93;
+    return `BATCH-${String(maxNum + 1).padStart(3, "0")}`;
+  }, [batches]);
 
   return (
     <BatchContext.Provider value={{ batches, saveDraft, updateBatch, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>

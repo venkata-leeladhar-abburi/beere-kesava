@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface POItem {
@@ -114,52 +115,79 @@ interface POContextValue {
 
 const POContext = createContext<POContextValue | null>(null);
 
+const QUERY_KEY = ["purchaseOrders"] as const;
+
 export function POProvider({ children }: { children: React.ReactNode }) {
-  const [pos, setPos] = useState<PurchaseOrder[]>(INITIAL_POS);
+  const queryClient = useQueryClient();
 
-  const addPO = useCallback((po: PurchaseOrder) => {
-    setPos(prev => [po, ...prev]);
-  }, []);
+  const { data: pos = INITIAL_POS } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(INITIAL_POS),
+    initialData: INITIAL_POS,
+  });
 
-  const approvePO = useCallback((id: string) => {
-    setPos(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, status: "approved" as const, approvedDate: new Date().toISOString().split("T")[0] }
-          : p
-      )
-    );
-  }, []);
+  const setPos = (updater: (prev: PurchaseOrder[]) => PurchaseOrder[]) => {
+    queryClient.setQueryData<PurchaseOrder[]>(QUERY_KEY, prev => updater(prev ?? []));
+  };
 
-  const rejectPO = useCallback((id: string, reason?: string) => {
-    setPos(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, status: "rejected" as const, rejectionReason: reason }
-          : p
-      )
-    );
-  }, []);
+  const addPOMutation = useMutation({
+    mutationFn: (po: PurchaseOrder) => Promise.resolve(po),
+    onSuccess: (po) => setPos(prev => [po, ...prev]),
+  });
 
-  const setMaterialInvoiceAmount = useCallback((poId: string, materialIndex: number, amount: number) => {
-    setPos(prev =>
-      prev.map(p =>
-        p.id === poId
-          ? { ...p, materials: p.materials.map((m, i) => i === materialIndex ? { ...m, invoiceAmount: amount } : m) }
-          : p
-      )
-    );
-  }, []);
+  const approvePOMutation = useMutation({
+    mutationFn: (id: string) => Promise.resolve(id),
+    onSuccess: (id) =>
+      setPos(prev =>
+        prev.map(p =>
+          p.id === id
+            ? { ...p, status: "approved" as const, approvedDate: new Date().toISOString().split("T")[0] }
+            : p
+        )
+      ),
+  });
+
+  const rejectPOMutation = useMutation({
+    mutationFn: (args: { id: string; reason?: string }) => Promise.resolve(args),
+    onSuccess: ({ id, reason }) =>
+      setPos(prev =>
+        prev.map(p =>
+          p.id === id
+            ? { ...p, status: "rejected" as const, rejectionReason: reason }
+            : p
+        )
+      ),
+  });
+
+  const setMaterialInvoiceAmountMutation = useMutation({
+    mutationFn: (args: { poId: string; materialIndex: number; amount: number }) => Promise.resolve(args),
+    onSuccess: ({ poId, materialIndex, amount }) =>
+      setPos(prev =>
+        prev.map(p =>
+          p.id === poId
+            ? { ...p, materials: p.materials.map((m, i) => i === materialIndex ? { ...m, invoiceAmount: amount } : m) }
+            : p
+        )
+      ),
+  });
+
+  const addPO = (po: PurchaseOrder) => addPOMutation.mutate(po);
+  const approvePO = (id: string) => approvePOMutation.mutate(id);
+  const rejectPO = (id: string, reason?: string) => rejectPOMutation.mutate({ id, reason });
+  const setMaterialInvoiceAmount = (poId: string, materialIndex: number, amount: number) =>
+    setMaterialInvoiceAmountMutation.mutate({ poId, materialIndex, amount });
 
   // Compute next PO number based on existing POs
-  const allNums = pos
-    .map(p => {
-      const m = p.poNumber.match(/PO-\d{4}-(\d+)/);
-      return m ? parseInt(m[1] ?? "0", 10) : 0;
-    })
-    .filter(n => n > 0);
-  const maxNum = allNums.length > 0 ? Math.max(...allNums) : 22;
-  const nextPONumber = `PO-2026-${String(maxNum + 1).padStart(3, "0")}`;
+  const nextPONumber = useMemo(() => {
+    const allNums = pos
+      .map(p => {
+        const m = p.poNumber.match(/PO-\d{4}-(\d+)/);
+        return m ? parseInt(m[1] ?? "0", 10) : 0;
+      })
+      .filter(n => n > 0);
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 22;
+    return `PO-2026-${String(maxNum + 1).padStart(3, "0")}`;
+  }, [pos]);
 
   return (
     <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, setMaterialInvoiceAmount, nextPONumber }}>

@@ -1,34 +1,46 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useLocation, useNavigate, useParams, Outlet } from "react-router";
 import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
-import { MaterialsPage }  from "../../materials/components/MaterialsPage";
-import { WeaversPage }    from "../../weavers/components/WeaversPage";
-import { ProductionPage } from "../../production/components/ProductionPage";
-import { PaymentsPage }   from "../../payments/components/PaymentsPage";
-import { ReportsPage }    from "../../reports/components/ReportsPage";
-import { CustomersPage }  from "../../customers/components/CustomersPage";
-import { ProductionHistoryPage } from "../../production/components/ProductionHistoryPage";
-import { FinishingTrackingPage } from "../../finishing/components/FinishingTrackingPage";
-import { NotificationsPage } from "../../notifications/components/NotificationsPage";
-import { AllWeaversPage }   from "../../weavers/components/AllWeaversPage";
-import { AllStockPage }    from "../../inventory/components/AllStockPage";
-import { AllOrdersPage } from "../../bulk-orders/components/AllOrdersPage";
-import { QcHistoryPage } from "../../qc/components/QcHistoryPage";
-import { ExternalPurchasesPage } from "../../inventory/components/ExternalPurchasesPage";
-import { AddUserPage } from "../../users/components/AddUserPage";
-import { FirmsPage } from "../../firms/components/FirmsPage";
-import { RatesPricingPage } from "../../pricing/components/RatesPricingPage";
-import { DesignLibraryPage } from "../../design-library/components/DesignLibraryPage";
-import { BatchCreationPage } from "../../production/components/BatchCreationPage";
-import { IssueMaterialPage } from "../../materials/components/IssueMaterialPage";
-import { InventoryPage } from "../../inventory/components/InventoryPage";
-import { VendorsPage } from "../../vendors/components/VendorsPage";
-import { SuppliersPage } from "../../suppliers/components/SuppliersPage";
-import { FactoryLoomPage } from "../../production/components/FactoryLoomPage";
 import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../portals/components/worker/WorkerGRN";
+
+// Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
+// page — only the active tab's chunk is fetched, on first navigation to it.
+const MaterialsPage = lazy(() => import("../../materials/components/MaterialsPage").then(m => ({ default: m.MaterialsPage })));
+const WeaversPage = lazy(() => import("../../weavers/components/WeaversPage").then(m => ({ default: m.WeaversPage })));
+const ProductionPage = lazy(() => import("../../production/components/ProductionPage").then(m => ({ default: m.ProductionPage })));
+const PaymentsPage = lazy(() => import("../../payments/components/PaymentsPage").then(m => ({ default: m.PaymentsPage })));
+const ReportsPage = lazy(() => import("../../reports/components/ReportsPage").then(m => ({ default: m.ReportsPage })));
+const CustomersPage = lazy(() => import("../../customers/components/CustomersPage").then(m => ({ default: m.CustomersPage })));
+const ProductionHistoryPage = lazy(() => import("../../production/components/ProductionHistoryPage").then(m => ({ default: m.ProductionHistoryPage })));
+const FinishingTrackingPage = lazy(() => import("../../finishing/components/FinishingTrackingPage").then(m => ({ default: m.FinishingTrackingPage })));
+const NotificationsPage = lazy(() => import("../../notifications/components/NotificationsPage").then(m => ({ default: m.NotificationsPage })));
+const AllWeaversPage = lazy(() => import("../../weavers/components/AllWeaversPage").then(m => ({ default: m.AllWeaversPage })));
+const AllStockPage = lazy(() => import("../../inventory/components/AllStockPage").then(m => ({ default: m.AllStockPage })));
+const AllOrdersPage = lazy(() => import("../../bulk-orders/components/AllOrdersPage").then(m => ({ default: m.AllOrdersPage })));
+const QcHistoryPage = lazy(() => import("../../qc/components/QcHistoryPage").then(m => ({ default: m.QcHistoryPage })));
+const ExternalPurchasesPage = lazy(() => import("../../inventory/components/ExternalPurchasesPage").then(m => ({ default: m.ExternalPurchasesPage })));
+const AddUserPage = lazy(() => import("../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
+const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
+const RatesPricingPage = lazy(() => import("../../pricing/components/RatesPricingPage").then(m => ({ default: m.RatesPricingPage })));
+const DesignLibraryPage = lazy(() => import("../../design-library/components/DesignLibraryPage").then(m => ({ default: m.DesignLibraryPage })));
+const BatchCreationPage = lazy(() => import("../../production/components/BatchCreationPage").then(m => ({ default: m.BatchCreationPage })));
+const IssueMaterialPage = lazy(() => import("../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
+const InventoryPage = lazy(() => import("../../inventory/components/InventoryPage").then(m => ({ default: m.InventoryPage })));
+const VendorsPage = lazy(() => import("../../vendors/components/VendorsPage").then(m => ({ default: m.VendorsPage })));
+const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPage").then(m => ({ default: m.SuppliersPage })));
+const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
+
+function TabLoadingFallback() {
+  return (
+    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(139,26,46,0.15)", borderTopColor: "#6B1A2A", animation: "bk-spin 0.8s linear infinite" }} />
+      <style>{"@keyframes bk-spin { to { transform: rotate(360deg); } }"}</style>
+    </div>
+  );
+}
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
@@ -342,6 +354,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       {PAGE_SECTIONS[mobileTab] && (
         <SectionNavigator sections={PAGE_SECTIONS[mobileTab]} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
+      <Suspense fallback={<TabLoadingFallback />}>
       {mobileTab === "Overview" ? (
         <>
           <MobileHero />
@@ -404,10 +417,12 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ) : mobileTab === "Firms" ? (
         <FirmsPage />
       ) : null}
+      </Suspense>
     </div>
   ) : (
     <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
       <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
+      <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (
         <MaterialsPage onNavigate={navigate} />
       ) : nav === "Weavers" ? (
@@ -552,6 +567,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
           <Footer />
         </>
       )}
+      </Suspense>
     </div>
   );
 

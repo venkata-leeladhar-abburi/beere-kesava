@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface WeaverPaymentRecord {
   id: string;
@@ -60,22 +61,39 @@ const SEED_PAYMENTS: WeaverPaymentRecord[] = [
   },
 ];
 
+const QUERY_KEY = ["weaverPayments"] as const;
+
 export function WeaverPaymentsProvider({ children }: { children: React.ReactNode }) {
-  const [payments, setPayments] = useState<WeaverPaymentRecord[]>(SEED_PAYMENTS);
+  const queryClient = useQueryClient();
 
-  const addPayments = useCallback((records: WeaverPaymentRecord[]) => {
-    setPayments(prev => {
-      // Avoid duplicate UTR numbers
-      const existingUtrs = new Set(prev.map(p => p.utrNumber));
-      const newRecords = records.filter(r => !existingUtrs.has(r.utrNumber));
-      return [...newRecords, ...prev];
-    });
-  }, []);
+  const { data: payments = SEED_PAYMENTS } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(SEED_PAYMENTS),
+    initialData: SEED_PAYMENTS,
+  });
 
-  const getPaymentsForWeaver = useCallback(
-    (weaverId: string) => payments.filter(p => p.weaverId === weaverId),
-    [payments]
-  );
+  const addPaymentsMutation = useMutation({
+    mutationFn: (records: WeaverPaymentRecord[]) => Promise.resolve(records),
+    onSuccess: (records) => {
+      queryClient.setQueryData<WeaverPaymentRecord[]>(QUERY_KEY, prev => {
+        const existingUtrs = new Set((prev ?? []).map(p => p.utrNumber));
+        const newRecords = records.filter(r => !existingUtrs.has(r.utrNumber));
+        return [...newRecords, ...(prev ?? [])];
+      });
+    },
+  });
+
+  const addPayments = (records: WeaverPaymentRecord[]) => addPaymentsMutation.mutate(records);
+
+  const getPaymentsForWeaver = useMemo(() => {
+    const byWeaver = new Map<string, WeaverPaymentRecord[]>();
+    for (const p of payments) {
+      const list = byWeaver.get(p.weaverId);
+      if (list) list.push(p);
+      else byWeaver.set(p.weaverId, [p]);
+    }
+    return (weaverId: string) => byWeaver.get(weaverId) ?? [];
+  }, [payments]);
 
   return (
     <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver }}>

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { INITIAL_RATES } from "../../pricing/components/RatesPricingPage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -178,10 +179,27 @@ const SEED_QC: QcRecord[] = [
   seedLoom("BKB-F-01-005", "BATCH-090", "FL-001", "Loom F-01", "passed",    [],                    0,   "2026-06-26", "2026-06-27", "SB-001", "Self Brocade", null),
 ];
 
-export function QcProvider({ children }: { children: React.ReactNode }) {
-  const [qcRecords, setQcRecords] = useState<QcRecord[]>(SEED_QC);
+const QUERY_KEY = ["qcRecords"] as const;
 
-  const recordQc = useCallback((input: RecordQcInput) => {
+export function QcProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
+
+  const { data: qcRecords = SEED_QC } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(SEED_QC),
+    initialData: SEED_QC,
+  });
+
+  const recordQcMutation = useMutation({
+    mutationFn: (record: QcRecord) => Promise.resolve(record),
+    // Re-inspecting a saree replaces its previous result.
+    onSuccess: (record) =>
+      queryClient.setQueryData<QcRecord[]>(QUERY_KEY, prev =>
+        [record, ...(prev ?? []).filter(r => r.sareeId !== record.sareeId)]
+      ),
+  });
+
+  const recordQc = (input: RecordQcInput): QcRecord => {
     const makingCharge = makingChargeFor(input.sareeTypeCode);
     const { deduction, payable } = computeQcPayment(input.result, makingCharge, input.semiDeduction ?? 0);
     const now = new Date().toISOString();
@@ -207,10 +225,9 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
       photoUrl: input.photoUrl ?? null,
       inspectedBy: input.inspectedBy,
     };
-    // Re-inspecting a saree replaces its previous result.
-    setQcRecords(prev => [record, ...prev.filter(r => r.sareeId !== record.sareeId)]);
+    recordQcMutation.mutate(record);
     return record;
-  }, []);
+  };
 
   const getQcForSaree = useCallback(
     (sareeId: string) => qcRecords.find(r => r.sareeId === sareeId),

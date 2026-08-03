@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * SalesContext — the single place that links every saree back to WHERE IT CAME FROM
@@ -354,24 +355,43 @@ interface SalesContextValue {
 
 const SalesContext = createContext<SalesContextValue | null>(null);
 
+const QUERY_KEY = ["sales", "sarees"] as const;
+
 export function SalesProvider({ children }: { children: React.ReactNode }) {
-  const [sarees, setSarees] = useState<UnifiedSaree[]>(DATASET);
+  const queryClient = useQueryClient();
 
-  const recordSale = useCallback((sareeId: string, sale: SaleInfo) => {
-    setSarees(prev => prev.map(s => s.sareeId === sareeId
-      ? { ...s, status: sale.channel, sale, ageDays: 0 }
-      : s));
-  }, []);
+  const { data: sarees = DATASET } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(DATASET),
+    initialData: DATASET,
+  });
 
-  const recordReturn = useCallback((sareeId: string, ret: ReturnInfo) => {
-    setSarees(prev => prev.map(s => s.sareeId === sareeId
-      ? { ...s, status: "returned", ret }
-      : s));
-  }, []);
+  const recordSaleMutation = useMutation({
+    mutationFn: (args: { sareeId: string; sale: SaleInfo }) => Promise.resolve(args),
+    onSuccess: ({ sareeId, sale }) =>
+      queryClient.setQueryData<UnifiedSaree[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(s => s.sareeId === sareeId
+          ? { ...s, status: sale.channel, sale, ageDays: 0 }
+          : s)
+      ),
+  });
+
+  const recordReturnMutation = useMutation({
+    mutationFn: (args: { sareeId: string; ret: ReturnInfo }) => Promise.resolve(args),
+    onSuccess: ({ sareeId, ret }) =>
+      queryClient.setQueryData<UnifiedSaree[]>(QUERY_KEY, prev =>
+        (prev ?? []).map(s => s.sareeId === sareeId
+          ? { ...s, status: "returned", ret }
+          : s)
+      ),
+  });
+
+  const recordSale = (sareeId: string, sale: SaleInfo) => recordSaleMutation.mutate({ sareeId, sale });
+  const recordReturn = (sareeId: string, ret: ReturnInfo) => recordReturnMutation.mutate({ sareeId, ret });
 
   const value = useMemo(
     () => ({ sarees, purchases: PURCHASES, recordSale, recordReturn }),
-    [sarees, recordSale, recordReturn],
+    [sarees],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
 }

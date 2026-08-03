@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal, Moon } from 'lucide-react';
 import { T, F, G, EASE } from '../theme';
 // @ts-ignore
-import imgHero from '../../../../../assets/hero.png';
+import imgHero from '../../../../../assets/hero.webp';
 
 export function Hero() {
   return (

@@ -1,20 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { PaymentsPage } from "../../payments/components/PaymentsPage";
-import { FirmsPage } from "../../firms/components/FirmsPage";
-import { ReportsPage } from "../../reports/components/ReportsPage";
-import { RatesPricingPage } from "../../pricing/components/RatesPricingPage";
-import { WeaversPage } from "../../weavers/components/WeaversPage";
-import { CustomersPage } from "../../customers/components/CustomersPage";
-import { VendorsPage } from "../../vendors/components/VendorsPage";
-import { SuppliersPage } from "../../suppliers/components/SuppliersPage";
-import { FactoryLoomPage } from "../../production/components/FactoryLoomPage";
-import { InventoryPage } from "../../inventory/components/InventoryPage";
 import { DownloadAccessProvider } from "../../../shared/ui/DownloadAccess";
+
+// Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
+// page — only the active tab's chunk is fetched, on first navigation to it.
+// PaymentsPage stays a static import since it's the default landing tab.
+const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
+const ReportsPage = lazy(() => import("../../reports/components/ReportsPage").then(m => ({ default: m.ReportsPage })));
+const RatesPricingPage = lazy(() => import("../../pricing/components/RatesPricingPage").then(m => ({ default: m.RatesPricingPage })));
+const WeaversPage = lazy(() => import("../../weavers/components/WeaversPage").then(m => ({ default: m.WeaversPage })));
+const CustomersPage = lazy(() => import("../../customers/components/CustomersPage").then(m => ({ default: m.CustomersPage })));
+const VendorsPage = lazy(() => import("../../vendors/components/VendorsPage").then(m => ({ default: m.VendorsPage })));
+const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPage").then(m => ({ default: m.SuppliersPage })));
+const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
+const InventoryPage = lazy(() => import("../../inventory/components/InventoryPage").then(m => ({ default: m.InventoryPage })));
+
+function TabLoadingFallback() {
+  return (
+    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(139,26,46,0.15)", borderTopColor: "#6B1A2A", animation: "bk-spin 0.8s linear infinite" }} />
+      <style>{"@keyframes bk-spin { to { transform: rotate(360deg); } }"}</style>
+    </div>
+  );
+}
 import { UserProfileModal } from "./BeereDashboard";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../lib/icon";
@@ -177,6 +190,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
       {/* Accountants read everything but export nothing — every download and
           export control inside these pages is hidden by this provider. */}
       <DownloadAccessProvider allowed={false}>
+        <Suspense fallback={<TabLoadingFallback />}>
         {active === "Payments" ? (
           <PaymentsPage />
         ) : active === "Firms" ? (
@@ -200,6 +214,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
         ) : (
           <PaymentsPage />
         )}
+        </Suspense>
       </DownloadAccessProvider>
 
       {showProfileModal && (

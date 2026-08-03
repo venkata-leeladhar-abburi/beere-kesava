@@ -17,7 +17,7 @@ import { useBatches } from "../../../production/contexts/BatchContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { useDesignLibrary, DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
-import { DispatchDetailsModal } from "../../../production/components/BatchCreationPage";
+import { DispatchDetailsModal } from "../../../production/components/DispatchDetailsModal";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {

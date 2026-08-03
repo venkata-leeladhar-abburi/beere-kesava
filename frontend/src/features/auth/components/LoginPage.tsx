@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { imgShowroom } from "../../../shared/constants/weaverImages";
 // @ts-ignore
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/logo.webp";
 
 // ── Design Tokens ──────────────────────────────────────────────────────────────
 const C = {

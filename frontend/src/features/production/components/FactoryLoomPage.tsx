@@ -15,8 +15,9 @@ import { useBatches } from "../contexts/BatchContext";
 import { useDesignLibrary, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { useQc } from "../../qc/contexts/QcContext";
-import { DispatchDetailsModal } from "./BatchCreationPage";
+import { DispatchDetailsModal } from "./DispatchDetailsModal";
 import { WeaverSareesSection } from "../../weavers/components/WeaverSareesSection";
+import { FactoryLoom, FACTORY_LOOMS_LIST } from "../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
 // ── Design Tokens ───────────────────────────────────────────────────────────
@@ -44,12 +45,6 @@ const F = {
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // ── Types ────────────────────────────────────────────────────────────────────
-interface FactoryLoom {
-  id: string; loomNumber: string;
-  location: string; operatorName: string; operatorPhone: string;
-  status: "active" | "idle" | "maintenance";
-  installedYear: string; notes: string;
-}
 interface LoomBatch {
   batchId: string; loomId: string; sareeCount: number; completedCount: number;
   dueDate: string; designCode: string; designName: string; orderRef: string;
@@ -67,13 +62,6 @@ interface LoomSaree {
 }
 
 // ── Data ─────────────────────────────────────────────────────────────────────
-const INITIAL_LOOMS: FactoryLoom[] = [
-  { id: "FL-001", loomNumber: "Loom F-01", location: "Factory Floor A", operatorName: "Srinivas Kumar", operatorPhone: "98765 11001", status: "active", installedYear: "2018", notes: "Main production loom for premium sarees" },
-  { id: "FL-002", loomNumber: "Loom F-02", location: "Factory Floor A", operatorName: "Mahesh Reddy", operatorPhone: "87654 22002", status: "active", installedYear: "2020", notes: "Dobby specialised for border patterns" },
-  { id: "FL-003", loomNumber: "Loom F-03", location: "Factory Floor B", operatorName: "Ramesh Naidu", operatorPhone: "76543 33003", status: "idle", installedYear: "2019", notes: "Currently awaiting new batch assignment" },
-  { id: "FL-004", loomNumber: "Loom F-04", location: "Factory Floor B", operatorName: "Suresh Babu", operatorPhone: "65432 44004", status: "maintenance", installedYear: "2015", notes: "Scheduled maintenance — resume in 3 days" },
-  { id: "FL-005", loomNumber: "Loom F-05", location: "Factory Floor C", operatorName: "Venkateswara Rao", operatorPhone: "54321 55005", status: "active", installedYear: "2022", notes: "New high-speed loom" },
-];
 const SAMPLE_BATCHES: LoomBatch[] = [
   { batchId: "BATCH-094", loomId: "FL-001", sareeCount: 10, completedCount: 7, dueDate: "20 Jul 2026", designCode: "DS-019", designName: "Grand Kanjivaram Pallu", orderRef: "Lakshmi Silks · ORD-041", status: "active", startDate: "01 Jul 2026" },
   { batchId: "BATCH-088", loomId: "FL-001", sareeCount: 12, completedCount: 12, dueDate: "05 Jul 2026", designCode: "DS-015", designName: "Classic Zari Border", orderRef: "Padma Stores · ORD-038", status: "completed", startDate: "20 Jun 2026" },
@@ -108,8 +96,6 @@ const SAMPLE_SAREES: LoomSaree[] = [
   { sareeId: "FL005-L1-003", loomId: "FL-005", batchId: "BATCH-095", sareeType: "SB-003", status: "in-progress" },
 ];
 
-// ── Exported list for use in other pages ─────────────────────────────────────
-export const FACTORY_LOOMS_LIST: FactoryLoom[] = INITIAL_LOOMS;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -1142,7 +1128,7 @@ function LoomAnalytics({ looms, batches, materials, sarees }: {
 }
 
 export function FactoryLoomPage() {
-  const [looms, setLooms] = useState<FactoryLoom[]>(INITIAL_LOOMS);
+  const [looms, setLooms] = useState<FactoryLoom[]>(FACTORY_LOOMS_LIST);
   const [view, setView] = useState<"card"|"table">("card");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");

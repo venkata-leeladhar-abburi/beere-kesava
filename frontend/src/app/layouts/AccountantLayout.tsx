@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { composeProviders } from "../../lib/composeProviders";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
   BatchProvider, MaterialIssueProvider, FirmsProvider,
@@ -9,27 +10,16 @@ import {
 
 // FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
 // finishing data is shared across worker, admin, superadmin and accountant.
-function AccountantContexts({ children }: { children: React.ReactNode }) {
-  return (
-    <SalesProvider>
-        <WeaverPaymentsProvider>
-          <FirmsProvider>
-            <POProvider>
-              <BulkOrderProvider>
-                <DesignLibraryProvider>
-                  <BatchProvider>
-                    <MaterialIssueProvider>
-                      {children}
-                    </MaterialIssueProvider>
-                  </BatchProvider>
-                </DesignLibraryProvider>
-              </BulkOrderProvider>
-            </POProvider>
-          </FirmsProvider>
-        </WeaverPaymentsProvider>
-    </SalesProvider>
-  );
-}
+const AccountantContexts = composeProviders([
+  SalesProvider,
+  WeaverPaymentsProvider,
+  FirmsProvider,
+  POProvider,
+  BulkOrderProvider,
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+]);
 
 export function AccountantLayout() {
   const { isAuthenticated, role } = useAuth();

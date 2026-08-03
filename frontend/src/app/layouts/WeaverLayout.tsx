@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { composeProviders } from "../../lib/composeProviders";
 import {
   DesignLibraryProvider,
   BatchProvider,
@@ -8,19 +9,12 @@ import {
   WeaverPaymentsProvider,
 } from "../../contexts";
 
-function WeaverContexts({ children }: { children: React.ReactNode }) {
-  return (
-    <DesignLibraryProvider>
-      <BatchProvider>
-        <MaterialIssueProvider>
-          <WeaverPaymentsProvider>
-            {children}
-          </WeaverPaymentsProvider>
-        </MaterialIssueProvider>
-      </BatchProvider>
-    </DesignLibraryProvider>
-  );
-}
+const WeaverContexts = composeProviders([
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  WeaverPaymentsProvider,
+]);
 
 export function WeaverLayout() {
   const { isAuthenticated, role } = useAuth();

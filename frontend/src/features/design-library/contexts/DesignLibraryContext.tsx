@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface DesignEntry {
@@ -128,43 +129,78 @@ const INITIAL_DISPATCHES: DispatchRecord[] = [
 // ─── Context ──────────────────────────────────────────────────────────────────
 const DesignLibraryContext = createContext<DesignLibraryContextValue | null>(null);
 
+const DESIGNS_KEY = ["designLibrary", "designs"] as const;
+const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
+
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
-  const [designs, setDesigns] = useState<DesignEntry[]>(INITIAL_DESIGNS);
-  const [dispatches, setDispatches] = useState<DispatchRecord[]>(INITIAL_DISPATCHES);
+  const queryClient = useQueryClient();
 
-  const addDesign = useCallback((d: DesignEntry) => {
-    setDesigns(prev => {
-      if (prev.some(x => x.code === d.code)) return prev;
-      return [d, ...prev];
-    });
-  }, []);
+  const { data: designs = INITIAL_DESIGNS } = useQuery({
+    queryKey: DESIGNS_KEY,
+    queryFn: () => Promise.resolve(INITIAL_DESIGNS),
+    initialData: INITIAL_DESIGNS,
+  });
 
-  const updateDesign = useCallback((code: string, patch: Partial<DesignEntry>) => {
-    setDesigns(prev => prev.map(d => d.code === code ? { ...d, ...patch } : d));
-  }, []);
+  const { data: dispatches = INITIAL_DISPATCHES } = useQuery({
+    queryKey: DISPATCHES_KEY,
+    queryFn: () => Promise.resolve(INITIAL_DISPATCHES),
+    initialData: INITIAL_DISPATCHES,
+  });
 
-  const getDesign = useCallback((code: string) => {
-    return designs.find(d => d.code === code);
-  }, [designs]);
+  const addDesignMutation = useMutation({
+    mutationFn: (d: DesignEntry) => Promise.resolve(d),
+    onSuccess: (d) =>
+      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev => {
+        const list = prev ?? [];
+        if (list.some(x => x.code === d.code)) return list;
+        return [d, ...list];
+      }),
+  });
 
-  const addDispatch = useCallback((d: Omit<DispatchRecord, "id" | "sentAt">) => {
-    let created!: DispatchRecord;
-    setDispatches(prev => {
-      created = {
-        ...d,
-        id: `DISP-${String(prev.length + 1).padStart(3, "0")}`,
-        sentAt: new Date().toLocaleString("en-US", {
-          day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
-        }),
-      };
-      return [created, ...prev];
-    });
+  const updateDesignMutation = useMutation({
+    mutationFn: (args: { code: string; patch: Partial<DesignEntry> }) => Promise.resolve(args),
+    onSuccess: ({ code, patch }) =>
+      queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev =>
+        (prev ?? []).map(d => d.code === code ? { ...d, ...patch } : d)
+      ),
+  });
+
+  const addDispatchMutation = useMutation({
+    mutationFn: (d: Omit<DispatchRecord, "id" | "sentAt">) => Promise.resolve(d),
+    onSuccess: (d) =>
+      queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => {
+        const list = prev ?? [];
+        const created: DispatchRecord = {
+          ...d,
+          id: `DISP-${String(list.length + 1).padStart(3, "0")}`,
+          sentAt: new Date().toLocaleString("en-US", {
+            day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+          }),
+        };
+        return [created, ...list];
+      }),
+  });
+
+  const addDesign = (d: DesignEntry) => addDesignMutation.mutate(d);
+  const updateDesign = (code: string, patch: Partial<DesignEntry>) => updateDesignMutation.mutate({ code, patch });
+  const getDesign = useCallback((code: string) => designs.find(d => d.code === code), [designs]);
+
+  const addDispatch = (d: Omit<DispatchRecord, "id" | "sentAt">): DispatchRecord => {
+    const created: DispatchRecord = {
+      ...d,
+      id: `DISP-${String(dispatches.length + 1).padStart(3, "0")}`,
+      sentAt: new Date().toLocaleString("en-US", {
+        day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+      }),
+    };
+    addDispatchMutation.mutate(d);
     return created;
-  }, []);
+  };
 
-  const getDispatchesForWeaver = useCallback((weaverId: string) => {
-    return dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaverId);
-  }, [dispatches]);
+  const getDispatchesForWeaver = useCallback(
+    (weaverId: string) => dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === weaverId),
+    [dispatches]
+  );
 
   return (
     <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver }}>

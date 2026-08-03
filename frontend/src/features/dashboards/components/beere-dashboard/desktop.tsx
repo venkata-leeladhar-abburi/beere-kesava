@@ -22,7 +22,7 @@ import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FA
 import { METRICS, WEAVERS, WEAVER_RATES, MATS, ACT } from './data.tsx';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
 // @ts-ignore
-import imgHero from '../../../../assets/hero.png';
+import imgHero from '../../../../assets/hero.webp';
 import { TopNav } from './components/TopNav';
 import { Hero } from './components/Hero';
 

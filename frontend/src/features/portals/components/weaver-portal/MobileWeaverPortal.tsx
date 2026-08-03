@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ClipboardList, CheckSquare, ArrowUpRight, Wallet, Flower2, Bell, UserRound, ChevronLeft, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useMaterialIssue } from '../../../materials/contexts/MaterialIssueContext';

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── BulkOrder Interface ──────────────────────────────────────────────────────
 export interface BulkOrder {
@@ -60,66 +61,92 @@ interface BulkOrderContextValue {
 
 const BulkOrderContext = createContext<BulkOrderContextValue | null>(null);
 
+const QUERY_KEY = ["bulkOrders"] as const;
+
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
-  const [bulkOrders, setBulkOrders] = useState<BulkOrder[]>(INITIAL_BULK_ORDERS);
+  const queryClient = useQueryClient();
 
-  const addBulkOrder = useCallback((order: BulkOrder) => {
-    setBulkOrders(prev => [order, ...prev]);
-  }, []);
+  const { data: bulkOrders = INITIAL_BULK_ORDERS } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => Promise.resolve(INITIAL_BULK_ORDERS),
+    initialData: INITIAL_BULK_ORDERS,
+  });
 
-  const updateBulkOrder = useCallback((ref: string, updates: Partial<BulkOrder>) => {
-    setBulkOrders(prev =>
-      prev.map(o => o.ref === ref ? { ...o, ...updates } : o)
-    );
-  }, []);
+  const setBulkOrders = (updater: (prev: BulkOrder[]) => BulkOrder[]) => {
+    queryClient.setQueryData<BulkOrder[]>(QUERY_KEY, prev => updater(prev ?? []));
+  };
 
-  const markDispatched = useCallback((ref: string, invoiceId?: string) => {
-    setBulkOrders(prev =>
-      prev.map(o =>
-        o.ref === ref
-          ? {
-              ...o,
-              dispatchStatus: "dispatched" as const,
-              dispatchDate: new Date().toISOString().split("T")[0],
-              ...(invoiceId ? { invoiceId } : {}),
-            }
-          : o
-      )
-    );
-  }, []);
+  const addBulkOrderMutation = useMutation({
+    mutationFn: (order: BulkOrder) => Promise.resolve(order),
+    onSuccess: (order) => setBulkOrders(prev => [order, ...prev]),
+  });
 
-  const recordPayment = useCallback((ref: string, amount: number) => {
-    setBulkOrders(prev =>
-      prev.map(o => {
-        if (o.ref !== ref) return o;
-        const newPaid = (o.amountPaid || 0) + amount;
-        const due = o.amountDue || 0;
-        const paymentStatus: BulkOrder["paymentStatus"] =
-          due > 0 && newPaid >= due ? "paid" : newPaid > 0 ? "partial" : "pending";
-        return { ...o, amountPaid: newPaid, paymentStatus };
+  const updateBulkOrderMutation = useMutation({
+    mutationFn: (args: { ref: string; updates: Partial<BulkOrder> }) => Promise.resolve(args),
+    onSuccess: ({ ref, updates }) =>
+      setBulkOrders(prev => prev.map(o => o.ref === ref ? { ...o, ...updates } : o)),
+  });
+
+  const markDispatchedMutation = useMutation({
+    mutationFn: (args: { ref: string; invoiceId?: string }) => Promise.resolve(args),
+    onSuccess: ({ ref, invoiceId }) =>
+      setBulkOrders(prev =>
+        prev.map(o =>
+          o.ref === ref
+            ? {
+                ...o,
+                dispatchStatus: "dispatched" as const,
+                dispatchDate: new Date().toISOString().split("T")[0],
+                ...(invoiceId ? { invoiceId } : {}),
+              }
+            : o
+        )
+      ),
+  });
+
+  const recordPaymentMutation = useMutation({
+    mutationFn: (args: { ref: string; amount: number }) => Promise.resolve(args),
+    onSuccess: ({ ref, amount }) =>
+      setBulkOrders(prev =>
+        prev.map(o => {
+          if (o.ref !== ref) return o;
+          const newPaid = (o.amountPaid || 0) + amount;
+          const due = o.amountDue || 0;
+          const paymentStatus: BulkOrder["paymentStatus"] =
+            due > 0 && newPaid >= due ? "paid" : newPaid > 0 ? "partial" : "pending";
+          return { ...o, amountPaid: newPaid, paymentStatus };
+        })
+      ),
+  });
+
+  const tallyOrderMutation = useMutation({
+    mutationFn: (args: { ref: string; by: string }) => Promise.resolve(args),
+    onSuccess: ({ ref, by }) =>
+      setBulkOrders(prev =>
+        prev.map(o =>
+          o.ref === ref
+            ? { ...o, tallied: true, talliedBy: by, talliedDate: new Date().toISOString().split("T")[0] }
+            : o
+        )
+      ),
+  });
+
+  const addBulkOrder = (order: BulkOrder) => addBulkOrderMutation.mutate(order);
+  const updateBulkOrder = (ref: string, updates: Partial<BulkOrder>) => updateBulkOrderMutation.mutate({ ref, updates });
+  const markDispatched = (ref: string, invoiceId?: string) => markDispatchedMutation.mutate({ ref, invoiceId });
+  const recordPayment = (ref: string, amount: number) => recordPaymentMutation.mutate({ ref, amount });
+  const tallyOrder = (ref: string, by: string) => tallyOrderMutation.mutate({ ref, by });
+
+  const nextOrderRef = useMemo(() => {
+    const allNums = bulkOrders
+      .map(o => {
+        const m = o.ref.match(/ORD-\d{4}-(\d+)/);
+        return m ? parseInt(m[1] ?? "0", 10) : 0;
       })
-    );
-  }, []);
-
-  const tallyOrder = useCallback((ref: string, by: string) => {
-    setBulkOrders(prev =>
-      prev.map(o =>
-        o.ref === ref
-          ? { ...o, tallied: true, talliedBy: by, talliedDate: new Date().toISOString().split("T")[0] }
-          : o
-      )
-    );
-  }, []);
-
-  // Compute next order ref
-  const allNums = bulkOrders
-    .map(o => {
-      const m = o.ref.match(/ORD-\d{4}-(\d+)/);
-      return m ? parseInt(m[1] ?? "0", 10) : 0;
-    })
-    .filter(n => n > 0);
-  const maxNum = allNums.length > 0 ? Math.max(...allNums) : 41;
-  const nextOrderRef = `ORD-2026-${String(maxNum + 1).padStart(3, "0")}`;
+      .filter(n => n > 0);
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 41;
+    return `ORD-2026-${String(maxNum + 1).padStart(3, "0")}`;
+  }, [bulkOrders]);
 
   return (
     <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder }}>

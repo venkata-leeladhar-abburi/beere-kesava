@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
@@ -264,33 +265,77 @@ interface MaterialIssueContextValue {
 
 const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(null);
 
+const ISSUE_RECORDS_KEY = ["materialIssue", "issueRecords"] as const;
+const RECEIVED_SAREES_KEY = ["materialIssue", "receivedSarees"] as const;
+
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
-  const [issueRecords, setIssueRecords] = useState<MaterialIssueRecord[]>(INITIAL_ISSUE_RECORDS);
-  const [receivedSarees, setReceivedSarees] = useState<ReceivedSareeRecord[]>(INITIAL_RECEIVED_SAREES);
+  const queryClient = useQueryClient();
 
-  // Compute next MIR number
-  const allNums = issueRecords
-    .map(r => {
-      const m = r.id.match(/MIR-\d{4}-(\d+)/);
-      return m ? parseInt(m[1] ?? "0", 10) : 0;
-    })
-    .filter(n => n > 0);
-  const maxNum = allNums.length > 0 ? Math.max(...allNums) : 3;
-  const nextId = `MIR-2026-${String(maxNum + 1).padStart(3, "0")}`;
+  const { data: issueRecords = INITIAL_ISSUE_RECORDS } = useQuery({
+    queryKey: ISSUE_RECORDS_KEY,
+    queryFn: () => Promise.resolve(INITIAL_ISSUE_RECORDS),
+    initialData: INITIAL_ISSUE_RECORDS,
+  });
 
-  const addIssueRecord = useCallback((record: Omit<MaterialIssueRecord, "id">) => {
+  const { data: receivedSarees = INITIAL_RECEIVED_SAREES } = useQuery({
+    queryKey: RECEIVED_SAREES_KEY,
+    queryFn: () => Promise.resolve(INITIAL_RECEIVED_SAREES),
+    initialData: INITIAL_RECEIVED_SAREES,
+  });
+
+  const addIssueRecordMutation = useMutation({
+    mutationFn: (record: MaterialIssueRecord) => Promise.resolve(record),
+    onSuccess: (record) =>
+      queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev => [record, ...(prev ?? [])]),
+  });
+
+  const addReceivedSareeMutation = useMutation({
+    mutationFn: (rec: ReceivedSareeRecord) => Promise.resolve(rec),
+    onSuccess: (rec) =>
+      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev => [rec, ...(prev ?? [])]),
+  });
+
+  const updateSignatureStatusMutation = useMutation({
+    mutationFn: (args: { recordId: string; method: "here" | "remote" }) => Promise.resolve(args),
+    onSuccess: ({ recordId, method }) =>
+      queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev =>
+        (prev ?? []).map(r =>
+          r.id === recordId
+            ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: "signed" as const }
+            : r
+        )
+      ),
+  });
+
+  const finalizeReceivedWeightMutation = useMutation({
+    mutationFn: (args: { id: string; finalWeightGrams: number }) => Promise.resolve(args),
+    onSuccess: ({ id, finalWeightGrams }) =>
+      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev =>
+        (prev ?? []).map(r => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
+      ),
+  });
+
+  const addIssueRecord = (record: Omit<MaterialIssueRecord, "id">): MaterialIssueRecord => {
+    // Compute next MIR number from the current cache.
+    const allNums = issueRecords
+      .map(r => {
+        const m = r.id.match(/MIR-\d{4}-(\d+)/);
+        return m ? parseInt(m[1] ?? "0", 10) : 0;
+      })
+      .filter(n => n > 0);
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 3;
+    const nextId = `MIR-2026-${String(maxNum + 1).padStart(3, "0")}`;
+
     const newRecord: MaterialIssueRecord = { ...record, id: nextId };
-    setIssueRecords(prev => [newRecord, ...prev]);
+    addIssueRecordMutation.mutate(newRecord);
     return newRecord;
-  }, [nextId]);
+  };
 
   const getRecordsForWeaver = useCallback((weaverId: string) => {
     return issueRecords.filter(r => r.weaverId === weaverId);
   }, [issueRecords]);
 
-  const addReceivedSaree = useCallback((rec: ReceivedSareeRecord) => {
-    setReceivedSarees(prev => [rec, ...prev]);
-  }, []);
+  const addReceivedSaree = (rec: ReceivedSareeRecord) => addReceivedSareeMutation.mutate(rec);
 
   const getReceivedForWeaver = useCallback((weaverId: string) => {
     return receivedSarees.filter(r => r.weaverId === weaverId);
@@ -300,11 +345,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     return receivedSarees.filter(r => r.batchId === batchId);
   }, [receivedSarees]);
 
-  const finalizeReceivedWeight = useCallback((id: string, finalWeightGrams: number) => {
-    setReceivedSarees(prev =>
-      prev.map(r => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
-    );
-  }, []);
+  const finalizeReceivedWeight = (id: string, finalWeightGrams: number) =>
+    finalizeReceivedWeightMutation.mutate({ id, finalWeightGrams });
 
   const getMaterialSummaryForWeaver = useCallback((weaverId: string): WeaverMaterialSummary => {
     return summarize(
@@ -333,15 +375,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
   }, [issueRecords, receivedSarees]);
 
-  const updateSignatureStatus = useCallback((recordId: string, method: "here" | "remote") => {
-    setIssueRecords(prev =>
-      prev.map(r =>
-        r.id === recordId
-          ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: "signed" as const }
-          : r
-      )
-    );
-  }, []);
+  const updateSignatureStatus = (recordId: string, method: "here" | "remote") =>
+    updateSignatureStatusMutation.mutate({ recordId, method });
 
   return (
     <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight }}>

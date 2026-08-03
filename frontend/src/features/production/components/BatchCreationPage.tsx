@@ -11,7 +11,8 @@ import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry, DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
-import { FACTORY_LOOMS_LIST } from "./FactoryLoomPage";
+import { FACTORY_LOOMS_LIST } from "../data/factoryLooms";
+import { DispatchDetailsModal } from "./DispatchDetailsModal";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
@@ -1269,31 +1270,6 @@ function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; on
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green, marginTop: 3 }}>{completedBatches}</div>
           </div>
         </div>
-      </div>
-    </PickerShell>
-  );
-}
-
-export function DispatchDetailsModal({ weaverName, records, onClose }: { weaverName: string; records: DispatchRecord[]; onClose: () => void }) {
-  return (
-    <PickerShell title={`Design Dispatch — ${weaverName}`} onClose={onClose} width={460}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {records.map(d => (
-          <div key={d.id} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.sentAt}</span>
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55, marginBottom: d.colorSlipImage ? 12 : 0 }}>{d.instructions}</div>
-            {d.colorSlipImage && (
-              <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 6 }}>Color Slip</div>
-                <img src={d.colorSlipImage} alt="Color slip" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
-              </div>
-            )}
-          </div>
-        ))}
       </div>
     </PickerShell>
   );

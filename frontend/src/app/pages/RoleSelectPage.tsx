@@ -9,7 +9,7 @@ import type { Role } from "../../contexts/AuthContext";
 import { useResponsive } from "../../hooks/useResponsive";
 import { T, F, ROLE_COLORS } from "../../lib/tokens";
 // @ts-ignore
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.webp";
 
 // ── Portal card definitions ────────────────────────────────────────────────────
 const PORTALS: {

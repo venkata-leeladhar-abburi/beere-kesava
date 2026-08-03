@@ -33,4 +33,23 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+
+  build: {
+    rollupOptions: {
+      output: {
+        // Split rarely-changing vendor code into its own cacheable chunks so an
+        // app-code deploy doesn't force users to re-download React/Radix/etc.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (/react-router|\/react\/|\/react-dom\//.test(id)) return 'vendor-react'
+          if (id.includes('@radix-ui')) return 'vendor-radix'
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts'
+          if (id.includes('xlsx')) return 'vendor-xlsx'
+          if (id.includes('lucide-react') || id.includes('@phosphor-icons')) return 'vendor-icons'
+          if (id.includes('motion')) return 'vendor-motion'
+          return 'vendor'
+        },
+      },
+    },
+  },
 })

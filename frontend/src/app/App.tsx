@@ -1,34 +1,46 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
+import { composeProviders } from "../lib/composeProviders";
 import { AuthProvider } from "../contexts/AuthContext";
 import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
+
+// Shared across every portal (worker, admin, superadmin, accountant) so finishing
+// assignments/returns/quotations raised in one show up identically in the others.
+const SharedContexts = composeProviders([
+  FinishingStaffProvider,
+  FinishingProvider,
+  QcProvider,
+  SupplierProvider,
+]);
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "../shared/ui/sonner";
+import { RouteLoadingFallback } from "./RouteLoadingFallback";
 
-// Layouts (for Context scope and Auth guards)
-import { AdminLayout }      from "./layouts/AdminLayout";
-import { SuperadminLayout } from "./layouts/SuperadminLayout";
-import { WorkerLayout }     from "./layouts/WorkerLayout";
-import { WeaverLayout }     from "./layouts/WeaverLayout";
-import { ShopLayout }       from "./layouts/ShopLayout";
-import { AccountantLayout } from "./layouts/AccountantLayout";
+// Layouts (for Context scope and Auth guards) — each is its own portal bundle so
+// a user only ever downloads the code for the role they're logged in as.
+const AdminLayout      = lazy(() => import("./layouts/AdminLayout").then(m => ({ default: m.AdminLayout })));
+const SuperadminLayout = lazy(() => import("./layouts/SuperadminLayout").then(m => ({ default: m.SuperadminLayout })));
+const WorkerLayout     = lazy(() => import("./layouts/WorkerLayout").then(m => ({ default: m.WorkerLayout })));
+const WeaverLayout     = lazy(() => import("./layouts/WeaverLayout").then(m => ({ default: m.WeaverLayout })));
+const ShopLayout       = lazy(() => import("./layouts/ShopLayout").then(m => ({ default: m.ShopLayout })));
+const AccountantLayout = lazy(() => import("./layouts/AccountantLayout").then(m => ({ default: m.AccountantLayout })));
 
-// Auth / Role pages
+// Auth / Role pages — needed on first paint, kept eager.
 import { LoginPage }      from "./pages/LoginPage";
 import { RoleSelectPage } from "./pages/RoleSelectPage";
 
 // Dashboards / Portals wrappers
-import { AdminDashboardPage }      from "./pages/admin/DashboardPage";
-import { SuperadminDashboardPage } from "./pages/superadmin/DashboardPage";
-import { WorkerHomePage }          from "./pages/worker/HomePage";
-import { WeaverHomePage }          from "./pages/weaver/HomePage";
-import { ShopHomePage }            from "./pages/shop/HomePage";
-import { AccountantHomePage }      from "./pages/accountant/HomePage";
+const AdminDashboardPage      = lazy(() => import("./pages/admin/DashboardPage").then(m => ({ default: m.AdminDashboardPage })));
+const SuperadminDashboardPage = lazy(() => import("./pages/superadmin/DashboardPage").then(m => ({ default: m.SuperadminDashboardPage })));
+const WorkerHomePage          = lazy(() => import("./pages/worker/HomePage").then(m => ({ default: m.WorkerHomePage })));
+const WeaverHomePage          = lazy(() => import("./pages/weaver/HomePage").then(m => ({ default: m.WeaverHomePage })));
+const ShopHomePage            = lazy(() => import("./pages/shop/HomePage").then(m => ({ default: m.ShopHomePage })));
+const AccountantHomePage      = lazy(() => import("./pages/accountant/HomePage").then(m => ({ default: m.AccountantHomePage })));
 
 // Other views
-import { MobileScanView } from "../features/scanning/components/MobileScanView";
+const MobileScanView = lazy(() => import("../features/scanning/components/MobileScanView").then(m => ({ default: m.MobileScanView })));
 
 // @ts-ignore
 import "../styles/mobile.css";
@@ -37,16 +49,10 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      {/* Shared across every portal (worker, admin, superadmin, accountant) so finishing
-          assignments/returns/quotations raised in one show up identically in the others. */}
-      <FinishingStaffProvider>
-      <FinishingProvider>
-      <QcProvider>
-      {/* Suppliers + external purchases are shared so the Suppliers page and the
-          External Purchases page always read the same inventory and spend. */}
-      <SupplierProvider>
+      <SharedContexts>
       <BrowserRouter>
         <ErrorBoundary>
+          <Suspense fallback={<RouteLoadingFallback />}>
           <Routes>
             {/* Redirect root to login */}
             <Route path="/" element={<Navigate to="/login" replace />} />
@@ -97,12 +103,10 @@ export default function App() {
             {/* Catch-all fallback */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
-      </SupplierProvider>
-      </QcProvider>
-      </FinishingProvider>
-      </FinishingStaffProvider>
+      </SharedContexts>
       <Toaster position="top-right" richColors />
     </AuthProvider>
     </QueryClientProvider>

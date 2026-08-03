@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { composeProviders } from "../../lib/composeProviders";
 import {
   BatchProvider,
   MaterialIssueProvider,
@@ -12,19 +13,12 @@ import {
 // finishing data is shared across worker, admin, superadmin and accountant.
 // FirmsProvider is needed here too — the Dispatch Details page names the firm
 // each dispatch was raised under.
-function WorkerContexts({ children }: { children: React.ReactNode }) {
-  return (
-    <DesignLibraryProvider>
-      <BatchProvider>
-        <MaterialIssueProvider>
-          <FirmsProvider>
-            {children}
-          </FirmsProvider>
-        </MaterialIssueProvider>
-      </BatchProvider>
-    </DesignLibraryProvider>
-  );
-}
+const WorkerContexts = composeProviders([
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  FirmsProvider,
+]);
 
 export function WorkerLayout() {
   const { isAuthenticated, role } = useAuth();

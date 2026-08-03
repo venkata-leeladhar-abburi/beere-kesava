@@ -5,7 +5,7 @@ import {
   CheckCircle2, Clock, AlertTriangle, Package, Layers, Sparkles, Eye, Factory,
 } from "lucide-react";
 import { useMaterialIssue, MaterialIssueRecord, IssuedMaterialItem } from "../contexts/MaterialIssueContext";
-import { FACTORY_LOOMS_LIST } from "../../production/components/FactoryLoomPage";
+import { FACTORY_LOOMS_LIST } from "../../production/data/factoryLooms";
 import { useBatches } from "../../production/contexts/BatchContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 

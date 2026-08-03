@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { todayISO } from "../../../lib/date";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -185,10 +186,28 @@ const FirmsContext = createContext<FirmsContextValue | null>(null);
 
 function mkId(prefix: string) { return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`; }
 
+const FIRMS_KEY = ["firms"] as const;
+const FINANCIALS_KEY = ["firms", "financials"] as const;
+
 export function FirmsProvider({ children }: { children: React.ReactNode }) {
-  const [firms, setFirms] = useState<Firm[]>(INITIAL_FIRMS);
-  const [financials, setFinancials] = useState<FirmFinancials[]>(INITIAL_FINANCIALS);
+  const queryClient = useQueryClient();
   const [nextNum, setNextNum] = useState(6);
+
+  const { data: firms = INITIAL_FIRMS } = useQuery({
+    queryKey: FIRMS_KEY,
+    queryFn: () => Promise.resolve(INITIAL_FIRMS),
+    initialData: INITIAL_FIRMS,
+  });
+
+  const { data: financials = INITIAL_FINANCIALS } = useQuery({
+    queryKey: FINANCIALS_KEY,
+    queryFn: () => Promise.resolve(INITIAL_FINANCIALS),
+    initialData: INITIAL_FINANCIALS,
+  });
+
+  const setFinancials = (updater: (prev: FirmFinancials[]) => FirmFinancials[]) => {
+    queryClient.setQueryData<FirmFinancials[]>(FINANCIALS_KEY, prev => updater(prev ?? []));
+  };
 
   const ensureFirmFinancials = useCallback((firmId: string) => {
     setFinancials(prev => {
@@ -197,59 +216,90 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const addFirm = useCallback((data: Omit<Firm, "id" | "createdAt">) => {
-    const id = `FIRM-${String(nextNum).padStart(3, "0")}`;
-    setNextNum(n => n + 1);
-    setFirms(prev => [{ ...data, id, createdAt: todayISO() }, ...prev]);
-    setFinancials(prev => [...prev, { firmId: id, income: [], expenses: [], misc: [] }]);
-  }, [nextNum]);
+  const addFirmMutation = useMutation({
+    mutationFn: (data: Omit<Firm, "id" | "createdAt">) => Promise.resolve(data),
+    onSuccess: (data) => {
+      const id = `FIRM-${String(nextNum).padStart(3, "0")}`;
+      setNextNum(n => n + 1);
+      queryClient.setQueryData<Firm[]>(FIRMS_KEY, prev => [{ ...data, id, createdAt: todayISO() }, ...(prev ?? [])]);
+      setFinancials(prev => [...prev, { firmId: id, income: [], expenses: [], misc: [] }]);
+    },
+  });
 
-  const updateFirm = useCallback((id: string, updates: Omit<Firm, "id" | "createdAt">) => {
-    setFirms(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
-  }, []);
+  const updateFirmMutation = useMutation({
+    mutationFn: (args: { id: string; updates: Omit<Firm, "id" | "createdAt"> }) => Promise.resolve(args),
+    onSuccess: ({ id, updates }) =>
+      queryClient.setQueryData<Firm[]>(FIRMS_KEY, prev => (prev ?? []).map(f => f.id === id ? { ...f, ...updates } : f)),
+  });
 
-  const deleteFirm = useCallback((id: string) => {
-    setFirms(prev => prev.filter(f => f.id !== id));
-  }, []);
+  const deleteFirmMutation = useMutation({
+    mutationFn: (id: string) => Promise.resolve(id),
+    onSuccess: (id) =>
+      queryClient.setQueryData<Firm[]>(FIRMS_KEY, prev => (prev ?? []).filter(f => f.id !== id)),
+  });
 
-  const addIncomeEntry = useCallback((firmId: string, entry: Omit<FinancialEntry, "id">) => {
-    ensureFirmFinancials(firmId);
-    setFinancials(prev => prev.map(f =>
-      f.firmId === firmId ? { ...f, income: [{ ...entry, id: mkId("INC") }, ...f.income] } : f
-    ));
-  }, [ensureFirmFinancials]);
+  const addIncomeMutation = useMutation({
+    mutationFn: (args: { firmId: string; entry: Omit<FinancialEntry, "id"> }) => Promise.resolve(args),
+    onSuccess: ({ firmId, entry }) => {
+      ensureFirmFinancials(firmId);
+      setFinancials(prev => prev.map(f =>
+        f.firmId === firmId ? { ...f, income: [{ ...entry, id: mkId("INC") }, ...f.income] } : f
+      ));
+    },
+  });
 
-  const addExpenseEntry = useCallback((firmId: string, entry: Omit<FinancialEntry, "id">) => {
-    ensureFirmFinancials(firmId);
-    setFinancials(prev => prev.map(f =>
-      f.firmId === firmId ? { ...f, expenses: [{ ...entry, id: mkId("EXP") }, ...f.expenses] } : f
-    ));
-  }, [ensureFirmFinancials]);
+  const addExpenseMutation = useMutation({
+    mutationFn: (args: { firmId: string; entry: Omit<FinancialEntry, "id"> }) => Promise.resolve(args),
+    onSuccess: ({ firmId, entry }) => {
+      ensureFirmFinancials(firmId);
+      setFinancials(prev => prev.map(f =>
+        f.firmId === firmId ? { ...f, expenses: [{ ...entry, id: mkId("EXP") }, ...f.expenses] } : f
+      ));
+    },
+  });
 
-  const addMiscEntry = useCallback((firmId: string, entry: Omit<MiscEntry, "id">) => {
-    ensureFirmFinancials(firmId);
-    setFinancials(prev => prev.map(f =>
-      f.firmId === firmId ? { ...f, misc: [{ ...entry, id: mkId("MSC") }, ...f.misc] } : f
-    ));
-  }, [ensureFirmFinancials]);
+  const addMiscMutation = useMutation({
+    mutationFn: (args: { firmId: string; entry: Omit<MiscEntry, "id"> }) => Promise.resolve(args),
+    onSuccess: ({ firmId, entry }) => {
+      ensureFirmFinancials(firmId);
+      setFinancials(prev => prev.map(f =>
+        f.firmId === firmId ? { ...f, misc: [{ ...entry, id: mkId("MSC") }, ...f.misc] } : f
+      ));
+    },
+  });
 
-  const bulkAddIncome = useCallback((firmId: string, entries: Omit<FinancialEntry, "id">[]) => {
-    ensureFirmFinancials(firmId);
-    setFinancials(prev => prev.map(f =>
-      f.firmId === firmId
-        ? { ...f, income: [...entries.map(e => ({ ...e, id: mkId("INC") })), ...f.income] }
-        : f
-    ));
-  }, [ensureFirmFinancials]);
+  const bulkAddIncomeMutation = useMutation({
+    mutationFn: (args: { firmId: string; entries: Omit<FinancialEntry, "id">[] }) => Promise.resolve(args),
+    onSuccess: ({ firmId, entries }) => {
+      ensureFirmFinancials(firmId);
+      setFinancials(prev => prev.map(f =>
+        f.firmId === firmId
+          ? { ...f, income: [...entries.map(e => ({ ...e, id: mkId("INC") })), ...f.income] }
+          : f
+      ));
+    },
+  });
 
-  const bulkAddExpenses = useCallback((firmId: string, entries: Omit<FinancialEntry, "id">[]) => {
-    ensureFirmFinancials(firmId);
-    setFinancials(prev => prev.map(f =>
-      f.firmId === firmId
-        ? { ...f, expenses: [...entries.map(e => ({ ...e, id: mkId("EXP") })), ...f.expenses] }
-        : f
-    ));
-  }, [ensureFirmFinancials]);
+  const bulkAddExpensesMutation = useMutation({
+    mutationFn: (args: { firmId: string; entries: Omit<FinancialEntry, "id">[] }) => Promise.resolve(args),
+    onSuccess: ({ firmId, entries }) => {
+      ensureFirmFinancials(firmId);
+      setFinancials(prev => prev.map(f =>
+        f.firmId === firmId
+          ? { ...f, expenses: [...entries.map(e => ({ ...e, id: mkId("EXP") })), ...f.expenses] }
+          : f
+      ));
+    },
+  });
+
+  const addFirm = (data: Omit<Firm, "id" | "createdAt">) => addFirmMutation.mutate(data);
+  const updateFirm = (id: string, updates: Omit<Firm, "id" | "createdAt">) => updateFirmMutation.mutate({ id, updates });
+  const deleteFirm = (id: string) => deleteFirmMutation.mutate(id);
+  const addIncomeEntry = (firmId: string, entry: Omit<FinancialEntry, "id">) => addIncomeMutation.mutate({ firmId, entry });
+  const addExpenseEntry = (firmId: string, entry: Omit<FinancialEntry, "id">) => addExpenseMutation.mutate({ firmId, entry });
+  const addMiscEntry = (firmId: string, entry: Omit<MiscEntry, "id">) => addMiscMutation.mutate({ firmId, entry });
+  const bulkAddIncome = (firmId: string, entries: Omit<FinancialEntry, "id">[]) => bulkAddIncomeMutation.mutate({ firmId, entries });
+  const bulkAddExpenses = (firmId: string, entries: Omit<FinancialEntry, "id">[]) => bulkAddExpensesMutation.mutate({ firmId, entries });
 
   const getFirmFinancials = useCallback((firmId: string): FirmFinancials => {
     return financials.find(f => f.firmId === firmId) ?? { firmId, income: [], expenses: [], misc: [] };
