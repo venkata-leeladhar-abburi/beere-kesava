@@ -143,7 +143,7 @@ export function WarpRequestPage() {
                 {(["warp", "resham", "jari"] as const).map(mat => (
                   <label key={mat} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", cursor: "pointer", borderBottom: mat !== "jari" ? `1px solid ${C.bdr}` : "none" }}>
                     <div
-                      onClick={() => setMaterials(m => ({ ...m, [mat]: !m[mat] }))}
+                      onClick={() => setMaterials(m => ({ ...m, [mat]: !m[mat] }))} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setMaterials(m => ({ ...m, [mat]: !m[mat] })))?.(); } }}
                       style={{
                         width: 24, height: 24, borderRadius: 6, border: `2px solid ${materials[mat] ? C.burg : C.bdr}`,
                         background: materials[mat] ? C.burg : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer",

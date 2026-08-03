@@ -76,19 +76,19 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
-                <label style={labelStyle}>Material Details *</label>
-                <input value={form.details} onChange={e => set("details", e.target.value)} placeholder="e.g. Cotton/Silk, Silk Red, Polyester 2G Gold" style={inputStyle} />
+                <label style={labelStyle} htmlFor="material-details">Material Details *</label>
+                <input id="material-details" value={form.details} onChange={e => set("details", e.target.value)} placeholder="e.g. Cotton/Silk, Silk Red, Polyester 2G Gold" style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Vendor Name *</label>
-                <input value={form.vendor} onChange={e => set("vendor", e.target.value)} placeholder="e.g. Sri Venkateswara Textiles" style={inputStyle} />
+                <label style={labelStyle} htmlFor="vendor-name">Vendor Name *</label>
+                <input id="vendor-name" value={form.vendor} onChange={e => set("vendor", e.target.value)} placeholder="e.g. Sri Venkateswara Textiles" style={inputStyle} />
               </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
-                <label style={labelStyle}>Date Received *</label>
-                <input type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} style={inputStyle} />
+                <label style={labelStyle} htmlFor="date-received">Date Received *</label>
+                <input id="date-received" type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} style={inputStyle} />
               </div>
               <div>
                 <label style={labelStyle}>
@@ -145,8 +145,8 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
             </div>
 
             <div>
-              <label style={labelStyle}>Price Per Kg (₹)</label>
-              <input type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" style={inputStyle} />
+              <label style={labelStyle} htmlFor="price-per-kg">Price Per Kg (₹)</label>
+              <input id="price-per-kg" type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" style={inputStyle} />
               {form.quantity && form.pricePerKg && (
                 <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>
                   Total value: ₹{(parseFloat(form.quantity) * parseFloat(form.pricePerKg)).toLocaleString("en-IN")}
@@ -155,8 +155,8 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
             </div>
 
             <div>
-              <label style={labelStyle}>Notes / Additional Info</label>
-              <textarea value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any additional notes about this batch..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+              <label style={labelStyle} htmlFor="notes-additional-info">Notes / Additional Info</label>
+              <textarea id="notes-additional-info" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any additional notes about this batch..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
             </div>
 
             <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>

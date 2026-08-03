@@ -6,6 +6,7 @@ import { Vendor } from "./types";
 import { MATERIAL_TYPES } from "./data";
 import { FadeUp } from "./FadeUp";
 import { VendorCard } from "./VendorCard";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: {
   vendors: Vendor[];
@@ -26,6 +27,8 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
     const mRating = ratingFilter === "All Ratings" || vendorRating === parseInt(ratingFilter, 10);
     return mSearch && mType && mStatus && mRating;
   });
+
+  const pag = usePagination(filtered, 25);
 
   return (
     <div style={{ padding: "0 56px" }}>
@@ -66,7 +69,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
-          {filtered.map((v, i) => (
+          {pag.pageItems.map((v, i) => (
             <FadeUp key={v.id} delay={i * 0.06}>
               <VendorCard vendor={v} onView={onSelectVendor} />
             </FadeUp>
@@ -78,6 +81,8 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
             </div>
           )}
         </div>
+        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+          onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendors" />
       </FadeUp>
     </div>
   );

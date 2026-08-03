@@ -133,7 +133,7 @@ export function SariTagPrintSettings({
         ].map(cb => (
           <div
             key={cb.label}
-            onClick={() => cb.set(!cb.value)}
+            onClick={() => cb.set(!cb.value)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => cb.set(!cb.value))?.(); } }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, cursor: "pointer" }}
           >
             <div

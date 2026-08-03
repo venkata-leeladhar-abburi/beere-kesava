@@ -70,7 +70,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
             <div>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Upload Invoice Document</div>
               <div
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
                 style={{
                   background: "#FFFFFF", border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "20px",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -97,32 +97,32 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
             </div>
 
             <div>
-              <label style={labelStyle}>Amount to Pay (₹) *</label>
-              <input type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
+              <label style={labelStyle} htmlFor="amount-to-pay">Amount to Pay (₹) *</label>
+              <input id="amount-to-pay" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Payment Date *</label>
-              <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+              <label style={labelStyle} htmlFor="payment-date">Payment Date *</label>
+              <input id="payment-date" type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>UTR Number *</label>
-              <input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" style={inputStyle} />
+              <label style={labelStyle} htmlFor="utr-number">UTR Number *</label>
+              <input id="utr-number" value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Payment Method</label>
-              <select value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+              <label style={labelStyle} htmlFor="payment-method">Payment Method</label>
+              <select id="payment-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                 {["Bank Transfer", "Cheque", "RTGS", "NEFT"].map(m => <option key={m}>{m}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Paying from Firm *</label>
-              <select value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+              <label style={labelStyle} htmlFor="paying-from-firm">Paying from Firm *</label>
+              <select id="paying-from-firm" value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                 {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Notes (optional)</label>
-              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
+              <label style={labelStyle} htmlFor="notes-optional">Notes (optional)</label>
+              <textarea id="notes-optional" value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
             </div>
           </div>
         </div>

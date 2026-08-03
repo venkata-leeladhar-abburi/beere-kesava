@@ -123,7 +123,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
         </p>
 
         <div
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
           style={{ border: `2px dashed rgba(110,15,45,0.25)`, background: "rgba(110,15,45,0.03)", borderRadius: 14, padding: "32px 20px", textAlign: "center", cursor: "pointer" }}
         >
           <UploadSimple size={28} color={T.royalBurgundy} style={{ marginBottom: 10 }} />

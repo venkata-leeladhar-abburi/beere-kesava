@@ -42,7 +42,7 @@ export function CustomersSection({
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 32 }}>
           <div style={{ flex: 1, position: "relative" as const }}>
             <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-            <input placeholder="Search by name or phone number..." style={{ width: "100%", height: 50, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
+            <input aria-label="Search by name or phone number..." placeholder="Search by name or phone number..." style={{ width: "100%", height: 50, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
           </div>
           {["All", "Highest Spend", "Most Frequent", "Regular Only"].map(f => (
             <button key={f} style={{ padding: "11px 20px", borderRadius: 999, border: `1px solid ${C.bdr}`, background: f === "All" ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: f === "All" ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: f === "All" ? 600 : 400 }}>{f}</button>

@@ -50,8 +50,8 @@ export function BatchSetupStep({
               style={fld} placeholder="e.g. 30" />
           </div>
           <div>
-            <label style={lbl}>Due Date</label>
-            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={fld} />
+            <label style={lbl} htmlFor="due-date">Due Date</label>
+            <input id="due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={fld} />
           </div>
           <motion.button onClick={generateRows} disabled={!totalCount || parseInt(totalCount, 10) < 1}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}

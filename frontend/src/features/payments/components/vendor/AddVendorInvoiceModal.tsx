@@ -44,7 +44,7 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <div
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
               style={{
                 background: "#FFFFFF", border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "20px",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -64,12 +64,12 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
             </div>
           </div>
           <div>
-            <label style={labelStyle}>Vendor Invoice Number</label>
-            <input value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" style={inputStyle} />
+            <label style={labelStyle} htmlFor="vendor-invoice-number">Vendor Invoice Number</label>
+            <input id="vendor-invoice-number" value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Invoice Date</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+            <label style={labelStyle} htmlFor="invoice-date">Invoice Date</label>
+            <input id="invoice-date" type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
           </div>
         </div>
 

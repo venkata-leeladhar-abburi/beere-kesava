@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { composeProviders } from "../../lib/composeProviders";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   BatchProvider,
   MaterialIssueProvider,
@@ -29,7 +30,9 @@ export function WorkerLayout() {
 
   return (
     <WorkerContexts>
-      <Outlet />
+      <ErrorBoundary resetTo="/worker">
+        <Outlet />
+      </ErrorBoundary>
     </WorkerContexts>
   );
 }

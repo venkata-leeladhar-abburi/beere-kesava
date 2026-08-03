@@ -145,7 +145,7 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                     const isChecked = selected.has(s.sareeId);
                     return (
                       <div key={s.sareeId}
-                        onClick={() => isSelectable && toggleSaree(q, s.sareeId)}
+                        onClick={() => isSelectable && toggleSaree(q, s.sareeId)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => isSelectable && toggleSaree(q, s.sareeId))?.(); } }}
                         style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", cursor: isSelectable ? "pointer" : "default", background: isChecked ? "rgba(107,26,42,0.04)" : "transparent" }}
                       >
                         {isSelectable ? (

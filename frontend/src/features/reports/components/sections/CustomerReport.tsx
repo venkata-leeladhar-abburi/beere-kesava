@@ -134,7 +134,7 @@ export function CustomerReport() {
         ))}
         <div style={{ flex: 1, position: "relative", minWidth: 200 }}>
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input placeholder="Search by customer name or phone number..." style={{ width: "100%", height: 36, padding: "0 10px 0 30px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <input aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." style={{ width: "100%", height: 36, padding: "0 10px 0 30px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
         </div>
       </div>
 

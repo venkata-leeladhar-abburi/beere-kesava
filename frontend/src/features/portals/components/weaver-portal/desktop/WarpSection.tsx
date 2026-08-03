@@ -94,7 +94,7 @@ export function WarpSection({
                 <div style={{ marginBottom: 28 }}>
                   {(["warp", "resham", "jari"] as const).map((mat) => (
                     <label key={mat} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 0", cursor: "pointer", borderBottom: mat !== "jari" ? `1px solid ${C.bdr}` : "none" }}>
-                      <div onClick={() => setMaterials(m => ({ ...m, [mat]: !m[mat] }))} style={{ width: 28, height: 28, borderRadius: 8, border: `2px solid ${materials[mat] ? C.burg : C.bdr}`, background: materials[mat] ? C.burg : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                      <div onClick={() => setMaterials(m => ({ ...m, [mat]: !m[mat] }))} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setMaterials(m => ({ ...m, [mat]: !m[mat] })))?.(); } }} style={{ width: 28, height: 28, borderRadius: 8, border: `2px solid ${materials[mat] ? C.burg : C.bdr}`, background: materials[mat] ? C.burg : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                         {materials[mat] && <Check size={16} color="#FFF" />}
                       </div>
                       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 17, color: C.text }}>

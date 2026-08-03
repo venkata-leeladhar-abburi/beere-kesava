@@ -113,7 +113,7 @@ export function LiveFilterBar({
             <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
               <Search size={14} color={T.taupe} />
             </div>
-            <input
+            <input aria-label="Search actions, users, records..."
               type="text"
               placeholder="Search actions, users, records..."
               value={search}

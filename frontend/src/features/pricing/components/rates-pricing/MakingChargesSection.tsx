@@ -156,35 +156,35 @@ export function MakingChargesSection({
                                   />
                                 </div>
                                 <div>
-                                  <label style={labelStyle}>Short Code</label>
-                                  <input value={row.code} readOnly style={{ ...inputStyle, background: "#EDE5D8", color: T.taupe, cursor: "not-allowed" }} />
+                                  <label style={labelStyle} htmlFor="short-code">Short Code</label>
+                                  <input id="short-code" value={row.code} readOnly style={{ ...inputStyle, background: "#EDE5D8", color: T.taupe, cursor: "not-allowed" }} />
                                   <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
                                 </div>
                                 <div>
-                                  <label style={labelStyle}>Description</label>
-                                  <textarea rows={2} value={editVals.description ?? row.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
+                                  <label style={labelStyle} htmlFor="description">Description</label>
+                                  <textarea id="description" rows={2} value={editVals.description ?? row.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
                                 </div>
                               </div>
                               {/* Col 2 — Pricing */}
                               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                                 <div>
-                                  <label style={labelStyle}>Making Charge (₹) *</label>
-                                  <input type="number" value={editVals.charge ?? row.charge} onChange={e => setEditVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} />
+                                  <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
+                                  <input id="making-charge" type="number" value={editVals.charge ?? row.charge} onChange={e => setEditVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} />
                                 </div>
                                 <div>
-                                  <label style={labelStyle}>Retail Price (₹)</label>
-                                  <input type="number" value={editVals.retail ?? row.retail} onChange={e => setEditVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} />
+                                  <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
+                                  <input id="retail-price" type="number" value={editVals.retail ?? row.retail} onChange={e => setEditVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} />
                                 </div>
                                 <div>
-                                  <label style={labelStyle}>Wholesale Price (₹)</label>
-                                  <input type="number" value={editVals.wholesale ?? row.wholesale} onChange={e => setEditVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} />
+                                  <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
+                                  <input id="wholesale-price" type="number" value={editVals.wholesale ?? row.wholesale} onChange={e => setEditVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} />
                                 </div>
                               </div>
                               {/* Col 3 — Weights */}
                               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                                 <div>
-                                  <label style={labelStyle}>Standard Weight (g) *</label>
-                                  <input type="number" value={editVals.stdWeight ?? row.stdWeight} onChange={e => setEditVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
+                                  <label style={labelStyle} htmlFor="standard-weight-g">Standard Weight (g) *</label>
+                                  <input id="standard-weight-g" type="number" value={editVals.stdWeight ?? row.stdWeight} onChange={e => setEditVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
                                 </div>
                                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
                                   <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
@@ -282,34 +282,34 @@ export function MakingChargesSection({
                     />
                   </div>
                   <div>
-                    <label style={labelStyle}>Short Code *</label>
-                    <input value={newVals.code ?? ""} onChange={e => setNewVals(p => ({ ...p, code: e.target.value }))} style={{ ...inputStyle, fontFamily: F.mono }} placeholder="e.g. KS-006" />
+                    <label style={labelStyle} htmlFor="short-code-2">Short Code *</label>
+                    <input id="short-code-2" value={newVals.code ?? ""} onChange={e => setNewVals(p => ({ ...p, code: e.target.value }))} style={{ ...inputStyle, fontFamily: F.mono }} placeholder="e.g. KS-006" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Description</label>
-                    <textarea rows={2} value={newVals.description ?? ""} onChange={e => setNewVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
+                    <label style={labelStyle} htmlFor="description-2">Description</label>
+                    <textarea id="description-2" rows={2} value={newVals.description ?? ""} onChange={e => setNewVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
                   </div>
                 </div>
                 {/* Col 2 — Pricing */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label style={labelStyle}>Making Charge (₹) *</label>
-                    <input type="number" value={newVals.charge ?? ""} onChange={e => setNewVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <label style={labelStyle} htmlFor="making-charge-2">Making Charge (₹) *</label>
+                    <input id="making-charge-2" type="number" value={newVals.charge ?? ""} onChange={e => setNewVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Retail Price (₹)</label>
-                    <input type="number" value={newVals.retail ?? ""} onChange={e => setNewVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <label style={labelStyle} htmlFor="retail-price-2">Retail Price (₹)</label>
+                    <input id="retail-price-2" type="number" value={newVals.retail ?? ""} onChange={e => setNewVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Wholesale Price (₹)</label>
-                    <input type="number" value={newVals.wholesale ?? ""} onChange={e => setNewVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (₹)</label>
+                    <input id="wholesale-price-2" type="number" value={newVals.wholesale ?? ""} onChange={e => setNewVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} placeholder="0" />
                   </div>
                 </div>
                 {/* Col 3 — Weights */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label style={labelStyle}>Standard Weight (g) *</label>
-                    <input type="number" value={newVals.stdWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
+                    <label style={labelStyle} htmlFor="standard-weight-g-2">Standard Weight (g) *</label>
+                    <input id="standard-weight-g-2" type="number" value={newVals.stdWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
                   </div>
                   <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
                     <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>

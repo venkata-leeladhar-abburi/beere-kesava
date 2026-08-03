@@ -32,8 +32,8 @@ export function SupplierSection({
   return (
     <>
       <div style={{ marginBottom: 14 }}>
-        <label style={labelStyle}>Select Supplier</label>
-        <select
+        <label style={labelStyle} htmlFor="select-supplier">Select Supplier</label>
+        <select id="select-supplier"
           style={{ ...inputStyle, cursor: "pointer" }}
           value={form.supplierId || (form.supplier ? "__other__" : "")}
           onChange={(e) => {
@@ -81,8 +81,8 @@ export function SupplierSection({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <div>
-          <label style={labelStyle}>Supplier Name</label>
-          <input
+          <label style={labelStyle} htmlFor="supplier-name">Supplier Name</label>
+          <input id="supplier-name"
             style={inputStyle}
             value={form.supplier}
             onChange={(e) => set("supplier", e.target.value)}
@@ -90,8 +90,8 @@ export function SupplierSection({
           />
         </div>
         <div>
-          <label style={labelStyle}>Location</label>
-          <input
+          <label style={labelStyle} htmlFor="location">Location</label>
+          <input id="location"
             style={inputStyle}
             value={form.location}
             onChange={(e) => set("location", e.target.value)}
@@ -99,8 +99,8 @@ export function SupplierSection({
           />
         </div>
         <div>
-          <label style={labelStyle}>Purchase Date</label>
-          <input
+          <label style={labelStyle} htmlFor="purchase-date">Purchase Date</label>
+          <input id="purchase-date"
             type="date"
             style={inputStyle}
             value={form.date}
@@ -114,8 +114,8 @@ export function SupplierSection({
           </div>
         </div>
         <div>
-          <label style={labelStyle}>Payment Status</label>
-          <select
+          <label style={labelStyle} htmlFor="payment-status">Payment Status</label>
+          <select id="payment-status"
             style={{ ...inputStyle, cursor: "pointer" }}
             value={form.status}
             onChange={(e) => set("status", e.target.value)}
@@ -126,8 +126,8 @@ export function SupplierSection({
           </select>
         </div>
         <div>
-          <label style={labelStyle}>GST Number</label>
-          <input
+          <label style={labelStyle} htmlFor="gst-number">GST Number</label>
+          <input id="gst-number"
             style={{ ...inputStyle, fontFamily: F.mono }}
             value={form.gstNumber}
             onChange={(e) => set("gstNumber", e.target.value.toUpperCase())}
@@ -135,8 +135,8 @@ export function SupplierSection({
           />
         </div>
         <div>
-          <label style={labelStyle}>Invoice Number</label>
-          <input
+          <label style={labelStyle} htmlFor="invoice-number">Invoice Number</label>
+          <input id="invoice-number"
             style={{ ...inputStyle, fontFamily: F.mono }}
             value={form.invoiceNumber}
             onChange={(e) => set("invoiceNumber", e.target.value)}
@@ -144,8 +144,8 @@ export function SupplierSection({
           />
         </div>
         <div>
-          <label style={labelStyle}>Bill Amount</label>
-          <input
+          <label style={labelStyle} htmlFor="bill-amount">Bill Amount</label>
+          <input id="bill-amount"
             style={inputStyle}
             value={form.billAmount}
             onChange={(e) => set("billAmount", e.target.value)}
@@ -191,8 +191,8 @@ export function SupplierSection({
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <label style={labelStyle}>Notes</label>
-        <textarea
+        <label style={labelStyle} htmlFor="notes">Notes</label>
+        <textarea id="notes"
           value={form.notes}
           onChange={(e) => set("notes", e.target.value)}
           rows={3}

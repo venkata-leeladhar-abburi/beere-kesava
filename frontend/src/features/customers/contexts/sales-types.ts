@@ -88,21 +88,10 @@ export interface PurchaseSummary {
   sareeCount: number;
 }
 
-
-// ─── Helper predicates used across pages ──────────────────────────────────────
-export function isSold(s: Pick<UnifiedSaree, "status">): boolean {
-  return s.status === "retail" || s.status === "wholesale";
-}
-
-export function isOutstanding(s: Pick<UnifiedSaree, "status">): boolean {
-  return s.status === "unsold";
-}
-
-export type AgeBucket = "fresh" | "aging" | "old" | "stale";
-
-export function ageBucket(days: number): AgeBucket {
-  if (days <= 30) return "fresh";
-  if (days <= 60) return "aging";
-  if (days <= 120) return "old";
-  return "stale";
+// ─── Context ──────────────────────────────────────────────────────────────────
+export interface SalesContextValue {
+  sarees: UnifiedSaree[];
+  purchases: PurchaseSummary[];
+  recordSale: (sareeId: string, sale: SaleInfo) => void;
+  recordReturn: (sareeId: string, ret: ReturnInfo) => void;
 }

@@ -137,7 +137,7 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                   No batch history found for this weaver.
                 </div>
               )}
-              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")}>See All Batches →</div>
+              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onNavigate?.("Production"))?.(); } }}>See All Batches →</div>
             </div>
   );
 }

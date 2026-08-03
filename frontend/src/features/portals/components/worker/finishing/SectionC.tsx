@@ -69,7 +69,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             const isOpen = expanded === r.name;
             return (
               <div key={r.name} style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
-                <div onClick={() => setExpanded(isOpen ? null : r.name)} style={{ padding: "12px 14px", cursor: "pointer" }}>
+                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setExpanded(isOpen ? null : r.name))?.(); } }} style={{ padding: "12px 14px", cursor: "pointer" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>{r.name}</span>
                     <ChevronDown size={14} color={C.muted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />

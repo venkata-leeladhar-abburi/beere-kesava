@@ -48,7 +48,7 @@ export function Footer() {
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.35)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Newsletter</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input placeholder="Email address"
+            <input aria-label="Email address" placeholder="Email address"
               style={{ fontFamily: F.ui, fontSize: 15, color: "#FFFDF9", background: "rgba(255,253,249,0.07)", border: "1px solid rgba(255,253,249,0.14)", borderRadius: 12, padding: "12px 16px", outline: "none", width: "100%", boxSizing: "border-box" }} />
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               style={{ background: T.antiqueGold, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 24px", fontFamily: F.ui, fontWeight: 600, fontSize: 15, cursor: "pointer" }}>

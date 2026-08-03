@@ -24,7 +24,7 @@ export function FadeUp({ children, delay = 0, style }: { children: React.ReactNo
 export function Pill({ active, children, onClick }: { active: boolean, children: React.ReactNode, onClick?: () => void }) {
   return (
     <div
-      onClick={onClick}
+      onClick={onClick} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (onClick)?.(); } }}
       style={{
         padding: "6px 16px", borderRadius: 20, cursor: "pointer",
         background: active ? T.royalBurgundy : "transparent",

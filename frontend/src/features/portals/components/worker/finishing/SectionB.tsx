@@ -105,7 +105,7 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
             const checked = selected.has(a.id);
             return (
               <div key={a.id}
-                onClick={() => toggleRow(a.id)}
+                onClick={() => toggleRow(a.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(a.id))?.(); } }}
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderTop: i > 0 ? `1px solid rgba(107,26,42,0.07)` : "none", background: checked ? "rgba(30,102,64,0.04)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}
               >
                 <div style={{ flexShrink: 0 }}>

@@ -41,7 +41,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
 
       {sigMethod === "here" && (
         <div style={{ marginTop: 14 }}>
-          <div onClick={() => setSigned(true)} style={{
+          <div onClick={() => setSigned(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSigned(true))?.(); } }} style={{
             background: "#FFF", border: `1.5px solid ${signed ? "rgba(30,102,64,0.35)" : T.borderDef}`, borderRadius: 14,
             height: 150, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center",
             cursor: "crosshair", position: "relative" as const,

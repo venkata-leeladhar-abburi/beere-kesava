@@ -94,7 +94,7 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
     <div>
       <label style={labelStyle}>{label}</label>
       <div
-        onClick={() => inputRef.current?.click()}
+        onClick={() => inputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => inputRef.current?.click())?.(); } }}
         style={{ height: 100, border: `2px dashed rgba(110,15,45,0.22)`, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", background: T.warmIvory, overflow: "hidden", position: "relative" }}
       >
         {preview ? (

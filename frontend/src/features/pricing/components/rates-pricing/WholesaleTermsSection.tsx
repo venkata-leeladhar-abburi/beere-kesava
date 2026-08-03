@@ -112,12 +112,12 @@ export function WholesaleTermsSection() {
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
                               <div>
-                                <label style={labelStyle}>Payment Terms (Days) *</label>
-                                <input type="number" defaultValue={parseInt(row.terms)} style={inputStyle} />
+                                <label style={labelStyle} htmlFor="payment-terms-days">Payment Terms (Days) *</label>
+                                <input id="payment-terms-days" type="number" defaultValue={parseInt(row.terms)} style={inputStyle} />
                               </div>
                               <div>
-                                <label style={labelStyle}>Notes</label>
-                                <textarea rows={2} style={{ ...inputStyle, resize: "none" }} placeholder="Optional notes about this customer's terms…" />
+                                <label style={labelStyle} htmlFor="notes">Notes</label>
+                                <textarea id="notes" rows={2} style={{ ...inputStyle, resize: "none" }} placeholder="Optional notes about this customer's terms…" />
                               </div>
                             </div>
                             <div style={{ display: "flex", gap: 10 }}>

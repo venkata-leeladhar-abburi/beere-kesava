@@ -166,7 +166,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 500, color: T.taupe, whiteSpace: "nowrap" as const }}>Compare period</span>
           <div
-            onClick={() => setCompareOn(!compareOn)}
+            onClick={() => setCompareOn(!compareOn)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setCompareOn(!compareOn))?.(); } }}
             style={{ width: 50, height: 28, borderRadius: 14, background: compareOn ? T.royalBurgundy : "rgba(110,15,45,0.12)", cursor: "pointer", position: "relative" as const, transition: "background 0.22s", flexShrink: 0 }}
           >
             <div style={{ position: "absolute", top: 4, left: compareOn ? 26 : 4, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.22s", boxShadow: "0 1px 5px rgba(0,0,0,0.25)" }} />

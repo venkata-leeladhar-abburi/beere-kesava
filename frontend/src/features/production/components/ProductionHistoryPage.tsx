@@ -178,7 +178,7 @@ function FilterBar() {
 
       <div style={{ flex: 1, minWidth: 180, position: "relative" }}>
         <Search size={14} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-        <input
+        <input aria-label="Search batches..."
           placeholder="Search batches..."
           style={{
             width: "100%", padding: "7px 12px 7px 32px",

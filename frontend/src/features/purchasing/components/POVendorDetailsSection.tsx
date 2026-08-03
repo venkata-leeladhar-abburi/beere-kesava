@@ -42,8 +42,8 @@ export function POVendorDetailsSection({
 
       {/* Vendor dropdown */}
       <div style={{ marginBottom: 14 }}>
-        <label style={labelStyle}>Vendor Name *</label>
-        <select
+        <label style={labelStyle} htmlFor="vendor-name">Vendor Name *</label>
+        <select id="vendor-name"
           value={selectedVendorIdx}
           onChange={e => {
             const v = parseInt(e.target.value);
@@ -134,8 +134,8 @@ export function POVendorDetailsSection({
       )}
 
       <div>
-        <label style={labelStyle}>Expected Delivery Date *</label>
-        <input
+        <label style={labelStyle} htmlFor="expected-delivery-date">Expected Delivery Date *</label>
+        <input id="expected-delivery-date"
           type="date"
           value={deliveryDate}
           min={(() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toISOString().split("T")[0]; })()}

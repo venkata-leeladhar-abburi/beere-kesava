@@ -4,6 +4,7 @@ import { Search, Package } from "lucide-react";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { StockCard, StockSaree, StockStatus, StockSource } from "./StockCard";
 import { ViewStockDialog } from "./ViewStockDialog";
+import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -69,6 +70,8 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     const matchSource = sourceFilter === "all" || s.source === sourceFilter;
     return matchSearch && matchStatus && matchSource;
   });
+
+  const pag = usePagination(filtered, 25);
 
   const availableCount  = ALL_STOCK.filter(s => s.status === "available").length;
   const soldCount       = ALL_STOCK.filter(s => s.status === "sold").length;
@@ -181,13 +184,17 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       {/* ── CARDS GRID ── */}
       <section style={{ padding: "24px 56px 56px" }}>
         {filtered.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
-            {filtered.map((s, i) => (
-              <FadeUp key={s.id} delay={i * 0.05} style={{ height: "100%" }}>
-                <StockCard s={s} onView={setViewSaree} />
-              </FadeUp>
-            ))}
-          </div>
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
+              {pag.pageItems.map((s, i) => (
+                <FadeUp key={s.id} delay={i * 0.05} style={{ height: "100%" }}>
+                  <StockCard s={s} onView={setViewSaree} />
+                </FadeUp>
+              ))}
+            </div>
+            <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+          </>
         ) : (
           <FadeUp>
             <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>

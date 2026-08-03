@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { composeProviders } from "../../lib/composeProviders";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   FirmsProvider, DesignLibraryProvider, BulkOrderProvider, BatchProvider, SalesProvider,
 } from "../../contexts";
@@ -27,7 +28,9 @@ export function ShopLayout() {
 
   return (
     <ShopContexts>
-      <Outlet />
+      <ErrorBoundary resetTo="/shop">
+        <Outlet />
+      </ErrorBoundary>
     </ShopContexts>
   );
 }

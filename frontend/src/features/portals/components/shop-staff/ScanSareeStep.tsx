@@ -52,7 +52,7 @@ export function ScanSareeStep({
         <>
           {/* Camera scan zone */}
           <div
-            onClick={handleScan}
+            onClick={handleScan} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (handleScan)?.(); } }}
             style={{
               margin: "0 20px 18px",
               background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`,

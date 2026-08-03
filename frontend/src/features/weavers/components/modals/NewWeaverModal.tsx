@@ -53,12 +53,12 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>
                 {/* First / Last name split */}
                 <div>
-                  <label style={labelStyle}>First Name *</label>
-                  <input style={fieldStyle} placeholder="First name" />
+                  <label style={labelStyle} htmlFor="first-name">First Name *</label>
+                  <input id="first-name" style={fieldStyle} placeholder="First name" />
                 </div>
                 <div>
-                  <label style={labelStyle}>Last Name *</label>
-                  <input style={fieldStyle} placeholder="Last name" />
+                  <label style={labelStyle} htmlFor="last-name">Last Name *</label>
+                  <input id="last-name" style={fieldStyle} placeholder="Last name" />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: -16, marginBottom: 20 }}>
@@ -71,22 +71,22 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
                     Email ID *
                     <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 400, color: T.taupe, marginLeft: 8 }}>Used for records and notifications.</span>
                   </label>
-                  <input style={fieldStyle} type="email" placeholder="weaver@example.com" />
+                  <input aria-label="weaver@example.com" style={fieldStyle} type="email" placeholder="weaver@example.com" />
                 </div>
-                <div><label style={labelStyle}>Mobile Number *</label><input style={fieldStyle} placeholder="10-digit mobile number" /></div>
-                <div><label style={labelStyle}>Village / Area *</label><input style={fieldStyle} placeholder="E.g., Dharmavaram, AP" /></div>
-                <div><label style={labelStyle}>Number of Looms *</label><input style={fieldStyle} type="number" placeholder="Total active looms" /></div>
-                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Full Address</label><input style={fieldStyle} placeholder="Complete postal address" /></div>
+                <div><label style={labelStyle}>Mobile Number *</label><input aria-label="10-digit mobile number" style={fieldStyle} placeholder="10-digit mobile number" /></div>
+                <div><label style={labelStyle}>Village / Area *</label><input aria-label="E.g., Dharmavaram, AP" style={fieldStyle} placeholder="E.g., Dharmavaram, AP" /></div>
+                <div><label style={labelStyle}>Number of Looms *</label><input aria-label="Total active looms" style={fieldStyle} type="number" placeholder="Total active looms" /></div>
+                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Full Address</label><input aria-label="Complete postal address" style={fieldStyle} placeholder="Complete postal address" /></div>
               </div>
 
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, marginBottom: 20, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
                 Bank Account Details
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>
-                <div><label style={labelStyle}>Bank Name</label><input style={fieldStyle} placeholder="E.g., State Bank of India" /></div>
-                <div><label style={labelStyle}>Account Holder Name</label><input style={fieldStyle} placeholder="Name as per bank" /></div>
-                <div><label style={labelStyle}>Account Number</label><input style={fieldStyle} placeholder="Account number" /></div>
-                <div><label style={labelStyle}>IFSC Code</label><input style={fieldStyle} placeholder="11-character IFSC code" /></div>
+                <div><label style={labelStyle}>Bank Name</label><input aria-label="E.g., State Bank of India" style={fieldStyle} placeholder="E.g., State Bank of India" /></div>
+                <div><label style={labelStyle}>Account Holder Name</label><input aria-label="Name as per bank" style={fieldStyle} placeholder="Name as per bank" /></div>
+                <div><label style={labelStyle}>Account Number</label><input aria-label="Account number" style={fieldStyle} placeholder="Account number" /></div>
+                <div><label style={labelStyle}>IFSC Code</label><input aria-label="11-character IFSC code" style={fieldStyle} placeholder="11-character IFSC code" /></div>
               </div>
 
               <div style={{ display: "flex", gap: 16, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, paddingTop: 32 }}>

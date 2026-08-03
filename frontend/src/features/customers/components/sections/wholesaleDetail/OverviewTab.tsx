@@ -57,7 +57,7 @@ export function OverviewTab({
               const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
               const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
               return (
-                <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => onViewBulkOrder(o, "overview")}>
+                <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => onViewBulkOrder(o, "overview")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onViewBulkOrder(o, "overview"))?.(); } }}>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                       <span style={{ fontFamily: F.mono, fontSize: 17, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>

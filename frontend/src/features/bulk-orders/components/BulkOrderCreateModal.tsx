@@ -1,8 +1,19 @@
 import React, { useState } from "react";
+import { z } from "zod";
 import { motion, AnimatePresence } from "motion/react";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, WHOLESALE_CUSTOMERS } from "./WholesaleCustomerSelectSection";
+
+// Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
+// under the hood, so numeric/date fields are validated as strings and coerced on submit).
+const bulkOrderFormSchema = z.object({
+  customerId: z.string().min(1, "Please select a wholesale customer"),
+  quantity: z
+    .string()
+    .refine(v => parseInt(v, 10) >= 1, "Quantity must be at least 1"),
+  deliveryDate: z.string().min(1, "Please select a delivery deadline"),
+});
 
 const T = {
   royalBurgundy: "#6E0F2D", darkBurgundy: "#3D0E1A",
@@ -59,12 +70,18 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   };
 
   const validate = () => {
+    const result = bulkOrderFormSchema.safeParse({ customerId, quantity, deliveryDate });
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
     const e: Record<string, string> = {};
-    if (!customerId) e.customerId = "Please select a wholesale customer";
-    if (!quantity || parseInt(quantity, 10) < 1) e.quantity = "Quantity must be at least 1";
-    if (!deliveryDate) e.deliveryDate = "Please select a delivery deadline";
+    for (const issue of result.error.issues) {
+      const field = issue.path[0];
+      if (typeof field === "string" && !e[field]) e[field] = issue.message;
+    }
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return false;
   };
 
   const handleSubmit = () => {
@@ -230,8 +247,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </div>
 
                   <div>
-                    <label style={labelStyle}>Quantity (sarees)</label>
-                    <input
+                    <label style={labelStyle} htmlFor="quantity-sarees">Quantity (sarees)</label>
+                    <input id="quantity-sarees"
                       type="number"
                       min={1}
                       value={quantity}
@@ -243,8 +260,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </div>
 
                   <div>
-                    <label style={labelStyle}>Delivery Deadline</label>
-                    <input
+                    <label style={labelStyle} htmlFor="delivery-deadline">Delivery Deadline</label>
+                    <input id="delivery-deadline"
                       type="date"
                       min={minDate}
                       value={deliveryDate}
@@ -255,8 +272,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </div>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Estimated Value (₹)</label>
-                    <input
+                    <label style={labelStyle} htmlFor="estimated-value">Estimated Value (₹)</label>
+                    <input id="estimated-value"
                       type="number"
                       value={estimatedValue}
                       onChange={e => setEstimatedValue(e.target.value)}
@@ -272,8 +289,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 <div style={sectionLabel}>3 · Additional</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div>
-                    <label style={labelStyle}>Special Instructions (Optional)</label>
-                    <textarea
+                    <label style={labelStyle} htmlFor="special-instructions-optional">Special Instructions (Optional)</label>
+                    <textarea id="special-instructions-optional"
                       value={instructions}
                       onChange={e => setInstructions(e.target.value)}
                       placeholder="Any special production or packaging instructions..."

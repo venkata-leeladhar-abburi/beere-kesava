@@ -66,8 +66,8 @@ export function SareeRowCard({
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
         <div>
-          <label style={labelStyle}>Saree Type</label>
-          <input
+          <label style={labelStyle} htmlFor="saree-type">Saree Type</label>
+          <input id="saree-type"
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.sareeType}
             onChange={(e) => updateSareeRow(s._uid, { sareeType: e.target.value })}
@@ -75,8 +75,8 @@ export function SareeRowCard({
           />
         </div>
         <div>
-          <label style={labelStyle}>Colour</label>
-          <input
+          <label style={labelStyle} htmlFor="colour">Colour</label>
+          <input id="colour"
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.color}
             onChange={(e) => updateSareeRow(s._uid, { color: e.target.value })}
@@ -84,8 +84,8 @@ export function SareeRowCard({
           />
         </div>
         <div>
-          <label style={labelStyle}>Weight (grams)</label>
-          <input
+          <label style={labelStyle} htmlFor="weight-grams">Weight (grams)</label>
+          <input id="weight-grams"
             type="number"
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.weight.replace(/g$/, "")}
@@ -97,8 +97,8 @@ export function SareeRowCard({
       {/* Price per quantity × quantity = buying price */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
         <div>
-          <label style={labelStyle}>Price / Quantity (₹)</label>
-          <input
+          <label style={labelStyle} htmlFor="price-quantity">Price / Quantity (₹)</label>
+          <input id="price-quantity"
             type="number"
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.price || ""}
@@ -107,8 +107,8 @@ export function SareeRowCard({
           />
         </div>
         <div>
-          <label style={labelStyle}>Quantity</label>
-          <input
+          <label style={labelStyle} htmlFor="quantity">Quantity</label>
+          <input id="quantity"
             type="number"
             min={1}
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
@@ -131,8 +131,8 @@ export function SareeRowCard({
       {/* Markup drives selling price and profit */}
       <div style={{ display: "grid", gridTemplateColumns: "0.75fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
         <div>
-          <label style={labelStyle}>Sell % (markup)</label>
-          <input
+          <label style={labelStyle} htmlFor="sell-markup">Sell % (markup)</label>
+          <input id="sell-markup"
             type="number"
             style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.sellPercent || ""}
@@ -180,8 +180,8 @@ export function SareeRowCard({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 10 }}>
         <div>
-          <label style={labelStyle}>Notes (optional)</label>
-          <textarea
+          <label style={labelStyle} htmlFor="notes-optional">Notes (optional)</label>
+          <textarea id="notes-optional"
             value={s.notes}
             onChange={(e) => updateSareeRow(s._uid, { notes: e.target.value })}
             rows={2}

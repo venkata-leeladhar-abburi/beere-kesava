@@ -72,8 +72,8 @@ export function WholesaleCustomerSelectSection({
     <div>
       <div style={sectionLabel}>1 · Wholesale Customer</div>
       <div>
-        <label style={labelStyle}>Select Wholesale Customer</label>
-        <select
+        <label style={labelStyle} htmlFor="select-wholesale-customer">Select Wholesale Customer</label>
+        <select id="select-wholesale-customer"
           value={customerId}
           onChange={e => handleCustomerSelect(e.target.value)}
           style={{ ...selectStyle, borderColor: errors.customerId ? T.crimson : T.borderDef }}

@@ -1,4 +1,4 @@
-import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary } from "./sales-types";
+import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary, SareeOrigin, SareeSaleStatus } from "./sales-types";
 
 // ─── Seed reference data (codes match the source pages exactly) ───────────────
 const WEAVERS = [
@@ -32,7 +32,7 @@ const PURCHASES_RAW: (Omit<PurchaseSummary, "billAmount" | "paidAmount"> & {
   { id: "EXT-2026-0006", supplier: "Pochampally Coop",         location: "Pochampally, TG",  date: "11 Jun 2026", invoiceNumber: "INV-PC-2026-301", gstNumber: "36POCH2345P1Z9", billAmount: 120000, paidPct: 0,    status: "Pending", sareeCount: 15, sareeType: "Patola"      },
 ];
 
-export const PURCHASES: PurchaseSummary[] = PURCHASES_RAW.map(p => ({
+export const SEED_PURCHASE_SUMMARIES: PurchaseSummary[] = PURCHASES_RAW.map(p => ({
   id: p.id, supplier: p.supplier, location: p.location, date: p.date,
   invoiceNumber: p.invoiceNumber, gstNumber: p.gstNumber,
   billAmount: p.billAmount, paidAmount: Math.round(p.billAmount * p.paidPct),
@@ -161,7 +161,7 @@ function buildDataset(): UnifiedSaree[] {
   return out;
 }
 
-const DATASET = buildDataset();
+export const SEED_UNIFIED_SAREES = buildDataset();
 
 // ─── Selectors (pure — usable from any page) ─────────────────────────────────
 export const isOutstanding = (s: UnifiedSaree) =>
@@ -234,7 +234,7 @@ export interface PurchaseOutstanding extends PurchaseSummary {
 }
 
 export function purchaseOutstanding(sarees: UnifiedSaree[]): PurchaseOutstanding[] {
-  return PURCHASES.map(p => {
+  return SEED_PURCHASE_SUMMARIES.map(p => {
     const rows = sarees.filter(s => s.purchaseId === p.id);
     const unsoldSarees = rows.filter(isOutstanding);
     const returnedSarees = rows.filter(s => s.status === "returned");
@@ -252,12 +252,4 @@ export function purchaseOutstanding(sarees: UnifiedSaree[]): PurchaseOutstanding
       dueAmount: p.billAmount - p.paidAmount,
     };
   });
-}
-
-// ─── Context ──────────────────────────────────────────────────────────────────
-interface SalesContextValue {
-  sarees: UnifiedSaree[];
-  purchases: PurchaseSummary[];
-  recordSale: (sareeId: string, sale: SaleInfo) => void;
-  recordReturn: (sareeId: string, ret: ReturnInfo) => void;
 }

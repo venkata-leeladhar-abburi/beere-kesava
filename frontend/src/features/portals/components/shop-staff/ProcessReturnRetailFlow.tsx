@@ -54,7 +54,7 @@ export function ProcessReturnRetailFlow({
           {!saleFound ? (
             <>
               <div
-                onClick={() => setSaleFound(true)}
+                onClick={() => setSaleFound(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSaleFound(true))?.(); } }}
                 style={{
                   margin: "0 20px 18px",
                   background: `linear-gradient(135deg, ${C.dark} 0%, #8B1A1A 100%)`,

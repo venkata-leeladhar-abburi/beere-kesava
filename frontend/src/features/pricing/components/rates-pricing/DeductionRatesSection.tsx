@@ -57,16 +57,16 @@ export function DeductionRatesSection() {
                 <div style={{ background: "#fff", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 16px 16px", padding: 20 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                     <div>
-                      <label style={labelStyle}>Deduction Rate (₹ per gram) *</label>
-                      <input type="number" defaultValue="5.20" style={inputStyle} />
+                      <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (₹ per gram) *</label>
+                      <input id="deduction-rate-per-gram" type="number" defaultValue="5.20" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Applies After Variance (grams) *</label>
-                      <input type="number" defaultValue="5" style={inputStyle} />
+                      <label style={labelStyle} htmlFor="applies-after-variance-grams">Applies After Variance (grams) *</label>
+                      <input id="applies-after-variance-grams" type="number" defaultValue="5" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Reason</label>
-                      <textarea rows={2} style={{ ...inputStyle, resize: "none" }} placeholder="e.g. Vendor price increase…" />
+                      <label style={labelStyle} htmlFor="reason">Reason</label>
+                      <textarea id="reason" rows={2} style={{ ...inputStyle, resize: "none" }} placeholder="e.g. Vendor price increase…" />
                     </div>
                   </div>
                   <div style={{
@@ -139,16 +139,16 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle}>Deduction Rate (₹ per gram) *</label>
-                    <input type="number" defaultValue="15.00" style={inputStyle} />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (₹ per gram) *</label>
+                    <input id="deduction-rate-per-gram-2" type="number" defaultValue="15.00" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Applies After Variance (grams) *</label>
-                    <input type="number" defaultValue="3" style={inputStyle} />
+                    <label style={labelStyle} htmlFor="applies-after-variance-grams-2">Applies After Variance (grams) *</label>
+                    <input id="applies-after-variance-grams-2" type="number" defaultValue="3" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Reason</label>
-                    <textarea rows={2} style={{ ...inputStyle, resize: "none" }} />
+                    <label style={labelStyle} htmlFor="reason-2">Reason</label>
+                    <textarea id="reason-2" rows={2} style={{ ...inputStyle, resize: "none" }} />
                   </div>
                   <div style={{
                     background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
@@ -214,16 +214,16 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle}>Deduction Rate (₹ per reel) *</label>
-                    <input type="number" defaultValue="42.00" style={inputStyle} />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (₹ per reel) *</label>
+                    <input id="deduction-rate-per-reel" type="number" defaultValue="42.00" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Applies After Variance (reels) *</label>
-                    <input type="number" defaultValue="1" style={inputStyle} />
+                    <label style={labelStyle} htmlFor="applies-after-variance-reels">Applies After Variance (reels) *</label>
+                    <input id="applies-after-variance-reels" type="number" defaultValue="1" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Reason</label>
-                    <textarea rows={2} style={{ ...inputStyle, resize: "none" }} />
+                    <label style={labelStyle} htmlFor="reason-3">Reason</label>
+                    <textarea id="reason-3" rows={2} style={{ ...inputStyle, resize: "none" }} />
                   </div>
                   <div style={{
                     background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,

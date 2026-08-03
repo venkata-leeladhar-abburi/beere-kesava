@@ -30,31 +30,31 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={lbl}>Business Name *</label>
-            <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={inp} />
+            <label style={lbl} htmlFor="business-name">Business Name *</label>
+            <input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={inp} />
           </div>
           <div>
-            <label style={lbl}>Owner / Contact Name *</label>
-            <input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={inp} />
+            <label style={lbl} htmlFor="owner-contact-name">Owner / Contact Name *</label>
+            <input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={inp} />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div>
-              <label style={lbl}>Phone Number *</label>
-              <input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={inp} />
+              <label style={lbl} htmlFor="phone-number">Phone Number *</label>
+              <input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={inp} />
             </div>
             <div>
-              <label style={lbl}>WhatsApp Number</label>
-              <input value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
+              <label style={lbl} htmlFor="whatsapp-number">WhatsApp Number</label>
+              <input id="whatsapp-number" value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div>
-              <label style={lbl}>City *</label>
-              <input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={inp} />
+              <label style={lbl} htmlFor="city">City *</label>
+              <input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={inp} />
             </div>
             <div>
-              <label style={lbl}>State *</label>
-              <select value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
+              <label style={lbl} htmlFor="state">State *</label>
+              <select id="state" value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
@@ -78,8 +78,8 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               </div>
             </div>
             <div>
-              <label style={lbl}>Payment Terms *</label>
-              <select value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
+              <label style={lbl} htmlFor="payment-terms">Payment Terms *</label>
+              <select id="payment-terms" value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
                 {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
               <label style={lbl}>Vendor Rating</label>
@@ -87,7 +87,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
                 {[1, 2, 3, 4, 5].map(i => {
                   const ratingVal = (form as any).rating || 3;
                   return (
-                    <div key={i} onClick={() => set("rating", i)}>
+                    <div key={i} onClick={() => set("rating", i)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => set("rating", i))?.(); } }}>
                       <Star size={20} fill={i <= ratingVal ? T.antiqueGold : "none"} color={i <= ratingVal ? T.antiqueGold : T.taupe} />
                     </div>
                   );
@@ -99,26 +99,26 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={lbl}>Business Address</label>
-            <textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
+            <label style={lbl} htmlFor="business-address">Business Address</label>
+            <textarea id="business-address" value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div>
-              <label style={lbl}>Bank Name</label>
-              <input value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
+              <label style={lbl} htmlFor="bank-name">Bank Name</label>
+              <input id="bank-name" value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
             </div>
             <div>
-              <label style={lbl}>Account Number</label>
-              <input value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
+              <label style={lbl} htmlFor="account-number">Account Number</label>
+              <input id="account-number" value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
             </div>
           </div>
           <div>
-            <label style={lbl}>GST Number</label>
-            <input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={inp} />
+            <label style={lbl} htmlFor="gst-number">GST Number</label>
+            <input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={inp} />
           </div>
           <div>
-            <label style={lbl}>Notes</label>
-            <textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
+            <label style={lbl} htmlFor="notes">Notes</label>
+            <textarea id="notes" value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
           </div>
         </div>
       </div>

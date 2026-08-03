@@ -2,7 +2,8 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export * from "./sales-types";
-import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary, SalesContextValue } from "./sales-types";
+export * from "./sales-seed";
+import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue } from "./sales-types";
 import { SEED_UNIFIED_SAREES, SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 const SalesContext = createContext<SalesContextValue | null>(null);
@@ -12,10 +13,10 @@ const QUERY_KEY = ["sales", "sarees"] as const;
 export function SalesProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: sarees = DATASET } = useQuery({
+  const { data: sarees = SEED_UNIFIED_SAREES } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => Promise.resolve(DATASET),
-    initialData: DATASET,
+    queryFn: () => Promise.resolve(SEED_UNIFIED_SAREES),
+    initialData: SEED_UNIFIED_SAREES,
   });
 
   const recordSaleMutation = useMutation({
@@ -42,7 +43,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
   const recordReturn = (sareeId: string, ret: ReturnInfo) => recordReturnMutation.mutate({ sareeId, ret });
 
   const value = useMemo(
-    () => ({ sarees, purchases: PURCHASES, recordSale, recordReturn }),
+    () => ({ sarees, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn }),
     [sarees],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
@@ -53,8 +54,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
  * anywhere without every layout having to wrap them first.
  */
 const FALLBACK: SalesContextValue = {
-  sarees: DATASET,
-  purchases: PURCHASES,
+  sarees: SEED_UNIFIED_SAREES,
+  purchases: SEED_PURCHASE_SUMMARIES,
   recordSale: () => {},
   recordReturn: () => {},
 };

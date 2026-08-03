@@ -3,6 +3,8 @@ import React from "react";
 interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  /** Where "Go to Home" navigates. Defaults to the app root. */
+  resetTo?: string;
 }
 
 interface State {
@@ -10,8 +12,10 @@ interface State {
 }
 
 /**
- * Global error boundary — catches render errors and shows a readable fallback.
- * Previously inlined in App.tsx.
+ * Error boundary — catches render errors and shows a readable fallback.
+ * Mount one per portal layout (scoped to that portal's <Outlet />) so a
+ * crash in one tab doesn't blank the whole app, plus one global instance
+ * around the router as a last-resort catch-all.
  */
 export class ErrorBoundary extends React.Component<Props, State> {
   state: State = { error: null };
@@ -20,9 +24,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { error };
   }
 
+  handleRetry = () => {
+    this.setState({ error: null });
+  };
+
   handleReset = () => {
     this.setState({ error: null });
-    window.location.href = "/";
+    window.location.href = this.props.resetTo ?? "/";
   };
 
   render() {
@@ -60,22 +68,40 @@ export class ErrorBoundary extends React.Component<Props, State> {
             {"\n\n"}
             {this.state.error.stack}
           </pre>
-          <button
-            onClick={this.handleReset}
-            style={{
-              background: "#6E0F2D",
-              color: "#FFF",
-              border: "none",
-              borderRadius: 8,
-              padding: "10px 24px",
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            Go to Home
-          </button>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button
+              onClick={this.handleRetry}
+              style={{
+                background: "transparent",
+                color: "#ff6b6b",
+                border: "1px solid rgba(255,107,107,0.4)",
+                borderRadius: 8,
+                padding: "10px 24px",
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              Try Again
+            </button>
+            <button
+              onClick={this.handleReset}
+              style={{
+                background: "#6E0F2D",
+                color: "#FFF",
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 24px",
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
       );
     }

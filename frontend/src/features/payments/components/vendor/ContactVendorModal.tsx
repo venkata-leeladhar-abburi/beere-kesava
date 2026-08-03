@@ -73,7 +73,7 @@ Thank you.`;
                 const isSelected = selected === v.id;
                 return (
                   <div key={v.id}
-                    onClick={() => setSelected(v.id)}
+                    onClick={() => setSelected(v.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSelected(v.id))?.(); } }}
                     style={{
                       display: "flex", alignItems: "center", gap: 14,
                       padding: "14px 16px", borderRadius: 12, cursor: "pointer",

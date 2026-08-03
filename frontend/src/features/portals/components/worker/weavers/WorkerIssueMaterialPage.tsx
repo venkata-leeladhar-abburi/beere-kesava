@@ -303,7 +303,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         {sigMethod === "here" && (
           <div style={{ margin: "10px 16px 0" }}>
             <div style={{ background: "#FFF", border: `1px solid ${signed ? "rgba(30,102,64,0.30)" : "rgba(139,26,46,0.25)"}`, borderRadius: 12, height: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", cursor: "crosshair" }}
-              onClick={() => setSigned(true)}>
+              onClick={() => setSigned(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSigned(true))?.(); } }}>
               {!signed ? (
                 <>
                   <PenLine size={26} color={C.muted} style={{ marginBottom: 8 }} />

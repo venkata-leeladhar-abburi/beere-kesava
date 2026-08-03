@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { composeProviders } from "../../lib/composeProviders";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   DesignLibraryProvider,
   BatchProvider,
@@ -25,7 +26,9 @@ export function WeaverLayout() {
 
   return (
     <WeaverContexts>
-      <Outlet />
+      <ErrorBoundary resetTo="/weaver">
+        <Outlet />
+      </ErrorBoundary>
     </WeaverContexts>
   );
 }

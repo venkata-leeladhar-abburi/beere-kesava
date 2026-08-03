@@ -127,7 +127,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
         )}
 
         <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1, background: d?.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7, cursor: d?.designGraph ? "pointer" : "default" }} onClick={() => d?.designGraph && setShowGraphModal(true)}>
+          <div style={{ flex: 1, background: d?.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7, cursor: d?.designGraph ? "pointer" : "default" }} onClick={() => d?.designGraph && setShowGraphModal(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => d?.designGraph && setShowGraphModal(true))?.(); } }}>
             <Layers size={13} color={d?.hasGraph ? C.green : C.muted} />
             <div>
               <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>DESIGN GRAPH</div>

@@ -47,8 +47,8 @@ export function RecordVendorPaymentSidebar({
       </div>
       <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div>
-          <label style={labelStyle}>Select Vendor</label>
-          <select value={selVendor} onChange={e => { setSelVendor(e.target.value); setPayAmount(""); }} style={{ ...fieldStyle }}>
+          <label style={labelStyle} htmlFor="select-vendor">Select Vendor</label>
+          <select id="select-vendor" value={selVendor} onChange={e => { setSelVendor(e.target.value); setPayAmount(""); }} style={{ ...fieldStyle }}>
             {vendorPayments.filter(v => v.status !== "Paid").map(v => (
               <option key={v.id} value={v.id}>{v.vendor}</option>
             ))}
@@ -82,18 +82,18 @@ export function RecordVendorPaymentSidebar({
           </div>
         </div>
         <div>
-          <label style={labelStyle}>Payment Date</label>
-          <input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} style={{ ...fieldStyle }} />
+          <label style={labelStyle} htmlFor="payment-date">Payment Date</label>
+          <input id="payment-date" type="date" value={payDate} onChange={e => setPayDate(e.target.value)} style={{ ...fieldStyle }} />
         </div>
         <div>
-          <label style={labelStyle}>Payment Method</label>
-          <select value={payMethod} onChange={e => setPayMethod(e.target.value)} style={{ ...fieldStyle }}>
+          <label style={labelStyle} htmlFor="payment-method">Payment Method</label>
+          <select id="payment-method" value={payMethod} onChange={e => setPayMethod(e.target.value)} style={{ ...fieldStyle }}>
             {["Bank Transfer","Cash","Cheque","NEFT/RTGS","UPI"].map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
         <div>
-          <label style={labelStyle}>UTR Number</label>
-          <input value={utrNumber} onChange={e => setUtrNumber(e.target.value)} placeholder="Bank transaction reference..."
+          <label style={labelStyle} htmlFor="utr-number">UTR Number</label>
+          <input id="utr-number" value={utrNumber} onChange={e => setUtrNumber(e.target.value)} placeholder="Bank transaction reference..."
             style={{ ...fieldStyle }} />
         </div>
         {payAmount && (

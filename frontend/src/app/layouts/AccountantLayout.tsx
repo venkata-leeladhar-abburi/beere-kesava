@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { composeProviders } from "../../lib/composeProviders";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
   BatchProvider, MaterialIssueProvider, FirmsProvider,
@@ -30,7 +31,9 @@ export function AccountantLayout() {
 
   return (
     <AccountantContexts>
-      <Outlet />
+      <ErrorBoundary resetTo="/accountant">
+        <Outlet />
+      </ErrorBoundary>
     </AccountantContexts>
   );
 }

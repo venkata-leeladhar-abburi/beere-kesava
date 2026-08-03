@@ -99,7 +99,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Upload the LR receipt document (photo or PDF).</div>
               <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "40px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}
-                onClick={() => {}}>
+                onClick={() => {}} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => {})?.(); } }}>
                 <Upload size={32} color={T.taupe} style={{ margin: "0 auto 12px" }} />
                 <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Click to upload LR receipt</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>

@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { ViewPurchaseModal, PrintPurchaseModal, Purchase, MatType } from "./PurchaseModals";
 import { PurchaseCard } from "./PurchaseCard";
+import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -62,6 +63,8 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
       p.grn.toLowerCase().includes(search.toLowerCase());
     return matchType && matchSearch;
   });
+
+  const pag = usePagination(filtered, 25);
 
   const totalSpend = ALL_PURCHASES.reduce((sum, p) => {
     const num = parseInt(p.totalPaid.replace(/[₹,]/g, ""));
@@ -187,11 +190,15 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Try adjusting your search or filter.</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
-            {filtered.map((p, i) => (
-              <PurchaseCard key={p.id} p={p} index={i} onView={setViewPurchase} onPrint={setPrintPurchase} />
-            ))}
-          </div>
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
+              {pag.pageItems.map((p, i) => (
+                <PurchaseCard key={p.id} p={p} index={i} onView={setViewPurchase} onPrint={setPrintPurchase} />
+              ))}
+            </div>
+            <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+              onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="purchases" />
+          </>
         )}
       </div>
 

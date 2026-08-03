@@ -63,8 +63,8 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
               <input value={form.code ?? ""} onChange={e => set("code", e.target.value)} style={fieldStyle} placeholder="e.g. BKB-047" />
             </div>
             <div>
-              <label style={labelStyle}>Saree Type</label>
-              <select value={form.typeCode} onChange={e => { const t = SAREE_TYPES.find(x => x.code === e.target.value); set("typeCode", e.target.value); set("typeName", t?.name ?? ""); }} style={{ ...fieldStyle, cursor: "pointer" }}>
+              <label style={labelStyle} htmlFor="saree-type">Saree Type</label>
+              <select id="saree-type" value={form.typeCode} onChange={e => { const t = SAREE_TYPES.find(x => x.code === e.target.value); set("typeCode", e.target.value); set("typeName", t?.name ?? ""); }} style={{ ...fieldStyle, cursor: "pointer" }}>
                 {SAREE_TYPES.map(t => <option key={t.code} value={t.code}>{t.code} · {t.name}</option>)}
               </select>
             </div>

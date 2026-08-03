@@ -215,7 +215,7 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
   }
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ background: bg, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)}>
+      <div style={{ background: bg, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <span style={{ color }}>{icon}</span>
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{title}</span>
         <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 15, color }}>{fmtFull(total)}</span>
@@ -270,7 +270,7 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
   const totalExp = entries.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ background: T.bgGold, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)}>
+      <div style={{ background: T.bgGold, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <Minus size={16} color={T.antiqueGold} />
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>Extra / Miscellaneous Payments</span>
         <span style={{ fontFamily: F.ui, fontSize: 11, color: T.green }}>{fmtFull(totalInc)} in</span>

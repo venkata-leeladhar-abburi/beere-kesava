@@ -74,7 +74,7 @@ export function Toggle({
 }) {
   return (
     <div
-      onClick={disabled ? undefined : onChange}
+      onClick={disabled ? undefined : onChange} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (disabled ? undefined : onChange)?.(); } }}
       style={{
         width: 44,
         height: 24,

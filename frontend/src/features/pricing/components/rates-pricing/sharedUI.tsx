@@ -31,7 +31,7 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
           ))}
         </div>
       </div>
-      <input type="number" value={shown} placeholder="0"
+      <input aria-label="0" type="number" value={shown} placeholder="0"
         onChange={e => {
           const v = e.target.value;
           onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));

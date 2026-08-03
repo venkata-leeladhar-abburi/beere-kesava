@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { z } from "zod";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
@@ -7,6 +8,21 @@ import { T, F, VENDORS, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
 import { POMaterialRow } from "./POMaterialRow";
 import { POVendorDetailsSection } from "./POVendorDetailsSection";
+
+const poFormSchema = z
+  .object({
+    firm: z.string().min(1, "Please select a purchasing firm"),
+    vendor: z.string().min(1, "Please select a vendor"),
+    deliveryDate: z.string().min(1, "Please select a delivery date"),
+    materials: z.array(z.object({ _key: z.string(), quantity: z.number() })),
+  })
+  .superRefine((data, ctx) => {
+    data.materials.forEach((m, i) => {
+      if (!m.quantity || m.quantity <= 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Required", path: ["materials", i, "quantity"] });
+      }
+    });
+  });
 
 interface POCreateModalProps {
   open: boolean;
@@ -59,15 +75,28 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   const selectedFirm = firms.find(f => f.id === selectedFirmId) ?? null;
 
   const validate = (): boolean => {
-    const e: Record<string, string> = {};
-    if (!selectedFirmId) e.firm = "Please select a purchasing firm";
-    if (!vendor) e.vendor = "Please select a vendor";
-    if (!deliveryDate) e.deliveryDate = "Please select a delivery date";
-    materials.forEach(m => {
-      if (!m.quantity || m.quantity <= 0) e[`mat-${m._key}-qty`] = "Required";
+    const result = poFormSchema.safeParse({
+      firm: selectedFirmId,
+      vendor: vendor?.name ?? "",
+      deliveryDate,
+      materials: materials.map(m => ({ _key: m._key, quantity: m.quantity })),
     });
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
+    const e: Record<string, string> = {};
+    for (const issue of result.error.issues) {
+      if (issue.path[0] === "materials" && typeof issue.path[1] === "number") {
+        const key = materials[issue.path[1]]?._key;
+        if (key) e[`mat-${key}-qty`] = issue.message;
+        continue;
+      }
+      const field = issue.path[0];
+      if (typeof field === "string" && !e[field]) e[field] = issue.message;
+    }
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return false;
   };
 
   const handleSubmit = () => {
@@ -200,8 +229,8 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                 <div>
                   <div style={sectionTitleStyle}><Building2 size={15} color={T.royalBurgundy} /> Purchasing Firm</div>
                   <div>
-                    <label style={labelStyle}>Firm Name *</label>
-                    <select
+                    <label style={labelStyle} htmlFor="firm-name">Firm Name *</label>
+                    <select id="firm-name"
                       value={selectedFirmId}
                       onChange={e => {
                         setSelectedFirmId(e.target.value);
@@ -287,13 +316,13 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   <div style={sectionTitleStyle}><ClipboardList size={15} color={T.royalBurgundy} /> Additional Details</div>
 
                   <div style={{ marginBottom: 14 }}>
-                    <label style={labelStyle}>PO Number</label>
-                    <input value={poNumber} onChange={e => setPoNumber(e.target.value)} style={{ ...inputStyle, fontFamily: F.mono }} />
+                    <label style={labelStyle} htmlFor="po-number">PO Number</label>
+                    <input id="po-number" value={poNumber} onChange={e => setPoNumber(e.target.value)} style={{ ...inputStyle, fontFamily: F.mono }} />
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
-                    <label style={labelStyle}>Notes for Vendor (optional)</label>
-                    <textarea
+                    <label style={labelStyle} htmlFor="notes-for-vendor-optional">Notes for Vendor (optional)</label>
+                    <textarea id="notes-for-vendor-optional"
                       value={notesVendor}
                       onChange={e => setNotesVendor(e.target.value)}
                       placeholder="Any special instructions for this order..."
@@ -303,8 +332,8 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
-                    <label style={labelStyle}>Notes for Superadmin (optional)</label>
-                    <textarea
+                    <label style={labelStyle} htmlFor="notes-for-superadmin-optional">Notes for Superadmin (optional)</label>
+                    <textarea id="notes-for-superadmin-optional"
                       value={notesAdmin}
                       onChange={e => setNotesAdmin(e.target.value)}
                       placeholder="Why is this order needed..."

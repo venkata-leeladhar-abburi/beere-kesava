@@ -250,7 +250,7 @@ export function TopNav({
                   { Icon: CheckCircle2, iconColor: "#1E6640", iconBg: "rgba(30,102,64,0.10)", title: "Batch 089 Completed", body: "Ravi Kumar completed 3 sarees", time: "2h ago", urgent: false },
                   { Icon: AlertCircle, iconColor: "#B45309", iconBg: "rgba(180,83,9,0.10)", title: "Jari Stock Low", body: "Below minimum threshold — 8 kg remaining", time: "4h ago", urgent: true },
                 ].map((n, i) => (
-                  <div key={i} onClick={() => { setShowNotif(false); set("Notifications"); }} style={{ padding: "12px 20px", background: n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)", borderBottom: `1px solid rgba(110,15,45,0.06)`, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
+                  <div key={i} onClick={() => { setShowNotif(false); set("Notifications"); }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => { setShowNotif(false); set("Notifications"); })?.(); } }} style={{ padding: "12px 20px", background: n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)", borderBottom: `1px solid rgba(110,15,45,0.06)`, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)")}
                     onMouseLeave={e => (e.currentTarget.style.background = n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)")}>
                     <div style={{ width: 32, height: 32, borderRadius: 10, background: n.iconBg, border: `1px solid ${n.iconColor}28`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>

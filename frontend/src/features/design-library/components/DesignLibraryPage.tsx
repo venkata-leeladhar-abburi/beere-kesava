@@ -161,14 +161,14 @@ export function DesignLibraryPage() {
                     {/* Recipient Dropdown */}
                     {dispRecipientType === "weaver" ? (
                       <div>
-                        <label style={labelStyle}>Assign Weaver</label>
-                        <select value={dispWeaverId} onChange={e => setDispWeaverId(e.target.value)} style={{ ...fieldStyle, cursor: "pointer" }}>
+                        <label style={labelStyle} htmlFor="assign-weaver">Assign Weaver</label>
+                        <select id="assign-weaver" value={dispWeaverId} onChange={e => setDispWeaverId(e.target.value)} style={{ ...fieldStyle, cursor: "pointer" }}>
                           {WEAVERS_LIST.map(w => <option key={w.id} value={w.id}>{w.name} ({w.initials})</option>)}
                         </select>
                         {selectedWeaver && (
                           <div style={{ marginTop: 16 }}>
-                            <label style={labelStyle}>Assign Loom</label>
-                            <select value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
+                            <label style={labelStyle} htmlFor="assign-loom">Assign Loom</label>
+                            <select id="assign-loom" value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
                               {Array.from({ length: selectedWeaver.looms || 1 }).map((_, i) => (
                                 <option key={i + 1} value={i + 1}>Loom {i + 1}</option>
                               ))}
@@ -178,8 +178,8 @@ export function DesignLibraryPage() {
                       </div>
                     ) : (
                       <div>
-                        <label style={labelStyle}>Assign Loom Number</label>
-                        <select value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
+                        <label style={labelStyle} htmlFor="assign-loom-number">Assign Loom Number</label>
+                        <select id="assign-loom-number" value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
                           {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>Loom {n}</option>)}
                         </select>
                       </div>
