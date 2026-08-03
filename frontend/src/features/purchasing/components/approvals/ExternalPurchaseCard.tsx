@@ -1,0 +1,199 @@
+import React, { useState } from "react";
+import { motion } from "motion/react";
+import { Check, X, Package } from "lucide-react";
+import {
+  PurchaseRequest, formatINR,
+  purchaseTotals, expandSareePieces, lineProfit,
+} from "../../../suppliers/contexts/SupplierContext";
+import { T, F } from "./tokens";
+import { GreenBtn, CrimsonBtn } from "./SharedUI";
+
+// ─── External purchase request card ───────────────────────────────────────────
+// Shows the whole purchase the admin filled in — supplier, invoice, and every
+// saree line with its codes and pricing — so the superadmin approves the exact
+// entry that will be created.
+export function ExternalPurchaseCard({
+  req,
+  onApprove,
+  onReject,
+}: {
+  req: PurchaseRequest;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const sarees = req.sarees ?? [];
+  const totals = purchaseTotals(sarees);
+  const pieces = expandSareePieces(sarees);
+  const urgent = req.urgency === "Urgent";
+
+  const meta: { label: string; value: string }[] = [
+    { label: "Supplier ID", value: req.supplierId || "—" },
+    { label: "Location", value: req.location || "—" },
+    { label: "GST Number", value: req.gstNumber || "—" },
+    { label: "Invoice Number", value: req.invoiceNumber || "—" },
+    { label: "Purchase Date", value: req.purchaseDate || req.requestedDate },
+    { label: "Bill Amount", value: req.billAmount || "—" },
+    { label: "Raised By", value: req.requestedBy },
+    { label: "Raised On", value: req.requestedDate },
+  ];
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      style={{
+        background: "#FFF", borderRadius: 16,
+        border: "1px solid " + T.borderDef,
+        borderLeft: `4px solid ${urgent ? T.crimson : T.antiqueGold}`,
+        boxShadow: "0 2px 12px rgba(44,24,16,0.07)",
+        padding: "20px 24px",
+        display: "flex", flexDirection: "column", gap: 14,
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 6, padding: "3px 9px" }}>
+              {req.id}
+            </span>
+            {urgent && (
+              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: "#FFF", background: T.crimson, borderRadius: 6, padding: "3px 8px" }}>
+                URGENT
+              </span>
+            )}
+            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: T.cream, borderRadius: 6, padding: "3px 8px" }}>
+              External Purchase
+            </span>
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>
+            <Package size={15} color={T.antiqueGold} /> {req.supplierName}
+          </div>
+          <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+            {req.location || "—"} · {totals.pieces} saree{totals.pieces !== 1 ? "s" : ""} · {sarees.length} line{sarees.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, letterSpacing: 1.2, marginBottom: 4 }}>ESTIMATED VALUE</div>
+          <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.antiqueGold }}>
+            {formatINR(req.estimatedAmount)}
+          </div>
+        </div>
+      </div>
+
+      {/* Money summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
+        {[
+          { label: "Pieces", text: String(totals.pieces), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+          { label: "Buying Price", text: formatINR(totals.buying), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+          { label: "Selling Price", text: formatINR(totals.selling), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
+          { label: "Profit", text: formatINR(totals.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+        ].map(({ label, text, color, bg, border }) => (
+          <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, letterSpacing: 0.6, marginBottom: 4 }}>
+              {label.toUpperCase()}
+            </div>
+            <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color }}>{text}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Purchase meta */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px" }}>
+        {meta.map(({ label, value }) => (
+          <div key={label}>
+            <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, letterSpacing: 0.8, marginBottom: 3 }}>{label.toUpperCase()}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, wordBreak: "break-word" }}>{value}</div>
+          </div>
+        ))}
+      </div>
+
+      {req.reason && (
+        <div style={{ background: T.cream, borderRadius: 10, padding: "10px 14px" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe }}>REASON · </span>
+          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{req.reason}</span>
+        </div>
+      )}
+      {req.notes && (
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+          <strong style={{ color: T.luxuryBrown }}>Notes:</strong> {req.notes}
+        </div>
+      )}
+
+      {/* Saree lines */}
+      {sarees.length > 0 && (
+        <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden" }}>
+          <button
+            onClick={() => setOpen(o => !o)}
+            style={{
+              width: "100%", background: T.silkCream, border: "none", cursor: "pointer",
+              padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between",
+              fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown,
+            }}
+          >
+            <span>Saree details — {totals.pieces} saree{totals.pieces !== 1 ? "s" : ""} to be tagged</span>
+            <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.royalBurgundy }}>
+              {open ? "Hide" : "View all"}
+            </span>
+          </button>
+          {open && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
+                <thead>
+                  <tr style={{ background: T.warmIvory }}>
+                    {["S.No", "Saree Code", "Line Serial", "Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
+                      <th key={h} style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: 0.7, whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                        {h.toUpperCase()}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {pieces.map((s, i) => (
+                    <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{i + 1}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{s.id}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 10.5, color: T.taupe, whiteSpace: "nowrap" }}>
+                        {s.lineCode} <span style={{ fontSize: 9.5 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
+                      </td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{s.sareeType || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.weight || "—"}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.sellPercent}%</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.antiqueGold }}>{formatINR(s.finalAmount)}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: T.silkCream }}>
+                    <td colSpan={6} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>
+                      Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
+                    </td>
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>{formatINR(totals.buying)}</td>
+                    <td />
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.antiqueGold }}>{formatINR(totals.selling)}</td>
+                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.green }}>{formatINR(totals.profit)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+        <GreenBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onApprove(req.id)}>
+          <Check size={14} /> Approve &amp; Create Purchase
+        </GreenBtn>
+        <CrimsonBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onReject(req.id)}>
+          <X size={14} /> Reject
+        </CrimsonBtn>
+      </div>
+    </motion.div>
+  );
+}

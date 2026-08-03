@@ -1,0 +1,268 @@
+import React from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Check } from "lucide-react";
+import { PurchaseOrder } from "../../contexts/POContext";
+import { PurchaseRequest } from "../../../suppliers/contexts/SupplierContext";
+import { T, F } from "./tokens";
+import { PO_DATA, WARP_DATA, RATE_DATA } from "./data";
+import { BulkActionStrip, EmptyState } from "./SharedUI";
+import { POCard } from "./POCard";
+import { WarpCard } from "./WarpCard";
+import { RateCard } from "./RateCard";
+import { ExternalPurchaseCard } from "./ExternalPurchaseCard";
+
+type POItem = typeof PO_DATA[0] & { notesAdmin?: string; urgency?: string; totalValue?: number };
+
+// ─── 3. TABS NAV ─────────────────────────────────────────────────────────────
+export function TabsNav({
+  tabs,
+  activeTab,
+  setActiveTab,
+}: {
+  tabs: { key: "po" | "ext" | "warp" | "rate"; label: string; count: number }[];
+  activeTab: "po" | "ext" | "warp" | "rate";
+  setActiveTab: (t: "po" | "ext" | "warp" | "rate") => void;
+}) {
+  return (
+    <div style={{
+      position: "sticky", top: 90, zIndex: 50,
+      background: "#FFF",
+      borderBottom: "1px solid " + T.borderDef,
+      marginTop: 32,
+      display: "flex", alignItems: "center",
+      padding: "0 56px",
+      boxShadow: "0 2px 8px rgba(44,24,16,0.05)",
+    }}>
+      {tabs.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => setActiveTab(tab.key)}
+          style={{
+            padding: "14px 24px",
+            fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+            background: activeTab === tab.key ? T.royalBurgundy : "transparent",
+            color: activeTab === tab.key ? "#FFF" : T.luxuryBrown,
+            border: "none",
+            borderBottom: activeTab === tab.key ? "2px solid " + T.antiqueGold : "2px solid transparent",
+            cursor: "pointer",
+            transition: "all 0.18s",
+            display: "flex", alignItems: "center", gap: 8,
+          }}
+        >
+          {tab.label}
+          <span style={{
+            background: activeTab === tab.key ? "rgba(255,255,255,0.20)" : T.cream,
+            color: activeTab === tab.key ? "#FFF" : T.taupe,
+            borderRadius: 10, padding: "1px 7px", fontSize: 11,
+          }}>
+            {tab.count}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── 4. TAB CONTENT ───────────────────────────────────────────────────────────
+export function TabContent({
+  activeTab,
+  combinedPOList,
+  contextPendingItems,
+  pos,
+  pendingRequests,
+  warpList,
+  rateList,
+  allEmpty,
+  setPoList,
+  approvePO,
+  rejectPO,
+  setViewDocPOId,
+  decideExternal,
+  setWarpList,
+  setRateList,
+}: {
+  activeTab: "po" | "ext" | "warp" | "rate";
+  combinedPOList: POItem[];
+  contextPendingItems: { id: string }[];
+  pos: PurchaseOrder[];
+  pendingRequests: PurchaseRequest[];
+  warpList: typeof WARP_DATA;
+  rateList: typeof RATE_DATA;
+  allEmpty: boolean;
+  setPoList: React.Dispatch<React.SetStateAction<typeof PO_DATA>>;
+  approvePO: (id: string) => void;
+  rejectPO: (id: string) => void;
+  setViewDocPOId: (id: string | null) => void;
+  decideExternal: (id: string, status: "approved" | "rejected") => void;
+  setWarpList: React.Dispatch<React.SetStateAction<typeof WARP_DATA>>;
+  setRateList: React.Dispatch<React.SetStateAction<typeof RATE_DATA>>;
+}) {
+  return (
+    <div style={{ padding: "32px 56px 0" }}>
+      <AnimatePresence mode="wait">
+        {/* — Purchase Orders — */}
+        {activeTab === "po" && (
+          <motion.div
+            key="po"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {combinedPOList.length === 0 ? (
+              <EmptyState message="No pending purchase orders" />
+            ) : (
+              <>
+                <BulkActionStrip
+                  count={combinedPOList.length}
+                  noun="purchase orders"
+                  onApproveAll={() => { setPoList([]); contextPendingItems.forEach(p => approvePO(p.id)); }}
+                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <AnimatePresence>
+                    {combinedPOList.map(item => (
+                      <POCard
+                        key={item.id}
+                        item={item}
+                        onAction={id => setPoList(prev => prev.filter(p => p.id !== id))}
+                        onApprove={id => approvePO(id)}
+                        onReject={id => rejectPO(id)}
+                        onViewDoc={pos.some(p => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+
+        {/* — External Purchase Requests — */}
+        {activeTab === "ext" && (
+          <motion.div
+            key="ext"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {pendingRequests.length === 0 ? (
+              <EmptyState message="No pending external purchase requests" />
+            ) : (
+              <>
+                <BulkActionStrip
+                  count={pendingRequests.length}
+                  noun="external purchase requests"
+                  onApproveAll={() => pendingRequests.forEach(r => decideExternal(r.id, "approved"))}
+                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <AnimatePresence>
+                    {pendingRequests.map(req => (
+                      <ExternalPurchaseCard
+                        key={req.id}
+                        req={req}
+                        onApprove={id => decideExternal(id, "approved")}
+                        onReject={id => decideExternal(id, "rejected")}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+
+        {/* — Warp Requests — */}
+        {activeTab === "warp" && (
+          <motion.div
+            key="warp"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {warpList.length === 0 ? (
+              <EmptyState message="No pending warp requests" />
+            ) : (
+              <>
+                <BulkActionStrip
+                  count={warpList.length}
+                  noun="warp requests"
+                  onApproveAll={() => setWarpList([])}
+                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <AnimatePresence>
+                    {warpList.map(item => (
+                      <WarpCard
+                        key={item.id}
+                        item={item}
+                        onAction={id => setWarpList(prev => prev.filter(w => w.id !== id))}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+
+        {/* — Rate Changes — */}
+        {activeTab === "rate" && (
+          <motion.div
+            key="rate"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {rateList.length === 0 ? (
+              <EmptyState message="No pending rate change requests" />
+            ) : (
+              <>
+                <BulkActionStrip
+                  count={rateList.length}
+                  noun="rate change requests"
+                  onApproveAll={() => setRateList([])}
+                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <AnimatePresence>
+                    {rateList.map(item => (
+                      <RateCard
+                        key={item.id}
+                        item={item}
+                        onAction={id => setRateList(prev => prev.filter(r => r.id !== id))}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* All-empty state */}
+      {allEmpty && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            background: "#FFF", borderRadius: 16,
+            border: "1px solid " + T.borderDef,
+            boxShadow: "0 2px 12px rgba(44,24,16,0.07)",
+            padding: "48px 24px", marginTop: 24,
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+          }}
+        >
+          <Check size={64} color={T.green} strokeWidth={1.5} />
+          <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 600, color: T.luxuryBrown }}>
+            All caught up!
+          </span>
+          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", maxWidth: 400, lineHeight: 1.6 }}>
+            There are no pending approvals right now. All purchase orders, warp requests, and rate changes have been actioned.
+          </span>
+        </motion.div>
+      )}
+    </div>
+  );
+}
