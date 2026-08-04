@@ -29,8 +29,8 @@ export * from "./enums"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Permissions
+ * const permissions = await prisma.permission.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -39,6 +39,21 @@ export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
 export { Prisma }
 
+/**
+ * Model Permission
+ * 
+ */
+export type Permission = Prisma.PermissionModel
+/**
+ * Model RolePermission
+ * 
+ */
+export type RolePermission = Prisma.RolePermissionModel
+/**
+ * Model UserPermissionOverride
+ * 
+ */
+export type UserPermissionOverride = Prisma.UserPermissionOverrideModel
 /**
  * Model User
  * 
@@ -49,3 +64,173 @@ export type User = Prisma.UserModel
  * 
  */
 export type OtpCode = Prisma.OtpCodeModel
+/**
+ * Model Weaver
+ * 
+ */
+export type Weaver = Prisma.WeaverModel
+/**
+ * Model FactoryLoom
+ * 
+ */
+export type FactoryLoom = Prisma.FactoryLoomModel
+/**
+ * Model DesignLibrary
+ * 
+ */
+export type DesignLibrary = Prisma.DesignLibraryModel
+/**
+ * Model SareeTypeRate
+ * 
+ */
+export type SareeTypeRate = Prisma.SareeTypeRateModel
+/**
+ * Model Batch
+ * 
+ */
+export type Batch = Prisma.BatchModel
+/**
+ * Model BatchSareeRow
+ * 
+ */
+export type BatchSareeRow = Prisma.BatchSareeRowModel
+/**
+ * Model MaterialIssueRecord
+ * 
+ */
+export type MaterialIssueRecord = Prisma.MaterialIssueRecordModel
+/**
+ * Model MaterialIssueItem
+ * 
+ */
+export type MaterialIssueItem = Prisma.MaterialIssueItemModel
+/**
+ * Model QcRecord
+ * 
+ */
+export type QcRecord = Prisma.QcRecordModel
+/**
+ * Model FinishingStaff
+ * 
+ */
+export type FinishingStaff = Prisma.FinishingStaffModel
+/**
+ * Model FinishingAssignment
+ * 
+ */
+export type FinishingAssignment = Prisma.FinishingAssignmentModel
+/**
+ * Model Quotation
+ * 
+ */
+export type Quotation = Prisma.QuotationModel
+/**
+ * Model QuotationSaree
+ * 
+ */
+export type QuotationSaree = Prisma.QuotationSareeModel
+/**
+ * Model BulkOrder
+ * 
+ */
+export type BulkOrder = Prisma.BulkOrderModel
+/**
+ * Model DispatchRecord
+ * 
+ */
+export type DispatchRecord = Prisma.DispatchRecordModel
+/**
+ * Model DispatchSaree
+ * 
+ */
+export type DispatchSaree = Prisma.DispatchSareeModel
+/**
+ * Model InventoryRecord
+ * 
+ */
+export type InventoryRecord = Prisma.InventoryRecordModel
+/**
+ * Model Saree
+ * 
+ */
+export type Saree = Prisma.SareeModel
+/**
+ * Model SaleRecord
+ * 
+ */
+export type SaleRecord = Prisma.SaleRecordModel
+/**
+ * Model ReturnRecord
+ * 
+ */
+export type ReturnRecord = Prisma.ReturnRecordModel
+/**
+ * Model Supplier
+ * 
+ */
+export type Supplier = Prisma.SupplierModel
+/**
+ * Model Vendor
+ * 
+ */
+export type Vendor = Prisma.VendorModel
+/**
+ * Model Purchase
+ * 
+ */
+export type Purchase = Prisma.PurchaseModel
+/**
+ * Model PurchaseOrder
+ * 
+ */
+export type PurchaseOrder = Prisma.PurchaseOrderModel
+/**
+ * Model PurchaseRequest
+ * 
+ */
+export type PurchaseRequest = Prisma.PurchaseRequestModel
+/**
+ * Model Firm
+ * 
+ */
+export type Firm = Prisma.FirmModel
+/**
+ * Model FirmFinancialEntry
+ * 
+ */
+export type FirmFinancialEntry = Prisma.FirmFinancialEntryModel
+/**
+ * Model WeaverPayment
+ * 
+ */
+export type WeaverPayment = Prisma.WeaverPaymentModel
+/**
+ * Model VendorPayment
+ * 
+ */
+export type VendorPayment = Prisma.VendorPaymentModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
+ * Model InvoicePayment
+ * 
+ */
+export type InvoicePayment = Prisma.InvoicePaymentModel
+/**
+ * Model Customer
+ * 
+ */
+export type Customer = Prisma.CustomerModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel

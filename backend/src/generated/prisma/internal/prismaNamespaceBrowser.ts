@@ -51,8 +51,45 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  UserPermissionOverride: 'UserPermissionOverride',
   User: 'User',
-  OtpCode: 'OtpCode'
+  OtpCode: 'OtpCode',
+  Weaver: 'Weaver',
+  FactoryLoom: 'FactoryLoom',
+  DesignLibrary: 'DesignLibrary',
+  SareeTypeRate: 'SareeTypeRate',
+  Batch: 'Batch',
+  BatchSareeRow: 'BatchSareeRow',
+  MaterialIssueRecord: 'MaterialIssueRecord',
+  MaterialIssueItem: 'MaterialIssueItem',
+  QcRecord: 'QcRecord',
+  FinishingStaff: 'FinishingStaff',
+  FinishingAssignment: 'FinishingAssignment',
+  Quotation: 'Quotation',
+  QuotationSaree: 'QuotationSaree',
+  BulkOrder: 'BulkOrder',
+  DispatchRecord: 'DispatchRecord',
+  DispatchSaree: 'DispatchSaree',
+  InventoryRecord: 'InventoryRecord',
+  Saree: 'Saree',
+  SaleRecord: 'SaleRecord',
+  ReturnRecord: 'ReturnRecord',
+  Supplier: 'Supplier',
+  Vendor: 'Vendor',
+  Purchase: 'Purchase',
+  PurchaseOrder: 'PurchaseOrder',
+  PurchaseRequest: 'PurchaseRequest',
+  Firm: 'Firm',
+  FirmFinancialEntry: 'FirmFinancialEntry',
+  WeaverPayment: 'WeaverPayment',
+  VendorPayment: 'VendorPayment',
+  Invoice: 'Invoice',
+  InvoicePayment: 'InvoicePayment',
+  Customer: 'Customer',
+  AuditLog: 'AuditLog',
+  Notification: 'Notification'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -71,13 +108,46 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const PermissionScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const RolePermissionScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  permissionId: 'permissionId'
+} as const
+
+export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
+
+
+export const UserPermissionOverrideScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  permissionId: 'permissionId',
+  granted: 'granted'
+} as const
+
+export type UserPermissionOverrideScalarFieldEnum = (typeof UserPermissionOverrideScalarFieldEnum)[keyof typeof UserPermissionOverrideScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
-  phoneNumber: 'phoneNumber',
-  name: 'name',
+  empId: 'empId',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  mobile: 'mobile',
+  email: 'email',
   role: 'role',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
+  accessLevel: 'accessLevel',
+  status: 'status',
+  dateAdded: 'dateAdded',
   updatedAt: 'updatedAt'
 } as const
 
@@ -97,12 +167,584 @@ export const OtpCodeScalarFieldEnum = {
 export type OtpCodeScalarFieldEnum = (typeof OtpCodeScalarFieldEnum)[keyof typeof OtpCodeScalarFieldEnum]
 
 
+export const WeaverScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  initials: 'initials',
+  village: 'village',
+  cluster: 'cluster',
+  looms: 'looms',
+  status: 'status',
+  photoUrl: 'photoUrl',
+  email: 'email',
+  phone: 'phone',
+  bankName: 'bankName',
+  accountNo: 'accountNo',
+  ifsc: 'ifsc',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WeaverScalarFieldEnum = (typeof WeaverScalarFieldEnum)[keyof typeof WeaverScalarFieldEnum]
+
+
+export const FactoryLoomScalarFieldEnum = {
+  id: 'id',
+  loomNumber: 'loomNumber',
+  location: 'location',
+  operatorName: 'operatorName',
+  operatorPhone: 'operatorPhone',
+  status: 'status',
+  installedYear: 'installedYear',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FactoryLoomScalarFieldEnum = (typeof FactoryLoomScalarFieldEnum)[keyof typeof FactoryLoomScalarFieldEnum]
+
+
+export const DesignLibraryScalarFieldEnum = {
+  code: 'code',
+  name: 'name',
+  typeCode: 'typeCode',
+  typeName: 'typeName',
+  description: 'description',
+  color: 'color',
+  weaverId: 'weaverId',
+  notesForWeaver: 'notesForWeaver',
+  colorSlipPhotoUrl: 'colorSlipPhotoUrl',
+  designGraphUrl: 'designGraphUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DesignLibraryScalarFieldEnum = (typeof DesignLibraryScalarFieldEnum)[keyof typeof DesignLibraryScalarFieldEnum]
+
+
+export const SareeTypeRateScalarFieldEnum = {
+  code: 'code',
+  type: 'type',
+  description: 'description',
+  makingCharge: 'makingCharge',
+  retailPrice: 'retailPrice',
+  wholesalePrice: 'wholesalePrice',
+  stdWeightG: 'stdWeightG',
+  warpWeightG: 'warpWeightG',
+  reshamWeightG: 'reshamWeightG',
+  jariWeightG: 'jariWeightG',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SareeTypeRateScalarFieldEnum = (typeof SareeTypeRateScalarFieldEnum)[keyof typeof SareeTypeRateScalarFieldEnum]
+
+
+export const BatchScalarFieldEnum = {
+  id: 'id',
+  totalCount: 'totalCount',
+  dueDate: 'dueDate',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BatchScalarFieldEnum = (typeof BatchScalarFieldEnum)[keyof typeof BatchScalarFieldEnum]
+
+
+export const BatchSareeRowScalarFieldEnum = {
+  id: 'id',
+  batchId: 'batchId',
+  serial: 'serial',
+  sareeId: 'sareeId',
+  recipientType: 'recipientType',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  designCode: 'designCode',
+  sareeTypeCode: 'sareeTypeCode',
+  bulkOrderRef: 'bulkOrderRef',
+  qcPassed: 'qcPassed',
+  createdAt: 'createdAt'
+} as const
+
+export type BatchSareeRowScalarFieldEnum = (typeof BatchSareeRowScalarFieldEnum)[keyof typeof BatchSareeRowScalarFieldEnum]
+
+
+export const MaterialIssueRecordScalarFieldEnum = {
+  id: 'id',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  loomNumber: 'loomNumber',
+  batchId: 'batchId',
+  issuedById: 'issuedById',
+  issuedAt: 'issuedAt',
+  signatureMethod: 'signatureMethod',
+  signatureCaptured: 'signatureCaptured',
+  signatureTimestamp: 'signatureTimestamp',
+  status: 'status',
+  notes: 'notes'
+} as const
+
+export type MaterialIssueRecordScalarFieldEnum = (typeof MaterialIssueRecordScalarFieldEnum)[keyof typeof MaterialIssueRecordScalarFieldEnum]
+
+
+export const MaterialIssueItemScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  materialType: 'materialType',
+  warpSubtype: 'warpSubtype',
+  quantity: 'quantity',
+  unit: 'unit',
+  jariType: 'jariType',
+  jariGrade: 'jariGrade',
+  jariColor: 'jariColor',
+  grnBatchId: 'grnBatchId'
+} as const
+
+export type MaterialIssueItemScalarFieldEnum = (typeof MaterialIssueItemScalarFieldEnum)[keyof typeof MaterialIssueItemScalarFieldEnum]
+
+
+export const QcRecordScalarFieldEnum = {
+  sareeId: 'sareeId',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  batchId: 'batchId',
+  loomNumber: 'loomNumber',
+  result: 'result',
+  defects: 'defects',
+  makingCharge: 'makingCharge',
+  deduction: 'deduction',
+  payable: 'payable',
+  receivedDate: 'receivedDate',
+  qcDate: 'qcDate',
+  photoUrl: 'photoUrl',
+  notes: 'notes',
+  inspectedById: 'inspectedById'
+} as const
+
+export type QcRecordScalarFieldEnum = (typeof QcRecordScalarFieldEnum)[keyof typeof QcRecordScalarFieldEnum]
+
+
+export const FinishingStaffScalarFieldEnum = {
+  id: 'id',
+  empId: 'empId',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  mobile: 'mobile',
+  email: 'email',
+  specialisation: 'specialisation',
+  notes: 'notes',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type FinishingStaffScalarFieldEnum = (typeof FinishingStaffScalarFieldEnum)[keyof typeof FinishingStaffScalarFieldEnum]
+
+
+export const FinishingAssignmentScalarFieldEnum = {
+  id: 'id',
+  sareeId: 'sareeId',
+  designCode: 'designCode',
+  sareeType: 'sareeType',
+  finishingStaffId: 'finishingStaffId',
+  assignedById: 'assignedById',
+  assignedDate: 'assignedDate',
+  status: 'status',
+  condition: 'condition',
+  damageType: 'damageType',
+  damageSeverity: 'damageSeverity',
+  damageNotes: 'damageNotes',
+  damagePhotoUrl: 'damagePhotoUrl',
+  quotationRef: 'quotationRef'
+} as const
+
+export type FinishingAssignmentScalarFieldEnum = (typeof FinishingAssignmentScalarFieldEnum)[keyof typeof FinishingAssignmentScalarFieldEnum]
+
+
+export const QuotationScalarFieldEnum = {
+  id: 'id',
+  quotationNumber: 'quotationNumber',
+  quotationDate: 'quotationDate',
+  customerId: 'customerId',
+  bulkOrderRef: 'bulkOrderRef',
+  applyGst: 'applyGst',
+  gstPct: 'gstPct',
+  subtotal: 'subtotal',
+  grandTotal: 'grandTotal',
+  firmId: 'firmId',
+  status: 'status',
+  raisedById: 'raisedById',
+  createdAt: 'createdAt'
+} as const
+
+export type QuotationScalarFieldEnum = (typeof QuotationScalarFieldEnum)[keyof typeof QuotationScalarFieldEnum]
+
+
+export const QuotationSareeScalarFieldEnum = {
+  id: 'id',
+  quotationId: 'quotationId',
+  sareeId: 'sareeId',
+  finishingStatus: 'finishingStatus',
+  price: 'price'
+} as const
+
+export type QuotationSareeScalarFieldEnum = (typeof QuotationSareeScalarFieldEnum)[keyof typeof QuotationSareeScalarFieldEnum]
+
+
+export const BulkOrderScalarFieldEnum = {
+  ref: 'ref',
+  customerId: 'customerId',
+  dueDate: 'dueDate',
+  createdDate: 'createdDate',
+  status: 'status',
+  sareeTypeCode: 'sareeTypeCode',
+  designCode: 'designCode',
+  total: 'total',
+  done: 'done',
+  shortage: 'shortage',
+  dispatchStatus: 'dispatchStatus',
+  paymentStatus: 'paymentStatus',
+  amountDue: 'amountDue',
+  amountPaid: 'amountPaid',
+  gstCode: 'gstCode',
+  address: 'address',
+  phone: 'phone',
+  visitingCardUrl: 'visitingCardUrl',
+  photoUrls: 'photoUrls',
+  tallied: 'tallied',
+  talliedBy: 'talliedBy',
+  talliedDate: 'talliedDate'
+} as const
+
+export type BulkOrderScalarFieldEnum = (typeof BulkOrderScalarFieldEnum)[keyof typeof BulkOrderScalarFieldEnum]
+
+
+export const DispatchRecordScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  dispatchDate: 'dispatchDate',
+  lrNumber: 'lrNumber',
+  transportCompany: 'transportCompany',
+  vehicleNumber: 'vehicleNumber',
+  driverName: 'driverName',
+  customerId: 'customerId',
+  invoiceNumber: 'invoiceNumber',
+  invoiceDate: 'invoiceDate',
+  pricePerSaree: 'pricePerSaree',
+  totalAmount: 'totalAmount',
+  gstPct: 'gstPct',
+  grandTotal: 'grandTotal',
+  firmId: 'firmId',
+  paymentDueDate: 'paymentDueDate',
+  bulkOrderRef: 'bulkOrderRef',
+  quotationRef: 'quotationRef'
+} as const
+
+export type DispatchRecordScalarFieldEnum = (typeof DispatchRecordScalarFieldEnum)[keyof typeof DispatchRecordScalarFieldEnum]
+
+
+export const DispatchSareeScalarFieldEnum = {
+  id: 'id',
+  dispatchId: 'dispatchId',
+  sareeId: 'sareeId'
+} as const
+
+export type DispatchSareeScalarFieldEnum = (typeof DispatchSareeScalarFieldEnum)[keyof typeof DispatchSareeScalarFieldEnum]
+
+
+export const InventoryRecordScalarFieldEnum = {
+  sareeId: 'sareeId',
+  status: 'status',
+  rawType: 'rawType',
+  bulkOrderRef: 'bulkOrderRef',
+  batchId: 'batchId',
+  quotationRef: 'quotationRef',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryRecordScalarFieldEnum = (typeof InventoryRecordScalarFieldEnum)[keyof typeof InventoryRecordScalarFieldEnum]
+
+
+export const SareeScalarFieldEnum = {
+  id: 'id',
+  origin: 'origin',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  purchaseId: 'purchaseId',
+  batchId: 'batchId',
+  designCode: 'designCode',
+  sareeTypeCode: 'sareeTypeCode',
+  weightG: 'weightG',
+  costPrice: 'costPrice',
+  qcDate: 'qcDate',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type SareeScalarFieldEnum = (typeof SareeScalarFieldEnum)[keyof typeof SareeScalarFieldEnum]
+
+
+export const SaleRecordScalarFieldEnum = {
+  saleRef: 'saleRef',
+  sareeId: 'sareeId',
+  channel: 'channel',
+  date: 'date',
+  customerId: 'customerId',
+  amount: 'amount'
+} as const
+
+export type SaleRecordScalarFieldEnum = (typeof SaleRecordScalarFieldEnum)[keyof typeof SaleRecordScalarFieldEnum]
+
+
+export const ReturnRecordScalarFieldEnum = {
+  returnRef: 'returnRef',
+  sareeId: 'sareeId',
+  reason: 'reason',
+  refundAmount: 'refundAmount',
+  restocked: 'restocked',
+  createdAt: 'createdAt'
+} as const
+
+export type ReturnRecordScalarFieldEnum = (typeof ReturnRecordScalarFieldEnum)[keyof typeof ReturnRecordScalarFieldEnum]
+
+
+export const SupplierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  initials: 'initials',
+  contactName: 'contactName',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  city: 'city',
+  state: 'state',
+  address: 'address',
+  gstCode: 'gstCode',
+  specialty: 'specialty',
+  terms: 'terms',
+  bankName: 'bankName',
+  accountNo: 'accountNo',
+  status: 'status',
+  rating: 'rating',
+  createdAt: 'createdAt'
+} as const
+
+export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
+
+
+export const VendorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  initials: 'initials',
+  contactName: 'contactName',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  city: 'city',
+  state: 'state',
+  address: 'address',
+  gstCode: 'gstCode',
+  specialty: 'specialty',
+  terms: 'terms',
+  bankName: 'bankName',
+  accountNo: 'accountNo',
+  status: 'status',
+  rating: 'rating',
+  createdAt: 'createdAt'
+} as const
+
+export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
+
+
+export const PurchaseScalarFieldEnum = {
+  id: 'id',
+  supplierId: 'supplierId',
+  date: 'date',
+  sareeCount: 'sareeCount',
+  gstNumber: 'gstNumber',
+  invoiceNumber: 'invoiceNumber',
+  billAmount: 'billAmount',
+  status: 'status'
+} as const
+
+export type PurchaseScalarFieldEnum = (typeof PurchaseScalarFieldEnum)[keyof typeof PurchaseScalarFieldEnum]
+
+
+export const PurchaseOrderScalarFieldEnum = {
+  id: 'id',
+  poNumber: 'poNumber',
+  vendorId: 'vendorId',
+  deliveryDate: 'deliveryDate',
+  totalValue: 'totalValue',
+  urgency: 'urgency',
+  status: 'status',
+  grnId: 'grnId',
+  createdAt: 'createdAt'
+} as const
+
+export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]
+
+
+export const PurchaseRequestScalarFieldEnum = {
+  id: 'id',
+  supplierId: 'supplierId',
+  requestedById: 'requestedById',
+  sareeType: 'sareeType',
+  quantity: 'quantity',
+  estimatedAmount: 'estimatedAmount',
+  urgency: 'urgency',
+  reason: 'reason',
+  status: 'status',
+  decidedById: 'decidedById',
+  decidedDate: 'decidedDate',
+  decisionNote: 'decisionNote',
+  createdAt: 'createdAt'
+} as const
+
+export type PurchaseRequestScalarFieldEnum = (typeof PurchaseRequestScalarFieldEnum)[keyof typeof PurchaseRequestScalarFieldEnum]
+
+
+export const FirmScalarFieldEnum = {
+  id: 'id',
+  firmName: 'firmName',
+  gstNumber: 'gstNumber',
+  address: 'address',
+  accountNumber: 'accountNumber',
+  ifscCode: 'ifscCode',
+  bankName: 'bankName',
+  contactPersonName: 'contactPersonName',
+  contactPersonPhone: 'contactPersonPhone',
+  createdAt: 'createdAt'
+} as const
+
+export type FirmScalarFieldEnum = (typeof FirmScalarFieldEnum)[keyof typeof FirmScalarFieldEnum]
+
+
+export const FirmFinancialEntryScalarFieldEnum = {
+  id: 'id',
+  firmId: 'firmId',
+  kind: 'kind',
+  category: 'category',
+  description: 'description',
+  amount: 'amount',
+  date: 'date',
+  notes: 'notes'
+} as const
+
+export type FirmFinancialEntryScalarFieldEnum = (typeof FirmFinancialEntryScalarFieldEnum)[keyof typeof FirmFinancialEntryScalarFieldEnum]
+
+
+export const WeaverPaymentScalarFieldEnum = {
+  id: 'id',
+  weaverId: 'weaverId',
+  amountPaid: 'amountPaid',
+  utrNumber: 'utrNumber',
+  firmId: 'firmId',
+  paymentDate: 'paymentDate',
+  uploadedAt: 'uploadedAt',
+  batchNo: 'batchNo',
+  loomNumber: 'loomNumber',
+  noOfSarees: 'noOfSarees',
+  deduction: 'deduction'
+} as const
+
+export type WeaverPaymentScalarFieldEnum = (typeof WeaverPaymentScalarFieldEnum)[keyof typeof WeaverPaymentScalarFieldEnum]
+
+
+export const VendorPaymentScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  amount: 'amount',
+  date: 'date',
+  utr: 'utr',
+  method: 'method',
+  firmId: 'firmId'
+} as const
+
+export type VendorPaymentScalarFieldEnum = (typeof VendorPaymentScalarFieldEnum)[keyof typeof VendorPaymentScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  invoiceDate: 'invoiceDate',
+  dueDate: 'dueDate',
+  total: 'total',
+  paid: 'paid',
+  status: 'status'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoicePaymentScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  amount: 'amount',
+  date: 'date',
+  utr: 'utr',
+  method: 'method',
+  firmId: 'firmId'
+} as const
+
+export type InvoicePaymentScalarFieldEnum = (typeof InvoicePaymentScalarFieldEnum)[keyof typeof InvoicePaymentScalarFieldEnum]
+
+
+export const CustomerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  city: 'city',
+  phone: 'phone',
+  address: 'address',
+  gstCode: 'gstCode',
+  type: 'type',
+  visitingCardUrl: 'visitingCardUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  device: 'device',
+  duration: 'duration',
+  failReason: 'failReason',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  targetType: 'targetType',
+  userId: 'userId',
+  role: 'role',
+  type: 'type',
+  payload: 'payload',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -119,4 +761,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

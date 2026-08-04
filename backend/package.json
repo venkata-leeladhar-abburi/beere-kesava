@@ -6,13 +6,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:push": "bash scripts/db-push.sh",
     "db:studio": "bash scripts/db-studio.sh",
+    "db:seed": "bash scripts/db-seed.sh",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
     "build": "nest build",
-    "lint": "eslint \"{src,test}/**/*.ts\"",
-    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\""
+    "lint": "eslint \"{src,test,prisma}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,test,prisma}/**/*.ts\" --fix",
+    "format": "prettier --write \"{src,prisma}/**/*.ts\""
   },
   "keywords": [],
   "author": "",

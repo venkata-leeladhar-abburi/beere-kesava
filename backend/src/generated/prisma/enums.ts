@@ -11,9 +11,315 @@
 
 export const UserRole = {
   ADMIN: 'ADMIN',
-  SHOP_STAFF: 'SHOP_STAFF',
+  SUPERADMIN: 'SUPERADMIN',
+  WORKER: 'WORKER',
   WEAVER: 'WEAVER',
-  WORKER: 'WORKER'
+  SHOP: 'SHOP',
+  ACCOUNTANT: 'ACCOUNTANT'
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const AccessLevel = {
+  FULL_ACCESS: 'FULL_ACCESS',
+  RESTRICTED: 'RESTRICTED',
+  DOWNLOAD_RESTRICTED: 'DOWNLOAD_RESTRICTED',
+  MONEY_HIDDEN: 'MONEY_HIDDEN'
+} as const
+
+export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
+
+
+export const ActiveStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type ActiveStatus = (typeof ActiveStatus)[keyof typeof ActiveStatus]
+
+
+export const LoomStatus = {
+  ACTIVE: 'ACTIVE',
+  IDLE: 'IDLE',
+  MAINTENANCE: 'MAINTENANCE'
+} as const
+
+export type LoomStatus = (typeof LoomStatus)[keyof typeof LoomStatus]
+
+
+export const BatchStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type BatchStatus = (typeof BatchStatus)[keyof typeof BatchStatus]
+
+
+export const RecipientType = {
+  WEAVER: 'WEAVER',
+  FACTORY_LOOM: 'FACTORY_LOOM'
+} as const
+
+export type RecipientType = (typeof RecipientType)[keyof typeof RecipientType]
+
+
+export const MaterialType = {
+  WARP: 'WARP',
+  RESHAM: 'RESHAM',
+  JARI: 'JARI'
+} as const
+
+export type MaterialType = (typeof MaterialType)[keyof typeof MaterialType]
+
+
+export const WarpSubtype = {
+  RESHAM_WARP: 'RESHAM_WARP',
+  JARI_WARP: 'JARI_WARP'
+} as const
+
+export type WarpSubtype = (typeof WarpSubtype)[keyof typeof WarpSubtype]
+
+
+export const JariGrade = {
+  G1: 'G1',
+  G2: 'G2',
+  G3: 'G3',
+  G4: 'G4',
+  G5: 'G5'
+} as const
+
+export type JariGrade = (typeof JariGrade)[keyof typeof JariGrade]
+
+
+export const SignatureMethod = {
+  HERE: 'HERE',
+  REMOTE: 'REMOTE'
+} as const
+
+export type SignatureMethod = (typeof SignatureMethod)[keyof typeof SignatureMethod]
+
+
+export const MaterialIssueStatus = {
+  PENDING_SIGNATURE: 'PENDING_SIGNATURE',
+  SIGNED: 'SIGNED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type MaterialIssueStatus = (typeof MaterialIssueStatus)[keyof typeof MaterialIssueStatus]
+
+
+export const QcResult = {
+  PASSED: 'PASSED',
+  SEMI: 'SEMI',
+  DEFECTIVE: 'DEFECTIVE'
+} as const
+
+export type QcResult = (typeof QcResult)[keyof typeof QcResult]
+
+
+export const FinishingAssignmentStatus = {
+  AWAITING_RETURN: 'AWAITING_RETURN',
+  RETURNED: 'RETURNED'
+} as const
+
+export type FinishingAssignmentStatus = (typeof FinishingAssignmentStatus)[keyof typeof FinishingAssignmentStatus]
+
+
+export const FinishingCondition = {
+  PERFECT: 'PERFECT',
+  DAMAGED: 'DAMAGED'
+} as const
+
+export type FinishingCondition = (typeof FinishingCondition)[keyof typeof FinishingCondition]
+
+
+export const DamageSeverity = {
+  MINOR: 'MINOR',
+  MODERATE: 'MODERATE',
+  SEVERE: 'SEVERE'
+} as const
+
+export type DamageSeverity = (typeof DamageSeverity)[keyof typeof DamageSeverity]
+
+
+export const QuotationStatus = {
+  RAISED: 'RAISED',
+  IN_FINISHING: 'IN_FINISHING',
+  PARTIALLY_RECEIVED: 'PARTIALLY_RECEIVED',
+  RECEIVED: 'RECEIVED',
+  DISPATCHED: 'DISPATCHED'
+} as const
+
+export type QuotationStatus = (typeof QuotationStatus)[keyof typeof QuotationStatus]
+
+
+export const QuotationSareeStatus = {
+  PENDING: 'PENDING',
+  IN_FINISHING: 'IN_FINISHING',
+  RECEIVED: 'RECEIVED'
+} as const
+
+export type QuotationSareeStatus = (typeof QuotationSareeStatus)[keyof typeof QuotationSareeStatus]
+
+
+export const BulkOrderStatus = {
+  ON_TRACK: 'ON_TRACK',
+  AT_RISK: 'AT_RISK',
+  OVERDUE: 'OVERDUE'
+} as const
+
+export type BulkOrderStatus = (typeof BulkOrderStatus)[keyof typeof BulkOrderStatus]
+
+
+export const DispatchStatus = {
+  PENDING: 'PENDING',
+  DISPATCHED: 'DISPATCHED',
+  INVOICED: 'INVOICED'
+} as const
+
+export type DispatchStatus = (typeof DispatchStatus)[keyof typeof DispatchStatus]
+
+
+export const OrderPaymentStatus = {
+  PENDING: 'PENDING',
+  PARTIAL: 'PARTIAL',
+  PAID: 'PAID'
+} as const
+
+export type OrderPaymentStatus = (typeof OrderPaymentStatus)[keyof typeof OrderPaymentStatus]
+
+
+export const DispatchType = {
+  SHOP: 'SHOP',
+  WHOLESALE: 'WHOLESALE'
+} as const
+
+export type DispatchType = (typeof DispatchType)[keyof typeof DispatchType]
+
+
+export const InventoryStatus = {
+  QC_PASSED: 'QC_PASSED',
+  FINISHING_COMPLETE: 'FINISHING_COMPLETE',
+  DISPATCHED: 'DISPATCHED',
+  DAMAGED_REVIEW_NEEDED: 'DAMAGED_REVIEW_NEEDED'
+} as const
+
+export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus]
+
+
+export const InventoryRawType = {
+  READY_SAREE: 'READY_SAREE',
+  RETURN: 'RETURN'
+} as const
+
+export type InventoryRawType = (typeof InventoryRawType)[keyof typeof InventoryRawType]
+
+
+export const SareeOrigin = {
+  WEAVER: 'WEAVER',
+  FACTORY_LOOM: 'FACTORY_LOOM',
+  EXTERNAL: 'EXTERNAL'
+} as const
+
+export type SareeOrigin = (typeof SareeOrigin)[keyof typeof SareeOrigin]
+
+
+export const SareeStatus = {
+  UNSOLD: 'UNSOLD',
+  RETAIL: 'RETAIL',
+  WHOLESALE: 'WHOLESALE',
+  RETURNED: 'RETURNED'
+} as const
+
+export type SareeStatus = (typeof SareeStatus)[keyof typeof SareeStatus]
+
+
+export const SalesChannel = {
+  RETAIL: 'RETAIL',
+  WHOLESALE: 'WHOLESALE'
+} as const
+
+export type SalesChannel = (typeof SalesChannel)[keyof typeof SalesChannel]
+
+
+export const PartyStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  OVERDUE: 'OVERDUE'
+} as const
+
+export type PartyStatus = (typeof PartyStatus)[keyof typeof PartyStatus]
+
+
+export const PurchasePaymentStatus = {
+  PAID: 'PAID',
+  PENDING: 'PENDING',
+  PARTIAL: 'PARTIAL'
+} as const
+
+export type PurchasePaymentStatus = (typeof PurchasePaymentStatus)[keyof typeof PurchasePaymentStatus]
+
+
+export const PurchaseOrderStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  RECEIVED: 'RECEIVED'
+} as const
+
+export type PurchaseOrderStatus = (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus]
+
+
+export const PurchaseRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type PurchaseRequestStatus = (typeof PurchaseRequestStatus)[keyof typeof PurchaseRequestStatus]
+
+
+export const FinancialEntryKind = {
+  INCOME: 'INCOME',
+  EXPENSE: 'EXPENSE',
+  MISC: 'MISC'
+} as const
+
+export type FinancialEntryKind = (typeof FinancialEntryKind)[keyof typeof FinancialEntryKind]
+
+
+export const InvoiceStatus = {
+  PAID: 'PAID',
+  PARTIAL: 'PARTIAL',
+  PENDING: 'PENDING',
+  OVERDUE: 'OVERDUE'
+} as const
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
+export const CustomerType = {
+  WHOLESALE: 'WHOLESALE',
+  RETAIL: 'RETAIL'
+} as const
+
+export type CustomerType = (typeof CustomerType)[keyof typeof CustomerType]
+
+
+export const AuditStatus = {
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  FAILED: 'FAILED'
+} as const
+
+export type AuditStatus = (typeof AuditStatus)[keyof typeof AuditStatus]
+
+
+export const NotificationTargetType = {
+  USER: 'USER',
+  ROLE: 'ROLE'
+} as const
+
+export type NotificationTargetType = (typeof NotificationTargetType)[keyof typeof NotificationTargetType]

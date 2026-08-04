@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Beere Kesava & Brothers Silks ERP — backend schema
+// Source of truth: Backend_Architecture_Design.pdf, Section 4 (Core Data Model)
 
 generator client {
   provider = "prisma-client"
@@ -12,21 +10,284 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────
+
 enum UserRole {
   ADMIN
-  SHOP_STAFF
-  WEAVER
+  SUPERADMIN
   WORKER
+  WEAVER
+  SHOP
+  ACCOUNTANT
 }
 
+enum AccessLevel {
+  FULL_ACCESS
+  RESTRICTED
+  DOWNLOAD_RESTRICTED
+  MONEY_HIDDEN
+}
+
+enum ActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LoomStatus {
+  ACTIVE
+  IDLE
+  MAINTENANCE
+}
+
+enum BatchStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum RecipientType {
+  WEAVER
+  FACTORY_LOOM
+}
+
+enum MaterialType {
+  WARP
+  RESHAM
+  JARI
+}
+
+enum WarpSubtype {
+  RESHAM_WARP
+  JARI_WARP
+}
+
+enum JariGrade {
+  G1
+  G2
+  G3
+  G4
+  G5
+}
+
+enum SignatureMethod {
+  HERE
+  REMOTE
+}
+
+enum MaterialIssueStatus {
+  PENDING_SIGNATURE
+  SIGNED
+  CANCELLED
+}
+
+enum QcResult {
+  PASSED
+  SEMI
+  DEFECTIVE
+}
+
+enum FinishingAssignmentStatus {
+  AWAITING_RETURN
+  RETURNED
+}
+
+enum FinishingCondition {
+  PERFECT
+  DAMAGED
+}
+
+enum DamageSeverity {
+  MINOR
+  MODERATE
+  SEVERE
+}
+
+enum QuotationStatus {
+  RAISED
+  IN_FINISHING
+  PARTIALLY_RECEIVED
+  RECEIVED
+  DISPATCHED
+}
+
+enum QuotationSareeStatus {
+  PENDING
+  IN_FINISHING
+  RECEIVED
+}
+
+enum BulkOrderStatus {
+  ON_TRACK
+  AT_RISK
+  OVERDUE
+}
+
+enum DispatchStatus {
+  PENDING
+  DISPATCHED
+  INVOICED
+}
+
+enum OrderPaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+}
+
+enum DispatchType {
+  SHOP
+  WHOLESALE
+}
+
+enum InventoryStatus {
+  QC_PASSED
+  FINISHING_COMPLETE
+  DISPATCHED
+  DAMAGED_REVIEW_NEEDED
+}
+
+enum InventoryRawType {
+  READY_SAREE
+  RETURN
+}
+
+enum SareeOrigin {
+  WEAVER
+  FACTORY_LOOM
+  EXTERNAL
+}
+
+enum SareeStatus {
+  UNSOLD
+  RETAIL
+  WHOLESALE
+  RETURNED
+}
+
+enum SalesChannel {
+  RETAIL
+  WHOLESALE
+}
+
+enum PartyStatus {
+  ACTIVE
+  INACTIVE
+  OVERDUE
+}
+
+enum PurchasePaymentStatus {
+  PAID
+  PENDING
+  PARTIAL
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RECEIVED
+}
+
+enum PurchaseRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum FinancialEntryKind {
+  INCOME
+  EXPENSE
+  MISC
+}
+
+enum InvoiceStatus {
+  PAID
+  PARTIAL
+  PENDING
+  OVERDUE
+}
+
+enum CustomerType {
+  WHOLESALE
+  RETAIL
+}
+
+enum AuditStatus {
+  LOGIN
+  LOGOUT
+  FAILED
+}
+
+enum NotificationTargetType {
+  USER
+  ROLE
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// RBAC
+// ─────────────────────────────────────────────────────────────────────────
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g. "po.approve", "finance.view_amounts"
+  description String
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+  userOverrides   UserPermissionOverride[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         UserRole
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([role])
+}
+
+model UserPermissionOverride {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  granted      Boolean
+
+  @@unique([userId, permissionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Users & Auth
+// ─────────────────────────────────────────────────────────────────────────
+
 model User {
-  id          String    @id @default(uuid())
-  phoneNumber String    @unique
-  name        String
+  id          String       @id @default(uuid())
+  empId       String       @unique // EMP-NNN
+  firstName   String
+  lastName    String
+  mobile      String       @unique
+  email       String?
   role        UserRole
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  accessLevel AccessLevel  @default(FULL_ACCESS)
+  status      ActiveStatus @default(ACTIVE)
+  dateAdded   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  permissionOverrides  UserPermissionOverride[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  issuedMaterialIssues MaterialIssueRecord[]    @relation("IssuedBy")
+  inspectedQcRecords   QcRecord[]               @relation("InspectedBy")
+  assignedFinishings   FinishingAssignment[]    @relation("AssignedBy")
+  raisedQuotations     Quotation[]              @relation("RaisedBy")
+  requestedPurchases   PurchaseRequest[]        @relation("RequestedBy")
+  decidedPurchases     PurchaseRequest[]        @relation("DecidedBy")
+
+  @@index([role])
 }
 
 model OtpCode {
@@ -39,4 +300,695 @@ model OtpCode {
   createdAt   DateTime  @default(now())
 
   @@index([phoneNumber])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Production masters
+// ─────────────────────────────────────────────────────────────────────────
+
+model Weaver {
+  id        String       @id @default(uuid())
+  name      String
+  firstName String
+  lastName  String
+  initials  String // derived, used in saree ID e.g. RAVI
+  village   String?
+  cluster   String?
+  looms     Int          @default(0)
+  status    ActiveStatus @default(ACTIVE)
+  photoUrl  String
+  email     String
+  phone     String
+  bankName  String?
+  accountNo String?
+  ifsc      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  designs        DesignLibrary[]
+  batchSareeRows BatchSareeRow[]
+  materialIssues MaterialIssueRecord[]
+  qcRecords      QcRecord[]
+  sarees         Saree[]
+  payments       WeaverPayment[]
+
+  @@index([status])
+}
+
+model FactoryLoom {
+  id            String     @id @default(uuid())
+  loomNumber    String     @unique // BKB-F-0X
+  location      String?
+  operatorName  String?
+  operatorPhone String?
+  status        LoomStatus @default(ACTIVE)
+  installedYear Int?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  batchSareeRows BatchSareeRow[]
+  materialIssues MaterialIssueRecord[]
+  qcRecords      QcRecord[]
+  sarees         Saree[]
+
+  @@index([status])
+}
+
+model DesignLibrary {
+  code              String   @id
+  name              String
+  typeCode          String
+  typeName          String
+  description       String?
+  color             String?
+  weaverId          String?
+  weaver            Weaver?  @relation(fields: [weaverId], references: [id])
+  notesForWeaver    String?
+  colorSlipPhotoUrl String?
+  designGraphUrl    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  batchSareeRows BatchSareeRow[]
+  sarees         Saree[]
+}
+
+model SareeTypeRate {
+  code           String   @id
+  type           String
+  description    String?
+  makingCharge   Decimal  @db.Decimal(12, 2)
+  retailPrice    Decimal  @db.Decimal(12, 2)
+  wholesalePrice Decimal  @db.Decimal(12, 2)
+  stdWeightG     Decimal  @db.Decimal(10, 2)
+  warpWeightG    Decimal  @db.Decimal(10, 2)
+  reshamWeightG  Decimal  @db.Decimal(10, 2)
+  jariWeightG    Decimal  @db.Decimal(10, 2)
+  updatedAt      DateTime @updatedAt
+
+  batchSareeRows BatchSareeRow[]
+  sarees         Saree[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Production — batches
+// ─────────────────────────────────────────────────────────────────────────
+
+model Batch {
+  id         String      @id // business key, e.g. BATCH-2026-001
+  totalCount Int
+  dueDate    DateTime
+  status     BatchStatus @default(DRAFT)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  rows             BatchSareeRow[]
+  materialIssues   MaterialIssueRecord[]
+  sarees           Saree[]
+  inventoryRecords InventoryRecord[]
+}
+
+model BatchSareeRow {
+  id            String        @id @default(uuid())
+  batchId       String
+  batch         Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  serial        Int
+  sareeId       String?       @unique
+  recipientType RecipientType
+  weaverId      String?
+  weaver        Weaver?       @relation(fields: [weaverId], references: [id])
+  factoryLoomId String?
+  factoryLoom   FactoryLoom?  @relation(fields: [factoryLoomId], references: [id])
+  designCode    String
+  design        DesignLibrary @relation(fields: [designCode], references: [code])
+  sareeTypeCode String
+  sareeType     SareeTypeRate @relation(fields: [sareeTypeCode], references: [code])
+  bulkOrderRef  String?
+  bulkOrder     BulkOrder?    @relation(fields: [bulkOrderRef], references: [ref])
+  qcPassed      Boolean?
+  createdAt     DateTime      @default(now())
+
+  qcRecord QcRecord?
+
+  @@unique([batchId, serial])
+  @@index([weaverId])
+  @@index([factoryLoomId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Material issue
+// ─────────────────────────────────────────────────────────────────────────
+
+model MaterialIssueRecord {
+  id                 String              @id // MIR-2026-NNN
+  weaverId           String?
+  weaver             Weaver?             @relation(fields: [weaverId], references: [id])
+  factoryLoomId      String?
+  factoryLoom        FactoryLoom?        @relation(fields: [factoryLoomId], references: [id])
+  loomNumber         String?
+  batchId            String?
+  batch              Batch?              @relation(fields: [batchId], references: [id])
+  issuedById         String
+  issuedBy           User                @relation("IssuedBy", fields: [issuedById], references: [id])
+  issuedAt           DateTime            @default(now())
+  signatureMethod    SignatureMethod?
+  signatureCaptured  Boolean             @default(false)
+  signatureTimestamp DateTime?
+  status             MaterialIssueStatus @default(PENDING_SIGNATURE)
+  notes              String?
+
+  items MaterialIssueItem[]
+
+  @@index([weaverId])
+  @@index([factoryLoomId])
+}
+
+model MaterialIssueItem {
+  id           String              @id @default(uuid())
+  issueId      String
+  issue        MaterialIssueRecord @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  materialType MaterialType
+  warpSubtype  WarpSubtype?
+  quantity     Decimal             @db.Decimal(12, 3)
+  unit         String
+  jariType     String?
+  jariGrade    JariGrade?
+  jariColor    String?
+  grnBatchId   String?
+
+  @@index([issueId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// QC
+// ─────────────────────────────────────────────────────────────────────────
+
+model QcRecord {
+  sareeId       String        @id
+  batchSareeRow BatchSareeRow @relation(fields: [sareeId], references: [sareeId])
+  weaverId      String?
+  weaver        Weaver?       @relation(fields: [weaverId], references: [id])
+  factoryLoomId String?
+  factoryLoom   FactoryLoom?  @relation(fields: [factoryLoomId], references: [id])
+  batchId       String?
+  loomNumber    String?
+  result        QcResult
+  defects       String[]
+  makingCharge  Decimal       @db.Decimal(12, 2)
+  deduction     Decimal       @default(0) @db.Decimal(12, 2)
+  payable       Decimal       @db.Decimal(12, 2)
+  receivedDate  DateTime?
+  qcDate        DateTime      @default(now())
+  photoUrl      String?
+  notes         String?
+  inspectedById String
+  inspectedBy   User          @relation("InspectedBy", fields: [inspectedById], references: [id])
+
+  @@index([weaverId])
+  @@index([factoryLoomId])
+  @@index([result])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Finishing
+// ─────────────────────────────────────────────────────────────────────────
+
+model FinishingStaff {
+  id             String       @id @default(uuid())
+  empId          String       @unique
+  firstName      String
+  lastName       String
+  mobile         String
+  email          String?
+  specialisation String?
+  notes          String?
+  status         ActiveStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+
+  assignments FinishingAssignment[]
+}
+
+model FinishingAssignment {
+  id               String                    @id @default(uuid())
+  sareeId          String
+  designCode       String?
+  sareeType        String?
+  finishingStaffId String
+  finishingStaff   FinishingStaff            @relation(fields: [finishingStaffId], references: [id])
+  assignedById     String
+  assignedBy       User                      @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedDate     DateTime                  @default(now())
+  status           FinishingAssignmentStatus @default(AWAITING_RETURN)
+  condition        FinishingCondition?
+  damageType       String?
+  damageSeverity   DamageSeverity?
+  damageNotes      String?
+  damagePhotoUrl   String?
+  quotationRef     String?
+  quotation        Quotation?                @relation(fields: [quotationRef], references: [id])
+
+  @@index([sareeId])
+  @@index([finishingStaffId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Quotations
+// ─────────────────────────────────────────────────────────────────────────
+
+model Quotation {
+  id              String          @id @default(uuid())
+  quotationNumber String          @unique
+  quotationDate   DateTime        @default(now())
+  customerId      String?
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  bulkOrderRef    String?
+  bulkOrder       BulkOrder?      @relation(fields: [bulkOrderRef], references: [ref])
+  applyGst        Boolean         @default(false)
+  gstPct          Decimal?        @db.Decimal(5, 2)
+  subtotal        Decimal         @db.Decimal(12, 2)
+  grandTotal      Decimal         @db.Decimal(12, 2)
+  firmId          String?
+  firm            Firm?           @relation(fields: [firmId], references: [id])
+  status          QuotationStatus @default(RAISED)
+  raisedById      String
+  raisedBy        User            @relation("RaisedBy", fields: [raisedById], references: [id])
+  createdAt       DateTime        @default(now())
+
+  sarees               QuotationSaree[]
+  finishingAssignments FinishingAssignment[]
+}
+
+model QuotationSaree {
+  id              String               @id @default(uuid())
+  quotationId     String
+  quotation       Quotation            @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  sareeId         String
+  finishingStatus QuotationSareeStatus @default(PENDING)
+  price           Decimal              @db.Decimal(12, 2)
+
+  @@unique([quotationId, sareeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Sales — Bulk orders, dispatch, unified sarees
+// ─────────────────────────────────────────────────────────────────────────
+
+model BulkOrder {
+  ref             String             @id // ORD-2026-NNN
+  customerId      String
+  customer        Customer           @relation(fields: [customerId], references: [id])
+  dueDate         DateTime
+  createdDate     DateTime           @default(now())
+  status          BulkOrderStatus    @default(ON_TRACK)
+  sareeTypeCode   String?
+  designCode      String?
+  total           Int
+  done            Int                @default(0)
+  shortage        Int                @default(0)
+  dispatchStatus  DispatchStatus     @default(PENDING)
+  paymentStatus   OrderPaymentStatus @default(PENDING)
+  amountDue       Decimal            @db.Decimal(12, 2)
+  amountPaid      Decimal            @default(0) @db.Decimal(12, 2)
+  gstCode         String?
+  address         String?
+  phone           String?
+  visitingCardUrl String?
+  photoUrls       String[]
+  tallied         Boolean            @default(false)
+  talliedBy       String?
+  talliedDate     DateTime?
+
+  batchSareeRows   BatchSareeRow[]
+  quotations       Quotation[]
+  dispatchRecords  DispatchRecord[]
+  inventoryRecords InventoryRecord[]
+
+  @@index([status])
+  @@index([customerId])
+}
+
+model DispatchRecord {
+  id               String       @id @default(uuid())
+  type             DispatchType
+  dispatchDate     DateTime     @default(now())
+  lrNumber         String?
+  transportCompany String?
+  vehicleNumber    String?
+  driverName       String?
+  customerId       String?
+  customer         Customer?    @relation(fields: [customerId], references: [id])
+  invoiceNumber    String?
+  invoiceDate      DateTime?
+  pricePerSaree    Decimal?     @db.Decimal(12, 2)
+  totalAmount      Decimal      @db.Decimal(12, 2)
+  gstPct           Decimal?     @db.Decimal(5, 2)
+  grandTotal       Decimal      @db.Decimal(12, 2)
+  firmId           String?
+  firm             Firm?        @relation(fields: [firmId], references: [id])
+  paymentDueDate   DateTime?
+  bulkOrderRef     String?
+  bulkOrder        BulkOrder?   @relation(fields: [bulkOrderRef], references: [ref])
+  quotationRef     String?
+
+  sarees DispatchSaree[]
+
+  @@index([paymentDueDate])
+  @@index([customerId])
+}
+
+model DispatchSaree {
+  id         String         @id @default(uuid())
+  dispatchId String
+  dispatch   DispatchRecord @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  sareeId    String
+
+  @@unique([dispatchId, sareeId])
+}
+
+model InventoryRecord {
+  sareeId      String           @id
+  status       InventoryStatus
+  rawType      InventoryRawType
+  bulkOrderRef String?
+  bulkOrder    BulkOrder?       @relation(fields: [bulkOrderRef], references: [ref])
+  batchId      String?
+  batch        Batch?           @relation(fields: [batchId], references: [id])
+  quotationRef String?
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status])
+}
+
+model Saree {
+  id            String         @id // canonical saree ID
+  origin        SareeOrigin
+  weaverId      String?
+  weaver        Weaver?        @relation(fields: [weaverId], references: [id])
+  factoryLoomId String?
+  factoryLoom   FactoryLoom?   @relation(fields: [factoryLoomId], references: [id])
+  purchaseId    String?
+  purchase      Purchase?      @relation(fields: [purchaseId], references: [id])
+  batchId       String?
+  batch         Batch?         @relation(fields: [batchId], references: [id])
+  designCode    String?
+  design        DesignLibrary? @relation(fields: [designCode], references: [code])
+  sareeTypeCode String?
+  sareeType     SareeTypeRate? @relation(fields: [sareeTypeCode], references: [code])
+  weightG       Decimal?       @db.Decimal(10, 2)
+  costPrice     Decimal?       @db.Decimal(12, 2)
+  qcDate        DateTime?
+  status        SareeStatus    @default(UNSOLD)
+  createdAt     DateTime       @default(now())
+
+  sales   SaleRecord[]
+  returns ReturnRecord[]
+
+  @@index([status])
+  @@index([weaverId])
+  @@index([factoryLoomId])
+}
+
+model SaleRecord {
+  saleRef    String       @id
+  sareeId    String
+  saree      Saree        @relation(fields: [sareeId], references: [id])
+  channel    SalesChannel
+  date       DateTime     @default(now())
+  customerId String?
+  customer   Customer?    @relation(fields: [customerId], references: [id])
+  amount     Decimal      @db.Decimal(12, 2)
+
+  @@index([sareeId])
+}
+
+model ReturnRecord {
+  returnRef    String   @id
+  sareeId      String
+  saree        Saree    @relation(fields: [sareeId], references: [id])
+  reason       String?
+  refundAmount Decimal? @db.Decimal(12, 2)
+  restocked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([sareeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Procurement
+// ─────────────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id          String      @id @default(uuid())
+  name        String
+  initials    String?
+  contactName String?
+  phone       String?
+  whatsapp    String?
+  city        String?
+  state       String?
+  address     String?
+  gstCode     String?
+  specialty   String?
+  terms       String?
+  bankName    String?
+  accountNo   String?
+  status      PartyStatus @default(ACTIVE)
+  rating      Int?
+  createdAt   DateTime    @default(now())
+
+  purchases        Purchase[]
+  purchaseRequests PurchaseRequest[]
+}
+
+model Vendor {
+  id          String      @id @default(uuid())
+  name        String
+  initials    String?
+  contactName String?
+  phone       String?
+  whatsapp    String?
+  city        String?
+  state       String?
+  address     String?
+  gstCode     String?
+  specialty   String?
+  terms       String?
+  bankName    String?
+  accountNo   String?
+  status      PartyStatus @default(ACTIVE)
+  rating      Int?
+  createdAt   DateTime    @default(now())
+
+  purchaseOrders PurchaseOrder[]
+  vendorPayments VendorPayment[]
+}
+
+model Purchase {
+  id            String                @id @default(uuid())
+  supplierId    String
+  supplier      Supplier              @relation(fields: [supplierId], references: [id])
+  date          DateTime              @default(now())
+  sareeCount    Int
+  gstNumber     String?
+  invoiceNumber String?
+  billAmount    Decimal               @db.Decimal(12, 2)
+  status        PurchasePaymentStatus @default(PENDING)
+
+  sarees Saree[]
+
+  @@index([supplierId])
+}
+
+model PurchaseOrder {
+  id           String              @id @default(uuid())
+  poNumber     String              @unique // PO-2026-NNN
+  vendorId     String
+  vendor       Vendor              @relation(fields: [vendorId], references: [id])
+  deliveryDate DateTime?
+  totalValue   Decimal             @db.Decimal(12, 2)
+  urgency      String?
+  status       PurchaseOrderStatus @default(PENDING)
+  grnId        String?
+  createdAt    DateTime            @default(now())
+
+  @@index([vendorId])
+  @@index([status])
+}
+
+model PurchaseRequest {
+  id              String                @id @default(uuid())
+  supplierId      String?
+  supplier        Supplier?             @relation(fields: [supplierId], references: [id])
+  requestedById   String
+  requestedBy     User                  @relation("RequestedBy", fields: [requestedById], references: [id])
+  sareeType       String?
+  quantity        Int
+  estimatedAmount Decimal?              @db.Decimal(12, 2)
+  urgency         String?
+  reason          String?
+  status          PurchaseRequestStatus @default(PENDING)
+  decidedById     String?
+  decidedBy       User?                 @relation("DecidedBy", fields: [decidedById], references: [id])
+  decidedDate     DateTime?
+  decisionNote    String?
+  createdAt       DateTime              @default(now())
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Firms & finance
+// ─────────────────────────────────────────────────────────────────────────
+
+model Firm {
+  id                 String   @id @default(uuid())
+  firmName           String
+  gstNumber          String?
+  address            String?
+  accountNumber      String?
+  ifscCode           String?
+  bankName           String?
+  contactPersonName  String?
+  contactPersonPhone String?
+  createdAt          DateTime @default(now())
+
+  financialEntries FirmFinancialEntry[]
+  weaverPayments   WeaverPayment[]
+  vendorPayments   VendorPayment[]
+  invoicePayments  InvoicePayment[]
+  quotations       Quotation[]
+  dispatchRecords  DispatchRecord[]
+}
+
+model FirmFinancialEntry {
+  id          String             @id @default(uuid())
+  firmId      String
+  firm        Firm               @relation(fields: [firmId], references: [id])
+  kind        FinancialEntryKind
+  category    String
+  description String?
+  amount      Decimal            @db.Decimal(12, 2)
+  date        DateTime           @default(now())
+  notes       String?
+
+  @@index([firmId])
+  @@index([kind])
+}
+
+model WeaverPayment {
+  id          String   @id @default(uuid())
+  weaverId    String
+  weaver      Weaver   @relation(fields: [weaverId], references: [id])
+  amountPaid  Decimal  @db.Decimal(12, 2)
+  utrNumber   String?
+  firmId      String?
+  firm        Firm?    @relation(fields: [firmId], references: [id])
+  paymentDate DateTime @default(now())
+  uploadedAt  DateTime @default(now())
+  batchNo     String?
+  loomNumber  String?
+  noOfSarees  Int?
+  deduction   Decimal? @db.Decimal(12, 2)
+
+  @@index([weaverId])
+}
+
+model VendorPayment {
+  id       String   @id @default(uuid())
+  vendorId String
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+  amount   Decimal  @db.Decimal(12, 2)
+  date     DateTime @default(now())
+  utr      String?
+  method   String?
+  firmId   String?
+  firm     Firm?    @relation(fields: [firmId], references: [id])
+
+  @@index([vendorId])
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  invoiceDate DateTime      @default(now())
+  dueDate     DateTime?
+  total       Decimal       @db.Decimal(12, 2)
+  paid        Decimal       @default(0) @db.Decimal(12, 2)
+  status      InvoiceStatus @default(PENDING)
+
+  payments InvoicePayment[]
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model InvoicePayment {
+  id        String   @id @default(uuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(12, 2)
+  date      DateTime @default(now())
+  utr       String?
+  method    String?
+  firmId    String?
+  firm      Firm?    @relation(fields: [firmId], references: [id])
+
+  @@index([invoiceId])
+}
+
+model Customer {
+  id              String       @id @default(uuid())
+  name            String
+  city            String?
+  phone           String?
+  address         String?
+  gstCode         String?
+  type            CustomerType @default(RETAIL)
+  visitingCardUrl String?
+  createdAt       DateTime     @default(now())
+
+  bulkOrders      BulkOrder[]
+  dispatchRecords DispatchRecord[]
+  invoices        Invoice[]
+  quotations      Quotation[]
+  sales           SaleRecord[]
+
+  @@index([type])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Platform — audit, notifications
+// ─────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id])
+  status     AuditStatus
+  device     String?
+  duration   Int?
+  failReason String?
+  createdAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id         String                 @id @default(uuid())
+  targetType NotificationTargetType
+  userId     String?
+  user       User?                  @relation(fields: [userId], references: [id])
+  role       UserRole?
+  type       String
+  payload    Json?
+  readAt     DateTime?
+  createdAt  DateTime               @default(now())
+
+  @@index([userId])
+  @@index([role])
+  @@index([readAt])
 }
