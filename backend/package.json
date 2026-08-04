@@ -9,7 +9,10 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
-    "build": "nest build"
+    "build": "nest build",
+    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [],
   "author": "",
@@ -17,6 +20,7 @@
   "description": "",
   "dependencies": {
     "@nestjs/common": "^11.1.28",
+    "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.28",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
@@ -37,6 +41,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
     "@types/bcryptjs": "^2.4.6",
@@ -44,8 +49,13 @@
     "@types/node": "^26.1.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.20.3",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
     "prisma": "^7.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0"
   }
 }
