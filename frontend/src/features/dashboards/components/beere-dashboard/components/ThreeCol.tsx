@@ -6,7 +6,7 @@ import { AnimatedNumber, Card, SectionHeader, Donut, BarChart } from '../ui';
 
 const PROG_BARS = [
   { label: "Production", pct: 72, color: "#6B1A2A" },
-  { label: "Inventory", pct: 84, color: "#C4923A" },
+  { label: "Inventory", pct: 84, color: "#845E04" },
   { label: "Payments", pct: 46, color: "#A0506A" },
 ];
 
@@ -27,7 +27,7 @@ export function ProductionProgress() {
       <div style={{ display: "flex", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, marginTop: "auto" }}>
         {PROG_BARS.map((b, i) => (
           <div key={b.label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
-            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>
+            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>
               {b.label}
             </div>
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: b.color, ...NUM }}>
@@ -55,7 +55,7 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
               onClick={() => setPeriod(p)}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              style={{ padding: "5px 11px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 11, letterSpacing: "0.1px", background: period === p ? G.button : "rgba(110,15,45,0.06)", color: period === p ? T.warmCream : T.taupe, transition: "all 0.18s" }}
+              style={{ padding: "5px 11px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, letterSpacing: "0.1px", background: period === p ? G.button : "rgba(110,15,45,0.06)", color: period === p ? T.warmCream : T.taupe, transition: "all 0.18s" }}
             >
               {p}
             </motion.button>
@@ -68,7 +68,7 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
           <TrendingUp size={12} color={T.green} />
-          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.green, letterSpacing: "0.1px" }}>14% from last month</span>
+          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.green, letterSpacing: "0.1px" }}>14% from last month</span>
         </div>
       </div>
       <div style={{ flex: 1, minHeight: 130 }}><BarChart /></div>
@@ -76,17 +76,17 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
         {[{ dot: T.royalBurgundy, label: "Produced" }, { dot: T.antiqueGold, label: "Dispatched" }].map(l => (
           <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.dot, flexShrink: 0 }} />
-            <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: T.taupe }}>{l.label}</span>
+            <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>{l.label}</span>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, paddingBottom: 28 }}>
         {[{ num: "7", label: "Active Batches" }, { num: "6", label: "Weavers Working" }, { num: "84", label: "In Stock" }].map((s, i) => (
           <div key={s.label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 34, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>
               <AnimatedNumber raw={s.num} />
             </div>
-            <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: T.taupe, marginTop: 3, letterSpacing: "0.1px" }}>{s.label}</div>
+            <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, marginTop: 3, letterSpacing: "0.1px" }}>{s.label}</div>
           </div>
         ))}
       </div>

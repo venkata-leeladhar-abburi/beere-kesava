@@ -11,7 +11,7 @@ export const T = {
   brown:    "#3B2314",
   green:    "#1E6640",
   crim:     "#C0392B",
-  muted:    "#8B7060",
+  muted:    "#69635E",
   bdr:      "rgba(110,15,45,0.10)",
   bdrMed:   "rgba(110,15,45,0.18)",
   cream:    "#F5E8D0",

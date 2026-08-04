@@ -18,7 +18,7 @@ const bulkOrderFormSchema = z.object({
 const T = {
   royalBurgundy: "#6E0F2D", darkBurgundy: "#3D0E1A",
   antiqueGold: "#C89B47", luxuryBrown: "#3B2314",
-  taupe: "#8B7060", crimson: "#C0392B",
+  taupe: "#69635E", crimson: "#C0392B",
   warmIvory: "#FFFDF9",
   borderDef: "rgba(110,15,45,0.10)",
 };
@@ -134,7 +134,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   };
 
   const sectionLabel: React.CSSProperties = {
-    fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe,
+    fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe,
     textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 16,
     paddingBottom: 8, borderBottom: `1px solid ${T.borderDef}`,
   };
@@ -179,10 +179,10 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9" }}>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>
                   Create Bulk Order
                 </div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, marginTop: 4 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   New wholesale customer order · {nextRef}
                 </div>
               </div>
@@ -232,7 +232,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                             <button
                               type="button"
                               onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
-                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", border: "none", color: "#FFF", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
+                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", border: "none", color: "#FFF", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
                             >
                               ×
                             </button>
@@ -240,7 +240,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                         ))}
                         <label htmlFor="bulk-order-photos-upload" style={{ width: 72, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: "rgba(110,15,45,0.02)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                           <span style={{ fontSize: 20, color: T.royalBurgundy, fontWeight: 300 }}>+</span>
-                          <span style={{ fontSize: 9, color: T.taupe, fontWeight: 600 }}>Add Photo</span>
+                          <span style={{ fontSize: 12, color: T.taupe, fontWeight: 600 }}>Add Photo</span>
                         </label>
                       </div>
                     </div>
@@ -338,7 +338,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 style={{
                   width: "100%", height: 52,
                   background: T.royalBurgundy, border: "none", borderRadius: 12,
-                  fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: "#FFFDF9",
+                  fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFFDF9",
                   cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
                   boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
                 }}

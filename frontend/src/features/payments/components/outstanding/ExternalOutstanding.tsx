@@ -64,8 +64,8 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
             { l: "Unsold Stock Value", v: inr(totUnsoldVal), c: T.green },
           ].map(k => (
             <div key={k.l} style={{ flex: "1 1 160px", background: T.warmCream, borderRadius: 12, padding: "13px 16px" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
-              <div style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: k.c }}>{k.v}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
+              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.c }}>{k.v}</div>
             </div>
           ))}
         </div>
@@ -86,11 +86,11 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                     {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{p.supplier}</span>
+                        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.supplier}</span>
                         <Pill label={p.status} color={statusCfg.color} bg={statusCfg.bg} />
                         {p.returnedCount > 0 && <Pill label={`${p.returnedCount} returned`} color={T.crimson} bg="rgba(192,57,43,0.10)" />}
                       </div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                         {p.id} · {p.invoiceNumber} · {p.date} · {p.location}
                       </div>
                     </div>
@@ -102,7 +102,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                         { l: "Bill Due", v: inr(p.dueAmount), c: p.dueAmount > 0 ? T.orange : T.green },
                       ].map(k => (
                         <div key={k.l} style={{ textAlign: "right", minWidth: 60 }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
                           <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                         </div>
                       ))}
@@ -125,7 +125,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                               { l: "Unsold Sale Value", v: inr(p.unsoldValue) },
                             ].map(k => (
                               <div key={k.l} style={{ background: T.warmCream, borderRadius: 10, padding: "10px 13px" }}>
-                                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{k.l}</div>
+                                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{k.l}</div>
                                 <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.v}</div>
                               </div>
                             ))}

@@ -45,12 +45,12 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
   const T2 = {
     silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
     antiqueGold: "#C89B47", goldLight: "#E7C983", luxuryBrown: "#3B2314",
-    taupe: "#8B7060", warmCream: "#F5E8D0", green: "#1E6640",
+    taupe: "#69635E", warmCream: "#F5E8D0", green: "#1E6640",
     borderDef: "rgba(110,15,45,0.10)",
   };
 
   return (
-    <div style={{ minHeight: "calc(100vh - 64px)", background: T2.silkCream, fontFamily: F.u }}>
+    <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, fontFamily: F.u }}>
       {/* Hero */}
       <section style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", padding: "56px 48px 0", position: "relative" as const, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)", pointerEvents: "none" }} />
@@ -61,7 +61,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{ width: 20, height: 1, background: T2.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>Ravi Kumar · WVR-014 · Weaver History</span>
+            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>Ravi Kumar · WVR-014 · Weaver History</span>
           </div>
           <h1 style={{ fontFamily: F.d, fontWeight: 400, fontSize: "clamp(32px, 3vw, 52px)", color: T2.warmCream, margin: "0 0 12px", lineHeight: 1.1 }}>
             {defaultFilter === "completed" ? "Completed Batches" : "Batch History"}{" "}
@@ -94,9 +94,9 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
                   <m.Icon size={19} color={m.hi ? T2.antiqueGold : "rgba(245,232,208,0.70)"} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 9, letterSpacing: "1.8px", textTransform: "uppercase" as const, color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 32, color: m.hi ? T2.goldLight : T2.warmCream, lineHeight: 1 }}>{m.val}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
+                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 30, color: m.hi ? T2.goldLight : T2.warmCream, lineHeight: 1 }}>{m.val}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
                 </div>
               </div>
             ))}
@@ -114,8 +114,8 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           ] as const).map(f => (
             <button key={f.key} onClick={() => setStatusFilter(f.key)}
               style={{ height: "100%", padding: "0 18px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, borderBottom: statusFilter === f.key ? `2px solid ${T2.royalBurgundy}` : "2px solid transparent" }}>
-              <span style={{ fontFamily: F.u, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13.5, color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.label}</span>
-              <span style={{ fontFamily: F.m, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.count}</span>
+              <span style={{ fontFamily: F.u, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.label}</span>
+              <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.count}</span>
             </button>
           ))}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: T2.silkCream, border: `1px solid ${T2.borderDef}`, borderRadius: 12, padding: "0 14px", height: 38 }}>
@@ -123,7 +123,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batch ID or design…"
               style={{ border: "none", background: "none", outline: "none", fontFamily: F.u, fontSize: 13, color: T2.luxuryBrown, width: 200 }} />
           </div>
-          <span style={{ fontFamily: F.m, fontSize: 11, color: T2.taupe }}>{filtered.length} batch{filtered.length !== 1 ? "es" : ""}</span>
+          <span style={{ fontFamily: F.m, fontSize: 12, color: T2.taupe }}>{filtered.length} batch{filtered.length !== 1 ? "es" : ""}</span>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T2.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <Layers size={28} color={T2.taupe} />
             </div>
-            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 22, color: T2.luxuryBrown, marginBottom: 8 }}>No batches found</div>
+            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: T2.luxuryBrown, marginBottom: 8 }}>No batches found</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: T2.taupe }}>Try adjusting your search or filter.</div>
           </div>
         ) : (

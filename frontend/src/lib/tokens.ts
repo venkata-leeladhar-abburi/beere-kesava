@@ -32,7 +32,7 @@ export const T = {
   warmCream:      "#F5E8D0",
   luxuryBrown:    "#3B2314",
   deepBlack:      "#3B2314",
-  taupe:          "#8B7060",
+  taupe:          "#69635E",
 
   // Semantic
   green:          "#1E6640",

@@ -174,7 +174,7 @@ export function BatchCreationPage() {
   const active = batches.filter(b => b.status === "active");
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
 
       {/* Header & Stats Banner */}
       <BatchCreationStatsHeader

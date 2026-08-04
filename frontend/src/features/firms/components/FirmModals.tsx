@@ -16,7 +16,7 @@ import {
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
       <div style={{ height: 1, width: 24, background: T.borderDef }} />
       {children}
       <div style={{ flex: 1, height: 1, background: T.borderDef }} />
@@ -77,7 +77,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
         style={{ background: "#FFF", borderRadius: 22, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,9,22,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ background: T.darkBurgundy, borderRadius: "22px 22px 0 0", padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
           </div>
           <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -149,7 +149,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
           </div>
           <button onClick={() => { onClose(); onEdit(); }}
             style={{ height: 36, padding: "0 16px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.12)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
@@ -173,15 +173,15 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
               {firm.purchaseAmount && (
                 <div style={{ background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Purchase Amount</span>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 22, color: T.antiqueGold }}>{fmtAmt(firm.purchaseAmount)}</span>
+                  <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{fmtAmt(firm.purchaseAmount)}</span>
                 </div>
               )}
-              <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
               <Row label="GST Number" value={firm.gstNumber} mono />
               <Row label="Address" value={firm.address} />
               {(firm.bankName || firm.accountNumber || firm.ifscCode) && (
                 <>
-                  <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Bank Details</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Bank Details</div>
                   <Row label="Bank Name" value={firm.bankName} />
                   <Row label="Account Number" value={firm.accountNumber} mono />
                   <Row label="IFSC Code" value={firm.ifscCode} mono />
@@ -189,7 +189,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
               )}
               {(firm.contactPersonName || firm.contactPersonPhone) && (
                 <>
-                  <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Contact Person</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Contact Person</div>
                   <Row label="Name" value={firm.contactPersonName} />
                   <Row label="Phone" value={firm.contactPersonPhone} mono />
                 </>

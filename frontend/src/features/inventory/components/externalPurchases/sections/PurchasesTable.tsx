@@ -60,7 +60,7 @@ export function PurchasesTable({
                   key={h}
                   style={{
                     fontFamily: F.mono,
-                    fontSize: 9,
+                    fontSize: 12,
                     color: T.taupe,
                     textTransform: "uppercase",
                     letterSpacing: 1.5,
@@ -105,7 +105,7 @@ export function PurchasesTable({
                   </span>
                 </td>
                 <td style={{ padding: "14px 16px" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
                     {row.date}
                   </span>
                 </td>
@@ -133,12 +133,12 @@ export function PurchasesTable({
                   </button>
                 </td>
                 <td style={{ padding: "14px 16px" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
                     {row.gstNumber || "—"}
                   </span>
                 </td>
                 <td style={{ padding: "14px 16px" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
                     {row.invoiceNumber || "—"}
                   </span>
                 </td>
@@ -267,7 +267,7 @@ export function PurchasesTable({
             padding: "12px 20px",
           }}
         >
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
             Showing 1–{filtered.length} of {totalCount} entries
           </span>
           <div style={{ display: "flex", gap: 4, alignItems: "center" }}>

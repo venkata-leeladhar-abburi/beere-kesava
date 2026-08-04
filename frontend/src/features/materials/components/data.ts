@@ -36,7 +36,7 @@ export const PO_STATUS_CFG = {
   pending:  { border: "#C89B47", badge: "⏳ Awaiting Superadmin Approval", badgeBg: "rgba(200,155,71,0.12)", badgeColor: "#C89B47", label: "Pending Approval" },
   approved: { border: "#1E6640", badge: "✓ Approved — Ready to Receive",   badgeBg: "rgba(30,102,64,0.10)",  badgeColor: "#1E6640", label: "Approved" },
   rejected: { border: "#C0392B", badge: "✗ Rejected",                       badgeBg: "rgba(192,57,43,0.09)", badgeColor: "#C0392B", label: "Rejected" },
-  received: { border: "#8B7060", badge: "📦 Received",                      badgeBg: "rgba(139,112,96,0.10)", badgeColor: "#8B7060", label: "Received" },
+  received: { border: "#69635E", badge: "📦 Received",                      badgeBg: "rgba(139,112,96,0.10)", badgeColor: "#69635E", label: "Received" },
 };
 
 export const BATCH_IMG: Record<string, string> = { Warp: imgWarp, Resham: imgResham, Jari: imgJari };
@@ -85,7 +85,7 @@ export const MAT_CARDS = [
   { name: "Resham", desc: "Silk Thread used for design and colour · Multiple colours",             stock: "180 kg in stock",     note: "6 different colours currently available",         pct: 85, barColor: T.antiqueGold,   stockColor: T.antiqueGold, badge: "✓ Stock is Healthy", green: true,  img: imgResham,
     extra: React.createElement("div", { style: { display: "flex", gap: 8, margin: "10px 0 6px" } }, ["#B22222", "#C89B47", "#1E5C8A", "#2D6B3A", "#8B008B", "#E8DCCB"].map((c, i) => React.createElement("div", { key: i, style: { width: 18, height: 18, borderRadius: "50%", background: c, border: "1.5px solid rgba(0,0,0,0.10)" } }))) as React.ReactNode },
   { name: "Jari",   desc: "Metallic Thread for borders and designs · Polyester and Silk Fast types", stock: "36 Buns (144 Reels)", note: "Polyester and Silk Fast · 5 Grades · 6 Colors",    pct: 30, barColor: T.crimson,       stockColor: T.crimson,     badge: "⚠ Some Types Are Low — Check Alerts", green: false, img: imgJari,
-    extra: React.createElement("div", { style: { display: "flex", gap: 8, margin: "10px 0 6px" } }, ["Polyester", "Silk Fast"].map(p => React.createElement("span", { key: p, style: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" as const, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 6, padding: "4px 10px" } }, p))) as React.ReactNode },
+    extra: React.createElement("div", { style: { display: "flex", gap: 8, margin: "10px 0 6px" } }, ["Polyester", "Silk Fast"].map(p => React.createElement("span", { key: p, style: { fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" as const, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 6, padding: "4px 10px" } }, p))) as React.ReactNode },
 ];
 
 export const VENDOR_DATA = [

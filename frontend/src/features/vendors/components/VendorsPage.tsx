@@ -19,7 +19,7 @@ export function VendorsPage() {
   if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={(v) => { setVendors(prev => prev.map(old => old.id === v.id ? v : old)); setSelectedVendor(v); }} />;
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
       <VendorsHeroStats vendors={vendors} onAddClick={() => setShowAddForm(true)} />
 
       <AnimatePresence>

@@ -54,7 +54,7 @@ export function InvoiceGenerator({
       {/* Left — form */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Auto-filled (read-only)</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Auto-filled (read-only)</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
               ["Customer",     customer?.name ?? "—"],
@@ -67,7 +67,7 @@ export function InvoiceGenerator({
             ].map(([k, v]) => (
               <div key={k} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, minWidth: 110, flexShrink: 0 }}>{k}</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? T.royalBurgundy : T.luxuryBrown, flex: 1, wordBreak: "break-all" as const, fontWeight: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? 700 : 400 }}>{v}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? T.royalBurgundy : T.luxuryBrown, flex: 1, wordBreak: "break-all" as const, fontWeight: (k === "Bulk Order" || k === "Batch(es)") && v !== "—" ? 700 : 400 }}>{v}</span>
               </div>
             ))}
           </div>
@@ -85,7 +85,7 @@ export function InvoiceGenerator({
           </Field>
 
           <div style={{ gridColumn: "1 / -1", marginTop: 8 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Enter Price per Saree *</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 10 }}>Enter Price per Saree *</div>
             <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
               {sarees.map((s, i) => {
                 const sId = s.sareeId || s.id;
@@ -95,9 +95,9 @@ export function InvoiceGenerator({
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                         <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{sId}</div>
-                        {sareeBatch && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</div>}
+                        {sareeBatch && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</div>}
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.designCode} · {s.sareeType}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.designCode} · {s.sareeType}</div>
                     </div>
                     <div style={{ position: "relative", width: 120 }}>
                       <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, color: T.taupe, fontSize: 13 }}>₹</span>
@@ -172,11 +172,11 @@ export function InvoiceGenerator({
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
             {selectedFirm?.firmName ?? "Beere Kesava & Brothers Silks"}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 3 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 3 }}>
             {selectedFirm?.address ?? "Hyderabad, Telangana"}
           </div>
           {selectedFirm?.gstNumber && (
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, marginTop: 4 }}>GST: {selectedFirm.gstNumber}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>GST: {selectedFirm.gstNumber}</div>
           )}
         </div>
 
@@ -186,15 +186,15 @@ export function InvoiceGenerator({
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>{isQuotation ? "QUOTATION" : "TAX INVOICE"}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || (isQuotation ? "QT-XXXX" : "INV-XXXX")}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
               {bulkOrderRef && (
                 <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
                     <ShoppingBag size={10} color={T.royalBurgundy} />
-                    <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
                   </div>
                   {linkedOrder && (
-                    <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 1, textTransform: "capitalize" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1, textTransform: "capitalize" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
                       {linkedOrder.sareeType.split(" · ")[0]} · {linkedOrder.design}
                     </div>
                   )}
@@ -202,18 +202,18 @@ export function InvoiceGenerator({
               )}
             </div>
             <div style={{ textAlign: "right" as const, maxWidth: "55%" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Bill To</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Bill To</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{customer?.name ?? "—"}</div>
               {customer?.address ? (
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{customer.address}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{customer.address}</div>
               ) : (
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>{customer?.city}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>{customer?.city}</div>
               )}
               {customer?.phone && (
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{customer.phone}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{customer.phone}</div>
               )}
               {customer?.gstCode && (
-                <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {customer.gstCode}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {customer.gstCode}</div>
               )}
             </div>
           </div>
@@ -222,7 +222,7 @@ export function InvoiceGenerator({
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
               {["Item", "Amount (₹)"].map((h, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i > 0 ? "right" as const : "left" as const }}>{h}</div>
+                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i > 0 ? "right" as const : "left" as const }}>{h}</div>
               ))}
             </div>
             {sarees.slice(0, 4).map((s, i) => {
@@ -233,19 +233,19 @@ export function InvoiceGenerator({
                 <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
                       {sareeBatch && (
-                        <span style={{ fontFamily: F.mono, fontSize: 9, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
                       )}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
                   </div>
                   <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>₹{p ? p.toLocaleString("en-IN") : "—"}</div>
                 </div>
               );
             })}
             {sarees.length > 4 && (
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
             )}
           </div>
 
@@ -266,24 +266,24 @@ export function InvoiceGenerator({
               <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{grandTotal.toLocaleString("en-IN")}</span>
             </div>
             {data.paymentDueDate && (
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>Payment due: {data.paymentDueDate}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Payment due: {data.paymentDueDate}</div>
             )}
           </div>
 
           {/* Dispatch details */}
           {!isQuotation && (
           <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
             {bulkOrderRef && (
               <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Bulk Order: </span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bulk Order: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
               </div>
             )}
             {detectedBatches.length > 0 && (
               <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(200,155,71,0.06)", border: `1px solid rgba(200,155,71,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Production Batch: </span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{batchStr}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Production Batch: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{batchStr}</span>
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
@@ -294,8 +294,8 @@ export function InvoiceGenerator({
                 ["Date",      transport.dispatchDate || "—"],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{k}: </span>
-                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.luxuryBrown }}>{v}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}: </span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{v}</span>
                 </div>
               ))}
             </div>

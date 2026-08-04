@@ -116,7 +116,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
           {picked.map(s => {
             const sId = s.sareeId || s.id;
             return (
-              <span key={sId} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", border: `1px solid ${T.borderMed}`, borderRadius: 999, padding: "5px 8px 5px 12px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>
+              <span key={sId} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", border: `1px solid ${T.borderMed}`, borderRadius: 999, padding: "5px 8px 5px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
                 {sId}
                 <button onClick={() => onChange(picked.filter(s => (s.sareeId || s.id) !== sId))} title="Remove"
                   style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>

@@ -68,7 +68,7 @@ export function SummaryCards({ purchases, totalSarees }: { purchases: Purchase[]
             <div
               style={{
                 fontFamily: F.mono,
-                fontSize: 9,
+                fontSize: 12,
                 color: card.highlight ? T.antiqueGold : "rgba(255,255,255,0.45)",
                 letterSpacing: 2,
                 marginBottom: 8,
@@ -81,7 +81,7 @@ export function SummaryCards({ purchases, totalSarees }: { purchases: Purchase[]
               style={{
                 fontFamily: F.display,
                 fontWeight: 700,
-                fontSize: 28,
+                fontSize: 30,
                 color: card.valueColor,
                 lineHeight: 1,
                 marginBottom: 6,

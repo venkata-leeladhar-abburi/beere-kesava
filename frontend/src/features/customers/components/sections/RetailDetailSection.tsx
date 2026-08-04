@@ -30,10 +30,10 @@ export function RetailDetailSection({
       <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32 }}>
         <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.warmCream, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, flexShrink: 0 }}>{customer.initials}</div>
         <div>
-          <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: "0 0 6px 0" }}>{customer.name}</h2>
+          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: "0 0 6px 0" }}>{customer.name}</h2>
           <div style={{ display: "flex", gap: 8 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.royalBurgundy, background: T.crimsonBg, padding: "4px 8px", borderRadius: 12 }}>Retail Customer</span>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "4px 8px", borderRadius: 12 }}>Since 2024</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, background: T.crimsonBg, padding: "4px 8px", borderRadius: 12 }}>Retail Customer</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "4px 8px", borderRadius: 12 }}>Since 2024</span>
           </div>
         </div>
       </div>
@@ -48,21 +48,21 @@ export function RetailDetailSection({
           {/* 4-stat summary strip */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
-              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{customer.purchases}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{customer.purchases}</div>
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{customer.spend}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{customer.spend}</div>
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
                 ₹{Math.round(parseInt(customer.spend.replace(/,/g, '')) / Math.max(customer.purchases, 1)).toLocaleString('en-IN')}
               </div>
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function RetailDetailSection({
               <thead>
                 <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
                   {["Sale Date", "Sarees (ID & Type)", "Price Paid", "Return"].map(h => (
-                    <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
+                    <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -91,7 +91,7 @@ export function RetailDetailSection({
                       {row.items.map((item, idx) => (
                         <div key={idx} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
                           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
-                          <span style={{ color: T.luxuryBrown, fontSize: 12.5 }}>{item.type}</span>
+                          <span style={{ color: T.luxuryBrown, fontSize: 12 }}>{item.type}</span>
                         </div>
                       ))}
                     </td>
@@ -107,16 +107,16 @@ export function RetailDetailSection({
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
-              <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
+              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
             </div>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>City / Location</div>
-              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{customer.city || "Hyderabad, TG"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>City / Location</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.city || "Hyderabad, TG"}</div>
             </div>
           </div>
           <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>Relationship Manager Notes</span>
               <button style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 12 }}>Save</button>
             </div>

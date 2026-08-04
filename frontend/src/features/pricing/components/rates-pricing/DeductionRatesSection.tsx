@@ -25,13 +25,13 @@ export function DeductionRatesSection() {
               <Package size={16} color="#fff" />
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Warp Deduction Rate</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹5.20</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹5.20</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>per gram below standard</div>
             <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
             <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
               Applied when returned warp weight is less than the standard issued weight for the saree type.
             </p>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginBottom: 14 }}>Last changed: 2 weeks ago</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 2 weeks ago</div>
             <button
               onClick={() => setEditDeduction(editDeduction === "warp" ? null : "warp")}
               style={{
@@ -111,13 +111,13 @@ export function DeductionRatesSection() {
             <Tag size={16} color={T.antiqueGold} />
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Resham Deduction Rate</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹15.00</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹15.00</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>per gram below standard</div>
           <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
             Applied when returned resham (silk thread) weight is less than the standard issued quantity for the design.
           </p>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginBottom: 14 }}>Last changed: 1 month ago</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 1 month ago</div>
           <button
             onClick={() => setEditDeduction(editDeduction === "resham" ? null : "resham")}
             style={{
@@ -180,19 +180,19 @@ export function DeductionRatesSection() {
             <Layers size={16} color="#fff" />
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Jari Deduction Rate</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹42.00</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹42.00</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 12 }}>per reel below standard</div>
           <div style={{
             display: "inline-block", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
             borderRadius: 999, padding: "3px 10px", marginBottom: 14,
           }}>
-            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold }}>Jari is measured in Reels · 1 Bun = 4 Reels</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>Jari is measured in Reels · 1 Bun = 4 Reels</span>
           </div>
           <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
             Applied when returned jari is less than the standard issued quantity. Measured in reels, not grams.
           </p>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginBottom: 14 }}>Last changed: 3 weeks ago</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 3 weeks ago</div>
           <button
             onClick={() => setEditDeduction(editDeduction === "jari" ? null : "jari")}
             style={{
@@ -253,7 +253,7 @@ export function DeductionRatesSection() {
         padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 5 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 5 }}>
             Current Variance Rule
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown }}>

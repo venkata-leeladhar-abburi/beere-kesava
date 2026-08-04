@@ -131,14 +131,14 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{a.sareeId}</div>
                   {/* Show saree type code instead of design code */}
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>{a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}</div>
-                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 1 }}>{a.batchId}</div>}
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}</div>
+                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 1 }}>{a.batchId}</div>}
                 </div>
                 <div style={{ flexShrink: 0, textAlign: "right" as const }}>
-                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginBottom: 4 }}>{a.assignedDate}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>{a.assignedDate}</div>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(248,140,0,0.10)", border: "1px solid rgba(248,140,0,0.22)", borderRadius: 999, padding: "2px 7px" }}>
                     <Clock size={9} color="#B85C00" />
-                    <span style={{ fontFamily: F.u, fontSize: 9, fontWeight: 600, color: "#B85C00" }}>Awaiting</span>
+                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#B85C00" }}>Awaiting</span>
                   </div>
                 </div>
               </div>

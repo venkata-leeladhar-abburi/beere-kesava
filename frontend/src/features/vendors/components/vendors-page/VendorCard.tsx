@@ -19,9 +19,9 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
               <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 800, color: "#FFF" }}>{vendor.initials}</span>
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{vendor.name}</div>
+              <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{vendor.name}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{vendor.id}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{vendor.id}</span>
                 <StatusPill status={vendor.status} />
               </div>
             </div>
@@ -29,25 +29,25 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
           <StarRating rating={vendor.rating} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><MapPin size={13} color={T.royalBurgundy} />{vendor.city}, {vendor.state}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><Phone size={13} color={T.royalBurgundy} />{vendor.phone}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{vendor.type}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><MapPin size={13} color={T.royalBurgundy} />{vendor.city}, {vendor.state}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Phone size={13} color={T.royalBurgundy} />{vendor.phone}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{vendor.type}</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
           {[{ label: "Orders", value: String(vendor.totalOrders) }, { label: "Total Spend", value: `₹${vendor.totalSpend}` }, { label: "Outstanding", value: vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}` }].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: s.label === "Outstanding" && vendor.outstanding !== "0" ? T.crimson : T.luxuryBrown }}>{s.value}</div>
             </div>
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Terms: <strong style={{ color: T.luxuryBrown }}>{vendor.terms}</strong></span>
-          <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Last: {vendor.lastOrder}</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Terms: <strong style={{ color: T.luxuryBrown }}>{vendor.terms}</strong></span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last: {vendor.lastOrder}</span>
         </div>
         <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
           <motion.button onClick={() => onView(vendor)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ width: "100%", padding: "9px 0", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            style={{ width: "100%", padding: "9px 0", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <Eye size={13} /> View Profile
           </motion.button>
         </div>

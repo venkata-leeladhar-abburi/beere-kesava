@@ -65,11 +65,11 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
             {showSource && (
               <td style={td}>
                 <div style={{ fontWeight: 600 }}>{sareeOriginName(s)}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{sareeOriginSub(s)}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{sareeOriginSub(s)}</div>
               </td>
             )}
             <td style={td}>{s.sareeTypeCode !== "EX-000" ? `${s.sareeTypeCode} · ` : ""}{s.sareeTypeName}</td>
-            <td style={{ ...td, fontFamily: F.mono, fontSize: 12.5 }}>{s.weight}</td>
+            <td style={{ ...td, fontFamily: F.mono, fontSize: 12 }}>{s.weight}</td>
             <td style={td}>{s.qcDate}</td>
             {mode === "outstanding" && <td style={td}><AgePill days={s.ageDays} /></td>}
             {mode === "produced"    && <td style={td}><StatusChip s={s} /></td>}
@@ -79,8 +79,8 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
               <td style={td}>{s.sale?.customer || "—"}</td>
               <td style={tdMono}>{s.sale?.saleRef || "—"}</td>
             </>}
-            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12.5 }}>{inr(s.costPrice)}</td>
-            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>
+            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>{inr(s.costPrice)}</td>
+            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>
               {mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}
             </td>
             {showReturn && (
@@ -88,8 +88,8 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
                 {s.ret
                   ? <div>
                       <Pill label={s.ret.restocked ? "Returned · Restocked" : "Returned · Not restocked"} color={T.crimson} bg="rgba(192,57,43,0.10)" />
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>{s.ret.returnRef} · {s.ret.date}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{s.ret.reason}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.ret.returnRef} · {s.ret.date}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.ret.reason}</div>
                     </div>
                   : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
               </td>

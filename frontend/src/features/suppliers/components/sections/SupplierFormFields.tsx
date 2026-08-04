@@ -20,7 +20,7 @@ export function SupplierFormFields({
 }) {
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
   const err = (k: string) => errors[k]
-    ? <div style={{ color: T.crimson, fontSize: 11, marginTop: 3, fontFamily: F.ui }}>{errors[k]}</div>
+    ? <div style={{ color: T.crimson, fontSize: 12, marginTop: 3, fontFamily: F.ui }}>{errors[k]}</div>
     : null;
 
   return (

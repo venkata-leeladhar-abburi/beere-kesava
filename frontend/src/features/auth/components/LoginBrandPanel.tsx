@@ -20,7 +20,7 @@ const PORTALS = ["Superadmin", "Admin", "Worker Staff", "Weaver", "Shop Staff"];
 export function LoginBrandPanel() {
   return (
     <div style={{
-      width: "45%", minHeight: "100vh", background: C.darkBg,
+      width: "45%", minHeight: "100dvh", background: C.darkBg,
       position: "relative" as const, overflow: "hidden",
       display: "flex", flexDirection: "column" as const,
     }}>
@@ -42,7 +42,7 @@ export function LoginBrandPanel() {
           <div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: "#F5EDD0", lineHeight: 1.1 }}>Beere Kesava</div>
             <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: "rgba(245,237,208,0.60)", lineHeight: 1.2 }}>& Brothers Silks</div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, letterSpacing: "3px", textTransform: "uppercase" as const, color: C.gold, marginTop: 6 }}>Since 1999</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "3px", textTransform: "uppercase" as const, color: C.gold, marginTop: 6 }}>Since 1999</div>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export function LoginBrandPanel() {
               style={{
                 fontFamily: F.display,
                 fontWeight: 700,
-                fontSize: 56,
+                fontSize: 60,
                 fontStyle: line.italic ? "italic" : "normal",
                 color: line.gold ? C.gold : "#FFFDF9",
                 lineHeight: 1.05,
@@ -77,7 +77,7 @@ export function LoginBrandPanel() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: "rgba(245,237,208,0.55)", lineHeight: 1.75, maxWidth: 340, margin: 0 }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,237,208,0.55)", lineHeight: 1.75, maxWidth: 340, margin: 0 }}
         >
           Four generations of passion, precision, and pure silk craftsmanship. Welcome back.
         </motion.p>
@@ -88,13 +88,13 @@ export function LoginBrandPanel() {
         background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)",
         borderRadius: 14, padding: "18px 22px",
       }}>
-        <div style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const, color: "rgba(245,237,208,0.40)", marginBottom: 12 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const, color: "rgba(245,237,208,0.40)", marginBottom: 12 }}>
           This system is used by:
         </div>
         <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px 8px" }}>
           {PORTALS.map(p => (
             <span key={p} style={{
-              fontFamily: F.ui, fontSize: 11, fontWeight: 500,
+              fontFamily: F.ui, fontSize: 12, fontWeight: 500,
               color: C.gold, background: "rgba(196,146,58,0.14)", border: "1px solid rgba(196,146,58,0.25)",
               borderRadius: 999, padding: "5px 14px",
             }}>{p}</span>

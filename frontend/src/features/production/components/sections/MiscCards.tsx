@@ -42,7 +42,7 @@ export function AllSareesSection() {
               <Stack size={26} color="#FFFDF9" weight="fill" />
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.2px" }}>All Sarees Inventory</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>All Sarees Inventory</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Track every saree end to end, across all weavers and in-house looms combined</div>
             </div>
           </div>

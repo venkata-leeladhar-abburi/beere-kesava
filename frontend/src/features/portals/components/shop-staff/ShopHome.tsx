@@ -51,7 +51,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <ShoppingBag size={30} color={C.text} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.text, lineHeight: 1.2 }}>New Retail Sale</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>New Retail Sale</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
             </div>
           </div>
@@ -63,10 +63,10 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
 
       {/* Process Return quick link */}
       <div style={{ margin: "0 20px 8px", display: "flex", gap: 12 }}>
-        <button onClick={() => onNavigate("return")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
+        <button onClick={() => onNavigate("return")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
           <RotateCcw size={17} color={C.crim} /> Process Return
         </button>
-        <button onClick={() => onNavigate("inventory")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
+        <button onClick={() => onNavigate("inventory")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
           <Package size={17} color={C.burg} /> View Inventory
         </button>
       </div>
@@ -82,12 +82,12 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                 <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
                 {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(196,146,58,0.12)" />}
               </div>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginTop: 3 }}>{s.customer}</div>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
             </div>
             <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
               {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
-              <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 3 }}>{s.time}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time}</div>
             </div>
           </div>
         ))}
@@ -102,14 +102,14 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
             <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>RAVI-L2-007</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
           </div>
-          <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>9:10 AM</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>9:10 AM</div>
         </div>
       </div>
 
       {/* Low Stock Alert */}
       <SectionTitle title="Stock Alert" />
       <div style={{ margin: "0 20px 16px", background: "rgba(192,57,43,0.06)", borderRadius: 16, borderLeft: `4px solid ${C.crim}`, padding: "18px" }}>
-        <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>
+        <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>
           ⚠ Shop stock is running low — only <strong>84 sarees</strong> remaining.
         </div>
         {alerted ? (
@@ -118,7 +118,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
             <span style={{ fontFamily: F.u, fontSize: 14, lineHeight: 1.4 }}>Admin and Superadmin have been notified about low stock.</span>
           </div>
         ) : (
-          <Btn label="Report Low Stock to Admin" icon={<Send size={16} />} onClick={() => setShowLowStockDialog(true)} style={{ width: "100%", height: 54, background: C.burg, fontSize: 15 }} />
+          <Btn label="Report Low Stock to Admin" icon={<Send size={16} />} onClick={() => setShowLowStockDialog(true)} style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }} />
         )}
       </div>
 
@@ -151,7 +151,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "14px 16px", marginBottom: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Current stock</span>
-                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.crim }}>84</span>
+                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.crim }}>84</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
                   <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Minimum threshold</span>

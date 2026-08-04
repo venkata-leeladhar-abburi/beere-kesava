@@ -38,7 +38,7 @@ export function RecipientSelector({
             style={{
               display: "flex", alignItems: "center", gap: 7,
               padding: "9px 20px", borderRadius: 10, cursor: "pointer",
-              fontFamily: F.ui, fontSize: 13.5, fontWeight: 700,
+              fontFamily: F.ui, fontSize: 13, fontWeight: 700,
               border: `1.5px solid ${recipientType === type ? T.royalBurgundy : T.borderDef}`,
               background: recipientType === type ? T.royalBurgundy : "#FFF",
               color: recipientType === type ? "#FFF" : T.taupe,
@@ -76,10 +76,10 @@ export function RecipientSelector({
                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials}</span>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown }}>{w.name} <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, fontWeight: 400 }}>· {w.id}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{w.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {w.id}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
                     </div>
-                    <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600 }}>{STATUS_CFG[w.status].label}</span>
+                    <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[w.status].label}</span>
                   </button>
                 ))}
               </div>
@@ -92,11 +92,11 @@ export function RecipientSelector({
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedWeaver.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedWeaver.id}</span></div>
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{selectedWeaver.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedWeaver.id}</span></div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
               </div>
               <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
-              <button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
+              <button onClick={() => { setSelectedWeaverId(null); setSelectedLoom(""); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
             </div>
             {/* Loom selector */}
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px", marginBottom: 12 }}>
@@ -111,7 +111,7 @@ export function RecipientSelector({
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Batch Number *</div>
               {weaverBatches.length === 0 ? (
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
                   No open production batches found for {selectedWeaver.name}.
                 </div>
               ) : (
@@ -128,7 +128,7 @@ export function RecipientSelector({
                         color: active ? "#FFF" : T.luxuryBrown, transition: "all 0.15s ease",
                       }}>
                         <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
                       </button>
                     );
                   })}
@@ -153,13 +153,13 @@ export function RecipientSelector({
                     <Factory size={16} color="#FFF" />
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe }}>{loom.id}</div>
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{loom.loomNumber}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{loom.id}</div>
                   </div>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{loom.location} · {loom.operatorName}</div>
                 <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 4, background: loom.status === "active" ? "rgba(30,102,64,0.10)" : loom.status === "maintenance" ? "rgba(192,57,43,0.09)" : "rgba(139,112,96,0.10)", borderRadius: 99, padding: "3px 9px" }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: loom.status === "active" ? T.green : loom.status === "maintenance" ? T.crimson : T.taupe }}>{loom.status.charAt(0).toUpperCase() + loom.status.slice(1)}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: loom.status === "active" ? T.green : loom.status === "maintenance" ? T.crimson : T.taupe }}>{loom.status.charAt(0).toUpperCase() + loom.status.slice(1)}</span>
                 </div>
               </button>
             ))}
@@ -171,16 +171,16 @@ export function RecipientSelector({
                 <Factory size={22} color="#FFF" />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{selectedFactoryLoom.loomNumber} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedFactoryLoom.id}</span></div>
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{selectedFactoryLoom.loomNumber} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedFactoryLoom.id}</span></div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
               </div>
-              <button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
+              <button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}>Change</button>
             </div>
             {/* Batch selector */}
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "16px 20px" }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Select Batch Number *</div>
               {loomBatches.length === 0 ? (
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
                   No open production batches found for {selectedFactoryLoom.loomNumber}.
                 </div>
               ) : (
@@ -197,7 +197,7 @@ export function RecipientSelector({
                         color: active ? "#FFF" : T.luxuryBrown, transition: "all 0.15s ease",
                       }}>
                         <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
                       </button>
                     );
                   })}

@@ -43,7 +43,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             fontFamily: "'JetBrains Mono', monospace",
             background: "#1a0008",
             color: "#ff6b6b",
-            minHeight: "100vh",
+            minHeight: "100dvh",
           }}
         >
           <h2 style={{ color: "#ff6b6b", marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

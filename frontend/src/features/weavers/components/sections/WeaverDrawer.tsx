@@ -91,10 +91,10 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
-        style={{ width: "100%", background: T.silkCream, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        style={{ width: "100%", background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
-          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 15, padding: "8px 4px" }}>
+          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 14, padding: "8px 4px" }}>
             <ChevronLeftIcon size={20} /> Back to Weavers
           </button>
           <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
@@ -105,7 +105,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={104} />
             <div style={{ flex: "1 1 320px" }}>
               <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{cfg.label}</span>
-              <div style={{ fontFamily: F.display, fontSize: 32, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
               <div style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, marginTop: 6 }}>{weaver.id}</div>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
@@ -117,8 +117,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", minWidth: 140 }}>
                   {s.icon}
                   <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
                   </div>
                 </div>
               ))}
@@ -132,7 +132,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 20 }}>
               <div style={{ width: 88, height: 88, borderRadius: "50%", border: "2px dashed rgba(110,15,45,0.25)", background: "rgba(110,15,45,0.04)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                 <Camera size={22} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
-                <span style={{ fontFamily: F.ui, fontSize: 10.5, color: "rgba(110,15,45,0.45)", marginTop: 5, fontWeight: 600 }}>Upload Photo</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 5, fontWeight: 600 }}>Upload Photo</span>
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>JPG or PNG · Max 5MB</div>
             </div>
@@ -167,7 +167,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
           ].map(({ key, label, icon }) => (
             <button key={key} onClick={() => setTab(key)}
-              style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === key ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" }}>
+              style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === key ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" }}>
               {icon}
               {label}
             </button>
@@ -188,11 +188,11 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                     { icon: <Home size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
                   ].map((r, i) => (
                     <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: i < 3 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, color: T.taupe, fontFamily: F.ui, fontSize: 14.5 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>
                         {r.icon}
                         <span>{r.label}</span>
                       </div>
-                      <div style={{ fontFamily: weaver.id === "WV-001" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14.5, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
+                      <div style={{ fontFamily: weaver.id === "WV-001" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
                     </div>
                   ))}
                 </div>
@@ -208,7 +208,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
-                            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
                             {r.materials.map((m: any, idx: number) => (
@@ -222,13 +222,13 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                           <span style={{ fontFamily: F.ui, fontSize: 12, color: r.signatureCaptured ? T.green : "#8B6018", background: r.signatureCaptured ? "rgba(30,102,64,0.08)" : "rgba(200,155,71,0.08)", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>
                             {r.signatureCaptured ? "✓ Signed" : "Pending"}
                           </span>
-                          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>By {r.issuedBy}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>By {r.issuedBy}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
                     No materials issued to this weaver yet.
                   </div>
                 )}
@@ -253,7 +253,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                     ))}
                   </div>
                 ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
                     No payments history found.
                   </div>
                 )}

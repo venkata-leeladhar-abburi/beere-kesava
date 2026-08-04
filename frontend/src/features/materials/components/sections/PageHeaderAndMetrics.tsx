@@ -16,8 +16,8 @@ export function PageHeader() {
           Since 1999 · Raw Material Management
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: F.display, fontSize: 52, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Materials</h1>
-          <span style={{ fontFamily: F.display, fontSize: 32, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Inventory Overview</span>
+          <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Materials</h1>
+          <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Inventory Overview</span>
         </div>
         <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 16, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
           See all raw materials in stock — Warp, Resham, and Jari. Track what was received, what was given to weavers, and what is remaining.
@@ -59,14 +59,14 @@ export function MetricsBar() {
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
                   {m.sub}
                 </span>
                 {m.hi && (

@@ -76,11 +76,11 @@ export function WholesaleDetailSection({
       <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy}, #1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 32, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700 }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>
               {customer.code}
             </div>
             <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, margin: 0 }}>{customer.name}</h2>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, margin: 0 }}>{customer.name}</h2>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.6)", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
                 <MapPin size={14} color={T.antiqueGold} /> {customer.city}
               </div>
@@ -91,11 +91,11 @@ export function WholesaleDetailSection({
         <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Total Spend</div>
-            <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>₹{customer.spend}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>₹{customer.spend}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Outstanding</div>
-            <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: customer.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>₹{customer.out}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: customer.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>₹{customer.out}</div>
           </div>
         </div>
       </div>

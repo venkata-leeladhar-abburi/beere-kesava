@@ -60,7 +60,7 @@ export function BatchesSection({
             <AlertTriangle size={24} color={C.crim} style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16.5, color: C.crim, marginBottom: 6 }}>QC Failed — Defective Saree Alert</div>
-              <div style={{ fontFamily: F.u, fontSize: 14.5, color: C.text, lineHeight: 1.6 }}>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.6 }}>
                 Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A payment deduction of <strong>₹{ds.deduction}</strong> has been registered.
               </div>
               <div style={{ display: "flex", gap: 16, marginTop: 12, fontFamily: F.u, fontSize: 13, color: C.muted }}>
@@ -83,7 +83,7 @@ export function BatchesSection({
               <History size={15} color={C.burg} /> View All History
             </button>
           </div>
-          <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 24 }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>
             You can have a maximum of 2 active batches at a time. Complete one before a new batch is assigned.
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 1fr", gap: isTablet ? 18 : 24, marginBottom: 20 }}>
@@ -97,7 +97,7 @@ export function BatchesSection({
           </div>
           <div style={{ background: "#FFF8E8", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 14, padding: "16px 22px", display: "flex", alignItems: "center", gap: 12 }}>
             <AlertCircle size={20} color={C.gold} />
-            <span style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>Maximum 2 active batches reached. Complete one before a new batch can be assigned.</span>
+            <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Maximum 2 active batches reached. Complete one before a new batch can be assigned.</span>
           </div>
         </div>
 
@@ -112,7 +112,7 @@ export function BatchesSection({
               <ListChecks size={15} color="#1D4ED8" /> See All Completed
             </button>
           </div>
-          <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 24 }}>Recent completed batches — your track record of finished work.</div>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>Recent completed batches — your track record of finished work.</div>
           {completedBatches.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center" as const, background: C.cream, borderRadius: 20, border: `1px solid ${C.bdr}` }}>
               <CheckCircle2 size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
@@ -129,8 +129,8 @@ export function BatchesSection({
         {/* Quick Actions */}
         <div style={{ background: C.dark, borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.22)" }}>
           <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
-            <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.75)" }}>Navigate to key tasks</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.75)" }}>Navigate to key tasks</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "repeat(3, 1fr)" }}>
             {[
@@ -143,10 +143,10 @@ export function BatchesSection({
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{a.label}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{a.label}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>
                 </div>
-                {a.badge && <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.dark, background: C.gold, padding: "3px 10px", borderRadius: 999 }}>{a.badge}</span>}
+                {a.badge && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.dark, background: C.gold, padding: "3px 10px", borderRadius: 999 }}>{a.badge}</span>}
                 <ArrowRight size={16} color="rgba(255,255,255,0.30)" />
               </button>
             ))}

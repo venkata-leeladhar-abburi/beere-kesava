@@ -12,7 +12,7 @@ interface WholesaleTableViewProps {
 }
 
 export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPayment }: WholesaleTableViewProps) {
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
   if (view === "list") {
@@ -32,7 +32,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
               }}
             >
               <div style={{ flex: "0 0 130px" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
               </div>
               <div style={{ flex: "0 0 230px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
@@ -41,17 +41,17 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
                 <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>₹{inv.total.toLocaleString("en-IN")}</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
-                <div style={{ fontFamily: F.mono, fontSize: 13.5, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
+                <div style={{ fontFamily: F.mono, fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
                   {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
                 </div>
               </div>
               <div style={{ flex: "0 0 130px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 500 }}>{inv.dueDate}</div>
               </div>
               <div style={{ flex: "0 0 150px" }}>
@@ -114,7 +114,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
                   <td style={TD}>{inv.invoiceDate}</td>
                   <td style={{ ...TD, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 400 }}>
                     {inv.dueDate}
-                    {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 11, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
+                    {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
                   </td>
                   <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{inv.total.toLocaleString("en-IN")}</td>
                   <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</td>

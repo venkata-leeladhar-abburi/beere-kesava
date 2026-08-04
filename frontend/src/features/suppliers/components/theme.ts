@@ -1,20 +1,21 @@
+import { brand, fonts, semantic } from '@/design-system/tokens';
 // Shared theme tokens for the Suppliers feature — colors, fonts, and the
 // standard fade-in easing curve used across all sections/modals.
 
 export const T = {
-  silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
-  deepWine: "#4A061B", darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
+  silkCream: semantic.surface.canvas, warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
+  deepWine: brand.burgundy[950], darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
   goldLight: "#E7C983", luxuryBrown: "#3B2314", warmCream: "#F5E8D0",
-  taupe: "#8B7060", green: "#1E6640", greenBg: "rgba(30,102,64,0.09)",
+  taupe: semantic.text.tertiary, green: "#1E6640", greenBg: "rgba(30,102,64,0.09)",
   greenMid: "#2D9158", crimson: "#C0392B", crimsonBg: "rgba(192,57,43,0.08)",
   borderDef: "rgba(110,15,45,0.10)", borderGold: "rgba(200,155,71,0.22)",
   cream: "#F0E8D0",
 };
 
 export const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui: "'Inter', sans-serif",
-  mono: "'JetBrains Mono', monospace",
+  display: fonts.display,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 
 export const EASE = [0.22, 1, 0.36, 1] as const;

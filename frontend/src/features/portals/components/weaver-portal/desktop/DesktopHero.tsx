@@ -17,7 +17,7 @@ export function DesktopHero({ breadcrumb, titleMain, titleSub, description, pill
 
       <div style={{ position: "relative", zIndex: 1, padding: isTablet ? "28px 28px 0" : "40px 48px 0" }}>
         {/* Breadcrumb */}
-        <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: "rgba(255,255,255,0.40)", textTransform: "uppercase", marginBottom: 20 }}>{breadcrumb}</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.40)", textTransform: "uppercase", marginBottom: 20 }}>{breadcrumb}</div>
 
         {/* Title row */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
@@ -35,7 +35,7 @@ export function DesktopHero({ breadcrumb, titleMain, titleSub, description, pill
         </div>
 
         {/* Description */}
-        <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, maxWidth: 640, marginBottom: 22 }}>{description}</div>
+        <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, maxWidth: 640, marginBottom: 22 }}>{description}</div>
 
         {/* Pills */}
         {pills && pills.length > 0 && (
@@ -64,7 +64,7 @@ export function DesktopHero({ breadcrumb, titleMain, titleSub, description, pill
               background: s.highlight ? "rgba(196,146,58,0.18)" : "transparent",
               borderTop: s.highlight ? `2px solid ${C.gold}` : "none",
             }}>
-              <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 10 }}>{s.label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 10 }}>{s.label}</div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: isTablet ? 38 : 54, color: s.highlight ? C.gold : "#FFF", lineHeight: 1, marginBottom: 8 }}>{s.val}</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{s.sub}</div>
             </div>

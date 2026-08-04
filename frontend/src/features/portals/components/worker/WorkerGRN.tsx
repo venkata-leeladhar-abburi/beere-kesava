@@ -38,10 +38,10 @@ function StepBar({ current }: { current: number }) {
             }}>
               {i < current
                 ? <CheckCircle2 size={13} color="#FFF" />
-                : <span style={{ fontFamily: F.m, fontSize: 10, color: i === current ? "#FFF" : C.muted, fontWeight: 700 }}>{i + 1}</span>
+                : <span style={{ fontFamily: F.m, fontSize: 12, color: i === current ? "#FFF" : C.muted, fontWeight: 700 }}>{i + 1}</span>
               }
             </div>
-            <span style={{ fontFamily: F.u, fontSize: 9, color: i <= current ? C.burg : C.muted, fontWeight: i === current ? 600 : 400, textAlign: "center", lineHeight: 1.2 }}>{s}</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: i <= current ? C.burg : C.muted, fontWeight: i === current ? 600 : 400, textAlign: "center", lineHeight: 1.2 }}>{s}</span>
           </div>
           {i < STEPS.length - 1 && (
             <div style={{ height: 2, flex: 0.5, background: i < current ? C.green : C.bdr, marginBottom: 16, borderRadius: 1 }} />
@@ -56,7 +56,7 @@ function SectionLabel({ step, title }: { step: number; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 20px 10px" }}>
       <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span style={{ fontFamily: F.m, fontSize: 10, fontWeight: 700, color: "#FFF" }}>{step}</span>
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{step}</span>
       </div>
       <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.burg }}>{title}</span>
     </div>
@@ -246,7 +246,7 @@ export function WorkerGRN({
           <div style={{ margin: "0 20px" }}>
             <input value={grnBatchId} onChange={e => setGrnBatchId(e.target.value)}
               style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, fontWeight: 600, color: C.burg, height: 46 }} />
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 4 }}>Auto-generated — you can edit this before confirming.</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Auto-generated — you can edit this before confirming.</div>
           </div>
 
           {/* Step 3 — Received Quantities (cross-check) */}
@@ -281,7 +281,7 @@ export function WorkerGRN({
                 onChange={e => setConfirmedReceived(e.target.checked)}
                 style={{ width: 18, height: 18, accentColor: C.burg, cursor: "pointer", flexShrink: 0 }}
               />
-              <span style={{ fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
                 I confirm that the materials have been verified and received perfectly.
               </span>
             </label>

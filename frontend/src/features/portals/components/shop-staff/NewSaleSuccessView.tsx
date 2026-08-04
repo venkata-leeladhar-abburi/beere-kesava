@@ -33,13 +33,13 @@ export function NewSaleSuccessView({
             <Check size={38} color={C.green} />
           </div>
         </motion.div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.text, marginBottom: 6 }}>Sale Confirmed!</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 6 }}>Sale Confirmed!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>Bill has been generated successfully.</div>
       </div>
       <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
         <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
         <div style={{ padding: 20 }}>
-          <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 15, color: C.burg, textAlign: "center" as const, marginBottom: 14 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
+          <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 14, color: C.burg, textAlign: "center" as const, marginBottom: 14 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>
             {[
               ["Saree ID", saree.id, true], ["Design", saree.name, false],

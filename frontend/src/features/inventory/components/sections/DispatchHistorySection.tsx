@@ -31,7 +31,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, border: `1px solid ${tab === t.key ? T.royalBurgundy : T.borderDef}`, background: tab === t.key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: tab === t.key ? T.royalBurgundy : T.taupe, cursor: "pointer" }}>
-              {t.label} <span style={{ fontFamily: F.mono, fontSize: 11 }}>({t.count})</span>
+              {t.label} <span style={{ fontFamily: F.mono, fontSize: 12 }}>({t.count})</span>
             </button>
           ))}
         </div>
@@ -40,7 +40,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
       {/* Header row */}
       <div style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
         {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm", "Status"].map((h, i) => (
-          <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
+          <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
         ))}
       </div>
 
@@ -51,28 +51,28 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
         const incomplete = d.pendingTransport || d.pendingReceipt;
         return (
           <div key={d.id} style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{d.dispatchDate}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{d.dispatchDate}</div>
             <div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, textTransform: "capitalize" as const }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
                 {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
               </span>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</div>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
             </div>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
             <div>
               {incomplete ? (
                 <button onClick={() => onResume(d)}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", background: "rgba(200,155,71,0.14)", border: `1px solid rgba(200,155,71,0.32)`, borderRadius: 999, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#8B6018", cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", background: "rgba(200,155,71,0.14)", border: `1px solid rgba(200,155,71,0.32)`, borderRadius: 999, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#8B6018", cursor: "pointer", whiteSpace: "nowrap" as const }}>
                   <Clock size={11} /> Complete Details
                 </button>
               ) : (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.green }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
                   <CheckCircle2 size={12} /> Complete
                 </span>
               )}

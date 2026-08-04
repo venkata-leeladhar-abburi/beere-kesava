@@ -7,7 +7,7 @@ import { AlertTriangle, AlertCircle, Info, CheckCircle2, Package, Wallet, ArrowU
 // ─── Shared tokens (local copy for this file) ────────────────────────────────
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#8B7060",
+  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
   bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0",
 };
 const F = {
@@ -29,7 +29,7 @@ export interface WeaverNotif {
 export const WN_T = {
   silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
   deepWine: "#4A061B", antiqueGold: "#C89B47", goldLight: "#E7C983",
-  luxuryBrown: "#3B2314", taupe: "#8B7060", warmCream: "#F5E8D0",
+  luxuryBrown: "#3B2314", taupe: "#69635E", warmCream: "#F5E8D0",
   green: "#1E6640", borderDef: "rgba(110,15,45,0.10)",
 };
 export const WN_G = {
@@ -128,16 +128,16 @@ export function BatchCard({ b }: { b: WeaverBatch }) {
         <div style={{ position: "absolute" as const, top: 0, left: 0, right: 0, height: 3, background: b.accentColor }} />
         <div style={{ position: "absolute" as const, top: 12, right: 12, display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 999, background: "rgba(255,253,249,0.92)", backdropFilter: "blur(8px)", border: "1px solid rgba(110,15,45,0.10)" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot }} />
-          <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 10.5, color: cfg.dot }}>{cfg.label}</span>
+          <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: cfg.dot }}>{cfg.label}</span>
         </div>
         <div style={{ position: "absolute" as const, bottom: 10, left: 14, background: "rgba(0,0,0,0.38)", borderRadius: 6, padding: "3px 10px" }}>
-          <span style={{ fontFamily: F.m, fontSize: 11, color: "rgba(255,255,255,0.90)" }}>{b.design}</span>
+          <span style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.90)" }}>{b.design}</span>
         </div>
       </div>
       <div style={{ padding: "18px 20px 22px", display: "flex", flexDirection: "column" as const, flex: 1, gap: 12 }}>
         <div>
-          <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: "#6E0F2D", lineHeight: 1.2, marginBottom: 3 }}>{b.id}</div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: "#8B7060" }}>{b.name}</div>
+          <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: "#6E0F2D", lineHeight: 1.2, marginBottom: 3 }}>{b.id}</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: "#69635E" }}>{b.name}</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
           {[
@@ -146,22 +146,22 @@ export function BatchCard({ b }: { b: WeaverBatch }) {
             { label: "Month",   val: b.month,                    color: "#3B2314" },
           ].map(stat => (
             <div key={stat.label} style={{ background: "#F7F2EA", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(110,15,45,0.10)" }}>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: "#8B7060", letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{stat.label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: "#69635E", letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{stat.label}</div>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: stat.color }}>{stat.val}</div>
             </div>
           ))}
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-            <span style={{ fontFamily: F.u, fontSize: 11, color: "#8B7060" }}>Progress</span>
-            <span style={{ fontFamily: F.m, fontSize: 11, color: "#3B2314", fontWeight: 600 }}>{b.pct}%</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: "#69635E" }}>Progress</span>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: "#3B2314", fontWeight: 600 }}>{b.pct}%</span>
           </div>
           <div style={{ height: 4, borderRadius: 999, background: "rgba(110,15,45,0.07)" }}>
             <div style={{ width: `${b.pct}%`, height: "100%", borderRadius: 999, background: b.accentColor, transition: "width 0.6s ease" }} />
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(110,15,45,0.08)" }}>
-          <span style={{ fontFamily: F.u, fontSize: 11, color: "#8B7060" }}>{b.month}</span>
+          <span style={{ fontFamily: F.u, fontSize: 12, color: "#69635E" }}>{b.month}</span>
           <motion.div whileHover={{ x: 3 }} style={{ display: "flex", alignItems: "center", gap: 4, color: "#6E0F2D", cursor: "pointer" }}>
             <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600 }}>View</span>
             <ChevronRight size={13} color="#6E0F2D" />

@@ -72,7 +72,7 @@ export function SupplierSection({
             ["GST", selectedSupplier.gstCode || "—"],
           ].map(([k, v]) => (
             <div key={k}>
-              <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, wordBreak: "break-word" }}>{v}</div>
             </div>
           ))}
@@ -178,10 +178,10 @@ export function SupplierSection({
           {form.invoiceFileName && (
             <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
               <FileText size={12} color={T.royalBurgundy} />
-              <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{form.invoiceFileName}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{form.invoiceFileName}</span>
               <button
                 onClick={() => set("invoiceFileName", "")}
-                style={{ background: "none", border: "none", color: T.crimson, cursor: "pointer", fontSize: 11, fontFamily: F.ui, padding: 0 }}
+                style={{ background: "none", border: "none", color: T.crimson, cursor: "pointer", fontSize: 12, fontFamily: F.ui, padding: 0 }}
               >
                 Remove
               </button>

@@ -28,10 +28,10 @@ export function StatsStrip({
     }}>
       {/* Col 1 */}
       <div style={{ padding: "28px 0", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           TOTAL PENDING
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>
           {totalPending}
         </div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
@@ -41,10 +41,10 @@ export function StatsStrip({
 
       {/* Col 2 */}
       <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           PURCHASE ORDERS
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{poCount}</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{poCount}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
           From admin · Awaiting approval
         </div>
@@ -52,10 +52,10 @@ export function StatsStrip({
 
       {/* Col — external purchase requests */}
       <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           EXTERNAL PURCHASES
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{externalCount}</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{externalCount}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
           {formatINR(externalTotal)} to approve
         </div>
@@ -69,10 +69,10 @@ export function StatsStrip({
         borderTop: "3px solid " + T.antiqueGold,
         position: "relative",
       }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
           WARP REQUESTS
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>3</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>3</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(231,201,131,0.70)", marginTop: 6 }}>
           Oldest: 2 days ago
         </div>
@@ -80,10 +80,10 @@ export function StatsStrip({
 
       {/* Col 4 */}
       <div style={{ padding: "28px 0 28px 32px" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           RATE CHANGES
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>2</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>2</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
           ⚠ From admin · Pending
         </div>

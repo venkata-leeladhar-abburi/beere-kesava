@@ -30,7 +30,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
           <PenLine size={10} color="#FFF" />
         </div>
         <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.burg }}>Weaver Signature</span>
-        <span style={{ fontFamily: F.u, fontSize: 10, color: "#FFF", background: C.crim, padding: "2px 7px", borderRadius: 999 }}>Required</span>
+        <span style={{ fontFamily: F.u, fontSize: 12, color: "#FFF", background: C.crim, padding: "2px 7px", borderRadius: 999 }}>Required</span>
       </div>
 
       <div style={{ margin: "0 16px 4px", background: "rgba(107,26,42,0.04)", borderRadius: 8, padding: "8px 12px" }}>
@@ -47,7 +47,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
             <PenLine size={20} color={sigMethod === "here" ? C.burg : C.muted} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Sign Here</div>
-          <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>On this device</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>On this device</div>
         </button>
 
         <button onClick={() => reset("remote")}
@@ -57,7 +57,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
             <Send size={20} color={sigMethod === "remote" ? C.burg : C.muted} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Send Request</div>
-          <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Weaver's mobile</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Weaver's mobile</div>
         </button>
       </div>
 
@@ -70,18 +70,18 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
               <>
                 <PenLine size={26} color={C.muted} style={{ marginBottom: 8 }} />
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Weaver signs here</span>
-                <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 4 }}>Tap to sign</span>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Tap to sign</span>
               </>
             ) : (
               <div style={{ padding: 14, textAlign: "center" }}>
-                <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 26, color: C.dark }}>{weaverName}</div>
-                <div style={{ fontFamily: F.u, fontSize: 11, color: C.green, marginTop: 5, display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+                <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 24, color: C.dark }}>{weaverName}</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, marginTop: 5, display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
                   <CheckCircle2 size={11} /> Signature captured
                 </div>
               </div>
             )}
             {signed && (
-              <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.gold, cursor: "pointer" }}>
+              <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>
                 Clear
               </button>
             )}
@@ -95,16 +95,16 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
             <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${C.green}`, borderRadius: 10, padding: 14, textAlign: "center" }}>
               <CheckCircle2 size={22} color={C.green} style={{ margin: "0 auto 8px" }} />
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.green, marginBottom: 4 }}>Signature Received!</div>
-              <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>Signed by {weaverName} · Just now</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>Signed by {weaverName} · Just now</div>
             </div>
           ) : remoteSent ? (
             <div style={{ background: "rgba(196,146,58,0.10)", border: `1px solid ${C.gold}`, borderRadius: 10, padding: 14, textAlign: "center" }}>
               <Clock size={22} color={C.gold} style={{ margin: "0 auto 6px" }} />
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 2 }}>Waiting for Signature…</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 10 }}>Request sent to {weaverName}'s mobile</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>Request sent to {weaverName}'s mobile</div>
               <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.gold, cursor: "pointer" }}>Resend</button>
-                <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+                <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Resend</button>
+                <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
               </div>
             </div>
           ) : (

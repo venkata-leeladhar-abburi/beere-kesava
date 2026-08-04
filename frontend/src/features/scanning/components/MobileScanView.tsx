@@ -12,7 +12,7 @@ const T = {
   silkCream:     "#F7F2EA",
   warmIvory:     "#FFFDF9",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 
@@ -78,7 +78,7 @@ export function MobileScanView({ saree = DEFAULT_SAREE }: { saree?: SareeData })
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         background: "#FFFFFF",
         fontFamily: "Inter, sans-serif",
       }}

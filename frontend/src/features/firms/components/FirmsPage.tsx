@@ -56,8 +56,8 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
             { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
           ].map((c, i) => (
             <div key={i} style={{ textAlign: "right", background: c.bg, border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "10px 16px" }}>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 17, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 2, letterSpacing: "0.3px" }}>{c.label}</div>
+              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2, letterSpacing: "0.3px" }}>{c.label}</div>
             </div>
           ))}
         </div>
@@ -70,7 +70,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
             {/* Table header */}
             <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
               {["Firm", "Income", "Expenses", "Net Balance", "Entries", ""].map((h, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: (i > 0 ? "right" : "left") as any }}>{h}</div>
+                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: (i > 0 ? "right" : "left") as any }}>{h}</div>
               ))}
             </div>
             {rows.map((r, i) => {
@@ -88,19 +88,19 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: "right" as const }}>
                     <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
-                    {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
+                    {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
                   </div>
                   <div style={{ textAlign: "right" as const }}>
                     <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
-                    {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
+                    {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
                   </div>
                   <div style={{ textAlign: "right" as const }}>
-                    <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
+                    <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
                       {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
                     </span>
                   </div>
@@ -122,10 +122,10 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
             <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
               </div>
-              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
-              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
               <div style={{ textAlign: "right" as const }}>
                 <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: totNet >= 0 ? T.green : T.crimson }}>
                   {totNet >= 0 ? "+" : ""}{fmtFull(totNet)}
@@ -162,13 +162,13 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
           <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{initials(firm.firmName)}</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: "#FFF", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{firm.firmName}</div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: "rgba(255,255,255,0.65)", letterSpacing: "1px", marginTop: 2 }}>{firm.id}</div>
+          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: "#FFF", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{firm.firmName}</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.65)", letterSpacing: "1px", marginTop: 2 }}>{firm.id}</div>
         </div>
         {firm.purchaseAmount && (
           <div style={{ textAlign: "right", flexShrink: 0 }}>
             <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: "#FFF" }}>{fmtAmt(firm.purchaseAmount)}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>Total Purchase</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>Total Purchase</div>
           </div>
         )}
       </div>
@@ -181,7 +181,7 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
           { label: "Net",      val: net, color: net >= 0 ? T.green : T.crimson },
         ].map((s, i) => (
           <div key={i} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
             <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
           </div>
         ))}
@@ -211,7 +211,7 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
         )}
         {firm.ifscCode && (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 4, padding: "2px 8px" }}>IFSC</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 4, padding: "2px 8px" }}>IFSC</span>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{firm.ifscCode}</span>
           </div>
         )}
@@ -270,7 +270,7 @@ export function FirmsPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
       <header style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
@@ -278,8 +278,8 @@ export function FirmsPage() {
         <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 52, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
-            <span style={{ fontFamily: F.display, fontSize: 32, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
+            <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
+            <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
           </div>
           <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 560, lineHeight: 1.6 }}>
             Manage all firms used for material purchases, weaver payments, and customer invoicing. Track income, expenses, and net balance per firm.
@@ -320,13 +320,13 @@ export function FirmsPage() {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
                   {m.sub}
                 </div>
               </div>
@@ -344,12 +344,12 @@ export function FirmsPage() {
         <div style={{ flex: 1, position: "relative", maxWidth: 380 }}>
           <Search size={15} color={T.taupe} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..."
-            style={{ width: "100%", boxSizing: "border-box", height: 40, paddingLeft: 38, paddingRight: 12, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, outline: "none" }} />
+            style={{ width: "100%", boxSizing: "border-box", height: 40, paddingLeft: 38, paddingRight: 12, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, outline: "none" }} />
         </div>
         <div style={{ marginLeft: "auto" }}>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={() => setModal({ type: "create" })}
-            style={{ height: 40, padding: "0 20px", borderRadius: 10, border: "none", background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+            style={{ height: 40, padding: "0 20px", borderRadius: 10, border: "none", background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
             <Plus size={16} /> Add New Firm
           </motion.button>
         </div>

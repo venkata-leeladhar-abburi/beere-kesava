@@ -91,11 +91,11 @@ export function SectionA({ isMobile }: { isMobile?: boolean }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.id}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>{s.designCode} · {s.sareeType}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginTop: 1 }}>{s.weaverName}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{s.designCode} · {s.sareeType}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{s.weaverName}</div>
                 </div>
                 <div style={{ flexShrink: 0, textAlign: "right" as const }}>
-                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{s.qcPassDate}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.qcPassDate}</div>
                 </div>
               </div>
             );

@@ -137,7 +137,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           initial={{ opacity: 0, letterSpacing: "10px" }}
           animate={{ opacity: 1, letterSpacing: "6px" }}
           transition={{ duration: 1.1, delay: 1.0, ease: EASE }}
-          style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10, color: T.antiqueGold, textTransform: "uppercase", marginTop: 10 }}
+          style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.antiqueGold, textTransform: "uppercase", marginTop: 10 }}
         >
           Est. 1999
         </motion.div>
@@ -165,7 +165,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.9, delay: 1.28 }}
-        style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 10, color: "rgba(200,155,71,0.60)", letterSpacing: "3.8px", textTransform: "uppercase", margin: 0 }}
+        style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.60)", letterSpacing: "3.8px", textTransform: "uppercase", margin: 0 }}
       >
         Weaving Heritage Into Every Thread
       </motion.p>
@@ -175,7 +175,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.38 }}
         transition={{ duration: 0.6, delay: 1.5 }}
-        style={{ position: "absolute", bottom: 18, fontFamily: F.mono, fontSize: 9.5, color: T.antiqueGold, letterSpacing: "1.5px" }}
+        style={{ position: "absolute", bottom: 18, fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px" }}
       >
         Admin Dashboard v2.0 · Est. 1999
       </motion.div>

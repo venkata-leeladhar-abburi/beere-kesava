@@ -16,7 +16,7 @@ const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   warmCream:     "#F5E8D0",
   green:         "#1E6640",
   borderDef:     "rgba(110,15,45,0.10)",
@@ -123,7 +123,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const totalSarees = ALL_WEAVERS.reduce((s, w) => s + w.thisMonth, 0);
 
   return (
-    <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
       <section style={{ background: G.card, padding: "56px 56px 0", position: "relative", overflow: "hidden" }}>
@@ -135,7 +135,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
             <div style={{ width: 20, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
               Since 1999 · Weaver Management
             </span>
           </motion.div>
@@ -180,9 +180,9 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                   <m.Icon size={19} color={m.hi ? T.antiqueGold : "rgba(245,232,208,0.70)"} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 9, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 32, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
+                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
                 </div>
               </div>
             ))}
@@ -202,8 +202,8 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           ] as const).map(f => (
             <button key={f.key} onClick={() => setStatusFilter(f.key)}
               style={{ height: "100%", padding: "0 18px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, position: "relative", borderBottom: statusFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
-              <span style={{ fontFamily: F.ui, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13.5, color: statusFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
+              <span style={{ fontFamily: F.ui, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
             </button>
           ))}
 
@@ -211,7 +211,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <select
             value={villageFilter}
             onChange={e => setVillageFilter(e.target.value)}
-            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, cursor: "pointer" }}
+            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer" }}
           >
             <option value="all">All Villages</option>
             {villages.map(v => <option key={v} value={v}>{v}</option>)}
@@ -221,7 +221,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as any)}
-            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, cursor: "pointer" }}
+            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer" }}
           >
             <option value="name">Sort: Name</option>
             <option value="output">Sort: This Month's Output</option>
@@ -238,7 +238,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
               style={{ border: "none", background: "none", outline: "none", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, width: 220 }}
             />
           </div>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} weaver{filtered.length !== 1 ? "s" : ""}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} weaver{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
@@ -249,7 +249,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <Users size={28} color={T.taupe} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, marginBottom: 8 }}>No weavers found</div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>No weavers found</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Try adjusting your search or filter.</div>
           </div>
         ) : (
@@ -273,13 +273,13 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                       />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.avatarBg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                        <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
                       </div>
                     )}
 
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
-                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                       {w.id}
                     </div>
 
@@ -291,7 +291,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                       ) : (
                         <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
                       )}
-                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" as const, letterSpacing: "0.5px", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" as const, letterSpacing: "0.5px", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
                         {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
                       </span>
                     </div>
@@ -304,7 +304,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                         {w.name}
                       </div>
                       {w.batch && (
-                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
                           {w.batch}
                         </span>
                       )}
@@ -329,7 +329,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                           <Rows size={14} color={T.royalBurgundy} weight="fill" />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
                           <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
                         </div>
                       </div>

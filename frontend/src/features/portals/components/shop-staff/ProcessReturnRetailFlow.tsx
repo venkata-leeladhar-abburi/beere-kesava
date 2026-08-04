@@ -42,7 +42,7 @@ export function ProcessReturnRetailFlow({
           {(["Find Sale", "Return Reason", "Confirm"] as const).map((label, i) => (
             <div key={i} style={{ flex: 1 }}>
               <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.crim : "rgba(192,57,43,0.15)", marginBottom: 5 }} />
-              <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.crim : C.muted, textAlign: "center" as const }}>{label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.crim : C.muted, textAlign: "center" as const }}>{label}</div>
             </div>
           ))}
         </div>
@@ -102,13 +102,13 @@ export function ProcessReturnRetailFlow({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.green }}>Original Sale Found</div>
-                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>Sale record located in system</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>Sale record located in system</div>
                 </div>
               </div>
               <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
                 <div style={{ height: 4, background: `linear-gradient(90deg, ${C.crim}, rgba(192,57,43,0.3))` }} />
                 <div style={{ padding: 18 }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 11, letterSpacing: 1, color: C.muted, marginBottom: 14, textTransform: "uppercase" as const }}>Original Sale Details</div>
+                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, letterSpacing: 1, color: C.muted, marginBottom: 14, textTransform: "uppercase" as const }}>Original Sale Details</div>
                   {[
                     ["Saree ID", "PADMA-L1-004", true],
                     ["Design", "BKB-045 · Cream Zari Border Saree", false],
@@ -137,7 +137,7 @@ export function ProcessReturnRetailFlow({
       {step === 2 && (
         <div style={{ marginTop: 12 }}>
           <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Return Reason</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Return Reason</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Why is the customer returning this saree?</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 20px 10px" }}>
@@ -154,7 +154,7 @@ export function ProcessReturnRetailFlow({
                 </div>
                 <div style={{ textAlign: "left" as const }}>
                   <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 2 }}>{r.sub}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{r.sub}</div>
                 </div>
                 {reason === r.id && (
                   <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -178,7 +178,7 @@ export function ProcessReturnRetailFlow({
                 </div>
                 <div style={{ textAlign: "left" as const }}>
                   <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{r.sub}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.sub}</div>
                 </div>
                 {reason === r.id && (
                   <div style={{ marginLeft: "auto", width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -207,7 +207,7 @@ export function ProcessReturnRetailFlow({
       {step === 3 && (
         <div style={{ marginTop: 12 }}>
           <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Confirm Return</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Confirm Return</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Please review before confirming</div>
           </div>
           <Card style={{ margin: "0 20px 14px", overflow: "hidden" }}>
@@ -226,7 +226,7 @@ export function ProcessReturnRetailFlow({
               ))}
               {otherReason && reason === "other" && (
                 <div style={{ background: "rgba(107,26,42,0.05)", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 4 }}>Notes</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>Notes</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{otherReason}</div>
                 </div>
               )}

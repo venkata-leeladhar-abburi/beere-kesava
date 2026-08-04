@@ -12,7 +12,7 @@ const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   warmCream:     "#F5E8D0",
   green:         "#1E6640",
   borderDef:     "rgba(110,15,45,0.10)",
@@ -86,8 +86,8 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: s
   return (
     <div style={{ background: G.button, borderRadius: "22px 22px 0 0", padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
       <div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
-        {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13.5, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
+        {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
       <motion.button onClick={onClose} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
         style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
@@ -108,8 +108,8 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
       <ModalHeader title="Purchase Details" subtitle={`Full record for ${purchase.po}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "5px 12px", borderRadius: 8 }}>{purchase.po}</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe, background: T.silkCream, padding: "5px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}` }}>{purchase.grn}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "5px 12px", borderRadius: 8 }}>{purchase.po}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "5px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}` }}>{purchase.grn}</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: sc.color, background: sc.bg, border: `1px solid ${sc.border}`, borderRadius: 20, padding: "5px 12px" }}>
             <Check size={12} /> {sc.label}
           </span>
@@ -122,11 +122,11 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 3 }}>{purchase.vendor}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>{purchase.vendorCity}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 11.5, color: mc.col, background: "rgba(255,255,255,0.60)", padding: "2px 9px", borderRadius: 6, display: "inline-block", letterSpacing: "1px" }}>{purchase.type} · {purchase.material}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: mc.col, background: "rgba(255,255,255,0.60)", padding: "2px 9px", borderRadius: 6, display: "inline-block", letterSpacing: "1px" }}>{purchase.type} · {purchase.material}</div>
           </div>
         </div>
 
-        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.antiqueGold, fontWeight: 600, marginBottom: 14 }}>{purchase.firmName}</div>
+        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600, marginBottom: 14 }}>{purchase.firmName}</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
           {[
@@ -138,17 +138,17 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
             <div key={row.label} style={{ background: T.silkCream, borderRadius: 12, padding: "14px 16px", border: `1px solid ${T.borderDef}` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                 <row.Icon size={12} color={T.taupe} />
-                <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{row.label}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{row.label}</span>
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.3 }}>{row.value}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.3 }}>{row.value}</div>
             </div>
           ))}
         </div>
 
         <div style={{ background: G.card, borderRadius: 14, padding: "20px 22px", marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: "rgba(200,155,71,0.80)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 6 }}>Total Amount Paid</div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 34, color: T.goldLight, lineHeight: 1, ...NUM }}>{purchase.totalPaid}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 6 }}>Total Amount Paid</div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: T.goldLight, lineHeight: 1, ...NUM }}>{purchase.totalPaid}</div>
           </div>
           <div style={{ width: 52, height: 52, borderRadius: 15, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IndianRupee size={24} color={T.antiqueGold} />
@@ -184,9 +184,9 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
         <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.10)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
-            <div style={{ fontFamily: F.mono, fontSize: 9.5, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Goods Received Note (GRN)</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Goods Received Note (GRN)</div>
             <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 10px", borderRadius: 6 }}>{purchase.grn}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 10px", borderRadius: 6 }}>{purchase.grn}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Printed: {today}</span>
             </div>
           </div>
@@ -199,7 +199,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
               { label: "Material Type", value: purchase.type },
             ].map(row => (
               <div key={row.label}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 3 }}>{row.label}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 3 }}>{row.label}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{row.value}</div>
               </div>
             ))}
@@ -208,7 +208,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
           <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.10)`, marginBottom: 16 }}>
             <div style={{ background: T.silkCream, padding: "10px 16px", display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
               {["Description", "Qty", "Total"].map(h => (
-                <span key={h} style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 600, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{h}</span>
+                <span key={h} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{h}</span>
               ))}
             </div>
             <div style={{ padding: "12px 16px", display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8, background: "#FFFFFF" }}>
@@ -235,7 +235,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
             {["Received By (Signature)", "Authorized By (Signature)"].map(s => (
               <div key={s}>
                 <div style={{ height: 36, borderBottom: `1.5px solid rgba(110,15,45,0.18)`, marginBottom: 6 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{s}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s}</div>
               </div>
             ))}
           </div>

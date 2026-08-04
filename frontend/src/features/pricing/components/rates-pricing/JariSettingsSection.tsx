@@ -12,7 +12,7 @@ export function JariSettingsSection() {
 
       <div style={{ ...cardStyle, padding: 40 }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 40, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
             1 Bun = 4 Reels
           </div>
           <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>

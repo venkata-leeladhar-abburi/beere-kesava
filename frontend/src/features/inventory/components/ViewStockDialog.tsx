@@ -8,7 +8,7 @@ const T = {
   deepWine:      "#4A061B",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
   borderGold:    "rgba(200,155,71,0.22)",
 };
@@ -48,7 +48,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.color }}>{cfg.label}</div>
-              {saree.assignedAt && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
+              {saree.assignedAt && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
@@ -63,13 +63,13 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
                 : { label: "Loom No.",    val: `Loom ${saree.loom}`,       mono: true },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
-                <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
+                <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
               </div>
             ))}
           </div>
           <div style={{ background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
               {saree.source === "factory"  ? `Own Factory · Loom ${saree.loom}`
              : saree.source === "external" ? `External Purchase · ${saree.supplier} (${saree.supplierLocation}) · ${saree.purchaseId}`
@@ -78,7 +78,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
           </div>
           {saree.customer && (
             <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>
                 {saree.status === "sold" ? "Sold To" : "Assigned Wholesale Order"}
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{saree.customer}</div>

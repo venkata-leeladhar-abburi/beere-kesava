@@ -122,14 +122,14 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>All Active Production Batches</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>All Active Production Batches</h2>
           </div>
           <motion.button onClick={() => onNavigate?.("Batches")} initial={{ backgroundColor: T.green }} animate={{ backgroundColor: T.green }} whileHover={{ scale: 1.03, backgroundColor: "#145230" }} whileTap={{ scale: 0.97 }}
             style={{ display: "flex", alignItems: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 20px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(30,102,64,0.2)" }}>
             <PhPlus size={16} weight="bold" /> Create New Batch
           </motion.button>
         </div>
-        <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 20px" }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</p>
+        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 20px" }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
           {FILTER_PILLS.map(f => (

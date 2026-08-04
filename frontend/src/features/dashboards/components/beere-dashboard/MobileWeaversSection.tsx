@@ -14,7 +14,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
       <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Active Weavers</span>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Active Weavers</span>
         </div>
         <button onClick={() => onNavigate("AllWeavers")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
       </div>
@@ -41,7 +41,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                 />
               ) : (
                 <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                  <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
                 </div>
               )}
 
@@ -49,7 +49,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
               {/* Floating ID badge in top left */}
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                 {w.id}
               </div>
 
@@ -72,7 +72,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                 )}
                 <span style={{
                   fontFamily: F.ui,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 700,
                   color: "#FFFFFF",
                   textTransform: "uppercase" as const,
@@ -92,7 +92,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                   {w.name}
                 </div>
                 {w.batch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
                     {w.batch}
                   </span>
                 )}
@@ -118,7 +118,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                     <Rows size={14} color={T.royalBurgundy} weight="fill" />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
                     <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
       <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Raw Material Overview</span>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Raw Material Overview</span>
         </div>
         <button onClick={() => onNavigate("Materials")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
       </div>
@@ -195,12 +195,12 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{m.name}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, lineHeight: 1.5, marginBottom: 4 }}>{m.desc}</div>
               {m.extra && <div style={{ marginBottom: 4 }}>{m.extra}</div>}
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 28, color: m.stockColor, lineHeight: 1, margin: "12px 0 6px" }}>{m.stock}</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: m.stockColor, lineHeight: 1, margin: "12px 0 6px" }}>{m.stock}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: m.green ? T.taupe : T.crimson, lineHeight: 1.5, marginBottom: 12 }}>{m.note}</div>
               <AnimatedBar pct={m.pct} color={m.barColor} height={5} />
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, margin: "8px 0 12px" }}>{m.pct}% of storage capacity</div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: m.green ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", border: `1px solid ${m.green ? "rgba(30,102,64,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "5px 12px" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
               </div>
             </div>
           </motion.div>

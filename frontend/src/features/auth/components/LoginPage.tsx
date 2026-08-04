@@ -12,7 +12,7 @@ const C = {
   burgundyHover: "#8B1A2E",
   gold:          "#C4923A",
   textPrimary:   "#1A0A0F",
-  textMuted:     "#8B7060",
+  textMuted:     "#69635E",
   green:         "#1E6640",
   inputBg:       "#FFF8E7",
   border:        "rgba(139,26,46,0.15)",
@@ -47,13 +47,13 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#FFFFFF", border: "1px solid rgba(107,26,42,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18, boxShadow: "0 4px 16px rgba(107,26,42,0.10)" }}>
           <img src={logo} alt="Beere Kesava Logo" style={{ width: 50, height: 50, objectFit: "contain" }} />
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 34, color: C.textPrimary, lineHeight: 1.1, marginBottom: 6 }}>Welcome Back</div>
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.textPrimary, lineHeight: 1.1, marginBottom: 6 }}>Welcome Back</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 16, color: C.textMuted }}>& Brothers Silks ERP</div>
       </div>
 
       <div style={{ height: 1, background: "rgba(139,26,46,0.10)", margin: "0 0 28px" }} />
 
-      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 15, color: C.textPrimary, marginBottom: 8 }}>
+      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: C.textPrimary, marginBottom: 8 }}>
         Enter Your Mobile Number
       </div>
       <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, lineHeight: 1.6, marginBottom: 16 }}>
@@ -69,7 +69,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         boxShadow: focused ? `0 0 0 4px rgba(107,26,42,0.08)` : "none",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 16px", flexShrink: 0 }}>
-          <span style={{ fontSize: 22, lineHeight: 1 }}>🇮🇳</span>
+          <span style={{ fontSize: 20, lineHeight: 1 }}>🇮🇳</span>
           <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: C.textMuted }}>+91</span>
         </div>
         <div style={{ width: 1, height: 28, background: C.border, flexShrink: 0 }} />
@@ -103,7 +103,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
           background: hovered ? C.burgundyHover : C.burgundy,
           border: "none", borderRadius: 999, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          fontFamily: F.ui, fontWeight: 700, fontSize: 17, color: "#FFFFFF",
+          fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: "#FFFFFF",
           transition: "background 0.18s",
           boxShadow: "0 4px 24px rgba(107,26,42,0.30)",
         }}
@@ -145,8 +145,8 @@ function StepSuccess() {
       >
         <Check size={40} color="#FFF" />
       </motion.div>
-      <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 32, color: C.textPrimary, marginBottom: 12 }}>Login Successful!</div>
-      <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: C.textMuted, lineHeight: 1.7 }}>
+      <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: C.textPrimary, marginBottom: 12 }}>Login Successful!</div>
+      <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, lineHeight: 1.7 }}>
         Welcome back, Admin.<br />Taking you to your dashboard...
       </div>
       <div style={{ marginTop: 32, height: 4, background: "rgba(196,146,58,0.15)", borderRadius: 2, overflow: "hidden" }}>
@@ -169,11 +169,11 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: C.pageBg, fontFamily: F.ui }}>
+    <div style={{ display: "flex", minHeight: "100dvh", background: C.pageBg, fontFamily: F.ui }}>
       {!isMobile && <LoginBrandPanel />}
 
       <div style={{
-        flex: 1, minHeight: "100vh",
+        flex: 1, minWidth: 0, minHeight: "100dvh",
         display: "flex", flexDirection: "column" as const,
         alignItems: "center", justifyContent: "center",
         padding: "40px 24px", position: "relative" as const,
@@ -185,8 +185,8 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
             <div style={{ width: 60, height: 60, borderRadius: 14, background: "#FFFFFF", border: "1px solid rgba(107,26,42,0.10)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12, boxShadow: "0 2px 12px rgba(107,26,42,0.08)" }}>
               <img src={logo} alt="Beere Kesava Logo" style={{ width: 42, height: 42, objectFit: "contain" }} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 26, color: C.textPrimary }}>Beere Kesava</div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 17, color: C.textMuted }}>& Brothers Silks</div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: C.textPrimary }}>Beere Kesava</div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: C.textMuted }}>& Brothers Silks</div>
           </div>
         )}
 
@@ -218,7 +218,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
           <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: C.textMuted, marginBottom: 4 }}>
             © 2026 Beere Kesava & Brothers Silks. All rights reserved.
           </div>
-          <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 10, color: C.gold, letterSpacing: "2px", textTransform: "uppercase" as const }}>
+          <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: C.gold, letterSpacing: "2px", textTransform: "uppercase" as const }}>
             Since 1999 · Tradition. Trust. Timeless Quality.
           </div>
         </div>

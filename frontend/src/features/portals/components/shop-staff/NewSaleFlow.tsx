@@ -121,7 +121,7 @@ export function NewSaleFlow() {
           {(["Customer", "Scan Saree", "Payment", "Confirm"] as const).map((label, i) => (
             <div key={i} style={{ flex: 1 }}>
               <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.burg : "rgba(139,26,46,0.15)", marginBottom: 5 }} />
-              <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.burg : C.muted, textAlign: "center" as const }}>{label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.burg : C.muted, textAlign: "center" as const }}>{label}</div>
             </div>
           ))}
         </div>
@@ -179,7 +179,7 @@ export function NewSaleFlow() {
       {step === 3 && (
         <div style={{ marginTop: 12 }}>
           <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Payment Method</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Payment Method</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>How is the customer paying?</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 20px 16px" }}>
@@ -201,7 +201,7 @@ export function NewSaleFlow() {
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: payment === p.id ? C.burg : C.text }}>{p.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 2 }}>{p.sub}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.sub}</div>
                 </div>
                 {payment === p.id && <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center" }}><Check size={10} color={C.text} /></div>}
               </button>
@@ -232,7 +232,7 @@ export function NewSaleFlow() {
       {step === 4 && (
         <div style={{ marginTop: 12 }}>
           <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Review & Confirm Sale</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Review & Confirm Sale</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Please verify all details before confirming</div>
           </div>
           <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
@@ -260,7 +260,7 @@ export function NewSaleFlow() {
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
                     <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sold For</span>
-                    <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: C.burg }}>{fmtPrice(soldPrice)}</span>
+                    <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.burg }}>{fmtPrice(soldPrice)}</span>
                   </div>
                   {priceDiscount > 0 && (
                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>

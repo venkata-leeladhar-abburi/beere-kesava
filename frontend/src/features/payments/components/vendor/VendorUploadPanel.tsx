@@ -91,7 +91,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Vendor Payment File</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
               Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>PO Number · Amount Paid · UTR Number · Payment Date · Firm Name</span>. System will auto-match vendor bills and flag unmatched rows.
             </div>
             {result && (
@@ -134,8 +134,8 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div key={i} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: "#fff", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.icon}</div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.label}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.label}</div>
                 </div>
               </div>
             ))}
@@ -146,7 +146,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <CheckCircle2 size={16} color={T.green} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Matched Vendor Bills</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
                 {result.matched.map((m, i) => (
@@ -154,13 +154,13 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
                     style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid rgba(30,102,64,0.22)`, borderLeft: `4px solid ${T.green}`, boxShadow: "0 2px 10px rgba(30,102,64,0.06)", padding: "14px 16px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                       <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{m.vendorPayment.vendor}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy }}>{m.poNumber}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.poNumber}</span>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amountPaid.toLocaleString("en-IN")}</div></div>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.utrNumber || "—"}</div></div>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.paymentDate}</div></div>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const }}>Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.firmName || "—"}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amountPaid.toLocaleString("en-IN")}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.utrNumber || "—"}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.paymentDate}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.firmName || "—"}</div></div>
                     </div>
                   </motion.div>
                 ))}
@@ -173,11 +173,11 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <AlertTriangle size={16} color={T.crimson} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Unmatched Rows</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {result.unmatched.map((u, i) => (
-                  <div key={i} style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.crimson }}>
+                  <div key={i} style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
                     No vendor bill found with PO Number <strong>{u.poNumber || "—"}</strong> — please verify manually
                   </div>
                 ))}

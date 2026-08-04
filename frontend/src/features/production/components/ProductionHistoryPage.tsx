@@ -15,7 +15,7 @@ const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   green:         "#1E6640",
   greenBg:       "#DCFCE7",
   amber:         "#92400E",
@@ -71,7 +71,7 @@ function Pip({ initials, bg }: { initials: string; bg: string }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       border: "1.5px solid rgba(255,255,255,0.6)", flexShrink: 0,
     }}>
-      <span style={{ fontFamily: F.ui, fontSize: 9, fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>{initials}</span>
     </div>
   );
 }
@@ -101,7 +101,7 @@ function StatusBadge({ status }: { status: BatchStatus }) {
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px",
       borderRadius: 20, background: cfg.bg, color: cfg.color,
-      fontFamily: F.ui, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+      fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
     }}>
       {cfg.icon}
       {status}
@@ -140,10 +140,10 @@ function PageHeader() {
           <rect x="22.5" y="13" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
         </svg>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>
             SINCE 1999 · BATCH RECORDS
           </div>
-          <h1 style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1, letterSpacing: "-0.3px" }}>
+          <h1 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1, letterSpacing: "-0.3px" }}>
             Production History
           </h1>
         </div>
@@ -220,7 +220,7 @@ function StatsBar() {
 // ── Section 4: Table ──────────────────────────────────────────────────────────
 const TH: React.CSSProperties = {
   fontFamily: F.ui,
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: 700,
   color: T.taupe,
   textTransform: "uppercase",
@@ -234,7 +234,7 @@ const TH: React.CSSProperties = {
 
 const TD: React.CSSProperties = {
   fontFamily: F.ui,
-  fontSize: 12.5,
+  fontSize: 12,
   color: T.luxuryBrown,
   padding: "11px 14px",
   verticalAlign: "middle",
@@ -272,7 +272,7 @@ function TableSection() {
                   </span>
                 </td>
                 <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{b.designCode}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.designCode}</span>
                 </td>
                 <td style={TD}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -281,7 +281,7 @@ function TableSection() {
                       <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={T.antiqueGold} strokeWidth="0.8" />
                       <line x1="1" y1="8.5" x2="13" y2="8.5" stroke={T.antiqueGold} strokeWidth="0.8" />
                     </svg>
-                    <span style={{ fontSize: 12.5, fontWeight: 500 }}>{b.sareeType}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</span>
                   </div>
                 </td>
                 <td style={{ ...TD, textAlign: "center" }}>
@@ -306,7 +306,7 @@ function TableSection() {
                 </td>
                 <td style={{ ...TD, textAlign: "center" }}>
                   {b.okPieces !== null ? (
-                    <span style={{ fontFamily: F.mono, fontSize: 12.5 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12 }}>
                       <span style={{ color: T.green, fontWeight: 600 }}>{b.okPieces}</span>
                       <span style={{ color: T.taupe }}> / </span>
                       <span style={{ color: T.amber, fontWeight: 600 }}>{b.found}</span>
@@ -326,7 +326,7 @@ function TableSection() {
                 </td>
                 <td style={{ ...TD, textAlign: "center" }}>
                   {b.bulkOrder ? (
-                    <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
                   ) : (
                     <span style={{ color: "#D1C5BC", fontSize: 12 }}>—</span>
                   )}
@@ -348,7 +348,7 @@ function TableSection() {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0 24px" }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           Showing 1 to 10 of 25 entries
         </span>
         <div style={{ display: "flex", gap: 4 }}>
@@ -358,14 +358,14 @@ function TableSection() {
               border: `1px solid ${p === "1" ? T.royalBurgundy : T.borderDef}`,
               background: p === "1" ? T.royalBurgundy : "#fff",
               color: p === "1" ? "#FFFDF9" : T.luxuryBrown,
-              fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+              fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>
               {p}
             </button>
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Rows per page</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Rows per page</span>
           <DropBtn label="10" />
         </div>
       </div>
@@ -375,7 +375,7 @@ function TableSection() {
 
 export function ProductionHistoryPage() {
   return (
-    <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <PageHeader />
       <FilterBar />
       <StatsBar />

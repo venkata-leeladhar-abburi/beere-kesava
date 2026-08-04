@@ -8,22 +8,22 @@ import { T, F, EASE } from "./theme";
 function FI({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
   return (
     <div>
-      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, display: "block", marginBottom: 6 }}>
+      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
         {label}{required && <span style={{ color: T.crimson }}> *</span>}
       </label>
       <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13.5, outline: "none", boxSizing: "border-box" as const }} />
+        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }} />
     </div>
   );
 }
 function FS({ label, value, onChange, options, required }: { label: string; value: string; onChange: (v: string) => void; options: string[]; required?: boolean }) {
   return (
     <div>
-      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, display: "block", marginBottom: 6 }}>
+      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
         {label}{required && <span style={{ color: T.crimson }}> *</span>}
       </label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13.5, outline: "none", boxSizing: "border-box" as const, appearance: "none" as const }}>
+        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const, appearance: "none" as const }}>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
@@ -47,7 +47,7 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
         <div style={{ background: `linear-gradient(110deg, ${T.darkBurgundy} 0%, #5A1A30 100%)`, padding: "22px 26px", borderTopLeftRadius: 22, borderTopRightRadius: 22, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Enter details for this loom</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Enter details for this loom</div>
           </div>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 34, height: 34, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X size={16} color="#FFF" />
@@ -67,7 +67,7 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             <FI label="Installed Year" value={form.installedYear} onChange={v => patch({ installedYear: v })} placeholder="2020" />
           </div>
           <div>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, display: "block", marginBottom: 6 }}>Notes</label>
+            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Notes</label>
             <textarea value={form.notes} onChange={e => patch({ notes: e.target.value })} rows={3} placeholder="Any notes..."
               style={{ width: "100%", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "10px 14px", fontFamily: F.ui, fontSize: 13, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
           </div>

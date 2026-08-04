@@ -42,13 +42,13 @@ export function NewSaleBillModal({
         <div style={{ background: C.burg, padding: "18px 20px", textAlign: "center" as const }}>
           <Flower2 size={24} color="rgba(255,255,255,0.7)" style={{ margin: "0 auto 6px" }} />
           <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Beere Kesava & Brothers Silks</div>
-          <div style={{ fontFamily: F.m, fontSize: 11, color: C.gold, marginTop: 2 }}>Est. 1999</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, marginTop: 2 }}>Est. 1999</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.70)", marginTop: 4 }}>Main Street, Silk Market, Bangalore — 560001</div>
         </div>
         <div style={{ padding: "18px 20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>Bill No: BKB-2026-1842</span>
-            <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>13 Jun 2026 · 11:42 AM</span>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>13 Jun 2026 · 11:42 AM</span>
           </div>
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginBottom: 12 }}>
             {[
@@ -64,7 +64,7 @@ export function NewSaleBillModal({
           {canSeePrices && (
             <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
               <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount:</span>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.gold }}>{fmtPrice(soldPrice)}</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.gold }}>{fmtPrice(soldPrice)}</span>
             </div>
           )}
           <div style={{ textAlign: "center" as const, marginBottom: 8 }}>
@@ -72,7 +72,7 @@ export function NewSaleBillModal({
           </div>
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 14, textAlign: "center" as const }}>
             <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 13, color: C.burg }}>Thank you for shopping with Beere Kesava & Brothers Silks</div>
-            <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 2, color: C.gold, marginTop: 4, textTransform: "uppercase" as const }}>Tradition · Trust · Timeless Quality</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 2, color: C.gold, marginTop: 4, textTransform: "uppercase" as const }}>Tradition · Trust · Timeless Quality</div>
           </div>
         </div>
       </div>

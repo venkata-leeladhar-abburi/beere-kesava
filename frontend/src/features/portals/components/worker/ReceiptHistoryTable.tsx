@@ -34,18 +34,18 @@ function renderMaterialsSummary(summary: string) {
           return (
             <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <span style={{ 
-                fontFamily: F.u, fontSize: 9.5, fontWeight: 700,
+                fontFamily: F.u, fontSize: 12, fontWeight: 700,
                 color: type === "Warp" ? "#7A5010" : type === "Resham" ? "#7A5E1C" : C.burg, 
                 background: type === "Warp" ? "rgba(196,146,58,0.14)" : type === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(107,26,42,0.08)",
                 padding: "2px 6px", borderRadius: 4 
               }}>{type}</span>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{desc}</span>
-              <span style={{ fontFamily: F.m, fontSize: 11.5, fontWeight: 700, color: C.burg }}>{qty}</span>
+              <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg }}>{qty}</span>
             </div>
           );
         }
         return (
-          <div key={idx} style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>
+          <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
             {p}
           </div>
         );
@@ -93,7 +93,7 @@ export function ReceiptHistoryTable({ receiptHistory, compact = false }: Receipt
             <thead>
               <tr style={{ background: C.inp }}>
                 {["GRN Batch ID", "PO Reference", "Vendor", "Firm Name", "Date Received", "Materials", "Received By", "Status"].map(h => (
-                  <th key={h} style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "left", padding: compact ? "9px 12px" : "12px 14px", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "left", padding: compact ? "9px 12px" : "12px 14px", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -112,7 +112,7 @@ export function ReceiptHistoryTable({ receiptHistory, compact = false }: Receipt
                     <td style={{ padding: compact ? "10px 12px" : "12px 14px" }}>{renderMaterialsSummary(r.materialsSummary)}</td>
                     <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</td>
                     <td style={{ padding: compact ? "10px 12px" : "12px 14px" }}>
-                      <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>
+                      <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>
                     </td>
                   </tr>
                 );

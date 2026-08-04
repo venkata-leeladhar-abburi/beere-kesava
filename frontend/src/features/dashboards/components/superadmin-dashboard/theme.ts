@@ -1,27 +1,28 @@
 import type React from "react";
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS (mirroring BeereDashboard)
 // ═══════════════════════════════════════════════════════════════════════════════
 export const T = {
-  silkCream: "#F7F2EA",
-  warmIvory: "#FFFDF9",
-  royalBurgundy: "#6E0F2D",
+  silkCream: semantic.surface.canvas,
+  warmIvory: semantic.surface.raised,
+  royalBurgundy: brand.burgundy[900],
   darkBurgundy: "#3D0E1A",
-  deepWine: "#4A061B",
-  antiqueGold: "#C89B47",
+  deepWine: brand.burgundy[950],
+  antiqueGold: brand.gold[500],
   goldLight: "#E7C983",
   luxuryBrown: "#3B2314",
   ivoryCream: "#F7F2EA",
   pureWhite: "#FFFDF9",
-  crimson: "#C0392B",
+  crimson: semantic.text.danger,
   mahogany: "#4A061B",
   gold: "#C89B47",
   deepBlack: "#3B2314",
   burgundy: "#3D2030",
-  taupe: "#8B7060",
+  taupe: semantic.text.tertiary,
   warmCream: "#F5E8D0",
-  green: "#1E6640",
+  green: semantic.text.success,
   borderDef: "rgba(110,15,45,0.10)",
   borderMed: "rgba(110,15,45,0.20)",
   borderGold: "rgba(200,155,71,0.22)",
@@ -33,9 +34,9 @@ export const T = {
 };
 
 export const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui: "'Inter', sans-serif",
-  mono: "'JetBrains Mono', monospace",
+  display: fonts.display,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 
 export const NUM: React.CSSProperties = {

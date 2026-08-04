@@ -155,13 +155,13 @@ export function IssueMaterialPage() {
   const pagedHistory = filteredHistory.slice((histPage - 1) * ROWS_PER_PAGE, histPage * ROWS_PER_PAGE);
 
   return (
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100vh" }}>
+    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       {/* Header */}
       <div style={{ background: T.darkBurgundy, position: "relative" as const, overflow: "hidden", minHeight: 190, display: "flex", alignItems: "stretch" }}>
         <div style={{ flex: 1, padding: "44px 56px 44px", zIndex: 10, position: "relative" as const }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · MATERIAL ISSUANCE</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · MATERIAL ISSUANCE</span>
           </div>
           <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 42, color: "#fff", margin: "0 0 8px", lineHeight: 1.1 }}>Issue Raw Materials to Weaver</h1>
           <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 560, margin: 0, lineHeight: 1.65 }}>
@@ -184,8 +184,8 @@ export function IssueMaterialPage() {
                   <CheckCircle2 size={26} color={T.green} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 19, color: T.green, marginBottom: 4 }}>Materials Issued Successfully</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.green, marginBottom: 4 }}>Materials Issued Successfully</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                     <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{successRecord.id}</span> · Given to {successRecord.weaverName} {successRecord.loomNumber ? `(Loom ${successRecord.loomNumber})` : ""} · {summarizeMaterials(successRecord.materials)}
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export function IssueMaterialPage() {
             {rows.map(row => (
               <MaterialRowEditor key={row.uid} row={row} grnBatches={grnBatches} onChange={r => updateRow(row.uid, r)} onRemove={() => removeRow(row.uid)} showRemove={rows.length > 1} />
             ))}
-            <button onClick={addRow} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: `1.5px dashed ${T.borderGold}`, borderRadius: 12, padding: "12px 18px", width: "100%", justifyContent: "center", cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13.5, color: T.royalBurgundy }}>
+            <button onClick={addRow} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: `1.5px dashed ${T.borderGold}`, borderRadius: 12, padding: "12px 18px", width: "100%", justifyContent: "center", cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.royalBurgundy }}>
               <Plus size={15} /> Add Another Material
             </button>
           </div>
@@ -226,7 +226,7 @@ export function IssueMaterialPage() {
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 3 · Notes (Optional)" />
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any special instructions, batch references, or remarks"
-              style={{ width: "100%", borderRadius: 12, border: `1.5px solid ${T.borderDef}`, padding: "12px 14px", fontFamily: F.ui, fontSize: 13.5, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
+              style={{ width: "100%", borderRadius: 12, border: `1.5px solid ${T.borderDef}`, padding: "12px 14px", fontFamily: F.ui, fontSize: 13, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
           </div>
 
           {/* STEP 5 — Signature */}

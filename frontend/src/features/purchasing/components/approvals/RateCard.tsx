@@ -32,7 +32,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
           </span>
         </div>
         <span style={{
-          fontFamily: F.mono, fontSize: 10, color: T.taupe,
+          fontFamily: F.mono, fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "4px 10px",
         }}>
           {item.raised}
@@ -51,7 +51,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Saree Type:</span>
         <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
-          {item.sareeType} <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>({item.code})</span>
+          {item.sareeType} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>({item.code})</span>
         </span>
       </div>
 
@@ -62,7 +62,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
           flex: 1, background: T.crimsonBg, borderRadius: 10, padding: "12px 16px",
           border: "1px solid rgba(192,57,43,0.15)", textAlign: "center",
         }}>
-          <div style={{ fontFamily: F.mono, fontSize: 9, color: T.crimson, marginBottom: 4, letterSpacing: 1 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, marginBottom: 4, letterSpacing: 1 }}>
             CURRENT RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.crimson }}>
@@ -78,7 +78,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
           flex: 1, background: T.greenBg, borderRadius: 10, padding: "12px 16px",
           border: "1px solid rgba(30,102,64,0.15)", textAlign: "center",
         }}>
-          <div style={{ fontFamily: F.mono, fontSize: 9, color: T.green, marginBottom: 4, letterSpacing: 1 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginBottom: 4, letterSpacing: 1 }}>
             REQUESTED RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.green }}>
@@ -105,7 +105,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Requested by:</span>
         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{item.raisedBy}</span>
         <span style={{
-          fontFamily: F.mono, fontSize: 10, color: T.taupe,
+          fontFamily: F.mono, fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 5, padding: "2px 7px",
         }}>
           {item.raised}

@@ -54,7 +54,7 @@ export function NoticeFooter() {
               <Download size={14} />
               Export Full Log
             </button>
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe }}>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
               PDF · Excel
             </span>
           </div>
@@ -78,7 +78,7 @@ export function NoticeFooter() {
         </div>
         <div style={{
           fontFamily: F.ui,
-          fontSize: 11,
+          fontSize: 12,
           color: T.taupe,
         }}>
           Superadmin Portal · Audit Log

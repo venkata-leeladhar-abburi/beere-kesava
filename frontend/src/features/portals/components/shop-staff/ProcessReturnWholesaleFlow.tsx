@@ -65,7 +65,7 @@ export function ProcessReturnWholesaleFlow({
           {(["Saree Details", "Generate Barcode"] as const).map((label, i) => (
             <div key={i} style={{ flex: 1 }}>
               <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.gold : "rgba(196,146,58,0.20)", marginBottom: 5 }} />
-              <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? "#8B6520" : C.muted, textAlign: "center" as const }}>{label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? "#8B6520" : C.muted, textAlign: "center" as const }}>{label}</div>
             </div>
           ))}
         </div>
@@ -77,7 +77,7 @@ export function ProcessReturnWholesaleFlow({
           <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
             <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(196,146,58,0.3))` }} />
             <div style={{ padding: 18 }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 16 }}>Enter Saree Details</div>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 16 }}>Enter Saree Details</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {[
                   { label: "Vendor / Source Name", val: wsVendor, setter: setWsVendor, placeholder: "e.g. Ravi Silks", type: "text" },
@@ -173,7 +173,7 @@ export function ProcessReturnWholesaleFlow({
                   setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
                   setWsBarcodeGenerated(true);
                 }}
-                style={{ width: "100%", height: 58, borderRadius: 14, border: `2px solid ${C.gold}`, background: "rgba(196,146,58,0.10)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#8B6520" }}
+                style={{ width: "100%", height: 58, borderRadius: 14, border: `2px solid ${C.gold}`, background: "rgba(196,146,58,0.10)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#8B6520" }}
               >
                 <QrCode size={22} color={C.gold} /> Generate New Barcode
               </button>

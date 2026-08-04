@@ -63,7 +63,7 @@ export function RetailCustomersSection({
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>{st.l}</div>
-              <div style={{ fontFamily: F.display, fontSize: 32, color: st.c, fontWeight: 700, lineHeight: 1.0 }}>{st.v}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, color: st.c, fontWeight: 700, lineHeight: 1.0 }}>{st.v}</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>{st.sub}</div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function RetailCustomersSection({
           </div>
         </div>
       </div>
-      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 18 }}>{filteredRetail.length} customer{filteredRetail.length !== 1 ? "s" : ""} found</div>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>{filteredRetail.length} customer{filteredRetail.length !== 1 ? "s" : ""} found</div>
 
       {/* Retail Cards View */}
       {retailView === "card" && (
@@ -123,19 +123,19 @@ export function RetailCustomersSection({
               <div style={{ height: 4, background: r.regular ? T.antiqueGold : r.inactive ? T.taupe : T.royalBurgundy }} />
               <div style={{ padding: "22px 22px 0", flex: 1 }}>
                 <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 18 }}>
-                  <div style={{ width: 60, height: 60, minWidth: 60, borderRadius: "50%", background: T.warmCream, border: `2px solid ${T.borderGold}`, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700, flexShrink: 0 }}>
+                  <div style={{ width: 60, height: 60, minWidth: 60, borderRadius: "50%", background: T.warmCream, border: `2px solid ${T.borderGold}`, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
                     {r.initials}
                   </div>
                   <div style={{ flex: 1 }}>
                     <h4 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", lineHeight: 1.2 }}>{r.name}</h4>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
                       {r.regular && (
-                        <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4 }}>
                           <Star size={11} fill={T.luxuryBrown} /> Regular
                         </span>
                       )}
                       {r.inactive && (
-                        <span style={{ background: T.crimsonBg, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.crimson }}>Inactive</span>
+                        <span style={{ background: T.crimsonBg, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>Inactive</span>
                       )}
                     </div>
                   </div>
@@ -152,11 +152,11 @@ export function RetailCustomersSection({
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 4 }}>Total Purchases</div>
-                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{r.purchases}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{r.purchases}</div>
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 4 }}>Total Spent</div>
-                    <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>₹{r.spend}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>₹{r.spend}</div>
                   </div>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6, marginBottom: 22 }}>
@@ -205,7 +205,7 @@ export function RetailCustomersSection({
                   <td style={{ padding: "14px 18px", color: T.antiqueGold, fontWeight: 600 }}>{r.purchases}</td>
                   <td style={{ padding: "14px 18px", color: T.luxuryBrown, fontWeight: 600 }}>₹{r.spend}</td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.lastVisit}</td>
-                  <td style={{ padding: "14px 18px" }}>{r.regular ? <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.luxuryBrown }}>⭐ Regular</span> : "—"}</td>
+                  <td style={{ padding: "14px 18px" }}>{r.regular ? <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>⭐ Regular</span> : "—"}</td>
                   <td style={{ padding: "14px 18px" }}><button onClick={() => onViewHistory(r)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View</button></td>
                 </tr>
               ))}

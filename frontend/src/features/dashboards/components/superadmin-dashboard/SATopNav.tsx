@@ -64,10 +64,10 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
                 Beere Kesava
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 10.5, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
                 And Brothers Silks
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
                 Since 1999
               </div>
             </div>
@@ -105,7 +105,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
                     <span style={{
-                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5,
+                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
                       color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
                       whiteSpace: "nowrap", letterSpacing: "0.1px",
                       transition: "color 0.2s",
@@ -166,7 +166,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                   overflow: "hidden", padding: 10,
                 }}
               >
-                <div style={{ padding: "10px 14px 8px", fontFamily: F.ui, fontWeight: 700, fontSize: 10.5, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const }}>
+                <div style={{ padding: "10px 14px 8px", fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const }}>
                   {g.label}
                 </div>
                 {g.pages.map(p => {
@@ -231,7 +231,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
               <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
                 <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
               </div>
-              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
+              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
               <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
             </motion.div>
             {showProfile && (
@@ -241,8 +241,8 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                     <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>Superadmin</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
@@ -253,13 +253,13 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                   </button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
 
-                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
+                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
                   <button onClick={() => {
                     setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "superadmin");
                     selectRole("shop");
                     navigate("/shop");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
@@ -269,7 +269,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                     localStorage.setItem("bk_original_admin_role", "superadmin");
                     selectRole("worker");
                     navigate("/worker");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <Package size={14} color={T.taupe} /> Worker Staff Portal

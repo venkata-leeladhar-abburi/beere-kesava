@@ -23,7 +23,7 @@ export function EditTab({
         <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>Edit Profile</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {savedFlash && (
-            <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.green, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green, display: "flex", alignItems: "center", gap: 6 }}>
               <CheckCircle2 size={14} /> Saved
             </span>
           )}

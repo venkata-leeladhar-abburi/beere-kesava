@@ -62,7 +62,7 @@ function MobileHero() {
           style={{ display: "flex", alignItems: "center", gap: 8 }}
         >
           <div style={{ width: 18, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: "rgba(200,155,71,0.78)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Tradition. Trust. Timeless Quality.</span>
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.78)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Tradition. Trust. Timeless Quality.</span>
         </motion.div>
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
@@ -90,7 +90,7 @@ function MobileHero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.95 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12.5, color: "rgba(245,232,208,0.90)", lineHeight: 1.8, margin: 0, maxWidth: 240, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.90)", lineHeight: 1.8, margin: 0, maxWidth: 240, letterSpacing: "0.05px" }}
         >
           From the finest raw silk to masterful craftsmanship — four generations of excellence.
         </motion.p>
@@ -103,7 +103,7 @@ function MobileHero() {
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 14, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.warmCream, letterSpacing: "0.1px", boxShadow: `0 6px 20px rgba(110,15,45,0.38)` }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 14, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px", boxShadow: `0 6px 20px rgba(110,15,45,0.38)` }}
           >
             Explore Production <ChevronRight size={12} color={T.warmCream} />
           </motion.button>
@@ -143,11 +143,11 @@ function MobileMetrics() {
         <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {m.ico}
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 36, color: T.warmCream, lineHeight: 1.0, ...NUM }}>
+        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.warmCream, lineHeight: 1.0, ...NUM }}>
           <AnimatedNumber raw={m.val} />
         </div>
-        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10, color: "rgba(245,232,208,0.92)", letterSpacing: "1.6px", textTransform: "uppercase" }}>{m.label}</div>
-        <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: "rgba(245,232,208,0.85)", letterSpacing: "0.05px" }}>{m.sub}</div>
+        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "rgba(245,232,208,0.92)", letterSpacing: "1.6px", textTransform: "uppercase" }}>{m.label}</div>
+        <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.85)", letterSpacing: "0.05px" }}>{m.sub}</div>
       </motion.div>
     );
   };
@@ -178,7 +178,7 @@ function MobileMetrics() {
               {highlighted.ico}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 10, color: "rgba(200,155,71,1)", letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 4 }}>{highlighted.label}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "rgba(200,155,71,1)", letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 4 }}>{highlighted.label}</div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.goldLight, lineHeight: 1.0, ...NUM }}>
                 <AnimatedNumber raw={highlighted.val} />
               </div>
@@ -213,7 +213,7 @@ function MobilePerformance() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${T.borderDef}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Performance Overview</span>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Performance Overview</span>
         </div>
         <ChevronRight size={16} color={T.taupe} />
       </div>
@@ -226,7 +226,7 @@ function MobilePerformance() {
           {[{ label: "Production", pct: 72, color: T.antiqueGold }, { label: "Inventory", pct: 84, color: T.royalBurgundy }, { label: "Payments", pct: 46, color: DARK_MAROON }].map(b => (
             <div key={b.label}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12.5, color: T.taupe, letterSpacing: "0.05px" }}>{b.label}</span>
+                <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.05px" }}>{b.label}</span>
                 <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, ...NUM }}>{b.pct}%</span>
               </div>
               <AnimatedBar pct={b.pct} color={b.color} height={4} />
@@ -288,13 +288,13 @@ function MobileFooter() {
                   <div style={{ fontFamily: F.display, fontStyle: "italic", fontWeight: 400, fontSize: 18, color: T.antiqueGold, lineHeight: 1.2 }}>Delivered with Trust.</div>
                 </div>
               </div>
-              <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11.5, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: "8px 0 10px", letterSpacing: "0.05px" }}>
+              <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: "8px 0 10px", letterSpacing: "0.05px" }}>
                 Four generations of passion, woven into every creation.
               </p>
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.28)", background: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 11.5, color: T.goldLight, letterSpacing: "0.1px" }}
+                style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.28)", background: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.goldLight, letterSpacing: "0.1px" }}
               >
                 Know Our Story <ArrowRight size={11} color={T.goldLight} />
               </motion.button>
@@ -309,7 +309,7 @@ function MobileFooter() {
           </div>
           <div>
             <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, letterSpacing: "0.1px" }}>Beere Kesava &amp; Brothers Silks</div>
-            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
+            <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 0, borderTop: `1px solid ${T.borderDef}` }}>
@@ -319,7 +319,7 @@ function MobileFooter() {
               whileHover={{ x: 4 }}
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.borderDef}` : "none", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13.5, color: T.luxuryBrown, letterSpacing: "0.1px" }}>{l}</span>
+              <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.luxuryBrown, letterSpacing: "0.1px" }}>{l}</span>
               <ChevronRight size={13} color={T.taupe} />
             </motion.div>
           ))}
@@ -339,11 +339,11 @@ function MobileFooter() {
         <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, paddingBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Lotus size={13} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9.5, color: T.antiqueGold, letterSpacing: "1.8px", textTransform: "uppercase", opacity: 0.80 }}>
+            <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "1.8px", textTransform: "uppercase", opacity: 0.80 }}>
               Tradition · Trust · Timeless Quality
             </span>
           </div>
-          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: T.taupe, opacity: 0.70, letterSpacing: "0.05px" }}>
+          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, opacity: 0.70, letterSpacing: "0.05px" }}>
             © 1999 Beere Kesava &amp; Brothers Silks. All rights reserved.
           </span>
         </div>

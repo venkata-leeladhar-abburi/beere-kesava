@@ -46,8 +46,8 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                   <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 15, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
+                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
                 </div>
               </div>
               <motion.button
@@ -123,8 +123,8 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                   <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 12, color: T.warmCream }}>BK</span>
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.luxuryBrown }}>Admin</div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 10.5, color: T.taupe }}>Administrator</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}>Admin</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>Administrator</div>
                 </div>
               </div>
             </div>
@@ -160,7 +160,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
         </div>
         <div>
           <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.1, letterSpacing: "0.1px" }}>Beere Kesava</div>
-          <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 9, color: T.taupe, letterSpacing: "0.2px" }}>&amp; Brothers Silks · Est. 1999</div>
+          <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.2px" }}>&amp; Brothers Silks · Est. 1999</div>
         </div>
       </div>
       <div style={{ position: "relative" }}>
@@ -176,7 +176,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
             </div>
             <div style={{ padding: "6px 0" }}>
               <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
@@ -184,13 +184,13 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
               </button>
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
               
-              <div style={{ padding: "4px 16px 2px", fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
+              <div style={{ padding: "4px 16px 2px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
               <button onClick={() => { 
                 setShowProfile(false); 
                 localStorage.setItem("bk_original_admin_role", "admin");
                 selectRole("shop");
                 navigate("/shop"); 
-              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, textAlign: "left" as const }}>
+              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <ShoppingCart size={13} color={T.taupe} /> Shop Staff Portal
               </button>
               <button onClick={() => { 
@@ -198,7 +198,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
                 localStorage.setItem("bk_original_admin_role", "admin");
                 selectRole("worker");
                 navigate("/worker"); 
-              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, textAlign: "left" as const }}>
+              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textAlign: "left" as const }}>
                 <Package size={13} color={T.taupe} /> Worker Staff Portal
               </button>
 

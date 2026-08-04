@@ -73,7 +73,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
             style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}
           >
             <div style={{ width: 24, height: 1.5, background: C.gold, opacity: 0.7 }} />
-            <span style={{ fontFamily: F.m, fontSize: 11, color: "rgba(196,146,58,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: "rgba(196,146,58,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
               Worker Staff Portal · Beere Kesava &amp; Brothers Silks
             </span>
           </motion.div>
@@ -93,7 +93,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.45 }}
-            style={{ fontFamily: F.u, fontSize: 17, color: "rgba(245,232,208,0.75)", margin: "0 0 28px", maxWidth: 520, lineHeight: 1.7 }}
+            style={{ fontFamily: F.u, fontSize: 16, color: "rgba(245,232,208,0.75)", margin: "0 0 28px", maxWidth: 520, lineHeight: 1.7 }}
           >
             Here's what needs your attention today. You have <strong style={{ color: C.gold }}>2 active tasks</strong> waiting.
           </motion.p>
@@ -106,7 +106,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
           >
             <button
               onClick={() => onNavigate("qc")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 24px", borderRadius: 14, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${C.burg} 0%, ${C.dark} 100%)`, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: "#FFFDF9", boxShadow: `0 8px 28px rgba(107,26,42,0.40)` }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 24px", borderRadius: 14, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${C.burg} 0%, ${C.dark} 100%)`, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFFDF9", boxShadow: `0 8px 28px rgba(107,26,42,0.40)` }}
             >
               Start Today's Work <ChevronRight size={16} />
             </button>
@@ -164,8 +164,8 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                          <span style={{ fontFamily: F.d, fontSize: 17, fontWeight: 600, color: C.dark }}>{task.title}</span>
-                          <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
+                          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 600, color: C.dark }}>{task.title}</span>
+                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
                         </div>
                         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.5 }}>{task.sub}</div>
                       </div>
@@ -200,7 +200,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                     <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.desc}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{a.time}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
                     </div>
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(107,26,42,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
                   </div>

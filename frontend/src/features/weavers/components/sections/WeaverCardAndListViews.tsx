@@ -36,7 +36,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                     />
                   ) : (
                     <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontFamily: F.display, fontSize: 44, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                      <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
                     </div>
                   )}
 
@@ -44,7 +44,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
                   {/* Floating ID badge in top left */}
-                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                     {w.id}
                   </div>
 
@@ -67,7 +67,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                     )}
                     <span style={{
                       fontFamily: F.ui,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: 700,
                       color: "#FFFFFF",
                       textTransform: "uppercase" as const,
@@ -87,7 +87,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                       {w.name}
                     </div>
                     {w.batch && (
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
                         {w.batch}
                       </span>
                     )}
@@ -113,7 +113,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                         <Rows size={14} color={T.royalBurgundy} weight="fill" />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
                         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
                       </div>
                     </div>
@@ -172,7 +172,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
       {/* Header row */}
       <div style={{ display: "grid", gridTemplateColumns: "2.2fr 1.5fr 1.2fr 110px 90px 70px 100px", padding: "14px 26px", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
         {["Weaver", "Village / Area", "Status", "This Month", "Pass Rate", "Looms", "Action"].map(h => (
-          <div key={h} style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 500 }}>{h}</div>
+          <div key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 500 }}>{h}</div>
         ))}
       </div>
       {visible.map((w, i) => {
@@ -195,25 +195,25 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
                 }
               </div>
               <div>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 17, color: T.luxuryBrown, marginBottom: 4 }}>{w.name}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 4 }}>{w.name}</div>
                 <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{w.id}</div>
               </div>
             </div>
             {/* Village */}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <PhMapPin size={15} color={T.taupe} weight="fill" />
-              <span style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>{w.village}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{w.village}</span>
             </div>
             {/* Status */}
             <div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
                 {w.status === "active" ? "● Weaving" : w.status === "qc" ? "● QC Check" : "○ Idle"}
               </span>
             </div>
             {/* This month */}
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.antiqueGold }}>{w.thisMonth} <span style={{ fontSize: 13, fontFamily: F.ui, color: T.taupe }}>sarees</span></div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{w.thisMonth} <span style={{ fontSize: 13, fontFamily: F.ui, color: T.taupe }}>sarees</span></div>
             {/* Pass rate */}
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>
             {/* Looms */}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <Rows size={16} color={T.taupe} weight="regular" />
@@ -225,7 +225,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
                 onClick={() => onSelect(w)}
                 whileHover={{ scale: 1.04, background: "rgba(110,15,45,0.10)" }}
                 whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 16px", fontFamily: F.ui, fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 16px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
               >
                 <PhEye size={18} weight="regular" /> View
               </motion.button>

@@ -29,7 +29,7 @@ export function IssueColors({ label, compact }: { label: string; compact?: boole
           <div style={{ position: "relative", flex: 1 }}>
             <input type="number" value={qty[cl] || ""} onChange={e => setQty(p => ({ ...p, [cl]: e.target.value }))} placeholder="0"
               style={{ ...inputStyle, height: compact ? 34 : 38, fontFamily: F.m, fontSize: compact ? 12 : 14, paddingRight: 30 }} />
-            <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 10, color: C.muted }}>kg</span>
+            <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, color: C.muted }}>kg</span>
           </div>
         </div>
       ))}

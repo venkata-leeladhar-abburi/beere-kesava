@@ -23,7 +23,7 @@ export function RetailChartsRow1() {
               <Star size={24} color={T.antiqueGold} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Retail Customers</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Retail Customers</h3>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By purchase value</p>
             </div>
           </div>
@@ -39,9 +39,9 @@ export function RetailChartsRow1() {
             return (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
                 <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: "50%", background: rankBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: rankColor }}>{i + 1}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
                 </div>
-                <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12.5, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
                   {c.name}
                 </div>
                 <div style={{ flex: 1, height: 7, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
@@ -67,7 +67,7 @@ export function RetailChartsRow1() {
               <Users size={24} color={T.royalBurgundy} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Category Split</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Category Split</h3>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue by saree type</p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export function RetailChartsRow1() {
               <Users size={24} color={T.greenMid} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning</h3>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Retail customers</p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export function RetailChartsRow2() {
               <Calendar size={24} color={T.antiqueGold} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Frequent Retail Buyers</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Frequent Retail Buyers</h3>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases</p>
             </div>
           </div>
@@ -151,15 +151,15 @@ export function RetailChartsRow2() {
               <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
               </div>
-              <div style={{ flex: 1, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
+              <div style={{ flex: 1, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
               <div style={{ flex: 2 }}>
                 <div style={{ height: 10, background: "rgba(200,155,71,0.13)", borderRadius: 5 }}>
                   <div style={{ width: `${(fb.count/20)*100}%`, height: "100%", background: i === 0 ? T.royalBurgundy : T.antiqueGold, borderRadius: 5 }} />
                 </div>
               </div>
               <div style={{ width: 120, textAlign: "right" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
               </div>
             </div>
           ))}
@@ -174,7 +174,7 @@ export function RetailChartsRow2() {
               <AlertTriangle size={24} color={T.crimson} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Inactive Retail Customers</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Inactive Retail Customers</h3>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months</p>
             </div>
           </div>
@@ -188,7 +188,7 @@ export function RetailChartsRow2() {
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{al.name}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{al.name}</span>
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Last purchase: {al.time}</div>
                 </div>

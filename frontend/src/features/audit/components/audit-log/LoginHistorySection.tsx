@@ -118,7 +118,7 @@ export function LoginHistorySection() {
                     flexShrink: 0,
                     zIndex: 1,
                   }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, color: "#fff" }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>
                       {circleInitial}
                     </span>
                   </div>
@@ -144,7 +144,7 @@ export function LoginHistorySection() {
                             : "rgba(192,57,43,0.08)",
                           color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
                           fontFamily: F.ui,
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: 600,
                           padding: "2px 9px",
                           borderRadius: 999,
@@ -154,11 +154,11 @@ export function LoginHistorySection() {
                         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>
                           {entry.user}
                         </span>
-                        <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                           {entry.role}
                         </span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                         {entry.time}
                       </span>
                     </div>
@@ -171,7 +171,7 @@ export function LoginHistorySection() {
                         <>
                           <span>·</span>
                           <span>Session:</span>
-                          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{entry.duration}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.duration}</span>
                         </>
                       )}
                     </div>
@@ -208,7 +208,7 @@ export function LoginHistorySection() {
                     {["Timestamp", "User", "Role", "Event", "Device", "Session Duration", "Status"].map(h => (
                       <th key={h} style={{
                         fontFamily: F.mono,
-                        fontSize: 9,
+                        fontSize: 12,
                         textTransform: "uppercase",
                         color: T.taupe,
                         padding: "12px 14px",
@@ -228,7 +228,7 @@ export function LoginHistorySection() {
                     const sessionDisplay = entry.duration
                       ? entry.duration
                       : entry.status === "login"
-                      ? <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 11 }}>Ongoing</span>
+                      ? <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 12 }}>Ongoing</span>
                       : "—";
 
                     return (
@@ -242,13 +242,13 @@ export function LoginHistorySection() {
                         onMouseEnter={e => (e.currentTarget.style.background = T.cream)}
                         onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : T.warmIvory)}
                       >
-                        <td style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                           {entry.time}
                         </td>
                         <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                           {entry.user}
                         </td>
-                        <td style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                           {entry.role}
                         </td>
                         <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -260,7 +260,7 @@ export function LoginHistorySection() {
                               : "rgba(192,57,43,0.08)",
                             color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
                             fontFamily: F.ui,
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: 600,
                             padding: "2px 9px",
                             borderRadius: 999,
@@ -275,7 +275,7 @@ export function LoginHistorySection() {
                             {entry.device}
                           </div>
                         </td>
-                        <td style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                           {sessionDisplay}
                         </td>
                         <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -287,7 +287,7 @@ export function LoginHistorySection() {
                               : "rgba(192,57,43,0.08)",
                             color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
                             fontFamily: F.ui,
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: 600,
                             padding: "2px 9px",
                             borderRadius: 999,
@@ -310,7 +310,7 @@ export function LoginHistorySection() {
                 padding: "16px 18px",
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                   Showing 1–10 of 142 sessions · Rows per page: 20
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -318,7 +318,7 @@ export function LoginHistorySection() {
                   {[1, 2, 3].map(n => (
                     <PaginationBtn key={n} active={n === 1}>{n}</PaginationBtn>
                   ))}
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, padding: "0 4px" }}>...</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
                   <PaginationBtn>8</PaginationBtn>
                   <PaginationBtn><ChevronRight size={13} /></PaginationBtn>
                 </div>

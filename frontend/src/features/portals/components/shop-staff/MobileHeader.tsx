@@ -21,7 +21,7 @@ export function MobileHeader({
       <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, width: 32, display: "flex", alignItems: "center" }}>
         <Flower2 size={22} color="rgba(255,255,255,0.90)" />
       </button>
-      <div style={{ flex: 1, textAlign: "center" as const, fontFamily: F.d, fontWeight: 600, fontSize: 17, color: "#FFF" }}>
+      <div style={{ flex: 1, textAlign: "center" as const, fontFamily: F.d, fontWeight: 600, fontSize: 16, color: "#FFF" }}>
         {title}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -31,13 +31,13 @@ export function MobileHeader({
         </button>
         <div style={{ position: "relative" as const }}>
           <button onClick={() => setShowProfile(v => !v)} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(255,255,255,0.30)", background: "rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 11, color: "#FFF" }}>PS</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>PS</span>
           </button>
           {showProfile && (
             <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: C.white, borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.18)", minWidth: 200, overflow: "hidden" }}>
               <div style={{ padding: "14px 16px", background: "rgba(0,128,128,0.05)", borderBottom: `1px solid ${C.bdr}` }}>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Priya Sharma</div>
-                <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
               </div>
               <div style={{ padding: "6px 0" }}>
                 <button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.text, textAlign: "left" as const }}>

@@ -44,7 +44,7 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   const d = payload[0].payload;
   return (
     <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 600 }}>
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
         {label} — {d.sarees} sarees dispatched — ₹{d.revenue.toLocaleString("en-IN")} revenue
       </span>
     </div>
@@ -64,25 +64,25 @@ export function WholesaleSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>May 2026 — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.green }}>₹{wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
               </div>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={wholesaleWeeklyData}>
               <CartesianGrid key="wsw-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="wsw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="wsw-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+              <XAxis key="wsw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="wsw-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
               <Tooltip key="wsw-tip" content={<WholesaleWeeklyTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
               <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0] as any} />
             </BarChart>
@@ -95,8 +95,8 @@ export function WholesaleSalesReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={wsMonthlyRev}>
               <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} width={42} />
+              <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} width={42} />
               <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
               <Bar key="ws-rev" dataKey="rev" name="Revenue">
                 {wsMonthlyRev.map(e => <Cell key={`ws-cell-${e.month}`} fill={e.month === "May" ? T.antiqueGold : "rgba(200,155,71,0.38)"} />)}
@@ -110,7 +110,7 @@ export function WholesaleSalesReport() {
             {wsOutstanding.map((d, i) => (
               <div key={d.customer}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{d.customer}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : `₹${d.amt.toLocaleString("en-IN")}`}</span>
                 </div>
                 <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / 500000) * 100)} color={d.color} height={6} delay={i * 0.06} />
@@ -170,13 +170,13 @@ export function WholesaleSalesReport() {
                   const statusColor = o.paymentStatus === "paid" ? T.green : o.paymentStatus === "partial" ? T.antiqueGold : T.crimson;
                   return (
                     <tr key={o.ref} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${statusColor}` }}>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{o.ref}</span></td>
+                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span></td>
                       <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span></td>
                       <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{o.total}</td>
                       <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? `₹${invoiceAmt.toLocaleString("en-IN")}` : "—"}</td>
                       <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? `₹${collected.toLocaleString("en-IN")}` : "—"}</td>
                       <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? `₹${balance.toLocaleString("en-IN")}` : "— Paid"}</td>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11.5 }}>{o.dispatchDate || "—"}</span></td>
+                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span></td>
                       <td style={{ ...TD, textAlign: "center" }}>
                         <StatusPill label={o.paymentStatus === "paid" ? "✓ Paid" : o.paymentStatus === "partial" ? "◑ Partial" : "⚠ Pending"} type={o.paymentStatus === "paid" ? "ok" : o.paymentStatus === "partial" ? "warn" : "bad"} />
                       </td>

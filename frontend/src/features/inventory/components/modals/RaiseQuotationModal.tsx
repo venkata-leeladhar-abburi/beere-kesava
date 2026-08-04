@@ -69,9 +69,9 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
                   <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
+                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 10, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
                 </div>
                 {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)", margin: "0 4px" }} />}
               </div>
@@ -104,7 +104,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
                 ))}
               </div>
               <div style={{ marginTop: 18 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
                 <div style={{ position: "relative" }}>
                   <select value={bulkOrderRef} onChange={e => setBulkOrderRef(e.target.value)} style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}>
                     <option value="">— Not linked to a bulk order —</option>

@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 const T = {
   royalBurgundy: "#6E0F2D",
   luxuryBrown: "#3B2314",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   silkCream: "#F7F2EA",
   borderDef: "rgba(110,15,45,0.10)",
 };

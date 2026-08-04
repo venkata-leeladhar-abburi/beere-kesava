@@ -40,11 +40,11 @@ export function WarpCard({ item, onAction }: { item: typeof WARP_DATA[0]; onActi
             )}
           </div>
           <div>
-            <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>
+            <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
               {item.name}
             </div>
             <span style={{
-              fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy,
+              fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy,
               background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 7px",
             }}>
               {item.code}
@@ -61,7 +61,7 @@ export function WarpCard({ item, onAction }: { item: typeof WARP_DATA[0]; onActi
 
       {/* Raised chip */}
       <span style={{
-        fontFamily: F.mono, fontSize: 10, color: T.taupe,
+        fontFamily: F.mono, fontSize: 12, color: T.taupe,
         background: T.cream, borderRadius: 6, padding: "4px 10px", alignSelf: "flex-start",
       }}>
         Request raised: {item.raised}
@@ -101,7 +101,7 @@ export function WarpCard({ item, onAction }: { item: typeof WARP_DATA[0]; onActi
             width: item.pct + "%",
           }} />
         </div>
-        <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 11, color: T.green }}>
+        <div style={{ textAlign: "right", fontFamily: F.mono, fontSize: 12, color: T.green }}>
           {item.pct}%
         </div>
       </div>

@@ -19,8 +19,8 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               <Users size={26} color="#FFFDF9" weight="fill" />
             </div>
             <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 32, color: T.luxuryBrown, margin: 0, lineHeight: 1.1 }}>All Weavers</h2>
-              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, marginTop: 3 }}>350 weavers registered · 84 currently active</div>
+              <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0, lineHeight: 1.1 }}>All Weavers</h2>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 3 }}>350 weavers registered · 84 currently active</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}><motion.button
@@ -69,7 +69,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
                 key={key} onClick={() => setView(key)}
                 animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
                 transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 20px", fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 20px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}
               >
                 <PhIcon size={18} weight={view === key ? "fill" : "regular"} /> {label}
               </motion.button>
@@ -83,15 +83,15 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
             <motion.button
               key={f} onClick={() => setFilter(f)}
               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14.5, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: filter === f ? T.royalBurgundy : "#FFFFFF", color: filter === f ? "#FFFDF9" : T.luxuryBrown, border: filter === f ? `1px solid ${T.royalBurgundy}` : `1.5px solid rgba(110,15,45,0.16)`, boxShadow: filter === f ? "0 4px 14px rgba(110,15,45,0.22)" : "none", transition: "all 0.18s" }}
+              style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: filter === f ? T.royalBurgundy : "#FFFFFF", color: filter === f ? "#FFFDF9" : T.luxuryBrown, border: filter === f ? `1px solid ${T.royalBurgundy}` : `1.5px solid rgba(110,15,45,0.16)`, boxShadow: filter === f ? "0 4px 14px rgba(110,15,45,0.22)" : "none", transition: "all 0.18s" }}
             >
               {f}
             </motion.button>
           ))}
-          <motion.button whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 14.5, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: "#FFFFFF", color: T.taupe, border: "1.5px solid rgba(110,15,45,0.16)" }}>
+          <motion.button whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 14, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: "#FFFFFF", color: T.taupe, border: "1.5px solid rgba(110,15,45,0.16)" }}>
             <PhMapPin size={16} weight="regular" /> Filter by Village <CaretDown size={14} weight="bold" />
           </motion.button>
-          <motion.button whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 14.5, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: "#FFFFFF", color: T.taupe, border: "1.5px solid rgba(110,15,45,0.16)" }}>
+          <motion.button whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 14, padding: "9px 20px", borderRadius: 99, cursor: "pointer", background: "#FFFFFF", color: T.taupe, border: "1.5px solid rgba(110,15,45,0.16)" }}>
             Sort: Most Sarees This Month <CaretDown size={14} weight="bold" />
           </motion.button>
         </div>

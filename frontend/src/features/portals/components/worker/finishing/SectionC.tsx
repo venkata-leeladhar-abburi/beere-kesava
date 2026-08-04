@@ -46,8 +46,8 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
     }).sort((a, b) => parseDMYDate(b.lastAssignmentDate) - parseDMYDate(a.lastAssignmentDate));
   }, [assignments, returns]);
 
-  const TH: React.CSSProperties = { fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: "left" as const, padding: "9px 10px", whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.u, fontSize: 12.5, color: C.text, padding: "10px 10px", verticalAlign: "middle" as const };
+  const TH: React.CSSProperties = { fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: "left" as const, padding: "9px 10px", whiteSpace: "nowrap" as const };
+  const TD: React.CSSProperties = { fontFamily: F.u, fontSize: 12, color: C.text, padding: "10px 10px", verticalAlign: "middle" as const };
 
   return (
     <div style={{ ...card, padding: 16, marginBottom: 16 }}>
@@ -76,16 +76,16 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                   </div>
                   <div style={{ display: "flex", gap: 14 }}>
                     <div>
-                      <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Assigned</div>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: C.text }}>{r.assignedSareeIds.length}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Assigned</div>
+                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.text }}>{r.assignedSareeIds.length}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Returned</div>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: C.text }}>{r.returnedSareeIds.length}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Returned</div>
+                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.text }}>{r.returnedSareeIds.length}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Pending</div>
-                      <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: pending > 0 ? "#B85C00" : C.text, background: pending > 0 ? "rgba(184,92,0,0.10)" : "transparent", borderRadius: 999, padding: pending > 0 ? "1px 8px" : 0 }}>{pending}</span>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Pending</div>
+                      <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: pending > 0 ? "#B85C00" : C.text, background: pending > 0 ? "rgba(184,92,0,0.10)" : "transparent", borderRadius: 999, padding: pending > 0 ? "1px 8px" : 0 }}>{pending}</span>
                     </div>
                   </div>
                 </div>
@@ -97,19 +97,19 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                         <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(107,26,42,0.06)`, paddingBottom: 8 }}>
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
+                              <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
                               {a.quotationRef && (
-                                <span style={{ fontFamily: F.u, fontSize: 9.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
+                                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
                               )}
                             </div>
-                            <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
+                            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
                           </div>
                           {!ret ? (
-                            <span style={{ fontFamily: F.u, fontSize: 11, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
+                            <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
                           ) : ret.condition === "perfect" ? (
-                            <span style={{ fontFamily: F.u, fontSize: 11, color: C.green, fontWeight: 600, flexShrink: 0 }}>Perfect ✓</span>
+                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flexShrink: 0 }}>Perfect ✓</span>
                           ) : (
-                            <span style={{ fontFamily: F.u, fontSize: 11, color: C.crim, fontWeight: 600, flexShrink: 0 }}>Damaged ⚠</span>
+                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim, fontWeight: 600, flexShrink: 0 }}>Damaged ⚠</span>
                           )}
                         </div>
                       );
@@ -148,7 +148,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                         <td style={{ ...TD, color: pending > 0 ? "#B85C00" : C.text, fontWeight: pending > 0 ? 700 : 400 }}>{pending}</td>
                         <td style={{ ...TD, color: C.green, fontWeight: 600 }}>{r.perfect}</td>
                         <td style={{ ...TD, color: r.damaged > 0 ? C.crim : C.text, fontWeight: r.damaged > 0 ? 700 : 400 }}>{r.damaged}</td>
-                        <td style={{ ...TD, fontFamily: F.m, fontSize: 11 }}>{r.lastAssignmentDate}</td>
+                        <td style={{ ...TD, fontFamily: F.m, fontSize: 12 }}>{r.lastAssignmentDate}</td>
                         <td style={TD}>
                           <button onClick={() => setExpanded(expanded === r.name ? null : r.name)}
                             style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" as const }}>
@@ -176,21 +176,21 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                                     const ret = returns.find(rt => rt.sareeId === a.sareeId);
                                     return (
                                       <tr key={a.id} style={{ borderTop: ai > 0 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
-                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 11.5, color: C.burg, fontWeight: 600 }}>{a.sareeId}</td>
+                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</td>
                                         <td style={TD}>
                                           {a.quotationRef ? (
-                                            <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px" }}>{a.quotationRef}</span>
-                                          ) : <span style={{ color: C.muted, fontSize: 11 }}>—</span>}
+                                            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px" }}>{a.quotationRef}</span>
+                                          ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>}
                                         </td>
-                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 11 }}>{a.assignedDate}</td>
-                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 11 }}>{ret?.receivedDate ?? "—"}</td>
+                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 12 }}>{a.assignedDate}</td>
+                                        <td style={{ ...TD, fontFamily: F.m, fontSize: 12 }}>{ret?.receivedDate ?? "—"}</td>
                                         <td style={TD}>
                                           {!ret ? (
-                                            <span style={{ fontFamily: F.u, fontSize: 11, color: "#B85C00", fontWeight: 600 }}>Awaiting Return</span>
+                                            <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600 }}>Awaiting Return</span>
                                           ) : ret.condition === "perfect" ? (
-                                            <span style={{ fontFamily: F.u, fontSize: 11, color: C.green, fontWeight: 600 }}>Perfect ✓</span>
+                                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600 }}>Perfect ✓</span>
                                           ) : (
-                                            <span style={{ fontFamily: F.u, fontSize: 11, color: C.crim, fontWeight: 600 }}>Damaged ⚠</span>
+                                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim, fontWeight: 600 }}>Damaged ⚠</span>
                                           )}
                                         </td>
                                         <td style={TD}>
@@ -199,7 +199,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                                               <Camera size={12} color="rgba(255,255,255,0.85)" />
                                             </div>
                                           ) : (
-                                            <span style={{ color: C.muted, fontSize: 11 }}>—</span>
+                                            <span style={{ color: C.muted, fontSize: 12 }}>—</span>
                                           )}
                                         </td>
                                       </tr>

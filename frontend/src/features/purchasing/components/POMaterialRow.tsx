@@ -58,18 +58,18 @@ export function POMaterialRow({
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10, alignItems: "start" }}>
         {/* Material Type */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>
+          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>
           <select value={item.materialType} onChange={e => set("materialType", e.target.value)} style={selectStyle}>
             <option value="Warp">Warp</option>
             <option value="Resham">Resham</option>
             <option value="Jari">Jari</option>
           </select>
-          {errors[`mat-${item._key}-type`] && <div style={{ color: T.crimson, fontSize: 11, marginTop: 3 }}>{errors[`mat-${item._key}-type`]}</div>}
+          {errors[`mat-${item._key}-type`] && <div style={{ color: T.crimson, fontSize: 12, marginTop: 3 }}>{errors[`mat-${item._key}-type`]}</div>}
         </div>
 
         {/* Description */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Description</label>
+          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Description</label>
           <textarea
             value={item.description ?? ""}
             onChange={e => set("description", e.target.value)}
@@ -81,7 +81,7 @@ export function POMaterialRow({
 
         {/* Quantity */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
+          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
             Quantity * {item.materialType !== "Jari" ? "(kg + g)" : ""}
           </label>
           {item.materialType === "Jari" ? (
@@ -104,10 +104,10 @@ export function POMaterialRow({
                   onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
                   style={{ ...inputStyle, paddingRight: 44 }} placeholder="0"
                 />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
               </div>
               {item.quantity > 0 && (
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold }}>
                   = {item.unit === "Reels" ? `${Math.round(item.quantity / 4)} Buns` : `${Math.round(item.quantity * 4)} Reels`}
                   <span style={{ color: T.taupe }}> (1 Bun = 4 Reels)</span>
                 </div>
@@ -133,16 +133,16 @@ export function POMaterialRow({
                   onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
                   style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
                 />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
               </div>
               {item.quantity > 0 && (
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
                   = {item.unit === "kg" ? `${(item.quantity * 1000).toFixed(0)} g` : `${(item.quantity / 1000).toFixed(3)} kg`}
                 </div>
               )}
             </div>
           )}
-          {errors[`mat-${item._key}-qty`] && <div style={{ color: T.crimson, fontSize: 11, marginTop: 3 }}>{errors[`mat-${item._key}-qty`]}</div>}
+          {errors[`mat-${item._key}-qty`] && <div style={{ color: T.crimson, fontSize: 12, marginTop: 3 }}>{errors[`mat-${item._key}-qty`]}</div>}
         </div>
       </div>
     </div>

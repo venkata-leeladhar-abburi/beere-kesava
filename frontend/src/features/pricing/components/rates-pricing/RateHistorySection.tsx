@@ -35,7 +35,7 @@ export function RateHistorySection() {
           <tbody>
             {HISTORY.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).map((row, i) => (
               <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(110,15,45,0.015)" }}>
-                <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>{row.date}</td>
+                <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{row.date}</td>
                 <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{row.by}</td>
                 <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{row.what}</td>
                 <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson }}>{row.old}</td>
@@ -53,7 +53,7 @@ export function RateHistorySection() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Lock size={12} color={T.taupe} />
-            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
               This history is permanent and cannot be edited or deleted.
             </span>
           </div>

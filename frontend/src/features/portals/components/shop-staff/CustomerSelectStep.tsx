@@ -64,7 +64,7 @@ export function CustomerSelectStep({
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ margin: "0 20px 16px" }}>
-        <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Customer Details</div>
+        <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Customer Details</div>
         <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Search a previous customer or add a new one</div>
       </div>
 
@@ -97,7 +97,7 @@ export function CustomerSelectStep({
               boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
             }}>
               <div style={{ padding: "8px 14px", background: "rgba(107,26,42,0.03)", borderBottom: `1px solid ${C.bdr}` }}>
-                <span style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+                <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {custSearch.length >= 2 ? `${filteredCustomers.length} result${filteredCustomers.length !== 1 ? "s" : ""} for "${custSearch}"` : "Recent Customers"}
                 </span>
               </div>
@@ -112,11 +112,11 @@ export function CustomerSelectStep({
                   </div>
                   <div style={{ flex: 1, textAlign: "left" as const }}>
                     <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{c.name}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 1 }}>+91 {c.phone}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 1 }}>+91 {c.phone}</div>
                   </div>
                   <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{c.purchases} purchases</div>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.gold }}>{c.lastPurchase}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{c.purchases} purchases</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>{c.lastPurchase}</div>
                   </div>
                 </button>
               )) : (
@@ -152,13 +152,13 @@ export function CustomerSelectStep({
                     <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF" }}>{selectedCustomer.initials}</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{selectedCustomer.name}</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{selectedCustomer.name}</div>
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>+91 {selectedCustomer.phone}</div>
                   </div>
                 </div>
                 <button onClick={() => setIsEditingCustomer(true)} style={{ background: "rgba(107,26,42,0.07)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
                   <Pencil size={12} color={C.burg} />
-                  <span style={{ fontFamily: F.u, fontSize: 11, color: C.burg }}>Edit</span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Edit</span>
                 </button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
@@ -169,7 +169,7 @@ export function CustomerSelectStep({
                 ].map((s, i) => (
                   <div key={i} style={{ background: "rgba(107,26,42,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: s.color, lineHeight: 1.3 }}>{s.val}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginTop: 2 }}>{s.label}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
                   </div>
                 ))}
               </div>

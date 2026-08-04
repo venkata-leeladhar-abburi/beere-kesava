@@ -7,7 +7,7 @@ import imgHero from '../../../../../assets/hero.webp';
 
 export function Hero() {
   return (
-    <section style={{ position: "relative", height: "calc(100vh - 90px - 100px)", minHeight: 500, overflow: "hidden", background: "#0D0207" }}>
+    <section style={{ position: "relative", height: "calc(100dvh - 90px - 100px)", minHeight: 500, overflow: "hidden", background: "#0D0207" }}>
       {/* Ken Burns hero image — actual Beere Kesava showroom */}
       <motion.img
         src={imgHero}
@@ -42,7 +42,7 @@ export function Hero() {
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
           <div style={{ width: 24, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
             Since 1999 · Heritage Craftsmanship
           </span>
         </motion.div>
@@ -89,7 +89,7 @@ export function Hero() {
             whileHover={{ scale: 1.04, boxShadow: "0px 16px 48px rgba(110,15,45,0.55)" }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.2 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "14px 28px", borderRadius: 16, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 13.5, color: T.warmCream, letterSpacing: "0.2px", boxShadow: `0 8px 32px rgba(110,15,45,0.40)` }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "14px 28px", borderRadius: 16, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.warmCream, letterSpacing: "0.2px", boxShadow: `0 8px 32px rgba(110,15,45,0.40)` }}
           >
             Explore Production
             <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -122,7 +122,7 @@ export function Hero() {
             <rect x="1" y="1" width="12" height="22" rx="6" stroke="rgba(245,232,208,0.22)" strokeWidth="1.5" />
             <rect x="5.5" y="5" width="3" height="6" rx="1.5" fill="rgba(200,155,71,0.50)" />
           </motion.svg>
-          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 9, color: "rgba(245,232,208,0.28)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Scroll to Explore</span>
+          <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.28)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Scroll to Explore</span>
         </motion.div>
       </div>
 

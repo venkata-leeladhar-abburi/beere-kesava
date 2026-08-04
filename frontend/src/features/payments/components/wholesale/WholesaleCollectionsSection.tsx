@@ -112,17 +112,17 @@ export function WholesaleCollectionsSection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
                 Wholesale Customer Collections
               </h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px" }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
               Track all outstanding and collected payments from wholesale customers.
             </p>
           </div>
           <DownloadGate>
             <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
               <Download size={15} />Download Collections Report
             </motion.button>
           </DownloadGate>
@@ -207,7 +207,7 @@ export function WholesaleCollectionsSection() {
               <motion.button key={key} onClick={() => setView(key as any)}
                 animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
                 transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
                 <Icon size={13} />{label}
               </motion.button>
             ))}

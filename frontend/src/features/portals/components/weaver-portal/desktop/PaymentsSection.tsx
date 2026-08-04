@@ -45,15 +45,15 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
           {/* Left: Deductions + History table */}
           <div>
             <DSectionHeader label="Deductions This Month" />
-            <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>Amounts deducted from your gross making charges this month.</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>Amounts deducted from your gross making charges this month.</div>
 
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.crim}`, borderRadius: 20, padding: "26px 28px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.crim }}>Defective Saree Deduction</div>
-                  <div style={{ fontFamily: F.m, fontSize: 15, color: C.burg, marginTop: 6 }}>PADMA-L1-004</div>
+                  <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg, marginTop: 6 }}>PADMA-L1-004</div>
                 </div>
-                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: C.crim }}>₹450</div>
+                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.crim }}>₹450</div>
               </div>
               <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
                 <span style={{ background: "rgba(192,57,43,0.10)", color: C.crim, borderRadius: 999, padding: "5px 14px", fontFamily: F.m, fontSize: 13 }}>Thread Break</span>
@@ -77,7 +77,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                 ].map((p, i) => (
                   <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "20px 26px", borderBottom: i < 2 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text }}>{p.month}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>{p.sarees}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{p.sarees}</div>
                     <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}>{p.amount}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <Check size={15} color={C.green} />
@@ -93,9 +93,9 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 22 }}>
             {/* Payout card */}
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, borderRadius: 20, padding: "30px 28px", boxShadow: "0 6px 28px rgba(61,14,26,0.22)" }}>
-              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 12 }}>THIS MONTH'S PAYOUT</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 56, color: C.gold, lineHeight: 1, marginBottom: 10 }}>₹7,650</div>
-              <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Net amount after deductions</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 12 }}>THIS MONTH'S PAYOUT</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 60, color: C.gold, lineHeight: 1, marginBottom: 10 }}>₹7,650</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Net amount after deductions</div>
               <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13, color: C.gold }}>
                 Payment by end of June 2026
               </div>
@@ -105,7 +105,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, padding: "26px 28px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <TrendingUp size={20} color={C.burg} />
-                <span style={{ fontFamily: F.u, fontSize: 17, fontWeight: 700, color: C.text }}>Earning Trend</span>
+                <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Earning Trend</span>
               </div>
               {[
                 { month: "Feb 2026", amt: 7560, pct: 95 },
@@ -118,7 +118,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                   <div style={{ flex: 1, height: 12, background: "rgba(107,26,42,0.08)", borderRadius: 999, overflow: "hidden" }}>
                     <div style={{ width: `${e.pct}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
                   </div>
-                  <span style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.text, width: 56, textAlign: "right" as const }}>₹{(e.amt / 1000).toFixed(1)}k</span>
+                  <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text, width: 56, textAlign: "right" as const }}>₹{(e.amt / 1000).toFixed(1)}k</span>
                 </div>
               ))}
             </div>
@@ -126,7 +126,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             {/* Schedule */}
             <div style={{ background: "#F0FFF4", border: `1px solid rgba(30,102,64,0.22)`, borderRadius: 18, padding: "22px 26px" }}>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.green, marginBottom: 10 }}>Payment Schedule</div>
-              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.7 }}>Payments are processed at month end. You'll receive a WhatsApp message and in-app notification when your payment is credited.</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.7 }}>Payments are processed at month end. You'll receive a WhatsApp message and in-app notification when your payment is credited.</div>
             </div>
           </div>
         </div>

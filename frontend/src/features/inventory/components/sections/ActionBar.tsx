@@ -62,7 +62,7 @@ export function ActionBar({
           >
             <Scan size={14} color="#FFF" /> Scan
           </button>
-          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             Scans a random unselected saree from the table below and selects it.
           </span>
         </div>

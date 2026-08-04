@@ -1,0 +1,72 @@
+# Font-size floor review — suppliers
+
+65 sites were raised from a sub-12px size to the 12px floor.
+Each is a visible size increase — confirm the surrounding layout still works.
+
+| File | Line | From | To |
+|---|---|---|---|
+| features/suppliers/components/sections/ExternalPurchaseHistorySection.tsx | 25 | 10px | 12px |
+| features/suppliers/components/sections/ExternalPurchaseHistorySection.tsx | 32 | 11.5px | 12px |
+| features/suppliers/components/sections/ExternalPurchaseHistorySection.tsx | 40 | 11px | 12px |
+| features/suppliers/components/sections/PurchaseHistoryTable.tsx | 23 | 10px | 12px |
+| features/suppliers/components/sections/PurchaseHistoryTable.tsx | 36 | 11.5px | 12px |
+| features/suppliers/components/sections/PurchaseHistoryTable.tsx | 40 | 11px | 12px |
+| features/suppliers/components/sections/PurchaseHistoryTable.tsx | 59 | 11.5px | 12px |
+| features/suppliers/components/sections/SareeInventoryTable.tsx | 24 | 9.5px | 12px |
+| features/suppliers/components/sections/SareeInventoryTable.tsx | 41 | 11.5px | 12px |
+| features/suppliers/components/sections/SareeInventoryTable.tsx | 42 | 11.5px | 12px |
+| features/suppliers/components/sections/SareeInventoryTable.tsx | 43 | 11.5px | 12px |
+| features/suppliers/components/sections/SareeInventoryTable.tsx | 44 | 11.5px | 12px |
+| features/suppliers/components/sections/SupplierAnalytics.tsx | 158 | 10.5px | 12px |
+| features/suppliers/components/sections/SupplierAnalytics.tsx | 171 | 10px | 12px |
+| features/suppliers/components/sections/SupplierCard.tsx | 29 | 10px | 12px |
+| features/suppliers/components/sections/SupplierCard.tsx | 50 | 9.5px | 12px |
+| features/suppliers/components/sections/SupplierCard.tsx | 57 | 11.5px | 12px |
+| features/suppliers/components/sections/SupplierCard.tsx | 58 | 11px | 12px |
+| features/suppliers/components/sections/SupplierFormFields.tsx | 23 | 11px | 12px |
+| features/suppliers/components/sections/SuppliersHero.tsx | 30 | 11px | 12px |
+| features/suppliers/components/sections/SuppliersHero.tsx | 70 | 9.5px | 12px |
+| features/suppliers/components/sections/SuppliersHero.tsx | 72 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/ContactTab.tsx | 22 | 9.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/ContactTab.tsx | 27 | 9.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/ContactTab.tsx | 32 | 9.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/ContactTab.tsx | 38 | 9.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 67 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 70 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 85 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 149 | 9px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 185 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 188 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 191 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/OverviewTab.tsx | 193 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/PaymentsTab.tsx | 28 | 11px | 12px |
+| features/suppliers/components/sections/supplierProfile/PaymentsTab.tsx | 46 | 10px | 12px |
+| features/suppliers/components/sections/supplierProfile/PaymentsTab.tsx | 53 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/PaymentsTab.tsx | 55 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/PaymentsTab.tsx | 57 | 11.5px | 12px |
+| features/suppliers/components/sections/supplierProfile/SupplierProfile.tsx | 176 | 11px | 12px |
+| features/suppliers/components/sections/analytics/OutstandingCard.tsx | 31 | 9.5px | 12px |
+| features/suppliers/components/sections/analytics/OutstandingCard.tsx | 33 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/OutstandingCard.tsx | 45 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/OutstandingCard.tsx | 50 | 10.5px | 12px |
+| features/suppliers/components/sections/analytics/OutstandingCard.tsx | 62 | 10px | 12px |
+| features/suppliers/components/sections/analytics/PurchaseTrendCard.tsx | 35 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/PurchaseTrendCard.tsx | 44 | 11px | 12px |
+| features/suppliers/components/sections/analytics/PurchaseTrendCard.tsx | 49 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 41 | 10px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 42 | 10.5px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 48 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 91 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 127 | 10.5px | 12px |
+| features/suppliers/components/sections/analytics/RatingAndModeCards.tsx | 138 | 9.5px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 37 | 9.5px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 45 | 11.5px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 49 | 10.5px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 59 | 11px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 61 | 11px | 12px |
+| features/suppliers/components/sections/analytics/TopSuppliersCard.tsx | 62 | 10px | 12px |
+| features/suppliers/components/sections/analytics/TypeMixCard.tsx | 41 | 10.5px | 12px |
+| features/suppliers/components/sections/analytics/TypeMixCard.tsx | 51 | 11.5px | 12px |
+| features/suppliers/components/modals/AddSupplierModal.tsx | 41 | 11px | 12px |
+| features/suppliers/components/common/primitives.tsx | 38 | 11px | 12px |
+| features/suppliers/components/common/primitives.tsx | 48 | 11px | 12px |

@@ -23,7 +23,7 @@ const COMMITMENTS = ["200+ Skilled Weavers", "Authentic Banarasi Patterns", "Pre
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ flex: 1, minWidth: 150 }}>
-      <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 800, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", marginBottom: 14, borderBottom: `1px solid rgba(200,155,71,0.20)`, paddingBottom: 8 }}>
+      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", marginBottom: 14, borderBottom: `1px solid rgba(200,155,71,0.20)`, paddingBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -33,7 +33,7 @@ function FooterCol({ title, children }: { title: string; children: React.ReactNo
 
 function FooterLink({ label }: { label: string }) {
   return (
-    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,253,249,0.65)", marginBottom: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "color 0.2s" }}>
+    <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginBottom: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "color 0.2s" }}>
       <ChevronDown size={10} style={{ transform: "rotate(-90deg)", color: T.antiqueGold, flexShrink: 0 }} />
       {label}
     </div>
@@ -55,10 +55,10 @@ export function ProductionHistoryFooter() {
               />
               <div>
                 <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.2 }}>Beers Keshara</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
+                <div style={{ fontFamily: F.display, fontSize: 14, color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
               </div>
             </div>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, letterSpacing: "2px", marginBottom: 10 }}>SINCE 1944</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", marginBottom: 10 }}>SINCE 1944</div>
             <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.55)", lineHeight: 1.7, marginBottom: 20 }}>
               Generating self-employment, we are traditional banarasi silk weaving manufacturers.
             </p>
@@ -103,7 +103,7 @@ export function ProductionHistoryFooter() {
 
         {/* Bottom bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", flexWrap: "wrap", gap: 12 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 11.5, color: "rgba(255,253,249,0.40)" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.40)" }}>
             © 2025 Beers Keshara &amp; Brothers Silks. All rights reserved.
           </span>
           <span style={{ fontFamily: F.display, fontSize: 13, fontStyle: "italic", color: T.antiqueGold, opacity: 0.8 }}>

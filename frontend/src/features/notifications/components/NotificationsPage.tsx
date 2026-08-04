@@ -136,14 +136,14 @@ export function NotificationsPage() {
   });
 
   return (
-    <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* HEADER */}
       <header style={{ background: "#2C0913", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
         <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · NOTIFICATIONS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 52, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
               Notifications
             </h1>
             {unread > 0 && (
@@ -198,7 +198,7 @@ export function NotificationsPage() {
                   color: active ? "#FFF" : T.luxuryBrown,
                   fontFamily: F.ui,
                   fontWeight: 600,
-                  fontSize: 13.5,
+                  fontSize: 13,
                   cursor: "pointer",
                   boxShadow: active ? "0 6px 20px rgba(110,15,45,0.14)" : "0 2px 8px rgba(0,0,0,0.02)",
                   transition: "background 0.2s, border-color 0.2s, color 0.2s"
@@ -208,7 +208,7 @@ export function NotificationsPage() {
                 <span>{c.label}</span>
                 <span style={{
                   fontFamily: F.mono,
-                  fontSize: 10.5,
+                  fontSize: 12,
                   fontWeight: 700,
                   padding: "2px 7px",
                   borderRadius: 999,
@@ -241,10 +241,10 @@ export function NotificationsPage() {
                   borderBottom: active ? `2px solid ${T.royalBurgundy}` : "2px solid transparent",
                 }}>
                 {cfg && <cfg.Icon size={14} color={active ? T.royalBurgundy : cfg.color} />}
-                <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 13.5, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 13, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
                   {f.label}
                 </span>
-                <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
                   {count}
                 </span>
               </button>
@@ -273,9 +273,9 @@ export function NotificationsPage() {
                 <FadeUp>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                     <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold, flexShrink: 0 }} />
-                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, letterSpacing: "-0.2px" }}>{dateGroup}</span>
+                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.2px" }}>{dateGroup}</span>
                     <div style={{ flex: 1, height: 1, background: T.borderDef, marginLeft: 4 }} />
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
                   </div>
                 </FadeUp>
 
@@ -316,24 +316,24 @@ export function NotificationsPage() {
                                   {!isRead && (
                                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
                                   )}
-                                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1 }}>
+                                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1 }}>
                                     {n.title}
                                   </span>
-                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
                                     <PriorityIcon size={10} /> {cfg.label}
                                   </span>
                                 </div>
 
-                                <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13.5, color: T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box" as any, WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as any, overflow: selected ? "visible" : "hidden" }}>
+                                <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box" as any, WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as any, overflow: selected ? "visible" : "hidden" }}>
                                   {n.body}
                                 </p>
 
                                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 10, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "3px 10px" }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "3px 10px" }}>
                                     <CatIcon size={10} /> {catCfg.label}
                                   </span>
 
-                                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{n.time}</span>
+                                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{n.time}</span>
 
                                   {n.action && (
                                     <motion.button
@@ -371,7 +371,7 @@ export function NotificationsPage() {
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                 <Inbox size={28} color={T.taupe} />
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, marginBottom: 8 }}>No notifications</div>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>No notifications</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No notifications match the current filter.</div>
             </div>
           )}

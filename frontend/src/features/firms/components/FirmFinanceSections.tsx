@@ -42,7 +42,7 @@ function Sel({ value, onChange, children }: { value: string; onChange: (v: strin
 }
 
 function FLabel({ children, req }: { children: React.ReactNode; req?: boolean }) {
-  return <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em" }}>{children}{req && <span style={{ color: T.crimson }}> *</span>}</div>;
+  return <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em" }}>{children}{req && <span style={{ color: T.crimson }}> *</span>}</div>;
 }
 
 export function FinSummaryStrip({ income, expenses, misc }: { income: FinancialEntry[]; expenses: FinancialEntry[]; misc: MiscEntry[] }) {
@@ -61,7 +61,7 @@ export function FinSummaryStrip({ income, expenses, misc }: { income: FinancialE
         <div key={i} style={{ padding: "14px 18px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", background: s.bg }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
             {s.icon}
-            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</span>
           </div>
           <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 18, color: s.color }}>{fmtFull(s.val)}</div>
         </div>
@@ -188,9 +188,9 @@ export function EntryRow({ entry, type }: { entry: FinancialEntry | MiscEntry; t
       <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
         {isIncome ? "+" : "−"}₹{entry.amount.toLocaleString("en-IN")}
       </div>
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{entry.date}</div>
+      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.date}</div>
       <div>
-        <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 11, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
+        <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 12, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
           {cat}
         </span>
       </div>
@@ -218,8 +218,8 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
       <div style={{ background: bg, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <span style={{ color }}>{icon}</span>
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{title}</span>
-        <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 15, color }}>{fmtFull(total)}</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginLeft: 4 }}>({entries.length} entries)</span>
+        <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color }}>{fmtFull(total)}</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>({entries.length} entries)</span>
         {open ? <ChevronUp size={15} color={T.taupe} /> : <ChevronDown size={15} color={T.taupe} />}
       </div>
       <AnimatePresence>
@@ -243,7 +243,7 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
             {entries.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 {["Description", "Amount", "Date", "Category", ""].map((h, i) => (
-                  <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
+                  <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
                 ))}
               </div>
             )}
@@ -273,10 +273,10 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
       <div style={{ background: T.bgGold, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <Minus size={16} color={T.antiqueGold} />
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>Extra / Miscellaneous Payments</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.green }}>{fmtFull(totalInc)} in</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, margin: "0 4px" }}>·</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson }}>{fmtFull(totalExp)} out</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginLeft: 4 }}>({entries.length})</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{fmtFull(totalInc)} in</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 4px" }}>·</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{fmtFull(totalExp)} out</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>({entries.length})</span>
         {open ? <ChevronUp size={15} color={T.taupe} /> : <ChevronDown size={15} color={T.taupe} />}
       </div>
       <AnimatePresence>
@@ -287,7 +287,7 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
                 style={{ height: 34, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${T.antiqueGold}`, background: "rgba(200,155,71,0.10)", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                 <PlusCircle size={13} /> Add Misc Entry
               </button>
-              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, alignSelf: "center" }}>Manual entry only — specify income or expense per row</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center" }}>Manual entry only — specify income or expense per row</span>
             </div>
             <AnimatePresence>
               {adding && (
@@ -299,7 +299,7 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
             {entries.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
                 {["Description", "Amount", "Date", "Type", ""].map((h, i) => (
-                  <div key={i} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
+                  <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
                 ))}
               </div>
             )}

@@ -34,21 +34,21 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
             <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
                 <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search batch ID or vendor…"
-                  style={{ width: "100%", height: 34, borderRadius: 8, border: `1px solid ${T.borderDef}`, padding: "0 10px", fontFamily: F.ui, fontSize: 12.5, outline: "none", boxSizing: "border-box" as const }} />
+                  style={{ width: "100%", height: 34, borderRadius: 8, border: `1px solid ${T.borderDef}`, padding: "0 10px", fontFamily: F.ui, fontSize: 12, outline: "none", boxSizing: "border-box" as const }} />
               </div>
               <div style={{ maxHeight: 220, overflowY: "auto" as const }}>
                 {filtered.length === 0 ? (
-                  <div style={{ padding: 14, textAlign: "center" as const, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>No {materialType} batches found</div>
+                  <div style={{ padding: 14, textAlign: "center" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>No {materialType} batches found</div>
                 ) : filtered.map(g => (
                   <button key={g.grnBatchId} onClick={() => { onChange(g.grnBatchId); setOpen(false); setQ(""); }} style={{
                     width: "100%", textAlign: "left" as const, padding: "10px 14px", border: "none", borderBottom: `1px solid ${T.borderDef}`,
                     background: value === g.grnBatchId ? "rgba(110,15,45,0.05)" : "#FFF", cursor: "pointer",
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, fontWeight: 700 }}>{g.grnBatchId}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.green }}>{g.availableQty} {g.unit} left</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{g.grnBatchId}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{g.availableQty} {g.unit} left</span>
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{g.vendor} · {g.dateReceived}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.vendor} · {g.dateReceived}</div>
                   </button>
                 ))}
               </div>

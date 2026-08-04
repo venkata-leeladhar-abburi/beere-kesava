@@ -44,13 +44,13 @@ function MobileProfile() {
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, padding: "28px 20px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 26, fontWeight: 700, color: "#FFF" }}>RK</span>
+            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>RK</span>
           </div>
           <div>
-            <div style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
-            <div style={{ fontFamily: F.m, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>WK-042</div>
+            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>WK-042</div>
             <div style={{ marginTop: 6, display: "inline-block", background: "rgba(196,146,58,0.30)", border: "1px solid rgba(196,146,58,0.50)", borderRadius: 999, padding: "3px 10px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#C4923A" }}>Floor Supervisor</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04" }}>Floor Supervisor</span>
             </div>
           </div>
         </div>
@@ -65,14 +65,14 @@ function MobileProfile() {
         ].map((s, i) => (
           <div key={i} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.burg, marginBottom: 3 }}>{s.val}</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>{s.label}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Info section */}
       <div style={{ margin: "16px 16px 0" }}>
-        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Work Details</div>
+        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Work Details</div>
         <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 14, overflow: "hidden" }}>
           {[
             { label: "Worker ID", value: "WK-042", mono: true },
@@ -91,7 +91,7 @@ function MobileProfile() {
 
       {/* Permissions */}
       <div style={{ margin: "16px 16px 0" }}>
-        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Permissions</div>
+        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Permissions</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {[
             { label: "Quality Check", on: true },
@@ -110,7 +110,7 @@ function MobileProfile() {
       </div>
 
       {/* Footer */}
-      <div style={{ margin: "20px 16px 0", textAlign: "center", fontFamily: F.u, fontSize: 11, color: C.muted }}>
+      <div style={{ margin: "20px 16px 0", textAlign: "center", fontFamily: F.u, fontSize: 12, color: C.muted }}>
         Beere Kesava & Brothers Silks · Est. 1999
       </div>
     </div>
@@ -122,11 +122,11 @@ function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; on
   const navigate = useNavigate();
   return (
     <motion.div initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-      style={{ position: "fixed", top: 0, left: 0, width: 260, height: "100vh", background: C.dark, zIndex: 200, display: "flex", flexDirection: "column", boxShadow: "4px 0 24px rgba(0,0,0,0.30)" }}>
+      style={{ position: "fixed", top: 0, left: 0, width: 260, height: "100dvh", background: C.dark, zIndex: 200, display: "flex", flexDirection: "column", boxShadow: "4px 0 24px rgba(0,0,0,0.30)" }}>
       <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.gold }}>Worker Portal</div>
-          <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
         </div>
         <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
           <X size={20} color="rgba(255,255,255,0.60)" />
@@ -178,7 +178,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   const handleNavigate = (tab: Tab) => setActiveTab(tab);
 
   return (
-    <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100vh", background: "#FFFFFF", display: "flex", flexDirection: "column", fontFamily: F.u, position: "relative" }}>
+    <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FFFFFF", display: "flex", flexDirection: "column", fontFamily: F.u, position: "relative" }}>
       {/* Hamburger overlay */}
       <AnimatePresence>
         {showMenu && (
@@ -219,10 +219,10 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button style={{ background: "none", border: "none", padding: 4, cursor: "pointer", position: "relative", minWidth: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Bell size={21} color="rgba(255,255,255,0.85)" />
-            <span style={{ position: "absolute", top: 0, right: 2, width: 16, height: 16, background: C.crim, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#FFF", fontFamily: F.u }}>3</span>
+            <span style={{ position: "absolute", top: 0, right: 2, width: 16, height: 16, background: C.crim, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u }}>3</span>
           </button>
           <button onClick={() => setShowProfile(true)} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(255,255,255,0.30)", background: "rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 11, color: "#FFF" }}>RK</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
           </button>
         </div>
       </div>
@@ -292,12 +292,12 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
                     style={{ position: "absolute", top: -9, left: "50%", marginLeft: -13, width: 26, height: 3, borderRadius: 4, background: C.burg }} />
                 )}
                 {tab.badge && (
-                  <span style={{ position: "absolute", top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#FFF", fontFamily: F.u, padding: "0 3px" }}>
+                  <span style={{ position: "absolute", top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u, padding: "0 3px" }}>
                     {tab.badge}
                   </span>
                 )}
                 <tab.Icon size={20} color={active ? C.burg : C.muted} />
-                <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: active ? 600 : 500, color: active ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: active ? 600 : 500, color: active ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
               </div>
             </button>
           );
@@ -336,7 +336,6 @@ export function WorkerPortal({ onBack }: WorkerPortalProps) {
 
   return (
     <>
-      <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
       {isMobile ? (
         <MobilePortal onBack={onBack} activeTab={activeTab} setActiveTab={setActiveTab} />

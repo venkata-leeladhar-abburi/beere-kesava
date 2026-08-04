@@ -16,7 +16,7 @@ import { useWeaverSareeRows } from "./useWeaverSareeRows";
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11,
+      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12,
       fontWeight: 700, color, background: `${color}1A`, borderRadius: 99, padding: "3px 9px", whiteSpace: "nowrap",
     }}>
       <span style={{ width: 5, height: 5, borderRadius: "50%", background: color }} />
@@ -352,8 +352,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             { l: "Weaver earns", v: inr(visible.reduce((a, r) => a + (r.payable || 0), 0)), c: T.green },
           ].map(s => (
             <div key={s.l}>
-              <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>{s.l}</div>
-              <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: s.c, marginTop: 3 }}>{s.v}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>{s.l}</div>
+              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: s.c, marginTop: 3 }}>{s.v}</div>
             </div>
           ))}
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center", maxWidth: 320, lineHeight: 1.5 }}>

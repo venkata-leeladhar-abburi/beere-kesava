@@ -28,12 +28,12 @@ export function OutstandingCard({
       </div>
       <div style={cardSub}>Billed minus settled in this period</div>
       <div style={{ background: totalDue > 0 ? T.crimsonBg : T.greenBg, borderRadius: 14, padding: "16px 18px", margin: "16px 0" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
-        <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: totalDue > 0 ? T.crimson : T.green, lineHeight: 1 }}>{formatINR(totalDue)}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>{dueList.length} of {perSupplierCount} suppliers unsettled</div>
+        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
+        <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: totalDue > 0 ? T.crimson : T.green, lineHeight: 1 }}>{formatINR(totalDue)}</div>
+        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{dueList.length} of {perSupplierCount} suppliers unsettled</div>
       </div>
       {dueList.length === 0 ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.greenMid }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.greenMid }}>
           <CheckCircle2 size={14} /> Every bill in this period is settled.
         </div>
       ) : (
@@ -42,12 +42,12 @@ export function OutstandingCard({
             <div key={s.id}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{s.name}</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.crimson }}>{formatINR(s.outstanding)}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{formatINR(s.outstanding)}</span>
               </div>
               <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                 <div style={{ width: `${(s.outstanding / (dueList[0].outstanding || 1)) * 100}%`, height: "100%", borderRadius: 4, background: "linear-gradient(90deg,#C0392B,#E74C3C)" }} />
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>Terms {s.terms} · {formatINR(s.paid)} of {formatINR(s.billed)} paid</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Terms {s.terms} · {formatINR(s.paid)} of {formatINR(s.billed)} paid</div>
             </div>
           ))}
         </div>
@@ -59,7 +59,7 @@ export function OutstandingCard({
           return (
             <div key={b.status} style={{ flex: 1, background: meta.bg, borderRadius: 10, padding: "9px 10px", textAlign: "center" }}>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: meta.color, lineHeight: 1 }}>{b.count}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 4 }}>{b.status}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{b.status}</div>
             </div>
           );
         })}

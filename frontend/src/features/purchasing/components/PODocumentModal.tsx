@@ -14,7 +14,7 @@ const T = {
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   crimson:       "#C0392B",
   green:         "#1E6640",
   borderDef:     "rgba(110,15,45,0.10)",
@@ -35,7 +35,7 @@ function StatusBadge({ status }: { status: PurchaseOrder["status"] }) {
   }[status];
   return (
     <span style={{
-      fontFamily: F.mono, fontSize: 11, fontWeight: 600,
+      fontFamily: F.mono, fontSize: 12, fontWeight: 600,
       color: cfg.color, background: cfg.bg,
       padding: "3px 10px", borderRadius: 6,
     }}>
@@ -103,14 +103,14 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", marginBottom: 6 }}>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 6 }}>
                   Purchase Order Document
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold }}>{po.poNumber}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
                   <StatusBadge status={po.status} />
                   {po.urgency === "Urgent" && (
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.crimson, background: "rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 5 }}>🔴 URGENT</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 5 }}>🔴 URGENT</span>
                   )}
                 </div>
               </div>
@@ -148,7 +148,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                   <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFDF9", marginBottom: 3 }}>
                     🪷 Beere Kesava &amp; Brothers Silks
                   </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, letterSpacing: "2px" }}>Est. 1999</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px" }}>Est. 1999</div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 4 }}>
                     Guntur, Andhra Pradesh, India
                   </div>
@@ -162,7 +162,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                         Purchase Order No: {po.poNumber}
                       </span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                       Date: {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
@@ -170,20 +170,20 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                   {/* Vendor + Delivery row */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
                     <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Vendor:</div>
-                      <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 15, color: T.luxuryBrown, marginBottom: 3 }}>{po.vendor}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Vendor:</div>
+                      <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>{po.vendor}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                         {[po.vendorCity, po.vendorContact].filter(Boolean).join(" · ")}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Expected Delivery:</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Expected Delivery:</div>
                       <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>
                         {po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                       </div>
                       {po.urgency === "Urgent" && (
                         <div style={{ marginTop: 6 }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 10, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "3px 9px", borderRadius: 5 }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "3px 9px", borderRadius: 5 }}>
                             🔴 Urgent — Low Stock Alert
                           </span>
                         </div>
@@ -195,14 +195,14 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                   <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden", marginBottom: 18 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", background: T.silkCream, padding: "10px 16px", gap: 8 }}>
                       {["Material", "Description", "Quantity"].map(h => (
-                        <span key={h} style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
+                        <span key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
                       ))}
                     </div>
                     {po.materials.map((m, i) => (
                       <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", padding: "11px 16px", gap: 8, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
                         <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{m.materialType}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.subtype || "—"}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.subtype || "—"}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
                       </div>
                     ))}
                     {/* Total row */}
@@ -219,14 +219,14 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                     <div style={{ marginBottom: 18 }}>
                       {po.notesVendor && (
                         <div style={{ background: T.silkCream, borderRadius: 9, padding: "12px 15px", marginBottom: 10 }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Instructions for Vendor:</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Instructions for Vendor:</div>
                           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{po.notesVendor}</div>
                         </div>
                       )}
                       {po.notesAdmin && (
                         <div style={{ background: "rgba(200,155,71,0.07)", borderRadius: 9, padding: "12px 15px", border: `1px solid ${T.borderGold}` }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 500, marginBottom: 5 }}>Admin's Note:</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontStyle: "italic" }}>{po.notesAdmin}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 500, marginBottom: 5 }}>Admin's Note:</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontStyle: "italic" }}>{po.notesAdmin}</div>
                         </div>
                       )}
                     </div>
@@ -244,7 +244,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                     <div>
                       <div style={{ height: 40, borderBottom: `1.5px solid rgba(110,15,45,0.18)`, marginBottom: 7 }} />
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Prepared by: _____________</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>Admin</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Admin</div>
                     </div>
                     <div>
                       <div style={{ height: 40, borderBottom: `1.5px solid rgba(110,15,45,0.18)`, marginBottom: 7, position: "relative" }}>
@@ -258,18 +258,18 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                         Approved by: {showApproved ? <span style={{ color: T.green, fontWeight: 600 }}>Superadmin</span> : "_____________"}
                       </div>
                       {showApproved && (
-                        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.green, marginTop: 4 }}>{approvedDisplay}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginTop: 4 }}>{approvedDisplay}</div>
                       )}
                       {!showApproved && (
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>Superadmin</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Superadmin</div>
                       )}
                     </div>
                   </div>
 
                   {/* Document footer */}
                   <div style={{ textAlign: "center", paddingTop: 14, borderTop: `1px solid ${T.borderDef}` }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Beere Kesava &amp; Brothers Silks · Est. 1999</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, marginTop: 3, letterSpacing: "1.5px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Beere Kesava &amp; Brothers Silks · Est. 1999</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 3, letterSpacing: "1.5px" }}>
                       Tradition · Trust · Timeless Quality
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                 whileTap={{ scale: 0.97 }}
                 style={{
                   flex: 1, height: 52, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 700, fontSize: 13.5,
+                  fontFamily: F.ui, fontWeight: 700, fontSize: 13,
                   background: T.royalBurgundy, color: "#FFFDF9", border: "none",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                 }}
@@ -306,7 +306,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                 whileTap={{ scale: 0.97 }}
                 style={{
                   flex: 1, height: 52, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 700, fontSize: 13.5,
+                  fontFamily: F.ui, fontWeight: 700, fontSize: 13,
                   background: T.green, color: "#FFFFFF", border: "none",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                 }}

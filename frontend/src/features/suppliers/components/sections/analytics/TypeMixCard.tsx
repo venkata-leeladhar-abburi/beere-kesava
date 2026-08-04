@@ -37,8 +37,8 @@ export function TypeMixCard({
           </PieChart>
         </ResponsiveContainer>
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-          <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{byType.length}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>types</div>
+          <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{byType.length}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>types</div>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
@@ -48,7 +48,7 @@ export function TypeMixCard({
               <div style={{ width: 10, height: 10, borderRadius: 3, background: d.fill, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.type}</span>
             </div>
-            <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.luxuryBrown, flexShrink: 0 }}>{d.qty} pcs</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, flexShrink: 0 }}>{d.qty} pcs</span>
           </div>
         ))}
       </div>

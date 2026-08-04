@@ -83,7 +83,7 @@ export function SectionHeader({
           transition={{ duration: 0.45, delay: 0.12, ease: EASE }}
           style={{ width: 4, height: 26, borderRadius: 2, background: G_GOLD, transformOrigin: "top", flexShrink: 0 }}
         />
-        <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 32, color: T.luxuryBrown, letterSpacing: "-0.3px", lineHeight: 1.15 }}>
+        <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: T.luxuryBrown, letterSpacing: "-0.3px", lineHeight: 1.15 }}>
           {title}
         </span>
       </div>
@@ -95,7 +95,7 @@ export function SectionHeader({
         style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "10px 20px", borderRadius: 10, cursor: "pointer",
-          fontFamily: F.ui, fontWeight: 700, fontSize: 13.5,
+          fontFamily: F.ui, fontWeight: 700, fontSize: 13,
           boxShadow: "0 2px 10px rgba(110,15,45,0.10)",
           transition: "all 0.18s",
           ...btnStyle,
@@ -153,8 +153,8 @@ export function ModalHeader({ title, subtitle, onClose }: { title: string; subti
   return (
     <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, borderRadius: "22px 22px 0 0", padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
       <div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
-        {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13.5, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
+        {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
       <motion.button
         onClick={onClose}

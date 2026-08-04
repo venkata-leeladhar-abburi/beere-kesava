@@ -41,7 +41,7 @@ export function ReportsPage() {
   };
 
   return (
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100vh" }}>
+    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       <ReportsHeader />
       <div style={{ paddingBottom: 36, background: T.silkCream }}>
         <ReportsStatsStrip />

@@ -29,14 +29,14 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
       >
         {/* Header */}
         <div style={{ background: T.darkBurgundy, padding: "24px 28px", position: "relative" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>
             Saree Type Details
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>
               {sareeType.code}
             </span>
-            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#fff" }}>
+            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: "#fff" }}>
               {sareeType.type}
             </span>
           </div>
@@ -54,32 +54,32 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           {/* Price + weight row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div style={{ background: T.cream, borderRadius: 12, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Making Charge</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Making Charge</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{parseInt(sareeType.charge).toLocaleString("en-IN")}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>per saree</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>per saree</div>
             </div>
             <div style={{ background: T.cream, borderRadius: 12, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Standard Weight</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Standard Weight</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>{sareeType.stdWeight}g</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>grams</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>grams</div>
             </div>
           </div>
 
           {/* Retail / Wholesale */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Retail Price</div>
-              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.retail).toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Retail Price</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.retail).toLocaleString("en-IN")}</div>
             </div>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Wholesale Price</div>
-              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.wholesale).toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Wholesale Price</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.wholesale).toLocaleString("en-IN")}</div>
             </div>
           </div>
 
           {/* Material breakdown */}
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
               {[
                 { label: "Warp", value: sareeType.warpWeight, unit: "g" },
@@ -90,15 +90,15 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
                 },
               ].map(({ label, value, unit, sub }: { label: string; value: string; unit: string; sub?: string }) => (
                 <div key={label} style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.08em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.08em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{value || "—"}{value ? unit : ""}</div>
-                  {sub && value && <div style={{ fontFamily: F.mono, fontSize: 9.5, color: T.taupe, marginTop: 3 }}>{sub}</div>}
+                  {sub && value && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>{sub}</div>}
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, borderTop: `1px solid ${T.borderDef}`, paddingTop: 12 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, borderTop: `1px solid ${T.borderDef}`, paddingTop: 12 }}>
             Last updated: {sareeType.changed}
           </div>
         </div>

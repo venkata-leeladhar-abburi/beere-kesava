@@ -15,7 +15,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check-bundle-size": "node scripts/check-bundle-size.mjs"
+    "check-bundle-size": "node scripts/check-bundle-size.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "ratchet": "node scripts/ratchet.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

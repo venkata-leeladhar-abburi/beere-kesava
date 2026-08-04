@@ -61,7 +61,7 @@ export function BarcodeSettingsCard() {
           bkbsilks.com/sari/&#123;sari_code&#125;
         </div>
       </div>
-      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         Each barcode links to the public saree detail page when scanned
       </div>
     </CardSection>

@@ -58,7 +58,7 @@ export function ScanPageSettingsCard({ scanFields, toggleScanField }: {
                 <div
                   style={{
                     fontFamily: F.ui,
-                    fontSize: 11,
+                    fontSize: 12,
                     color: T.taupe,
                     marginTop: 2,
                   }}
@@ -117,7 +117,7 @@ export function ScanPageSettingsCard({ scanFields, toggleScanField }: {
             <span
               style={{
                 fontFamily: F.ui,
-                fontSize: 11,
+                fontSize: 12,
                 color: T.taupe,
               }}
             >

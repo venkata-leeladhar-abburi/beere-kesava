@@ -249,13 +249,13 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: "#FFF" }}>{selectedWeaverQC}</div>
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{wSarees.length} saree{wSarees.length !== 1 ? "s" : ""} pending QC</div>
           </div>
-          {wg?.code && <span style={{ fontFamily: F.m, fontSize: 11, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "3px 9px", borderRadius: 999 }}>{wg.code}</span>}
+          {wg?.code && <span style={{ fontFamily: F.m, fontSize: 12, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "3px 9px", borderRadius: 999 }}>{wg.code}</span>}
         </div>
 
         {wSarees.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
             <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-            <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
@@ -292,10 +292,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           <div key={wg.name} style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: isDesktop ? "0 0 8px" : "0 16px 8px" }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: T.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 10, color: "#FFF" }}>{initials(wg.name)}</span>
+                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials(wg.name)}</span>
               </div>
               <span style={{ fontFamily: F.u, fontSize: isDesktop ? 14 : 12, fontWeight: 600, color: T.brown }}>{wg.name}</span>
-              <span style={{ fontFamily: F.u, fontSize: 10, color: T.muted, background: T.bgGold, border: `1px solid rgba(200,155,71,0.25)`, padding: "2px 8px", borderRadius: 999 }}>{wg.sarees.length} sarees</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, background: T.bgGold, border: `1px solid rgba(200,155,71,0.25)`, padding: "2px 8px", borderRadius: 999 }}>{wg.sarees.length} sarees</span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
               {wg.sarees.map(renderCard)}
@@ -319,7 +319,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       {pending.length === 0 ? (
         <div style={{ padding: "40px 20px", textAlign: "center" }}>
           <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>
+          <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>
         </div>
       ) : qcTab === "weavers" ? (
         <>

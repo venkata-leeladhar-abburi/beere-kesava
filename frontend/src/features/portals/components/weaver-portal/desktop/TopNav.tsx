@@ -33,8 +33,8 @@ export function TopNav({
           {!isTablet && (
           <div>
             <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1, textTransform: "uppercase" as const }}>Beere Kesava</div>
-            <div style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 400, color: "#3B2314", letterSpacing: 1.6, textTransform: "uppercase" as const, marginTop: 1 }}>And Brothers Silks</div>
-            <div style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>WEAVER PORTAL</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 400, color: "#3B2314", letterSpacing: 1.6, textTransform: "uppercase" as const, marginTop: 1 }}>And Brothers Silks</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>WEAVER PORTAL</div>
           </div>
           )}
         </div>
@@ -70,7 +70,7 @@ export function TopNav({
               </div>
               <div style={{ textAlign: "left" as const }}>
                 <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Ravi Kumar</div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>WVR-014 · Handloom</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>WVR-014 · Handloom</div>
               </div>
               <ChevronLeft size={13} color={C.muted} style={{ transform: showProfile ? "rotate(-90deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
             </button>
@@ -81,8 +81,8 @@ export function TopNav({
                     <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>RK</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Ravi Kumar</div>
-                    <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Ravi Kumar</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>

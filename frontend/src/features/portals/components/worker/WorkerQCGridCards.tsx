@@ -40,16 +40,16 @@ export function WorkerQCWeaverGrid({
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.u, fontSize: isDesktop ? 14 : 12, fontWeight: 700, color: T.brown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{wg.name}</div>
-              {wg.code && <div style={{ fontFamily: F.m, fontSize: 10, color: T.muted, marginTop: 1 }}>{wg.code}</div>}
+              {wg.code && <div style={{ fontFamily: F.m, fontSize: 12, color: T.muted, marginTop: 1 }}>{wg.code}</div>}
             </div>
             <ChevronRight size={14} color={T.muted} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ background: T.bgCrim, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 999, padding: "3px 9px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: T.crim }}>{wg.sarees.length} pending</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: T.crim }}>{wg.sarees.length} pending</span>
             </div>
             <div style={{ background: wg.source === "outsourced" ? T.bgGreen : T.bgGold, borderRadius: 999, padding: "3px 9px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: wg.source === "outsourced" ? T.green : T.gold }}>{wg.source === "outsourced" ? "Outsourced" : "Own Factory"}</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: wg.source === "outsourced" ? T.green : T.gold }}>{wg.source === "outsourced" ? "Outsourced" : "Own Factory"}</span>
             </div>
           </div>
         </button>
@@ -86,15 +86,15 @@ export function WorkerQCBatchGrid({
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: F.m, fontSize: isDesktop ? 13 : 11, fontWeight: 700, color: T.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bg.id}</div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: T.muted, marginTop: 1 }}>{bg.sarees.length} sarees</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted, marginTop: 1 }}>{bg.sarees.length} sarees</div>
               </div>
               <ChevronRight size={14} color={T.muted} />
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
               {bweavers.slice(0, 3).map(w => (
-                <span key={w} style={{ fontFamily: F.u, fontSize: 10, color: T.brown, background: "rgba(59,35,20,0.07)", padding: "2px 7px", borderRadius: 999 }}>{w}</span>
+                <span key={w} style={{ fontFamily: F.u, fontSize: 12, color: T.brown, background: "rgba(59,35,20,0.07)", padding: "2px 7px", borderRadius: 999 }}>{w}</span>
               ))}
-              {bweavers.length > 3 && <span style={{ fontFamily: F.u, fontSize: 10, color: T.muted }}>+{bweavers.length - 3} more</span>}
+              {bweavers.length > 3 && <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>+{bweavers.length - 3} more</span>}
             </div>
           </button>
         );

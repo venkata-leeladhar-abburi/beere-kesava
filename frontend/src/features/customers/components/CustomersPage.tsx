@@ -109,7 +109,7 @@ export function CustomersPage() {
   }
 
   return (
-    <div style={{ background: "#F7F2EA", minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: "#F7F2EA", minHeight: "100dvh", paddingBottom: 100 }}>
       <PageHeader />
       <StatsStrip />
 

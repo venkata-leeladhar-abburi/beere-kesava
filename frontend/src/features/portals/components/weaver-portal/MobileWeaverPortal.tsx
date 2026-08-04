@@ -38,7 +38,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: '0 auto', minHeight: '100vh', background: '#FAFAFA', display: 'flex', flexDirection: 'column', position: 'relative' as const }}>
+    <div style={{ width: '100%', maxWidth: '100%', margin: '0 auto', minHeight: '100dvh', background: '#FAFAFA', display: 'flex', flexDirection: 'column', position: 'relative' as const }}>
       {/* Global Header */}
       <div style={{ height: 60, background: C.burg, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, position: 'sticky' as const, top: 0, zIndex: 100, boxShadow: '0 2px 12px rgba(107,26,42,0.30)' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, width: 32, display: 'flex', alignItems: 'center' }}>
@@ -54,13 +54,13 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
           </button>
           <div style={{ position: 'relative' as const }}>
             <button onClick={() => { setShowProfile(v => !v); setShowNotifs(false); }} style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 11, color: '#FFF' }}>RK</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>RK</span>
             </button>
             {showProfile && (
               <div style={{ position: 'absolute' as const, top: 'calc(100% + 8px)', right: 0, zIndex: 300, background: '#FFFDF9', borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: '0 8px 32px rgba(44,24,16,0.18)', minWidth: 200, overflow: 'hidden' }}>
                 <div style={{ padding: '14px 16px', background: 'rgba(107,26,42,0.04)', borderBottom: `1px solid ${C.bdr}` }}>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Ravi Kumar</div>
-                  <div style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
                 </div>
                 <div style={{ padding: '6px 0' }}>
                   <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '10px 16px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: F.u, fontSize: 13, color: C.text, textAlign: 'left' as const }}>
@@ -128,12 +128,12 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
                       style={{ position: 'absolute' as const, top: -9, left: '50%', marginLeft: -13, width: 26, height: 3, borderRadius: 4, background: C.burg }} />
                   )}
                   {!!tab.badge && (
-                    <span style={{ position: 'absolute' as const, top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#FFF', fontFamily: F.u, padding: '0 3px' }}>
+                    <span style={{ position: 'absolute' as const, top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#FFF', fontFamily: F.u, padding: '0 3px' }}>
                       {tab.badge}
                     </span>
                   )}
                   {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
-                  <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: 'color 0.2s' }}>{tab.label}</span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: 'color 0.2s' }}>{tab.label}</span>
                 </div>
               </button>
             );

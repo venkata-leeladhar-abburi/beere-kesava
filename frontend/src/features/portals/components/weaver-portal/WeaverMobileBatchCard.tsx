@@ -7,7 +7,7 @@ import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 // Shared tokens
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#8B7060",
+  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
   bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", white: "#FFFFFF",
 };
 const F = {
@@ -37,7 +37,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: C.burg }}>{b.batchId}</span>
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>{b.batchId}</span>
           <StatusBadge
             label={isActive ? "🟢 Open — Weaving" : "🟡 Draft"}
             color={isActive ? C.green : C.gold}
@@ -47,10 +47,10 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
         {/* Saree count */}
         <div style={{ background: C.cream, borderRadius: 12, padding: "12px 16px", marginBottom: 12, textAlign: "center" as const }}>
-          <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 3 }}>Sarees assigned to you</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.text, lineHeight: 1 }}>{myCount}</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sarees assigned to you</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, lineHeight: 1 }}>{myCount}</div>
           {pendingCount > 0 && (
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 3 }}>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
               {readyCount} with ID · {pendingCount} pending setup
             </div>
           )}
@@ -68,7 +68,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW SAREE TYPE DETAILS</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
               {sareeTypePairs.map(([code, name]) => (
                 <button key={code} onClick={() => setExpandedType(expandedType === code ? null : code)}
@@ -96,7 +96,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.15)", borderRadius: 9, padding: "8px 12px", marginBottom: 8 }}>
             <Package size={13} color={C.green} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Customer Order</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Customer Order</div>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.green }}>{label}</div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(139,112,96,0.07)", border: "1px solid rgba(139,112,96,0.15)", borderRadius: 9, padding: "8px 12px", marginBottom: 8 }}>
             <Package size={13} color={C.muted} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>General Stock</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>General Stock</div>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{generalStock} saree{generalStock !== 1 ? "s" : ""} for stock</div>
             </div>
           </div>
@@ -134,21 +134,21 @@ export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
           <Flower2 size={18} color="rgba(255,255,255,0.70)" />
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{b.batchId}</span>
         </div>
-        <span style={{ position: "relative" as const, fontFamily: F.u, fontSize: 11, color: "#1D4ED8", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>✓ Completed</span>
+        <span style={{ position: "relative" as const, fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>✓ Completed</span>
       </div>
 
       <div style={{ padding: "14px 16px" }}>
         {/* Stats grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           <div style={{ background: C.cream, borderRadius: 10, padding: "10px 10px", textAlign: "center" as const }}>
-            <div style={{ fontFamily: F.m, fontSize: 8, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>PRODUCED</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>PRODUCED</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>{produced}</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>sarees</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>sarees</div>
           </div>
           <div style={{ background: "rgba(30,102,64,0.08)", borderRadius: 10, padding: "10px 10px", textAlign: "center" as const }}>
-            <div style={{ fontFamily: F.m, fontSize: 8, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>QC PASS</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 3 }}>QC PASS</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.green }}>100%</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>all passed</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>all passed</div>
           </div>
         </div>
 

@@ -73,10 +73,10 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
           <div>
-            <h3 style={{ fontFamily: F.display, fontSize: 22, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
+            <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
           </div>
-          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 11, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
+          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
         </div>
 
         {/* Form Grid */}
@@ -86,18 +86,18 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
             <div>
               <label style={lbl} htmlFor="business-name">Business Name *</label>
               <input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={{ ...inp, border: errors.name ? "1.5px solid #C0392B" : inp.border }} />
-              {errors.name && <div style={{ color: "#C0392B", fontSize: 11, marginTop: 3 }}>{errors.name}</div>}
+              {errors.name && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.name}</div>}
             </div>
             <div>
               <label style={lbl} htmlFor="owner-contact-name">Owner / Contact Name *</label>
               <input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={{ ...inp, border: errors.contactName ? "1.5px solid #C0392B" : inp.border }} />
-              {errors.contactName && <div style={{ color: "#C0392B", fontSize: 11, marginTop: 3 }}>{errors.contactName}</div>}
+              {errors.contactName && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.contactName}</div>}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <label style={lbl} htmlFor="phone-number">Phone Number *</label>
                 <input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={{ ...inp, border: errors.phone ? "1.5px solid #C0392B" : inp.border }} />
-                {errors.phone && <div style={{ color: "#C0392B", fontSize: 11, marginTop: 3 }}>{errors.phone}</div>}
+                {errors.phone && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.phone}</div>}
               </div>
               <div>
                 <label style={lbl} htmlFor="whatsapp-number">WhatsApp Number</label>
@@ -108,7 +108,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
               <div>
                 <label style={lbl} htmlFor="city">City *</label>
                 <input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={{ ...inp, border: errors.city ? "1.5px solid #C0392B" : inp.border }} />
-                {errors.city && <div style={{ color: "#C0392B", fontSize: 11, marginTop: 3 }}>{errors.city}</div>}
+                {errors.city && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.city}</div>}
               </div>
               <div>
                 <label style={lbl} htmlFor="state">State *</label>

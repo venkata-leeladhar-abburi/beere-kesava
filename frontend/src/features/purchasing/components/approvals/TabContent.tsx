@@ -53,7 +53,7 @@ export function TabsNav({
           <span style={{
             background: activeTab === tab.key ? "rgba(255,255,255,0.20)" : T.cream,
             color: activeTab === tab.key ? "#FFF" : T.taupe,
-            borderRadius: 10, padding: "1px 7px", fontSize: 11,
+            borderRadius: 10, padding: "1px 7px", fontSize: 12,
           }}>
             {tab.count}
           </span>

@@ -146,7 +146,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const navigateMobile = navigate;
 
   const dashboardContent = isMobile ? (
-    <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
       <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} />
       {PAGE_SECTIONS[mobileTab] && (
@@ -218,7 +218,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       </Suspense>
     </div>
   ) : (
-    <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (
@@ -256,13 +256,13 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ) : nav === "Notifications" ? (
         <NotificationsPage />
       ) : nav === "ReceiveStock" ? (
-        <div style={{ background: T.silkCream, minHeight: "100vh" }}>
+        <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
           {/* Admin-style page header — matches AuditLogPage / AddUserPage pattern exactly */}
           <div style={{ background: "#3D0E1A", position: "relative", overflow: "hidden", minHeight: 200, display: "flex", alignItems: "stretch" }}>
             <div style={{ flex: 1, padding: "44px 56px 48px", zIndex: 10, position: "relative" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-                <span style={{ fontFamily: F.mono, fontSize: 9, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
                   SINCE 1999 · ADMIN · MATERIALS
                 </span>
               </div>
@@ -310,7 +310,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
                         <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{g.grn}</div>
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{g.vendor} · {g.item}</div>
                       </div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{g.date}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{g.date}</div>
                     </div>
                   ))}
                 </div>

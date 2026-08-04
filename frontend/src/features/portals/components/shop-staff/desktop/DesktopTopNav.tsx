@@ -36,8 +36,8 @@ export function DesktopTopNav({
           {!isTablet && (
             <div>
               <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#2C1810", lineHeight: 1.1, textTransform: "uppercase" as const }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 400, color: "#3B2314", letterSpacing: 1.6, textTransform: "uppercase" as const, marginTop: 1 }}>And Brothers Silks</div>
-              <div style={{ fontFamily: F.u, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>SHOP STAFF PORTAL</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 400, color: "#3B2314", letterSpacing: 1.6, textTransform: "uppercase" as const, marginTop: 1 }}>And Brothers Silks</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.gold, letterSpacing: 2.5, textTransform: "uppercase" as const, marginTop: 4 }}>SHOP STAFF PORTAL</div>
             </div>
           )}
         </div>
@@ -76,7 +76,7 @@ export function DesktopTopNav({
             <Bell size={20} color={C.muted} />
             <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF" }} />
           </button>
-          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: TEAL, background: "rgba(15,118,110,0.10)", border: `1px solid rgba(15,118,110,0.25)`, borderRadius: 999, padding: "5px 12px" }}>
+          <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: TEAL, background: "rgba(15,118,110,0.10)", border: `1px solid rgba(15,118,110,0.25)`, borderRadius: 999, padding: "5px 12px" }}>
             Shop Staff
           </span>
           <div style={{ position: "relative" as const }}>
@@ -86,7 +86,7 @@ export function DesktopTopNav({
               </div>
               <div style={{ textAlign: "left" as const }}>
                 <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Priya Sharma</div>
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>SS · Shop Staff</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>SS · Shop Staff</div>
               </div>
               <ChevronLeft size={13} color={C.muted} style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
             </button>
@@ -97,8 +97,8 @@ export function DesktopTopNav({
                     <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>PS</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Priya Sharma</div>
-                    <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Priya Sharma</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>

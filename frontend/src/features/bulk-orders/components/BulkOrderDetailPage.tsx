@@ -19,7 +19,7 @@ const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
   deepWine: "#4A061B", darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
   goldLight: "#E7C983", luxuryBrown: "#3B2314",
-  taupe: "#8B7060", green: "#1E6640", greenBg: "rgba(30,102,64,0.09)",
+  taupe: "#69635E", green: "#1E6640", greenBg: "rgba(30,102,64,0.09)",
   greenMid: "#2D9158", crimson: "#C0392B", crimsonBg: "rgba(192,57,43,0.08)",
   borderDef: "rgba(110,15,45,0.10)", borderGold: "rgba(200,155,71,0.22)",
 };
@@ -148,7 +148,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   ];
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
       <div style={{ padding: "40px 56px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
           <motion.button onClick={onBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -156,7 +156,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             <ArrowLeft size={14} /> Back to Bulk Orders
           </motion.button>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
             <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
           </div>
         </div>
@@ -164,7 +164,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
         {/* Hero */}
         <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 24 }}>
           <div style={{ minWidth: 260 }}>
-            <h2 style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, margin: "0 0 8px" }}>{live.customer}</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, margin: "0 0 8px" }}>{live.customer}</h2>
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const, marginBottom: 10 }}>
               {live.address && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{live.address}</span>}
               {live.phone && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Phone size={13} color={T.antiqueGold} />{live.phone}</span>}
@@ -175,16 +175,16 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           </div>
           <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap" as const }}>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>PROGRESS</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>PROGRESS</div>
               <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{live.done}/{live.total} <span style={{ fontSize: 16 }}>({pct}%)</span></div>
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>DELIVERY DEADLINE</div>
-              <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700 }}>{live.due}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>DELIVERY DEADLINE</div>
+              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>{live.due}</div>
             </div>
             <div style={{ textAlign: "right" as const }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: balance > 0 ? "#F87171" : T.goldLight }}>{balance > 0 ? inr(balance) : "₹0"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: balance > 0 ? "#F87171" : T.goldLight }}>{balance > 0 ? inr(balance) : "₹0"}</div>
             </div>
           </div>
         </div>
@@ -288,19 +288,19 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                             <div>
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                 <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
-                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, textTransform: "capitalize" as const, background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
                               </div>
                               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}</div>
                             </div>
                             <div style={{ textAlign: "right" as const }}>
                               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{inr(q.grandTotal)}</div>
-                              {q.applyGst && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>incl. {q.gstPct}% GST</div>}
+                              {q.applyGst && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>incl. {q.gstPct}% GST</div>}
                             </div>
                           </div>
 
                           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: qDispatch ? 14 : 0 }}>
                             {q.sarees.map(s => (
-                              <span key={s.sareeId} style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
+                              <span key={s.sareeId} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
                             ))}
                           </div>
 
@@ -308,7 +308,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                             <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 10 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                 <Truck size={16} color={T.greenMid} />
-                                <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
                                   Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
                                 </span>
                               </div>

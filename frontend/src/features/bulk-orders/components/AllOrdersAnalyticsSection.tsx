@@ -17,7 +17,7 @@ const T = {
   royalBurgundy: "#6E0F2D",
   deepWine: "#4A061B",
   luxuryBrown: "#3B2314",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   borderDef: "rgba(110,15,45,0.10)",
   antiqueGold: "#C89B47",
   green: "#1E6640",
@@ -134,7 +134,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
     padding: "22px 24px", boxShadow: "0 4px 18px rgba(74,6,27,0.04)",
   };
   const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown };
-  const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 3 };
+  const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
   return (
@@ -142,7 +142,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ width: 3, height: 26, background: T.antiqueGold, borderRadius: 2 }} />
         <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Order Analytics</h2>
-        <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
         <div style={{ display: "flex", gap: 24, marginLeft: "auto", flexWrap: "wrap" }}>
           {[
             { label: "ORDERS", value: String(filteredOrders.length), color: T.royalBurgundy },
@@ -151,7 +151,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
             { label: "OUTSTANDING", value: L(outstanding), color: outstanding > 0 ? T.crimson : T.green },
           ].map(k => (
             <div key={k.label}>
-              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
             </div>
           ))}
@@ -176,25 +176,25 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, background: completionPct >= 80 ? "rgba(30,102,64,0.09)" : "rgba(200,155,71,0.14)", padding: "4px 10px", borderRadius: 20 }}>
                   <TrendingUp size={13} color={completionPct >= 80 ? T.green : "#8B6018"} />
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: completionPct >= 80 ? T.green : "#8B6018" }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: completionPct >= 80 ? T.green : "#8B6018" }}>
                     {totalOrdered - totalDone} sarees remaining
                   </span>
                 </div>
               </div>
-              <div style={{ fontFamily: F.display, fontSize: 40, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "10px 0 2px" }}>
+              <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "10px 0 2px" }}>
                 {totalDone.toLocaleString("en-IN")}
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 8 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>
                 of {totalOrdered.toLocaleString("en-IN")} sarees across {filteredOrders.length} order{filteredOrders.length === 1 ? "" : "s"}
               </div>
               <ResponsiveContainer width="100%" height={205}>
                 <ComposedChart data={monthly} barSize={24}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
                   <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
                   <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                   <Bar name="Ordered" dataKey="ordered" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
                   <Bar name="Completed" dataKey="done" fill={T.antiqueGold} radius={[5, 5, 0, 0]} />
                   <Line yAxisId="r" name="Completion" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
@@ -216,7 +216,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 </ResponsiveContainer>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
                   <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{filteredOrders.length}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>orders</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>orders</div>
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
@@ -224,9 +224,9 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <div key={d.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{d.name}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
                   </div>
                 ))}
               </div>
@@ -253,11 +253,11 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 <BarChart data={topCustomers} layout="vertical" barSize={20} margin={{ left: 4, right: 70 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
                   <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="short" width={140} tick={{ fontFamily: F.ui, fontSize: 11.5, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="short" width={140} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
                     formatter={(v: any, _n: any, p: any) => [`${inr(v)} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`, p.payload.customer]} />
                   <Bar dataKey="value" radius={[0, 6, 6, 0]}
-                    label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, fill: T.luxuryBrown }}>
+                    label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                     {topCustomers.map((c, i) => (
                       <Cell key={c.customer} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
                     ))}
@@ -277,9 +277,9 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
               </div>
               <div style={cardSub}>Billed against collected</div>
               <div style={{ background: outstanding > 0 ? "rgba(192,57,43,0.07)" : "rgba(30,102,64,0.09)", borderRadius: 14, padding: "16px 18px", margin: "16px 0" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>OUTSTANDING</div>
-                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: outstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{inr(outstanding)}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>{collectionRate}% of {inr(billed)} collected</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>OUTSTANDING</div>
+                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: outstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{inr(outstanding)}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{collectionRate}% of {inr(billed)} collected</div>
               </div>
               <div style={{ height: 10, borderRadius: 5, background: T.silkCream, overflow: "hidden", border: `1px solid ${T.borderDef}`, marginBottom: 14 }}>
                 <div style={{ width: `${collectionRate}%`, height: "100%", background: `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
@@ -289,9 +289,9 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <div key={p.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{p.label}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.label}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>{p.count}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{p.count}</span>
                   </div>
                 ))}
               </div>
@@ -313,15 +313,15 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   return (
                     <div key={o.ref}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: late ? T.crimson : soon ? "#E67E22" : T.taupe }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: late ? T.crimson : soon ? "#E67E22" : T.taupe }}>
                           {o.daysToGo === null ? o.due : late ? `${Math.abs(o.daysToGo)}d overdue` : `${o.daysToGo}d left`}
                         </span>
                       </div>
                       <div style={{ height: 8, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                         <div style={{ width: `${o.pct}%`, height: "100%", borderRadius: 4, background: late ? "linear-gradient(90deg,#C0392B,#E74C3C)" : `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
                         <span>{o.customer}</span>
                         <span>{o.done}/{o.total} · {o.pct}%</span>
                       </div>
@@ -340,8 +340,8 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
               <ResponsiveContainer width="100%" height={186}>
                 <BarChart data={byType} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                  <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                  <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+                  <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
+                  <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
                     formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
                   <Bar dataKey="sarees" radius={[5, 5, 0, 0]}>
@@ -349,7 +349,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+              <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                 <span>{byType.length} product line{byType.length === 1 ? "" : "s"}</span>
                 <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byType[0]?.type ?? "—"}</span>
               </div>
@@ -366,7 +366,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   data={[{ name: "Completion", value: completionPct, fill: completionPct >= 80 ? T.green : completionPct >= 50 ? T.antiqueGold : T.crimson }]}>
                   <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
                   <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{completionPct}%</text>
-                  <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }}>COMPLETED</text>
+                  <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>COMPLETED</text>
                 </RadialBarChart>
               </ResponsiveContainer>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
@@ -377,7 +377,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   { label: "Tallied", value: `${filteredOrders.filter(o => o.tallied).length}/${filteredOrders.length}` },
                 ].map(k => (
                   <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" }}>{k.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" }}>{k.label}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
                   </div>
                 ))}

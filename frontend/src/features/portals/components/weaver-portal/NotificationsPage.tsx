@@ -46,7 +46,7 @@ export function NotificationsPage() {
   const countByPriority = (p: WNPriority) => WN_DATA.filter(n => n.priority === p).length;
 
   return (
-    <div style={{ minHeight: "calc(100vh - 64px)", background: WN_T.silkCream, fontFamily: F.u }}>
+    <div style={{ minHeight: "calc(100dvh - 64px)", background: WN_T.silkCream, fontFamily: F.u }}>
 
       {/* ── HERO ── */}
       <section style={{ background: WN_G.card, padding: isMobile ? "24px 20px 0" : isTablet ? "36px 28px 0" : "56px 56px 0", position: "relative", overflow: "hidden", minHeight: 220 }}>
@@ -58,7 +58,7 @@ export function NotificationsPage() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: WN_EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
             <div style={{ width: 20, height: 1, background: WN_T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>
               Ravi Kumar · WVR-014 · Notifications
             </span>
           </motion.div>
@@ -105,8 +105,8 @@ export function NotificationsPage() {
                   <m.Icon size={18} color={m.hi ? WN_T.antiqueGold : (m.col || "rgba(245,232,208,0.70)")} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase" as const, color: m.hi ? "rgba(200,155,71,0.90)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 34, color: m.hi ? WN_T.goldLight : (m.col || WN_T.warmCream), lineHeight: 1, ...WN_NUM }}>{m.val}</div>
+                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, color: m.hi ? "rgba(200,155,71,0.90)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 38, color: m.hi ? WN_T.goldLight : (m.col || WN_T.warmCream), lineHeight: 1, ...WN_NUM }}>{m.val}</div>
                 </div>
               </div>
             ))}
@@ -125,8 +125,8 @@ export function NotificationsPage() {
               <button key={f.key} onClick={() => setFilter(f.key)}
                 style={{ height: "100%", padding: isMobile ? "0 14px" : "0 22px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, position: "relative" as const, borderBottom: isActive ? `2px solid ${WN_T.royalBurgundy}` : "2px solid transparent", flexShrink: 0, whiteSpace: "nowrap" as const }}>
                 {cfg && <cfg.Icon size={14} color={isActive ? WN_T.royalBurgundy : cfg.color} />}
-                <span style={{ fontFamily: F.u, fontWeight: isActive ? 600 : 400, fontSize: 13.5, color: isActive ? WN_T.royalBurgundy : WN_T.taupe, whiteSpace: "nowrap" as const }}>{f.label}</span>
-                <span style={{ fontFamily: F.m, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: isActive ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: isActive ? WN_T.royalBurgundy : WN_T.taupe }}>{count}</span>
+                <span style={{ fontFamily: F.u, fontWeight: isActive ? 600 : 400, fontSize: 13, color: isActive ? WN_T.royalBurgundy : WN_T.taupe, whiteSpace: "nowrap" as const }}>{f.label}</span>
+                <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: isActive ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: isActive ? WN_T.royalBurgundy : WN_T.taupe }}>{count}</span>
               </button>
             );
           })}
@@ -152,9 +152,9 @@ export function NotificationsPage() {
               <WNFadeUp>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                   <div style={{ width: 3, height: 18, borderRadius: 2, background: WN_G.gold, flexShrink: 0 }} />
-                  <span style={{ fontFamily: F.d, fontWeight: 400, fontSize: 22, color: WN_T.luxuryBrown, letterSpacing: "-0.2px" }}>{date}</span>
+                  <span style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: WN_T.luxuryBrown, letterSpacing: "-0.2px" }}>{date}</span>
                   <div style={{ flex: 1, height: 1, background: WN_T.borderDef, marginLeft: 4 }} />
-                  <span style={{ fontFamily: F.m, fontSize: 10, color: WN_T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: WN_T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
                 </div>
               </WNFadeUp>
 
@@ -187,19 +187,19 @@ export function NotificationsPage() {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" as const }}>
                                 {!isRead && <div style={{ width: 8, height: 8, borderRadius: "50%", background: pcfg.color, flexShrink: 0 }} />}
-                                <span style={{ fontFamily: F.d, fontWeight: 400, fontSize: 17, color: WN_T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1 }}>{n.title}</span>
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.m, fontSize: 10, fontWeight: 600, color: pcfg.color, background: pcfg.bg, border: `1px solid ${pcfg.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
+                                <span style={{ fontFamily: F.d, fontWeight: 400, fontSize: 16, color: WN_T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1 }}>{n.title}</span>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.m, fontSize: 12, fontWeight: 600, color: pcfg.color, background: pcfg.bg, border: `1px solid ${pcfg.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
                                   <PIcon size={10} /> {pcfg.label}
                                 </span>
                               </div>
-                              <p style={{ fontFamily: F.u, fontWeight: 400, fontSize: 13.5, color: WN_T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box" as any, WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as any, overflow: selected ? "visible" : "hidden" }}>
+                              <p style={{ fontFamily: F.u, fontWeight: 400, fontSize: 13, color: WN_T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box" as any, WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as any, overflow: selected ? "visible" : "hidden" }}>
                                 {n.body}
                               </p>
                               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.m, fontSize: 10, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "3px 10px" }}>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.m, fontSize: 12, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "3px 10px" }}>
                                   <CIcon size={10} /> {catCfg.label}
                                 </span>
-                                <span style={{ fontFamily: F.m, fontSize: 11, color: WN_T.taupe }}>{n.date} · {n.time}</span>
+                                <span style={{ fontFamily: F.m, fontSize: 12, color: WN_T.taupe }}>{n.date} · {n.time}</span>
                                 {n.action && (
                                   <motion.button
                                     onClick={e => { e.stopPropagation(); markRead(n.id); }}
@@ -239,7 +239,7 @@ export function NotificationsPage() {
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${WN_T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                 <Inbox size={28} color={WN_T.taupe} />
               </div>
-              <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 22, color: WN_T.luxuryBrown, marginBottom: 8 }}>No notifications</div>
+              <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: WN_T.luxuryBrown, marginBottom: 8 }}>No notifications</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>No notifications match the current filter.</div>
             </div>
           )}
@@ -266,7 +266,7 @@ export function NotificationsPage() {
                   <div style={{ background: WN_T.warmIvory, borderRadius: 24, border: `1px solid ${WN_T.borderDef}`, boxShadow: "0 16px 56px rgba(110,15,45,0.10)", overflow: "hidden" }}>
                     <div style={{ height: 4, background: `linear-gradient(90deg, ${pcfg.color}, ${pcfg.color}55)` }} />
                     <div style={{ padding: "20px 24px", borderBottom: `1px solid ${WN_T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 11, fontWeight: 600, color: pcfg.color, background: pcfg.bg, border: `1px solid ${pcfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 12, fontWeight: 600, color: pcfg.color, background: pcfg.bg, border: `1px solid ${pcfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
                         <PIcon size={12} /> {pcfg.label}
                       </span>
                       <motion.button onClick={() => setSelected(null)} whileHover={{ scale: 1.1, backgroundColor: "rgba(110,15,45,0.06)" }} whileTap={{ scale: 0.93 }}
@@ -280,8 +280,8 @@ export function NotificationsPage() {
                           <CIcon size={24} color={catCfg.color} />
                         </div>
                         <div>
-                          <div style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 600, letterSpacing: "2px", color: catCfg.color, textTransform: "uppercase" as const, marginBottom: 4 }}>{catCfg.label}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 11, color: WN_T.taupe }}>{selected.date} · {selected.time}</div>
+                          <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: catCfg.color, textTransform: "uppercase" as const, marginBottom: 4 }}>{catCfg.label}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: WN_T.taupe }}>{selected.date} · {selected.time}</div>
                         </div>
                       </div>
                       <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: WN_T.luxuryBrown, lineHeight: 1.35, marginBottom: 16, letterSpacing: "-0.2px" }}>{selected.title}</div>
@@ -296,7 +296,7 @@ export function NotificationsPage() {
                           { label: "Time",     value: selected.time,  color: WN_T.luxuryBrown },
                         ].map(({ label, value, color }) => (
                           <div key={label} style={{ background: WN_T.warmIvory, border: `1px solid ${WN_T.borderDef}`, borderRadius: 12, padding: "12px 14px" }}>
-                            <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: WN_T.taupe, marginBottom: 5 }}>{label}</div>
+                            <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: WN_T.taupe, marginBottom: 5 }}>{label}</div>
                             <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color }}>{value}</div>
                           </div>
                         ))}

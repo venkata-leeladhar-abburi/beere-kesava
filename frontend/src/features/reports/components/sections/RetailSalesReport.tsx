@@ -21,7 +21,7 @@ function RetailWeeklyTooltip({ active, payload, label }: any) {
   const d = payload[0].payload;
   return (
     <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 600 }}>
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
         {label} — {d.sarees} sarees sold — ₹{d.revenue.toLocaleString("en-IN")} revenue
       </span>
     </div>
@@ -63,25 +63,25 @@ export function RetailSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: T.luxuryBrown }}>Sarees Sold Each Week This Month</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Sarees Sold Each Week This Month</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>May 2026 — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.royalBurgundy }}>{retailWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{retailWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.green }}>₹{retailWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{retailWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
               </div>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={retailWeeklyData}>
               <CartesianGrid key="retw-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="retw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="retw-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+              <XAxis key="retw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="retw-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
               <Tooltip key="retw-tip" content={<RetailWeeklyTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
               <Bar key="retw-bar" dataKey="sarees" name="Sarees Sold" fill={T.royalBurgundy} radius={[6, 6, 0, 0] as any} />
             </BarChart>
@@ -95,7 +95,7 @@ export function RetailSalesReport() {
             {retailDesignSales.map((d, i) => (
               <div key={d.design}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
                 </div>
                 <AnimBar pct={Math.round((d.count / retailDesignSales[0].count) * 100)} color={T.royalBurgundy} height={7} delay={i * 0.07} />
@@ -118,9 +118,9 @@ export function RetailSalesReport() {
               <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{d.name}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: d.color }}>₹{(d.value / 1000).toFixed(0)}k</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{(d.value / 1000).toFixed(0)}k</span>
               </div>
             ))}
           </div>
@@ -149,12 +149,12 @@ export function RetailSalesReport() {
               <tbody>
                 {retailRows.map((r, i) => (
                   <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.price < 0 ? T.crimson : T.green}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.id}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11.5 }}>{r.date}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span></td>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
                     <td style={TD}><span style={{ color: T.taupe }}>{r.phone}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.sarId}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.design}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sarId}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.design}</span></td>
                     <td style={TD}>{r.type}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>{r.price < 0 ? `−₹${Math.abs(r.price).toLocaleString("en-IN")}` : `₹${r.price.toLocaleString("en-IN")}`}</td>
                     <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.barcode} type="ok" /></td>

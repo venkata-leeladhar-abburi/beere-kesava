@@ -6,7 +6,7 @@ import type { SectionNavItem } from "./section-navigator-data";
 export { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
 export type { SectionNavItem } from "./section-navigator-data";
 
-const T = { royalBurgundy: "#6E0F2D", taupe: "#8B7060", borderDef: "rgba(110,15,45,0.10)" };
+const T = { royalBurgundy: "#6E0F2D", taupe: "#69635E", borderDef: "rgba(110,15,45,0.10)" };
 const F = { ui: "'Inter', sans-serif" };
 function findScrollContainer(el: HTMLElement | null): HTMLElement {
   if (!el) return document.documentElement;

@@ -140,11 +140,11 @@ export function WeaverMakingChargesSection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
                 Weaver Making Charges — May 2026
               </h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px", maxWidth: 640, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", maxWidth: 640, lineHeight: 1.6 }}>
               Making charges are paid once a month at the end of the month. This system calculates each weaver's earnings based on completed and approved sarees.
             </p>
           </div>
@@ -157,11 +157,11 @@ export function WeaverMakingChargesSection() {
             )}
             <DownloadGate>
               <motion.button whileHover={{ scale: 1.03 }} onClick={downloadExcelTemplate}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
                 <Download size={15} />Export Ledger Template
               </motion.button>
               <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
                 <Download size={15} />Download Weaver Payment Report
               </motion.button>
             </DownloadGate>
@@ -285,7 +285,7 @@ export function WeaverMakingChargesSection() {
           <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
             <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..."
-              style={{ width: "100%", padding: "7px 12px 7px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+              style={{ width: "100%", padding: "7px 12px 7px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
           </div>
         </div>
 
@@ -338,30 +338,30 @@ export function WeaverMakingChargesSection() {
                   />
                   <Pip initials={w.initials} bg={w.bg} size={38} />
                   <div style={{ flex: "0 0 180px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{w.name}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{w.name}</div>
                     <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
                     </div>
                   </div>
-                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     <strong style={{ color: T.luxuryBrown, fontFamily: F.mono }}>{completedSarees}</strong> sarees completed
                     {w.uploadedBatchNo && (
-                      <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 11.5, fontFamily: F.mono, fontWeight: 600 }}>
+                      <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 12, fontFamily: F.mono, fontWeight: 600 }}>
                         Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
                       </span>
                     )}
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.luxuryBrown, fontWeight: 600 }}>₹{charges.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>₹{charges.toLocaleString("en-IN")}</div>
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.crimson, fontWeight: 600 }}>−₹{deduction.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 600 }}>−₹{deduction.toLocaleString("en-IN")}</div>
                   </div>
                   <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Net Payable</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Net Payable</div>
                     <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}>₹{net.toLocaleString("en-IN")}</div>
                   </div>
                   <div style={{ flex: "0 0 110px" }}>

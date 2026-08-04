@@ -18,7 +18,7 @@ export function PickerShell({ title, onClose, children, width = 480 }: { title: 
         transition={{ duration: 0.2 }}
         style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
         <div style={{ paddingTop: 16 }}>{children}</div>
@@ -39,7 +39,7 @@ export function WeaverPickerModal({ onClose, onSelect }: { onClose: () => void; 
             <Pip initials={w.initials} bg={w.bg} size={34} />
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{w.id} · L{w.loom}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{w.id} · L{w.loom}</div>
             </div>
           </button>
         ))}
@@ -74,7 +74,7 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not linked to any bulk order</div>
           </div>
         </button>
-        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", margin: "4px 0 2px" }}>Active Bulk Orders</div>
+        <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", margin: "4px 0 2px" }}>Active Bulk Orders</div>
         {bulkOrders.map(o => (
           <button key={o.ref} onClick={() => setSel(o.ref)}
             style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: `2px solid ${sel === o.ref ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === o.ref ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
@@ -85,7 +85,7 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.customer} · {o.sareeType}</div>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
           </button>
         ))}
       </div>
@@ -160,8 +160,8 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
                 </div>
                 {(d.hasGraph || d.hasColorSlip) && (
                   <div style={{ display: "flex", gap: 4 }}>
-                    {d.hasColorSlip && <span style={{ fontFamily: F.ui, fontSize: 10, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Slip</span>}
-                    {d.hasGraph && <span style={{ fontFamily: F.ui, fontSize: 10, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Graph</span>}
+                    {d.hasColorSlip && <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Slip</span>}
+                    {d.hasGraph && <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Graph</span>}
                   </div>
                 )}
               </button>
@@ -227,11 +227,11 @@ export function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => voi
           <button key={t.code} onClick={() => setSel(t.code)}
             style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", border: `2px solid ${sel === t.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === t.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{t.code}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{t.code}</div>
             </div>
           </button>
         ))}
@@ -255,7 +255,7 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
   const LOOMS = Array.from({ length: weaver.loom }, (_, i) => i + 1);
   return (
     <PickerShell title={`Select Loom for ${weaver.name}`} onClose={onClose} width={400}>
-      <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+      <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         {weaver.name} operates {weaver.loom} loom{weaver.loom !== 1 ? "s" : ""}.
       </div>
       <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
@@ -269,7 +269,7 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
             <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
               L{loom}
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
               Loom {loom}
             </div>
           </button>
@@ -301,9 +301,9 @@ export function FactoryLoomPickerModal({ onClose, onSelect }: { onClose: () => v
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{l.id} · {l.location}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{l.id} · {l.location}</div>
             </div>
-            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status}</span>
           </button>
         ))}
       </div>

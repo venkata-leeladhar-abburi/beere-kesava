@@ -72,7 +72,7 @@ export function WorkerQCInspectionScreen({
                 {result === "semi_approved" ? "Saree passed QC with deduction applied. WhatsApp sent." : "Stored in defective inventory. No payment for this saree. WhatsApp sent."}
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
-                {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", background: result === "semi_approved" ? T.gold : T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
+                {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", background: result === "semi_approved" ? T.gold : T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
               </div>
               {(() => {
                 const charge = makingChargeOf(inspecting);
@@ -80,7 +80,7 @@ export function WorkerQCInspectionScreen({
                 const payable = Math.max(charge - ded, 0);
                 return (
                   <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim }}>₹{ded} deducted</div>
+                    <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim }}>₹{ded} deducted</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted, marginTop: 4 }}>
                       {result === "semi_approved"
                         ? `Weaver earns ₹${payable} of the ₹${charge} making charge.`
@@ -105,24 +105,24 @@ export function WorkerQCInspectionScreen({
                 <div style={{ background: T.gradHero, padding: "12px 16px 10px" }}>
                   <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 700, color: T.goldL, marginBottom: 4 }}>{inspecting.id}</div>
                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: F.m, fontSize: 10, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "2px 7px", borderRadius: 999 }}>{inspecting.batch}</span>
-                    <span style={{ fontFamily: F.u, fontSize: 10, color: "#FFF", background: inspecting.source === "outsourced" ? "rgba(30,102,64,0.70)" : "rgba(255,255,255,0.20)", padding: "2px 7px", borderRadius: 999 }}>
+                    <span style={{ fontFamily: F.m, fontSize: 12, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "2px 7px", borderRadius: 999 }}>{inspecting.batch}</span>
+                    <span style={{ fontFamily: F.u, fontSize: 12, color: "#FFF", background: inspecting.source === "outsourced" ? "rgba(30,102,64,0.70)" : "rgba(255,255,255,0.20)", padding: "2px 7px", borderRadius: 999 }}>
                       {inspecting.source === "outsourced" ? `Weaver: ${inspecting.weaver}` : `Own: ${inspecting.weaver}`}
                     </span>
                   </div>
                 </div>
                 <div style={{ padding: "10px 16px", display: "flex", gap: 20, alignItems: "center" }}>
                   <div>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: T.muted }}>Recorded</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>Recorded</div>
                     <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 600, color: T.brown }}>{inspecting.weight}g</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: T.muted }}>Standard</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>Standard</div>
                     <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 600, color: T.brown }}>{inspecting.std}g</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {v.ok ? <CheckCircle2 size={12} color={T.green} /> : <AlertTriangle size={12} color={T.crim} />}
-                    <span style={{ fontFamily: F.u, fontSize: 11, color: v.ok ? T.green : T.crim }}>{v.d > 0 ? "+" : ""}{v.d}g {v.ok ? "✓" : "✗"}</span>
+                    <span style={{ fontFamily: F.u, fontSize: 12, color: v.ok ? T.green : T.crim }}>{v.d > 0 ? "+" : ""}{v.d}g {v.ok ? "✓" : "✗"}</span>
                   </div>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export function WorkerQCInspectionScreen({
                       style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, height: 72, background: sel ? "rgba(110,15,45,0.05)" : T.card, border: sel ? `2px solid ${T.burg}` : `1px solid ${T.bdr}`, borderRadius: 10, cursor: "pointer", position: "relative" }}>
                       {sel && <div style={{ position: "absolute", top: 4, right: 4, width: 14, height: 14, background: T.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
                       <dt.Icon size={18} color={sel ? T.burg : T.muted} />
-                      <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: sel ? 600 : 400, color: sel ? T.brown : T.muted, textAlign: "center", lineHeight: 1.2 }}>{dt.label}</span>
+                      <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: sel ? 600 : 400, color: sel ? T.brown : T.muted, textAlign: "center", lineHeight: 1.2 }}>{dt.label}</span>
                     </button>
                   );
                 })}
@@ -168,7 +168,7 @@ export function WorkerQCInspectionScreen({
                   </div>
                   <div>
                     <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: T.green }}>Defect photo captured</div>
-                    <button onClick={() => setHasPhoto(false)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: T.burg, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Retake</button>
+                    <button onClick={() => setHasPhoto(false)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: T.burg, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Retake</button>
                   </div>
                 </div>
               )}
@@ -187,7 +187,7 @@ export function WorkerQCInspectionScreen({
 
               <div style={{ background: result === "semi_approved" ? T.bgGold : T.bgCrim, border: `1px solid ${result === "semi_approved" ? "rgba(200,155,71,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 8 }}>
                 <AlertTriangle size={14} color={result === "semi_approved" ? T.gold : T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div style={{ fontFamily: F.u, fontSize: 11, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
                   {result === "semi_approved"
                     ? `₹${Number(deductionAmount) || 0} of the ₹${makingChargeOf(inspecting)} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment.`
                     : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ₹${makingChargeOf(inspecting)} making charge is withheld.`}

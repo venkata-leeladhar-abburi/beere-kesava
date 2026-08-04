@@ -23,7 +23,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <PenLine size={20} color={sigMethod === "here" ? T.royalBurgundy : T.taupe} />
           </div>
           <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Sign Here on This Screen</div>
-          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>Weaver signs on this device</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Weaver signs on this device</div>
         </button>
         <button onClick={() => setSigMethod("remote")} style={{
           padding: "18px 16px", borderRadius: 14, cursor: "pointer", textAlign: "center" as const, position: "relative" as const,
@@ -35,7 +35,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <Send size={20} color={sigMethod === "remote" ? T.royalBurgundy : T.taupe} />
           </div>
           <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Send to Weaver's Phone</div>
-          <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>Weaver signs remotely</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Weaver signs remotely</div>
         </button>
       </div>
 
@@ -72,20 +72,20 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${T.green}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
               <CheckCircle2 size={26} color={T.green} style={{ margin: "0 auto 8px" }} />
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.green, marginBottom: 4 }}>Signature Received!</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>Signed by {weaverName} · Just now</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Signed by {weaverName} · Just now</div>
             </div>
           ) : remoteSent ? (
             <div style={{ background: "rgba(196,146,58,0.12)", border: `1px solid ${T.antiqueGold}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
               <Clock size={24} color={T.antiqueGold} style={{ margin: "0 auto 8px" }} />
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>Waiting for signature…</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>Request sent to {weaverName}'s mobile (+91 {weaverPhone})</div>
-              <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12.5, color: T.taupe, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+              <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12, color: T.taupe, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
             </div>
           ) : (
             <>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 3 }}>Sending to</div>
-                <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 3 }}>Sending to</div>
+                <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
               </div>
               <button onClick={() => setRemoteSent(true)} style={{ width: "100%", height: 48, borderRadius: 12, background: T.royalBurgundy, border: "none", color: "#FFF", fontFamily: F.ui, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <Send size={15} /> Send Signature Request

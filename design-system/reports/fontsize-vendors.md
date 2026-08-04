@@ -1,0 +1,70 @@
+# Font-size floor review — vendors
+
+63 sites were raised from a sub-12px size to the 12px floor.
+Each is a visible size increase — confirm the surrounding layout still works.
+
+| File | Line | From | To |
+|---|---|---|---|
+| features/vendors/components/vendors-page/AddVendorModal.tsx | 79 | 11px | 12px |
+| features/vendors/components/vendors-page/AddVendorModal.tsx | 89 | 11px | 12px |
+| features/vendors/components/vendors-page/AddVendorModal.tsx | 94 | 11px | 12px |
+| features/vendors/components/vendors-page/AddVendorModal.tsx | 100 | 11px | 12px |
+| features/vendors/components/vendors-page/AddVendorModal.tsx | 111 | 11px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 8 | 10px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 20 | 10px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 23 | 11px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 37 | 11px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 38 | 11.5px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 39 | 11px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 47 | 11px | 12px |
+| features/vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx | 49 | 10px | 12px |
+| features/vendors/components/vendors-page/SharedBits.tsx | 12 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 157 | 10.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 165 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 169 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 195 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 202 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 207 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 250 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 258 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 261 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 271 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 273 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 274 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 288 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 290 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 304 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 309 | 10.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 331 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 332 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 352 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 359 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 376 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorAnalyticsSection.tsx | 387 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorCard.tsx | 24 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorCard.tsx | 39 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorCard.tsx | 45 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorCard.tsx | 46 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 74 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 78 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 106 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 113 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 144 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 146 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 161 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 170 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 171 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 185 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 194 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 205 | 10.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 210 | 10.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 216 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 238 | 10px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 245 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 247 | 11.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 253 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 289 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 294 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorProfile.tsx | 299 | 9.5px | 12px |
+| features/vendors/components/vendors-page/VendorsHeroStats.tsx | 23 | 11px | 12px |
+| features/vendors/components/vendors-page/VendorsHeroStats.tsx | 54 | 10px | 12px |

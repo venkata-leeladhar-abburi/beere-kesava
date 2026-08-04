@@ -70,7 +70,7 @@ export function ApprovalsPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
       <ApprovalsHeader poCount={combinedPOList.length} externalCount={pendingRequests.length} />
 
@@ -117,7 +117,7 @@ export function ApprovalsPage() {
         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 400, color: T.warmCream }}>
           Beere Kesava &amp; Brothers Silks · Est. 1999
         </span>
-        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           Superadmin Portal · Approvals Management
         </span>
       </div>

@@ -85,11 +85,11 @@ export function ScheduledReportsSection() {
 
               {/* Action buttons */}
               <div style={{ padding: "0 22px 20px", display: "flex", gap: 8 }}>
-                <button style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                <button style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
                   <Pencil size={14} />Edit
                 </button>
                 <button onClick={() => setScheduleStates(prev => prev.map((v, j) => j === i ? !v : v))}
-                  style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${scheduleStates[i] ? "rgba(200,155,71,0.35)" : T.borderDef}`, borderRadius: 9, background: scheduleStates[i] ? "rgba(200,155,71,0.08)" : "#fff", fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: scheduleStates[i] ? T.antiqueGold : T.taupe, cursor: "pointer" }}>
+                  style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${scheduleStates[i] ? "rgba(200,155,71,0.35)" : T.borderDef}`, borderRadius: 9, background: scheduleStates[i] ? "rgba(200,155,71,0.08)" : "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: scheduleStates[i] ? T.antiqueGold : T.taupe, cursor: "pointer" }}>
                   {scheduleStates[i] ? <><Pause size={14} />Pause</> : <><Play size={14} />Resume</>}
                 </button>
               </div>
@@ -117,11 +117,11 @@ export function ScheduledReportsSection() {
                 <div key={f.label}>
                   <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>{f.label}</label>
                   {f.type === "select" ? (
-                    <select style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }}>
+                    <select style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }}>
                       {f.opts.map((o: string) => <option key={o}>{o}</option>)}
                     </select>
                   ) : f.type === "time" ? (
-                    <input type="time" defaultValue="09:00" style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }} />
+                    <input type="time" defaultValue="09:00" style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }} />
                   ) : (
                     <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
                       {["PDF","Excel"].map(fmt => (

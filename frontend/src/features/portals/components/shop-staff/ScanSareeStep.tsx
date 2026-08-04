@@ -120,7 +120,7 @@ export function ScanSareeStep({
             </div>
             <div>
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.green }}>Saree Found Successfully</div>
-              <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>ID: {saree.id}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>ID: {saree.id}</div>
             </div>
           </div>
 
@@ -131,8 +131,8 @@ export function ScanSareeStep({
               <div style={{ flex: isMobile ? undefined : 1 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
                   <div>
-                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 15, color: C.burg, marginBottom: 4 }}>{saree.id}</div>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>{saree.name}</div>
+                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.burg, marginBottom: 4 }}>{saree.id}</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>{saree.name}</div>
                   </div>
                   <Chip label="Factory" color={C.green} bg="rgba(30,102,64,0.10)" />
                 </div>
@@ -144,7 +144,7 @@ export function ScanSareeStep({
                     ["Weaver", saree.weaver, false],
                   ].map(([k, v, mono], i) => (
                     <div key={i}>
-                      <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 3 }}>{k as string}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>{k as string}</div>
                       <div style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v as string}</div>
                     </div>
                   ))}
@@ -162,7 +162,7 @@ export function ScanSareeStep({
                       style={{ width: "100%", height: 56, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 36px 0 36px", fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, outline: "none", boxSizing: "border-box" as const }}
                     />
                   </div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 6 }}>Default: {fmtPrice(originalPrice)}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 6 }}>Default: {fmtPrice(originalPrice)}</div>
                 </div>
               )}
             </div>

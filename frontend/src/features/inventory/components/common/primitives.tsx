@@ -14,7 +14,7 @@ export function StatusBadge({ status }: { status: string }) {
   };
   const s = cfg[status] ?? cfg["Ready for Dispatch"];
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" as const }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>
       {status === "Ready for Dispatch"      && <CheckCircle2 size={10} />}
       {status === "Dispatched"              && <Truck size={10} />}
       {status === "Damaged — Review Needed" && <AlertTriangle size={10} />}
@@ -28,7 +28,7 @@ export function StatusBadge({ status }: { status: string }) {
 export function Field({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 6 }}>
+      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 6 }}>
         {label} {req && <span style={{ color: T.crimson }}>*</span>}
       </div>
       {children}

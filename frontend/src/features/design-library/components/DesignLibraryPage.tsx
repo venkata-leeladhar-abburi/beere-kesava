@@ -89,7 +89,7 @@ export function DesignLibraryPage() {
   });
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
 
       {/* ── Page header ── */}
       <div style={{ background: T.darkBurgundy, padding: "36px 56px 80px", position: "relative", overflow: "hidden" }}>
@@ -97,7 +97,7 @@ export function DesignLibraryPage() {
         <div style={{ position: "absolute", right: 20, bottom: -20, width: 200, height: 200, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.10)", pointerEvents: "none" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 14 }}>
+            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 14 }}>
               Since 1999 · Production
             </div>
             <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 42, fontWeight: 700, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }}>
@@ -122,7 +122,7 @@ export function DesignLibraryPage() {
                 <PaperPlaneTilt size={24} color="#FFFDF9" weight="bold" />
               </div>
               <div>
-                <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>Weaver Dispatch Control</h2>
+                <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>Weaver Dispatch Control</h2>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2, letterSpacing: "0.4px" }}>DISPATCH PRODUCTION DESIGN SLIPS</div>
               </div>
             </div>
@@ -137,7 +137,7 @@ export function DesignLibraryPage() {
                   
                   {dispatchSavedMsg && (
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                      style={{ background: "rgba(30,102,64,0.08)", border: `1.5px solid ${T.green}`, borderRadius: 10, padding: "12px 16px", color: T.green, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, marginBottom: 16 }}>
+                      style={{ background: "rgba(30,102,64,0.08)", border: `1.5px solid ${T.green}`, borderRadius: 10, padding: "12px 16px", color: T.green, fontFamily: F.ui, fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
                       ✓ {dispatchSavedMsg}
                     </motion.div>
                   )}
@@ -148,11 +148,11 @@ export function DesignLibraryPage() {
                       <label style={labelStyle}>Recipient Type</label>
                       <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}`, width: "fit-content" }}>
                         <button type="button" onClick={() => setDispRecipientType("weaver")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "weaver" ? "#FFFFFF" : "transparent", color: dispRecipientType === "weaver" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "weaver" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "weaver" ? "#FFFFFF" : "transparent", color: dispRecipientType === "weaver" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "weaver" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
                           <User size={14} weight="bold" /> Weaver
                         </button>
                         <button type="button" onClick={() => setDispRecipientType("loom")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "loom" ? "#FFFFFF" : "transparent", color: dispRecipientType === "loom" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "loom" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "loom" ? "#FFFFFF" : "transparent", color: dispRecipientType === "loom" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "loom" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
                           <Buildings size={14} weight="bold" /> Factory Loom
                         </button>
                       </div>
@@ -230,7 +230,7 @@ export function DesignLibraryPage() {
 
                   <DateFilterBar filter={historyDateFilter} onChange={setHistoryDateFilter} />
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100vh - 360px)", overflowY: "auto", paddingRight: 4 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100dvh - 360px)", overflowY: "auto", paddingRight: 4 }}>
                     {dispatchHistory.filter(h => {
                       if (!matchesDateFilter(h.sentAt, historyDateFilter)) return false;
                       if (!historySearch) return true;
@@ -243,11 +243,11 @@ export function DesignLibraryPage() {
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                               <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Dispatch to {h.recipientName}</span>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                               <CalendarCheck size={12} /> Sent on {h.sentAt}
                             </div>
                           </div>
-                          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
                             {h.recipientType === "weaver" ? <User size={11} weight="bold" /> : <Buildings size={11} weight="bold" />}
                             {h.recipientName}
                           </span>
@@ -255,14 +255,14 @@ export function DesignLibraryPage() {
 
 
 
-                        <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                        <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
                           <strong>Instructions:</strong> {h.instructions}
                         </div>
 
                         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
                           {h.colorSlipImage && (
                             <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
                               <img
                                 src={h.colorSlipImage}
                                 alt="Color slip"
@@ -273,7 +273,7 @@ export function DesignLibraryPage() {
                           )}
                           {h.designGraphImage && (
                             <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
                               <img
                                 src={h.designGraphImage}
                                 alt="Design graph"
@@ -283,7 +283,7 @@ export function DesignLibraryPage() {
                             </div>
                           )}
                           {!h.colorSlipImage && !h.designGraphImage && (
-                            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
                               No files attached
                             </span>
                           )}
@@ -307,7 +307,7 @@ export function DesignLibraryPage() {
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 400, color: T.warmCream, marginBottom: 6 }}>
           Beere Kesava &amp; Brothers Silks · Est. 1999
         </div>
-        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           Weaver Dispatcher
         </div>
       </div>

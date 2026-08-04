@@ -63,7 +63,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
       <div style={{ paddingBottom: 32 }}>
         <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
         <div style={{ margin: "20px 20px 8px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 4 }}>Select Return Type</div>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Select Return Type</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Choose the type of return to process</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 20px 8px" }}>

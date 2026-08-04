@@ -115,7 +115,7 @@ export function ActionLogSection() {
                   flexShrink: 0,
                   zIndex: 1,
                 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: "#fff" }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>
                     {ROLE_COLORS[entry.role]?.initial ?? "??"}
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export function ActionLogSection() {
                         background: ROLE_COLORS[entry.role]?.badge,
                         color: ROLE_COLORS[entry.role]?.text,
                         fontFamily: F.mono,
-                        fontSize: 9,
+                        fontSize: 12,
                         fontWeight: 600,
                         padding: "2px 8px",
                         borderRadius: 999,
@@ -148,7 +148,7 @@ export function ActionLogSection() {
                         {entry.user}
                       </span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                       {entry.time}
                     </span>
                   </div>
@@ -177,12 +177,12 @@ export function ActionLogSection() {
                       borderRadius: 6,
                       padding: "2px 8px",
                       fontFamily: F.mono,
-                      fontSize: 8,
+                      fontSize: 12,
                       color: T.royalBurgundy,
                     }}>
                       {entry.module}
                     </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>
                       {entry.record}
                     </span>
                   </div>
@@ -232,7 +232,7 @@ export function ActionLogSection() {
                     {["Timestamp", "Role", "User", "Module", "Action", "Record", "Old Value", "New Value"].map(h => (
                       <th key={h} style={{
                         fontFamily: F.mono,
-                        fontSize: 9,
+                        fontSize: 12,
                         textTransform: "uppercase",
                         color: T.taupe,
                         padding: "12px 14px",
@@ -259,7 +259,7 @@ export function ActionLogSection() {
                       onMouseEnter={e => (e.currentTarget.style.background = T.cream)}
                       onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : T.warmIvory)}
                     >
-                      <td style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                      <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                         {entry.time}
                       </td>
                       <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -267,7 +267,7 @@ export function ActionLogSection() {
                           background: ROLE_COLORS[entry.role]?.badge,
                           color: ROLE_COLORS[entry.role]?.text,
                           fontFamily: F.mono,
-                          fontSize: 8,
+                          fontSize: 12,
                           fontWeight: 600,
                           padding: "2px 7px",
                           borderRadius: 999,
@@ -286,7 +286,7 @@ export function ActionLogSection() {
                           borderRadius: 6,
                           padding: "2px 7px",
                           fontFamily: F.mono,
-                          fontSize: 8,
+                          fontSize: 12,
                           color: T.royalBurgundy,
                           whiteSpace: "nowrap",
                         }}>
@@ -296,7 +296,7 @@ export function ActionLogSection() {
                       <td style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "11px 14px", maxWidth: 300, borderBottom: `1px solid ${T.borderDef}` }}>
                         {entry.action}
                       </td>
-                      <td style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                      <td style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                         {entry.record}
                       </td>
                       <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: entry.oldVal ? T.crimson : T.taupe, padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -318,7 +318,7 @@ export function ActionLogSection() {
                 padding: "16px 18px",
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                   Showing 1–12 of 2,840 entries · Rows per page: 20
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -326,7 +326,7 @@ export function ActionLogSection() {
                   {[1, 2, 3].map(n => (
                     <PaginationBtn key={n} active={n === 1}>{n}</PaginationBtn>
                   ))}
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, padding: "0 4px" }}>...</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
                   <PaginationBtn>60</PaginationBtn>
                   <PaginationBtn><ChevronRight size={13} /></PaginationBtn>
                 </div>

@@ -68,10 +68,10 @@ export function SareeListModal({
             }}
           >
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: "#FFF" }}>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>
                 {purchase.id} — Saree Details
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.8)" }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
                 {purchase.supplier}
               </div>
             </div>
@@ -103,7 +103,7 @@ export function SareeListModal({
                       key={h}
                       style={{
                         fontFamily: F.mono,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: 700,
                         color: T.taupe,
                         textTransform: "uppercase" as const,
@@ -129,18 +129,18 @@ export function SareeListModal({
                       {s.id}
                     </td>
                     <td style={{ padding: "10px 14px", whiteSpace: "nowrap" as const }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{s.lineCode}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginLeft: 6 }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.lineCode}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 6 }}>
                         pc {s.pieceNo}/{s.lineQuantity}
                       </span>
                     </td>
-                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.sareeType || "—"}
                     </td>
-                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.color || "—"}
                     </td>
-                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
+                    <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
                       {s.weight}
                     </td>
                     <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>
@@ -172,7 +172,7 @@ export function SareeListModal({
                           padding: "5px 11px",
                           fontFamily: F.ui,
                           fontWeight: 600,
-                          fontSize: 11.5,
+                          fontSize: 12,
                           cursor: "pointer",
                           whiteSpace: "nowrap" as const,
                         }}
@@ -228,7 +228,7 @@ export function SareeListModal({
                 padding: "10px 0",
                 fontFamily: F.ui,
                 fontWeight: 600,
-                fontSize: 13.5,
+                fontSize: 13,
                 cursor: "pointer",
               }}
             >
@@ -246,7 +246,7 @@ export function SareeListModal({
                 padding: "10px 22px",
                 fontFamily: F.ui,
                 fontWeight: 500,
-                fontSize: 13.5,
+                fontSize: 13,
                 cursor: "pointer",
               }}
             >

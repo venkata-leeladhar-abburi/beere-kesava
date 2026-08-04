@@ -19,8 +19,8 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [saving, setSaving] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, marginBottom: 6, display: "block" };
+  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
 
   const handleSave = () => {
     if (!amount || !utr || !firmId) return;
@@ -39,7 +39,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
         style={{ background: T.warmIvory, borderRadius: 20, width: 840, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column" }}
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
-          <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
           <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
             <X size={16} />
           </button>
@@ -56,11 +56,11 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {history.map((h, i) => (
                     <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1.2fr", gap: "8px 10px" }}>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{h.amount.toLocaleString("en-IN")}</div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.date}</div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.firm}</div></div>
-                      <div style={{ gridColumn: "1 / 3" }}><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{h.utr}</div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{h.method}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{h.amount.toLocaleString("en-IN")}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
+                      <div style={{ gridColumn: "1 / 3" }}><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{h.utr}</div></div>
+                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.method}</div></div>
                     </div>
                   ))}
                 </div>
@@ -83,7 +83,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
                   <FileText size={20} color={T.royalBurgundy} />
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>Click to upload invoice</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
                 <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" />
               </div>
             </div>
@@ -93,7 +93,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
-              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
             </div>
 
             <div>

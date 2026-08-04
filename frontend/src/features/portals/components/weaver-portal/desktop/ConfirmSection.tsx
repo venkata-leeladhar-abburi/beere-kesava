@@ -55,7 +55,7 @@ export function ConfirmSection({
             <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
               <Check size={52} color={C.green} />
             </div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: C.text, marginBottom: 16 }}>Materials Confirmed!</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Materials Confirmed!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
             <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "10px 24px", fontFamily: F.m, fontSize: 18, marginBottom: 36 }}>{confirmedRecord.id}</div>
             <button onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }} style={{ display: "block", width: "100%", height: 60, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF", cursor: "pointer" }}>
@@ -88,7 +88,7 @@ export function ConfirmSection({
                 </div>
               </div>
             </div>
-            <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.7 }}>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.7 }}>
               The admin has issued your materials. Review the list below in Materials Received History, then sign to confirm receipt.
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
@@ -111,7 +111,7 @@ export function ConfirmSection({
           return (
             <div style={{ marginTop: 48 }}>
               <DSectionHeader label="Material Still With You" />
-              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginBottom: 22 }}>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>
                 Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
               </div>
 
@@ -124,8 +124,8 @@ export function ConfirmSection({
                 ].map(s => (
                   <div key={s.label} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "20px 22px" }}>
                     <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>{s.label}</div>
-                    <div style={{ fontFamily: F.d, fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 5 }}>{s.sub}</div>
+                    <div style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 5 }}>{s.sub}</div>
                   </div>
                 ))}
               </div>
@@ -145,8 +145,8 @@ export function ConfirmSection({
                     return (
                       <div key={b.batchId} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 8 }}>
-                          <span style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
-                          <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
+                          <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
+                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${C.bdr}` }}>
                           {[
@@ -155,9 +155,9 @@ export function ConfirmSection({
                             { label: "Outstanding", value: fmtKg(b.outstandingGrams), sub: undefined, color: b.outstandingGrams > 0 ? C.crim : C.green },
                           ].map((s, i) => (
                             <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-                              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
                               <div style={{ fontFamily: F.m, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                              {s.sub && <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 3 }}>{s.sub}</div>}
+                              {s.sub && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.sub}</div>}
                             </div>
                           ))}
                         </div>
@@ -179,7 +179,7 @@ export function ConfirmSection({
           <div style={{ marginTop: 48 }}>
             <DSectionHeader label="Materials Received History" />
             <div style={{ padding: "40px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>
-              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>No materials have been issued to you yet.</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No materials have been issued to you yet.</div>
             </div>
           </div>
         )}

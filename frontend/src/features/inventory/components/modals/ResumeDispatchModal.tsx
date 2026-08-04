@@ -46,7 +46,7 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
               <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
                 <Upload size={28} color={T.taupe} style={{ margin: "0 auto 10px" }} />
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>Click to upload LR receipt</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
               </div>
             </div>
           )}

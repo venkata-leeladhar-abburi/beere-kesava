@@ -17,7 +17,7 @@ export function useCanSeePrices() { return React.useContext(ShopPriceContext); }
 // ─── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#8B7060",
+  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
   bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", inp: "#FFF8E7", white: "#FFFFFF",
 };
 const F = { d: "'Plus Jakarta Sans', sans-serif", u: "'Inter', sans-serif", m: "'JetBrains Mono', monospace" };
@@ -43,7 +43,7 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
       <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${bgUrl || SHOP_BG})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.20 }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(61,14,26,0.96) 0%, rgba(61,14,26,0.78) 60%, rgba(61,14,26,0.52) 100%)" }} />
       <div style={{ position: "relative", zIndex: 1, padding: isTablet ? "28px 28px 0" : "40px 48px 0" }}>
-        <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: "rgba(255,255,255,0.40)", textTransform: "uppercase" as const, marginBottom: 20 }}>{breadcrumb}</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.40)", textTransform: "uppercase" as const, marginBottom: 20 }}>{breadcrumb}</div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
           <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: isTablet ? 40 : 62, color: "#FFF", lineHeight: 1 }}>
             {titleMain} <span style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: isTablet ? 26 : 38, color: C.gold }}>{titleSub}</span>
@@ -55,7 +55,7 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
             </div>
           )}
         </div>
-        <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.62)", lineHeight: 1.65, maxWidth: 640, marginBottom: 22 }}>{description}</div>
+        <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.65, maxWidth: 640, marginBottom: 22 }}>{description}</div>
         {pills && pills.length > 0 && (
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 32 }}>
             {pills.map((p, i) => (
@@ -79,7 +79,7 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
               borderRight: isTablet ? (i % 2 === 0 ? "1px solid rgba(255,255,255,0.10)" : "none") : (i < stats.length - 1 ? "1px solid rgba(255,255,255,0.10)" : "none"),
               background: s.highlight ? "rgba(196,146,58,0.18)" : "transparent",
             }}>
-              <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,0.38)", textTransform: "uppercase" as const, marginBottom: 10 }}>{s.label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: "rgba(255,255,255,0.38)", textTransform: "uppercase" as const, marginBottom: 10 }}>{s.label}</div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: isTablet ? 38 : 54, color: s.highlight ? C.gold : s.crimson ? "#FF8080" : "#FFF", lineHeight: 1, marginBottom: 8 }}>{s.val}</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{s.sub}</div>
             </div>
@@ -107,9 +107,9 @@ function SectionTitle({ title, link, onLink, id }: { title: string; link?: strin
 function HeroHeader({ eyebrow, title, sub, desc }: { eyebrow: string; title: string; sub: string; desc?: string }) {
   return (
     <div style={{ background: C.dark, padding: "24px 20px 22px" }}>
-      <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 3, color: "rgba(255,255,255,0.50)", textTransform: "uppercase" as const, marginBottom: 6 }}>{eyebrow}</div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 22, color: C.gold, marginBottom: desc ? 8 : 0 }}>{sub}</div>
+      <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.50)", textTransform: "uppercase" as const, marginBottom: 6 }}>{eyebrow}</div>
+      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 20, color: C.gold, marginBottom: desc ? 8 : 0 }}>{sub}</div>
       {desc && <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", lineHeight: 1.5 }}>{desc}</div>}
     </div>
   );
@@ -128,9 +128,9 @@ function StatsStrip({ items }: { items: { label: string; val: string; sub: strin
           borderTop: wrap2 && i >= 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
           background: s.highlight ? C.gold : "transparent",
         }}>
-          <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase" as const, color: s.highlight ? C.text : "rgba(255,255,255,0.50)", marginBottom: 5 }}>{s.label}</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: s.highlight ? C.text : s.crimson ? "#FF6B6B" : "#FFF", lineHeight: 1 }}>{s.val}</div>
-          <div style={{ fontFamily: F.u, fontSize: 11, color: s.highlight ? "rgba(26,10,15,0.55)" : "rgba(255,255,255,0.45)", marginTop: 4 }}>{s.sub}</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase" as const, color: s.highlight ? C.text : "rgba(255,255,255,0.50)", marginBottom: 5 }}>{s.label}</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: s.highlight ? C.text : s.crimson ? "#FF6B6B" : "#FFF", lineHeight: 1 }}>{s.val}</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: s.highlight ? "rgba(26,10,15,0.55)" : "rgba(255,255,255,0.45)", marginTop: 4 }}>{s.sub}</div>
         </div>
       ))}
     </div>
@@ -162,7 +162,7 @@ function Btn({ label, icon, onClick, variant = "burg", style }: { label: string;
 }
 
 function Chip({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return <span style={{ background: bg, color, borderRadius: 999, padding: "2px 10px", fontFamily: F.u, fontSize: 11, fontWeight: 500, display: "inline-block" }}>{label}</span>;
+  return <span style={{ background: bg, color, borderRadius: 999, padding: "2px 10px", fontFamily: F.u, fontSize: 12, fontWeight: 500, display: "inline-block" }}>{label}</span>;
 }
 
 // ─── PAGE 01 — SHOP HOME ────────────────────────────────────────────────────

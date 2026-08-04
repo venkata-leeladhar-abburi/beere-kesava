@@ -6,7 +6,7 @@ import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingConte
 const T = {
   royalBurgundy: "#6E0F2D",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   crimson:       "#C0392B",
   green:         "#1E6640",
   orange:        "#E67E22",
@@ -19,12 +19,12 @@ const F = {
 };
 
 function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
+  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
 }
 
-const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
+const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
-const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.royalBurgundy };
+const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 function AssignmentRow({ a, ret }: { a: FinishingAssignment; ret: FinishingReturn | undefined }) {
   return (
@@ -47,9 +47,9 @@ function AssignmentRow({ a, ret }: { a: FinishingAssignment; ret: FinishingRetur
               color={ret.condition === "perfect" ? T.green : T.crimson}
               bg={ret.condition === "perfect" ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.10)"}
             />
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4 }}>{ret.receivedDate} · by {ret.receivedBy}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{ret.receivedDate} · by {ret.receivedBy}</div>
             {ret.condition === "damaged" && ret.damageNotes && (
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson, marginTop: 2 }}>{ret.damageType || "Damage"}: {ret.damageNotes}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, marginTop: 2 }}>{ret.damageType || "Damage"}: {ret.damageNotes}</div>
             )}
           </div>
         )}
@@ -119,7 +119,7 @@ export function FinishingStaffSection({
                   style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last assigned {r.lastAssignmentDate} · Assigned by {r.assignedByLabel}</div>
                   </div>
                   <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -131,7 +131,7 @@ export function FinishingStaffSection({
                       { l: "Damaged", v: String(r.damaged), c: r.damaged > 0 ? T.crimson : T.taupe },
                     ].map(k => (
                       <div key={k.l} style={{ textAlign: "right", minWidth: 58 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
                         <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                       </div>
                     ))}

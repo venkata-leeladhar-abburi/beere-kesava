@@ -48,7 +48,7 @@ export function SectionTitle({ title, sub, action, onAction }: { title: string, 
       <div style={{ display: "flex", gap: 12 }}>
         <div style={{ width: 3, background: T.antiqueGold, borderRadius: 2 }} />
         <div>
-          <h2 style={{ fontFamily: F.display, fontSize: 28, color: T.luxuryBrown, margin: "0 0 6px 0", fontWeight: 600 }}>{title}</h2>
+          <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: "0 0 6px 0", fontWeight: 600 }}>{title}</h2>
           <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0, maxWidth: 600, lineHeight: 1.5 }}>{sub}</p>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function SectionTitle({ title, sub, action, onAction }: { title: string, 
 export function CardStat({ label, value, valueColor = T.luxuryBrown, isMono = false, isSmall = false }: { label: string, value: React.ReactNode, valueColor?: string, isMono?: boolean, isSmall?: boolean }) {
   return (
     <div>
-      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{label}</div>
       <div style={{
         fontFamily: isMono ? F.mono : F.display,
         fontSize: isSmall ? 16 : 18,

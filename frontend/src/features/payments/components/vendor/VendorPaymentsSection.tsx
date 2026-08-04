@@ -88,7 +88,7 @@ export function VendorPaymentsSection() {
     { key: "table", Icon: AlignJustify, label: "Table View" },
   ] as const;
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
   return (
@@ -98,17 +98,17 @@ export function VendorPaymentsSection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
                 Vendor Payments
               </h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px" }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
               Track payments made to raw material and thread suppliers. Record and verify all vendor bills.
             </p>
           </div>
           <DownloadGate>
             <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
               <Download size={15} />Download Vendor Payment Report
             </motion.button>
           </DownloadGate>
@@ -188,7 +188,7 @@ export function VendorPaymentsSection() {
               <motion.button key={key} onClick={() => setView(key as any)}
                 animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
                 transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
                 <Icon size={13} />{label}
               </motion.button>
             ))}
@@ -229,7 +229,7 @@ export function VendorPaymentsSection() {
                   </div>
                   <div style={{ flex: "0 0 200px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{vp.vendor}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, marginTop: 2 }}>{vp.poNumber}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{vp.poNumber}</div>
                   </div>
                   <div style={{ flex: 1, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</div>
                   <div style={{ flex: 1, fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
@@ -237,7 +237,7 @@ export function VendorPaymentsSection() {
                   </div>
                   <div style={{ flex: "0 0 120px", fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
                     {vp.dueDate}
-                    {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 10, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4 }}>{vp.daysOverdue}d</span>}
+                    {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4 }}>{vp.daysOverdue}d</span>}
                   </div>
                   <VendorBadge status={vp.status} />
                   <button onClick={() => setViewDetails(vp)} style={{ padding: "6px 14px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>View</button>
@@ -287,12 +287,12 @@ export function VendorPaymentsSection() {
                             </td>
                             <td style={{ ...TD, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
                               {vp.dueDate}
-                              {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 11, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4 }}>{vp.daysOverdue}d late</span>}
+                              {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4 }}>{vp.daysOverdue}d late</span>}
                             </td>
                             <td style={{ ...TD, textAlign: "center" as const }}><VendorBadge status={vp.status} /></td>
                             <td style={TD}>
                               {vp.utr
-                                ? <span style={{ fontFamily: F.mono, fontSize: 11, color: T.green }}>{vp.utr}</span>
+                                ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{vp.utr}</span>
                                 : <span style={{ color: T.taupe }}>—</span>}
                             </td>
                             <td style={{ ...TD, textAlign: "center" as const }}>

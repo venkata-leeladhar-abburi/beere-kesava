@@ -10,7 +10,7 @@ export const CASH_FLOW_DATA = [
 
 export const COMPLIANCE_DATA = [
   { name: "Paid",    value: 2, color: "#1E6640" },
-  { name: "Partial", value: 1, color: "#C89B47" },
+  { name: "Partial", value: 1, color: "#845E04" },
   { name: "Overdue", value: 3, color: "#C0392B" },
 ];
 
@@ -18,8 +18,8 @@ export const WEAVER_DIST_DATA = [
   { name: "Anand K.",   amount: 36000, pct: 100, color: "#4A061B" },
   { name: "Kamala B.",  amount: 30000, pct: 83,  color: "#6E0F2D" },
   { name: "Ravi Kumar", amount: 28000, pct: 78,  color: "#8B3050" },
-  { name: "Padma Veni", amount: 26000, pct: 72,  color: "#C4923A" },
-  { name: "Lakshmi D.", amount: 20000, pct: 56,  color: "#8B7060" },
+  { name: "Padma Veni", amount: 26000, pct: 72,  color: "#845E04" },
+  { name: "Lakshmi D.", amount: 20000, pct: 56,  color: "#69635E" },
 ];
 
 export const TOTAL_TOP5 = WEAVER_DIST_DATA.reduce((s, d) => s + d.amount, 0);

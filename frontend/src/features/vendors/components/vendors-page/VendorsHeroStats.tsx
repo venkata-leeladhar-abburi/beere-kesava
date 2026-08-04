@@ -20,13 +20,13 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 28, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},rgba(200,155,71,0))` }} />
-              <span style={{ fontFamily: F.mono, fontSize: 11, letterSpacing: "2.5px", color: "rgba(200,155,71,0.82)", textTransform: "uppercase" as const, fontWeight: 600 }}>Since 1999 · Supplier Management</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", color: "rgba(200,155,71,0.82)", textTransform: "uppercase" as const, fontWeight: 600 }}>Since 1999 · Supplier Management</span>
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 4 }}>
-              <h1 style={{ fontFamily: F.display, fontSize: 52, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1.0 }}>Vendors</h1>
+              <h1 style={{ fontFamily: F.display, fontSize: 48, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1.0 }}>Vendors</h1>
               <span style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontStyle: "italic", fontWeight: 400 }}>&amp; Supplier Registry</span>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: "rgba(255,253,249,0.60)", margin: "6px 0 0", maxWidth: 540, lineHeight: 1.65 }}>Manage all raw material vendors. Track purchase history, payment terms, and outstanding amounts for every supplier.</p>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.60)", margin: "6px 0 0", maxWidth: 540, lineHeight: 1.65 }}>Manage all raw material vendors. Track purchase history, payment terms, and outstanding amounts for every supplier.</p>
           </div>
           <motion.button onClick={onAddClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             style={{ alignSelf: "flex-start", padding: "13px 24px", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.darkBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(200,155,71,0.35)", flexShrink: 0 }}>
@@ -51,8 +51,8 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
                 <m.icon size={22} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
               </div>
               <div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 34, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 6 }}>{m.value}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 6 }}>{m.value}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)" }}>{m.sub}</div>
               </div>
             </div>

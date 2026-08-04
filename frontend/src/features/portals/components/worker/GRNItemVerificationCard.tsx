@@ -12,7 +12,7 @@ const MAT_TAG: Record<string, { col: string; bg: string }> = {
 function MatChip({ type }: { type: string }) {
   const cfg = MAT_TAG[type] ?? { col: C.text, bg: C.inp };
   return (
-    <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: cfg.col, background: cfg.bg, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
+    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: cfg.col, background: cfg.bg, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
       {type}
     </span>
   );
@@ -57,20 +57,20 @@ export function GRNItemVerificationCard({
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {/* Ordered — read-only */}
         <div>
-          <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Ordered</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Ordered</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
             <MatChip type={m.materialType} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, marginBottom: 4 }}>{m.description || m.subtype}</div>
           <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text }}>
             {m.quantity} {m.unit}
-            {isKg && <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 1000)} g)</span>}
-            {m.materialType === "Jari" && m.unit === "Buns" && <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 4)} Reels)</span>}
+            {isKg && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 1000)} g)</span>}
+            {m.materialType === "Jari" && m.unit === "Buns" && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 4)} Reels)</span>}
           </div>
         </div>
         {/* Received — editable */}
         <div>
-          <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Received</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6 }}>Received</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {/* Unit Selector Button Group */}
             <div style={{ display: "flex", gap: 4 }}>
@@ -85,7 +85,7 @@ export function GRNItemVerificationCard({
                       border: `1px solid ${receivedUnit === u ? C.burg : C.bdr}`,
                       background: receivedUnit === u ? C.burg : "#FFF",
                       color: receivedUnit === u ? "#FFF" : C.text,
-                      fontFamily: F.u, fontSize: 10.5, fontWeight: 600, cursor: "pointer"
+                      fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer"
                     }}
                   >
                     {u}
@@ -102,7 +102,7 @@ export function GRNItemVerificationCard({
                       border: `1px solid ${receivedUnit === u ? C.burg : C.bdr}`,
                       background: receivedUnit === u ? C.burg : "#FFF",
                       color: receivedUnit === u ? "#FFF" : C.text,
-                      fontFamily: F.u, fontSize: 10.5, fontWeight: 600, cursor: "pointer"
+                      fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer"
                     }}
                   >
                     {u}
@@ -120,14 +120,14 @@ export function GRNItemVerificationCard({
                 placeholder="0"
                 style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 46, height: 40 }}
               />
-              <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: matColor }}>
+              <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: matColor }}>
                 {receivedUnit || (m.materialType === "Jari" ? "Buns" : "kg")}
               </span>
             </div>
 
             {/* Auto conversion preview */}
             {receivedQty && (
-              <div style={{ fontFamily: F.u, fontSize: 10.5, color: matColor, fontWeight: 600 }}>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: matColor, fontWeight: 600 }}>
                 {m.materialType === "Jari" ? (
                   receivedUnit === "Reels"
                     ? `= ${(parseFloat(receivedQty) / 4).toFixed(2)} Buns`
@@ -147,21 +147,21 @@ export function GRNItemVerificationCard({
           {cmp.diff === 0 ? (
             <>
               <CheckCircle2 size={13} color={C.green} />
-              <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.green }}>✓ Match</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green }}>✓ Match</span>
             </>
           ) : cmp.diff < 0 ? (
             <>
               <AlertTriangle size={13} color={C.gold} />
-              <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
                 <input type="checkbox" checked={notifySuperadmin || false} onChange={e => setNotifySuperadmin(prev => ({ ...prev, [i]: e.target.checked }))} style={{ accentColor: C.burg, cursor: "pointer" }} />
-                <span style={{ fontFamily: F.u, fontSize: 10, color: C.text }}>Notify Superadmin</span>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>Notify Superadmin</span>
               </label>
             </>
           ) : (
             <>
               <TrendingUp size={13} color="#1565C0" />
-              <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#1565C0" }}>▲ Excess by {cmp.diff.toFixed(3)} {cmp.unit}</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#1565C0" }}>▲ Excess by {cmp.diff.toFixed(3)} {cmp.unit}</span>
             </>
           )}
         </div>
@@ -169,7 +169,7 @@ export function GRNItemVerificationCard({
 
       {/* Per-item approval */}
       <div style={{ marginTop: 12, borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>
-        <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>Confirm This Item</div>
+        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>Confirm This Item</div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             type="button"
@@ -205,10 +205,10 @@ export function GRNItemVerificationCard({
               onChange={e => setItemRejectReason(prev => ({ ...prev, [i]: e.target.value }))}
               placeholder="Reason this item was not approved (e.g. damaged, wrong shade, torn packaging)…"
               rows={2}
-              style={{ ...inputStyle, height: "auto", padding: "8px 10px", fontFamily: F.u, fontSize: 12.5, resize: "vertical" as const, borderColor: itemRejectReason?.trim() ? C.bdr : "#C0392B" }}
+              style={{ ...inputStyle, height: "auto", padding: "8px 10px", fontFamily: F.u, fontSize: 12, resize: "vertical" as const, borderColor: itemRejectReason?.trim() ? C.bdr : "#C0392B" }}
             />
             {!itemRejectReason?.trim() && (
-              <div style={{ fontFamily: F.u, fontSize: 10.5, color: "#C0392B", marginTop: 4 }}>Reason is required for items marked Not Approved.</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: "#C0392B", marginTop: 4 }}>Reason is required for items marked Not Approved.</div>
             )}
           </div>
         )}

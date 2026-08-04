@@ -95,7 +95,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
 
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px" }}>
             <WarningCircle size={16} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "#8B6018", lineHeight: 1.5 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
               Only Design Code is required — all other fields can be filled in later. The new code will be saved to the master Design Library immediately.
             </span>
           </div>

@@ -61,7 +61,7 @@ export function LabelPreviewCard({ fields }: {
                 style={{
                   fontFamily: F.display,
                   fontWeight: 700,
-                  fontSize: 10,
+                  fontSize: 12,
                   color: T.royalBurgundy,
                 }}
               >
@@ -71,7 +71,7 @@ export function LabelPreviewCard({ fields }: {
             <span
               style={{
                 fontFamily: F.mono,
-                fontSize: 8,
+                fontSize: 12,
                 color: T.taupe,
                 background: T.cream,
                 borderRadius: 4,
@@ -91,7 +91,7 @@ export function LabelPreviewCard({ fields }: {
                 style={{
                   fontFamily: F.mono,
                   fontWeight: 700,
-                  fontSize: 9,
+                  fontSize: 12,
                   textAlign: "center",
                   marginTop: 3,
                   color: "#000",
@@ -127,7 +127,7 @@ export function LabelPreviewCard({ fields }: {
                   style={{
                     fontFamily: F.mono,
                     fontWeight: 700,
-                    fontSize: 8,
+                    fontSize: 12,
                     color: "#000",
                   }}
                 >
@@ -151,7 +151,7 @@ export function LabelPreviewCard({ fields }: {
                   style={{
                     fontFamily: F.mono,
                     fontWeight: 700,
-                    fontSize: 8,
+                    fontSize: 12,
                     color: "#000",
                   }}
                 >
@@ -174,7 +174,7 @@ export function LabelPreviewCard({ fields }: {
                 style={{
                   fontFamily: F.mono,
                   fontWeight: 700,
-                  fontSize: 8,
+                  fontSize: 12,
                   color: "#000",
                 }}
               >
@@ -204,7 +204,7 @@ export function LabelPreviewCard({ fields }: {
         <div
           style={{
             fontFamily: F.ui,
-            fontSize: 11,
+            fontSize: 12,
             color: T.taupe,
             textAlign: "center",
           }}

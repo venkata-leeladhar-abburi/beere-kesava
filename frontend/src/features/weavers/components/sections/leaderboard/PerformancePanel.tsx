@@ -23,7 +23,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 <Medal size={26} color="#FFFDF9" weight="fill" />
               </div>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Weaver Performance This Month</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Weaver Performance This Month</div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Rankings by sarees produced · Quality check results</div>
               </div>
             </div>
@@ -71,11 +71,11 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
 
                     {/* Stats */}
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>
+                      <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>
                         {l.sarees}
                         <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontWeight: 400, marginLeft: 5 }}>sarees</span>
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 15, color: qcColor(l.rate), fontWeight: 700, marginTop: 4 }}>{l.rate}% pass rate</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: qcColor(l.rate), fontWeight: 700, marginTop: 4 }}>{l.rate}% pass rate</div>
                     </div>
 
                     {/* On-time badge */}
@@ -116,7 +116,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                     </PieChart>
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
                       <div style={{ fontFamily: F.display, fontSize: 42, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>248</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 5, textAlign: "center", lineHeight: 1.4 }}>sarees<br />this month</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5, textAlign: "center", lineHeight: 1.4 }}>sarees<br />this month</div>
                     </div>
                   </div>
 
@@ -129,7 +129,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                             <div style={{ width: 10, height: 10, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
                             <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 600 }}>{d.name}</span>
                           </div>
-                          <span style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: d.color }}>{d.value}</span>
+                          <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: d.color }}>{d.value}</span>
                         </div>
                         {/* Slim bar — 5px */}
                         <div style={{ height: 5, background: "rgba(110,15,45,0.07)", borderRadius: 99, overflow: "hidden" }}>
@@ -150,9 +150,9 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 <div style={{ background: "rgba(192,57,43,0.05)", border: "1px solid rgba(192,57,43,0.14)", borderRadius: 14, padding: "18px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                     <WarningCircle size={18} color={T.crimson} weight="fill" />
-                    <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.crimson }}>Most common rejection reasons</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>Most common rejection reasons</span>
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, lineHeight: 1.6 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6 }}>
                     Defective threads <strong style={{ color: T.crimson }}>6 sarees</strong> · Weight issue <strong style={{ color: T.crimson }}>4 sarees</strong>
                   </div>
                 </div>
@@ -167,9 +167,9 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                   <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 16, padding: "20px 22px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
                       <s.PhIcon size={18} color={s.color} weight="fill" />
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: s.color, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 600 }}>{s.label}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: s.color, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 600 }}>{s.label}</div>
                     </div>
-                    <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
                   </div>
                 ))}
               </div>

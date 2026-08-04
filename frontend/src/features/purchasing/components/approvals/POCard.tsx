@@ -56,7 +56,7 @@ export function POCard({
           {item.id}
         </span>
         <span style={{
-          fontFamily: F.mono, fontSize: 10, color: T.taupe,
+          fontFamily: F.mono, fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "3px 8px",
         }}>
           Raised {item.raised}
@@ -65,7 +65,7 @@ export function POCard({
 
       {/* Urgency chip */}
       {item.urgency === "Urgent" && (
-        <div style={{ background: "rgba(192,57,43,0.09)", borderRadius: 7, padding: "6px 10px", fontFamily: F.mono, fontSize: 10, color: T.crimson, fontWeight: 600 }}>
+        <div style={{ background: "rgba(192,57,43,0.09)", borderRadius: 7, padding: "6px 10px", fontFamily: F.mono, fontSize: 12, color: T.crimson, fontWeight: 600 }}>
           🔴 Urgent — Low Stock Alert
         </div>
       )}
@@ -74,11 +74,11 @@ export function POCard({
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Package size={16} color={T.taupe} />
-          <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>
+          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
             {item.vendor}
           </span>
         </div>
-        <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, paddingLeft: 24 }}>
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, paddingLeft: 24 }}>
           {item.vendorCity}
         </span>
       </div>

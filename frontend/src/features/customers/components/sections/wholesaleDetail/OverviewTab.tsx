@@ -41,7 +41,7 @@ export function OverviewTab({
         ].map((s, idx) => (
           <div key={idx} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
-            <div style={{ fontFamily: s.isMono ? F.mono : F.display, fontSize: 26, fontWeight: 700, color: s.color }}>{s.value}</div>
+            <div style={{ fontFamily: s.isMono ? F.mono : F.display, fontSize: 24, fontWeight: 700, color: s.color }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -60,11 +60,11 @@ export function OverviewTab({
                 <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => onViewBulkOrder(o, "overview")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onViewBulkOrder(o, "overview"))?.(); } }}>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 17, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{o.done} of {o.total} sarees · {o.sareeType}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, background: meta.bg, color: meta.color, padding: "2px 9px", borderRadius: 20 }}>{meta.label}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: meta.bg, color: meta.color, padding: "2px 9px", borderRadius: 20 }}>{meta.label}</span>
                     </div>
-                    <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>Due {o.due}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Due {o.due}</span>
                   </div>
                   <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 99, overflow: "hidden" }}>
                     <div style={{ width: `${pct}%`, height: "100%", background: T.antiqueGold, borderRadius: 99 }} />
@@ -81,13 +81,13 @@ export function OverviewTab({
           <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Bulk Orders &amp; Invoices</h3>
           {custOrders.length > 0 && (
             <button onClick={() => setWholesaleTab("Order History")}
-              style={{ background: "transparent", border: "none", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              style={{ background: "transparent", border: "none", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
               View Full Order History →
             </button>
           )}
         </div>
         {custOrders.length === 0 ? (
-          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "36px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>
+          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "36px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
             No bulk orders have been created for this customer yet.
           </div>
         ) : (
@@ -108,12 +108,12 @@ export function OverviewTab({
                     <tr key={o.ref} onClick={() => onViewBulkOrder(o, "payments")}
                       style={{ borderBottom: `1px solid ${T.borderDef}`, cursor: "pointer" }}>
                       <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12.5, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</td>
+                      <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</td>
                       <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</td>
                       <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.total}× {o.sareeType} · {o.design}</td>
                       <td style={{ padding: "12px 14px", fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{m.amountDue ? inr(m.amountDue) : "—"}</td>
                       <td style={{ padding: "12px 14px" }}>
-                        <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 11, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>
+                        <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>
                       </td>
                     </tr>
                   );

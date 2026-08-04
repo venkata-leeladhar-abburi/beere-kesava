@@ -20,7 +20,7 @@ export function StickyFooter() {
         justifyContent: "space-between",
       }}
     >
-      <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         Last saved: Today at 2:34 PM
       </span>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>

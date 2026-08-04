@@ -7,14 +7,14 @@ import { FadeUp } from "../common/primitives";
 
 export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; setExpanded: (v: boolean) => void }) {
   const fieldStyle: React.CSSProperties = { width: "100%", height: 48, padding: "0 16px", fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 8 };
+  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 8 };
 
   return (
     <div style={expanded ? { position: "fixed", inset: 0, zIndex: 1250, background: "rgba(26,10,15,0.42)", backdropFilter: "blur(4px)", padding: "32px 48px", overflowY: "auto" } : { padding: "40px 48px", paddingBottom: 80 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "32px", boxShadow: expanded ? "0 30px 90px rgba(0,0,0,0.25)" : "0 8px 32px rgba(74,6,27,0.06)", maxWidth: 900, margin: expanded ? "24px auto" : "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h2 style={{ fontFamily: F.display, fontSize: 28, color: T.luxuryBrown, margin: 0 }}>Add a New Weaver</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0 }}>Add a New Weaver</h2>
             {!expanded && <motion.button onClick={() => setExpanded(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 24px", fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>Open Form</motion.button>}
             {expanded && <button onClick={() => setExpanded(false)} style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, background: "none", border: "none", cursor: "pointer" }}>Cancel ×</button>}
           </div>
@@ -26,7 +26,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
             </motion.button>
           ) : (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} style={{ overflow: "hidden" }}>
-              <div style={{ fontFamily: F.display, fontSize: 28, color: T.luxuryBrown, marginBottom: 8 }}>New Weaver Registration</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, marginBottom: 8 }}>New Weaver Registration</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, marginBottom: 32 }}>Fill in all the details below. Fields marked with * are required.</div>
 
               {/* ── Photo Upload ── */}

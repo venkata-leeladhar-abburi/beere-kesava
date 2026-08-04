@@ -17,8 +17,8 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, marginBottom: 6, display: "block" };
+  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
 
   const handleSave = () => {
     if (!amount || !utr || !firmId) return;
@@ -37,7 +37,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
         style={{ background: T.warmIvory, borderRadius: 20, width: 480, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
-          <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
           <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
             <X size={16} />
           </button>
@@ -51,22 +51,22 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
 
           <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
-            <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.antiqueGold }}>₹{remaining.toLocaleString("en-IN")}</div>
+            <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{remaining.toLocaleString("en-IN")}</div>
           </div>
 
           {/* Previous Payments */}
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}>
                 <Receipt size={16} color={T.royalBurgundy} /> Previous Payments
               </div>
-              <span style={{ fontSize: 11, fontFamily: F.ui, color: T.taupe, fontWeight: 600 }}>
+              <span style={{ fontSize: 12, fontFamily: F.ui, color: T.taupe, fontWeight: 600 }}>
                 {inv.payments?.length || 0} transaction{inv.payments?.length !== 1 ? "s" : ""}
               </span>
             </div>
 
             {(!inv.payments || inv.payments.length === 0) ? (
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "16px 0", background: T.silkCream, borderRadius: 10 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic", textAlign: "center", padding: "16px 0", background: T.silkCream, borderRadius: 10 }}>
                 No previous payments recorded.
               </div>
             ) : (
@@ -81,18 +81,18 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
-                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.royalBurgundy }}>
+                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.royalBurgundy }}>
                           ₹{p.amount.toLocaleString("en-IN")}
                         </div>
-                        <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                           {p.utr} · {p.method}
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                        <span style={{ fontSize: 9.5, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        <span style={{ fontSize: 12, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                           {p.firmName ?? "Beere Kesava & Brothers Silks"}
                         </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                           <CalendarClock size={11} /> {p.date}
                         </div>
                       </div>

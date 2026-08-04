@@ -64,10 +64,10 @@ export function OverviewTab({
           <div key={s.label} style={{ ...card, padding: "20px 22px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <s.Icon size={15} color={T.royalBurgundy} />
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{s.label}</div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>{s.sub}</div>
+            <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -82,7 +82,7 @@ export function OverviewTab({
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={spendByMonth} barSize={28}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis hide />
                 <RechartsTooltip formatter={(v: any) => [formatINR(Number(v)), "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
                 <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
@@ -127,7 +127,7 @@ export function OverviewTab({
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
             <div>
               <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>External Purchase Inventory</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 3 }}>Every saree bought from {supplierName} in the selected time range.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Every saree bought from {supplierName} in the selected time range.</div>
             </div>
             <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "6px 12px", borderRadius: 8 }}>
               {filteredSarees.length} saree{filteredSarees.length !== 1 ? "s" : ""}
@@ -146,8 +146,8 @@ export function OverviewTab({
                   { label: "Profit", text: formatINR(t.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
                 ].map(({ label, text, color, bg, border }) => (
                   <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color }}>{text}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color }}>{text}</div>
                   </div>
                 ))}
               </div>
@@ -182,15 +182,15 @@ export function OverviewTab({
           <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Purchase Requests</div>
           {myRequests.map((r, i) => (
             <div key={r.id} style={{ padding: "14px 22px", borderTop: i > 0 ? `1px solid ${T.borderDef}` : "none", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, minWidth: 90 }}>{r.id}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, minWidth: 90 }}>{r.id}</div>
               <div style={{ flex: 1, minWidth: 180 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.quantity} × {r.sareeType}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2 }}>{r.reason}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.reason}</div>
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{formatINR(r.estimatedAmount)}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{r.requestedDate}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatINR(r.estimatedAmount)}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.requestedDate}</div>
               <span style={{
-                fontFamily: F.ui, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+                fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
                 background: r.status === "approved" ? "rgba(30,102,64,0.09)" : r.status === "rejected" ? T.crimsonBg : "rgba(230,126,34,0.12)",
                 color: r.status === "approved" ? T.greenMid : r.status === "rejected" ? T.crimson : "rgba(230,126,34,1)",
               }}>{r.status}</span>
