@@ -50,6 +50,7 @@ export interface Invoice {
   total: number; paid: number; status: InvoiceStatus;
   daysOverdue?: number;
   payments?: InvoicePayment[];
+  dispatchId?: string | null;
 }
 
 export type VendorStatus = "Paid" | "Partial" | "Overdue" | "Pending";

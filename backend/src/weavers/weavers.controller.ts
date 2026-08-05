@@ -21,9 +21,25 @@ export class WeaversController {
     return this.weaversService.findAll(query);
   }
 
+  /**
+   * Returns the top-10 leaderboard of active weavers ranked by QC pass rate.
+   * NOTE: This route MUST be declared before @Get(':id') so NestJS does not
+   * attempt to resolve the literal string "leaderboard" as a UUID param.
+   */
+  @Get("leaderboard")
+  getLeaderboard() {
+    return this.weaversService.getLeaderboard();
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.weaversService.findOne(id);
+  }
+
+  /** Live performance stats: QC pass rate, active batch rows, material issues. */
+  @Get(":id/stats")
+  getStats(@Param("id") id: string) {
+    return this.weaversService.getWeaverStats(id);
   }
 
   @Patch(":id")

@@ -1,4 +1,15 @@
 // ── Cross-section mock data ────────────────────────────────────────────────
+// MOCK-BACKED: every export in this file (WEAVERS, TABLE_ROWS, LEADERBOARD,
+// ACTIVITIES, BATCH_HISTORY, WARP_REQUESTS, ANALYTICS_WEAVERS,
+// PRODUCTION_LEDGER, HEADER_CHIPS, STATS, WEAVER_RATES) remains static mock
+// data. It mixes WV-XXX-style ids with production/QC/payments numbers that
+// have no backend endpoint yet, and WeaversPage.tsx's directory/analytics/
+// leaderboard sections read it directly — untangling identity from
+// production here would mean either the WV-XXX-id migration or faking
+// production stats for real weavers, both explicitly out of scope for the
+// identity/roster wiring done in AllWeaversPage.tsx and NewWeaverModal.tsx.
+// Leave this file mock until batches/QC/payments are wired to real weaver
+// ids.
 import type React from "react";
 import { Package, CheckCircle, WarningCircle, Medal, ChartBar, SquaresFour, List as PhList, Table as PhTable } from "@phosphor-icons/react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";

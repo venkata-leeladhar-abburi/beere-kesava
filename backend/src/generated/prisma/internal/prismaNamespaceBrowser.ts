@@ -90,7 +90,9 @@ export const ModelName = {
   Invoice: 'Invoice',
   InvoicePayment: 'InvoicePayment',
   Customer: 'Customer',
+  LabelSettings: 'LabelSettings',
   AuditLog: 'AuditLog',
+  ActionLog: 'ActionLog',
   Notification: 'Notification'
 } as const
 
@@ -699,7 +701,8 @@ export const InvoiceScalarFieldEnum = {
   dueDate: 'dueDate',
   total: 'total',
   paid: 'paid',
-  status: 'status'
+  status: 'status',
+  dispatchId: 'dispatchId'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
@@ -733,6 +736,30 @@ export const CustomerScalarFieldEnum = {
 export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
 
 
+export const LabelSettingsScalarFieldEnum = {
+  id: 'id',
+  labelSize: 'labelSize',
+  showBarcode: 'showBarcode',
+  showCode: 'showCode',
+  showWeaver: 'showWeaver',
+  showDate: 'showDate',
+  showBranding: 'showBranding',
+  defaultPrinter: 'defaultPrinter',
+  connectionType: 'connectionType',
+  scanShowPhoto: 'scanShowPhoto',
+  scanShowCode: 'scanShowCode',
+  scanShowWeaver: 'scanShowWeaver',
+  scanShowFabric: 'scanShowFabric',
+  scanShowColour: 'scanShowColour',
+  scanShowJari: 'scanShowJari',
+  scanShowDispatchDate: 'scanShowDispatchDate',
+  scanShowProductionStatus: 'scanShowProductionStatus',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LabelSettingsScalarFieldEnum = (typeof LabelSettingsScalarFieldEnum)[keyof typeof LabelSettingsScalarFieldEnum]
+
+
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -744,6 +771,23 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const ActionLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  role: 'role',
+  module: 'module',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  recordLabel: 'recordLabel',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  createdAt: 'createdAt'
+} as const
+
+export type ActionLogScalarFieldEnum = (typeof ActionLogScalarFieldEnum)[keyof typeof ActionLogScalarFieldEnum]
 
 
 export const NotificationScalarFieldEnum = {

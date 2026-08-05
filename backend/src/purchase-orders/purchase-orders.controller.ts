@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
 import { ListPurchaseOrdersQueryDto } from "./dto/list-purchase-orders-query.dto";
 import { RejectPurchaseOrderDto } from "./dto/reject-purchase-order.dto";
@@ -28,8 +29,8 @@ export class PurchaseOrdersController {
 
   @Post(":id/approve")
   @HttpCode(HttpStatus.OK)
-  approve(@Param("id") id: string) {
-    return this.purchaseOrdersService.approve(id);
+  approve(@Param("id") id: string, @Body() dto: ActorOnlyDto) {
+    return this.purchaseOrdersService.approve(id, dto);
   }
 
   @Post(":id/reject")
@@ -40,7 +41,7 @@ export class PurchaseOrdersController {
 
   @Post(":id/grn")
   @HttpCode(HttpStatus.OK)
-  receiveGrn(@Param("id") id: string) {
-    return this.purchaseOrdersService.receiveGrn(id);
+  receiveGrn(@Param("id") id: string, @Body() dto: ActorOnlyDto) {
+    return this.purchaseOrdersService.receiveGrn(id, dto);
   }
 }

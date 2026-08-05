@@ -1,15 +1,74 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import {
   AlignLeft, Table2, ChevronDown, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { F, T, ROLE_COLORS } from "./tokens";
-import { ACTION_ENTRIES } from "./data";
 import { PaginationBtn } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
+import { auditLogApi, ActionLogEntry } from "../../../../shared/api/audit-log";
+
+type ActionEntry = {
+  id: string;
+  role: string;
+  user: string;
+  time: string;
+  action: string;
+  module: string;
+  record: string;
+  oldVal: string | null;
+  newVal: string | null;
+};
+
+// Backend UserRole enum -> the display labels ROLE_COLORS is keyed on.
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: "ADMIN",
+  SUPERADMIN: "SUPERADMIN",
+  WORKER: "WORKER STAFF",
+  SHOP: "SHOP STAFF",
+  WEAVER: "WEAVERS",
+  ACCOUNTANT: "ACCOUNTANT",
+};
+
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+  const timePart = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  if (isToday) return `Today · ${timePart}`;
+  if (isYesterday) return `Yesterday · ${timePart}`;
+  return `${d.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · ${timePart}`;
+}
+
+function toActionEntry(log: ActionLogEntry): ActionEntry {
+  const roleLabel = ROLE_LABELS[log.role] ?? log.role;
+  return {
+    id: log.id,
+    role: roleLabel,
+    user: log.user ? `${log.user.firstName} ${log.user.lastName}` : "System",
+    time: formatTime(log.createdAt),
+    action: log.action,
+    module: log.module,
+    record: log.recordLabel ?? log.entityId ?? "—",
+    oldVal: log.oldValue,
+    newVal: log.newValue,
+  };
+}
 
 export function ActionLogSection() {
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["audit-log", "actions"],
+    queryFn: () => auditLogApi.listActions(),
+  });
+
+  const entries: ActionEntry[] = (data?.items ?? []).map(toActionEntry);
+  const total = data?.total ?? 0;
 
   return (
     <div style={{ padding: "48px 56px 0" }}>
@@ -70,7 +129,24 @@ export function ActionLogSection() {
               borderRadius: 1,
             }} />
 
-            {ACTION_ENTRIES.map(entry => (
+            {isLoading && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "24px 0" }}>
+                Loading action log…
+              </div>
+            )}
+            {isError && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "24px 0" }}>
+                Could not load the action log. Please try again later.
+              </div>
+            )}
+            {!isLoading && !isError && entries.length === 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "24px 0" }}>
+                No actions recorded yet. As weavers, invoices, and purchase orders are created or
+                updated, they'll show up here.
+              </div>
+            )}
+
+            {entries.map(entry => (
               <div key={entry.id} style={{ display: "flex", gap: 20, marginBottom: 14, position: "relative" }}>
                 {/* Circle */}
                 <div style={{
@@ -203,7 +279,25 @@ export function ActionLogSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ACTION_ENTRIES.map((entry, i) => (
+                  {entries.length === 0 && !isLoading && (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        style={{
+                          fontFamily: F.ui,
+                          fontSize: 13,
+                          color: T.taupe,
+                          padding: "24px 14px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {isError
+                          ? "Could not load the action log. Please try again later."
+                          : "No actions recorded yet."}
+                      </td>
+                    </tr>
+                  )}
+                  {entries.map((entry, i) => (
                     <tr
                       key={entry.id}
                       style={{
@@ -274,7 +368,7 @@ export function ActionLogSection() {
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                  Showing 1–12 of 2,840 entries · Rows per page: 20
+                  Showing {entries.length} of {total} entr{total === 1 ? "y" : "ies"}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <PaginationBtn disabled><ChevronLeft size={13} /></PaginationBtn>

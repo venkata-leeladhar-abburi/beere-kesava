@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { AuditLogService } from "./audit-log.service";
+import { ListActionLogQueryDto } from "./dto/list-action-log-query.dto";
 import { ListAuditLogQueryDto } from "./dto/list-audit-log-query.dto";
 
 // NOTE: RBAC guards intentionally not yet applied — see the same note in
@@ -16,5 +17,12 @@ export class AuditLogController {
   @Get()
   findAll(@Query() query: ListAuditLogQueryDto) {
     return this.auditLogService.findAll(query);
+  }
+
+  // Generic "action feed" — writes come from weavers/invoices/purchase-orders
+  // (and, incrementally, other modules) via AuditLogService.recordAction().
+  @Get("actions")
+  findAllActions(@Query() query: ListActionLogQueryDto) {
+    return this.auditLogService.findAllActions(query);
   }
 }

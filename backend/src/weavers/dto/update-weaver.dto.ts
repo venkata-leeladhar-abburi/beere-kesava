@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Matches,
   Min,
@@ -11,6 +12,10 @@ import {
 import { ActiveStatus } from "../../generated/prisma/client";
 
 export class UpdateWeaverDto {
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsOptional()
   @IsString()
   @Length(1, 100)

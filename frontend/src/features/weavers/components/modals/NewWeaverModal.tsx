@@ -1,13 +1,89 @@
 // ── New weaver registration modal/form ──────────────────────────────────────
-import React from "react";
+// Wired to the real backend: submitting this form calls POST /weavers
+// (weaversApi.create) and invalidates the "weavers-directory" query used by
+// AllWeaversPage.tsx so the new weaver shows up there. Note: WeaversPage.tsx's
+// own card/list/table directory still renders the static mock roster in
+// data.ts (see comment there) — that migration is out of scope here — so a
+// weaver registered from this modal will appear on AllWeaversPage but not
+// yet in the WeaversPage directory views.
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Plus, Camera } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
+import { weaversApi, CreateWeaverPayload } from "../../../../shared/api/weavers";
+
+interface FormState {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  village: string;
+  looms: string;
+  bankName: string;
+  accountNo: string;
+  ifsc: string;
+}
+
+const EMPTY_FORM: FormState = {
+  firstName: "", lastName: "", email: "", phone: "", village: "", looms: "",
+  bankName: "", accountNo: "", ifsc: "",
+};
 
 export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; setExpanded: (v: boolean) => void }) {
   const fieldStyle: React.CSSProperties = { width: "100%", height: 48, padding: "0 16px", fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 8 };
+
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm(prev => ({ ...prev, [key]: e.target.value }));
+
+  const createWeaver = useMutation({
+    mutationFn: (payload: CreateWeaverPayload) => weaversApi.create(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
+      setForm(EMPTY_FORM);
+      setError(null);
+      setExpanded(false);
+    },
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : "Failed to save weaver. Please try again.");
+    },
+  });
+
+  const handleSave = () => {
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.phone.trim()) {
+      setError("First name, last name, email and mobile number are required.");
+      return;
+    }
+    const looms = form.looms.trim() ? Number(form.looms) : undefined;
+    if (form.looms.trim() && (Number.isNaN(looms) || (looms ?? 0) < 0)) {
+      setError("Number of looms must be a valid non-negative number.");
+      return;
+    }
+    createWeaver.mutate({
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      village: form.village.trim() || undefined,
+      looms,
+      photoUrl: "",
+      bankName: form.bankName.trim() || undefined,
+      accountNo: form.accountNo.trim() || undefined,
+      ifsc: form.ifsc.trim() || undefined,
+    });
+  };
+
+  const handleCancel = () => {
+    setForm(EMPTY_FORM);
+    setError(null);
+    setExpanded(false);
+  };
 
   return (
     <div style={expanded ? { position: "fixed", inset: 0, zIndex: 1250, background: "rgba(26,10,15,0.42)", backdropFilter: "blur(4px)", padding: "32px 48px", overflowY: "auto" } : { padding: "40px 48px", paddingBottom: 80 }}>
@@ -16,7 +92,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0 }}>Add a New Weaver</h2>
             {!expanded && <motion.button onClick={() => setExpanded(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 24px", fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>Open Form</motion.button>}
-            {expanded && <button onClick={() => setExpanded(false)} style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, background: "none", border: "none", cursor: "pointer" }}>Cancel ×</button>}
+            {expanded && <button onClick={handleCancel} style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, background: "none", border: "none", cursor: "pointer" }}>Cancel ×</button>}
           </div>
 
           {!expanded ? (
@@ -31,21 +107,24 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
 
               {/* ── Photo Upload ── */}
               <div style={{ marginBottom: 32 }}>
-                <label style={labelStyle}>Photo of Weaver *</label>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14, marginTop: -4 }}>Upload a clear photo for easy identification. Appears on profile and batch records.</div>
+                <label style={labelStyle}>Photo of Weaver</label>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14, marginTop: -4 }}>
+                  Upload a clear photo for easy identification. Appears on profile and batch records.
+                  {" "}(Photo upload isn't wired yet — the weaver will be saved without a photo.)
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
                   <div style={{
                     width: 120, height: 120, borderRadius: "50%",
                     border: "2px dashed rgba(110,15,45,0.25)",
                     background: "rgba(110,15,45,0.04)",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", flexShrink: 0,
+                    cursor: "not-allowed", flexShrink: 0,
                   }}>
                     <Camera size={28} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 8, fontWeight: 600 }}>Upload Photo</span>
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
-                    JPG or PNG · Max 5MB · Mandatory
+                    JPG or PNG · Max 5MB
                   </div>
                 </div>
               </div>
@@ -54,11 +133,11 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
                 {/* First / Last name split */}
                 <div>
                   <label style={labelStyle} htmlFor="first-name">First Name *</label>
-                  <input id="first-name" style={fieldStyle} placeholder="First name" />
+                  <input id="first-name" style={fieldStyle} placeholder="First name" value={form.firstName} onChange={set("firstName")} />
                 </div>
                 <div>
                   <label style={labelStyle} htmlFor="last-name">Last Name *</label>
-                  <input id="last-name" style={fieldStyle} placeholder="Last name" />
+                  <input id="last-name" style={fieldStyle} placeholder="Last name" value={form.lastName} onChange={set("lastName")} />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: -16, marginBottom: 20 }}>
@@ -71,32 +150,36 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
                     Email ID *
                     <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 400, color: T.taupe, marginLeft: 8 }}>Used for records and notifications.</span>
                   </label>
-                  <input aria-label="weaver@example.com" style={fieldStyle} type="email" placeholder="weaver@example.com" />
+                  <input aria-label="weaver@example.com" style={fieldStyle} type="email" placeholder="weaver@example.com" value={form.email} onChange={set("email")} />
                 </div>
-                <div><label style={labelStyle}>Mobile Number *</label><input aria-label="10-digit mobile number" style={fieldStyle} placeholder="10-digit mobile number" /></div>
-                <div><label style={labelStyle}>Village / Area *</label><input aria-label="E.g., Dharmavaram, AP" style={fieldStyle} placeholder="E.g., Dharmavaram, AP" /></div>
-                <div><label style={labelStyle}>Number of Looms *</label><input aria-label="Total active looms" style={fieldStyle} type="number" placeholder="Total active looms" /></div>
-                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Full Address</label><input aria-label="Complete postal address" style={fieldStyle} placeholder="Complete postal address" /></div>
+                <div><label style={labelStyle}>Mobile Number *</label><input aria-label="10-digit mobile number" style={fieldStyle} placeholder="10-digit mobile number" value={form.phone} onChange={set("phone")} /></div>
+                <div><label style={labelStyle}>Village / Area</label><input aria-label="E.g., Dharmavaram, AP" style={fieldStyle} placeholder="E.g., Dharmavaram, AP" value={form.village} onChange={set("village")} /></div>
+                <div><label style={labelStyle}>Number of Looms</label><input aria-label="Total active looms" style={fieldStyle} type="number" min={0} placeholder="Total active looms" value={form.looms} onChange={set("looms")} /></div>
               </div>
 
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, marginBottom: 20, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
                 Bank Account Details
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>
-                <div><label style={labelStyle}>Bank Name</label><input aria-label="E.g., State Bank of India" style={fieldStyle} placeholder="E.g., State Bank of India" /></div>
-                <div><label style={labelStyle}>Account Holder Name</label><input aria-label="Name as per bank" style={fieldStyle} placeholder="Name as per bank" /></div>
-                <div><label style={labelStyle}>Account Number</label><input aria-label="Account number" style={fieldStyle} placeholder="Account number" /></div>
-                <div><label style={labelStyle}>IFSC Code</label><input aria-label="11-character IFSC code" style={fieldStyle} placeholder="11-character IFSC code" /></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+                <div><label style={labelStyle}>Bank Name</label><input aria-label="E.g., State Bank of India" style={fieldStyle} placeholder="E.g., State Bank of India" value={form.bankName} onChange={set("bankName")} /></div>
+                <div><label style={labelStyle}>Account Number</label><input aria-label="Account number" style={fieldStyle} placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} /></div>
+                <div><label style={labelStyle}>IFSC Code</label><input aria-label="11-character IFSC code" style={fieldStyle} placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} /></div>
               </div>
 
+              {error && (
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: "#C0392B", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 20 }}>
+                  {error}
+                </div>
+              )}
+
               <div style={{ display: "flex", gap: 16, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, paddingTop: 32 }}>
-                <motion.button onClick={() => setExpanded(false)} whileHover={{ scale: 1.02 }}
+                <motion.button onClick={handleCancel} whileHover={{ scale: 1.02 }}
                   style={{ width: 140, height: 56, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: T.taupe, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>
                   Cancel
                 </motion.button>
-                <motion.button whileHover={{ scale: 1.02 }}
-                  style={{ width: 240, height: 56, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer", background: T.royalBurgundy }}>
-                  Save Weaver
+                <motion.button onClick={handleSave} disabled={createWeaver.isPending} whileHover={{ scale: 1.02 }}
+                  style={{ width: 240, height: 56, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: createWeaver.isPending ? "wait" : "pointer", background: T.royalBurgundy, opacity: createWeaver.isPending ? 0.7 : 1 }}>
+                  {createWeaver.isPending ? "Saving…" : "Save Weaver"}
                 </motion.button>
               </div>
             </motion.div>

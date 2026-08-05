@@ -24,6 +24,17 @@ import { ImportWeaversModal } from "./modals/ImportWeaversModal";
  * sub-split for the two largest sections), all under this same
  * directory. See git history for the pre-split version if you need to
  * trace exactly what moved where.
+ *
+ * MOCK-BACKED (known gap): the directory/analytics/leaderboard/warp-request
+ * sections rendered below (PageHeader, StatsStrip, WarpRequestsSection,
+ * WeaverDirectory, WeaverAnalytics, LeaderboardAndQC) all still read the
+ * static WEAVERS/TABLE_ROWS/etc. arrays from ./data.ts, not the real
+ * /weavers API — see the comment at the top of data.ts. Real identity/roster
+ * wiring has been done in AllWeaversPage.tsx (GET /weavers) and
+ * NewWeaverModal.tsx (POST /weavers) instead; a weaver registered there will
+ * NOT yet appear in this page's directory until data.ts's mock roster is
+ * replaced, which requires the WV-XXX-id migration and production-stats
+ * wiring called out as out of scope for this pass.
  */
 export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
   const location = useLocation();

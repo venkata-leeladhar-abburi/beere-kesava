@@ -3,7 +3,17 @@ import { RotateCcw, Save } from "lucide-react";
 import { F, T } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
-export function StickyFooter() {
+export function StickyFooter({
+  lastSavedLabel,
+  onReset,
+  onSave,
+  isSaving,
+}: {
+  lastSavedLabel: string;
+  onReset: () => void;
+  onSave: () => void;
+  isSaving: boolean;
+}) {
   return (
     <div
       style={{
@@ -22,14 +32,14 @@ export function StickyFooter() {
       }}
     >
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-        Last saved: Today at 2:34 PM
+        {lastSavedLabel}
       </span>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Button variant="tertiary" size="sm" iconLeft={RotateCcw}>
+        <Button variant="tertiary" size="sm" iconLeft={RotateCcw} onClick={onReset} disabled={isSaving}>
           Reset to Default
         </Button>
-        <Button variant="primary" size="md" iconLeft={Save}>
-          Save Settings
+        <Button variant="primary" size="md" iconLeft={Save} onClick={onSave} disabled={isSaving}>
+          {isSaving ? "Saving…" : "Save Settings"}
         </Button>
       </div>
     </div>

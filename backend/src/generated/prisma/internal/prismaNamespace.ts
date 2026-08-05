@@ -436,7 +436,9 @@ export const ModelName = {
   Invoice: 'Invoice',
   InvoicePayment: 'InvoicePayment',
   Customer: 'Customer',
+  LabelSettings: 'LabelSettings',
   AuditLog: 'AuditLog',
+  ActionLog: 'ActionLog',
   Notification: 'Notification'
 } as const
 
@@ -453,7 +455,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "auditLog" | "notification"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3343,6 +3345,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    LabelSettings: {
+      payload: Prisma.$LabelSettingsPayload<ExtArgs>
+      fields: Prisma.LabelSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LabelSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LabelSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.LabelSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LabelSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.LabelSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.LabelSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.LabelSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LabelSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.LabelSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        update: {
+          args: Prisma.LabelSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.LabelSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LabelSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LabelSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.LabelSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LabelSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.LabelSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLabelSettings>
+        }
+        groupBy: {
+          args: Prisma.LabelSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LabelSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LabelSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LabelSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>
       fields: Prisma.AuditLogFieldRefs
@@ -3414,6 +3490,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    ActionLog: {
+      payload: Prisma.$ActionLogPayload<ExtArgs>
+      fields: Prisma.ActionLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ActionLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ActionLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        findFirst: {
+          args: Prisma.ActionLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ActionLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        findMany: {
+          args: Prisma.ActionLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>[]
+        }
+        create: {
+          args: Prisma.ActionLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        createMany: {
+          args: Prisma.ActionLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ActionLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>[]
+        }
+        delete: {
+          args: Prisma.ActionLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        update: {
+          args: Prisma.ActionLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.ActionLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ActionLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ActionLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.ActionLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionLogPayload>
+        }
+        aggregate: {
+          args: Prisma.ActionLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateActionLog>
+        }
+        groupBy: {
+          args: Prisma.ActionLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ActionLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ActionLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ActionLogCountAggregateOutputType> | number
         }
       }
     }
@@ -4119,7 +4269,8 @@ export const InvoiceScalarFieldEnum = {
   dueDate: 'dueDate',
   total: 'total',
   paid: 'paid',
-  status: 'status'
+  status: 'status',
+  dispatchId: 'dispatchId'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
@@ -4153,6 +4304,30 @@ export const CustomerScalarFieldEnum = {
 export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
 
 
+export const LabelSettingsScalarFieldEnum = {
+  id: 'id',
+  labelSize: 'labelSize',
+  showBarcode: 'showBarcode',
+  showCode: 'showCode',
+  showWeaver: 'showWeaver',
+  showDate: 'showDate',
+  showBranding: 'showBranding',
+  defaultPrinter: 'defaultPrinter',
+  connectionType: 'connectionType',
+  scanShowPhoto: 'scanShowPhoto',
+  scanShowCode: 'scanShowCode',
+  scanShowWeaver: 'scanShowWeaver',
+  scanShowFabric: 'scanShowFabric',
+  scanShowColour: 'scanShowColour',
+  scanShowJari: 'scanShowJari',
+  scanShowDispatchDate: 'scanShowDispatchDate',
+  scanShowProductionStatus: 'scanShowProductionStatus',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LabelSettingsScalarFieldEnum = (typeof LabelSettingsScalarFieldEnum)[keyof typeof LabelSettingsScalarFieldEnum]
+
+
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -4164,6 +4339,23 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const ActionLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  role: 'role',
+  module: 'module',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  recordLabel: 'recordLabel',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  createdAt: 'createdAt'
+} as const
+
+export type ActionLogScalarFieldEnum = (typeof ActionLogScalarFieldEnum)[keyof typeof ActionLogScalarFieldEnum]
 
 
 export const NotificationScalarFieldEnum = {
@@ -4997,7 +5189,9 @@ export type GlobalOmitConfig = {
   invoice?: Prisma.InvoiceOmit
   invoicePayment?: Prisma.InvoicePaymentOmit
   customer?: Prisma.CustomerOmit
+  labelSettings?: Prisma.LabelSettingsOmit
   auditLog?: Prisma.AuditLogOmit
+  actionLog?: Prisma.ActionLogOmit
   notification?: Prisma.NotificationOmit
 }
 

@@ -1,5 +1,6 @@
-import { BadRequestException, Controller, Get, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Patch, Query, Res } from "@nestjs/common";
 import type { Response } from "express";
+import { UpdateLabelSettingsDto } from "./dto/update-label-settings.dto";
 import { LabelsService } from "./labels.service";
 
 // NOTE: RBAC guards intentionally not yet applied — see the same note in
@@ -7,6 +8,16 @@ import { LabelsService } from "./labels.service";
 @Controller("labels")
 export class LabelsController {
   constructor(private readonly labelsService: LabelsService) {}
+
+  @Get("settings")
+  getSettings() {
+    return this.labelsService.getSettings();
+  }
+
+  @Patch("settings")
+  updateSettings(@Body() dto: UpdateLabelSettingsDto) {
+    return this.labelsService.updateSettings(dto);
+  }
 
   @Get("barcode")
   async getBarcode(@Query("code") code: string | undefined, @Res() res: Response) {

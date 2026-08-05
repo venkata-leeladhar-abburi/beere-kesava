@@ -2,10 +2,22 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { T, F, G, NUM, EASE } from '../theme';
-import { METRICS } from '../data.tsx';
+import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck } from '../ui';
 import { AnimatedNumber } from '../ui';
+import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
+
+/** Icon set in the same order as the metrics array from useDashboardMetrics */
+const ICONS = [
+  <IcoResourceMgmt sz={22} col={T.warmCream} />,
+  <IcoFabricRoll   sz={22} col={T.warmCream} />,
+  <IcoInvoice      sz={22} col={T.warmCream} />,
+  <IcoQualityCheck sz={22} col={T.warmCream} />,
+  <IcoTruck        sz={22} col={T.warmCream} />,
+];
 
 export function MetricsBar() {
+  const { metrics, isLoading } = useDashboardMetrics();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -14,9 +26,9 @@ export function MetricsBar() {
       style={{ padding: "0 48px", marginTop: -56, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {METRICS.map((m, i) => (
+        {metrics.map((m, i) => (
           <motion.div
-            key={i}
+            key={m.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 + i * 0.09, ease: EASE }}
@@ -35,14 +47,18 @@ export function MetricsBar() {
               transition={{ duration: 0.25 }}
               style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              {m.ico}
+              {ICONS[i]}
             </motion.div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
-                <AnimatedNumber raw={m.val} />
+                {isLoading ? (
+                  <span style={{ fontSize: 28, opacity: 0.45 }}>—</span>
+                ) : (
+                  <AnimatedNumber raw={m.val} />
+                )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>

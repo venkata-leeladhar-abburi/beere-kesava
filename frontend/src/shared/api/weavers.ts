@@ -20,6 +20,28 @@ export interface BackendWeaver {
   ifsc: string | null;
 }
 
+/** Live performance metrics returned by GET /weavers/:id/stats */
+export interface BackendWeaverStats {
+  weaverId: string;
+  totalSareesWoven: number;
+  qcPassCount: number;
+  /** Percentage 0-100, one decimal place */
+  qcPassRate: number;
+  activeBatchRowsCount: number;
+  materialIssueCount: number;
+}
+
+/** Entry in the GET /weavers/leaderboard response */
+export interface BackendWeaverLeaderboardEntry {
+  weaverId: string;
+  name: string;
+  initials: string;
+  photoUrl: string;
+  village: string | null;
+  totalSareesWoven: number;
+  qcPassRate: number;
+}
+
 interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -56,4 +78,12 @@ export const weaversApi = {
 
   update: (id: string, payload: UpdateWeaverPayload) =>
     apiClient.patch<BackendWeaver>(`/weavers/${id}`, payload),
+
+  /** Live stats: QC pass rate, active batch row count, material issue count, total sarees woven. */
+  getStats: (id: string) =>
+    apiClient.get<BackendWeaverStats>(`/weavers/${id}/stats`),
+
+  /** Top-10 leaderboard of active weavers ranked by QC pass rate. */
+  getLeaderboard: () =>
+    apiClient.get<BackendWeaverLeaderboardEntry[]>(`/weavers/leaderboard`),
 };

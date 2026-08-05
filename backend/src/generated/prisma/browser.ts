@@ -213,10 +213,20 @@ export type InvoicePayment = Prisma.InvoicePaymentModel
  */
 export type Customer = Prisma.CustomerModel
 /**
+ * Model LabelSettings
+ * 
+ */
+export type LabelSettings = Prisma.LabelSettingsModel
+/**
  * Model AuditLog
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model ActionLog
+ * 
+ */
+export type ActionLog = Prisma.ActionLogModel
 /**
  * Model Notification
  * 

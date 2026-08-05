@@ -232,6 +232,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  actionLogs?: Prisma.ActionLogListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   issuedMaterialIssues?: Prisma.MaterialIssueRecordListRelationFilter
   inspectedQcRecords?: Prisma.QcRecordListRelationFilter
@@ -255,6 +256,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   permissionOverrides?: Prisma.UserPermissionOverrideOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  actionLogs?: Prisma.ActionLogOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordOrderByRelationAggregateInput
   inspectedQcRecords?: Prisma.QcRecordOrderByRelationAggregateInput
@@ -281,6 +283,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  actionLogs?: Prisma.ActionLogListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   issuedMaterialIssues?: Prisma.MaterialIssueRecordListRelationFilter
   inspectedQcRecords?: Prisma.QcRecordListRelationFilter
@@ -338,6 +341,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -361,6 +365,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -384,6 +389,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -407,6 +413,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -638,6 +645,22 @@ export type UserUpdateOneWithoutAuditLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
 }
 
+export type UserCreateNestedOneWithoutActionLogsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutActionLogsInput, Prisma.UserUncheckedCreateWithoutActionLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutActionLogsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutActionLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutActionLogsInput, Prisma.UserUncheckedCreateWithoutActionLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutActionLogsInput
+  upsert?: Prisma.UserUpsertWithoutActionLogsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutActionLogsInput, Prisma.UserUpdateWithoutActionLogsInput>, Prisma.UserUncheckedUpdateWithoutActionLogsInput>
+}
+
 export type UserCreateNestedOneWithoutNotificationsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
@@ -667,6 +690,7 @@ export type UserCreateWithoutPermissionOverridesInput = {
   dateAdded?: Date | string
   updatedAt?: Date | string
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -689,6 +713,7 @@ export type UserUncheckedCreateWithoutPermissionOverridesInput = {
   dateAdded?: Date | string
   updatedAt?: Date | string
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -727,6 +752,7 @@ export type UserUpdateWithoutPermissionOverridesInput = {
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -749,6 +775,7 @@ export type UserUncheckedUpdateWithoutPermissionOverridesInput = {
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -772,6 +799,7 @@ export type UserCreateWithoutIssuedMaterialIssuesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
@@ -794,6 +822,7 @@ export type UserUncheckedCreateWithoutIssuedMaterialIssuesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
@@ -832,6 +861,7 @@ export type UserUpdateWithoutIssuedMaterialIssuesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
@@ -854,6 +884,7 @@ export type UserUncheckedUpdateWithoutIssuedMaterialIssuesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -876,6 +907,7 @@ export type UserCreateWithoutInspectedQcRecordsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
@@ -898,6 +930,7 @@ export type UserUncheckedCreateWithoutInspectedQcRecordsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
@@ -936,6 +969,7 @@ export type UserUpdateWithoutInspectedQcRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
@@ -958,6 +992,7 @@ export type UserUncheckedUpdateWithoutInspectedQcRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -980,6 +1015,7 @@ export type UserCreateWithoutAssignedFinishingsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -1002,6 +1038,7 @@ export type UserUncheckedCreateWithoutAssignedFinishingsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -1040,6 +1077,7 @@ export type UserUpdateWithoutAssignedFinishingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -1062,6 +1100,7 @@ export type UserUncheckedUpdateWithoutAssignedFinishingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -1084,6 +1123,7 @@ export type UserCreateWithoutRaisedQuotationsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -1106,6 +1146,7 @@ export type UserUncheckedCreateWithoutRaisedQuotationsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -1144,6 +1185,7 @@ export type UserUpdateWithoutRaisedQuotationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -1166,6 +1208,7 @@ export type UserUncheckedUpdateWithoutRaisedQuotationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -1188,6 +1231,7 @@ export type UserCreateWithoutRequestedPurchasesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -1210,6 +1254,7 @@ export type UserUncheckedCreateWithoutRequestedPurchasesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -1237,6 +1282,7 @@ export type UserCreateWithoutDecidedPurchasesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -1259,6 +1305,7 @@ export type UserUncheckedCreateWithoutDecidedPurchasesInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -1297,6 +1344,7 @@ export type UserUpdateWithoutRequestedPurchasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -1319,6 +1367,7 @@ export type UserUncheckedUpdateWithoutRequestedPurchasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -1352,6 +1401,7 @@ export type UserUpdateWithoutDecidedPurchasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -1374,6 +1424,7 @@ export type UserUncheckedUpdateWithoutDecidedPurchasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -1395,6 +1446,7 @@ export type UserCreateWithoutAuditLogsInput = {
   dateAdded?: Date | string
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
@@ -1417,6 +1469,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   dateAdded?: Date | string
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
@@ -1455,6 +1508,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
@@ -1477,6 +1531,115 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+}
+
+export type UserCreateWithoutActionLogsInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutDecidedByInput
+}
+
+export type UserUncheckedCreateWithoutActionLogsInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutDecidedByInput
+}
+
+export type UserCreateOrConnectWithoutActionLogsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutActionLogsInput, Prisma.UserUncheckedCreateWithoutActionLogsInput>
+}
+
+export type UserUpsertWithoutActionLogsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutActionLogsInput, Prisma.UserUncheckedUpdateWithoutActionLogsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutActionLogsInput, Prisma.UserUncheckedCreateWithoutActionLogsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutActionLogsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutActionLogsInput, Prisma.UserUncheckedUpdateWithoutActionLogsInput>
+}
+
+export type UserUpdateWithoutActionLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutDecidedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutActionLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
@@ -1500,6 +1663,7 @@ export type UserCreateWithoutNotificationsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
@@ -1522,6 +1686,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   updatedAt?: Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
@@ -1560,6 +1725,7 @@ export type UserUpdateWithoutNotificationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
@@ -1582,6 +1748,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -1598,6 +1765,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
 export type UserCountOutputType = {
   permissionOverrides: number
   auditLogs: number
+  actionLogs: number
   notifications: number
   issuedMaterialIssues: number
   inspectedQcRecords: number
@@ -1610,6 +1778,7 @@ export type UserCountOutputType = {
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   permissionOverrides?: boolean | UserCountOutputTypeCountPermissionOverridesArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  actionLogs?: boolean | UserCountOutputTypeCountActionLogsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   issuedMaterialIssues?: boolean | UserCountOutputTypeCountIssuedMaterialIssuesArgs
   inspectedQcRecords?: boolean | UserCountOutputTypeCountInspectedQcRecordsArgs
@@ -1641,6 +1810,13 @@ export type UserCountOutputTypeCountPermissionOverridesArgs<ExtArgs extends runt
  */
 export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountActionLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ActionLogWhereInput
 }
 
 /**
@@ -1707,6 +1883,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   permissionOverrides?: boolean | Prisma.User$permissionOverridesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   issuedMaterialIssues?: boolean | Prisma.User$issuedMaterialIssuesArgs<ExtArgs>
   inspectedQcRecords?: boolean | Prisma.User$inspectedQcRecordsArgs<ExtArgs>
@@ -1763,6 +1940,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   permissionOverrides?: boolean | Prisma.User$permissionOverridesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   issuedMaterialIssues?: boolean | Prisma.User$issuedMaterialIssuesArgs<ExtArgs>
   inspectedQcRecords?: boolean | Prisma.User$inspectedQcRecordsArgs<ExtArgs>
@@ -1780,6 +1958,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     permissionOverrides: Prisma.$UserPermissionOverridePayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    actionLogs: Prisma.$ActionLogPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     issuedMaterialIssues: Prisma.$MaterialIssueRecordPayload<ExtArgs>[]
     inspectedQcRecords: Prisma.$QcRecordPayload<ExtArgs>[]
@@ -2196,6 +2375,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   permissionOverrides<T extends Prisma.User$permissionOverridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$permissionOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPermissionOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  actionLogs<T extends Prisma.User$actionLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$actionLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ActionLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   issuedMaterialIssues<T extends Prisma.User$issuedMaterialIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$issuedMaterialIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inspectedQcRecords<T extends Prisma.User$inspectedQcRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inspectedQcRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2681,6 +2861,30 @@ export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.actionLogs
+ */
+export type User$actionLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ActionLog
+   */
+  select?: Prisma.ActionLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ActionLog
+   */
+  omit?: Prisma.ActionLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ActionLogInclude<ExtArgs> | null
+  where?: Prisma.ActionLogWhereInput
+  orderBy?: Prisma.ActionLogOrderByWithRelationInput | Prisma.ActionLogOrderByWithRelationInput[]
+  cursor?: Prisma.ActionLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ActionLogScalarFieldEnum | Prisma.ActionLogScalarFieldEnum[]
 }
 
 /**

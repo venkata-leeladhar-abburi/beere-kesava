@@ -1,17 +1,38 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight, Activity, AlertTriangle, MapPin, Phone, Eye, Edit3, Layers3 } from 'lucide-react';
-import { Clock as PhClock, Rows } from '@phosphor-icons/react';
+import { Rows } from '@phosphor-icons/react';
 import { T, F } from '../theme';
-import { WEAVERS } from '../data.tsx';
 import { SectionHeader } from '../ui';
+import { useDashboardWeavers } from '../hooks/useDashboardWeavers';
 
 export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
+  const { data: weavers = [], isLoading } = useDashboardWeavers();
+
+  if (isLoading) {
+    return (
+      <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
+        <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
+        <div style={{ display: "flex", gap: 18 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1, height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)",
+                border: `1px solid rgba(110,15,45,0.10)`, animation: "pulse 1.5s ease-in-out infinite",
+              }}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch", position: "relative" }}>
-        {WEAVERS.map((w, i) => (
+        {weavers.map((w, i) => (
           <motion.div
             key={w.id}
             onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
@@ -45,7 +66,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
               <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                {w.id}
+                {w.id.slice(0, 8).toUpperCase()}
               </div>
 
               <div style={{
@@ -59,8 +80,6 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               }}>
                 {w.status === "active" ? (
                   <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
-                ) : w.status === "qc" ? (
-                  <PhClock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
                 ) : (
                   <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
                 )}
@@ -73,7 +92,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                   letterSpacing: "0.5px",
                   textShadow: "0 1px 4px rgba(0,0,0,0.6)"
                 }}>
-                  {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                  {w.status === "active" ? "Currently Weaving" : "Inactive"}
                 </span>
               </div>
             </div>
@@ -84,17 +103,12 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                 <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
                   {w.name}
                 </div>
-                {w.batch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
-                    {w.batch}
-                  </span>
-                )}
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.village}</span>
+                  <span>{w.village ?? "—"}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />

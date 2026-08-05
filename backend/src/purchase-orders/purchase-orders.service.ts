@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma, PurchaseOrderStatus } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
 import { ListPurchaseOrdersQueryDto } from "./dto/list-purchase-orders-query.dto";
 import { RejectPurchaseOrderDto } from "./dto/reject-purchase-order.dto";
@@ -12,6 +14,7 @@ export class PurchaseOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreatePurchaseOrderDto) {
@@ -23,7 +26,7 @@ export class PurchaseOrdersService {
     const year = new Date().getFullYear();
     const poNumber = await this.idGenerator.nextFormatted(`PO-${year}`);
 
-    return this.prisma.purchaseOrder.create({
+    const po = await this.prisma.purchaseOrder.create({
       data: {
         poNumber,
         vendorId: dto.vendorId,
@@ -33,6 +36,17 @@ export class PurchaseOrdersService {
       },
       include: { vendor: true },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "PURCHASE",
+      action: `Created purchase order for ${vendor.name}`,
+      entityType: "PurchaseOrder",
+      entityId: po.id,
+      recordLabel: poNumber,
+    });
+
+    return po;
   }
 
   async findAll(
@@ -68,38 +82,76 @@ export class PurchaseOrdersService {
     return po;
   }
 
-  async approve(id: string) {
+  async approve(id: string, dto: ActorOnlyDto) {
     const po = await this.findOne(id);
     this.assertStatus(po.status, PurchaseOrderStatus.PENDING, "approved");
-    return this.prisma.purchaseOrder.update({
+    const updated = await this.prisma.purchaseOrder.update({
       where: { id },
       data: { status: PurchaseOrderStatus.APPROVED },
       include: { vendor: true },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "APPROVALS",
+      action: `Approved purchase order ${po.poNumber}`,
+      entityType: "PurchaseOrder",
+      entityId: id,
+      recordLabel: po.poNumber,
+      oldValue: PurchaseOrderStatus.PENDING,
+      newValue: PurchaseOrderStatus.APPROVED,
+    });
+
+    return updated;
   }
 
   async reject(id: string, dto: RejectPurchaseOrderDto) {
     const po = await this.findOne(id);
     this.assertStatus(po.status, PurchaseOrderStatus.PENDING, "rejected");
-    return this.prisma.purchaseOrder.update({
+    const updated = await this.prisma.purchaseOrder.update({
       where: { id },
       data: { status: PurchaseOrderStatus.REJECTED, rejectionReason: dto.reason },
       include: { vendor: true },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "APPROVALS",
+      action: `Rejected purchase order ${po.poNumber}`,
+      entityType: "PurchaseOrder",
+      entityId: id,
+      recordLabel: po.poNumber,
+      oldValue: PurchaseOrderStatus.PENDING,
+      newValue: PurchaseOrderStatus.REJECTED,
+    });
+
+    return updated;
   }
 
-  async receiveGrn(id: string) {
+  async receiveGrn(id: string, dto: ActorOnlyDto) {
     const po = await this.findOne(id);
     this.assertStatus(po.status, PurchaseOrderStatus.APPROVED, "received against a GRN");
 
     const year = new Date().getFullYear();
     const grnId = await this.idGenerator.nextFormatted(`GRN-${year}`);
 
-    return this.prisma.purchaseOrder.update({
+    const updated = await this.prisma.purchaseOrder.update({
       where: { id },
       data: { status: PurchaseOrderStatus.RECEIVED, grnId },
       include: { vendor: true },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "PURCHASE",
+      action: `Received GRN for purchase order ${po.poNumber}`,
+      entityType: "PurchaseOrder",
+      entityId: id,
+      recordLabel: po.poNumber,
+      newValue: grnId,
+    });
+
+    return updated;
   }
 
   private assertStatus(

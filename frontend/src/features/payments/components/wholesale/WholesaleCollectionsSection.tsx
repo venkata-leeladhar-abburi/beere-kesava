@@ -36,6 +36,7 @@ function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
     total: Number(inv.total),
     paid: Number(inv.paid),
     status: backendStatusToFrontend(inv.status),
+    dispatchId: inv.dispatchId,
     payments: inv.payments.map(p => ({
       amount: Number(p.amount),
       date: new Date(p.date).toLocaleDateString("en-IN"),
@@ -79,20 +80,19 @@ export function WholesaleCollectionsSection() {
   });
 
   // A wholesale dispatch with an invoiceNumber means an invoice should exist
-  // for it — but Invoice has no FK back to a Dispatch (invoiceNumber is a
-  // free-text field on DispatchRecord, not an id), so a real Invoice is
-  // created here the first time we see a wholesale dispatch whose customer
-  // has no invoice yet for that exact total, rather than fabricating a fake
-  // client-side Invoice object like before.
+  // for it. Invoice.dispatchId is a real FK back to DispatchRecord.id, so we
+  // can reliably tell whether a given dispatch already has an invoice
+  // instead of guessing from matching totals.
   useEffect(() => {
     dispatches.forEach(d => {
       if (d.type !== "wholesale" || !d.invoiceNumber || !d.customerId) return;
       const total = d.grandTotal || d.totalAmount || 0;
-      const alreadyInvoiced = invoices.some(i => i.customer && total === i.total);
+      const alreadyInvoiced = invoices.some(i => i.dispatchId === d.id);
       if (!alreadyInvoiced && !createInvoiceMutation.isPending) {
         createInvoiceMutation.mutate({
           customerId: d.customerId,
           dueDate: d.paymentDueDate,
+          dispatchId: d.id,
           total,
         });
       }
@@ -100,9 +100,14 @@ export function WholesaleCollectionsSection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the dispatch list itself changes
   }, [dispatches]);
 
+  // Resolve the BulkOrder tied to an invoice via its dispatch's own
+  // bulkOrderRef, rather than parsing numeric suffixes off id strings.
   const matchBulkOrder = (invId: string): BulkOrder | undefined => {
-    const suffix = invId.split("-").pop();
-    return bulkOrders.find(o => o.ref.split("-").pop() === suffix);
+    const inv = invoices.find(i => i.id === invId);
+    if (!inv?.dispatchId) return undefined;
+    const dispatch = dispatches.find(d => d.id === inv.dispatchId);
+    if (!dispatch?.bulkOrderRef) return undefined;
+    return bulkOrders.find(o => o.ref === dispatch.bulkOrderRef);
   };
 
   const recordPaymentMutation = useMutation({

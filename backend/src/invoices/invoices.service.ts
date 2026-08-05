@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { InvoiceStatus, Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -13,7 +14,10 @@ const include = {
 
 @Injectable()
 export class InvoicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async create(dto: CreateInvoiceDto) {
     const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
@@ -25,8 +29,19 @@ export class InvoicesService {
       data: {
         customerId: dto.customerId,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        dispatchId: dto.dispatchId,
         total: dto.total,
       },
+    });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Created invoice for ${customer.name}`,
+      entityType: "Invoice",
+      entityId: created.id,
+      recordLabel: `INV-${created.id.slice(0, 8).toUpperCase()}`,
+      newValue: String(dto.total),
     });
 
     return this.findOne(created.id);
@@ -95,6 +110,17 @@ export class InvoicesService {
         data: { paid: newPaid, status: newStatus },
       }),
     ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Recorded payment of ${dto.amount} on invoice`,
+      entityType: "Invoice",
+      entityId: invoiceId,
+      recordLabel: `INV-${invoiceId.slice(0, 8).toUpperCase()}`,
+      oldValue: String(invoice.paid),
+      newValue: String(newPaid),
+    });
 
     return this.findOne(invoiceId);
   }

@@ -11,6 +11,7 @@ import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
+import { salesApi } from "../../../../shared/api/sales";
 import { Button, Input } from '../../../../shared/ui/primitives';
 
 export function NewSaleFlow() {
@@ -33,6 +34,8 @@ export function NewSaleFlow() {
 
   const [saree, setSaree] = useState({ id: "", design: "", name: "", type: "", typeCode: "", weight: "—", weaver: "" });
   const [scanError, setScanError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const originalPrice = Number(getSareeTypeByCode(saree.typeCode)?.retail ?? 0);
   const [soldPrice, setSoldPrice] = useState(originalPrice);
@@ -295,7 +298,32 @@ export function NewSaleFlow() {
             </div>
           </Card>
           <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
-            <Btn label="Confirm Sale — Generate Bill" onClick={() => setStep("success")} style={{ width: "100%", background: C.green, height: 56 }} />
+            {submitError && (
+              <div style={{ fontFamily: F.u, fontSize: 12, color: "#C0392B", textAlign: "center" as const, marginBottom: 8 }}>
+                {submitError}
+              </div>
+            )}
+            <Btn
+              label={isSubmitting ? "Recording Sale…" : "Confirm Sale — Generate Bill"}
+              onClick={async () => {
+                if (isSubmitting) return;
+                setIsSubmitting(true);
+                setSubmitError(null);
+                try {
+                  await salesApi.create({
+                    sareeId: saree.id,
+                    channel: "RETAIL",
+                    amount: soldPrice,
+                  });
+                  setStep("success");
+                } catch (err) {
+                  setSubmitError(err instanceof ApiError ? err.message : "Failed to record sale — please try again.");
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }}
+              style={{ width: "100%", background: isSubmitting ? "#999" : C.green, height: 56, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+            />
             <Btn label="← Edit Details" variant="ghost" onClick={() => setStep(3)} style={{ width: "100%" }} />
           </div>
         </div>

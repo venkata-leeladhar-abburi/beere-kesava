@@ -1,6 +1,12 @@
-import { IsEmail, IsInt, IsOptional, IsString, Length, Matches, Min } from "class-validator";
+import { IsEmail, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Min } from "class-validator";
 
 export class CreateWeaverDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsString()
   @Length(1, 100)
   firstName!: string;

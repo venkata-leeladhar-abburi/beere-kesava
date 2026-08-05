@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { motion, useInView } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Users, Activity, Clock, CheckCircle2,
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
 import { Rows } from "@phosphor-icons/react";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
+import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
@@ -54,20 +55,42 @@ interface Weaver {
   lastActive: string;
 }
 
-const ALL_WEAVERS: Weaver[] = [
-  { id: "WV-001", name: "Ravi Kumar",    village: "Dharmavaram, AP",       mobile: "×××× 4521", photo: imgRaviKumar,   initials: "RK", avatarBg: "#5A3E6B", status: "active", accentColor: "#5A3E6B",    thisMonth: 12, passRate: 94, totalSarees: 2140, looms: 3, batch: "BATCH-079", totalPaid: "₹8,42,000",  lastActive: "Today"      },
-  { id: "WV-002", name: "Padma Veni",    village: "Pochampally, Telangana", mobile: "×××× 8834", photo: imgPadmaVeni,   initials: "PV", avatarBg: T.royalBurgundy, status: "active", accentColor: T.royalBurgundy, thisMonth: 18, passRate: 97, totalSarees: 1840, looms: 2, batch: "BATCH-086", totalPaid: "₹6,90,000",  lastActive: "Today"      },
-  { id: "WV-007", name: "Suresh Murti",  village: "Venkatagiri, AP",        mobile: "×××× 9982", photo: imgSureshMurti, initials: "SM", avatarBg: "#2D6B6B", status: "qc",     accentColor: "#2D6B6B",    thisMonth:  7, passRate: 98, totalSarees:  980, looms: 2, batch: "BATCH-081", totalPaid: "₹3,64,000",  lastActive: "Yesterday"  },
-  { id: "WV-005", name: "Anand K.",      village: "Pochampally, Telangana", mobile: "×××× 7723", photo: imgAnandK,      initials: "AK", avatarBg: "#4A6B4A", status: "active", accentColor: T.antiqueGold, thisMonth:  9, passRate: 92, totalSarees: 1560, looms: 2, batch: "BATCH-083", totalPaid: "₹5,84,000",  lastActive: "Today"      },
-  { id: "WV-012", name: "Meena R.",      village: "Siddipet, Telangana",    mobile: "×××× 6614", photo: null,           initials: "MR", avatarBg: "#9B6B8A", status: "active", accentColor: "#9B6B8A",    thisMonth:  6, passRate: 89, totalSarees:  720, looms: 1, batch: "BATCH-088", totalPaid: "₹2,68,000",  lastActive: "Today"      },
-  { id: "WV-018", name: "Lakshmi D.",    village: "Dharmavaram, AP",        mobile: "×××× 3341", photo: null,           initials: "LD", avatarBg: "#2D7D6B", status: "qc",     accentColor: "#2D7D6B",    thisMonth: 11, passRate: 96, totalSarees: 1320, looms: 2, batch: "BATCH-080", totalPaid: "₹4,92,000",  lastActive: "Yesterday"  },
-  { id: "WV-024", name: "Venkat Rao",    village: "Venkatagiri, AP",        mobile: "×××× 1122", photo: null,           initials: "VR", avatarBg: "#4A5E7A", status: "idle",   accentColor: T.taupe,      thisMonth:  0, passRate: 95, totalSarees: 2480, looms: 4, batch: null,         totalPaid: "₹9,28,000",  lastActive: "3 days ago" },
-  { id: "WV-031", name: "Kamala B.",     village: "Pochampally, Telangana", mobile: "×××× 5589", photo: null,           initials: "KB", avatarBg: "#7A2040", status: "active", accentColor: "#7A2040",    thisMonth: 14, passRate: 99, totalSarees: 3120, looms: 3, batch: "BATCH-084", totalPaid: "₹11,64,000", lastActive: "Today"      },
-  { id: "WV-003", name: "Krishnamma",    village: "Venkatagiri, AP",        mobile: "×××× 2210", photo: null,           initials: "KR", avatarBg: "#6B4A2A", status: "idle",   accentColor: "#6B4A2A",    thisMonth:  0, passRate: 96, totalSarees: 2640, looms: 2, batch: null,         totalPaid: "₹9,84,000",  lastActive: "3 days ago" },
-  { id: "WV-004", name: "Rajesh T.",     village: "Siddipet, Telangana",    mobile: "×××× 5567", photo: null,           initials: "RT", avatarBg: "#4A6B9B", status: "active", accentColor: "#4A6B9B",    thisMonth:  5, passRate: 91, totalSarees:  620, looms: 1, batch: "BATCH-091", totalPaid: "₹2,18,000",  lastActive: "Today"      },
-  { id: "WV-006", name: "Saraswati M.", village: "Dharmavaram, AP",         mobile: "×××× 3341", photo: null,           initials: "SM", avatarBg: "#7A4A6B", status: "qc",     accentColor: "#7A4A6B",    thisMonth: 11, passRate: 98, totalSarees: 3240, looms: 3, batch: "BATCH-078", totalPaid: "₹12,40,000", lastActive: "Yesterday"  },
-  { id: "WV-008", name: "Bhavani K.",    village: "Siddipet, Telangana",    mobile: "×××× 6614", photo: null,           initials: "BK", avatarBg: "#5A6B4A", status: "idle",   accentColor: "#5A6B4A",    thisMonth:  0, passRate: 88, totalSarees:  440, looms: 1, batch: null,         totalPaid: "₹1,60,000",  lastActive: "5 days ago" },
+// ── MOCK PRODUCTION STATS ───────────────────────────────────────────────
+// The backend Weaver record (see shared/api/weavers.ts) only has identity/
+// roster fields — name, village, cluster, looms, status(ACTIVE|INACTIVE),
+// photo, contact, bank details. It has no concept of "this month's output",
+// QC pass rate, current batch, total paid, or last-active timestamp — those
+// live in the production/payments/QC modules, which are NOT wired to this
+// page (explicitly out of scope here; wiring them requires the batch/QC/
+// payments backend integration, tracked separately). Below is a small pool
+// of placeholder production numbers, cycled onto each *real* weaver by
+// index purely so the existing card layout still has something to render
+// in those slots. None of these numbers are tied to the specific weaver
+// they're displayed on — do not treat them as real.
+const MOCK_PRODUCTION_STATS: Omit<Weaver, "id" | "name" | "village" | "mobile" | "photo" | "initials" | "looms">[] = [
+  { avatarBg: "#5A3E6B",         status: "active", accentColor: "#5A3E6B",       thisMonth: 12, passRate: 94, totalSarees: 2140, batch: "BATCH-079", totalPaid: "₹8,42,000",  lastActive: "Today"      },
+  { avatarBg: T.royalBurgundy,   status: "active", accentColor: T.royalBurgundy, thisMonth: 18, passRate: 97, totalSarees: 1840, batch: "BATCH-086", totalPaid: "₹6,90,000",  lastActive: "Today"      },
+  { avatarBg: "#2D6B6B",         status: "qc",     accentColor: "#2D6B6B",       thisMonth:  7, passRate: 98, totalSarees:  980, batch: "BATCH-081", totalPaid: "₹3,64,000",  lastActive: "Yesterday"  },
+  { avatarBg: "#4A6B4A",         status: "active", accentColor: T.antiqueGold,   thisMonth:  9, passRate: 92, totalSarees: 1560, batch: "BATCH-083", totalPaid: "₹5,84,000",  lastActive: "Today"      },
+  { avatarBg: "#9B6B8A",         status: "active", accentColor: "#9B6B8A",       thisMonth:  6, passRate: 89, totalSarees:  720, batch: "BATCH-088", totalPaid: "₹2,68,000",  lastActive: "Today"      },
+  { avatarBg: "#2D7D6B",         status: "qc",     accentColor: "#2D7D6B",       thisMonth: 11, passRate: 96, totalSarees: 1320, batch: "BATCH-080", totalPaid: "₹4,92,000",  lastActive: "Yesterday"  },
+  { avatarBg: "#4A5E7A",         status: "idle",   accentColor: T.taupe,         thisMonth:  0, passRate: 95, totalSarees: 2480, batch: null,         totalPaid: "₹9,28,000",  lastActive: "3 days ago" },
+  { avatarBg: "#7A2040",         status: "active", accentColor: "#7A2040",       thisMonth: 14, passRate: 99, totalSarees: 3120, batch: "BATCH-084", totalPaid: "₹11,64,000", lastActive: "Today"      },
 ];
+
+function toDisplayWeaver(w: BackendWeaver, index: number): Weaver {
+  const mock = MOCK_PRODUCTION_STATS[index % MOCK_PRODUCTION_STATS.length];
+  return {
+    id: w.id,
+    name: w.name,
+    village: w.village || "—",
+    mobile: w.phone || "—",
+    photo: w.photoUrl || null,
+    initials: w.initials,
+    looms: w.looms,
+    ...mock,
+  };
+}
 
 function AnimatedBar({ pct, color }: { pct: number; color: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -104,6 +127,16 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
   const [villageFilter, setVillageFilter] = useState<"all" | string>("all");
   const [sortBy, setSortBy] = useState<"name" | "output" | "looms">("name");
+
+  // Real weaver roster/identity records from the backend. Production stats
+  // (thisMonth, passRate, batch, totalPaid, lastActive) are NOT backed by
+  // the API yet — see the MOCK_PRODUCTION_STATS comment above.
+  const { data: weaversRes, isLoading, isError } = useQuery({
+    queryKey: ["weavers-directory"],
+    queryFn: () => weaversApi.list(),
+  });
+
+  const ALL_WEAVERS: Weaver[] = (weaversRes?.items ?? []).map(toDisplayWeaver);
 
   const villages = Array.from(new Set(ALL_WEAVERS.map(w => w.village))).sort();
 
@@ -172,7 +205,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             {[
               { label: "Total Active Weavers",    val: `${activeCount + qcCount}`,  sub: "All currently with the firm",     Icon: Users,        hi: false },
               { label: "Sarees Produced This Month", val: `${totalSarees}`,          sub: "↑ 14% more than last month",     Icon: Layers,       hi: true  },
-              { label: "Quality Check Pass Rate",  val: `${Math.round(ALL_WEAVERS.reduce((s,w) => s + w.passRate, 0) / ALL_WEAVERS.length)}%`, sub: "Only 4% rejected this month", Icon: CheckCircle2, hi: false },
+              { label: "Quality Check Pass Rate",  val: `${ALL_WEAVERS.length ? Math.round(ALL_WEAVERS.reduce((s,w) => s + w.passRate, 0) / ALL_WEAVERS.length) : 0}%`, sub: "Only 4% rejected this month", Icon: CheckCircle2, hi: false },
               { label: "Warp Requests Pending",    val: "3",                         sub: "Need approval today",             Icon: Clock,        hi: false },
               { label: "Total Paid to Weavers",    val: "₹4.2L",                    sub: "This month's making charges",     Icon: Star,         hi: false },
             ].map((m, i) => (
@@ -240,13 +273,29 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
 
       {/* ── WEAVERS GRID ── */}
       <div style={{ padding: "40px 56px 80px" }}>
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div style={{ textAlign: "center", padding: "80px 40px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            Loading weavers…
+          </div>
+        ) : isError ? (
+          <div style={{ textAlign: "center", padding: "80px 40px" }}>
+            <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <AlertTriangle size={28} color="#C0392B" />
+            </div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>Couldn't load weavers</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 40px" }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <Users size={28} color={T.taupe} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>No weavers found</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Try adjusting your search or filter.</div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>
+              {ALL_WEAVERS.length === 0 ? "No weavers yet" : "No weavers found"}
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+              {ALL_WEAVERS.length === 0 ? "Register a weaver to see them here." : "Try adjusting your search or filter."}
+            </div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>

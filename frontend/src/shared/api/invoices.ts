@@ -20,6 +20,7 @@ export interface BackendInvoice {
   total: string;
   paid: string;
   status: BackendInvoiceStatus;
+  dispatchId: string | null;
   payments: BackendInvoicePayment[];
   customer: { id: string; name: string; city: string | null; phone: string | null } | null;
 }
@@ -34,6 +35,7 @@ interface PaginatedResponse<T> {
 export interface CreateInvoicePayload {
   customerId: string;
   dueDate?: string;
+  dispatchId?: string;
   total: number;
 }
 
