@@ -46,10 +46,28 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (body as ApiSuccessBody<T>).data;
 }
 
+async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, { method: "POST", body: formData });
+  const body: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const errBody = body as ApiErrorBody | null;
+    const message = errBody?.message
+      ? Array.isArray(errBody.message)
+        ? errBody.message.join(", ")
+        : errBody.message
+      : `Request failed with status ${res.status}`;
+    throw new ApiError(res.status, message);
+  }
+
+  return (body as ApiSuccessBody<T>).data;
+}
+
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(payload) }),
   patch: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(payload) }),
+  postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
 };

@@ -2,154 +2,69 @@ import React, { useCallback, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, CircleAlert, FileText, IndianRupee, UploadCloud, X } from "lucide-react";
 import { motion } from "motion/react";
 
-import { WeaverPaymentRecord, useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { WEAVERS } from "../../data/weavers";
+import { ApiError } from "../../../../shared/api/client";
+import { ImportResult, weaverPaymentsApi } from "../../../../shared/api/payments";
 import { EASE, F, T } from "../../theme";
-import { ExcelRow, MatchedPayment, UnmatchedRow, UploadResult } from "../../types";
-import { Pip } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // ── Bank Upload Panel ─────────────────────────────────────────────────────────
-export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (matched: MatchedPayment[]) => void; onReset?: () => void }) {
+// Uploads straight to the real backend import job (POST /payments/weavers/import,
+// processed async via BullMQ against real Weaver rows) instead of parsing/matching
+// the file client-side — the backend is the single source of truth for which
+// weaverId values actually exist.
+export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown[]) => void; onReset?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [result, setResult] = useState<UploadResult | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [parsing, setParsing] = useState(false);
-  const { addPayments } = useWeaverPayments();
+  const [uploading, setUploading] = useState(false);
 
-  const normalize = (s: unknown) =>
-    String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const pollJob = useCallback(async (jobId: string): Promise<ImportResult> => {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const status = await weaverPaymentsApi.getImportStatus(jobId);
+      if (status.state === "completed" && status.result) return status.result;
+      if (status.state === "failed") {
+        throw new Error(status.failedReason ?? "Import job failed");
+      }
+      await sleep(1000);
+    }
+    throw new Error("Import is taking longer than expected — please check back shortly.");
+  }, []);
 
-  const HEADER_MAP: Record<string, keyof ExcelRow> = {
-    weaverid:       "weaverId",
-    weavername:     "weaverName",
-    name:           "weaverName",
-    batchno:        "batchNo",
-    batchnumber:    "batchNo",
-    loomnumber:     "loomNumber",
-    noofsarees:     "noOfSarees",
-    numberofsarees: "noOfSarees",
-    amount:         "amount",
-    amountpaid:     "amount",
-    deduction:      "deduction",
-  };
-
-  const parseFile = useCallback((file: File) => {
-    setParsing(true);
+  const handleFile = useCallback(async (file: File) => {
+    setUploading(true);
     setError(null);
     setResult(null);
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const XLSX = await import("xlsx");
-        const data = new Uint8Array(e.target!.result as ArrayBuffer);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const raw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-
-        if (raw.length === 0) { setError("The uploaded file is empty or has no data rows."); setParsing(false); return; }
-
-        // Build column key → ExcelRow key map from first row headers
-        const firstRowKeys = Object.keys(raw[0]);
-        const colMap: Record<string, keyof ExcelRow> = {};
-        firstRowKeys.forEach(k => {
-          const norm = normalize(k);
-          if (HEADER_MAP[norm]) colMap[k] = HEADER_MAP[norm];
-        });
-
-        // Ensure all 7 fields are present
-        const requiredKeys: (keyof ExcelRow)[] = ["weaverId", "weaverName", "batchNo", "loomNumber", "noOfSarees", "amount", "deduction"];
-        const missing = requiredKeys.filter(
-          k => !Object.values(colMap).includes(k)
-        );
-        if (missing.length > 0) {
-          setError(`Missing required columns: ${missing.map(k => {
-            if (k === "weaverId") return "Weaver ID";
-            if (k === "weaverName") return "Name";
-            if (k === "batchNo") return "Batch No";
-            if (k === "loomNumber") return "Loom Number";
-            if (k === "noOfSarees") return "No of Sarees";
-            if (k === "amount") return "Amount";
-            if (k === "deduction") return "Deduction";
-            return k;
-          }).join(", ")}. Expected all 7 columns to be present.`);
-          setParsing(false);
-          return;
-        }
-
-        // Parse each row
-        const rows: ExcelRow[] = raw.map(r => {
-          const out: Partial<ExcelRow> = {};
-          Object.entries(colMap).forEach(([col, key]) => {
-            if (key === "amount" || key === "deduction") {
-              out[key] = parseFloat(String(r[col]).replace(/[^\d.]/g, "")) || 0;
-            } else if (key === "noOfSarees") {
-              out[key] = parseInt(String(r[col]).replace(/[^\d]/g, ""), 10) || 0;
-            } else {
-              (out as Record<string, unknown>)[key] = String(r[col] ?? "").trim();
-            }
-          });
-          return out as ExcelRow;
-        });
-
-        // Match against WEAVERS
-        const matched: MatchedPayment[] = [];
-        const unmatched: UnmatchedRow[] = [];
-
-        rows.forEach(row => {
-          const found = WEAVERS.find(
-            w => w.id.trim().toLowerCase() === row.weaverId.trim().toLowerCase()
-          );
-          if (found) matched.push({ ...row, weaverRecord: found });
-          else unmatched.push(row);
-        });
-
-        setResult({ fileName: file.name, totalRows: rows.length, matched, unmatched });
-
-        // Persist matched records to shared context so WeaverPortal can read them
-        if (matched.length > 0) {
-          const records: WeaverPaymentRecord[] = matched.map((m, idx) => ({
-            id: `pay-${Date.now()}-${idx}`,
-            weaverId: m.weaverRecord.id,
-            weaverName: m.weaverRecord.name,
-            amountPaid: m.amount, // mapped from amount
-            utrNumber: `UTR-${m.batchNo}-${m.loomNumber}`, // generated fallback UTR
-            firmName: "Beere Kesava & Brothers Silks",
-            paymentDate: new Date().toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }),
-            uploadedAt: new Date().toISOString(),
-            batchNo: m.batchNo,
-            loomNumber: m.loomNumber,
-            noOfSarees: m.noOfSarees,
-            amount: m.amount,
-            deduction: m.deduction,
-          }));
-          addPayments(records);
-          onMatchUpdate?.(matched);
-        }
-      } catch (err) {
-        setError("Failed to read the file. Please ensure it is a valid .xlsx or .xls file.");
-      } finally {
-        setParsing(false);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  }, [onMatchUpdate, addPayments]);
+    setFileName(file.name);
+    try {
+      const { jobId } = await weaverPaymentsApi.importExcel(file);
+      const finalResult = await pollJob(jobId);
+      setResult(finalResult);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to import this file.");
+    } finally {
+      setUploading(false);
+    }
+  }, [pollJob]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) parseFile(file);
+    if (file) void handleFile(file);
     e.target.value = "";
   };
 
   const handleReset = () => {
     setResult(null);
     setError(null);
+    setFileName(null);
     onReset?.();
   };
 
-  const fmtAmt = (n: number) =>
-    n >= 100000 ? `₹${(n / 100000).toFixed(2)}L` : `₹${n.toLocaleString("en-IN")}`;
+  const totalRows = result ? result.created + result.failed : 0;
 
   return (
     <div style={{ marginBottom: 22 }}>
@@ -162,18 +77,16 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
-              Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>Weaver ID · Name · Batch No · Loom Number · No of Sarees · Amount · Deduction</span>. System will auto-match weavers and flag unmatched rows.
+              Upload an Excel file (.xlsx) with a header row. Required columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>. Rows are matched against real weaver records and saved directly.
             </div>
             {result ? (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
                 <CheckCircle2 size={12} />
-                {result.fileName} — {result.totalRows} rows processed
+                {fileName} — {totalRows} rows processed
               </div>
-            ) : (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
-                <CheckCircle2 size={12} />Last payment: April 2026 paid on 05 May 2026
-              </div>
-            )}
+            ) : uploading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Uploading and matching against real weaver records…</div>
+            ) : null}
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
@@ -194,10 +107,10 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
             variant="primary"
             size="md"
             iconLeft={UploadCloud}
-            loading={parsing}
+            loading={uploading}
             onClick={() => fileInputRef.current?.click()}
           >
-            {parsing ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
+            {uploading ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
           </Button>
         </div>
       </div>
@@ -214,12 +127,11 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
       {result && (
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: EASE }}>
           {/* Summary strip */}
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 22 }}>
+          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
             {[
-              { label: "Total Rows",          value: String(result.totalRows),                              color: T.luxuryBrown, bg: "#FFFFFF",                           icon: <FileText size={18} color={T.royalBurgundy} /> },
-              { label: "Matched Weavers",     value: String(result.matched.length),                         color: T.green,       bg: "rgba(30,102,64,0.07)",             icon: <CheckCircle2 size={18} color={T.green} /> },
-              { label: "Unmatched Rows",      value: String(result.unmatched.length),                       color: T.crimson,     bg: "rgba(192,57,43,0.06)",             icon: <AlertTriangle size={18} color={T.crimson} /> },
-              { label: "Total Distributed",   value: fmtAmt(result.matched.reduce((s, m) => s + m.amount, 0)), color: T.antiqueGold, bg: "rgba(200,155,71,0.08)", icon: <IndianRupee size={18} color={T.antiqueGold} /> },
+              { label: "Total Rows", value: String(totalRows), color: T.luxuryBrown, bg: "#FFFFFF", icon: <FileText size={18} color={T.royalBurgundy} /> },
+              { label: "Payments Saved", value: String(result.created), color: T.green, bg: "rgba(30,102,64,0.07)", icon: <CheckCircle2 size={18} color={T.green} /> },
+              { label: "Failed Rows", value: String(result.failed), color: T.crimson, bg: "rgba(192,57,43,0.06)", icon: <IndianRupee size={18} color={T.crimson} /> },
             ].map((s, i) => (
               <div key={i} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: "#fff", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -233,102 +145,29 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
             ))}
           </div>
 
-          {/* Section A — Matched */}
-          {result.matched.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <CheckCircle2 size={16} color={T.green} />
-                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Matched Payments</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
-                {result.matched.map((m, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.04 }}
-                    style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid rgba(30,102,64,0.22)`, borderLeft: `4px solid ${T.green}`, boxShadow: "0 2px 10px rgba(30,102,64,0.06)", overflow: "hidden" }}>
-                    {/* Card header */}
-                    <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <Pip initials={m.weaverRecord.initials} bg={m.weaverRecord.bg} size={36} />
-                        <div>
-                          <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2 }}>{m.weaverRecord.name}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 1 }}>{m.weaverRecord.id}</div>
-                        </div>
-                      </div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: "rgba(30,102,64,0.10)", color: T.green, flexShrink: 0 }}>
-                        <CheckCircle2 size={11} />Matched ✓
-                      </span>
-                    </div>
-                    {/* Details */}
-                    <div style={{ padding: "0 16px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px 14px" }}>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Batch No</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{m.batchNo}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Loom Number</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>Loom {m.loomNumber}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>No of Sarees</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{m.noOfSarees}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Amount</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amount.toLocaleString("en-IN")}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Deduction</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{m.deduction.toLocaleString("en-IN")}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Net Paid</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{(m.amount - m.deduction).toLocaleString("en-IN")}</div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+          {result.created > 0 && (
+            <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 10, fontFamily: F.ui, fontSize: 13, color: T.green }}>
+              <CheckCircle2 size={16} color={T.green} />
+              {result.created} payment{result.created !== 1 ? "s" : ""} saved directly to the backend — no further action needed.
             </div>
           )}
 
-          {/* Section B — Unmatched */}
-          {result.unmatched.length > 0 && (
+          {/* Failed rows */}
+          {result.errors.length > 0 && (
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <AlertTriangle size={16} color={T.crimson} />
-                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Unmatched Rows</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
+                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Failed Rows</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.errors.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {result.unmatched.map((u, i) => (
+                {result.errors.map((e, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }}
-                    style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "14px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
-                      <div>
-                        <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.crimson, lineHeight: 1.2 }}>{u.weaverName || "(No Name)"}</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>ID: {u.weaverId || "—"}</div>
-                      </div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: "rgba(192,57,43,0.10)", color: T.crimson, flexShrink: 0 }}>
-                        <AlertTriangle size={11} />Unmatched ⚠
-                      </span>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px 14px", marginBottom: 10 }}>
-                      {[
-                        { label: "Batch No",   value: u.batchNo || "—" },
-                        { label: "Loom No",    value: u.loomNumber || "—" },
-                        { label: "Sarees",     value: String(u.noOfSarees) },
-                        { label: "Amount",     value: `₹${u.amount.toLocaleString("en-IN")}` },
-                        { label: "Deduction",  value: `₹${u.deduction.toLocaleString("en-IN")}` },
-                      ].map(f => (
-                        <div key={f.label}>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>{f.label}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{f.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
-                      <CircleAlert size={12} />No weaver found with ID <strong>{u.weaverId || "—"}</strong> — please verify manually
-                    </div>
+                    style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                    <CircleAlert size={14} color={T.crimson} style={{ flexShrink: 0 }} />
+                    <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+                      Row {e.row}: {e.message}
+                    </span>
                   </motion.div>
                 ))}
               </div>

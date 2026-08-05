@@ -220,25 +220,12 @@ export function WeaverMakingChargesSection() {
         </div>
 
         {/* ── Upload Bank Payment File panel ──────────────────── */}
-        <BankUploadPanel 
-          onMatchUpdate={(matchedRows) => {
-            setWeaversList(prev => prev.map(w => {
-              const match = matchedRows.find(m => m.weaverId.toLowerCase() === w.id.toLowerCase());
-              if (match) {
-                return {
-                  ...w,
-                  status: "Paid" as const,
-                  uploadedAmount: match.amount,
-                  uploadedDeduction: match.deduction,
-                  uploadedNoOfSarees: match.noOfSarees,
-                  uploadedBatchNo: match.batchNo,
-                  uploadedLoomNumber: match.loomNumber,
-                };
-              }
-              return w;
-            }));
-            toast.success(`Matched and updated status for ${matchedRows.length} weavers!`);
-          }}
+        {/* NOTE: this now saves directly to the real backend (real Weaver
+            UUIDs), so it can no longer flip the "Paid" status on this
+            page's mock weaversList — that list still keys on fake "WV-XXX"
+            ids that don't match real backend Weaver ids. Wiring that
+            requires rebuilding this whole directory off GET /weavers. */}
+        <BankUploadPanel
           onReset={() => {
             setWeaversList(WEAVERS);
           }}
