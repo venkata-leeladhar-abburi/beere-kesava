@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import { C, F, TEAL, Card, Btn, Chip, SectionTitle } from './theme';
+import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
 function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void }) {
   const canSeePrices = useCanSeePrices();
   const [alerted, setAlerted] = useState(false);
@@ -55,20 +56,20 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
             </div>
           </div>
-          <button onClick={() => onNavigate("sale")} style={{ width: "100%", height: 56, borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 18px rgba(107,26,42,0.30)" }}>
+          <Button onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6B1A2A] border-none font-bold text-base text-white gap-2 shadow-[0_6px_18px_rgba(107,26,42,0.30)]">
             <ArrowUpRight size={20} /> Start New Sale
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Process Return quick link */}
       <div style={{ margin: "0 20px 8px", display: "flex", gap: 12 }}>
-        <button onClick={() => onNavigate("return")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
+        <Button onClick={() => onNavigate("return")} className="flex-1 h-[52px] border border-[rgba(139,26,46,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
           <RotateCcw size={17} color={C.crim} /> Process Return
-        </button>
-        <button onClick={() => onNavigate("inventory")} style={{ flex: 1, height: 52, border: `1px solid ${C.bdr}`, background: C.white, borderRadius: 14, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 1px 6px rgba(44,24,16,0.05)" }}>
+        </Button>
+        <Button onClick={() => onNavigate("inventory")} className="flex-1 h-[52px] border border-[rgba(139,26,46,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
           <Package size={17} color={C.burg} /> View Inventory
-        </button>
+        </Button>
       </div>
 
       {/* Recent Sales */}
@@ -143,9 +144,14 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                   <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Report Low Stock</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Notify Admin & Superadmin</div>
                 </div>
-                <button onClick={() => setShowLowStockDialog(false)} style={{ marginLeft: "auto", background: "rgba(139,112,96,0.10)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                  <X size={18} color={C.muted} />
-                </button>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={() => setShowLowStockDialog(false)}
+                  variant="ghost"
+                  shape="circle"
+                  className="ml-auto bg-[rgba(139,112,96,0.10)] text-[#69635E] w-9 h-9"
+                />
               </div>
               {/* Stock info */}
               <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "14px 16px", marginBottom: 20 }}>
@@ -165,26 +171,35 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Priority</div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  {(["urgent", "normal"] as const).map(p => (
-                    <button key={p} onClick={() => setLowStockPriority(p)} style={{ flex: 1, height: 44, borderRadius: 10, border: `2px solid ${lowStockPriority === p ? (p === "urgent" ? C.crim : C.burg) : C.bdr}`, background: lowStockPriority === p ? (p === "urgent" ? "rgba(192,57,43,0.08)" : "rgba(107,26,42,0.06)") : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: lowStockPriority === p ? (p === "urgent" ? C.crim : C.burg) : C.muted, cursor: "pointer" }}>
-                      {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
-                    </button>
-                  ))}
+                  {(["urgent", "normal"] as const).map(p => {
+                    const isActive = lowStockPriority === p;
+                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)] text-[#6B1A2A]";
+                    return (
+                      <Button
+                        key={p}
+                        onClick={() => setLowStockPriority(p)}
+                        variant="ghost"
+                        className={"flex-1 h-11 rounded-[10px] border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E]")}
+                      >
+                        {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
               {/* Optional message */}
               <div style={{ marginBottom: 22 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 8 }}>Additional note <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span></div>
-                <textarea value={lowStockMsg} onChange={e => setLowStockMsg(e.target.value)} placeholder="E.g. We need silk sarees urgently for upcoming festival orders..." rows={3}
-                  style={{ width: "100%", minHeight: 90, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "12px 14px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }} />
+                <Textarea value={lowStockMsg} onChange={e => setLowStockMsg(e.target.value)} placeholder="E.g. We need silk sarees urgently for upcoming festival orders..." rows={3}
+                  className="rounded-xl min-h-[90px] resize-none" />
               </div>
               {/* Confirm */}
-              <button onClick={() => {
+              <Button onClick={() => {
                 setLowStockSending(true);
                 setTimeout(() => { setLowStockSending(false); setShowLowStockDialog(false); setAlerted(true); }, 1200);
-              }} style={{ width: "100%", height: 54, background: C.crim, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              }} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-full font-bold text-base text-white gap-2">
                 {lowStockSending ? "Sending…" : <><Send size={18} /> Send Report to Admin</>}
-              </button>
+              </Button>
             </motion.div>
           </motion.div>
         )}

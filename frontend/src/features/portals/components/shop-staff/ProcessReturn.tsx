@@ -7,6 +7,7 @@ import { ProcessReturnHeader, ReturnHistorySection, ReturnRecord } from './Proce
 import { RetailReturnSuccessView, WholesaleReturnSuccessView } from './ProcessReturnSuccessView';
 import { ProcessReturnRetailFlow } from './ProcessReturnRetailFlow';
 import { ProcessReturnWholesaleFlow } from './ProcessReturnWholesaleFlow';
+import { Button } from "../../../../shared/ui/primitives";
 
 type MyReturnType = "retail" | "wholesale" | "damage" | null;
 type ReturnStep = "type" | 1 | 2 | 3 | "success";
@@ -67,9 +68,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Choose the type of return to process</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 20px 8px" }}>
-          <button
+          <Button
             onClick={() => { setReturnType("retail"); setStep(1); }}
-            style={{ padding: "20px 16px", borderRadius: 16, border: `1.5px solid ${C.bdr}`, background: C.white, cursor: "pointer", display: "flex", flexDirection: "column" as const, alignItems: "flex-start", gap: 12, boxShadow: "0 2px 12px rgba(44,24,16,0.06)", textAlign: "left" as const }}
+            variant="ghost"
+            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
           >
             <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ShoppingBag size={24} color={C.crim} />
@@ -78,10 +80,11 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 6 }}>Retail Return</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>Customer returning a saree they purchased from our shop. Has original receipt or saree barcode.</div>
             </div>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => { setReturnType("wholesale"); setStep(1); }}
-            style={{ padding: "20px 16px", borderRadius: 16, border: `1.5px solid ${C.bdr}`, background: C.white, cursor: "pointer", display: "flex", flexDirection: "column" as const, alignItems: "flex-start", gap: 12, boxShadow: "0 2px 12px rgba(44,24,16,0.06)", textAlign: "left" as const }}
+            variant="ghost"
+            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
           >
             <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(196,146,58,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Building2 size={24} color={C.gold} />
@@ -90,7 +93,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 6 }}>Wholesale Return</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>Saree returned from wholesale buyer. No barcode — a new one will be generated and saree added to inventory.</div>
             </div>
-          </button>
+          </Button>
         </div>
         <ReturnHistorySection returnLog={returnLog} canSeePrices={canSeePrices} />
       </div>

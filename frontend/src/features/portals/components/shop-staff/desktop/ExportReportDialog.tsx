@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, FileText, X } from "lucide-react";
 import { C, F } from "../theme";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 export function ExportReportDialog({
   dialog, onClose, format, setFormat, done, setDone,
@@ -30,9 +31,14 @@ export function ExportReportDialog({
                   <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{dialog!.label}</div>
                 </div>
-                <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                  <X size={18} color="rgba(255,255,255,0.70)" />
-                </button>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={onClose}
+                  variant="ghost"
+                  shape="circle"
+                  className="bg-white/10 text-white/70 w-9 h-9"
+                />
               </div>
             </div>
             <div style={{ padding: "28px 32px 32px" }}>
@@ -45,7 +51,7 @@ export function ExportReportDialog({
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 24 }}>
                     Your <strong style={{ color: C.text }}>{dialog!.label}</strong> report has been exported as <strong style={{ color: C.text }}>{format.toUpperCase()}</strong>. Check your downloads folder.
                   </div>
-                  <button onClick={onClose} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Done</button>
+                  <Button onClick={onClose} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white">Done</Button>
                 </div>
               ) : (
                 <>
@@ -58,11 +64,19 @@ export function ExportReportDialog({
                         { key: "csv" as const, label: "CSV", icon: "📊", desc: "Spreadsheet" },
                         { key: "excel" as const, label: "Excel", icon: "📗", desc: "Advanced" },
                       ]).map(f => (
-                        <button key={f.key} onClick={() => setFormat(f.key)} style={{ flex: 1, padding: "16px 10px", borderRadius: 14, border: `2px solid ${format === f.key ? C.burg : C.bdr}`, background: format === f.key ? "rgba(107,26,42,0.06)" : "#FFF", cursor: "pointer", textAlign: "center" as const }}>
+                        <Button
+                          key={f.key}
+                          onClick={() => setFormat(f.key)}
+                          variant="ghost"
+                          className={
+                            "flex-1 h-auto py-4 px-2.5 rounded-2xl border-2 text-center flex-col " +
+                            (format === f.key ? "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-[rgba(139,26,46,0.12)] bg-white")
+                          }
+                        >
                           <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
                           <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: format === f.key ? C.burg : C.text, marginBottom: 2 }}>{f.label}</div>
                           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{f.desc}</div>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -78,10 +92,10 @@ export function ExportReportDialog({
                   </div>
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 12 }}>
-                    <button onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Cancel</button>
-                    <button onClick={() => setDone(true)} style={{ flex: 2, height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                    <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
+                    <Button onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
                       <FileText size={17} /> Export as {format.toUpperCase()}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}

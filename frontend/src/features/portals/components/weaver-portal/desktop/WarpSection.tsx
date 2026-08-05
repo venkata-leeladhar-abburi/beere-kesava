@@ -2,6 +2,7 @@ import React from "react";
 import { Check, Info, Send } from "lucide-react";
 import { C, F, BG_IMAGE } from "../theme";
 import { DesktopHero } from "./DesktopHero";
+import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
 
 function DSectionHeader({ label }: { label: string }) {
   return (
@@ -52,9 +53,16 @@ export function WarpSection({
         {/* Batch selector */}
         <div style={{ display: "flex", gap: 14, marginBottom: 36 }}>
           {(["086", "089"] as const).map(b => (
-            <button key={b} onClick={() => setWarpBatch(b)} style={{ padding: "12px 32px", borderRadius: 999, border: `2px solid ${C.burg}`, background: warpBatch === b ? C.burg : "transparent", color: warpBatch === b ? "#FFF" : C.burg, fontFamily: F.m, fontSize: 14, cursor: "pointer", fontWeight: 700, transition: "all 0.15s" }}>
+            <Button
+              key={b}
+              onClick={() => setWarpBatch(b)}
+              className={
+                "rounded-full px-8 py-3 h-auto border-2 border-[#6B1A2A] font-mono text-sm font-bold transition-all " +
+                (warpBatch === b ? "bg-[#6B1A2A] text-white" : "bg-transparent text-[#6B1A2A]")
+              }
+            >
               BATCH-{b}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -65,9 +73,9 @@ export function WarpSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Warp Request Sent!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 36 }}>Your request has been sent to worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-            <button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} style={{ display: "block", width: "100%", height: 60, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF", cursor: "pointer" }}>
+            <Button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="block h-[60px] bg-[#6B1A2A] border-none rounded-full font-bold text-lg text-white">
               ← Back to Warp Requests
-            </button>
+            </Button>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 380px", gap: 36, alignItems: "start" }}>
@@ -109,22 +117,23 @@ export function WarpSection({
                     <label style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>
                       {mat === "warp" ? "Warp amount (kg):" : mat === "resham" ? "Resham amount and color:" : "Jari amount (reels):"}
                     </label>
-                    <input value={amounts[mat]} onChange={e => setAmounts(a => ({ ...a, [mat]: e.target.value }))} placeholder={mat === "warp" ? "e.g. 3 kg" : mat === "resham" ? "e.g. 500g Red" : "e.g. 4 reels"}
-                      style={{ width: "100%", height: 56, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px", fontFamily: F.m, fontSize: 16, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+                    <Input value={amounts[mat]} onChange={e => setAmounts(a => ({ ...a, [mat]: e.target.value }))} placeholder={mat === "warp" ? "e.g. 3 kg" : mat === "resham" ? "e.g. 500g Red" : "e.g. 4 reels"}
+                      size="lg" className="font-mono" containerClassName="rounded-xl h-14" />
                   </div>
                 ))}
 
                 <div>
                   <label style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>Why do you need more material?</label>
-                  <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Example: Extra sarees needed for a large order" rows={3}
-                    style={{ width: "100%", minHeight: 110, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "14px 18px", fontFamily: F.u, fontSize: 16, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }} />
+                  <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Example: Extra sarees needed for a large order" rows={3}
+                    className="rounded-[14px] min-h-[110px] resize-none text-base" />
                 </div>
               </div>
 
-              <button onClick={() => (materials.warp || materials.resham || materials.jari) ? setWarpSubmitted(true) : undefined}
-                style={{ width: "100%", height: 60, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, boxShadow: "0 4px 20px rgba(107,26,42,0.35)" }}>
+              <Button onClick={() => (materials.warp || materials.resham || materials.jari) ? setWarpSubmitted(true) : undefined}
+                fullWidth
+                className="h-[60px] bg-[#6B1A2A] border-none rounded-full font-bold text-lg text-white gap-3 shadow-[0_4px_20px_rgba(107,26,42,0.35)]">
                 <Send size={22} /> Send Warp Request
-              </button>
+              </Button>
             </div>
 
             {/* Right: Rules + History */}

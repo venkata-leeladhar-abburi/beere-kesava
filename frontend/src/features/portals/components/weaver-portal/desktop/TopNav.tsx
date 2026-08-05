@@ -1,7 +1,8 @@
 import React from "react";
-import { Bell, ChevronLeft, LogOut, Search, UserRound } from "lucide-react";
+import { Bell, ChevronLeft, LogOut, UserRound } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, Tab5 } from "../theme";
+import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 
 export function TopNav({
   isTablet, NAV, active, showNotifs, setActive, setShowNotifs,
@@ -39,32 +40,52 @@ export function TopNav({
           )}
         </div>
         <nav className="wp-filter-scroll" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center", gap: 2, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
-          {NAV.map(tab => (
-            <button key={tab.id} onClick={() => { setActive(tab.id); setShowNotifs(false); }} style={{
-              display: "flex", alignItems: "center", gap: 7, flexShrink: 0, padding: isTablet ? "0 10px" : "0 18px", height: 64, border: "none", background: "transparent", cursor: "pointer",
-              fontFamily: F.u, fontSize: 14, fontWeight: active === tab.id && !showNotifs ? 600 : 400,
-              color: active === tab.id && !showNotifs ? C.text : C.muted,
-              borderBottom: active === tab.id && !showNotifs ? `2px solid ${C.burg}` : "2px solid transparent",
-              transition: "all 0.15s", whiteSpace: "nowrap" as const,
-            }}
-            onMouseEnter={e => { if (!(active === tab.id && !showNotifs)) e.currentTarget.style.color = C.text; }}
-            onMouseLeave={e => { if (!(active === tab.id && !showNotifs)) e.currentTarget.style.color = C.muted; }}>
-              {React.cloneElement(tab.icon as React.ReactElement<any>, { color: active === tab.id && !showNotifs ? C.burg : C.muted })}
-              {tab.label}
-            </button>
-          ))}
+          {NAV.map(tab => {
+            const isActive = active === tab.id && !showNotifs;
+            return (
+              <Button
+                key={tab.id}
+                onClick={() => { setActive(tab.id); setShowNotifs(false); }}
+                variant="ghost"
+                className={
+                  "flex items-center gap-1.5 shrink-0 h-16 border-none bg-transparent rounded-none whitespace-nowrap border-b-2 " +
+                  (isTablet ? "px-2.5 " : "px-[18px] ") +
+                  (isActive ? "border-b-[#6B1A2A] font-semibold text-[#1A0A0F] hover:bg-transparent hover:text-[#1A0A0F]" : "border-b-transparent font-normal text-[#69635E] hover:bg-transparent hover:text-[#1A0A0F]")
+                }
+              >
+                {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
+                {tab.label}
+              </Button>
+            );
+          })}
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <SearchInput
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="rounded-full"
+            containerClassName={"rounded-full " + (isTablet ? "w-[140px]" : "w-[200px]")}
+          />
           <div style={{ position: "relative" as const }}>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ width: isTablet ? 140 : 200, height: 38, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 999, padding: "0 14px 0 38px", fontFamily: F.u, fontSize: 13, color: C.text, outline: "none" }} />
-            <Search size={14} color={C.muted} style={{ position: "absolute" as const, left: 12, top: "50%", transform: "translateY(-50%)" }} />
+            <IconButton
+              icon={Bell}
+              label="Notifications"
+              onClick={() => setShowNotifs(v => !v)}
+              variant="ghost"
+              className={"rounded-lg " + (showNotifs ? "bg-[rgba(107,26,42,0.08)]" : "")}
+            />
+            <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF", pointerEvents: "none" as const }} />
           </div>
-          <button onClick={() => setShowNotifs(v => !v)} style={{ position: "relative" as const, background: showNotifs ? "rgba(107,26,42,0.08)" : "none", border: "none", cursor: "pointer", padding: 8, borderRadius: 8, display: "flex", alignItems: "center" }}>
-            <Bell size={20} color={showNotifs ? C.burg : C.muted} />
-            <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF" }} />
-          </button>
           <div style={{ position: "relative" as const }}>
-            <button onClick={() => setShowProfile(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 14px", background: showProfile ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.06)", border: `1px solid ${showProfile ? C.burg : C.bdr}`, borderRadius: 999, cursor: "pointer" }}>
+            <Button
+              onClick={() => setShowProfile(p => !p)}
+              variant="ghost"
+              className={
+                "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
+                (showProfile ? "bg-[rgba(107,26,42,0.10)] border-[#6B1A2A]" : "bg-[rgba(107,26,42,0.06)] border-[rgba(139,26,46,0.12)]")
+              }
+            >
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>RK</span>
               </div>
@@ -73,7 +94,7 @@ export function TopNav({
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>WVR-014 · Handloom</div>
               </div>
               <ChevronLeft size={13} color={C.muted} style={{ transform: showProfile ? "rotate(-90deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
-            </button>
+            </Button>
             {showProfile && (
               <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFF", borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
                 <div style={{ padding: "16px 18px", background: "rgba(107,26,42,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
@@ -86,14 +107,12 @@ export function TopNav({
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
                     <UserRound size={15} color={C.muted} /> View Profile
-                  </button>
+                  </Button>
                   <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
                   {localStorage.getItem("bk_original_admin_role") ? (
-                    <button onClick={() => {
+                    <Button onClick={() => {
                       setShowProfile(false);
                       const origAdminRole = localStorage.getItem("bk_original_admin_role");
                       if (origAdminRole) {
@@ -101,23 +120,17 @@ export function TopNav({
                         selectRole(origAdminRole as any);
                         navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                       }
-                    }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
                       <ChevronLeft size={15} color={C.muted} /> My Portal
-                    </button>
+                    </Button>
                   ) : (
-                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(107,26,42,0.04)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
                       <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                    </button>
+                    </Button>
                   )}
-                  <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
                     <LogOut size={15} color="#C0392B" /> Logout
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

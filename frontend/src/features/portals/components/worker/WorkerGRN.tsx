@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { ChevronDown, CheckCircle2 } from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary } from "./tokens";
+import { C, F } from "./tokens";
 import { usePO, PurchaseOrder, POItem } from "../../../purchasing/contexts/POContext";
 import { ReceiptHistoryTable, ReceiptRecord } from "./ReceiptHistoryTable";
 import { GRNSuccessView, GRNPrintView } from "./GRNSuccessPrint";
 import { GRNItemVerificationCard } from "./GRNItemVerificationCard";
 import { GRNPODropdown } from "./GRNPODropdown";
+import { Button, Input, CheckboxField } from "../../../../shared/ui/primitives";
 
 type GRNStep = "form" | "success" | "print";
 
@@ -244,8 +245,8 @@ export function WorkerGRN({
         <>
           <SectionLabel step={2} title="GRN Batch ID" />
           <div style={{ margin: "0 20px" }}>
-            <input value={grnBatchId} onChange={e => setGrnBatchId(e.target.value)}
-              style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, fontWeight: 600, color: C.burg, height: 46 }} />
+            <Input value={grnBatchId} onChange={e => setGrnBatchId(e.target.value)}
+              className="font-mono text-sm font-semibold text-[#6B1A2A]" containerClassName="h-[46px]" />
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Auto-generated — you can edit this before confirming.</div>
           </div>
 
@@ -274,32 +275,26 @@ export function WorkerGRN({
 
           {/* Confirm Block */}
           <div style={{ margin: "16px 20px 0", display: "flex", flexDirection: "column", gap: 10 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 10, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", cursor: "pointer" }}>
-              <input
-                type="checkbox"
+            <div style={{ background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+              <CheckboxField
                 checked={confirmedReceived}
-                onChange={e => setConfirmedReceived(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: C.burg, cursor: "pointer", flexShrink: 0 }}
+                onCheckedChange={v => setConfirmedReceived(v === true)}
+                label={
+                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+                    I confirm that the materials have been verified and received perfectly.
+                  </span>
+                }
               />
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
-                I confirm that the materials have been verified and received perfectly.
-              </span>
-            </label>
+            </div>
 
-            <button
+            <Button
               onClick={handleConfirm}
               disabled={!allFilled || !allApproved || !confirmedReceived}
-              style={{
-                ...btnPrimary,
-                height: 52,
-                marginTop: 6,
-                gap: 8,
-                opacity: (allFilled && allApproved && confirmedReceived) ? 1 : 0.5,
-                cursor: (allFilled && allApproved && confirmedReceived) ? "pointer" : "default"
-              }}
+              fullWidth
+              className="h-[52px] mt-1.5 gap-2 bg-[#6B1A2A] border-none rounded-full font-semibold text-white"
             >
               <CheckCircle2 size={17} /> Confirm Receipt — Generate GRN
-            </button>
+            </Button>
           </div>
         </>
       )}

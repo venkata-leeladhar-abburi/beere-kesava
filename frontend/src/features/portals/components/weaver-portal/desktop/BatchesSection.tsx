@@ -5,6 +5,7 @@ import { BatchHistoryPage } from "../BatchHistoryPage";
 import { DesktopHero } from "./DesktopHero";
 import { DesktopActiveBatchCard } from "./DesktopActiveBatchCard";
 import { DesktopCompletedBatchCard } from "./DesktopCompletedBatchCard";
+import { Button } from "../../../../../shared/ui/primitives";
 
 type DefectiveSaree = {
   sareeId: string; batchId: string; designCode?: string;
@@ -79,9 +80,9 @@ export function BatchesSection({
               <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
               <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Active Batches</span>
             </div>
-            <button onClick={() => setBatchesSubPage("history")} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(107,26,42,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 999, padding: "8px 18px", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.burg, fontWeight: 600 }}>
+            <Button onClick={() => setBatchesSubPage("history")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(107,26,42,0.06)] border border-[rgba(139,26,46,0.12)] rounded-full px-[18px] py-2 text-sm text-[#6B1A2A] font-semibold">
               <History size={15} color={C.burg} /> View All History
-            </button>
+            </Button>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>
             You can have a maximum of 2 active batches at a time. Complete one before a new batch is assigned.
@@ -108,9 +109,9 @@ export function BatchesSection({
               <div style={{ width: 5, height: 28, background: "#1D4ED8", borderRadius: 3 }} />
               <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Completed Batches</span>
             </div>
-            <button onClick={() => setBatchesSubPage("completed")} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(29,78,216,0.06)", border: "1px solid rgba(29,78,216,0.20)", borderRadius: 999, padding: "8px 18px", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#1D4ED8", fontWeight: 600 }}>
+            <Button onClick={() => setBatchesSubPage("completed")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(29,78,216,0.06)] border border-[rgba(29,78,216,0.20)] rounded-full px-[18px] py-2 text-sm text-[#1D4ED8] font-semibold">
               <ListChecks size={15} color="#1D4ED8" /> See All Completed
-            </button>
+            </Button>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>Recent completed batches — your track record of finished work.</div>
           {completedBatches.length === 0 ? (
@@ -138,9 +139,15 @@ export function BatchesSection({
               { label: "Raise Warp Request", sub: "Request additional material", tab: "warp" as Tab5, icon: <Package size={18} color={C.gold} />, badge: null },
               { label: "Payment Ledger", sub: "View earnings & deductions", tab: "payments" as Tab5, icon: <CreditCard size={18} color={C.gold} />, badge: null },
             ].map((a, i) => (
-              <button key={a.tab} onClick={() => setActive(a.tab)} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "18px 26px", border: "none", borderBottom: "1px solid rgba(255,255,255,0.07)", borderRight: !isTablet && i < 2 ? "1px solid rgba(255,255,255,0.07)" : "none", background: "transparent", cursor: "pointer", textAlign: "left" as const }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <Button
+                key={a.tab}
+                onClick={() => setActive(a.tab)}
+                variant="ghost"
+                className={
+                  "flex items-center gap-4 w-full h-auto px-[26px] py-[18px] border-none rounded-none bg-transparent justify-start text-left border-b border-white/[0.07] hover:bg-white/5 " +
+                  (!isTablet && i < 2 ? "border-r border-r-white/[0.07]" : "")
+                }
+              >
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{a.label}</div>
@@ -148,7 +155,7 @@ export function BatchesSection({
                 </div>
                 {a.badge && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.dark, background: C.gold, padding: "3px 10px", borderRadius: 999 }}>{a.badge}</span>}
                 <ArrowRight size={16} color="rgba(255,255,255,0.30)" />
-              </button>
+              </Button>
             ))}
           </div>
         </div>

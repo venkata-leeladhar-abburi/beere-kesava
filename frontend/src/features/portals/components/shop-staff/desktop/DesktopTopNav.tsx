@@ -1,7 +1,8 @@
 import React from "react";
-import { Bell, ChevronLeft, LogOut, RotateCcw, Search, UserRound } from "lucide-react";
+import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, TEAL } from "../theme";
+import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -43,44 +44,60 @@ export function DesktopTopNav({
         </div>
         <nav className="shop-topnav-groups" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center", gap: 2, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
           <style>{`.shop-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
-          {TABS.map(tab => (
-            <button key={tab.id} onClick={() => { setActive(tab.id); }} style={{
-              display: "flex", alignItems: "center", gap: 7, flexShrink: 0, padding: isTablet ? "0 12px" : "0 18px", height: 64, border: "none", background: "transparent", cursor: "pointer",
-              fontFamily: F.u, fontSize: 14, fontWeight: active === tab.id && !showReturn ? 600 : 400,
-              color: active === tab.id && !showReturn ? TEAL : C.muted,
-              borderBottom: active === tab.id && !showReturn ? `3px solid ${TEAL}` : "2px solid transparent",
-              transition: "all 0.15s", whiteSpace: "nowrap" as const,
-            }}
-              onMouseEnter={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = TEAL; }}
-              onMouseLeave={e => { if (!(active === tab.id && !showReturn)) e.currentTarget.style.color = C.muted; }}>
-              {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, color: active === tab.id && !showReturn ? TEAL : C.muted })}
-              {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
-            </button>
-          ))}
-          <button onClick={() => setShowReturn(true)} style={{
-            display: "flex", alignItems: "center", gap: 7, flexShrink: 0, padding: isTablet ? "0 12px" : "0 18px", height: 64, border: "none", background: "transparent", cursor: "pointer",
-            fontFamily: F.u, fontSize: 14, fontWeight: showReturn ? 600 : 400, color: showReturn ? C.crim : C.muted,
-            borderBottom: showReturn ? `2px solid ${C.crim}` : "2px solid transparent", transition: "all 0.15s", whiteSpace: "nowrap" as const,
-          }}
-            onMouseEnter={e => { if (!showReturn) e.currentTarget.style.color = C.crim; }}
-            onMouseLeave={e => { if (!showReturn) e.currentTarget.style.color = C.muted; }}>
+          {TABS.map(tab => {
+            const isActive = active === tab.id && !showReturn;
+            return (
+              <Button
+                key={tab.id}
+                onClick={() => { setActive(tab.id); }}
+                variant="ghost"
+                className={
+                  "flex items-center gap-1.5 shrink-0 h-16 border-none bg-transparent rounded-none whitespace-nowrap border-b-[3px] " +
+                  (isTablet ? "px-3 " : "px-[18px] ") +
+                  (isActive ? "border-b-[#0F766E] font-semibold text-[#0F766E] hover:bg-transparent hover:text-[#0F766E]" : "border-b-transparent font-normal text-[#69635E] hover:bg-transparent hover:text-[#0F766E]")
+                }
+              >
+                {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, color: isActive ? TEAL : C.muted })}
+                {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
+              </Button>
+            );
+          })}
+          <Button
+            onClick={() => setShowReturn(true)}
+            variant="ghost"
+            className={
+              "flex items-center gap-1.5 shrink-0 h-16 border-none bg-transparent rounded-none whitespace-nowrap border-b-2 " +
+              (isTablet ? "px-3 " : "px-[18px] ") +
+              (showReturn ? "border-b-[#C0392B] font-semibold text-[#C0392B] hover:bg-transparent hover:text-[#C0392B]" : "border-b-transparent font-normal text-[#69635E] hover:bg-transparent hover:text-[#C0392B]")
+            }
+          >
             <RotateCcw size={16} color={showReturn ? C.crim : C.muted} /> Process Return
-          </button>
+          </Button>
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <SearchInput
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="rounded-full"
+            containerClassName={"rounded-full " + (isTablet ? "w-[140px]" : "w-[200px]")}
+          />
           <div style={{ position: "relative" as const }}>
-            <Search size={14} color={C.muted} style={{ position: "absolute" as const, left: 12, top: "50%", transform: "translateY(-50%)" }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ width: isTablet ? 140 : 200, height: 38, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 999, padding: "0 14px 0 38px", fontFamily: F.u, fontSize: 13, color: C.text, outline: "none" }} />
+            <IconButton icon={Bell} label="Notifications" variant="ghost" className="rounded-lg" />
+            <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF", pointerEvents: "none" as const }} />
           </div>
-          <button style={{ position: "relative" as const, background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: 8, display: "flex", alignItems: "center" }}>
-            <Bell size={20} color={C.muted} />
-            <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF" }} />
-          </button>
           <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: TEAL, background: "rgba(15,118,110,0.10)", border: `1px solid rgba(15,118,110,0.25)`, borderRadius: 999, padding: "5px 12px" }}>
             Shop Staff
           </span>
           <div style={{ position: "relative" as const }}>
-            <button onClick={() => setShowProfile(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 14px", background: showProfile ? "rgba(0,128,128,0.12)" : "rgba(0,128,128,0.07)", border: `1px solid ${showProfile ? "#008080" : "rgba(0,128,128,0.20)"}`, borderRadius: 999, cursor: "pointer" }}>
+            <Button
+              onClick={() => setShowProfile(p => !p)}
+              variant="ghost"
+              className={
+                "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
+                (showProfile ? "bg-[rgba(0,128,128,0.12)] border-[#008080]" : "bg-[rgba(0,128,128,0.07)] border-[rgba(0,128,128,0.20)]")
+              }
+            >
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#008080", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>PS</span>
               </div>
@@ -89,7 +106,7 @@ export function DesktopTopNav({
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>SS · Shop Staff</div>
               </div>
               <ChevronLeft size={13} color={C.muted} style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
-            </button>
+            </Button>
             {showProfile && (
               <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: C.white, borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
                 <div style={{ padding: "16px 18px", background: "rgba(0,128,128,0.05)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
@@ -102,14 +119,12 @@ export function DesktopTopNav({
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                  <Button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
                     <UserRound size={15} color={C.muted} /> View Profile
-                  </button>
+                  </Button>
                   <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
                   {localStorage.getItem("bk_original_admin_role") ? (
-                    <button onClick={() => {
+                    <Button onClick={() => {
                       setShowProfile(false);
                       const origAdminRole = localStorage.getItem("bk_original_admin_role");
                       if (origAdminRole) {
@@ -117,23 +132,17 @@ export function DesktopTopNav({
                         selectRole(origAdminRole as any);
                         routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                       }
-                    }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
                       <ChevronLeft size={15} color={C.muted} /> My Portal
-                    </button>
+                    </Button>
                   ) : (
-                    <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: C.text, textAlign: "left" as const }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,128,128,0.05)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
                       <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                    </button>
+                    </Button>
                   )}
-                  <button onClick={() => { setShowProfile(false); handleLogout(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.u, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                  <Button onClick={() => { setShowProfile(false); handleLogout(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
                     <LogOut size={15} color="#C0392B" /> Logout
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
