@@ -6,6 +6,7 @@ import { PurchaseRequest } from "../../../suppliers/contexts/SupplierContext";
 import { T, F } from "./tokens";
 import { PO_DATA, WARP_DATA, RATE_DATA } from "./data";
 import { BulkActionStrip, EmptyState } from "./SharedUI";
+import { Button } from "../../../../shared/ui/primitives";
 import { POCard } from "./POCard";
 import { WarpCard } from "./WarpCard";
 import { RateCard } from "./RateCard";
@@ -34,20 +35,11 @@ export function TabsNav({
       boxShadow: "0 2px 8px rgba(44,24,16,0.05)",
     }}>
       {tabs.map(tab => (
-        <button
+        <Button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          style={{
-            padding: "14px 24px",
-            fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-            background: activeTab === tab.key ? T.royalBurgundy : "transparent",
-            color: activeTab === tab.key ? "#FFF" : T.luxuryBrown,
-            border: "none",
-            borderBottom: activeTab === tab.key ? "2px solid " + T.antiqueGold : "2px solid transparent",
-            cursor: "pointer",
-            transition: "all 0.18s",
-            display: "flex", alignItems: "center", gap: 8,
-          }}
+          variant={activeTab === tab.key ? "primary" : "tertiary"} size="md"
+          className={"rounded-none border-b-2 " + (activeTab === tab.key ? "border-b-[var(--bk-gold-500,#C89B47)]" : "border-b-transparent")}
         >
           {tab.label}
           <span style={{
@@ -57,7 +49,7 @@ export function TabsNav({
           }}>
             {tab.count}
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );

@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { motion, useInView } from "motion/react";
 import {
-  Search, Users, Activity, Clock, CheckCircle2,
+  Users, Activity, Clock, CheckCircle2,
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
 import { Rows } from "@phosphor-icons/react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
+import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -200,42 +201,37 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             { key: "qc",     label: "Pending QC",        count: qcCount },
             { key: "idle",   label: "No Active Batch",   count: idleCount },
           ] as const).map(f => (
-            <button key={f.key} onClick={() => setStatusFilter(f.key)}
-              style={{ height: "100%", padding: "0 18px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, position: "relative", borderBottom: statusFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
-              <span style={{ fontFamily: F.ui, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
+            <Button key={f.key} onClick={() => setStatusFilter(f.key)} variant="ghost" size="sm"
+              className="h-full rounded-none"
+            >
+              <span style={{ fontFamily: F.ui, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap", borderBottom: statusFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", paddingBottom: 2 }}>{f.label}</span>
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
-            </button>
+            </Button>
           ))}
 
           {/* Village filter */}
-          <select
-            value={villageFilter}
-            onChange={e => setVillageFilter(e.target.value)}
-            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer" }}
-          >
-            <option value="all">All Villages</option>
-            {villages.map(v => <option key={v} value={v}>{v}</option>)}
-          </select>
+          <div style={{ width: 170 }}>
+            <Select value={villageFilter} onValueChange={setVillageFilter} size="sm">
+              <SelectItem value="all">All Villages</SelectItem>
+              {villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+            </Select>
+          </div>
 
           {/* Sort */}
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-            style={{ height: 38, border: `1px solid ${T.borderDef}`, background: T.silkCream, borderRadius: 10, padding: "0 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer" }}
-          >
-            <option value="name">Sort: Name</option>
-            <option value="output">Sort: This Month's Output</option>
-            <option value="looms">Sort: Looms</option>
-          </select>
+          <div style={{ width: 220 }}>
+            <Select value={sortBy} onValueChange={v => setSortBy(v as any)} size="sm">
+              <SelectItem value="name">Sort: Name</SelectItem>
+              <SelectItem value="output">Sort: This Month's Output</SelectItem>
+              <SelectItem value="looms">Sort: Looms</SelectItem>
+            </Select>
+          </div>
 
           {/* Search */}
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", height: 38 }}>
-            <Search size={14} color={T.taupe} />
-            <input
+          <div style={{ marginLeft: "auto", width: 240 }}>
+            <SearchInput
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, village, ID…"
-              style={{ border: "none", background: "none", outline: "none", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, width: 220 }}
             />
           </div>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} weaver{filtered.length !== 1 ? "s" : ""}</span>
@@ -336,30 +332,33 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                     </div>
 
                     <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-                      <motion.button
+                      <Button
                         onClick={() => onNavigate?.("Weavers", { weaverId: w.id, mode: "view" })}
-                        whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                        whileTap={{ scale: 0.97 }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                        variant="secondary"
+                        size="sm"
+                        iconLeft={Eye}
+                        fullWidth
                       >
-                        <Eye size={14} /> Details
-                      </motion.button>
-                      <motion.button
+                        Details
+                      </Button>
+                      <Button
                         onClick={() => onNavigate?.("Weavers", { weaverId: w.id, mode: "edit" })}
-                        whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
-                        whileTap={{ scale: 0.97 }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                        variant="tertiary"
+                        size="sm"
+                        iconLeft={Edit3}
+                        fullWidth
                       >
-                        <Edit3 size={13} /> Edit
-                      </motion.button>
-                      <motion.button
+                        Edit
+                      </Button>
+                      <Button
                         onClick={() => onNavigate?.("Weavers", { weaverId: w.id, mode: "view" })}
-                        whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                        whileTap={{ scale: 0.97 }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                        variant="secondary"
+                        size="sm"
+                        iconLeft={Layers3}
+                        fullWidth
                       >
-                        <Layers3 size={14} /> Batches
-                      </motion.button>
+                        Batches
+                      </Button>
                     </div>
                   </div>
                 </motion.div>

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Search, UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react";
+import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { Button, SearchInput } from "../../../../shared/ui/primitives";
 
 const topCustomers = [
   { name: "Meenakshi Silks",        total: 840000 },
@@ -127,14 +128,12 @@ export function CustomerReport() {
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" as const }}>
         {filters.map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            style={{ padding: "6px 13px", borderRadius: 20, border: `1.5px solid ${filter === f ? T.royalBurgundy : T.borderDef}`, background: filter === f ? T.royalBurgundy : "#fff", color: filter === f ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 12, fontWeight: filter === f ? 700 : 500, cursor: "pointer" }}>
+          <Button key={f} variant={filter === f ? "primary" : "secondary"} size="sm" onClick={() => setFilter(f)}>
             {f}
-          </button>
+          </Button>
         ))}
-        <div style={{ flex: 1, position: "relative", minWidth: 200 }}>
-          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." style={{ width: "100%", height: 36, padding: "0 10px 0 30px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <SearchInput aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." />
         </div>
       </div>
 
@@ -208,10 +207,9 @@ export function CustomerReport() {
                   )}
                 </div>
                 <DownloadGate>
-                  <button onClick={() => downloadCustomerData(r)}
-                    style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
+                  <Button variant="secondary" size="sm" fullWidth onClick={() => downloadCustomerData(r)} className="mt-auto">
                     ↓ Download Data
-                  </button>
+                  </Button>
                 </DownloadGate>
               </div>
             ))}

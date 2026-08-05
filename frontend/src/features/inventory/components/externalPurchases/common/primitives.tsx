@@ -1,43 +1,32 @@
 import React from "react";
 import { T, F } from "../theme";
+import {
+  Select as DsSelect,
+  SelectItem,
+  StatusPill as DsStatusPill,
+  type StatusTone,
+} from "../../../../../shared/ui/primitives";
 
 export function Select({ value, options, onChange }: {
   value: string; options: string[]; onChange: (v: string) => void;
 }) {
   return (
-    <select value={value} onChange={e => onChange(e.target.value)}
-      style={{
-        height: 44, padding: "0 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
-        background: "#FFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, cursor: "pointer", outline: "none"
-      }}>
-      {options.map(o => <option key={o} value={o}>{o}</option>)}
-    </select>
+    <DsSelect value={value} onValueChange={onChange}>
+      {options.map((o) => (
+        <SelectItem key={o} value={o}>{o}</SelectItem>
+      ))}
+    </DsSelect>
   );
 }
 
+const STATUS_TONE: Record<string, StatusTone> = {
+  Paid: "success",
+  Pending: "warning",
+  Partial: "danger",
+};
+
 export function StatusPill({ status }: { status: string }) {
-  const styles: Record<string, { color: string; bg: string }> = {
-    Paid: { color: "#1E6640", bg: "rgba(30,102,64,0.09)" },
-    Pending: { color: "rgba(230,126,34,1)", bg: "rgba(230,126,34,0.12)" },
-    Partial: { color: "#C0392B", bg: "rgba(192,57,43,0.08)" },
-  };
-  const s = styles[status] || { color: T.taupe, bg: T.cream };
-  return (
-    <span
-      style={{
-        fontFamily: F.ui,
-        fontWeight: 600,
-        fontSize: 12,
-        color: s.color,
-        background: s.bg,
-        borderRadius: 999,
-        padding: "3px 10px",
-        display: "inline-block",
-      }}
-    >
-      {status}
-    </span>
-  );
+  return <DsStatusPill tone={STATUS_TONE[status] ?? "neutral"} label={status} />;
 }
 
 export const inputStyle: React.CSSProperties = {

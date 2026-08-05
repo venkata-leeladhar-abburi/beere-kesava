@@ -1,6 +1,7 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
 import { T, F, ExtItem } from "./POTypesAndVendors";
+import { IconButton, Textarea, NumberInput, Select, SelectItem, Button } from "../../../shared/ui/primitives";
 
 interface POMaterialRowProps {
   item: ExtItem;
@@ -17,14 +18,6 @@ export function POMaterialRow({
   canRemove,
   errors,
 }: POMaterialRowProps) {
-  const inputStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
-    border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8,
-    padding: "8px 10px", outline: "none", background: T.warmIvory,
-    width: "100%", boxSizing: "border-box" as const,
-  };
-  const selectStyle: React.CSSProperties = { ...inputStyle, cursor: "pointer" };
-
   const set = (k: keyof ExtItem, v: unknown) => {
     const updated = { ...item, [k]: v } as ExtItem;
     // Reset unit when type changes
@@ -43,39 +36,36 @@ export function POMaterialRow({
       position: "relative",
     }}>
       {canRemove && (
-        <button
+        <IconButton
           onClick={onRemove}
-          style={{
-            position: "absolute", top: 10, right: 12,
-            background: "none", border: "none", cursor: "pointer",
-            color: T.taupe, display: "flex", alignItems: "center",
-          }}
-        >
-          <Trash2 size={15} color={T.crimson} />
-        </button>
+          label="Remove material"
+          icon={Trash2}
+          variant="ghost"
+          size="sm"
+          className="absolute top-[10px] right-[12px]"
+        />
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10, alignItems: "start" }}>
         {/* Material Type */}
         <div>
           <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>
-          <select value={item.materialType} onChange={e => set("materialType", e.target.value)} style={selectStyle}>
-            <option value="Warp">Warp</option>
-            <option value="Resham">Resham</option>
-            <option value="Jari">Jari</option>
-          </select>
+          <Select value={item.materialType} onValueChange={v => set("materialType", v)}>
+            <SelectItem value="Warp">Warp</SelectItem>
+            <SelectItem value="Resham">Resham</SelectItem>
+            <SelectItem value="Jari">Jari</SelectItem>
+          </Select>
           {errors[`mat-${item._key}-type`] && <div style={{ color: T.crimson, fontSize: 12, marginTop: 3 }}>{errors[`mat-${item._key}-type`]}</div>}
         </div>
 
         {/* Description */}
         <div>
           <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Description</label>
-          <textarea
+          <Textarea
             value={item.description ?? ""}
             onChange={e => set("description", e.target.value)}
             placeholder="Color, grade, subtype, quality notes..."
             rows={2}
-            style={{ ...inputStyle, resize: "none" as const }}
           />
         </div>
 
@@ -88,21 +78,15 @@ export function POMaterialRow({
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <div style={{ display: "flex", gap: 5, marginBottom: 2 }}>
                 {["Buns", "Reels"].map(u => (
-                  <button key={u} onClick={() => set("unit", u)} style={{
-                    flex: 1, padding: "7px 4px", borderRadius: 7, cursor: "pointer",
-                    fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                    background: item.unit === u ? T.royalBurgundy : T.warmIvory,
-                    color: item.unit === u ? "#FFFDF9" : T.taupe,
-                    border: item.unit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                  }}>{u}</button>
+                  <Button key={u} onClick={() => set("unit", u)} variant={item.unit === u ? "primary" : "secondary"} size="sm" className="flex-1">{u}</Button>
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <input
-                  type="number" min={0}
+                <NumberInput
+                  min={0}
                   value={item.quantity || ""}
-                  onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
-                  style={{ ...inputStyle, paddingRight: 44 }} placeholder="0"
+                  onValueChange={v => set("quantity", v === "" ? 0 : v)}
+                  className="pr-11" placeholder="0"
                 />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
               </div>
@@ -117,21 +101,15 @@ export function POMaterialRow({
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <div style={{ display: "flex", gap: 5, marginBottom: 2 }}>
                 {["kg", "g"].map(u => (
-                  <button key={u} onClick={() => set("unit", u)} style={{
-                    flex: 1, padding: "7px 4px", borderRadius: 7, cursor: "pointer",
-                    fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                    background: item.unit === u ? T.royalBurgundy : T.warmIvory,
-                    color: item.unit === u ? "#FFFDF9" : T.taupe,
-                    border: item.unit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                  }}>{u}</button>
+                  <Button key={u} onClick={() => set("unit", u)} variant={item.unit === u ? "primary" : "secondary"} size="sm" className="flex-1">{u}</Button>
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <input
-                  type="number" min={0}
+                <NumberInput
+                  min={0}
                   value={item.quantity || ""}
-                  onChange={e => set("quantity", parseFloat(e.target.value) || 0)}
-                  style={{ ...inputStyle, paddingRight: 32 }} placeholder="0"
+                  onValueChange={v => set("quantity", v === "" ? 0 : v)}
+                  className="pr-8" placeholder="0"
                 />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{item.unit}</span>
               </div>

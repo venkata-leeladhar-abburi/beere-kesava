@@ -6,6 +6,7 @@ import { MapPin, Phone, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
 import { StatusPill, StarRating } from "../common/primitives";
 import { useSuppliers, Supplier, formatINR } from "../../contexts/SupplierContext";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView: (s: Supplier) => void }) {
   const { statsFor } = useSuppliers();
@@ -59,10 +60,9 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
         </div>
 
         <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
-          <motion.button onClick={() => onView(supplier)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ width: "100%", padding: "9px 0", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <Eye size={13} /> View Profile
-          </motion.button>
+          <Button variant="primary" size="sm" fullWidth iconLeft={Eye} onClick={() => onView(supplier)}>
+            View Profile
+          </Button>
         </div>
       </div>
     </motion.div>

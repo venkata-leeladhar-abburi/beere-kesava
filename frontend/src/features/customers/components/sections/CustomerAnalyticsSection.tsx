@@ -9,6 +9,7 @@ import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilter
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionTitle } from "../common/primitives";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { downloadDataAsCSV } from "../utils";
 import {
   top10Customers, revenueSplit, newVsReturning, frequentBuyers, inactiveAlerts,
@@ -48,13 +49,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Wholesale and retail combined</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (₹)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
               title="Download CSV"
-              style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
           {/* Summary strip */}
           <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -113,13 +117,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue from each sales channel</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], revenueSplit.map(item => [item.name, item.value]))}
               title="Download CSV"
-              style={{ background: "rgba(110,15,45,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.royalBurgundy, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
@@ -158,13 +165,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Last 6 months trend</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("new_vs_returning.csv", ["Month", "New Customers", "Returning Customers"], newVsReturning.map(item => [item.month, item.new, item.returning]))}
               title="Download CSV"
-              style={{ background: "rgba(30,102,64,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
           <div style={{ flex: 1, minHeight: 280 }}>
             <ResponsiveContainer key="rc-3" width="100%" height="100%">
@@ -197,13 +207,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases — all time</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("frequent_buyers.csv", ["Rank", "Customer Name", "Orders Count", "Frequency"], frequentBuyers.map((fb, i) => [i + 1, fb.name, fb.count, fb.freq]))}
               title="Download CSV"
-              style={{ background: "rgba(200,155,71,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
             {frequentBuyers.map((fb, i) => (
@@ -238,13 +251,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months — consider reaching out</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("inactive_customers.csv", ["Customer Name", "Type", "Last Purchase Date"], inactiveAlerts.map(al => [al.name, al.type, al.time]))}
               title="Download CSV"
-              style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.crimson, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
             {inactiveAlerts.map((al, i) => (
@@ -261,7 +277,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Last purchase: {al.time}</div>
                   </div>
                 </div>
-                <button style={{ background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 7, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "7px 16px" }}>Reach Out</button>
+                <Button variant="tertiary" size="sm">Reach Out</Button>
               </div>
             ))}
           </div>
@@ -284,13 +300,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
               </div>
             </div>
-            <DownloadGate><button
+            <DownloadGate><IconButton
+              icon={Download}
+              label="Download CSV"
               onClick={() => downloadDataAsCSV("customer_locations.csv", ["State", "Customers Count", "Percentage Share"], [["Andhra Pradesh", 18, "37%"], ["Telangana", 14, "29%"], ["Tamil Nadu", 8, "17%"], ["Karnataka", 5, "10%"], ["Others", 3, "6%"]])}
               title="Download CSV"
-              style={{ background: "rgba(45,145,88,0.10)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.greenMid, alignSelf: "flex-start" }}
-            >
-              <Download size={14} />
-            </button></DownloadGate>
+              variant="ghost"
+              shape="circle"
+              size="sm"
+              className="self-start"
+            /></DownloadGate>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -318,13 +337,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
 
           <DownloadGate>
-            <button style={{
-              marginTop: 32, padding: "11px 22px", borderRadius: 9, border: `1px solid ${T.antiqueGold}`,
-              background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 14, fontWeight: 600,
-              display: "flex", alignItems: "center", gap: 9, cursor: "pointer"
-            }}>
-              <Download size={16} /> Download Customer List with Locations
-            </button>
+            <Button variant="tertiary" iconLeft={Download} className="mt-8">
+              Download Customer List with Locations
+            </Button>
           </DownloadGate>
         </div>
 

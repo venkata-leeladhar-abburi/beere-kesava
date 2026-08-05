@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
 import { useResponsive } from "../../../../hooks/useResponsive";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
@@ -84,9 +85,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{designCode}</span>
           {d && <span style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.70)" }}>{d.name}</span>}
         </div>
-        <button onClick={onClose} style={{ position: "absolute" as const, top: 10, right: 10, width: 28, height: 28, borderRadius: 999, background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <X size={13} color="#FFF" />
-        </button>
+        <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/45 text-white" />
       </div>
 
       <div style={{ padding: "14px 16px 16px" }}>
@@ -152,7 +151,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
               <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
                 <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
-                <button onClick={() => setShowGraphModal(false)} style={{ background: C.burg, border: "none", color: "#FFF", fontFamily: F.u, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close Reference</button>
+                <Button onClick={() => setShowGraphModal(false)} variant="primary" size="sm" className="text-white bg-[#6B1A2A] hover:bg-[#6B1A2A]">Close Reference</Button>
               </div>
             </motion.div>
           </motion.div>
@@ -177,9 +176,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
           <span style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 6, padding: "3px 9px" }}>{typeCode}</span>
           <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{typeName}</span>
         </div>
-        <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 999, background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <X size={13} color="#FFF" />
-        </button>
+        <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} className="w-7 h-7 rounded-full bg-white/10 text-white" />
       </div>
 
       <div style={{ padding: "14px 16px 16px" }}>
@@ -241,9 +238,9 @@ function SectionTitle({ title, link, onLink }: { title: string; link?: string; o
       <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>{title}</span>
       {link && (
-        <button onClick={onLink} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 13, color: C.gold, cursor: "pointer", padding: 0 }}>
+        <Button variant="link" onClick={onLink} className="p-0 text-[13px] text-[#C4923A]">
           {link}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -310,11 +307,11 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
       {codes.map(code => {
         const d = getDesign(code);
         return (
-          <button key={code} onClick={() => onOpen(code)} style={{ flexShrink: 0, width: 120, background: C.white, borderRadius: 12, border: `1px solid ${C.bdr}`, overflow: "hidden", cursor: "pointer", padding: 0, textAlign: "left" as const }}>
+          <Button key={code} variant="tertiary" onClick={() => onOpen(code)} className="flex-shrink-0 w-[120px] h-auto flex-col items-stretch overflow-hidden rounded-xl border border-[rgba(139,26,46,0.12)] bg-white p-0 text-left">
             {d?.colorSlipPhoto ? (
-              <div style={{ height: 80, backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+              <div style={{ height: 80, width: "100%", backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             ) : (
-              <div style={{ height: 80, background: C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ height: 80, width: "100%", background: C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Flower2 size={30} color={C.muted} />
               </div>
             )}
@@ -322,7 +319,7 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 2 }}>{code}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.3 }}>{d?.name || "—"}</div>
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>

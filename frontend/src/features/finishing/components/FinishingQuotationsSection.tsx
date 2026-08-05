@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Building2, UserRound, Package } from "lucide-react";
 import { Quotation } from "../contexts/FinishingContext";
+import { Button } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -70,8 +71,8 @@ export function FinishingQuotationsSection({
             const received = qt.sarees.filter(s => s.finishingStatus === "received").length;
             return (
               <div key={qt.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                <button onClick={() => setOpenQuotation(isOpen ? null : qt.id)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
+                <Button variant="ghost" onClick={() => setOpenQuotation(isOpen ? null : qt.id)}
+                  className={`w-full h-auto justify-start text-left gap-3.5 py-3.5 px-[18px] rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -90,7 +91,7 @@ export function FinishingQuotationsSection({
                     <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: T.luxuryBrown, lineHeight: 1 }}>{received}/{qt.sarees.length}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px", marginTop: 3 }}>Received</div>
                   </div>
-                </button>
+                </Button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>

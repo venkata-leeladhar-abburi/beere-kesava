@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronRight, Package, Shield, Sparkles } from "lucide-react";
 import { C, F } from "./tokens";
 import { useResponsive } from "../../../../hooks/useResponsive";
+import { Button } from "../../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing";
 
@@ -107,19 +108,12 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
           {NAV_CARDS.map((card) => {
             const Icon = card.icon;
             return (
-              <button
+              <Button
                 key={card.tab}
+                variant="tertiary"
+                fullWidth
                 onClick={() => onNavigate(card.tab)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 14,
-                  padding: "16px 14px",
-                  background: "#FFF",
-                  border: `1.5px solid ${C.bdr}`,
-                  borderRadius: 16,
-                  boxShadow: "0 2px 12px rgba(107,26,42,0.06)",
-                  cursor: "pointer", width: "100%", textAlign: "left" as const,
-                  transition: "all 0.15s",
-                }}
+                className="justify-start gap-3.5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white px-3.5 py-4 text-left shadow-[0_2px_12px_rgba(107,26,42,0.06)] transition-all"
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = card.accent;
                   (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 20px rgba(107,26,42,0.12)`;
@@ -140,7 +134,7 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>{card.sub}</div>
                 </div>
                 <ChevronRight size={16} color={C.muted} style={{ flexShrink: 0 }} />
-              </button>
+              </Button>
             );
           })}
         </div>

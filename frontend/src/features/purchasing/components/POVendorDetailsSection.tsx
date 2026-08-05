@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Package } from "lucide-react";
 import { T, F, VENDORS, Vendor } from "./POTypesAndVendors";
+import { Input, Button, Select, SelectItem } from "../../../shared/ui/primitives";
 
 interface POVendorDetailsSectionProps {
   selectedVendorIdx: number;
@@ -15,7 +16,6 @@ interface POVendorDetailsSectionProps {
   setShowAddVendor: (v: boolean) => void;
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  inputStyle: React.CSSProperties;
   labelStyle: React.CSSProperties;
   sectionTitleStyle: React.CSSProperties;
 }
@@ -32,7 +32,6 @@ export function POVendorDetailsSection({
   setShowAddVendor,
   errors,
   setErrors,
-  inputStyle,
   labelStyle,
   sectionTitleStyle,
 }: POVendorDetailsSectionProps) {
@@ -43,10 +42,10 @@ export function POVendorDetailsSection({
       {/* Vendor dropdown */}
       <div style={{ marginBottom: 14 }}>
         <label style={labelStyle} htmlFor="vendor-name">Vendor Name *</label>
-        <select id="vendor-name"
-          value={selectedVendorIdx}
-          onChange={e => {
-            const v = parseInt(e.target.value);
+        <Select
+          value={String(selectedVendorIdx)}
+          onValueChange={val => {
+            const v = parseInt(val);
             if (v === -99) { setShowAddVendor(true); return; }
             setSelectedVendorIdx(v);
             const sel = VENDORS[v];
@@ -57,14 +56,13 @@ export function POVendorDetailsSection({
             }
             setErrors(prev => ({ ...prev, vendor: "" }));
           }}
-          style={{ ...inputStyle, cursor: "pointer" }}
         >
-          <option value={-1}>Select vendor…</option>
+          <SelectItem value="-1">Select vendor…</SelectItem>
           {VENDORS.map((v, i) => (
-            <option key={i} value={i}>{v.name} · {v.city}</option>
+            <SelectItem key={i} value={String(i)}>{v.name} · {v.city}</SelectItem>
           ))}
-          <option value={-99} style={{ color: T.antiqueGold }}>+ Add New Vendor</option>
-        </select>
+          <SelectItem value="-99">+ Add New Vendor</SelectItem>
+        </Select>
         {errors.vendor && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.vendor}</div>}
         {vendor && (
           <div style={{ marginTop: 14, background: "linear-gradient(135deg, rgba(110,15,45,0.04) 0%, rgba(110,15,45,0.02) 100%)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 14, overflow: "hidden" }}>
@@ -123,24 +121,23 @@ export function POVendorDetailsSection({
           <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.antiqueGold, marginBottom: 10 }}>New Vendor Details</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {["Vendor Name", "City & State"].map(p => (
-              <input key={p} placeholder={p} style={{ ...inputStyle, fontSize: 12 }} />
+              <Input key={p} placeholder={p} />
             ))}
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Cancel</motion.button>
-            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", background: T.antiqueGold, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>Add Vendor</motion.button>
+            <Button onClick={() => setShowAddVendor(false)} variant="secondary" size="sm" className="flex-1">Cancel</Button>
+            <Button onClick={() => setShowAddVendor(false)} variant="primary" size="sm" className="flex-1">Add Vendor</Button>
           </div>
         </div>
       )}
 
       <div>
         <label style={labelStyle} htmlFor="expected-delivery-date">Expected Delivery Date *</label>
-        <input id="expected-delivery-date"
+        <Input id="expected-delivery-date"
           type="date"
           value={deliveryDate}
           min={(() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toISOString().split("T")[0]; })()}
           onChange={e => { setDeliveryDate(e.target.value); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
-          style={inputStyle}
         />
         {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.deliveryDate}</div>}
       </div>

@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 import { T, F } from "../../theme";
 import { SupplierFormValues } from "../../types";
 import { SupplierFormFields } from "../SupplierFormFields";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function EditTab({
   card, form, setForm, cardPreview, setCardPreview, savedFlash, onSave,
@@ -27,10 +28,9 @@ export function EditTab({
               <CheckCircle2 size={14} /> Saved
             </span>
           )}
-          <button onClick={onSave}
-            style={{ padding: "9px 18px", background: T.royalBurgundy, color: "#FFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer", border: "none" }}>
+          <Button variant="primary" size="md" onClick={onSave}>
             Save Changes
-          </button>
+          </Button>
         </div>
       </div>
       <SupplierFormFields form={form} setForm={setForm} errors={{}} cardPreview={cardPreview} onCardChange={setCardPreview} />

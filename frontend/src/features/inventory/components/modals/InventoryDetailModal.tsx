@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Package, X, Hash, FileText, Truck, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { FinishingReturn, DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F } from "../theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { InventoryRecord } from "../types";
 import { getSareeColor } from "../utils";
 import { StatusBadge } from "../common/primitives";
@@ -44,9 +45,13 @@ export function InventoryDetailModal({
             <Package size={18} color={T.antiqueGold} />
             <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: '#FFF' }}>Saree Record</span>
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <X size={15} color="#FFF" />
-          </button>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            size="sm"
+            className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+          />
         </div>
 
         {/* Body */}
@@ -146,9 +151,9 @@ export function InventoryDetailModal({
 
         {/* Footer */}
         <div style={{ padding: '14px 24px', borderTop: `1px solid ${T.borderDef}`, background: 'rgba(110,15,45,0.02)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
-          <button onClick={onClose} style={{ height: 38, padding: '0 22px', background: T.royalBurgundy, border: 'none', borderRadius: 8, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: '#FFF', cursor: 'pointer' }}>
+          <Button onClick={onClose} variant="primary">
             Close
-          </button>
+          </Button>
         </div>
       </motion.div>
     </div>

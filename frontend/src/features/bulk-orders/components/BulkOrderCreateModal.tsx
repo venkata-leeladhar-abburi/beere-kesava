@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, WHOLESALE_CUSTOMERS } from "./WholesaleCustomerSelectSection";
+import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
 // under the hood, so numeric/date fields are validated as strings and coerced on submit).
@@ -119,18 +120,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   const today = new Date();
   const minDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", height: 44, border: `1px solid ${T.borderDef}`, borderRadius: 10,
-    padding: "0 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown,
-    background: T.warmIvory, outline: "none", boxSizing: "border-box",
-  };
-
   const labelStyle: React.CSSProperties = {
     fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6, display: "block",
-  };
-
-  const errStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontSize: 12, color: T.crimson, marginTop: 4,
   };
 
   const sectionLabel: React.CSSProperties = {
@@ -186,12 +177,14 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   New wholesale customer order · {nextRef}
                 </div>
               </div>
-              <button
+              <IconButton
                 onClick={onClose}
-                style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <LucideX size={18} />
-              </button>
+                icon={LucideX}
+                variant="ghost"
+                size="md"
+                aria-label="Close"
+                style={{ border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff" }}
+              />
             </div>
 
             {/* Scrollable body */}
@@ -229,13 +222,15 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                         {photos.map((file, idx) => (
                           <div key={idx} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
                             <img src={URL.createObjectURL(file)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            <button
+                            <IconButton
                               type="button"
                               onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
-                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", border: "none", color: "#FFF", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}
-                            >
-                              ×
-                            </button>
+                              icon={LucideX}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Remove photo"
+                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", color: "#FFF" }}
+                            />
                           </div>
                         ))}
                         <label htmlFor="bulk-order-photos-upload" style={{ width: 72, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: "rgba(110,15,45,0.02)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -246,40 +241,34 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                     </div>
                   </div>
 
-                  <div>
-                    <label style={labelStyle} htmlFor="quantity-sarees">Quantity (sarees)</label>
-                    <input id="quantity-sarees"
-                      type="number"
+                  <Field label="Quantity (sarees)" error={errors.quantity} id="quantity-sarees">
+                    <NumberInput id="quantity-sarees"
                       min={1}
                       value={quantity}
                       onChange={e => setQuantity(e.target.value)}
                       placeholder="e.g. 40"
-                      style={{ ...inputStyle, borderColor: errors.quantity ? T.crimson : T.borderDef }}
+                      invalid={!!errors.quantity}
                     />
-                    {errors.quantity && <div style={errStyle}>{errors.quantity}</div>}
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label style={labelStyle} htmlFor="delivery-deadline">Delivery Deadline</label>
-                    <input id="delivery-deadline"
+                  <Field label="Delivery Deadline" error={errors.deliveryDate} id="delivery-deadline">
+                    <Input id="delivery-deadline"
                       type="date"
                       min={minDate}
                       value={deliveryDate}
                       onChange={e => setDeliveryDate(e.target.value)}
-                      style={{ ...inputStyle, borderColor: errors.deliveryDate ? T.crimson : T.borderDef }}
+                      invalid={!!errors.deliveryDate}
                     />
-                    {errors.deliveryDate && <div style={errStyle}>{errors.deliveryDate}</div>}
-                  </div>
+                  </Field>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle} htmlFor="estimated-value">Estimated Value (₹)</label>
-                    <input id="estimated-value"
-                      type="number"
-                      value={estimatedValue}
-                      onChange={e => setEstimatedValue(e.target.value)}
-                      placeholder="Enter estimated value"
-                      style={inputStyle}
-                    />
+                    <Field label="Estimated Value (₹)" id="estimated-value">
+                      <NumberInput id="estimated-value"
+                        value={estimatedValue}
+                        onChange={e => setEstimatedValue(e.target.value)}
+                        placeholder="Enter estimated value"
+                      />
+                    </Field>
                   </div>
                 </div>
               </div>
@@ -288,39 +277,26 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
               <div>
                 <div style={sectionLabel}>3 · Additional</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div>
-                    <label style={labelStyle} htmlFor="special-instructions-optional">Special Instructions (Optional)</label>
-                    <textarea id="special-instructions-optional"
+                  <Field label="Special Instructions (Optional)" id="special-instructions-optional">
+                    <Textarea
                       value={instructions}
                       onChange={e => setInstructions(e.target.value)}
                       placeholder="Any special production or packaging instructions..."
-                      style={{ ...inputStyle, height: 80, resize: "vertical", paddingTop: 10, paddingBottom: 10 } as React.CSSProperties}
+                      style={{ height: 80 }}
                     />
-                  </div>
+                  </Field>
                   <div>
                     <label style={labelStyle}>Priority</label>
                     <div style={{ display: "flex", gap: 16 }}>
                       {(["Normal", "Urgent"] as const).map(p => (
-                        <button
+                        <Button
                           key={p}
                           onClick={() => setPriority(p)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 9, padding: "10px 20px",
-                            borderRadius: 10,
-                            border: `1.5px solid ${priority === p ? (p === "Urgent" ? T.crimson : T.royalBurgundy) : T.borderDef}`,
-                            background: priority === p ? (p === "Urgent" ? "rgba(192,57,43,0.07)" : "rgba(110,15,45,0.07)") : T.warmIvory,
-                            cursor: "pointer",
-                          }}
+                          variant={priority === p ? (p === "Urgent" ? "danger-subtle" : "primary") : "tertiary"}
+                          size="md"
                         >
-                          <div style={{
-                            width: 16, height: 16, borderRadius: "50%",
-                            border: `2px solid ${priority === p ? (p === "Urgent" ? T.crimson : T.royalBurgundy) : T.taupe}`,
-                            background: priority === p ? (p === "Urgent" ? T.crimson : T.royalBurgundy) : "transparent",
-                          }} />
-                          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: priority === p ? (p === "Urgent" ? T.crimson : T.royalBurgundy) : T.luxuryBrown }}>
-                            {p}
-                          </span>
-                        </button>
+                          {p}
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -331,32 +307,22 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
 
             {/* Footer */}
             <div style={{ padding: "20px 28px", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-              <motion.button
+              <Button
                 onClick={handleSubmit}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  width: "100%", height: 52,
-                  background: T.royalBurgundy, border: "none", borderRadius: 12,
-                  fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFFDF9",
-                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
-                  boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
-                }}
+                variant="primary"
+                size="lg"
+                fullWidth
               >
                 ✓ Create Bulk Order
-              </motion.button>
-              <motion.button
+              </Button>
+              <Button
                 onClick={onClose}
-                whileHover={{ background: "rgba(110,15,45,0.05)" }}
-                style={{
-                  width: "100%", height: 44,
-                  background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 12,
-                  fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe,
-                  cursor: "pointer",
-                }}
+                variant="tertiary"
+                size="md"
+                fullWidth
               >
                 × Cancel
-              </motion.button>
+              </Button>
             </div>
           </motion.div>
         </motion.div>

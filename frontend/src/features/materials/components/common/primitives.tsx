@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { useAnimatedNumber } from "../../../../hooks/useAnimatedNumber";
 import { T, F, EASE, G_GOLD } from "../theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function AnimatedBar({ pct, color, height = 5, trackBg = "rgba(110,15,45,0.09)" }: {
   pct: number; color: string; height?: number; trackBg?: string;
@@ -61,12 +62,7 @@ export function SectionHeader({
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
 
-  const btnStyle: React.CSSProperties =
-    actionVariant === "solid"
-      ? { background: T.royalBurgundy, color: "#FFFDF9", border: "none" }
-      : actionVariant === "gold"
-      ? { background: G_GOLD, color: T.luxuryBrown, border: "none" }
-      : { background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.20)` };
+  const buttonVariant = actionVariant === "solid" ? "primary" : actionVariant === "gold" ? "primary" : "secondary";
 
   return (
     <motion.div
@@ -87,23 +83,10 @@ export function SectionHeader({
           {title}
         </span>
       </div>
-      <motion.button
-        onClick={onAction}
-        whileHover={{ scale: 1.04, boxShadow: "0 6px 22px rgba(110,15,45,0.22)" }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ duration: 0.18 }}
-        style={{
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "10px 20px", borderRadius: 10, cursor: "pointer",
-          fontFamily: F.ui, fontWeight: 700, fontSize: 13,
-          boxShadow: "0 2px 10px rgba(110,15,45,0.10)",
-          transition: "all 0.18s",
-          ...btnStyle,
-        }}
-      >
+      <Button onClick={onAction} variant={buttonVariant} size="sm">
         {actionIcon}
         {action}
-      </motion.button>
+      </Button>
     </motion.div>
   );
 }
@@ -156,14 +139,13 @@ export function ModalHeader({ title, subtitle, onClose }: { title: string; subti
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
         {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
-      <motion.button
+      <IconButton
+        icon={X}
+        label="Close"
         onClick={onClose}
-        whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.18)" }}
-        whileTap={{ scale: 0.95 }}
-        style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
-      >
-        <X size={18} color="#FFFDF9" />
-      </motion.button>
+        shape="circle"
+        className="bg-white/12 text-white border border-white/22 hover:bg-white/18"
+      />
     </div>
   );
 }

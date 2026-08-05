@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronLeft, Flower2, Printer, MessageSquare } from "lucide-react";
 import { C, F, Btn, Chip } from "./theme";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 interface NewSaleBillModalProps {
   saree: { id: string; design: string; name: string };
@@ -30,7 +31,7 @@ export function NewSaleBillModal({
   return (
     <div style={{ paddingBottom: 32 }}>
       <div style={{ background: C.burg, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}><ChevronLeft size={24} color="#FFF" /></button>
+        <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onClose} className="text-white" />
         <span style={{ fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>Bill Preview</span>
       </div>
       <div style={{

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2 } from "lucide-react";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialIssue, MaterialIssueRecord, IssuedMaterialItem } from "../contexts/MaterialIssueContext";
 import { FACTORY_LOOMS_LIST } from "../../production/data/factoryLooms";
 import { useBatches } from "../../production/contexts/BatchContext";
@@ -189,7 +190,7 @@ export function IssueMaterialPage() {
                     <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{successRecord.id}</span> · Given to {successRecord.weaverName} {successRecord.loomNumber ? `(Loom ${successRecord.loomNumber})` : ""} · {summarizeMaterials(successRecord.materials)}
                   </div>
                 </div>
-                <button onClick={() => setSuccessRecord(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} color={T.green} /></button>
+                <IconButton icon={X} label="Dismiss" onClick={() => setSuccessRecord(null)} variant="ghost" className="text-[var(--text-success)]" />
               </div>
             </motion.div>
           )}
@@ -217,9 +218,9 @@ export function IssueMaterialPage() {
             {rows.map(row => (
               <MaterialRowEditor key={row.uid} row={row} grnBatches={grnBatches} onChange={r => updateRow(row.uid, r)} onRemove={() => removeRow(row.uid)} showRemove={rows.length > 1} />
             ))}
-            <button onClick={addRow} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: `1.5px dashed ${T.borderGold}`, borderRadius: 12, padding: "12px 18px", width: "100%", justifyContent: "center", cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.royalBurgundy }}>
-              <Plus size={15} /> Add Another Material
-            </button>
+            <Button onClick={addRow} variant="secondary" fullWidth iconLeft={Plus} className="border-dashed">
+              Add Another Material
+            </Button>
           </div>
 
           {/* STEP 4 — Notes */}
@@ -242,14 +243,9 @@ export function IssueMaterialPage() {
           </div>
 
           {/* Confirm */}
-          <button onClick={handleConfirm} disabled={!canConfirm} style={{
-            marginTop: 32, width: "100%", height: 56, borderRadius: 14, border: "none",
-            background: canConfirm ? T.green : "#C0C0C0", color: "#FFF",
-            fontFamily: F.ui, fontWeight: 700, fontSize: 16, cursor: canConfirm ? "pointer" : "not-allowed",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          }}>
-            <Check size={20} /> Confirm Issuance
-          </button>
+          <Button onClick={handleConfirm} disabled={!canConfirm} variant="primary" size="lg" fullWidth iconLeft={Check} className="mt-8">
+            Confirm Issuance
+          </Button>
         </div>
 
         {/* ═══ SECTION B — ISSUANCE HISTORY ═══ */}

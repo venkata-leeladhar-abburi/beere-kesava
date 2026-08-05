@@ -2,6 +2,7 @@ import {
   Star, Calendar, AlertTriangle, Users, IndianRupee,
 } from "lucide-react";
 import { T, F } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 import {
   top10RetailCustomers, retailCategorySplit, frequentRetailBuyers,
   inactiveRetailAlerts, newVsReturningRetail,
@@ -193,7 +194,7 @@ export function RetailChartsRow2() {
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Last purchase: {al.time}</div>
                 </div>
               </div>
-              <button style={{ background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 7, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "7px 16px" }}>Reach Out</button>
+              <Button variant="tertiary" size="sm">Reach Out</Button>
             </div>
           ))}
         </div>

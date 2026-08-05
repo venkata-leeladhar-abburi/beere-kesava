@@ -1,6 +1,7 @@
 import React from "react";
 import { Lock, Download } from "lucide-react";
 import { F, T } from "./tokens";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function NoticeFooter() {
   return (
@@ -37,23 +38,9 @@ export function NoticeFooter() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0, marginLeft: 24 }}>
-            <button style={{
-              border: `1px solid ${T.royalBurgundy}`,
-              borderRadius: 8,
-              padding: "9px 18px",
-              background: "transparent",
-              color: T.royalBurgundy,
-              fontFamily: F.ui,
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}>
-              <Download size={14} />
+            <Button variant="secondary" size="md" iconLeft={Download}>
               Export Full Log
-            </button>
+            </Button>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
               PDF · Excel
             </span>

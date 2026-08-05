@@ -5,6 +5,7 @@ import { T, F, MobileCtx } from "../theme";
 import { RECENT_DATA } from "../data";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { RecentReceivedDetailModal } from "../modals/ReportModals";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurchases: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
@@ -78,14 +79,12 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
                 </div>
 
                 <div style={{ padding: "0 20px 20px", display: "flex", gap: 8, marginTop: "auto" }}>
-                  <motion.button onClick={() => setViewItem(r)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.14 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: typeLight, color: typeAccent, border: `1.5px solid ${typeAccent}30`, borderRadius: 12, padding: "11px 10px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                    <Eye size={15} strokeWidth={2.2} /> View
-                  </motion.button>
-                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.14 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: typeGrad, color: "#FFF", border: "none", borderRadius: 12, padding: "11px 10px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                    <Printer size={15} strokeWidth={2.2} /> Print
-                  </motion.button>
+                  <Button onClick={() => setViewItem(r)} variant="secondary" size="sm" iconLeft={Eye} className="flex-1">
+                    View
+                  </Button>
+                  <Button variant="primary" size="sm" iconLeft={Printer} className="flex-1">
+                    Print
+                  </Button>
                 </div>
               </motion.div>
             </FadeUp>

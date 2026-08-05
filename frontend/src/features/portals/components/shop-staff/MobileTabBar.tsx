@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { C, F } from "./theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -20,11 +21,8 @@ export function MobileTabBar({
       {TABS.map(tab => {
         const isActive = active === tab.id;
         return (
-          <button key={tab.id} onClick={() => setActive(tab.id)} style={{
-            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-            background: "none", border: "none", cursor: "pointer", padding: 0,
-            position: "relative" as const,
-          }}>
+          <Button key={tab.id} variant="ghost" onClick={() => setActive(tab.id)}
+            className="relative flex-1 h-full justify-center p-0 rounded-none">
             <div style={{ position: "relative" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", gap: 4 }}>
               {isActive && (
                 <motion.div layoutId="shop-tab-indicator" transition={{ type: "spring", stiffness: 420, damping: 34 }}
@@ -36,7 +34,7 @@ export function MobileTabBar({
               {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>

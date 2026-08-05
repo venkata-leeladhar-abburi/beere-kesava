@@ -11,6 +11,7 @@ import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext"
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { Button } from "../../../shared/ui/primitives";
 
 import { T, F, G, SAREE_TYPE_RECORDS, rowComplete } from "./batch-creation/constants";
 import {
@@ -288,15 +289,12 @@ export function BatchCreationPage() {
           {/* Step 5: Save buttons */}
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <motion.button onClick={handleSaveDraft} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", background: "transparent", border: `2px solid ${T.royalBurgundy}`, color: T.royalBurgundy, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+              <Button onClick={handleSaveDraft} variant="secondary" size="lg">
                 <FloppyDisk size={17} weight="bold" /> Save as Draft
-              </motion.button>
-              <motion.button onClick={handleFinalize} disabled={!canFinalize}
-                whileHover={canFinalize ? { scale: 1.02 } : undefined} whileTap={canFinalize ? { scale: 0.97 } : undefined}
-                style={{ display: "flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", background: canFinalize ? G.green : T.taupe, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: canFinalize ? "pointer" : "not-allowed", opacity: canFinalize ? 1 : 0.55 }}>
+              </Button>
+              <Button onClick={handleFinalize} disabled={!canFinalize} variant="primary" size="lg">
                 <CheckCircle size={17} weight="bold" /> Finalize Batch
-              </motion.button>
+              </Button>
               {savedMsg && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
                   style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>

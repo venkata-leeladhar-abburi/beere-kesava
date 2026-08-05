@@ -1,6 +1,7 @@
 import React from "react";
 import { T, F, G } from "./batch-creation/constants";
 import { BatchRecord } from "../contexts/BatchContext";
+import { Button } from "../../../shared/ui/primitives";
 
 interface BatchCreationStatsHeaderProps {
   active: BatchRecord[];
@@ -78,7 +79,7 @@ export function BatchCreationStatsHeader({
       {/* ── Tab bar ── */}
       <div style={{ padding: "32px 56px 0" }}>
         <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 12, padding: 4, width: "fit-content", border: `1px solid ${T.borderDef}` }}>
-          <button
+          <Button
             onClick={() => {
               if (editingBatchId) {
                 setEditingBatchId(null);
@@ -91,59 +92,29 @@ export function BatchCreationStatsHeader({
               }
               setTab("new");
             }}
-            style={{
-              padding: "9px 20px",
-              borderRadius: 9,
-              border: "none",
-              background: tab === "new" && !editingBatchId ? T.royalBurgundy : "transparent",
-              color: tab === "new" && !editingBatchId ? "#fff" : T.taupe,
-              fontFamily: F.ui,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.18s"
-            }}
+            variant={tab === "new" && !editingBatchId ? "primary" : "tertiary"}
+            size="sm"
           >
             Create New Batch
-          </button>
+          </Button>
 
           {editingBatchId && (
-            <button
+            <Button
               onClick={() => setTab("new")}
-              style={{
-                padding: "9px 20px",
-                borderRadius: 9,
-                border: "none",
-                background: tab === "new" ? T.royalBurgundy : "transparent",
-                color: tab === "new" ? "#fff" : T.taupe,
-                fontFamily: F.ui,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.18s"
-              }}
+              variant={tab === "new" ? "primary" : "tertiary"}
+              size="sm"
             >
               Edit {editingBatchId}
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
             onClick={() => setTab("drafts")}
-            style={{
-              padding: "9px 20px",
-              borderRadius: 9,
-              border: "none",
-              background: tab === "drafts" ? T.royalBurgundy : "transparent",
-              color: tab === "drafts" ? "#fff" : T.taupe,
-              fontFamily: F.ui,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.18s"
-            }}
+            variant={tab === "drafts" ? "primary" : "tertiary"}
+            size="sm"
           >
             All Batches ({batches.length})
-          </button>
+          </Button>
         </div>
       </div>
     </>

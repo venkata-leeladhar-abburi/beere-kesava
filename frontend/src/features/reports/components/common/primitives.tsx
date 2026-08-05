@@ -3,6 +3,7 @@ import { motion, useInView } from "motion/react";
 import { Download, FileText, Calendar } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -132,12 +133,12 @@ export function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { 
       </div>
       <DownloadGate>
         <div style={{ display: "flex", gap: 8 }}>
-          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#FFFFFF", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-            <FileText size={14} />Download PDF
-          </button>
-          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFFDF9", cursor: "pointer" }}>
-            <Download size={14} />Download Excel
-          </button>
+          <Button variant="secondary" size="sm" iconLeft={FileText}>
+            Download PDF
+          </Button>
+          <Button variant="primary" size="sm" iconLeft={Download}>
+            Download Excel
+          </Button>
         </div>
       </DownloadGate>
     </div>
@@ -216,7 +217,7 @@ export function TablePager({ total, showing }: { total: number; showing: number 
       <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {showing} of {total} records</span>
       <div style={{ display: "flex", gap: 5 }}>
         {["Prev", "1", "2", "3", "Next"].map(p => (
-          <button key={p} style={{ padding: "7px 13px", borderRadius: 7, border: `1px solid ${p === "1" ? T.royalBurgundy : T.borderDef}`, background: p === "1" ? T.royalBurgundy : "#fff", color: p === "1" ? "#FFFDF9" : T.luxuryBrown, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{p}</button>
+          <Button key={p} variant={p === "1" ? "primary" : "secondary"} size="sm">{p}</Button>
         ))}
       </div>
     </div>

@@ -114,10 +114,10 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
 
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-        <GreenBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onAction(item.id)}>
+        <GreenBtn className="flex-1" onClick={() => onAction(item.id)}>
           <Check size={14} /> Approve Rate Change
         </GreenBtn>
-        <CrimsonBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onAction(item.id)}>
+        <CrimsonBtn className="flex-1" onClick={() => onAction(item.id)}>
           <X size={14} /> Reject
         </CrimsonBtn>
       </div>

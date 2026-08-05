@@ -5,6 +5,7 @@ import { T, F } from "../theme";
 import { W_STATUS } from "../data";
 import type { WeaverMat } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ─── WEAVER VIEW DETAILS MODAL ────────────────────────────────────────────────
 export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat | null; onClose: () => void }) {
@@ -76,14 +77,9 @@ export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat 
           </div>
         </div>
 
-        <motion.button
-          onClick={onClose}
-          whileHover={{ scale: 1.02, boxShadow: "0 6px 20px rgba(110,15,45,0.22)" }}
-          whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}
-        >
+        <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );
@@ -153,17 +149,12 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
         </div>
 
         <div style={{ display: "flex", gap: 12 }}>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
+          <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
             Close
-          </motion.button>
-          <motion.button
-            onClick={() => window.print()}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }}
-            whileTap={{ scale: 0.97 }}
-            style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-          >
-            <Printer size={16} /> Print Issue Slip
-          </motion.button>
+          </Button>
+          <Button onClick={() => window.print()} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
+            Print Issue Slip
+          </Button>
         </div>
       </div>
     </ModalOverlay>

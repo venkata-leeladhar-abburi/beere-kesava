@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import { IconButton } from "../../../shared/ui/primitives";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -149,21 +150,13 @@ export function MobileScanView({ saree = DEFAULT_SAREE }: { saree?: SareeData })
           >
             {saree.id}
           </span>
-          <button
+          <IconButton
             onClick={handleCopy}
-            style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: copied ? "rgba(30,102,64,0.10)" : "rgba(110,15,45,0.07)",
-              border: `1px solid ${copied ? "rgba(30,102,64,0.25)" : "rgba(110,15,45,0.15)"}`,
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.2s",
-            }}
-            aria-label="Copy saree ID"
-          >
-            {copied
-              ? <Check size={15} color={T.green} />
-              : <Copy size={15} color={T.royalBurgundy} />}
-          </button>
+            icon={copied ? Check : Copy}
+            label="Copy saree ID"
+            variant="secondary"
+            size="sm"
+          />
         </div>
 
         {/* ── Status pill ── */}

@@ -3,11 +3,11 @@ import { isSold, isOutstanding } from "../../../customers/contexts/SalesContext"
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { useCanSeeMoney } from "../../../../shared/ui/MoneyAccess";
-import { Search } from "lucide-react";
 import { T, F, th, td, tdMono } from "./theme";
 import { WeaverSareeRow, FinishingStatus, TabKey, tabDate } from "./types";
 import { inr, fmtDate, externalSerialOf, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
 import { ExternalSareesTable } from "./ExternalSareesTable";
+import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { MainSareesTable } from "./MainSareesTable";
 import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
@@ -254,13 +254,11 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap",
         boxShadow: "0 2px 10px rgba(74,6,27,0.05)"
       }}>
-        <div style={{ position: "relative", flex: "1 1 280px" }}>
-          <Search size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
-          <input
+        <div style={{ flex: "1 1 280px" }}>
+          <SearchInput
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search Saree ID, batch, type, colour, weaver…"
-            style={{ width: "100%", padding: "9px 12px 9px 38px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" }}
           />
         </div>
 
@@ -297,14 +295,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         )}
 
         {filtersActive && (
-          <button onClick={resetFilters}
-            style={{
-              height: 38, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
-              border: `1px solid ${T.borderDef}`, borderRadius: 10, fontFamily: F.ui,
-              fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto"
-            }}>
+          <Button onClick={resetFilters} variant="tertiary" size="sm" className="ml-auto">
             Clear filters
-          </button>
+          </Button>
         )}
       </div>
 

@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
-import { Search, Package } from "lucide-react";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { Package } from "lucide-react";
 import { StockCard, StockSaree, StockStatus, StockSource } from "./StockCard";
 import { ViewStockDialog } from "./ViewStockDialog";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -88,9 +88,15 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
         <div style={{ position: "relative", zIndex: 2 }}>
           {onBack && (
-            <motion.button onClick={onBack} whileHover={{ x: -3 }} style={{ display: "flex", alignItems: "center", gap: 7, color: "rgba(255,253,249,0.60)", fontFamily: F.ui, fontSize: 13, fontWeight: 500, background: "none", border: "none", cursor: "pointer", marginBottom: 24, padding: 0 }}>
-              <ArrowLeft size={15} /> Back to Production
-            </motion.button>
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              size="sm"
+              iconLeft="back"
+              className="mb-6 -ml-3 text-[rgba(255,253,249,0.60)] hover:bg-white/10 hover:text-[rgba(255,253,249,0.85)]"
+            >
+              Back to Production
+            </Button>
           )}
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
@@ -129,13 +135,13 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       <section style={{ padding: "28px 56px 0" }}>
         <FadeUp>
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "18px 22px", boxShadow: "0 4px 20px rgba(74,6,27,0.07)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ position: "relative", flex: "1 1 280px" }}>
-              <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-              <input
+            <div style={{ flex: "1 1 280px" }}>
+              <SearchInput
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by saree ID, weaver, supplier, invoice, or design code..."
-                style={{ width: "100%", height: 44, paddingLeft: 44, paddingRight: 14, fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" }}
+                size="lg"
+                containerClassName="w-full bg-[#F7F2EA]"
               />
             </div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -145,14 +151,18 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 { key: "sold",      label: "Sold"            },
                 { key: "wholesale", label: "Wholesale"       },
               ].map(f => (
-                <motion.button
+                <Button
                   key={f.key}
                   onClick={() => setStatusFilter(f.key as "all" | StockStatus)}
-                  whileHover={{ scale: 1.03 }}
-                  style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "9px 18px", borderRadius: 99, cursor: "pointer", background: statusFilter === f.key ? T.royalBurgundy : "transparent", color: statusFilter === f.key ? "#FFFDF9" : T.taupe, border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}
+                  size="sm"
+                  className={`rounded-full font-semibold shadow-none ${
+                    statusFilter === f.key
+                      ? "bg-[#6E0F2D] text-[#FFFDF9] border-none hover:bg-[#6E0F2D]/90"
+                      : "bg-transparent text-[#69635E] border border-[rgba(110,15,45,0.18)] hover:bg-transparent"
+                  }`}
                 >
                   {f.label}
-                </motion.button>
+                </Button>
               ))}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -163,14 +173,18 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
                 { key: "outsourced", label: "🪡 Weavers"     },
                 { key: "external",   label: "🚚 External"    },
               ].map(f => (
-                <motion.button
+                <Button
                   key={f.key}
                   onClick={() => setSourceFilter(f.key as "all" | StockSource)}
-                  whileHover={{ scale: 1.03 }}
-                  style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 99, cursor: "pointer", background: sourceFilter === f.key ? T.antiqueGold : "transparent", color: sourceFilter === f.key ? "#3D0E1A" : T.taupe, border: sourceFilter === f.key ? "none" : `1.5px solid rgba(200,155,71,0.32)`, transition: "all 0.18s" }}
+                  size="sm"
+                  className={`rounded-full font-semibold shadow-none ${
+                    sourceFilter === f.key
+                      ? "bg-[#C89B47] text-[#3D0E1A] border-none hover:bg-[#C89B47]/90"
+                      : "bg-transparent text-[#69635E] border border-[rgba(200,155,71,0.32)] hover:bg-transparent"
+                  }`}
                 >
                   {f.label}
-                </motion.button>
+                </Button>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>

@@ -1,6 +1,7 @@
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
+import { Button } from "../../../../shared/ui/primitives";
 
 export interface RetailDetailSectionProps {
   customer: RetailCustomer;
@@ -19,12 +20,9 @@ export function RetailDetailSection({
     <div style={{ padding: "48px 56px" }}>
       {/* Header row with Back button */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-        <button
-          onClick={onBack}
-          style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
-        >
+        <Button onClick={onBack} variant="secondary" size="sm">
           ← Back to Customers
-        </button>
+        </Button>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32 }}>
@@ -118,7 +116,7 @@ export function RetailDetailSection({
           <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>Relationship Manager Notes</span>
-              <button style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 12 }}>Save</button>
+              <Button variant="link" size="sm">Save</Button>
             </div>
             <textarea
               defaultValue="Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops."

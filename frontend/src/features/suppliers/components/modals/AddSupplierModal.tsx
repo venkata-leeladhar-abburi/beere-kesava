@@ -7,6 +7,7 @@ import { T, F, EASE } from "../theme";
 import { SupplierFormFields } from "../sections/SupplierFormFields";
 import { emptyForm } from "../utils";
 import { SupplierFormValues } from "../types";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function AddSupplierModal({ onSave, onCancel, nextId }: {
   onSave: (v: SupplierFormValues, card: string | null) => void;
@@ -44,11 +45,10 @@ export function AddSupplierModal({ onSave, onCancel, nextId }: {
         <SupplierFormFields form={form} setForm={setForm} errors={errors} cardPreview={cardPreview} onCardChange={setCardPreview} />
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid ${T.borderDef}` }}>
-          <button onClick={onCancel} style={{ padding: "10px 24px", background: "transparent", color: T.taupe, borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-          <motion.button onClick={handleSave} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ padding: "10px 32px", background: T.royalBurgundy, color: "#FFF", borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-            <CheckCircle2 size={15} /> Save Supplier
-          </motion.button>
+          <Button variant="tertiary" size="md" onClick={onCancel}>Cancel</Button>
+          <Button variant="primary" size="md" iconLeft={CheckCircle2} onClick={handleSave}>
+            Save Supplier
+          </Button>
         </div>
       </motion.div>
     </div>

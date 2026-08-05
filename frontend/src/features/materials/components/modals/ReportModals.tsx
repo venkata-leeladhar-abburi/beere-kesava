@@ -5,6 +5,7 @@ import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { T, F } from "../theme";
 import { HISTORY_ENTRIES, RECENT_DATA, PO_STATUS_CFG } from "../data";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
+import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 
 // ─── FULL REPORTS MODAL ───────────────────────────────────────────────────────
 export function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -33,9 +34,9 @@ export function FullReportsModal({ open, onClose }: { open: boolean; onClose: ()
             </motion.div>
           ))}
         </div>
-        <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
+        <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );
@@ -71,9 +72,9 @@ export function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClos
             </motion.div>
           ))}
         </div>
-        <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
+        <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );
@@ -120,17 +121,20 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
               ))}
             </div>
             <div style={{ display: "flex", gap: 12 }}>
-              <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
+              <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
                 Cancel
-              </motion.button>
-              <motion.button
+              </Button>
+              <Button
                 onClick={handleDownload}
-                whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                variant="primary"
+                size="md"
+                loading={downloading}
+                loadingLabel="Generating"
+                iconLeft={Download}
+                className="flex-[2]"
               >
-                {downloading ? "Generating..." : <><Download size={16} /> Download Report</>}
-              </motion.button>
+                {downloading ? "Generating..." : "Download Report"}
+              </Button>
             </div>
           </>
         )}
@@ -155,7 +159,6 @@ export function ThresholdsModal({ open, onClose, thresholds, onSave }: {
 
   const rowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, background: T.silkCream, borderRadius: 12, padding: "14px 16px" };
   const chipStyle = (col: string, bg: string): React.CSSProperties => ({ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: col, background: bg, borderRadius: 6, padding: "4px 10px", flexShrink: 0 });
-  const inputStyle: React.CSSProperties = { width: 90, fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "8px 10px", outline: "none", background: "#FFFFFF" };
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
@@ -164,40 +167,38 @@ export function ThresholdsModal({ open, onClose, thresholds, onSave }: {
         <div style={rowStyle}>
           <span style={chipStyle(T.royalBurgundy, "rgba(110,15,45,0.09)")}>Warp</span>
           <div style={{ flex: 1 }} />
-          <input type="number" value={warp} onChange={e => setWarp(parseFloat(e.target.value) || 0)} style={inputStyle} />
+          <Input type="number" value={warp} onChange={e => setWarp(parseFloat(e.target.value) || 0)} className="w-[90px]" />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 4 kg</span>
         </div>
         <div style={rowStyle}>
           <span style={chipStyle("#7A5E1C", "rgba(200,155,71,0.13)")}>Resham</span>
           <div style={{ flex: 1 }} />
-          <input type="number" value={resham} onChange={e => setResham(parseFloat(e.target.value) || 0)} style={inputStyle} />
+          <Input type="number" value={resham} onChange={e => setResham(parseFloat(e.target.value) || 0)} className="w-[90px]" />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 2 kg</span>
         </div>
         <div style={rowStyle}>
           <span style={chipStyle(T.luxuryBrown, "rgba(59,35,20,0.09)")}>Jari</span>
           <div style={{ flex: 1 }} />
-          <input type="number" value={jari.qty} onChange={e => setJari(prev => ({ ...prev, qty: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
+          <Input type="number" value={jari.qty} onChange={e => setJari(prev => ({ ...prev, qty: parseFloat(e.target.value) || 0 }))} className="w-[90px]" />
           <div style={{ display: "flex", border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, overflow: "hidden" }}>
             {(["Buns", "Reels"] as const).map(u => (
-              <button key={u} onClick={() => setJari(prev => ({ ...prev, unit: u }))}
-                style={{ padding: "7px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: jari.unit === u ? T.royalBurgundy : "#FFFFFF", color: jari.unit === u ? "#FFFDF9" : T.taupe }}>
+              <Button key={u} onClick={() => setJari(prev => ({ ...prev, unit: u }))}
+                variant={jari.unit === u ? "primary" : "tertiary"} size="sm" className="rounded-none">
                 {u}
-              </button>
+              </Button>
             ))}
           </div>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 6 Buns / 24 Reels</span>
         </div>
         <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
+          <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
             Cancel
-          </motion.button>
-          <motion.button onClick={() => { onSave({ warp, resham, jari }); onClose(); }} whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
+          </Button>
+          <Button onClick={() => { onSave({ warp, resham, jari }); onClose(); }} variant="primary" size="md" className="flex-[2]">
             Save Thresholds
-          </motion.button>
+          </Button>
         </div>
       </div>
     </ModalOverlay>
@@ -234,9 +235,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                 <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 4 }}>Purchase Order</div>
                 <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
               </div>
-              <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.10)", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X size={16} />
-              </button>
+              <IconButton icon={X} label="Close" onClick={onClose} size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 8, padding: "5px 12px" }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
@@ -358,10 +357,9 @@ export function RecentReceivedDetailModal({ item, onClose }: { item: typeof RECE
             </div>
           ))}
         </div>
-        <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
+        <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );

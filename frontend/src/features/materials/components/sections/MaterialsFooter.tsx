@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { motion } from "motion/react";
 import { T, F, MobileCtx } from "../theme";
 import { FOOTER_LINKS } from "../data";
+import { Button, Input } from "../../../../shared/ui/primitives";
 
 export function MaterialsFooter() {
   const { isMobile, px } = useContext(MobileCtx);
@@ -54,10 +55,10 @@ export function MaterialsFooter() {
             Get notified about stock alerts and system updates.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email address" style={{ fontFamily: F.ui, fontSize: 12, color: "#FFFDF9", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 10, padding: "10px 14px", outline: "none", width: "100%" }} />
-            <motion.button initial={{ backgroundColor: T.royalBurgundy }} animate={{ backgroundColor: T.royalBurgundy }} whileHover={{ scale: 1.03, backgroundColor: "#5A0A24" }} whileTap={{ scale: 0.97 }} style={{ color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer", width: "100%" }}>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email address" className="bg-white/[0.07] border-white/[0.14] text-[#FFFDF9]" />
+            <Button variant="primary" size="md" fullWidth>
               Subscribe
-            </motion.button>
+            </Button>
           </div>
         </div>
       </div>

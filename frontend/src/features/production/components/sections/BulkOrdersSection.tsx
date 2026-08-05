@@ -5,12 +5,14 @@ import {
   CheckCircle, WarningCircle, Clock,
   Eye as PhEye,
 } from "@phosphor-icons/react";
+import { X as XIcon } from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { BulkOrderCreateModal } from "../../../bulk-orders/components/BulkOrderCreateModal";
 import { T, F } from "../theme";
 import { ORDER_CFG, STATUS_LABELS } from "../data";
 import type { BulkOrder } from "../types";
 import { FadeUp } from "../common/primitives";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
@@ -119,22 +121,20 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
       <div style={{ height: 1, background: "rgba(110,15,45,0.07)", margin: "0 22px" }} />
 
       <div style={{ display: "flex", gap: 10, padding: "16px 22px 22px" }}>
-        <motion.button
+        <Button
           onClick={(e) => { e.stopPropagation(); onView?.(o); }}
-          whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
-          whileTap={{ scale: 0.97 }}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          variant="secondary"
+          fullWidth
         >
           <PhEye size={18} weight="regular" /> View Order
-        </motion.button>
-        <motion.button
+        </Button>
+        <Button
           onClick={(e) => { e.stopPropagation(); onSlip?.(o); }}
-          whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
-          whileTap={{ scale: 0.97 }}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "12px 10px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          variant="secondary"
+          fullWidth
         >
           <CurrencyInr size={18} weight="regular" /> Payment
-        </motion.button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -161,12 +161,12 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <motion.button onClick={() => setShowCreate(true)} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: T.antiqueGold, color: T.luxuryBrown, border: "none", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+              <Button onClick={() => setShowCreate(true)} variant="primary">
                 <PhPlus size={15} weight="bold" /> Add Bulk Order
-              </motion.button>
-              <motion.button onClick={() => onNavigate?.("AllOrders")} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.22)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              </Button>
+              <Button onClick={() => onNavigate?.("AllOrders")} variant="secondary">
                 View All Orders <ArrowRight size={15} weight="bold" />
-              </motion.button>
+              </Button>
             </div>
           </div>
 
@@ -178,7 +178,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
                 <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.green, flex: 1 }}>
                   Bulk Order {successRef} created. Production teams have been notified.
                 </span>
-                <button onClick={() => setSuccessRef(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.green, padding: 0 }}>×</button>
+                <IconButton onClick={() => setSuccessRef(null)} variant="ghost" size="sm" label="Dismiss" icon={XIcon} />
               </motion.div>
             )}
           </AnimatePresence>

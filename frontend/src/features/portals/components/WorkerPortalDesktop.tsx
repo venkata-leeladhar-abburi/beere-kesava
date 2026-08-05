@@ -11,6 +11,7 @@ import { WorkerTopNav } from "./worker/WorkerTopNav";
 import {
   SectionNavigator, PAGE_SECTIONS, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
+import { Button } from "../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -181,11 +182,11 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
                       {[
                         { label: "Receive Sarees", sub: "receive-sarees" as WeaversSubPage },
                       ].map((item, i) => (
-                        <button key={i} onClick={() => setWeaversSub(item.sub)}
-                          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "10px 12px", background: weaversSub === item.sub ? "rgba(107,26,42,0.05)" : "none", border: `1px solid ${weaversSub === item.sub ? C.burg : "rgba(110,15,45,0.08)"}`, borderRadius: 10, cursor: "pointer" }}>
+                        <Button key={i} variant="tertiary" fullWidth onClick={() => setWeaversSub(item.sub)}
+                          className={weaversSub === item.sub ? "justify-between rounded-[10px] border border-[#6B1A2A] bg-[rgba(107,26,42,0.05)] px-3 py-2.5" : "justify-between rounded-[10px] border border-[rgba(110,15,45,0.08)] px-3 py-2.5"}>
                           <span style={{ fontFamily: F.u, fontSize: 13, color: weaversSub === item.sub ? C.burg : C.dark, fontWeight: weaversSub === item.sub ? 600 : 400 }}>{item.label}</span>
                           <ChevronDown size={13} color={C.muted} style={{ transform: "rotate(-90deg)" }} />
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>

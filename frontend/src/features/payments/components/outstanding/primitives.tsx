@@ -1,9 +1,9 @@
 import React from "react";
-import { motion } from "motion/react";
 import { Download, Package } from "lucide-react";
 import { T, F } from "../../theme";
 import { ageBucket } from "../../../customers/contexts/SalesContext";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
+import { Button } from "../../../../shared/ui/primitives";
 
 export const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 
@@ -100,9 +100,8 @@ export function ExportBtn({ onClick }: { onClick: () => void }) {
   // Single choke point for every CSV export on this page.
   if (!useDownloadsAllowed()) return null;
   return (
-    <motion.button onClick={onClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-      style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-      <Download size={14} /> Export CSV
-    </motion.button>
+    <Button variant="tertiary" size="sm" iconLeft={Download} onClick={onClick}>
+      Export CSV
+    </Button>
   );
 }

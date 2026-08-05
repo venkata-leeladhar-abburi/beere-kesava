@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { IconButton } from "../../../shared/ui/primitives";
 
 // Extracted out of BatchCreationPage.tsx so FactoryLoomPage.tsx (which also needs
 // this modal) doesn't have to import from BatchCreationPage.tsx, which in turn
@@ -27,7 +28,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
         style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, fontSize: 20, lineHeight: 1 }}>×</button>
+          <IconButton icon="close" label="Close" variant="ghost" size="sm" onClick={onClose} />
         </div>
         <div style={{ paddingTop: 16 }}>{children}</div>
       </motion.div>

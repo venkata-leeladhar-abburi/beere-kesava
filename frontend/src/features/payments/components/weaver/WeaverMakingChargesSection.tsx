@@ -13,6 +13,7 @@ import { RATES, calcCharges, calcNet } from "../../utils/charges";
 import { formatINR } from "../../utils/format";
 import { FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
+import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
@@ -150,20 +151,17 @@ export function WeaverMakingChargesSection() {
           </div>
           <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
             {selectedIds.size > 0 && (
-              <motion.button whileHover={{ scale: 1.03 }} onClick={() => setSelectedIds(new Set())}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "10px 14px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+              <Button variant="secondary" size="md" onClick={() => setSelectedIds(new Set())}>
                 Clear Selection ({selectedIds.size})
-              </motion.button>
+              </Button>
             )}
             <DownloadGate>
-              <motion.button whileHover={{ scale: 1.03 }} onClick={downloadExcelTemplate}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
-                <Download size={15} />Export Ledger Template
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
-                <Download size={15} />Download Weaver Payment Report
-              </motion.button>
+              <Button variant="secondary" size="md" iconLeft={Download} onClick={downloadExcelTemplate}>
+                Export Ledger Template
+              </Button>
+              <Button variant="primary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}>
+                Download Weaver Payment Report
+              </Button>
             </DownloadGate>
           </div>
         </div>
@@ -251,12 +249,11 @@ export function WeaverMakingChargesSection() {
           {/* View toggle */}
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
-              <motion.button key={key} onClick={() => setView(key as any)}
-                animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
-                transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 13px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
-                <Icon size={12} />{label}
-              </motion.button>
+              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
+                onClick={() => setView(key as any)}
+                style={{ borderRadius: 0 }}>
+                {label}
+              </Button>
             ))}
           </div>
           <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>

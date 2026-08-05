@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F, G } from "./theme";
+import { Button, IconButton, Input } from "../../../shared/ui/primitives";
 
 export { AddDesignModal, SlipModal } from "./DesignModals";
 
@@ -38,11 +39,10 @@ export function WeaverCombobox({ value, onChange }: { value: string; onChange: (
   const filtered = KNOWN_WEAVERS.filter(w => w.toLowerCase().includes(value.toLowerCase()));
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <input
+      <Input
         value={value}
         onChange={e => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        style={fieldStyle}
         placeholder="Weaver name (optional)"
         autoComplete="off"
       />
@@ -54,11 +54,10 @@ export function WeaverCombobox({ value, onChange }: { value: string; onChange: (
             style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 500, background: T.warmIvory, borderRadius: 10, boxShadow: "0 8px 28px rgba(44,6,27,0.14)", border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}
           >
             {filtered.map(w => (
-              <button key={w} onMouseDown={() => { onChange(w); setOpen(false); }}
-                style={{ width: "100%", display: "block", textAlign: "left", padding: "9px 14px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.05)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "none")}
-              >{w}</button>
+              <Button key={w} type="button" variant="ghost" size="sm" fullWidth
+                onMouseDown={() => { onChange(w); setOpen(false); }}
+                className="justify-start"
+              >{w}</Button>
             ))}
           </motion.div>
         )}
@@ -115,7 +114,7 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
           </>
         )}
       </div>
-      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleChange} />
+      <Input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
     </div>
   );
 }
@@ -139,9 +138,8 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <img src={design.colorSlipPhoto} alt={design.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(61,14,26,0.7) 0%, transparent 55%)" }} />
             <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
-            <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: 8, background: "rgba(61,14,26,0.55)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-              <PhX size={16} />
-            </button>
+            <IconButton onClick={onClose} label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
+              className="absolute top-[14px] right-[14px] bg-[rgba(61,14,26,0.55)] text-white/85 border-none" />
           </div>
         ) : (
           <div style={{ background: T.darkBurgundy, padding: "24px 24px 20px", borderRadius: "20px 20px 0 0", position: "relative" }}>
@@ -150,9 +148,8 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
               <span style={{ fontFamily: F.mono, fontSize: 14, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>{design.code}</span>
               <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#fff" }}>{design.name || design.code}</span>
             </div>
-            <button onClick={onClose} style={{ position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.7)" }}>
-              <PhX size={16} />
-            </button>
+            <IconButton onClick={onClose} label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
+              className="absolute top-[18px] right-[18px] bg-white/10 text-white/70 border-none" />
           </div>
         )}
 
@@ -226,9 +223,9 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             </div>
           )}
 
-          <button onClick={onClose} style={{ height: 46, background: G.button, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={onClose} variant="primary" size="lg" fullWidth>
             Close
-          </button>
+          </Button>
         </div>
       </motion.div>
     </div>
@@ -308,20 +305,17 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 18px 18px" }}>
         <div style={{ display: "flex", gap: 8 }}>
-          <motion.button onClick={() => onView(d)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={() => onView(d)} variant="secondary" size="md" fullWidth>
             <PhEye size={15} weight="duotone" /> View Design
-          </motion.button>
-          <motion.button onClick={() => onSlip(d)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          </Button>
+          <Button onClick={() => onSlip(d)} variant="secondary" size="md" fullWidth>
             <UploadSimple size={15} weight="duotone" />
             {d.hasColorSlip ? "Update Slip" : "Upload Slip"}
-          </motion.button>
+          </Button>
         </div>
-        <motion.button onClick={() => onDispatch(d.code)} whileHover={{ scale: 1.02, backgroundColor: T.darkBurgundy }} whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+        <Button onClick={() => onDispatch(d.code)} variant="primary" size="md" fullWidth>
           <PaperPlaneTilt size={15} color="#FFFDF9" weight="fill" /> Dispatch Design
-        </motion.button>
+        </Button>
       </div>
     </div>
   );

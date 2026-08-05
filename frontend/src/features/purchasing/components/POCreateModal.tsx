@@ -8,6 +8,7 @@ import { T, F, VENDORS, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
 import { POMaterialRow } from "./POMaterialRow";
 import { POVendorDetailsSection } from "./POVendorDetailsSection";
+import { Button, IconButton, Input, Textarea, Select, SelectItem, RadioGroup, RadioField } from "../../../shared/ui/primitives";
 
 const poFormSchema = z
   .object({
@@ -130,11 +131,6 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     onClose();
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
-    border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10,
-    padding: "10px 14px", outline: "none", background: T.warmIvory, boxSizing: "border-box" as const,
-  };
   const labelStyle: React.CSSProperties = {
     fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe,
     letterSpacing: "0.3px", marginBottom: 6, display: "block",
@@ -196,20 +192,15 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   New material request to vendor — requires Superadmin approval
                 </div>
               </div>
-              <motion.button
+              <IconButton
                 onClick={onClose}
-                whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.18)" }}
-                whileTap={{ scale: 0.95 }}
-                style={{
-                  width: 36, height: 36, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1.5px solid rgba(255,255,255,0.22)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", flexShrink: 0,
-                }}
-              >
-                <X size={18} color="#FFFDF9" />
-              </motion.button>
+                label="Close"
+                icon={X}
+                variant="secondary"
+                size="md"
+                shape="circle"
+                className="bg-white/10 border-white/20 text-white"
+              />
             </div>
 
             {/* Body: two panels */}
@@ -230,19 +221,18 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   <div style={sectionTitleStyle}><Building2 size={15} color={T.royalBurgundy} /> Purchasing Firm</div>
                   <div>
                     <label style={labelStyle} htmlFor="firm-name">Firm Name *</label>
-                    <select id="firm-name"
+                    <Select
                       value={selectedFirmId}
-                      onChange={e => {
-                        setSelectedFirmId(e.target.value);
+                      onValueChange={v => {
+                        setSelectedFirmId(v);
                         setErrors(prev => ({ ...prev, firm: "" }));
                       }}
-                      style={{ ...inputStyle, cursor: "pointer" }}
+                      placeholder="Select purchasing firm…"
                     >
-                      <option value="">Select purchasing firm…</option>
                       {firms.map(f => (
-                        <option key={f.id} value={f.id}>{f.firmName}</option>
+                        <SelectItem key={f.id} value={f.id}>{f.firmName}</SelectItem>
                       ))}
-                    </select>
+                    </Select>
                     {errors.firm && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.firm}</div>}
                     {selectedFirm && (
                       <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -271,7 +261,6 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   setShowAddVendor={setShowAddVendor}
                   errors={errors}
                   setErrors={setErrors}
-                  inputStyle={inputStyle}
                   labelStyle={labelStyle}
                   sectionTitleStyle={sectionTitleStyle}
                 />
@@ -294,21 +283,12 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                       />
                     ))}
                   </div>
-                  <motion.button
+                  <Button
                     onClick={() => setMaterials(prev => [...prev, { ...emptyItem(), _key: Date.now() }])}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      marginTop: 12, width: "100%", padding: "11px 0",
-                      borderRadius: 10, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 600, fontSize: 13,
-                      background: "transparent", color: T.antiqueGold,
-                      border: `1.5px dashed ${T.borderGold}`,
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    }}
+                    variant="secondary" size="lg" fullWidth className="mt-3 border-dashed" iconLeft={Plus}
                   >
-                    <Plus size={15} /> Add Another Material
-                  </motion.button>
+                    Add Another Material
+                  </Button>
                 </div>
 
                 {/* ADDITIONAL DETAILS */}
@@ -317,79 +297,54 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
                   <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle} htmlFor="po-number">PO Number</label>
-                    <input id="po-number" value={poNumber} onChange={e => setPoNumber(e.target.value)} style={{ ...inputStyle, fontFamily: F.mono }} />
+                    <Input id="po-number" value={poNumber} onChange={e => setPoNumber(e.target.value)} className="font-mono" />
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle} htmlFor="notes-for-vendor-optional">Notes for Vendor (optional)</label>
-                    <textarea id="notes-for-vendor-optional"
+                    <Textarea id="notes-for-vendor-optional"
                       value={notesVendor}
                       onChange={e => setNotesVendor(e.target.value)}
                       placeholder="Any special instructions for this order..."
                       rows={3}
-                      style={{ ...inputStyle, resize: "vertical" as const }}
                     />
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle} htmlFor="notes-for-superadmin-optional">Notes for Superadmin (optional)</label>
-                    <textarea id="notes-for-superadmin-optional"
+                    <Textarea id="notes-for-superadmin-optional"
                       value={notesAdmin}
                       onChange={e => setNotesAdmin(e.target.value)}
                       placeholder="Why is this order needed..."
                       rows={3}
-                      style={{ ...inputStyle, resize: "vertical" as const }}
                     />
                   </div>
 
                   {/* Urgency */}
                   <div>
                     <label style={labelStyle}>Urgency</label>
-                    <div style={{ display: "flex", gap: 12 }}>
+                    <RadioGroup value={urgency} onValueChange={v => setUrgency(v as "Normal" | "Urgent")} className="flex gap-3">
                       {(["Normal", "Urgent"] as const).map(u => (
-                        <label key={u} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: urgency === u ? T.luxuryBrown : T.taupe, fontWeight: urgency === u ? 600 : 400 }}>
-                          <input
-                            type="radio"
-                            value={u}
-                            checked={urgency === u}
-                            onChange={() => setUrgency(u)}
-                            style={{ accentColor: T.royalBurgundy }}
-                          />
-                          {u === "Normal" ? "Normal" : "🔴 Urgent — Low Stock"}
-                        </label>
+                        <RadioField key={u} value={u} label={u === "Normal" ? "Normal" : "🔴 Urgent — Low Stock"} />
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
                 </div>
 
                 {/* Footer buttons */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
-                  <motion.button
+                  <Button
                     onClick={handleSubmit}
-                    whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      width: "100%", height: 52, borderRadius: 11, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 700, fontSize: 14,
-                      background: T.royalBurgundy, color: "#FFFDF9", border: "none",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    }}
+                    variant="primary" size="lg" fullWidth iconLeft={ClipboardList}
                   >
-                    <ClipboardList size={17} /> Submit for Superadmin Approval
-                  </motion.button>
-                  <motion.button
+                    Submit for Superadmin Approval
+                  </Button>
+                  <Button
                     onClick={onClose}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      width: "100%", height: 44, borderRadius: 10, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 500, fontSize: 13,
-                      background: "transparent", color: T.taupe,
-                      border: `1.5px solid rgba(110,15,45,0.18)`,
-                    }}
+                    variant="secondary" size="md" fullWidth
                   >
                     × Cancel
-                  </motion.button>
+                  </Button>
                 </div>
               </div>
 

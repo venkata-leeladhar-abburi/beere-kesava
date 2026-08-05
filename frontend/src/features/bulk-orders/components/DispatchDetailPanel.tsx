@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Truck, X, AlertTriangle } from "lucide-react";
 import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
+import { IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -51,7 +52,7 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
             <Truck size={18} color={T.antiqueGold} />
             <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.14)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: "pointer", color: "#FFF" }}><X size={14} /></button>
+          <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" aria-label="Close" style={{ background: "rgba(255,255,255,0.14)", color: "#FFF" }} />
         </div>
         {(dispatch.pendingTransport || dispatch.pendingReceipt) && (
           <div style={{ margin: "16px 20px 0", background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", gap: 8 }}>

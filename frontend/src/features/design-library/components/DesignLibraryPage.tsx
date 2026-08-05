@@ -15,6 +15,7 @@ import {
   FadeUp, WeaverCombobox, UploadZone, fieldStyle, labelStyle,
   DesignCodeCard, DesignCard, AddDesignModal, SlipModal,
 } from "./DesignLibraryComponents";
+import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 
 export { DesignCodeCard };
 
@@ -147,14 +148,14 @@ export function DesignLibraryPage() {
                     <div>
                       <label style={labelStyle}>Recipient Type</label>
                       <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}`, width: "fit-content" }}>
-                        <button type="button" onClick={() => setDispRecipientType("weaver")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "weaver" ? "#FFFFFF" : "transparent", color: dispRecipientType === "weaver" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "weaver" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
-                          <User size={14} weight="bold" /> Weaver
-                        </button>
-                        <button type="button" onClick={() => setDispRecipientType("loom")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", background: dispRecipientType === "loom" ? "#FFFFFF" : "transparent", color: dispRecipientType === "loom" ? T.royalBurgundy : T.taupe, boxShadow: dispRecipientType === "loom" ? "0 2px 8px rgba(110,15,45,0.08)" : "none", transition: "all 0.18s" }}>
-                          <Buildings size={14} weight="bold" /> Factory Loom
-                        </button>
+                        <Button type="button" onClick={() => setDispRecipientType("weaver")}
+                          variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User}>
+                          Weaver
+                        </Button>
+                        <Button type="button" onClick={() => setDispRecipientType("loom")}
+                          variant={dispRecipientType === "loom" ? "secondary" : "ghost"} size="sm" iconLeft={Buildings}>
+                          Factory Loom
+                        </Button>
                       </div>
                     </div>
 
@@ -162,26 +163,26 @@ export function DesignLibraryPage() {
                     {dispRecipientType === "weaver" ? (
                       <div>
                         <label style={labelStyle} htmlFor="assign-weaver">Assign Weaver</label>
-                        <select id="assign-weaver" value={dispWeaverId} onChange={e => setDispWeaverId(e.target.value)} style={{ ...fieldStyle, cursor: "pointer" }}>
-                          {WEAVERS_LIST.map(w => <option key={w.id} value={w.id}>{w.name} ({w.initials})</option>)}
-                        </select>
+                        <Select value={dispWeaverId} onValueChange={setDispWeaverId}>
+                          {WEAVERS_LIST.map(w => <SelectItem key={w.id} value={w.id}>{w.name} ({w.initials})</SelectItem>)}
+                        </Select>
                         {selectedWeaver && (
                           <div style={{ marginTop: 16 }}>
                             <label style={labelStyle} htmlFor="assign-loom">Assign Loom</label>
-                            <select id="assign-loom" value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
+                            <Select value={String(dispLoomNum)} onValueChange={v => setDispLoomNum(parseInt(v, 10))}>
                               {Array.from({ length: selectedWeaver.looms || 1 }).map((_, i) => (
-                                <option key={i + 1} value={i + 1}>Loom {i + 1}</option>
+                                <SelectItem key={i + 1} value={String(i + 1)}>Loom {i + 1}</SelectItem>
                               ))}
-                            </select>
+                            </Select>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div>
                         <label style={labelStyle} htmlFor="assign-loom-number">Assign Loom Number</label>
-                        <select id="assign-loom-number" value={dispLoomNum} onChange={e => setDispLoomNum(parseInt(e.target.value, 10))} style={{ ...fieldStyle, cursor: "pointer" }}>
-                          {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>Loom {n}</option>)}
-                        </select>
+                        <Select value={String(dispLoomNum)} onValueChange={v => setDispLoomNum(parseInt(v, 10))}>
+                          {[1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)}>Loom {n}</SelectItem>)}
+                        </Select>
                       </div>
                     )}
 
@@ -190,8 +191,7 @@ export function DesignLibraryPage() {
                     {/* Instruction field */}
                     <div>
                       <label style={labelStyle}>Description / Dispatch Instructions <span style={{ color: T.royalBurgundy }}>*</span></label>
-                      <textarea value={dispInstructions} onChange={e => setDispInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…"
-                        style={{ width: "100%", padding: "12px 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", resize: "none", lineHeight: 1.6, boxSizing: "border-box" }} />
+                      <Textarea value={dispInstructions} onChange={e => setDispInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…" />
                     </div>
 
                     {/* Attachments section (Images) */}
@@ -206,11 +206,9 @@ export function DesignLibraryPage() {
                     </div>
 
                     {/* Submit button */}
-                    <motion.button onClick={handleSendDispatch} disabled={!dispInstructions.trim()}
-                      whileHover={dispInstructions.trim() ? { scale: 1.02, backgroundColor: T.darkBurgundy } : undefined} whileTap={dispInstructions.trim() ? { scale: 0.97 } : undefined}
-                      style={{ width: "100%", height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: dispInstructions.trim() ? T.royalBurgundy : T.taupe, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: dispInstructions.trim() ? "pointer" : "not-allowed", opacity: dispInstructions.trim() ? 1 : 0.55, marginTop: 8 }}>
-                      <PaperPlaneTilt size={17} color="#fff" weight="fill" /> Dispatch Instructions
-                    </motion.button>
+                    <Button onClick={handleSendDispatch} disabled={!dispInstructions.trim()} variant="primary" size="lg" fullWidth className="mt-2" iconLeft={PaperPlaneTilt}>
+                      Dispatch Instructions
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -220,8 +218,7 @@ export function DesignLibraryPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {/* Search bar */}
                   <div style={{ position: "relative" }}>
-                    <MagnifyingGlass size={18} weight="bold" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
-                    <input value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" style={{ ...fieldStyle, paddingLeft: 44 }} />
+                    <SearchInput value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" />
                   </div>
 
                   <h3 style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 4, display: "flex", alignItems: "center", gap: 8 }}>
@@ -337,7 +334,7 @@ export function DesignLibraryPage() {
               <img src={zoomImage.url} alt={zoomImage.label} style={{ maxWidth: "100%", maxHeight: "78vh", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }} />
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.85)" }}>{zoomImage.label}</span>
-                <button onClick={() => setZoomImage(null)} style={{ background: T.royalBurgundy, border: "none", color: "#FFF", fontFamily: F.ui, fontWeight: 600, padding: "8px 18px", borderRadius: 8, cursor: "pointer" }}>Close</button>
+                <Button onClick={() => setZoomImage(null)} variant="primary" size="sm">Close</Button>
               </div>
             </motion.div>
           </motion.div>

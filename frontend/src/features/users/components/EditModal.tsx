@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
-import { T, F, EASE, inputStyle, labelStyle, FieldFocus, FieldBlur } from "./theme";
+import { T, F, EASE } from "./theme";
+import { Button, IconButton, Field, Input, Textarea } from "../../../shared/ui/primitives";
 
 export function EditModal({ member, onClose, onSave }: {
   member: FinishingStaffMember;
@@ -34,55 +35,50 @@ export function EditModal({ member, onClose, onSave }: {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#fff" }}>
             Edit Finishing Staff Profile
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <X size={15} color="#fff" />
-          </button>
+          <IconButton label="Close" icon={X} size="sm" variant="ghost" onClick={onClose}
+            className="bg-white/10 text-white hover:bg-white/20 hover:text-white" />
         </div>
 
         {/* Form */}
         <div style={{ padding: "24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px 24px" }}>
-          <div>
-            <label style={labelStyle}>First Name <span style={{ color: T.crimson }}>*</span></label>
-            <input value={firstName} onChange={e => setFirstName(e.target.value)} style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
-          <div>
-            <label style={labelStyle}>Last Name <span style={{ color: T.crimson }}>*</span></label>
-            <input value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
-          <div>
-            <label style={labelStyle}>Mobile <span style={{ color: T.crimson }}>*</span></label>
-            <input value={mobile} onChange={e => setMobile(e.target.value)} style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
-          <div>
-            <label style={labelStyle}>Email <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-            <input value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
-          <div>
-            <label style={labelStyle}>Employee ID <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-            <input value={empId} onChange={e => setEmpId(e.target.value)} style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
-          <div>
-            <label style={labelStyle}>Specialisation <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-            <input value={specialisation} onChange={e => setSpecialisation(e.target.value)} placeholder="e.g. Silk finishing" style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-          </div>
+          <Field label="First Name" required>
+            <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
+          </Field>
+          <Field label="Last Name" required>
+            <Input value={lastName} onChange={e => setLastName(e.target.value)} />
+          </Field>
+          <Field label="Mobile" required>
+            <Input value={mobile} onChange={e => setMobile(e.target.value)} />
+          </Field>
+          <Field label="Email" hint="Optional">
+            <Input value={email} onChange={e => setEmail(e.target.value)} />
+          </Field>
+          <Field label="Employee ID" hint="Optional">
+            <Input value={empId} onChange={e => setEmpId(e.target.value)} />
+          </Field>
+          <Field label="Specialisation" hint="Optional">
+            <Input value={specialisation} onChange={e => setSpecialisation(e.target.value)} placeholder="e.g. Silk finishing" />
+          </Field>
           <div style={{ gridColumn: "1 / -1" }}>
-            <label style={labelStyle}>Notes <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, resize: "none" as const, lineHeight: 1.55 }} onFocus={FieldFocus} onBlur={FieldBlur} />
+            <Field label="Notes" hint="Optional">
+              <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+            </Field>
           </div>
         </div>
 
         {/* Footer buttons */}
         <div style={{ padding: "0 24px 24px", display: "flex", gap: 10 }}>
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email, empId, specialisation, notes }); }}
             disabled={!canSave}
-            style={{ flex: 1, height: 46, background: canSave ? `linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)` : "rgba(139,112,96,0.15)", border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: canSave ? "#fff" : T.taupe, cursor: canSave ? "pointer" : "not-allowed" }}
           >
             Save Changes
-          </button>
-          <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}>
+          </Button>
+          <Button variant="secondary" fullWidth onClick={onClose}>
             Cancel
-          </button>
+          </Button>
         </div>
       </motion.div>
     </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { Plus } from "lucide-react";
 import { formatINR, purchaseTotals } from "../../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../../theme";
+import { Button } from "../../../../../../shared/ui/primitives";
 import { SareeRow } from "../../types";
 import { SareeRowCard } from "./SareeRowCard";
 
@@ -30,26 +31,9 @@ export function SareeDetailsEditor({
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
           Saree Details ({sareeDetails.length} line{sareeDetails.length !== 1 ? "s" : ""} · {pieceCount} pc)
         </span>
-        <button
-          onClick={addSareeRow}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            background: T.royalBurgundy,
-            color: "#FFF",
-            border: "none",
-            borderRadius: 8,
-            padding: "6px 12px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            cursor: "pointer",
-          }}
-        >
-          <Plus size={12} />
+        <Button variant="primary" size="sm" iconLeft={Plus} onClick={addSareeRow}>
           Add Saree
-        </button>
+        </Button>
       </div>
 
       {sareeDetails.length === 0 && (

@@ -8,6 +8,7 @@ import { T, F, inp } from "../../theme";
 import { WHOLESALE_CUSTOMERS } from "../../data";
 import { TransportData, InvoiceData } from "../../types";
 import { Field, TextInput, SelectInput } from "../../common/primitives";
+import { Button, Input, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -78,10 +79,7 @@ export function InvoiceGenerator({
             <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder={isQuotation ? "QT-2026-001" : "INV-2026-001"} mono />
           </Field>
           <Field label={`${docLabel} Date`} req>
-            <input type="date" value={data.invoiceDate} onChange={e => set("invoiceDate")(e.target.value)}
-              style={{ ...inp, fontFamily: F.mono }}
-              onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-              onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
+            <Input type="date" value={data.invoiceDate} onChange={e => set("invoiceDate")(e.target.value)} className="font-code" />
           </Field>
 
           <div style={{ gridColumn: "1 / -1", marginTop: 8 }}>
@@ -99,9 +97,12 @@ export function InvoiceGenerator({
                       </div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.designCode} · {s.sareeType}</div>
                     </div>
-                    <div style={{ position: "relative", width: 120 }}>
-                      <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.mono, color: T.taupe, fontSize: 13 }}>₹</span>
-                      <input type="number" value={data.prices[sId] || ""} onChange={e => setPrice(sId, e.target.value)} placeholder="0" style={{ ...inp, paddingLeft: 22, fontFamily: F.mono, fontSize: 14 }} />
+                    <div style={{ width: 120 }}>
+                      <CurrencyInput
+                        value={data.prices[sId] ? Number(data.prices[sId]) : ""}
+                        onValueChange={v => setPrice(sId, v === "" ? "" : String(v))}
+                        placeholder="0"
+                      />
                     </div>
                   </div>
                 );
@@ -118,14 +119,18 @@ export function InvoiceGenerator({
           {/* GST */}
           <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 12 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-              <input type="checkbox" checked={data.applyGst} onChange={e => set("applyGst")(e.target.checked)}
-                style={{ accentColor: T.royalBurgundy, width: 16, height: 16 }} />
+              <Checkbox checked={data.applyGst} onCheckedChange={checked => set("applyGst")(checked === true)} />
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Apply GST</span>
             </label>
             {data.applyGst && (
-              <input type="number" value={data.gstPct} onChange={e => set("gstPct")(e.target.value)}
-                placeholder="%" min={0} max={100}
-                style={{ ...inp, width: 70, textAlign: "center" as const, fontFamily: F.mono, fontSize: 13 }} />
+              <NumberInput
+                value={data.gstPct === "" ? "" : Number(data.gstPct)}
+                onValueChange={v => set("gstPct")(v === "" ? "" : String(v))}
+                placeholder="%"
+                min={0}
+                max={100}
+                className="w-[70px] text-center font-code text-[13px]"
+              />
             )}
             {data.applyGst && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>% GST = ₹{gstAmount.toLocaleString("en-IN")}</span>}
           </div>
@@ -146,20 +151,19 @@ export function InvoiceGenerator({
 
           {!isQuotation && (
           <Field label="Payment Due Date">
-            <input type="date" value={data.paymentDueDate} onChange={e => set("paymentDueDate")(e.target.value)}
-              style={{ ...inp, fontFamily: F.mono }}
-              onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-              onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
+            <Input type="date" value={data.paymentDueDate} onChange={e => set("paymentDueDate")(e.target.value)} className="font-code" />
           </Field>
           )}
 
           <div style={{ gridColumn: "1 / -1" }}>
             <Field label="Additional Notes">
-              <textarea value={data.invoiceNotes} onChange={e => set("invoiceNotes")(e.target.value)} rows={2}
+              <Textarea
+                value={data.invoiceNotes}
+                onChange={e => set("invoiceNotes")(e.target.value)}
+                rows={2}
                 placeholder={`Any notes for this ${docLabel.toLowerCase()}…`}
-                style={{ ...inp, resize: "none" as const, lineHeight: 1.55 }}
-                onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.royalBurgundy; }}
-                onBlur={e =>  { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(110,15,45,0.18)"; }} />
+                className="resize-none leading-[1.55]"
+              />
             </Field>
           </div>
         </div>
@@ -307,15 +311,22 @@ export function InvoiceGenerator({
       {/* Action buttons — full width below both columns */}
       {!embedded && (
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 10, flexWrap: "wrap" as const }}>
-        <button onClick={onSend} style={{ flex: 1, height: 50, background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
-          <Send size={16} /> {isQuotation ? "Send Quotation to Customer" : "Send Invoice to Customer"}
-        </button>
-        <button onClick={onDraft} style={{ height: 50, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
-          <Save size={15} /> Save as Draft
-        </button>
-        <button onClick={onCancel} style={{ height: 50, padding: "0 20px", background: "transparent", border: `1px solid rgba(139,112,96,0.20)`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          iconLeft={Send}
+          onClick={onSend}
+          className="flex-1 rounded-full shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
+        >
+          {isQuotation ? "Send Quotation to Customer" : "Send Invoice to Customer"}
+        </Button>
+        <Button variant="secondary" size="lg" iconLeft={Save} onClick={onDraft} className="rounded-full">
+          Save as Draft
+        </Button>
+        <Button variant="tertiary" size="lg" onClick={onCancel} className="rounded-full">
           Cancel
-        </button>
+        </Button>
       </div>
       )}
     </div>

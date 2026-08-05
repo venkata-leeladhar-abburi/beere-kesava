@@ -1,36 +1,21 @@
 import React from "react";
 import { Check } from "lucide-react";
 import { T, F } from "./tokens";
+import { Button } from "../../../../shared/ui/primitives";
 
-export function GreenBtn({ children, onClick, style }: { children: React.ReactNode; onClick?: () => void; style?: React.CSSProperties }) {
+export function GreenBtn({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        background: T.green, color: "#FFF", border: "none", borderRadius: 999,
-        padding: "9px 20px", fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-        cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-        ...style,
-      }}
-    >
+    <Button onClick={onClick} variant="primary" size="sm" className={"rounded-full justify-center " + (className ?? "")}>
       {children}
-    </button>
+    </Button>
   );
 }
 
-export function CrimsonBtn({ children, onClick, style }: { children: React.ReactNode; onClick?: () => void; style?: React.CSSProperties }) {
+export function CrimsonBtn({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "transparent", color: T.crimson, border: "1px solid " + T.crimson,
-        borderRadius: 999, padding: "9px 20px", fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-        cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-        ...style,
-      }}
-    >
+    <Button onClick={onClick} variant="danger-subtle" size="sm" className={"rounded-full justify-center " + (className ?? "")}>
       {children}
-    </button>
+    </Button>
   );
 }
 

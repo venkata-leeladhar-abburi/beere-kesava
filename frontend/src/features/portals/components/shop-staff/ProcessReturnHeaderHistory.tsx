@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronLeft, RotateCcw } from "lucide-react";
 import { C, F } from "./theme";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 export interface ReturnRecord {
   id: string;
@@ -30,16 +31,17 @@ export function ProcessReturnHeader({ step, onBack, setStep, setReturnType }: Pr
       background: `linear-gradient(135deg, ${C.dark} 0%, #8B1A1A 100%)`,
       display: "flex", alignItems: "center", padding: "14px 16px", gap: 12,
     }}>
-      <button
+      <IconButton
+        icon={ChevronLeft}
+        label="Back"
+        variant="ghost"
         onClick={step === "type" ? onBack : () => {
           if (step === 1) { setStep("type"); setReturnType(null); }
           else if (step === 2) setStep(1);
           else if (step === 3) setStep(2);
         }}
-        style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.20)", borderRadius: 10, width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-      >
-        <ChevronLeft size={20} color="#FFF" />
-      </button>
+        className="bg-white/10 border border-white/20 rounded-[10px] w-[38px] h-[38px] text-white"
+      />
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 2, color: "rgba(255,255,255,0.50)", textTransform: "uppercase" as const, marginBottom: 2 }}>Since 1999</div>
         <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Process Return</div>

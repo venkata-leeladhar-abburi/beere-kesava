@@ -4,10 +4,11 @@
 
 import React from "react";
 import { Star, X } from "lucide-react";
-import { T, F } from "../theme";
+import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
 import { STATES, PAYMENT_TERMS } from "../data";
 import { SupplierFormValues } from "../types";
+import { Field, Input, Select, SelectItem, IconButton } from "../../../../shared/ui/primitives";
 
 export function SupplierFormFields({
   form, setForm, errors, cardPreview, onCardChange,
@@ -19,51 +20,34 @@ export function SupplierFormFields({
   onCardChange: (dataUrl: string | null) => void;
 }) {
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
-  const err = (k: string) => errors[k]
-    ? <div style={{ color: T.crimson, fontSize: 12, marginTop: 3, fontFamily: F.ui }}>{errors[k]}</div>
-    : null;
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
       {/* Left */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div>
-          <label style={lbl} htmlFor="business-name">Business Name *</label>
-          <input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop"
-            style={{ ...inp, border: errors.name ? `1.5px solid ${T.crimson}` : inp.border }} />
-          {err("name")}
-        </div>
-        <div>
-          <label style={lbl} htmlFor="owner-contact-name">Owner / Contact Name *</label>
-          <input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business"
-            style={{ ...inp, border: errors.contactName ? `1.5px solid ${T.crimson}` : inp.border }} />
-          {err("contactName")}
+        <Field label="Business Name" required error={errors.name}>
+          <Input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" />
+        </Field>
+        <Field label="Owner / Contact Name" required error={errors.contactName}>
+          <Input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
+        </Field>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Field label="Phone Number" required error={errors.phone}>
+            <Input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
+          </Field>
+          <Field label="WhatsApp Number">
+            <Input id="whatsapp-number" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />
+          </Field>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={lbl} htmlFor="phone-number">Phone Number *</label>
-            <input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number"
-              style={{ ...inp, border: errors.phone ? `1.5px solid ${T.crimson}` : inp.border }} />
-            {err("phone")}
-          </div>
-          <div>
-            <label style={lbl} htmlFor="whatsapp-number">WhatsApp Number</label>
-            <input id="whatsapp-number" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
-          </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={lbl} htmlFor="city">City *</label>
-            <input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City"
-              style={{ ...inp, border: errors.city ? `1.5px solid ${T.crimson}` : inp.border }} />
-            {err("city")}
-          </div>
-          <div>
-            <label style={lbl} htmlFor="state">State *</label>
-            <select id="state" value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer" }}>
-              {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
+          <Field label="City" required error={errors.city}>
+            <Input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
+          </Field>
+          <Field label="State" required>
+            <Select value={form.state} onValueChange={v => set("state", v)}>
+              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </Select>
+          </Field>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div>
@@ -76,12 +60,11 @@ export function SupplierFormFields({
               ))}
             </div>
           </div>
-          <div>
-            <label style={lbl} htmlFor="payment-terms">Payment Terms *</label>
-            <select id="payment-terms" value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer" }}>
-              {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
+          <Field label="Payment Terms" required>
+            <Select value={form.terms} onValueChange={v => set("terms", v)}>
+              {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            </Select>
+          </Field>
         </div>
       </div>
 
@@ -93,21 +76,18 @@ export function SupplierFormFields({
             style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={lbl} htmlFor="bank-name">Bank Name</label>
-            <input id="bank-name" value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
-          </div>
-          <div>
-            <label style={lbl} htmlFor="account-number">Account Number</label>
-            <input id="account-number" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
-          </div>
+          <Field label="Bank Name">
+            <Input id="bank-name" value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
+          </Field>
+          <Field label="Account Number">
+            <Input id="account-number" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
+          </Field>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={lbl} htmlFor="gst-number">GST Number</label>
-            <input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
-              style={{ ...inp, fontFamily: F.mono, fontSize: 13 }} />
-          </div>
+          <Field label="GST Number">
+            <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
+              className="font-mono text-[13px]" />
+          </Field>
           <div>
             <label style={lbl} htmlFor="visiting-card-photo">Visiting Card Photo</label>
             <input id="visiting-card-photo" type="file" accept="image/*" onChange={e => {
@@ -122,10 +102,15 @@ export function SupplierFormFields({
         {cardPreview && (
           <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}`, position: "relative" }}>
             <img src={cardPreview} alt="Visiting card" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
-            <button onClick={() => onCardChange(null)}
-              style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <X size={13} />
-            </button>
+            <IconButton
+              label="Remove visiting card photo"
+              icon={X}
+              variant="secondary"
+              size="sm"
+              shape="circle"
+              onClick={() => onCardChange(null)}
+              className="absolute top-2 right-2 bg-black/55 text-white border-none hover:bg-black/70"
+            />
           </div>
         )}
         <div>

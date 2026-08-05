@@ -6,6 +6,7 @@ import { ChartBar } from "@phosphor-icons/react";
 import { T, F } from "../../theme";
 import { ACTIVITIES, ACTIVITY_ICONS } from "../../data";
 import { FadeUp } from "../../common/primitives";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) {
   const activitiesNeedingAction = ACTIVITIES.filter(a => a.needsAction).length;
@@ -32,9 +33,9 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   <Bell size={14} /> {activitiesNeedingAction} need{activitiesNeedingAction === 1 ? "s" : ""} your action
                 </span>
               )}
-              <motion.button onClick={onActivities} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.20)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Bell size={16} /> View All Activities
-              </motion.button>
+              <Button onClick={onActivities} variant="secondary" iconLeft={Bell} className="bg-white/10 text-[#FFFDF9] border-white/20">
+                View All Activities
+              </Button>
             </div>
           </div>
 
@@ -79,10 +80,9 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
                     <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
                     {a.needsAction && (
-                      <button onClick={onActivities}
-                        style={{ display: "flex", alignItems: "center", gap: 5, background: T.royalBurgundy, color: "#FFF", border: "none", borderRadius: 8, padding: "6px 13px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                      <Button onClick={onActivities} variant="primary" size="sm" className="whitespace-nowrap">
                         Review →
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </motion.div>

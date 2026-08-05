@@ -3,6 +3,7 @@ import { BulkOrder } from "../../../../bulk-orders/contexts/BulkOrderContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
 import { T, F } from "../../theme";
+import { Button } from "../../../../../shared/ui/primitives";
 
 const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
@@ -103,14 +104,12 @@ export function OrderHistoryTab({
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ display: "flex", gap: 8, whiteSpace: "nowrap" as const }}>
-                        <button onClick={() => onViewBulkOrder(o, "overview")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
-                          <Eye size={13} /> View Order
-                        </button>
-                        <button onClick={() => onViewBulkOrder(o, "sarees")}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
-                          <ShoppingBag size={13} /> Sarees
-                        </button>
+                        <Button onClick={() => onViewBulkOrder(o, "overview")} variant="secondary" size="sm" iconLeft={Eye}>
+                          View Order
+                        </Button>
+                        <Button onClick={() => onViewBulkOrder(o, "sarees")} variant="tertiary" size="sm" iconLeft={ShoppingBag}>
+                          Sarees
+                        </Button>
                       </div>
                     </td>
                   </tr>

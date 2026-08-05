@@ -1,8 +1,8 @@
 import React from "react";
-import { motion } from "motion/react";
 import { WarningCircle } from "@phosphor-icons/react";
-import { T, F, G, fld, lbl } from "./batch-creation/constants";
+import { T, F, fld, lbl } from "./batch-creation/constants";
 import { SareeRow } from "../contexts/BatchContext";
+import { Button, NumberInput, Input } from "../../../shared/ui/primitives";
 
 interface BatchSetupStepProps {
   batchId: string;
@@ -45,19 +45,17 @@ export function BatchSetupStep({
           </div>
           <div>
             <label style={lbl}>Total Saree Count <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <input type="number" min={1} max={500} value={totalCount}
+            <NumberInput min={1} max={500} value={totalCount}
               onChange={e => { setTotalCount(e.target.value); setGenerated(false); }}
-              style={fld} placeholder="e.g. 30" />
+              placeholder="e.g. 30" />
           </div>
           <div>
             <label style={lbl} htmlFor="due-date">Due Date</label>
-            <input id="due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={fld} />
+            <Input id="due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
           </div>
-          <motion.button onClick={generateRows} disabled={!totalCount || parseInt(totalCount, 10) < 1}
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ height: 44, padding: "0 24px", background: totalCount && parseInt(totalCount, 10) > 0 ? G.button : T.taupe, color: "#fff", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", opacity: totalCount && parseInt(totalCount, 10) > 0 ? 1 : 0.5 }}>
+          <Button onClick={generateRows} disabled={!totalCount || parseInt(totalCount, 10) < 1} variant="primary" size="lg">
             Generate Table →
-          </motion.button>
+          </Button>
         </div>
       </div>
 

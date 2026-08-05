@@ -8,6 +8,7 @@ import { F, T } from "../theme";
 import { formatINR } from "../utils/format";
 import { AnimBar, FadeUp } from "./common/motion";
 import { ActionModal } from "./common/primitives";
+import { Button } from "../../../shared/ui/primitives";
 
 export function SummaryLineItem({ label, value, color }: { label: string; value: string; color: string }) {
   return (
@@ -38,10 +39,9 @@ export function FinancialSummarySection() {
             </p>
           </div>
           <DownloadGate>
-            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-              <Download size={15} />Download Report
-            </motion.button>
+            <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)} className="shrink-0">
+              Download Report
+            </Button>
           </DownloadGate>
         </div>
 

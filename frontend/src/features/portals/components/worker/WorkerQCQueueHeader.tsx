@@ -1,5 +1,6 @@
 import React from "react";
 import { T, F } from "./WorkerQCTypes";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCQueueHeaderProps {
   pendingLength: number;
@@ -32,10 +33,11 @@ export function WorkerQCQueueHeader({
 
       <div id="wqc-in-progress" style={{ display: "flex", margin: isDesktop ? "0 0 12px" : "0 16px 12px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
         {([["weavers", "By Weaver"], ["batches", "By Batch"]] as const).map(([key, label]) => (
-          <button key={key} onClick={() => { setQcTab(key); setWeaverSearch(""); }}
-            style={{ flex: 1, padding: "9px 8px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, fontWeight: 600, background: qcTab === key ? T.burg : "transparent", color: qcTab === key ? "#FFF" : T.muted }}>
+          <Button key={key} variant={qcTab === key ? "primary" : "tertiary"} fullWidth
+            onClick={() => { setQcTab(key); setWeaverSearch(""); }}
+            className={qcTab === key ? "rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-lg bg-transparent"}>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
     </>

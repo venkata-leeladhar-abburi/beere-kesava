@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Truck, Users, ShoppingBag, Clock, CheckCircle2 } from "lucide-react";
 import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F, card } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
@@ -29,10 +30,15 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           {TABS.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, border: `1px solid ${tab === t.key ? T.royalBurgundy : T.borderDef}`, background: tab === t.key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: tab === t.key ? T.royalBurgundy : T.taupe, cursor: "pointer" }}>
+            <Button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              variant={tab === t.key ? "secondary" : "tertiary"}
+              size="sm"
+              className="rounded-full"
+            >
               {t.label} <span style={{ fontFamily: F.mono, fontSize: 12 }}>({t.count})</span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -67,10 +73,15 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
             <div>
               {incomplete ? (
-                <button onClick={() => onResume(d)}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", background: "rgba(200,155,71,0.14)", border: `1px solid rgba(200,155,71,0.32)`, borderRadius: 999, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#8B6018", cursor: "pointer", whiteSpace: "nowrap" as const }}>
-                  <Clock size={11} /> Complete Details
-                </button>
+                <Button
+                  onClick={() => onResume(d)}
+                  variant="secondary"
+                  size="sm"
+                  iconLeft={Clock}
+                  className="rounded-full bg-[rgba(200,155,71,0.14)] border-[rgba(200,155,71,0.32)] text-[#8B6018] hover:bg-[rgba(200,155,71,0.22)] whitespace-nowrap"
+                >
+                  Complete Details
+                </Button>
               ) : (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
                   <CheckCircle2 size={12} /> Complete

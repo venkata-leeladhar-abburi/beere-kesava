@@ -6,6 +6,7 @@ import {
 import { T, F } from "../theme";
 import { WEEKLY_DATA, STAGE_FUNNEL, TOP_WEAVERS_CHART, ORDER_PROGRESS, ANALYTICS_PERIODS } from "../data";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
+import { Button, CheckboxField } from "../../../../shared/ui/primitives";
 
 const CARD_STYLE: React.CSSProperties = {
   background: "#FFFFFF",
@@ -61,14 +62,13 @@ export function ProductionAnalyticsSection() {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginTop: 4 }}>
             {ANALYTICS_PERIODS.map(p => (
-              <motion.button key={p} onClick={() => setPeriod(p)} whileHover={{ scale: 1.02 }}
-                style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 99, cursor: "pointer", background: period === p ? T.royalBurgundy : "transparent", color: period === p ? "#FFFDF9" : T.taupe, border: period === p ? "none" : `1px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}>
+              <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "tertiary"} size="sm">
                 {p}
-              </motion.button>
+              </Button>
             ))}
-            <motion.button onClick={() => setShowExportDialog(true)} whileHover={{ scale: 1.02, backgroundColor: "rgba(200,155,71,0.20)" }} style={{ display: "flex", alignItems: "center", gap: 7, background: T.warmCream, border: `1.5px solid ${T.borderGold}`, borderRadius: 10, padding: "8px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>
+            <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm">
               <DownloadSimple size={16} color={T.antiqueGold} weight="bold" /> Export Report
-            </motion.button>
+            </Button>
           </div>
         </div>
 
@@ -241,11 +241,7 @@ export function ProductionAnalyticsSection() {
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Include in Report</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {Object.entries(exportIncludes).map(([key, checked]) => (
-                      <label key={key} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: checked ? "rgba(110,15,45,0.05)" : "transparent", border: `1px solid ${checked ? "rgba(110,15,45,0.18)" : T.borderDef}`, transition: "all 0.15s" }}>
-                        <input type="checkbox" checked={checked} onChange={() => setExportIncludes(prev => ({ ...prev, [key]: !prev[key] }))}
-                          style={{ width: 16, height: 16, accentColor: T.royalBurgundy, cursor: "pointer" }} />
-                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
-                      </label>
+                      <CheckboxField key={key} label={key} checked={checked} onCheckedChange={() => setExportIncludes(prev => ({ ...prev, [key]: !prev[key] }))} />
                     ))}
                   </div>
                 </div>
@@ -253,25 +249,24 @@ export function ProductionAnalyticsSection() {
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Export Format</div>
                   <div style={{ display: "flex", gap: 10 }}>
                     {["PDF", "Excel (.xlsx)", "CSV"].map(fmt => (
-                      <motion.button key={fmt} onClick={() => setExportFormat(fmt)} whileHover={{ scale: 1.03 }}
-                        style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: exportFormat === fmt ? "none" : `1.5px solid ${T.borderDef}`, background: exportFormat === fmt ? T.royalBurgundy : "transparent", color: exportFormat === fmt ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.18s" }}>
+                      <Button key={fmt} onClick={() => setExportFormat(fmt)} variant={exportFormat === fmt ? "primary" : "secondary"} fullWidth>
                         {fmt}
-                      </motion.button>
+                      </Button>
                     ))}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
+                  <Button
                     onClick={() => setShowExportDialog(false)}
-                    style={{ flex: 2, height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `linear-gradient(135deg, ${T.antiqueGold} 0%, #B88730 100%)`, color: T.deepWine, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(200,155,71,0.28)" }}>
+                    variant="primary"
+                    size="lg"
+                    className="flex-[2]"
+                  >
                     <DownloadSimple size={18} weight="bold" /> Generate &amp; Download
-                  </motion.button>
-                  <motion.button onClick={() => setShowExportDialog(false)} whileHover={{ scale: 1.02 }}
-                    style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                  </Button>
+                  <Button onClick={() => setShowExportDialog(false)} variant="secondary" size="lg" className="flex-1">
                     Cancel
-                  </motion.button>
+                  </Button>
                 </div>
               </div>
             </ProductionDialog>

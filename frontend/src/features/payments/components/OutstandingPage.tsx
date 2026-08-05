@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { motion } from "motion/react";
 import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users,
 } from "lucide-react";
 import { useSales, isOutstanding } from "../../customers/contexts/SalesContext";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
+import { Button } from "../../../shared/ui/primitives";
 import { StatChip } from "./outstanding/primitives";
 import type { AgeKey } from "./outstanding/primitives";
 import { FilterBar } from "./outstanding/FilterBar";
@@ -95,12 +95,10 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
             const active = tab === t.key;
             const count = tabCounts[t.key];
             return (
-              <motion.button key={t.key} onClick={() => setTab(t.key)}
-                whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }}
-                transition={{ type: "spring", stiffness: 300, damping: 22 }}
+              <Button key={t.key} variant="tertiary" size="lg" fullWidth onClick={() => setTab(t.key)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 14, textAlign: "left", cursor: "pointer",
-                  padding: "18px 20px", borderRadius: 16, minWidth: 0,
+                  display: "flex", alignItems: "center", gap: 14, textAlign: "left", justifyContent: "flex-start",
+                  padding: "18px 20px", borderRadius: 16, minWidth: 0, height: "auto",
                   background: active ? "linear-gradient(135deg, rgba(200,155,71,0.26), rgba(200,155,71,0.12))" : "rgba(255,253,249,0.06)",
                   border: `2px solid ${active ? T.antiqueGold : "rgba(255,253,249,0.12)"}`,
                   boxShadow: active ? "0 8px 26px rgba(200,155,71,0.22)" : "none",
@@ -118,7 +116,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.40)", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 4 }}>Unsold</div>
                   </div>
                 )}
-              </motion.button>
+              </Button>
             );
           })}
         </div>

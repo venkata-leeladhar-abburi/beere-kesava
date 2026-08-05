@@ -1,5 +1,6 @@
 import React from "react";
 import { F, T } from "./theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Shared small UI helpers ───────────────────────────────────────────────────
 export function SectionPill({ label }: { label: string }) {
@@ -10,23 +11,28 @@ export function PillTab({ options, value, onChange }: { options: string[]; value
   return (
     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
       {options.map(opt => (
-        <button key={opt} onClick={() => onChange(opt)} style={{
-          padding: "8px 18px", borderRadius: 999, cursor: "pointer",
-          border: `1.5px solid ${value === opt ? T.royalBurgundy : T.borderDef}`,
-          background: value === opt ? T.royalBurgundy : "#FFF",
-          color: value === opt ? "#FFF" : T.luxuryBrown,
-          fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-        }}>{opt}</button>
+        <Button
+          key={opt}
+          variant={value === opt ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => onChange(opt)}
+          className="rounded-full"
+        >
+          {opt}
+        </Button>
       ))}
     </div>
   );
 }
 
 export function ColorSwatchPicker({ colors, value, onChange }: { colors: { name: string; hex: string }[]; value: string; onChange: (v: string) => void }) {
+  // Dynamic per-item hex colors can't be expressed with Button's className-only
+  // styling API (Button omits the `style` prop), so this stays a raw <button>
+  // that renders a plain color circle — intentional exception.
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
       {colors.map(c => (
-        <button key={c.name} title={c.name} onClick={() => onChange(c.name)} style={{
+        <button key={c.name} type="button" title={c.name} onClick={() => onChange(c.name)} style={{
           width: 32, height: 32, borderRadius: "50%", background: c.hex, cursor: "pointer",
           border: value === c.name ? `3px solid ${T.luxuryBrown}` : "3px solid transparent",
           boxShadow: "0 1px 4px rgba(0,0,0,0.18)", flexShrink: 0,

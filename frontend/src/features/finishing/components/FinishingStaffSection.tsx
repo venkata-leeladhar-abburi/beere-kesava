@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Package, Camera } from "lucide-react";
 import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
+import { Button } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -115,8 +116,8 @@ export function FinishingStaffSection({
             const isOpen = open === r.name;
             return (
               <div key={r.name} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                <button onClick={() => setOpen(isOpen ? null : r.name)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
+                <Button variant="ghost" onClick={() => setOpen(isOpen ? null : r.name)}
+                  className={`w-full h-auto justify-start text-left gap-3.5 py-3.5 px-[18px] rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
@@ -136,7 +137,7 @@ export function FinishingStaffSection({
                       </div>
                     ))}
                   </div>
-                </button>
+                </Button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>

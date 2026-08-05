@@ -7,6 +7,7 @@ import { ReceiveSareesPage } from "./weavers/ReceiveSareesPage";
 import { HistorySection } from "./weavers/HistorySection";
 import { ManualEntryModal } from "./weavers/ManualEntryModal";
 import { type WeaversPage, type ReceivedSareeLog } from "./weavers/shared";
+import { Button } from "../../../../shared/ui/primitives";
 
 // Re-exported for consumers that reach into this module directly.
 export { MaterialSplitPanel, type MatSplit } from "./weavers/MaterialSplitPanel";
@@ -55,10 +56,10 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
               <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", marginBottom: 2 }}>Receive Sarees</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
             </div>
-            <button onClick={() => setShowManual(true)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: 12, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", cursor: "pointer" }}>
-              <Plus size={14} /> Add Manually
-            </button>
+            <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowManual(true)}
+              className="rounded-xl border border-white/28 bg-white/13 text-white hover:bg-white/13">
+              Add Manually
+            </Button>
           </div>
         </div>
 

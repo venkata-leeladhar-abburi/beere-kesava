@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, Calendar, Users, Search, Download, Eye } from "lucide-react";
+import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
 import { getSareeTypeByName } from "../../../pricing/components/RatesPricingPage";
 import { T, F } from "../theme";
 import { HISTORY_BATCHES } from "../data";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitives";
+import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
 
 function HistoryBatchSquares({ size }: { size: number }) {
   const colors = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
@@ -20,9 +21,9 @@ function HistoryBatchSquares({ size }: { size: number }) {
 
 function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
-    <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer", whiteSpace: "nowrap" }}>
+    <Button variant="secondary" size="sm" className="whitespace-nowrap">
       {icon}{label}<ChevronDown size={14} style={{ color: T.taupe }} />
-    </button>
+    </Button>
   );
 }
 
@@ -63,9 +64,9 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
             </div>
           </div>
-          <motion.button onClick={() => setShowReportDialog(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", background: `linear-gradient(135deg, ${T.antiqueGold} 0%, ${T.goldLight} 100%)`, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.deepWine, boxShadow: "0 2px 12px rgba(200,155,71,0.30)" }}>
+          <Button onClick={() => setShowReportDialog(true)} variant="secondary" size="sm">
             <Download size={14} />Generate Production Report
-          </motion.button>
+          </Button>
         </div>
 
         <div style={{ background: "#fff", padding: "12px 24px", borderLeft: `1px solid ${T.borderDef}`, borderRight: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
@@ -73,10 +74,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           <HistoryDropBtn label="All Saree Types" />
           <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
           <HistoryDropBtn label="All Orders" />
-          <div style={{ flex: 1, minWidth: 180, position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..."
-              style={{ width: "100%", padding: "7px 12px 7px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FAFAFA", outline: "none", boxSizing: "border-box" as const }} />
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
           </div>
         </div>
 
@@ -167,9 +166,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                       : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>}
                   </td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <motion.button whileHover={{ scale: 1.08 }} style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${T.borderDef}`, background: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.royalBurgundy }}>
-                      <Eye size={13} />
-                    </motion.button>
+                    <IconButton icon={Eye} label="View batch" variant="secondary" size="sm" />
                   </td>
                 </tr>
               ))}
@@ -179,10 +176,10 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing 1 to 10 of 25 entries</span>
             <div style={{ display: "flex", gap: 4 }}>
               {["Prev", "1", "2", "3", "Next"].map(p => (
-                <button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}
-                  style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${p === String(currentPage) ? T.royalBurgundy : T.borderDef}`, background: p === String(currentPage) ? T.royalBurgundy : "#fff", color: p === String(currentPage) ? "#FFFDF9" : T.luxuryBrown, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                <Button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}
+                  variant={p === String(currentPage) ? "primary" : "secondary"} size="sm">
                   {p}
-                </button>
+                </Button>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -201,32 +198,29 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Report Period</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {["Today", "This Week", "This Month", "Last 3 Months", "This Year"].map(p => (
-                    <motion.button key={p} onClick={() => setRPeriod(p)} whileHover={{ scale: 1.03 }}
-                      style={{ padding: "8px 14px", borderRadius: 99, border: rPeriod === p ? "none" : `1.5px solid rgba(110,15,45,0.18)`, background: rPeriod === p ? T.royalBurgundy : "transparent", color: rPeriod === p ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
+                    <Button key={p} onClick={() => setRPeriod(p)} variant={rPeriod === p ? "primary" : "tertiary"} size="sm">
                       {p}
-                    </motion.button>
+                    </Button>
                   ))}
                 </div>
               </div>
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 8 }}>Filter by Weaver</div>
-                <select value={rWeavers} onChange={e => setRWeavers(e.target.value)}
-                  style={{ width: "100%", height: 44, padding: "0 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none" }}>
-                  <option>All Weavers</option>
-                  <option>Padma Veni</option>
-                  <option>Ravi Kumar</option>
-                  <option>Suresh Murti</option>
-                  <option>Anand K.</option>
-                  <option>Own Factory</option>
-                </select>
+                <Select value={rWeavers} onValueChange={setRWeavers}>
+                  <SelectItem value="All Weavers">All Weavers</SelectItem>
+                  <SelectItem value="Padma Veni">Padma Veni</SelectItem>
+                  <SelectItem value="Ravi Kumar">Ravi Kumar</SelectItem>
+                  <SelectItem value="Suresh Murti">Suresh Murti</SelectItem>
+                  <SelectItem value="Anand K.">Anand K.</SelectItem>
+                  <SelectItem value="Own Factory">Own Factory</SelectItem>
+                </Select>
               </div>
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Include in Report</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                   {Object.entries(rIncludes).map(([key, checked]) => (
                     <label key={key} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "9px 14px", borderRadius: 10, background: checked ? "rgba(110,15,45,0.05)" : "transparent", border: `1px solid ${checked ? "rgba(110,15,45,0.16)" : T.borderDef}`, transition: "all 0.15s" }}>
-                      <input type="checkbox" checked={checked} onChange={() => setRIncludes(prev => ({ ...prev, [key]: !prev[key] }))}
-                        style={{ width: 16, height: 16, accentColor: T.royalBurgundy, cursor: "pointer" }} />
+                      <Checkbox checked={checked} onCheckedChange={() => setRIncludes(prev => ({ ...prev, [key]: !prev[key] }))} />
                       <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
                     </label>
                   ))}
@@ -236,25 +230,19 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Export Format</div>
                 <div style={{ display: "flex", gap: 10 }}>
                   {["PDF", "Excel (.xlsx)", "CSV"].map(fmt => (
-                    <motion.button key={fmt} onClick={() => setRFormat(fmt)} whileHover={{ scale: 1.03 }}
-                      style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: rFormat === fmt ? "none" : `1.5px solid ${T.borderDef}`, background: rFormat === fmt ? T.royalBurgundy : "transparent", color: rFormat === fmt ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.18s" }}>
+                    <Button key={fmt} onClick={() => setRFormat(fmt)} variant={rFormat === fmt ? "primary" : "tertiary"} fullWidth>
                       {fmt}
-                    </motion.button>
+                    </Button>
                   ))}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowReportDialog(false)}
-                  style={{ flex: 2, height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `linear-gradient(135deg, ${T.antiqueGold} 0%, #B88730 100%)`, color: T.deepWine, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(200,155,71,0.28)" }}>
+                <Button onClick={() => setShowReportDialog(false)} variant="primary" size="lg" className="flex-[2]">
                   <Download size={17} /> Generate &amp; Download
-                </motion.button>
-                <motion.button onClick={() => setShowReportDialog(false)} whileHover={{ scale: 1.02 }}
-                  style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                </Button>
+                <Button onClick={() => setShowReportDialog(false)} variant="tertiary" size="lg" className="flex-1">
                   Cancel
-                </motion.button>
+                </Button>
               </div>
             </div>
           </ProductionDialog>

@@ -6,6 +6,7 @@ import {
   buildSareeCode, computeFinalAmount, purchaseTotals,
 } from "../../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../../theme";
+import { Button, IconButton } from "../../../../../../shared/ui/primitives";
 import { FormState } from "../../types";
 import { nextRowUid, toSareeRow } from "../../utils";
 import { SupplierSection } from "./SupplierSection";
@@ -156,23 +157,12 @@ export function PurchaseFormModal({
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>
               {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
             </div>
-            <button
+            <IconButton
+              icon={X}
+              label="Close"
               onClick={onClose}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)",
-                border: "none",
-                color: "#FFF",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <X size={15} />
-            </button>
+              className="rounded-full bg-white/12 text-white hover:bg-white/20"
+            />
           </div>
 
           <div style={{ padding: "22px 26px", overflowY: "auto", flex: 1 }}>
@@ -206,46 +196,23 @@ export function PurchaseFormModal({
               flexShrink: 0,
             }}
           >
-            <button
+            <Button
+              variant="primary"
               disabled={!valid}
               onClick={() => valid && onSubmit(form, buildFinalSarees())}
-              style={{
-                flex: 1,
-                background: valid ? T.royalBurgundy : "rgba(110,15,45,0.30)",
-                color: "white",
-                border: "none",
-                borderRadius: 999,
-                padding: "11px 0",
-                fontFamily: F.ui,
-                fontWeight: 600,
-                fontSize: 14,
-                cursor: valid ? "pointer" : "default",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
+              iconLeft={Save}
+              fullWidth
+              className="rounded-full"
             >
-              <Save size={15} />
               {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={onClose}
-              style={{
-                flex: "0 0 auto",
-                background: "transparent",
-                color: T.taupe,
-                border: `1px solid ${T.borderDef}`,
-                borderRadius: 999,
-                padding: "11px 22px",
-                fontFamily: F.ui,
-                fontWeight: 500,
-                fontSize: 14,
-                cursor: "pointer",
-              }}
+              className="flex-none rounded-full"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

@@ -4,6 +4,7 @@ import {
   Package, Tag, Eye, Printer, Calendar, IndianRupee, Check, FileText, Hash,
 } from "lucide-react";
 import { Purchase, MAT_CFG, STATUS_CFG } from "./PurchaseModals";
+import { Button } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -114,18 +115,17 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-            <motion.button
+            <Button
+              variant="secondary"
+              iconLeft={Eye}
               onClick={() => onView(p)}
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 40, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-              <Eye size={14} /> View
-            </motion.button>
-            <motion.button
-              onClick={() => onPrint(p)}
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 40, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-              <Printer size={14} /> Print
-            </motion.button>
+              className="flex-1 rounded-[10px] bg-[rgba(110,15,45,0.06)] border-[rgba(110,15,45,0.18)]"
+            >
+              View
+            </Button>
+            <Button variant="primary" iconLeft={Printer} onClick={() => onPrint(p)} className="flex-1 rounded-[10px]">
+              Print
+            </Button>
           </div>
         </div>
       </motion.div>

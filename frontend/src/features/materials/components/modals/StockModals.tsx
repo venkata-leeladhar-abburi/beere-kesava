@@ -5,6 +5,7 @@ import { T, F } from "../theme";
 import { STATUS_CFG, MAT_TAG } from "../data";
 import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
+import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -30,11 +31,6 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
     setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", warpReshamUnit: "kg", pricePerKg: "", notes: "" }); }, 1800);
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown,
-    border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10,
-    padding: "11px 14px", outline: "none", background: T.warmIvory, boxSizing: "border-box",
-  };
   const labelStyle: React.CSSProperties = {
     fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe,
     letterSpacing: "0.3px", marginBottom: 6, display: "block",
@@ -58,38 +54,30 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               <label style={labelStyle}>Material Type *</label>
               <div style={{ display: "flex", gap: 10 }}>
                 {["Warp", "Resham", "Jari"].map(t => (
-                  <motion.button
+                  <Button
                     key={t}
                     onClick={() => set("materialType", t)}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      flex: 1, padding: "10px 0", borderRadius: 10, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 700, fontSize: 14,
-                      background: form.materialType === t ? T.royalBurgundy : T.warmIvory,
-                      color: form.materialType === t ? "#FFFDF9" : T.taupe,
-                      border: form.materialType === t ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                    }}
-                  >{t}</motion.button>
+                    variant={form.materialType === t ? "primary" : "secondary"}
+                    size="md"
+                    className="flex-1"
+                  >{t}</Button>
                 ))}
               </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div>
-                <label style={labelStyle} htmlFor="material-details">Material Details *</label>
-                <input id="material-details" value={form.details} onChange={e => set("details", e.target.value)} placeholder="e.g. Cotton/Silk, Silk Red, Polyester 2G Gold" style={inputStyle} />
-              </div>
-              <div>
-                <label style={labelStyle} htmlFor="vendor-name">Vendor Name *</label>
-                <input id="vendor-name" value={form.vendor} onChange={e => set("vendor", e.target.value)} placeholder="e.g. Sri Venkateswara Textiles" style={inputStyle} />
-              </div>
+              <Field label="Material Details" required>
+                <Input value={form.details} onChange={e => set("details", e.target.value)} placeholder="e.g. Cotton/Silk, Silk Red, Polyester 2G Gold" />
+              </Field>
+              <Field label="Vendor Name" required>
+                <Input value={form.vendor} onChange={e => set("vendor", e.target.value)} placeholder="e.g. Sri Venkateswara Textiles" />
+              </Field>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div>
-                <label style={labelStyle} htmlFor="date-received">Date Received *</label>
-                <input id="date-received" type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} style={inputStyle} />
-              </div>
+              <Field label="Date Received" required>
+                <Input type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} />
+              </Field>
               <div>
                 <label style={labelStyle}>
                   {form.materialType === "Jari" ? `Quantity (${form.jariUnit}) *` : `Quantity Received (${form.warpReshamUnit || "kg"}) *`}
@@ -98,17 +86,11 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
                       {(["Reels", "Buns"] as const).map(u => (
-                        <button key={u} onClick={() => set("jariUnit", u)} style={{
-                          flex: 1, padding: "8px 0", borderRadius: 9, cursor: "pointer",
-                          fontFamily: F.ui, fontSize: 13, fontWeight: 700,
-                          background: form.jariUnit === u ? T.royalBurgundy : T.warmIvory,
-                          color: form.jariUnit === u ? "#FFFDF9" : T.taupe,
-                          border: form.jariUnit === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                        }}>{u}</button>
+                        <Button key={u} onClick={() => set("jariUnit", u)} variant={form.jariUnit === u ? "primary" : "secondary"} size="sm" className="flex-1">{u}</Button>
                       ))}
                     </div>
                     <div style={{ position: "relative" }}>
-                      <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 52 }} />
+                      <Input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" className="pr-[52px]" />
                       <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.jariUnit}</span>
                     </div>
                     {form.quantity && (
@@ -121,17 +103,11 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
                       {(["kg", "g"] as const).map(u => (
-                        <button key={u} onClick={() => set("warpReshamUnit", u)} style={{
-                          flex: 1, padding: "8px 0", borderRadius: 9, cursor: "pointer",
-                          fontFamily: F.ui, fontSize: 13, fontWeight: 700,
-                          background: (form.warpReshamUnit || "kg") === u ? T.royalBurgundy : T.warmIvory,
-                          color: (form.warpReshamUnit || "kg") === u ? "#FFFDF9" : T.taupe,
-                          border: (form.warpReshamUnit || "kg") === u ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                        }}>{u}</button>
+                        <Button key={u} onClick={() => set("warpReshamUnit", u)} variant={(form.warpReshamUnit || "kg") === u ? "primary" : "secondary"} size="sm" className="flex-1">{u}</Button>
                       ))}
                     </div>
                     <div style={{ position: "relative" }}>
-                      <input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" style={{ ...inputStyle, paddingRight: 36 }} />
+                      <Input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" className="pr-9" />
                       <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.warpReshamUnit || "kg"}</span>
                     </div>
                     {form.quantity && (
@@ -144,37 +120,26 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               </div>
             </div>
 
-            <div>
-              <label style={labelStyle} htmlFor="price-per-kg">Price Per Kg (₹)</label>
-              <input id="price-per-kg" type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" style={inputStyle} />
+            <Field label="Price Per Kg (₹)">
+              <Input type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" />
               {form.quantity && form.pricePerKg && (
                 <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>
                   Total value: ₹{(parseFloat(form.quantity) * parseFloat(form.pricePerKg)).toLocaleString("en-IN")}
                 </div>
               )}
-            </div>
+            </Field>
 
-            <div>
-              <label style={labelStyle} htmlFor="notes-additional-info">Notes / Additional Info</label>
-              <textarea id="notes-additional-info" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any additional notes about this batch..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
-            </div>
+            <Field label="Notes / Additional Info">
+              <Textarea value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any additional notes about this batch..." rows={3} />
+            </Field>
 
             <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
-              <motion.button
-                onClick={onClose}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}
-              >
+              <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
                 Cancel
-              </motion.button>
-              <motion.button
-                onClick={handleSubmit}
-                whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-              >
-                <Plus size={16} /> Add to Stock
-              </motion.button>
+              </Button>
+              <Button onClick={handleSubmit} variant="primary" size="md" iconLeft={Plus} className="flex-[2]">
+                Add to Stock
+              </Button>
             </div>
           </div>
         )}
@@ -263,14 +228,9 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
           </div>
         </div>
 
-        <motion.button
-          onClick={onClose}
-          whileHover={{ scale: 1.02, boxShadow: "0 6px 20px rgba(110,15,45,0.22)" }}
-          whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}
-        >
+        <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );
@@ -313,17 +273,12 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
         </div>
 
         <div style={{ display: "flex", gap: 12 }}>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.warmIvory, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
+          <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
             Cancel
-          </motion.button>
-          <motion.button
-            onClick={() => { window.print(); }}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }}
-            whileTap={{ scale: 0.97 }}
-            style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-          >
-            <Printer size={16} /> Print Barcode Label
-          </motion.button>
+          </Button>
+          <Button onClick={() => { window.print(); }} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
+            Print Barcode Label
+          </Button>
         </div>
       </div>
     </ModalOverlay>

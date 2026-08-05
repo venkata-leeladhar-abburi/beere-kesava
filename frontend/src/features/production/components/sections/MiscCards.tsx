@@ -4,6 +4,7 @@ import { ArrowRight, Swatches, Stack } from "@phosphor-icons/react";
 import { WeaverSareesSection } from "../../../weavers/components/WeaverSareesSection";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   return (
@@ -21,11 +22,9 @@ export function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: strin
               </div>
             </div>
           </div>
-          <motion.button onClick={() => onNavigate?.("Designs")}
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            style={{ display: "flex", alignItems: "center", gap: 8, height: 46, padding: "0 22px", background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+          <Button onClick={() => onNavigate?.("Designs")} variant="primary" size="lg" className="shrink-0">
             Open Design Library <ArrowRight size={15} weight="bold" />
-          </motion.button>
+          </Button>
         </div>
       </FadeUp>
     </div>

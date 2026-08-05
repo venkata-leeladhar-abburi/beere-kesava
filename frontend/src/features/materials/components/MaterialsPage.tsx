@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { IconButton } from "../../../shared/ui/primitives";
 import { useIsMobile } from "../../../hooks/useResponsive";
 import { usePO, PurchaseOrder } from "../../purchasing/contexts/POContext";
 import { POCreateModal } from "../../purchasing/components/POCreateModal";
@@ -71,12 +72,14 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "#1E6640", fontWeight: 600 }}>
                   ✓ Purchase Order {successPOId} submitted for Superadmin approval. You will be notified when it is approved or rejected.
                 </span>
-                <button
+                <IconButton
+                  icon={X}
+                  label="Dismiss"
                   onClick={() => setSuccessPOId(null)}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "#1E6640", marginLeft: 16 }}
-                >
-                  <X size={16} />
-                </button>
+                  variant="ghost"
+                  size="sm"
+                  className="text-[#1E6640] ml-4"
+                />
               </div>
             </div>
           )}

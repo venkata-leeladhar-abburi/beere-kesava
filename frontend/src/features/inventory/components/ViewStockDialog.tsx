@@ -1,7 +1,9 @@
 import React from "react";
 import { motion } from "motion/react";
 import { CheckCircle } from "@phosphor-icons/react";
+import { X } from "lucide-react";
 import { StockSaree, STATUS_CFG } from "./StockCard";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -17,10 +19,6 @@ const F = {
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
 };
-const G = {
-  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-};
-
 export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () => void }) {
   const cfg = STATUS_CFG[saree.status];
   return (
@@ -39,7 +37,13 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{saree.id}</div>
           </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            size="sm"
+            className="border border-white/22 bg-white/12 text-white hover:bg-white/20"
+          />
         </div>
         <div style={{ padding: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 11, padding: "12px 16px", marginBottom: 20 }}>
@@ -85,12 +89,15 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
               {saree.saleRef && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 3 }}>{saree.saleRef}</div>}
             </div>
           )}
-          <motion.button
+          <Button
             onClick={onClose}
-            whileHover={{ scale: 1.02 }}
-            style={{ width: "100%", height: 46, background: G.button, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-95 border-none shadow-none"
+          >
             Close
-          </motion.button>
+          </Button>
         </div>
       </motion.div>
     </motion.div>

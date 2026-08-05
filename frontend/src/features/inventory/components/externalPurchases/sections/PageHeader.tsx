@@ -1,6 +1,7 @@
 import React from "react";
 import { Download, Plus } from "lucide-react";
 import { T, F } from "../theme";
+import { Button } from "../../../../../shared/ui/primitives";
 
 /** Hero banner + Export/Add action buttons for the External Purchases page. */
 export function PageHeader({ onAdd }: { onAdd: () => void }) {
@@ -81,45 +82,22 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
           flexShrink: 0,
         }}
       >
-        <button
-          style={{
-            border: "1px solid rgba(255,255,255,0.25)",
-            background: "transparent",
-            color: "white",
-            borderRadius: 8,
-            padding: "8px 14px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            cursor: "pointer",
-          }}
+        <Button
+          variant="secondary"
+          size="sm"
+          iconLeft={Download}
+          className="bg-transparent text-white border border-white/25 hover:bg-white/10 shadow-none"
         >
-          <Download size={13} />
           Export
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onAdd}
-          style={{
-            background: T.antiqueGold,
-            color: "#3B2314",
-            border: "none",
-            borderRadius: 8,
-            padding: "8px 16px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            cursor: "pointer",
-          }}
+          size="sm"
+          iconLeft={Plus}
+          className="bg-[var(--bk-gold-500)] text-[#3B2314] font-semibold hover:bg-[var(--bk-gold-500)]/90 border-none shadow-none"
         >
-          <Plus size={13} />
           Add External Purchase
-        </button>
+        </Button>
       </div>
 
       <div
