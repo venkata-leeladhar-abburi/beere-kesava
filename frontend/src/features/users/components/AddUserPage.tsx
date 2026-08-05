@@ -218,7 +218,7 @@ export function AddUserPage() {
   }), [allRows]);
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────────────── */}
       <motion.div
@@ -230,7 +230,7 @@ export function AddUserPage() {
         <div style={{ flex: 1, padding: "44px 56px 48px", zIndex: 10, position: "relative" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
               SINCE 1999 · USER MANAGEMENT
             </span>
           </div>
@@ -280,9 +280,9 @@ export function AddUserPage() {
                 {s.icon}
               </div>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 34, color: s.accent, lineHeight: 1.1, letterSpacing: "-0.5px" }}>{s.val}</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: s.accent, lineHeight: 1.1, letterSpacing: "-0.5px" }}>{s.val}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginTop: 2 }}>{s.label}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{s.sub}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{s.sub}</div>
               </div>
             </div>
           ))}
@@ -303,15 +303,15 @@ export function AddUserPage() {
                   <div style={{ width: 40, height: 40, borderRadius: 12, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Icon size={18} color={c.text} />
                   </div>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 28, color: c.text, lineHeight: 1 }}>{s.count}</div>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: c.text, lineHeight: 1 }}>{s.count}</div>
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.luxuryBrown }}>{s.role}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}>{s.role}</div>
                 {s.role === "Admin" ? (
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
                     {s.fullAccess} Full · {s.semiAccess} Semi
                   </div>
                 ) : (
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.active} active</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.active} active</div>
                 )}
               </div>
             );

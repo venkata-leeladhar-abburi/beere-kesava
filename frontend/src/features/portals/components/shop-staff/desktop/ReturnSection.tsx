@@ -28,7 +28,7 @@ export function ReturnSection({
           </div>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 20, position: "sticky" as const, top: 84 }}>
             <div style={{ background: C.dark, borderRadius: 18, padding: "24px", boxShadow: "0 4px 24px rgba(61,14,26,0.18)" }}>
-              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 16 }}>RETURN PROCESS</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 16 }}>RETURN PROCESS</div>
               {[
                 { n: "1", title: "Find Original Sale", desc: "Scan the saree barcode or enter the Saree ID to find the original sale record" },
                 { n: "2", title: "Select Reason", desc: "Choose why the customer is returning — defective, wrong design, changed mind, etc." },
@@ -39,14 +39,14 @@ export function ReturnSection({
                     <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: "#FFF" }}>{s.n}</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: "#FFF", marginBottom: 5 }}>{s.title}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 5 }}>{s.title}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.6 }}>{s.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "20px 22px" }}>
-              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 700, color: C.crim, marginBottom: 10 }}>Today's Returns</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.crim, marginBottom: 10 }}>Today's Returns</div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0" }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <RotateCcw size={20} color={C.crim} />

@@ -32,7 +32,7 @@ export function OwnFactoryReceiveTab() {
       <div style={{ margin: "10px 16px 0" }}>
         <FieldLabel>Which loom?</FieldLabel>
         <input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="Loom Number"
-          style={{ ...inputStyle, fontFamily: F.m, fontSize: 15, height: 46 }} />
+          style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, height: 46 }} />
       </div>
 
       <div style={{ ...card, margin: "10px 16px 10px", padding: 14 }}>
@@ -50,7 +50,7 @@ export function OwnFactoryReceiveTab() {
             {ownWeight && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
                 {parseFloat(ownWeight) >= 600 ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
-                <span style={{ fontFamily: F.u, fontSize: 10, color: parseFloat(ownWeight) >= 600 ? C.green : C.crim }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: parseFloat(ownWeight) >= 600 ? C.green : C.crim }}>
                   {parseFloat(ownWeight) >= 600 ? "OK" : "Too low"}
                 </span>
               </div>
@@ -59,10 +59,10 @@ export function OwnFactoryReceiveTab() {
           <div>
             <FieldLabel>Photo</FieldLabel>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: ownPhoto ? "#F5F5F5" : C.burg, border: ownPhoto ? `1px solid ${C.bdr}` : "none", borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: ownPhoto ? C.green : "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: ownPhoto ? "#F5F5F5" : C.burg, border: ownPhoto ? `1px solid ${C.bdr}` : "none", borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: ownPhoto ? C.green : "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                 <Camera size={12} color={ownPhoto ? C.green : "#FFF"} /> {ownPhoto ? "Taken ✓" : "Camera"}
               </button>
-              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                 <UploadCloud size={12} /> Gallery
               </button>
             </div>
@@ -86,16 +86,16 @@ export function OwnFactoryReceiveTab() {
 
         {ownWeight && ownPhoto && loomNum && (
           <div style={{ textAlign: "center", marginBottom: 10 }}>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginBottom: 2 }}>Saree ID</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>Saree ID</div>
             <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{ownSareeId}</div>
           </div>
         )}
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
             <Printer size={12} /> Print Tag
           </button>
-          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
             <Plus size={12} /> Next Saree
           </button>
         </div>

@@ -41,7 +41,7 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
   if (!auto) {
     return (
       <div style={{ background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
+        <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
           {typeCode && getSareeTypeByCode(typeCode)
             ? "Enter the saree weight to split it into warp, resham and jari."
             : "No rate card found for this saree type — material split unavailable."}
@@ -63,16 +63,16 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text }}>Material Weights</span>
-          <span style={{ fontFamily: F.m, fontSize: 9.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "2px 6px" }}>
+          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "2px 6px" }}>
             {auto.rate.code} · std {auto.rate.stdWeight}g
           </span>
-          <span style={{ fontFamily: F.u, fontSize: 10, color: dirty ? C.gold : C.green }}>
+          <span style={{ fontFamily: F.u, fontSize: 12, color: dirty ? C.gold : C.green }}>
             {dirty ? "Edited manually" : `Auto · ×${auto.factor.toFixed(2)}`}
           </span>
         </div>
         {dirty && (
           <button onClick={() => onEdit({})}
-            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.u, fontSize: 10.5, color: C.burg, textDecoration: "underline" }}>
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.burg, textDecoration: "underline" }}>
             Reset to auto
           </button>
         )}
@@ -81,19 +81,19 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
         {([{ key: "warp", label: "Warp" }, { key: "resham", label: "Resham" }] as const).map(f => (
           <div key={f.key}>
-            <div style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
               {f.label} (g)
             </div>
             <input type="number" value={val(f.key)}
               onChange={e => onEdit({ ...edits, [f.key]: e.target.value })}
               style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
-            <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3 }}>auto {auto[f.key]}g</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>auto {auto[f.key]}g</div>
           </div>
         ))}
 
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginBottom: 4 }}>
-            <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Jari ({jariUnit})
             </span>
             <div style={{ display: "flex", background: "rgba(107,26,42,0.06)", borderRadius: 999, padding: 2 }}>
@@ -101,7 +101,7 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
                 <button key={u} type="button" onClick={() => setJariUnit(u)}
                   style={{
                     border: "none", borderRadius: 999, padding: "2px 8px", cursor: "pointer",
-                    fontFamily: F.u, fontSize: 9.5, fontWeight: 600, textTransform: "capitalize",
+                    fontFamily: F.u, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
                     background: jariUnit === u ? C.burg : "transparent",
                     color: jariUnit === u ? "#FFF" : C.muted,
                   }}>
@@ -113,14 +113,14 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
           <input type="number" value={trimNum(jariFromReels(jariReels, jariUnit))}
             onChange={e => onEdit({ ...edits, jari: trimNum(jariToReels(parseFloat(e.target.value) || 0, jariUnit)) })}
             style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3 }}>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
             {trimNum(jariReels)} reels · {trimNum(jariFromReels(jariReels, "buns"))} buns · {trimNum(jariG, 0)}g
             <span style={{ marginLeft: 4 }}>· auto {auto.jari} reels</span>
           </div>
         </div>
       </div>
 
-      <div style={{ marginTop: 8, fontFamily: F.u, fontSize: 10.5, color: Math.abs(diff) > 5 ? C.gold : C.muted }}>
+      <div style={{ marginTop: 8, fontFamily: F.u, fontSize: 12, color: Math.abs(diff) > 5 ? C.gold : C.muted }}>
         Warp + Resham + Jari = {total.toFixed(0)}g of {parseFloat(weight) || 0}g saree weight
         {Math.abs(diff) > 5 ? ` · ${Math.abs(diff).toFixed(0)}g ${diff > 0 ? "unaccounted" : "over"}` : ""}
       </div>

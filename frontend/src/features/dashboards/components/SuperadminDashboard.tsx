@@ -151,7 +151,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const sections = PAGE_SECTIONS[nav];
 
   return (
-    <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <style>{`
         :root {
           --foreground: #1F1209;
@@ -167,8 +167,6 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
           --tw-ring-shadow: 0 0 rgba(0,0,0,0);
           --tw-ring-color: rgba(139,112,96,0.5);
         }
-        button { background-color: rgba(0,0,0,0); }
-        html, body { overflow-x: hidden; max-width: 100%; }
       `}</style>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
       {isMobile ? (

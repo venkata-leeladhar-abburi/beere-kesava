@@ -64,11 +64,11 @@ export function PaymentAnalyticsSection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
                 Payment Analytics &amp; Insights
               </h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px" }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
               Visual breakdown of cash flow, customer compliance, and top weaver earnings.
             </p>
           </div>
@@ -84,7 +84,7 @@ export function PaymentAnalyticsSection() {
               onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))"; }}
             >
               <Download size={15} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
             </button>
           </DownloadGate>
         </div>
@@ -113,11 +113,11 @@ export function PaymentAnalyticsSection() {
               {/* Label */}
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, lineHeight: 1.4 }}>{m.label}</div>
               {/* Value */}
-              <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 800, color: m.color, lineHeight: 1.1 }}>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: m.color, lineHeight: 1.1 }}>
                 <AnimCount raw={m.value} />
               </div>
               {/* Sub */}
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: "auto" }}>{m.sub}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: "auto" }}>{m.sub}</div>
             </motion.div>
           ))}
         </div>
@@ -134,7 +134,7 @@ export function PaymentAnalyticsSection() {
                   <TrendingUp size={22} color={T.green} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>Cash Flow Overview</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Cash Flow Overview</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Income vs. expenses · ₹ Lakhs</div>
                 </div>
               </div>
@@ -144,8 +144,8 @@ export function PaymentAnalyticsSection() {
               <ResponsiveContainer width="100%" height={210}>
                 <BarChart data={CASH_FLOW_DATA} barGap={4} barCategoryGap="28%">
                   <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                  <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}L`} width={46} />
+                  <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}L`} width={46} />
                   <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
                   <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
                   <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
@@ -171,7 +171,7 @@ export function PaymentAnalyticsSection() {
                   <CheckCircle2 size={22} color={T.antiqueGold} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>Payment Compliance</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Payment Compliance</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice status breakdown · May 2026</div>
                 </div>
               </div>
@@ -217,7 +217,7 @@ export function PaymentAnalyticsSection() {
                   <Users size={22} color={T.royalBurgundy} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>Top Weaver Earnings</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Top Weaver Earnings</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Highest-paid weavers · May 2026</div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export function PaymentAnalyticsSection() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFDF9" }}>{d.name.split(" ").map((w: string) => w[0]).join("").slice(0,2)}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9" }}>{d.name.split(" ").map((w: string) => w[0]).join("").slice(0,2)}</span>
                       </div>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.name}</span>
                     </div>

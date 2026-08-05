@@ -24,7 +24,7 @@ const prodWeeklyData = [
   { week: "W4", may: 54, apr: 48 },
 ];
 const prodStageData = [
-  { stage: "Dispatched",          count: 186, color: "#8B7060" },
+  { stage: "Dispatched",          count: 186, color: "#69635E" },
   { stage: "Finished",            count: 186, color: "#3B5F4E" },
   { stage: "Assigned to Finishing",count: 24, color: T.darkBurgundy },
   { stage: "Quality Check Passed", count: 238, color: T.green },
@@ -77,12 +77,12 @@ export function ExternalPurchasesSection() {
                 {externalPurchaseRows.map((r, i) => (
                   <tr key={r.invoiceNumber} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier}</span></td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 11 }}>{r.gstNumber}</td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.invoiceNumber}</td>
+                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber}</td>
+                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.billAmount.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 11.5 }}>{r.date}</td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 10.5, color: T.taupe }}>{r.sareeIds.join(", ")}</td>
+                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.date}</td>
+                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sareeIds.join(", ")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -125,8 +125,8 @@ export function SareeProductionReport() {
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={prodWeeklyData}>
               <CartesianGrid key="prod-wk-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="prod-wk-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="prod-wk-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+              <XAxis key="prod-wk-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="prod-wk-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
               <Tooltip key="prod-wk-tip" content={<ChartTip suffix=" sarees" />} />
               <Line key="prod-wk-may" type="monotone" dataKey="may" name="May 2026" stroke={T.royalBurgundy} strokeWidth={2.5} dot={{ fill: T.royalBurgundy, r: 4 }} />
               <Line key="prod-wk-apr" type="monotone" dataKey="apr" name="April 2026" stroke={T.antiqueGold} strokeWidth={2} strokeDasharray="5 4" dot={{ fill: T.antiqueGold, r: 3 }} />
@@ -170,7 +170,7 @@ export function SareeProductionReport() {
             </ResponsiveContainer>
             <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", pointerEvents: "none" }}>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>96%</div>
-              <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe }}>Pass Rate</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Pass Rate</div>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px" }}>
@@ -193,7 +193,7 @@ export function SareeProductionReport() {
               <Boxes size={24} color={T.royalBurgundy} />
             </div>
             <div>
-              <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0" }}>Own Factory vs Outsourced</h3>
+              <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0" }}>Own Factory vs Outsourced</h3>
               <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Production source split this period</p>
             </div>
           </div>
@@ -263,7 +263,7 @@ export function SareeProductionReport() {
                     <td style={{ ...TD, textAlign: "center" }}>
                       <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />
                     </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.designs}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span></td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.charges.toLocaleString("en-IN")}</td>
                   </tr>
                 ))}

@@ -59,19 +59,19 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
   const tabCount = tabCounts[tab] ?? totals.all;
 
   return (
-    <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: embedded ? undefined : "100vh" }}>
+    <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: embedded ? undefined : "100dvh" }}>
 
       {/* HERO */}
       <section style={{ background: G.card, padding: "44px 40px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
             REPORTS · OUTSTANDING STOCK
           </div>
           <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: "#FFFDF9", margin: 0, lineHeight: 1.12 }}>
             Outstanding Sarees Report
           </h1>
-          <p style={{ fontFamily: F.ui, fontSize: 14.5, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 720 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 720 }}>
             Every saree still not sold — retail or wholesale — split by where it came from: our own weavers,
             our factory looms, and external purchases. External purchases are shown purchase-wise with bill dues
             and customer returns.
@@ -109,13 +109,13 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
                   <t.Icon size={24} color={active ? "#2C0913" : "rgba(255,253,249,0.70)"} />
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.25 }}>{t.label}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: active ? "rgba(231,201,131,0.95)" : "rgba(255,253,249,0.45)", marginTop: 3 }}>{t.desc}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.25 }}>{t.label}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(231,201,131,0.95)" : "rgba(255,253,249,0.45)", marginTop: 3 }}>{t.desc}</div>
                 </div>
                 {count !== null && (
                   <div style={{ flexShrink: 0, textAlign: "right" }}>
                     <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: active ? T.antiqueGold : "rgba(255,253,249,0.80)", lineHeight: 1 }}>{count}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 10, color: "rgba(255,253,249,0.40)", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 4 }}>Unsold</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.40)", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 4 }}>Unsold</div>
                   </div>
                 )}
               </motion.button>
@@ -129,7 +129,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
         <div style={{ padding: "22px 40px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(192,57,43,0.07)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "13px 18px" }}>
             <AlertTriangle size={17} color={T.crimson} />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
               <strong style={{ color: T.crimson }}>{totals.aged90} sarees</strong> have been sitting unsold for more than 90 days. Use the <strong>90+ d</strong> ageing filter to see them.
             </span>
           </div>

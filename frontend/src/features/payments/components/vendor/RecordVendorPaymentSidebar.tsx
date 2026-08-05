@@ -62,14 +62,14 @@ export function RecordVendorPaymentSidebar({
             { label: "Previous Paid",  val: `₹${selVP.paidAmt.toLocaleString("en-IN")}`,   color: T.green },
           ].map(row => (
             <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{row.label}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12.5, color: row.color, fontWeight: 700 }}>{row.val}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{row.label}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: row.color, fontWeight: 700 }}>{row.val}</span>
             </div>
           ))}
           <div style={{ height: 1, background: T.borderDef, margin: "2px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>Balance Due</span>
-            <span style={{ fontFamily: F.mono, fontSize: 15, color: T.crimson, fontWeight: 700 }}>₹{selBalance.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>Balance Due</span>
+            <span style={{ fontFamily: F.mono, fontSize: 14, color: T.crimson, fontWeight: 700 }}>₹{selBalance.toLocaleString("en-IN")}</span>
           </div>
         </div>
 
@@ -98,8 +98,8 @@ export function RecordVendorPaymentSidebar({
         </div>
         {payAmount && (
           <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, padding: "12px 14px" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Balance After This Payment</div>
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: afterPay <= 0 ? T.green : T.royalBurgundy }}>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Balance After This Payment</div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: afterPay <= 0 ? T.green : T.royalBurgundy }}>
               {afterPay <= 0 ? "Fully Paid ✓" : `₹${afterPay.toLocaleString("en-IN")}`}
             </div>
           </div>

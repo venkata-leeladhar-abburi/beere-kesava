@@ -67,7 +67,7 @@ export function InactiveCustomersSection({
 
       {/* Timeline filter — how long inactive */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20, flexWrap: "wrap" as const }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, fontWeight: 600, marginRight: 4 }}>Inactive for:</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginRight: 4 }}>Inactive for:</span>
         {([
           { key: "all", label: "Any length" },
           { key: "6", label: "6+ months" },
@@ -84,7 +84,7 @@ export function InactiveCustomersSection({
         ))}
       </div>
 
-      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginBottom: 12 }}>{filteredInactive.length} customer{filteredInactive.length !== 1 ? "s" : ""} found</div>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>{filteredInactive.length} customer{filteredInactive.length !== 1 ? "s" : ""} found</div>
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 14 }}>
@@ -109,12 +109,12 @@ export function InactiveCustomersSection({
               return (
                 <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                   <td style={{ padding: "16px 24px", fontWeight: 600, color: T.luxuryBrown }}>{row.name}</td>
-                  <td style={{ padding: "16px 24px" }}><span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 11, borderRadius: 4, fontWeight: 600 }}>{row.type}</span></td>
+                  <td style={{ padding: "16px 24px" }}><span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 12, borderRadius: 4, fontWeight: 600 }}>{row.type}</span></td>
                   <td style={{ padding: "16px 24px", color: T.taupe }}>{row.city}</td>
                   <td style={{ padding: "16px 24px", minWidth: 180 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
                       <span style={{ fontWeight: 600, color: severity.color }}>{row.last}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px" }}>{severity.label}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px" }}>{severity.label}</span>
                     </div>
                     <div style={{ height: 4, background: T.silkCream, borderRadius: 2, overflow: "hidden" }}>
                       <div style={{ width: `${pct}%`, height: "100%", background: severity.color, borderRadius: 2 }} />
@@ -124,7 +124,7 @@ export function InactiveCustomersSection({
                   <td style={{ padding: "16px 24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <button style={{ background: "transparent", border: "none", color: T.antiqueGold, fontWeight: 600, cursor: "pointer", fontFamily: F.ui, fontSize: 13 }}>Mark as Inactive</button>
-                      <span style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
                     </div>
                   </td>
                 </tr>

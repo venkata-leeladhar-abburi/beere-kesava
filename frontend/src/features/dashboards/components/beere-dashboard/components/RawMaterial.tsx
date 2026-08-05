@@ -31,7 +31,7 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
               <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>{m.name}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 4 }}>{m.desc}</div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 36, color: m.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{m.stock}</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: m.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{m.stock}</div>
               </div>
             </motion.div>
           </FadeUp>

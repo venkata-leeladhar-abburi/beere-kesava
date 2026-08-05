@@ -59,12 +59,12 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
 
-        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 700, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
           {b.batchId}
         </div>
 
         <div style={{ position: "absolute", top: 12, right: 12 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 10, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "rgba(30,102,64,0.85)" : "rgba(200,155,71,0.92)", backdropFilter: "blur(4px)", borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "rgba(30,102,64,0.85)" : "rgba(200,155,71,0.92)", backdropFilter: "blur(4px)", borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: b.status === "active" ? "#2ECC71" : T.royalBurgundy }} />
             {b.status === "active" ? "Active" : "Draft"}
           </span>
@@ -72,12 +72,12 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
 
         <div style={{ position: "absolute", bottom: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Quantity</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Quantity</div>
             <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: "#FFFFFF" }}>{b.totalCount} Sarees</div>
           </div>
           {hasDueDate && (
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
               <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight }}>{b.dueDate}</div>
             </div>
           )}
@@ -95,12 +95,12 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
         )}
 
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
             Assigned Weavers
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {weavers.map(w => (
-              <span key={w.name} style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "4px 8px" }}>
+              <span key={w.name} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "4px 8px" }}>
                 {w.count} × {w.name}
               </span>
             ))}
@@ -109,12 +109,12 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
 
         {orders.length > 0 && (
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
               Linked Orders
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {orders.map(o => (
-                <span key={o.label} style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.06)" : "rgba(30,102,64,0.05)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.15)" : "rgba(30,102,64,0.15)"}`, borderRadius: 8, padding: "4px 8px" }}>
+                <span key={o.label} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.06)" : "rgba(30,102,64,0.05)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.15)" : "rgba(30,102,64,0.15)"}`, borderRadius: 8, padding: "4px 8px" }}>
                   {o.count} × {o.label}
                 </span>
               ))}
@@ -127,7 +127,7 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Rows complete: {completeCount} of {b.totalCount}</span>
-            <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 800, color: pct === 100 ? T.green : T.antiqueGold }}>{pct}%</span>
+            <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 800, color: pct === 100 ? T.green : T.antiqueGold }}>{pct}%</span>
           </div>
           <div style={{ height: 8, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.05)" }}>
             <motion.div
@@ -199,7 +199,7 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
                 {firstRow ? firstRow.sareeTypeName : "Batch"} Production
               </div>
             </div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "#2ECC71" : T.antiqueGold, borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "#2ECC71" : T.antiqueGold, borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               {b.status === "active" ? "Active" : "Draft"}
             </span>
           </div>
@@ -221,7 +221,7 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
               <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
                 {b.dueDate || "Not Set"}
               </div>
@@ -272,15 +272,15 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
               <div style={{ position: "relative", flex: "1 1 200px" }}>
                 <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, boxSizing: "border-box" }} />
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, boxSizing: "border-box" }} />
               </div>
-              <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+              <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
                 {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
               </select>
-              <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+              <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
                 {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
               </select>
-              <select value={qcFilter} onChange={e => setQcFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+              <select value={qcFilter} onChange={e => setQcFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
                 {["All", "QC Passed", "In Progress"].map(q => <option key={q} value={q}>{q === "All" ? "All QC Status" : q}</option>)}
               </select>
             </div>
@@ -294,21 +294,21 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
                         Saree {row.serial}
                       </span>
                       {row.sareeId && (
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
                           ({row.sareeId})
                         </span>
                       )}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, marginTop: 4 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, marginTop: 4 }}>
                       Loom {row.weaverLoom} · {row.weaverName || "Unassigned"}
                     </div>
                     {row.bulkOrderLabel && (
-                      <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.green, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
                         <span>↳ Order: {row.bulkOrderLabel}</span>
                       </div>
                     )}
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: row.qcPassed ? T.green : T.taupe, background: row.qcPassed ? "rgba(30,102,64,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 8px" }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: row.qcPassed ? T.green : T.taupe, background: row.qcPassed ? "rgba(30,102,64,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 8px" }}>
                     {row.qcPassed ? "QC Passed" : "In Progress"}
                   </span>
                 </div>

@@ -23,7 +23,7 @@ export function WarpRequestsSection() {
                 <WarningCircle size={26} color="#FFFDF9" weight="fill" />
               </div>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Warp Requests Waiting for Approval</div>
+                <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Warp Requests Waiting for Approval</div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Review each weaver's progress and material need before approving</div>
               </div>
             </div>
@@ -54,7 +54,7 @@ export function WarpRequestsSection() {
                     <img src={r.photo} alt={r.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 21, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{r.name}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{r.name}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{r.code}</div>
                     <div style={{ display: "inline-block", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>{r.batch}</div>
                   </div>
@@ -72,7 +72,7 @@ export function WarpRequestsSection() {
                       <Clock size={20} color={T.royalBurgundy} weight="regular" />
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
                       <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.raised}</div>
                     </div>
                   </div>
@@ -83,7 +83,7 @@ export function WarpRequestsSection() {
                       <Package size={20} color={T.royalBurgundy} weight="regular" />
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
                       <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.material}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>{r.reason}</div>
                     </div>
@@ -95,10 +95,10 @@ export function WarpRequestsSection() {
                       <ChartBar size={20} color={T.royalBurgundy} weight="regular" />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 6 }}>Batch progress</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 6 }}>Batch progress</div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.done} of {r.total} sarees done</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.antiqueGold }}>{r.pct}%</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.done} of {r.total} sarees done</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.antiqueGold }}>{r.pct}%</div>
                       </div>
                       {/* Progress bar */}
                       <div style={{ height: 10, background: "rgba(110,15,45,0.09)", borderRadius: 99, overflow: "hidden" }}>
@@ -124,7 +124,7 @@ export function WarpRequestsSection() {
                     onClick={() => setDecision({ type: "approve", req: r })}
                     whileHover={{ scale: 1.02, backgroundColor: "#145230" }}
                     whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: T.green, color: "#FFFFFF", border: "none", borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: T.green, color: "#FFFFFF", border: "none", borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                   >
                     <CheckCircle size={22} weight="fill" />
                     Approve
@@ -133,7 +133,7 @@ export function WarpRequestsSection() {
                     onClick={() => setDecision({ type: "reject", req: r })}
                     whileHover={{ scale: 1.02, backgroundColor: "rgba(192,57,43,0.08)" }}
                     whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: T.crimson, background: "rgba(192,57,43,0.05)", border: `1.5px solid rgba(192,57,43,0.30)`, borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: T.crimson, background: "rgba(192,57,43,0.05)", border: `1.5px solid rgba(192,57,43,0.30)`, borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                   >
                     <XCircle size={22} weight="fill" />
                     Reject

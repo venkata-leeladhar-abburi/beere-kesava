@@ -31,7 +31,7 @@ export function Footer() {
               initial={{ backgroundColor: "rgba(200,155,71,0.09)" }}
               whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.16)" }}
               whileTap={{ scale: 0.97 }}
-              style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 16, border: "1px solid rgba(200,155,71,0.32)", backgroundColor: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.goldLight, letterSpacing: "0.1px" }}
+              style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 16, border: "1px solid rgba(200,155,71,0.32)", backgroundColor: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.goldLight, letterSpacing: "0.1px" }}
             >
               Know Our Story <ArrowRight size={12} color={T.goldLight} />
             </motion.button>
@@ -55,9 +55,9 @@ export function Footer() {
               <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply" }} />
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 15, color: T.luxuryBrown, letterSpacing: "0.2px" }}>Beere Kesava</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 11, color: T.taupe, letterSpacing: "0.1px" }}>&amp; Brothers Silks</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase" }}>Est. 1999</div>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, letterSpacing: "0.2px" }}>Beere Kesava</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.1px" }}>&amp; Brothers Silks</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase" }}>Est. 1999</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 32 }}>
@@ -89,7 +89,7 @@ export function Footer() {
         <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, opacity: 0.75, letterSpacing: "0.1px" }}>© 1999 Beere Kesava &amp; Brothers Silks. All rights reserved.</span>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Lotus size={14} color={T.antiqueGold} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 11, color: T.antiqueGold, letterSpacing: "2px", opacity: 0.75, textTransform: "uppercase" }}>Tradition · Trust · Timeless Quality</span>
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", opacity: 0.75, textTransform: "uppercase" }}>Tradition · Trust · Timeless Quality</span>
         </div>
       </div>
     </footer>

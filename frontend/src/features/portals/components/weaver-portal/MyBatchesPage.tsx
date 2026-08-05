@@ -81,12 +81,12 @@ export function MyBatchesPage() {
         <div key={ds.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(192,57,43,0.06)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "16px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
             <AlertTriangle size={18} color={C.crim} />
-            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14.5, color: C.crim }}>QC Failed — Defective Saree Alert</span>
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>QC Failed — Defective Saree Alert</span>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
             Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong>₹{ds.deduction}</strong> has been registered.
           </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 11.5, color: C.muted }}>
+          <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 12, color: C.muted }}>
             <span>QC Date: {ds.date}</span>
             <span>•</span>
             <span style={{ fontStyle: "italic" }}>Defect photo sent via WhatsApp</span>
@@ -97,13 +97,13 @@ export function MyBatchesPage() {
       {/* Weaver Identity */}
       <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: myDefectiveSarees.length > 0 ? 16 : 0 }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 19, color: "#FFF" }}>RK</span>
+          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>RK</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 19, color: "#FFF" }}>Ravi Kumar</div>
+          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Ravi Kumar</div>
           <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 3 }}>WVR-014 · Handloom Weaver</div>
         </div>
-        <div style={{ border: `1px solid ${C.gold}`, color: C.gold, borderRadius: 999, padding: "6px 14px", fontFamily: F.m, fontSize: 11.5, flexShrink: 0, whiteSpace: "nowrap" as const }}>{totalMyActive} Active {totalMyActive === 1 ? "Batch" : "Batches"}</div>
+        <div style={{ border: `1px solid ${C.gold}`, color: C.gold, borderRadius: 999, padding: "6px 14px", fontFamily: F.m, fontSize: 12, flexShrink: 0, whiteSpace: "nowrap" as const }}>{totalMyActive} Active {totalMyActive === 1 ? "Batch" : "Batches"}</div>
       </div>
 
       {/* Stats Strip — spacious, clearly readable */}
@@ -118,7 +118,7 @@ export function MyBatchesPage() {
             borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
           }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: s.highlight ? C.gold : "#FFF", lineHeight: 1 }}>{s.val}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12.5, color: "rgba(255,255,255,0.60)", marginTop: 5 }}>{s.label}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 5 }}>{s.label}</div>
           </div>
         ))}
       </div>

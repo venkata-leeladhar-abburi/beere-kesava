@@ -26,7 +26,7 @@ export function WholesaleTermsSection() {
           <Clock size={16} color={T.antiqueGold} />
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
             Payment alerts start from:{" "}
-            <strong style={{ color: T.antiqueGold, fontSize: 15 }}>Day 45</strong>{" "}
+            <strong style={{ color: T.antiqueGold, fontSize: 14 }}>Day 45</strong>{" "}
             for all customers
           </span>
         </div>
@@ -71,16 +71,16 @@ export function WholesaleTermsSection() {
               <React.Fragment key={row.code}>
                 <tr style={{ background: editTermsRow === i ? "rgba(110,15,45,0.03)" : "transparent" }}>
                   <td style={{ ...tdStyle, fontWeight: 500 }}>{row.name}</td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{row.code}</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{row.code}</td>
                   <td style={tdStyle}>
                     <span style={{
                       fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown,
                       background: T.cream, padding: "3px 10px", borderRadius: 6,
                     }}>{row.terms}</span>
                   </td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.antiqueGold }}>{row.alert}</td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.crimson }}>{row.overdue}</td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{row.changed}</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{row.alert}</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.crimson }}>{row.overdue}</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.changed}</td>
                   <td style={tdStyle}>
                     <button
                       onClick={() => setEditTermsRow(editTermsRow === i ? null : i)}

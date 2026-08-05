@@ -101,7 +101,7 @@ export function SectionHeader({ title, actionText = "View All →", small, onAct
         </span>
       </div>
       <motion.span onClick={onAction} whileHover={{ x: 3, opacity: 1 }} transition={{ duration: 0.2 }}
-        style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "#C4923A", cursor: "pointer", letterSpacing: "0.1px" }}
+        style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "#845E04", cursor: "pointer", letterSpacing: "0.1px" }}
       >{actionText}</motion.span>
     </motion.div>
   );

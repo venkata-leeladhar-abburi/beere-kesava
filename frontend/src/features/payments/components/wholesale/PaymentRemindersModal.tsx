@@ -63,7 +63,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
           <div>
             <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</label>
             <select value={selectedInvoiceId} onChange={e => setSelectedInvoiceId(e.target.value)}
-              style={{ width: "100%", height: 40, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
+              style={{ width: "100%", height: 40, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
               {overdueInvoices.map(i => (
                 <option key={i.id} value={i.id}>
                   {i.customer} ({i.id}) — ₹{(i.total - i.paid).toLocaleString("en-IN")} ({i.daysOverdue}d late)
@@ -97,9 +97,9 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
                       onChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
                       style={{ accentColor: T.royalBurgundy }}
                     />
-                    <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginLeft: 22 }}>{ch.sub}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 22 }}>{ch.sub}</span>
                 </label>
               ))}
             </div>
@@ -126,7 +126,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
                   }}
                 >
                   <div style={{ fontSize: 13, fontWeight: 700, color: scheduleType === s.key ? T.royalBurgundy : T.luxuryBrown }}>{s.label}</div>
-                  <div style={{ fontSize: 10.5, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
+                  <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
                 </button>
               ))}
             </div>

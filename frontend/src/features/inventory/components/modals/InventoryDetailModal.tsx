@@ -22,7 +22,7 @@ export function InventoryDetailModal({
 
   const infoCell = (label: string, value: React.ReactNode) => (
     <div>
-      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
       <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{value}</div>
     </div>
   );
@@ -54,16 +54,16 @@ export function InventoryDetailModal({
 
           {/* ID Card */}
           <div style={{ textAlign: 'center' as const, padding: '16px 20px', background: 'rgba(110,15,45,0.04)', borderRadius: 14, border: `1px solid rgba(110,15,45,0.08)` }}>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, letterSpacing: '2px', textTransform: 'uppercase' as const }}>Saree Barcode ID</div>
-            <div style={{ fontFamily: F.mono, fontSize: 26, fontWeight: 700, color: T.royalBurgundy, marginTop: 4, letterSpacing: '1px' }}>{item.id}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: '2px', textTransform: 'uppercase' as const }}>Saree Barcode ID</div>
+            <div style={{ fontFamily: F.mono, fontSize: 24, fontWeight: 700, color: T.royalBurgundy, marginTop: 4, letterSpacing: '1px' }}>{item.id}</div>
             <div style={{ marginTop: 10 }}><StatusBadge status={item.status} /></div>
             {item.bulkOrderRef && (
-              <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(200,155,71,0.10)', border: '1px solid rgba(200,155,71,0.25)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: '#7A5310' }}>
+              <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(200,155,71,0.10)', border: '1px solid rgba(200,155,71,0.25)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: '#7A5310' }}>
                 <Hash size={10} /> {item.bulkOrderRef}
               </div>
             )}
             {item.quotationRef && (
-              <div style={{ marginTop: 8, marginLeft: item.bulkOrderRef ? 6 : 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(110,15,45,0.06)', border: '1px solid rgba(110,15,45,0.16)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy }}>
+              <div style={{ marginTop: 8, marginLeft: item.bulkOrderRef ? 6 : 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(110,15,45,0.06)', border: '1px solid rgba(110,15,45,0.16)', borderRadius: 999, padding: '3px 10px', fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>
                 <FileText size={10} /> {item.quotationRef}
               </div>
             )}
@@ -93,7 +93,7 @@ export function InventoryDetailModal({
                 {disp.type === 'wholesale' && disp.customerName && (
                   <div style={{ gridColumn: '1 / -1', borderTop: `1px solid ${T.borderDef}`, paddingTop: 10, marginTop: 2 }}>
                     {infoCell('Customer', <span style={{ color: T.royalBurgundy, fontWeight: 700 }}>{disp.customerName}</span>)}
-                    {disp.invoiceNumber && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 4 }}>Invoice: {disp.invoiceNumber}</div>}
+                    {disp.invoiceNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>Invoice: {disp.invoiceNumber}</div>}
                   </div>
                 )}
               </div>
@@ -113,7 +113,7 @@ export function InventoryDetailModal({
                 {infoCell('Date', <span style={{ fontFamily: F.mono }}>{ret.receivedDate}</span>)}
                 {ret.damageNotes && (
                   <div style={{ gridColumn: '1 / -1', borderTop: 'rgba(192,57,43,0.10) solid 1px', paddingTop: 10, marginTop: 2 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 4 }}>Notes</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Notes</div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontStyle: 'italic' }}>“{ret.damageNotes}”</div>
                   </div>
                 )}

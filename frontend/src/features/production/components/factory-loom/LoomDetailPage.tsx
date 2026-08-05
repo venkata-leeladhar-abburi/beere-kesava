@@ -90,9 +90,9 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
   return (
     <>
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100vh" }}>
+    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, top: 0, zIndex: 10 }}>
-        <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 15, padding: "8px 4px" }}>
+        <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 14, padding: "8px 4px" }}>
           <ArrowLeft size={18} /> Back to Factory Looms
         </button>
         <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
@@ -105,7 +105,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           </div>
           <div style={{ flex: "1 1 320px" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: sc.color, background: sc.bg, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{sc.icon}{sc.label}</span>
-            <div style={{ fontFamily: F.display, fontSize: 32, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loom.loomNumber}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loom.loomNumber}</div>
             <div style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, marginTop: 6 }}>{loom.id}</div>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
@@ -117,8 +117,8 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
               <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", minWidth: 140 }}>
                 {s.icon}
                 <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{s.label}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{s.label}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
                 </div>
               </div>
             ))}
@@ -129,7 +129,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
       <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
         {TABS.map(t => (
           <button key={t.k} onClick={() => setTab(t.k as any)}
-            style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: tab === t.k ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === t.k ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" as const }}>
+            style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: tab === t.k ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === t.k ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" as const }}>
             {t.icon}{t.l}
           </button>
         ))}
@@ -168,7 +168,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                     { label: "Notes", value: loom.notes || "—" },
                   ].map((r, i, arr) => (
                     <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, padding: "16px 20px", borderBottom: i < arr.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF" }}>
-                      <span style={{ color: T.taupe, fontFamily: F.ui, fontSize: 14.5 }}>{r.label}</span>
+                      <span style={{ color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>{r.label}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>{r.value}</span>
                     </div>
                   ))}
@@ -185,15 +185,15 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                   ) : materialRecords.map(r => (
                     <div key={r.id} style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 10 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "2px 8px" }}>{r.id}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "2px 8px" }}>{r.id}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
                       </div>
                       {r.materials.map((m, i) => (
                         <div key={i} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                           • {m.materialType}: <strong>{m.quantity} {m.unit}</strong>{m.description ? ` ${m.description}` : ""}
                         </div>
                       ))}
-                      <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>Batch {r.batchId || "—"} · Issued by {r.issuedBy}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Batch {r.batchId || "—"} · Issued by {r.issuedBy}</div>
                     </div>
                   ))}
                 </div>
@@ -222,15 +222,15 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                 <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 10 }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" as const }}>{b.status}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" as const }}>{b.status}</span>
                     </div>
                     {b.dueDate && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Due Date: {b.dueDate}</div>}
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" as const, marginBottom: 6 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>Progress: {doneCount} of {rowsInBatch.length} sarees done</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Progress: {doneCount} of {rowsInBatch.length} sarees done</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
                   </div>
                   <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 16 }}>
                     <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }} />
@@ -241,34 +241,34 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                       <thead>
                         <tr style={{ background: T.warmCream }}>
                           {["Saree ID", "Saree Type", "Bulk Order", "Design Dispatch", "QC Status"].map(h => (
-                            <th key={h} style={{ padding: "8px 10px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>{h}</th>
+                            <th key={h} style={{ padding: "8px 10px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {rowsInBatch.map((row, idx) => {
-                          let qcLabel = "In Production", qcBg = "rgba(139,112,96,0.08)", qcColorVal = T.taupe;
+                          let qcLabel = "In Production", qcBg = "rgba(139,112,96,0.08)", qcColorVal: string = T.taupe;
                           if (row.qcPassed === true) { qcLabel = "QC Passed"; qcBg = "rgba(30,102,64,0.08)"; qcColorVal = T.green; }
                           else if (row.qcPassed === false) { qcLabel = "QC Failed"; qcBg = "rgba(192,57,43,0.08)"; qcColorVal = T.crimson; }
                           return (
                             <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
                               <td style={{ padding: "9px 10px" }}>
                                 {row.sareeId
-                                  ? <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
-                                  : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>—</span>}
+                                  ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
+                                  : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>}
                               </td>
-                              <td style={{ padding: "9px 10px", fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</td>
-                              <td style={{ padding: "9px 10px", fontFamily: F.ui, fontSize: 11, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</td>
+                              <td style={{ padding: "9px 10px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</td>
+                              <td style={{ padding: "9px 10px", fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</td>
                               <td style={{ padding: "9px 10px" }}>
                                 {idx === 0 && batchDispatches.length > 0
                                   ? <button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })}
-                                      style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                      style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
                                       {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
                                     </button>
-                                  : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>}
+                                  : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>}
                               </td>
                               <td style={{ padding: "9px 10px" }}>
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" as const }}>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" as const }}>
                                   <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />{qcLabel}
                                 </span>
                               </td>
@@ -281,7 +281,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                 </div>
               );
             }) : (
-              <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" as const, border: `1px solid ${T.borderDef}` }}>
+              <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" as const, border: `1px solid ${T.borderDef}` }}>
                 No batch history found for this loom.
               </div>
             )}
@@ -295,36 +295,36 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
             {dispatchGroups.length > 0 ? dispatchGroups.map(group => (
               <div key={group.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
-                  <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
                   {group.records.map(h => (
                     <div key={h.id} style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Sent on {h.sentAt}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sent on {h.sentAt}</span>
                       </div>
-                      <div style={{ background: "rgba(110,15,45,0.03)", border: "1px solid rgba(110,15,45,0.06)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                      <div style={{ background: "rgba(110,15,45,0.03)", border: "1px solid rgba(110,15,45,0.06)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
                         <strong>Instructions:</strong> {h.instructions}
                       </div>
                       <div style={{ display: "flex", gap: 14, alignItems: "flex-start" as const, flexWrap: "wrap" as const }}>
                         {h.colorSlipImage && (
                           <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                            <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
                             <img src={h.colorSlipImage} alt="Color slip" onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — ${h.id}` })}
                               style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
                           </div>
                         )}
                         {h.designGraphImage && (
                           <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                            <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
                             <img src={h.designGraphImage} alt="Design graph" onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — ${h.id}` })}
                               style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
                           </div>
                         )}
                         {!h.colorSlipImage && !h.designGraphImage && (
-                          <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" as const }}>No files attached</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" as const }}>No files attached</span>
                         )}
                       </div>
                     </div>
@@ -332,7 +332,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                 </div>
               </div>
             )) : (
-              <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" as const, border: `1px solid ${T.borderDef}` }}>
+              <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center" as const, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" as const, border: `1px solid ${T.borderDef}` }}>
                 No design dispatches found for this loom.
               </div>
             )}

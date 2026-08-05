@@ -101,14 +101,14 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
         <PageHeader title="Tag Preview" onBack={() => setShowTagPrint(false)} />
         <div style={{ paddingBottom: 28 }}>
           <div style={{ margin: "14px 16px", border: `1px solid rgba(139,26,46,0.20)`, borderRadius: 12, padding: 16, background: "#FFF" }}>
-            <div style={{ fontFamily: F.u, fontSize: 9, color: C.muted, textAlign: "center", marginBottom: 8 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center", marginBottom: 8 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
             <div style={{ background: "#000", height: 36, borderRadius: 4, marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontFamily: F.m, fontSize: 7, color: "#FFF", letterSpacing: 3 }}>||| | || ||| || |</span>
             </div>
             <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, textAlign: "center", color: C.text, marginBottom: 10 }}>{sareeId}</div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div><span style={{ fontFamily: F.u, fontSize: 10, color: C.gold }}>Weaver: </span><span style={{ fontFamily: F.u, fontSize: 10, color: C.text }}>{selectedWeaver?.name}</span></div>
-              <div><span style={{ fontFamily: F.u, fontSize: 10, color: C.gold }}>Date: </span><span style={{ fontFamily: F.u, fontSize: 10, color: C.text }}>13 Jun 2026</span></div>
+              <div><span style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>Weaver: </span><span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{selectedWeaver?.name}</span></div>
+              <div><span style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>Date: </span><span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>13 Jun 2026</span></div>
             </div>
           </div>
           <div style={{ padding: "0 16px" }}>
@@ -168,9 +168,9 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <div>
                         <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
                       </div>
-                      <span style={{ fontFamily: F.u, fontSize: 10, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 12, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
                         {allDone ? "Ready for signature" : "Active"}
                       </span>
                     </div>
@@ -216,7 +216,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     {weightNum !== null && (
                       <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
                         {weightOk ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
-                        <span style={{ fontFamily: F.u, fontSize: 10, color: weightOk ? C.green : C.crim }}>
+                        <span style={{ fontFamily: F.u, fontSize: 12, color: weightOk ? C.green : C.crim }}>
                           {weightOk ? "OK" : "Too low"}
                         </span>
                       </div>
@@ -226,10 +226,10 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     <FieldLabel>Photo</FieldLabel>
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: C.burg, border: "none", borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: C.burg, border: "none", borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                           <Camera size={12} /> Camera
                         </button>
-                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                           <UploadCloud size={12} /> Gallery
                         </button>
                       </div>
@@ -239,7 +239,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                         <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckCircle2 size={10} color="#FFF" />
                         </div>
-                        <button onClick={() => setHasPhoto(false)} style={{ position: "absolute", bottom: 3, right: 5, background: "none", border: "none", fontFamily: F.u, fontSize: 9, color: "rgba(0,0,0,0.5)", cursor: "pointer" }}>Retake</button>
+                        <button onClick={() => setHasPhoto(false)} style={{ position: "absolute", bottom: 3, right: 5, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: "rgba(0,0,0,0.5)", cursor: "pointer" }}>Retake</button>
                       </div>
                     )}
                   </div>
@@ -254,22 +254,22 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
                 {sareeColor && sareeWeight && hasPhoto && (
                   <div style={{ textAlign: "center", marginBottom: 10 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginBottom: 2 }}>Saree ID</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>Saree ID</div>
                     <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{sareeId}</div>
                   </div>
                 )}
 
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <button onClick={() => setShowTagPrint(true)} style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  <button onClick={() => setShowTagPrint(true)} style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                     <Printer size={12} /> Print Tag
                   </button>
                   <button onClick={saveSaree} disabled={!canSaveSaree}
-                    style={{ flex: 1, height: 42, background: canSaveSaree ? "#FFF" : "#F5F0EC", border: `1px solid ${canSaveSaree ? C.burg : C.bdr}`, borderRadius: 999, fontFamily: F.u, fontSize: 11, fontWeight: 600, color: canSaveSaree ? C.burg : C.muted, cursor: canSaveSaree ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    style={{ flex: 1, height: 42, background: canSaveSaree ? "#FFF" : "#F5F0EC", border: `1px solid ${canSaveSaree ? C.burg : C.bdr}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: canSaveSaree ? C.burg : C.muted, cursor: canSaveSaree ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                     <Plus size={12} /> Next Saree
                   </button>
                 </div>
                 <button onClick={() => setShowDefectPrompt(true)}
-                  style={{ width: "100%", height: 38, background: "rgba(220,53,69,0.06)", border: `1px solid rgba(220,53,69,0.25)`, borderRadius: 999, fontFamily: F.u, fontSize: 11.5, fontWeight: 600, color: C.crim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  style={{ width: "100%", height: 38, background: "rgba(220,53,69,0.06)", border: `1px solid rgba(220,53,69,0.25)`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                   <AlertTriangle size={12} /> Mark as Defective
                 </button>
               </div>
@@ -318,7 +318,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
             {rejectedSarees.length > 0 && (
               <div style={{ margin: "0 16px 10px" }}>
-                <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.crim, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.crim, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
                   Rejected at Receipt ({rejectedSarees.length})
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -328,8 +328,8 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                         <Camera size={14} color="rgba(255,255,255,0.85)" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: F.m, fontSize: 11, fontWeight: 600, color: C.text }}>{r.id}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>{r.weaver} · {r.weight} · {r.date}</div>
+                        <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.text }}>{r.id}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.weaver} · {r.weight} · {r.date}</div>
                       </div>
                     </div>
                   ))}

@@ -34,7 +34,7 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
             </motion.span>
           </div>
         </div>
-        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14.5, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
+        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
           The following materials have gone below the minimum stock level set by the system admin. Please create a purchase order to restock.
         </p>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
@@ -45,8 +45,8 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
               transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
               style={{ background: "#FFFFFF", border: "1px solid rgba(192,57,43,0.14)", borderLeft: `3px solid ${T.crimson}`, borderRadius: 10, padding: "18px 20px", minWidth: 240, flex: "1 1 240px", maxWidth: 300, boxShadow: "0 2px 10px rgba(192,57,43,0.05)" }}
             >
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 500, color: T.taupe, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 12 }}>{a.type}</div>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 28, color: T.crimson, lineHeight: 1, marginBottom: 6 }}>{a.current}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 12 }}>{a.type}</div>
+              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 30, color: T.crimson, lineHeight: 1, marginBottom: 6 }}>{a.current}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, marginBottom: 14 }}>
                 Minimum set: {a.type === "WARP" ? `${thresholds.warp} kg` : a.type === "RESHAM" ? `${thresholds.resham} kg` : `${thresholds.jari.qty} ${thresholds.jari.unit}`}
               </div>

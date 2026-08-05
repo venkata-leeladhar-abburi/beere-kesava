@@ -45,7 +45,7 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
             { label: "Weight (grams)", val: weight, set: setWeight, placeholder: "e.g. 850" },
           ].map(({ label, val, set, placeholder }) => (
             <div key={label}>
-              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</div>
               <input value={val} onChange={e => set(e.target.value)} placeholder={placeholder}
                 style={{ ...inputStyle, height: 46, fontSize: 13 }} />
             </div>

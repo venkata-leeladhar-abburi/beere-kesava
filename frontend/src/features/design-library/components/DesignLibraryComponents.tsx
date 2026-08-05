@@ -111,7 +111,7 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
               <Icon size={20} color={T.taupe} weight="duotone" />
             </div>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{hint}</span>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, fontWeight: 600 }}>Click to upload</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>Click to upload</span>
           </>
         )}
       </div>
@@ -145,7 +145,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
           </div>
         ) : (
           <div style={{ background: T.darkBurgundy, padding: "24px 24px 20px", borderRadius: "20px 20px 0 0", position: "relative" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>Design Code</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>Design Code</div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontFamily: F.mono, fontSize: 14, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>{design.code}</span>
               <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#fff" }}>{design.name || design.code}</span>
@@ -165,7 +165,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
               { label: "Total Produced", val: design.total ? `${design.total.toLocaleString()} sarees` : "—", mono: false },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{r.label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{r.label}</div>
                 <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
               </div>
             ))}
@@ -173,20 +173,20 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
 
           {design.desc && (
             <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Description</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe, lineHeight: 1.6 }}>{design.desc}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Description</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>{design.desc}</div>
             </div>
           )}
 
           {design.weaverName && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(30,102,64,0.06)", border: "1px solid rgba(30,102,64,0.18)", borderRadius: 10, padding: "11px 14px" }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.goldLight }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.goldLight }}>
                   {design.weaverName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
               </div>
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Assigned Weaver</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Assigned Weaver</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{design.weaverName}</div>
               </div>
             </div>
@@ -194,7 +194,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
 
           {design.notesForWeaver && (
             <div style={{ background: "rgba(200,155,71,0.07)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "12px 14px" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Notes for Weaver</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Notes for Weaver</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "#7A5E1A", lineHeight: 1.6 }}>{design.notesForWeaver}</div>
             </div>
           )}
@@ -203,7 +203,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: design.hasGraph ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${design.hasGraph ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 10, padding: "11px 13px" }}>
               <Graph size={17} color={design.hasGraph ? T.green : "#8B6018"} weight="duotone" />
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Design Graph</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Design Graph</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: design.hasGraph ? T.green : "#8B6018" }}>
                   {design.hasGraph ? "Uploaded ✓" : "Not uploaded"}
                 </div>
@@ -212,7 +212,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: design.hasColorSlip ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${design.hasColorSlip ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 10, padding: "11px 13px" }}>
               <ImageSquare size={17} color={design.hasColorSlip ? T.green : "#8B6018"} weight="duotone" />
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Color Slip</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Color Slip</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: design.hasColorSlip ? T.green : "#8B6018" }}>
                   {design.hasColorSlip ? "Uploaded ✓" : "Not uploaded"}
                 </div>
@@ -264,7 +264,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
       )}
 
       <div style={{ padding: "18px 18px 0", flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25, marginBottom: 8 }}>{d.name || d.code}</div>
+        <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25, marginBottom: 8 }}>{d.name || d.code}</div>
 
         {d.typeCode && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "5px 10px", marginBottom: 10, alignSelf: "flex-start" }}>
@@ -276,7 +276,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
 
         {d.weaverName && (
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 6px" }}>Weaver</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 6px" }}>Weaver</span>
             {d.weaverName}
           </div>
         )}
@@ -292,7 +292,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
             <Package size={18} color={T.royalBurgundy} weight="duotone" />
             <div>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{d.total.toLocaleString()}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>total produced</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>total produced</div>
             </div>
           </div>
         </div>

@@ -63,8 +63,8 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
         {!isTablet && (
           <div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
-            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 10, color: C.dark, marginTop: 1 }}>&amp; Brothers Silks</div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 8, color: C.gold, letterSpacing: "2px", textTransform: "uppercase", marginTop: 2 }}>Worker Staff</div>
+            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 12, color: C.dark, marginTop: 1 }}>&amp; Brothers Silks</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.gold, letterSpacing: "2px", textTransform: "uppercase", marginTop: 2 }}>Worker Staff</div>
           </div>
         )}
       </div>
@@ -92,7 +92,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                 {item.label}
               </span>
               {item.badge && (
-                <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: "#FFF", background: C.crim, minWidth: 18, height: 18, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: C.crim, minWidth: 18, height: 18, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
                   {item.badge}
                 </span>
               )}
@@ -127,12 +127,12 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                 <div key={i} style={{ padding: "10px 16px", borderBottom: i < 2 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <span style={{ fontSize: 15, flexShrink: 0 }}>{n.emoji}</span>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{n.emoji}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{n.desc}</div>
                   </div>
-                  <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, flexShrink: 0 }}>{n.time}</span>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
                 </div>
               ))}
             </div>
@@ -148,7 +148,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
             style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "rgba(110,15,45,0.02)" }}
           >
             <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 11, color: "#FFF" }}>RK</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
             </div>
             <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>Ravi Kumar</span>
             <ChevronDown size={12} color={C.muted} />
@@ -157,7 +157,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
             <div style={{ position: "absolute", top: 44, right: 0, width: 210, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 12px 40px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
               <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>Ravi Kumar</div>
-                <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
               </div>
               <button onClick={() => { onSelect("profile"); closeAll(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.dark, textAlign: "left" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}

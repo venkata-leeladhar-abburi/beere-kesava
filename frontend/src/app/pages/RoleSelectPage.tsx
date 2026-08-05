@@ -197,7 +197,7 @@ export function RoleSelectPage() {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      minHeight: "100dvh",
       background: "#FAFAF8",
       display: "flex",
       flexDirection: stacked ? "column" : "row",
@@ -206,7 +206,7 @@ export function RoleSelectPage() {
       {/* Left dark brand panel */}
       <div style={{
         width: stacked ? "100%" : 340,
-        minHeight: stacked ? undefined : "100vh",
+        minHeight: stacked ? undefined : "100dvh",
         background: T.darkBg,
         position: "relative",
         overflow: "hidden",

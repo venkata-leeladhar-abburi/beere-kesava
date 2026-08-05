@@ -67,8 +67,8 @@ export function InHouseOutstanding({
           { l: "Expected Sale Value", v: inr(totalVal), c: T.green },
         ].map(k => (
           <div key={k.l} style={{ flex: "1 1 190px", background: T.warmCream, borderRadius: 12, padding: "13px 16px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
-            <div style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: k.c }}>{k.v}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.c }}>{k.v}</div>
           </div>
         ))}
       </div>
@@ -86,24 +86,24 @@ export function InHouseOutstanding({
                 >
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{g.name}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{g.name}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.sub}</div>
                   </div>
                   <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Produced</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Produced</div>
                       <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{g.all.length}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Sold</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Sold</div>
                       <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{g.soldRows.length}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Outstanding</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Outstanding</div>
                       <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{g.rows.length}</div>
                     </div>
                     <div style={{ textAlign: "right", minWidth: 96 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Value</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Value</div>
                       <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{inr(val)}</div>
                     </div>
                   </div>

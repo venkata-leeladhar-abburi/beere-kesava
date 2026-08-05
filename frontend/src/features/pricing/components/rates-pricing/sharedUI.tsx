@@ -22,7 +22,7 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
             <button key={u} type="button" onClick={() => setUnit(u)}
               style={{
                 border: "none", borderRadius: 999, padding: "3px 10px", cursor: "pointer",
-                fontFamily: F.ui, fontSize: 10, fontWeight: 600, textTransform: "capitalize",
+                fontFamily: F.ui, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
                 background: unit === u ? T.luxuryBrown : "transparent",
                 color: unit === u ? "#FFF" : T.taupe,
               }}>
@@ -37,7 +37,7 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
           onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));
         }}
         style={inputStyle} />
-      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 4 }}>
+      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>
         {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns · {trimNum(jariGrams(reelsNum), 0)}g
       </div>
     </div>

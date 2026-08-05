@@ -67,17 +67,17 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{a.action}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const, color: T.taupe, background: T.silkCream, borderRadius: 999, padding: "2px 8px" }}>{a.category}</span>
+                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{a.action}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const, color: T.taupe, background: T.silkCream, borderRadius: 999, padding: "2px 8px" }}>{a.category}</span>
                       {a.needsAction && (
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.18)", borderRadius: 999, padding: "2px 9px" }}>Needs action</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.18)", borderRadius: 999, padding: "2px 9px" }}>Needs action</span>
                       )}
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>{a.detail}</div>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
                     {a.needsAction && (
                       <button onClick={onActivities}
                         style={{ display: "flex", alignItems: "center", gap: 5, background: T.royalBurgundy, color: "#FFF", border: "none", borderRadius: 8, padding: "6px 13px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}>

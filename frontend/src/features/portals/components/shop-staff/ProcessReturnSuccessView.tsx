@@ -16,7 +16,7 @@ export function RetailReturnSuccessView({ resetReturn, onBack }: RetailSuccessPr
           <RotateCcw size={36} color={C.crim} />
         </div>
       </motion.div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.text, marginBottom: 8 }}>Return Processed</div>
+      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>Return Processed</div>
       <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.65, marginBottom: 20 }}>
         PADMA-L1-004 has been returned successfully.<br />Shop inventory updated. Customer profile updated.
       </div>
@@ -57,7 +57,7 @@ export function WholesaleReturnSuccessView({
             <Check size={38} color={C.green} />
           </div>
         </motion.div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.text, marginBottom: 8 }}>Return Processed — Added to Inventory</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>Return Processed — Added to Inventory</div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,146,58,0.12)", color: "#8B6520", borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 20 }}>
           <QrCode size={13} color={C.gold} /> {wsNewId}
         </div>
@@ -71,7 +71,7 @@ export function WholesaleReturnSuccessView({
                 <div key={i} style={{ width: w * 2, background: "#FFF", height: i % 3 === 0 ? 40 : i % 2 === 0 ? 34 : 38, borderRadius: 1 }} />
               ))}
             </div>
-            <div style={{ fontFamily: F.m, fontSize: 10, color: "#AAA", letterSpacing: 2 }}>{wsNewId}</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: "#AAA", letterSpacing: 2 }}>{wsNewId}</div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const, marginBottom: 14 }}>This saree has been added to shop inventory</div>
           {[

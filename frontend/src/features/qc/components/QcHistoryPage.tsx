@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, ClipboardCheck } from "lucide-react";
 import { ProductionDialog } from "../../production/components/ProductionPage";
-const T = { silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D", deepWine: "#4A061B", luxuryBrown: "#3B2314", taupe: "#8B7060", green: "#1E6640", crimson: "#C0392B", borderDef: "rgba(110,15,45,0.10)" };
+const T = { silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D", deepWine: "#4A061B", luxuryBrown: "#3B2314", taupe: "#69635E", green: "#1E6640", crimson: "#C0392B", borderDef: "rgba(110,15,45,0.10)" };
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 const QC_QUEUE = [
   { batchId: "BATCH-081", weaver: "Suresh Murti", sareeType: "Plain Silk", count: 4, submitted: "20 May 2026" },
@@ -11,7 +11,7 @@ const QC_QUEUE = [
 ];
 export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
   const [selected, setSelected] = useState<typeof QC_QUEUE[0] | null>(null);
-  return <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+  return <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
     <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "34px 48px", color: "#FFFDF9" }}>
       <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 12, padding: "10px 14px", cursor: "pointer", marginBottom: 22 }}><ArrowLeft size={16} /> Back to Production</button>
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}><ClipboardCheck size={30} /><div><h1 style={{ margin: 0, fontFamily: F.display, fontSize: 38 }}>Full QC History</h1><p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.68)" }}>All batches awaiting and completed quality checks.</p></div></div>

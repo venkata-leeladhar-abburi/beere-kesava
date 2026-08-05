@@ -200,7 +200,7 @@ export function BatchCreationPage() {
   const active = batches.filter(b => b.status === "active");
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
       {directoryError && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Could not load weavers/factory looms: {directoryError}</span>

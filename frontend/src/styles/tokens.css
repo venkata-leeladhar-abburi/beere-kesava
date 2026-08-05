@@ -1,0 +1,654 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BK LOOM DESIGN SYSTEM — PHASE 1: FOUNDATION TOKENS
+   Beere Keshava & Brothers
+
+   Import LAST in index.css so these values win over theme.css.
+
+   TWO LAYERS:
+     1. PRIMITIVES  --bk-*        raw ramps. NEVER use in a component.
+     2. SEMANTICS   --text-*, --surface-*, --border-*, --chart-*
+                                  this is what components consume.
+
+   All colours are hex/rgb — never oklch() — so Motion can sample computed
+   styles without crashing. This replaces the runtime <style> override in
+   features/dashboards/components/beere-dashboard/theme.tsx.
+
+   Every value is annotated with its measured WCAG 2.1 contrast vs white.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     1. PRIMITIVES — COLOUR RAMPS  (OKLCH-generated, perceptually even)
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Burgundy — primary brand. 900 and 950 are your existing brand colours. */
+  --bk-burgundy-50:  #FEF4F5;   /*  1.08:1 */
+  --bk-burgundy-100: #FEE8EB;   /*  1.17:1 */
+  --bk-burgundy-200: #FFD1D8;   /*  1.37:1 */
+  --bk-burgundy-300: #FCB2BE;   /*  1.71:1 */
+  --bk-burgundy-400: #F18EA0;   /*  2.30:1 */
+  --bk-burgundy-500: #E06580;   /*  3.31:1  min for borders/icons */
+  --bk-burgundy-600: #C54D69;   /*  4.53:1  min for body text */
+  --bk-burgundy-700: #A63A55;   /*  6.25:1  hover */
+  --bk-burgundy-800: #872D44;   /*  8.44:1  active */
+  --bk-burgundy-900: #6E0F2D;   /* 11.87:1  ★ BRAND PRIMARY (unchanged) */
+  --bk-burgundy-950: #4A061B;   /* 15.75:1  ★ deep wine (unchanged) */
+
+  /* Gold — accent / seal. 500 is your existing gold: DECORATION ONLY. */
+  --bk-gold-50:  #FCF6EE;   /*  1.07:1 */
+  --bk-gold-100: #F6EDDD;   /*  1.16:1 */
+  --bk-gold-200: #EDDCC1;   /*  1.35:1 */
+  --bk-gold-300: #E0C59A;   /*  1.66:1 */
+  --bk-gold-400: #CEAA6D;   /*  2.19:1 */
+  --bk-gold-500: #C89B47;   /*  2.55:1  ★ brand gold — NEVER as text colour */
+  --bk-gold-600: #9F7315;   /*  4.25:1  min for large text */
+  --bk-gold-700: #845E04;   /*  5.86:1  ★ GOLD TEXT — use this instead */
+  --bk-gold-800: #6B4B01;   /*  7.98:1 */
+  --bk-gold-900: #553B01;   /* 10.44:1 */
+  --bk-gold-950: #392601;   /* 14.47:1 */
+
+  /* Warm neutral — the substrate. Hue 65°, not blue-grey. */
+  --bk-neutral-0:   #FFFDFB;   /*  1.01:1 */
+  --bk-neutral-25:  #FAF8F6;   /*  1.06:1  ★ page canvas */
+  --bk-neutral-50:  #F5F2EE;   /*  1.12:1  ★ sunken / table header */
+  --bk-neutral-100: #EAE5E1;   /*  1.25:1 */
+  --bk-neutral-200: #D8D2CE;   /*  1.50:1  ★ default border */
+  --bk-neutral-300: #BFB9B4;   /*  1.94:1 */
+  --bk-neutral-400: #A09A94;   /*  2.78:1  placeholder / disabled */
+  --bk-neutral-500: #847E79;   /*  4.01:1  LARGE TEXT ONLY (>=18.66px) */
+  --bk-neutral-600: #69635E;   /*  5.92:1  ★ tertiary text — replaces #8B7060 */
+  --bk-neutral-700: #4F4A45;   /*  8.76:1  ★ secondary text */
+  --bk-neutral-800: #322D28;   /* 13.62:1 */
+  --bk-neutral-900: #1D1814;   /* 17.60:1  ★ primary text (AAA) */
+  --bk-neutral-950: #110C08;   /* 19.45:1  inverse surface */
+
+  /* Green — success */
+  --bk-green-50:  #F0FAF4;
+  --bk-green-100: #E2F3E8;
+  --bk-green-200: #C9E8D4;
+  --bk-green-300: #A7D7B9;
+  --bk-green-400: #7EC19A;
+  --bk-green-500: #4CA978;   /*  2.90:1 */
+  --bk-green-600: #319061;   /*  3.97:1 */
+  --bk-green-700: #1F774E;   /*  5.52:1  ★ success text */
+  --bk-green-800: #15603D;   /*  7.57:1 */
+  --bk-green-900: #0F4C30;   /* 10.02:1 */
+  --bk-green-950: #07331E;   /* 13.99:1 */
+
+  /* Amber — warning */
+  --bk-amber-50:  #FEF6EC;
+  --bk-amber-100: #FBEBDA;
+  --bk-amber-200: #F6D9BA;
+  --bk-amber-300: #ECC18F;
+  --bk-amber-400: #DEA35B;
+  --bk-amber-500: #CA8104;   /*  3.16:1 */
+  --bk-amber-600: #AB6C00;   /*  4.31:1 */
+  --bk-amber-700: #8D5802;   /*  5.95:1  ★ warning text */
+  --bk-amber-800: #724701;   /*  8.02:1 */
+  --bk-amber-900: #5B3700;   /* 10.55:1 */
+  --bk-amber-950: #3D2300;   /* 14.60:1 */
+
+  /* Red — danger */
+  --bk-red-50:  #FEF5F3;
+  --bk-red-100: #FFE8E5;
+  --bk-red-200: #FED3CD;
+  --bk-red-300: #FFB3AA;
+  --bk-red-400: #F78E83;
+  --bk-red-500: #E7645A;   /*  3.30:1 */
+  --bk-red-600: #CB4B43;   /*  4.54:1 */
+  --bk-red-700: #AB3832;   /*  6.28:1  ★ danger text */
+  --bk-red-800: #8C2B26;   /*  8.44:1 */
+  --bk-red-900: #70211D;   /* 10.91:1 */
+  --bk-red-950: #4C1311;   /* 14.91:1 */
+
+  /* Blue — info */
+  --bk-blue-50:  #F1F8FE;
+  --bk-blue-100: #E1F0FE;
+  --bk-blue-200: #C5E3FD;
+  --bk-blue-300: #A0CFF8;
+  --bk-blue-400: #74B7EE;
+  --bk-blue-500: #3E9AE0;   /*  3.04:1 */
+  --bk-blue-600: #2082C6;   /*  4.14:1 */
+  --bk-blue-700: #0A6AA7;   /*  5.78:1  ★ info text */
+  --bk-blue-800: #045588;   /*  7.89:1 */
+  --bk-blue-900: #03446D;   /* 10.24:1 */
+  --bk-blue-950: #012C4A;   /* 14.38:1 */
+
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     2. SEMANTIC — SURFACES
+     ───────────────────────────────────────────────────────────────────────── */
+  --surface-canvas:          var(--bk-neutral-25);
+  --surface-raised:          #FFFFFF;
+  --surface-raised-hover:    var(--bk-neutral-25);
+  --surface-sunken:          var(--bk-neutral-50);
+  --surface-overlay:         #FFFFFF;
+  --surface-inverse:         var(--bk-neutral-900);
+  --surface-brand:           var(--bk-burgundy-900);
+  --surface-brand-hover:     var(--bk-burgundy-800);
+  --surface-brand-active:    var(--bk-burgundy-950);
+  --surface-brand-subtle:    var(--bk-burgundy-50);
+  --surface-accent-subtle:   var(--bk-gold-50);
+  --surface-success-subtle:  var(--bk-green-50);
+  --surface-warning-subtle:  var(--bk-amber-50);
+  --surface-danger-subtle:   var(--bk-red-50);
+  --surface-info-subtle:     var(--bk-blue-50);
+  --surface-disabled:        var(--bk-neutral-100);
+  --surface-scrim:           rgba(29, 24, 20, 0.48);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     3. SEMANTIC — TEXT   (ratio quoted vs --surface-canvas)
+     ───────────────────────────────────────────────────────────────────────── */
+  --text-primary:      var(--bk-neutral-900);   /* 17.60:1  AAA */
+  --text-secondary:    var(--bk-neutral-700);   /*  8.76:1  AAA */
+  --text-tertiary:     var(--bk-neutral-600);   /*  5.92:1  AA  ★ table headers, labels */
+  --text-placeholder:  var(--bk-neutral-400);   /*  2.78:1  placeholder only */
+  --text-disabled:     var(--bk-neutral-400);   /*  2.78:1  exempt from AA */
+  --text-brand:        var(--bk-burgundy-900);  /* 11.87:1  AAA */
+  --text-brand-hover:  var(--bk-burgundy-700);  /*  6.25:1 */
+  --text-accent:       var(--bk-gold-700);      /*  5.86:1  ★ replaces ALL gold text */
+  --text-success:      var(--bk-green-700);     /*  5.52:1 */
+  --text-warning:      var(--bk-amber-700);     /*  5.95:1 */
+  --text-danger:       var(--bk-red-700);       /*  6.28:1 */
+  --text-info:         var(--bk-blue-700);      /*  5.78:1 */
+  --text-on-brand:     #FFFFFF;                 /* 11.87:1 on --surface-brand */
+  --text-on-inverse:   var(--bk-neutral-25);
+  --text-link:         var(--bk-burgundy-900);
+  --text-link-visited: var(--bk-burgundy-950);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     4. SEMANTIC — BORDERS
+     ───────────────────────────────────────────────────────────────────────── */
+  --border-subtle:   var(--bk-neutral-100);
+  --border-default:  var(--bk-neutral-200);   /* 1.50:1 — replaces rgba(0,0,0,.1) @ 1.2:1 */
+  --border-strong:   var(--bk-neutral-300);
+  --border-brand:    var(--bk-burgundy-900);
+  --border-focus:    var(--bk-burgundy-700);  /* 6.25:1 — clears WCAG 1.4.11 */
+  --border-accent:   var(--bk-gold-500);
+  --border-success:  var(--bk-green-600);
+  --border-warning:  var(--bk-amber-600);
+  --border-danger:   var(--bk-red-600);
+  --border-info:     var(--bk-blue-600);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     5. SEMANTIC — CHART SERIES
+     Assign IN ORDER. Max 5 categorical series. Never colour-only encoding.
+     Adjacent pairs alternate light/dark so they survive greyscale + CVD.
+     ───────────────────────────────────────────────────────────────────────── */
+  --chart-1: #9A2D4A;   /* burgundy   7.37:1 */
+  --chart-2: #BA8824;   /* gold       3.17:1 */
+  --chart-3: #035181;   /* blue       8.41:1 */
+  --chart-4: #C6739C;   /* rose       3.32:1 */
+  --chart-5: #047879;   /* teal       5.29:1 */
+  --chart-6: #969F59;   /* olive      2.84:1 */
+  --chart-7: #754D9E;   /* violet     6.34:1 */
+  --chart-8: #65B187;   /* green      2.56:1 */
+
+  --chart-grid:      var(--bk-neutral-100);
+  --chart-axis:      var(--bk-neutral-300);
+  --chart-label:     var(--text-tertiary);
+  --chart-tooltip-bg: var(--bk-neutral-900);
+  --chart-tooltip-fg: var(--bk-neutral-25);
+
+  /* Sequential (heatmap / intensity) */
+  --chart-seq-1: var(--bk-burgundy-100);
+  --chart-seq-2: var(--bk-burgundy-300);
+  --chart-seq-3: var(--bk-burgundy-500);
+  --chart-seq-4: var(--bk-burgundy-700);
+  --chart-seq-5: var(--bk-burgundy-900);
+
+  /* Diverging (variance / profit-loss) */
+  --chart-div-neg-2: var(--bk-red-700);
+  --chart-div-neg-1: var(--bk-red-300);
+  --chart-div-mid:   var(--bk-neutral-200);
+  --chart-div-pos-1: var(--bk-green-300);
+  --chart-div-pos-2: var(--bk-green-700);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     6. TYPOGRAPHY — FAMILIES
+     ───────────────────────────────────────────────────────────────────────── */
+  --font-display: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-ui:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-code:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ── FAMILIES — SIZES ──
+     Anchored at 14px body (data-dense app, not a marketing site).
+     NOTHING BELOW 12px RENDERS TEXT. */
+  --text-display-2xl: 3.75rem;    /* 60 */
+  --text-display-xl:  3rem;       /* 48 */
+  --text-display-lg:  2.375rem;   /* 38 */
+  --text-display-md:  1.875rem;   /* 30 */
+  --text-title-lg:    1.5rem;     /* 24 */
+  --text-title-md:    1.25rem;    /* 20 */
+  --text-title-sm:    1.125rem;   /* 18 */
+  --text-body-lg:     1rem;       /* 16 */
+  --text-body-md:     0.875rem;   /* 14  ★ default */
+  --text-body-sm:     0.8125rem;  /* 13 */
+  --text-label-lg:    0.875rem;   /* 14 */
+  --text-label-md:    0.8125rem;  /* 13 */
+  --text-label-sm:    0.75rem;    /* 12 */
+  --text-caption:     0.75rem;    /* 12 */
+  --text-overline:    0.75rem;    /* 12  ★ table headers */
+  --text-code-md:     0.8125rem;  /* 13 */
+  --text-code-sm:     0.75rem;    /* 12 */
+  --text-metric-lg:   1.875rem;   /* 30 */
+  --text-metric-md:   1.5rem;     /* 24 */
+  --text-metric-sm:   1.125rem;   /* 18 */
+
+  /* Fluid display sizes — shrink on mobile instead of overflowing.
+     Body sizes stay fixed: fluid body text harms readability. */
+  --text-display-2xl-fluid: clamp(2.25rem, 1.2rem + 4.2vw, 3.75rem);
+  --text-display-xl-fluid:  clamp(2rem,    1.2rem + 3.2vw, 3rem);
+  --text-display-lg-fluid:  clamp(1.75rem, 1.2rem + 2.2vw, 2.375rem);
+
+  /* ── WEIGHTS — 400/500/600/700 only. Never 300, never 800. ── */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ── LINE HEIGHTS ── */
+  --leading-none:    1;
+  --leading-tight:   1.15;
+  --leading-snug:    1.3;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+  /* ── LETTER SPACING — negative above 20px, zero 14–20px,
+        positive only for uppercase overlines. ── */
+  --tracking-tighter: -0.03em;
+  --tracking-tight:   -0.02em;
+  --tracking-snug:    -0.01em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.02em;
+  --tracking-wider:   0.06em;   /* overline / uppercase only */
+
+  /* ── NUMERIC FEATURES ── */
+  --numeric-tabular: tabular-nums lining-nums;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     7. SPACING — 4pt grid
+     ───────────────────────────────────────────────────────────────────────── */
+  --space-0:    0;
+  --space-px:   1px;
+  --space-0-5:  0.125rem;  /*  2 */
+  --space-1:    0.25rem;   /*  4 */
+  --space-1-5:  0.375rem;  /*  6 */
+  --space-2:    0.5rem;    /*  8 */
+  --space-2-5:  0.625rem;  /* 10 */
+  --space-3:    0.75rem;   /* 12 */
+  --space-4:    1rem;      /* 16 */
+  --space-5:    1.25rem;   /* 20 */
+  --space-6:    1.5rem;    /* 24 */
+  --space-8:    2rem;      /* 32 */
+  --space-10:   2.5rem;    /* 40 */
+  --space-12:   3rem;      /* 48 */
+  --space-16:   4rem;      /* 64 */
+  --space-20:   5rem;      /* 80 */
+  --space-24:   6rem;      /* 96 */
+
+  /* Semantic spacing aliases — carry intent, use these in components */
+  --gutter-page-x:      var(--space-12);  /* responsive overrides below */
+  --gutter-page-y:      var(--space-8);
+  --gap-card:           var(--space-6);
+  --gap-section:        var(--space-10);
+  --pad-card:           var(--space-6);
+  --pad-card-compact:   var(--space-5);
+  --pad-cell-x:         var(--space-4);
+  --pad-cell-y:         var(--space-3);
+  --pad-cell-y-compact: var(--space-2);
+  --gap-stack:          var(--space-3);
+  --gap-inline:         var(--space-2);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     8. RADIUS — inner radius = outer − padding
+     ───────────────────────────────────────────────────────────────────────── */
+  --radius-xs:   0.25rem;   /*  4 */
+  --radius-sm:   0.375rem;  /*  6 */
+  --radius-md:   0.5rem;    /*  8  ★ buttons, inputs */
+  --radius-lg:   0.75rem;   /* 12  ★ cards */
+  --radius-xl:   1rem;      /* 16  modals */
+  --radius-2xl:  1.25rem;   /* 20 */
+  --radius-3xl:  1.75rem;   /* 28  brand surfaces only */
+  --radius-full: 9999px;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     9. ELEVATION — warm-tinted (neutral-900), never pure black
+     ───────────────────────────────────────────────────────────────────────── */
+  --shadow-xs:    0 1px 2px rgba(29,24,20,0.05);
+  --shadow-sm:    0 1px 3px rgba(29,24,20,0.07), 0 1px 2px -1px rgba(29,24,20,0.06);
+  --shadow-md:    0 4px 8px -2px rgba(29,24,20,0.08), 0 2px 4px -2px rgba(29,24,20,0.06);
+  --shadow-lg:    0 12px 20px -6px rgba(29,24,20,0.10), 0 4px 8px -4px rgba(29,24,20,0.06);
+  --shadow-xl:    0 24px 40px -12px rgba(29,24,20,0.14), 0 8px 16px -8px rgba(29,24,20,0.08);
+  --shadow-2xl:   0 40px 64px -20px rgba(29,24,20,0.18);
+  --shadow-inner: inset 0 1px 2px rgba(29,24,20,0.06);
+  --shadow-brand: 0 4px 14px -4px rgba(110,15,45,0.28);
+  --shadow-focus: 0 0 0 3px rgba(166,58,85,0.40);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     10. MOTION
+     ───────────────────────────────────────────────────────────────────────── */
+  --duration-instant: 75ms;
+  --duration-fast:    150ms;
+  --duration-normal:  200ms;
+  --duration-slow:    300ms;
+  --duration-slower:  450ms;
+
+  --ease-standard:   cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);   /* your existing EASE */
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     11. Z-INDEX LADDER
+     ───────────────────────────────────────────────────────────────────────── */
+  --z-base:     0;
+  --z-raised:   10;
+  --z-sticky:   100;
+  --z-nav:      200;
+  --z-dropdown: 300;
+  --z-overlay:  400;
+  --z-modal:    500;
+  --z-popover:  600;
+  --z-toast:    700;
+  --z-tooltip:  800;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     12. LAYOUT
+     ───────────────────────────────────────────────────────────────────────── */
+  --container-max:  1600px;
+  --content-measure: 65ch;     /* 45–75 characters */
+  --target-min:     44px;      /* WCAG 2.5.8 / Fitts's Law */
+
+  --nav-height-top:    72px;   /* single source of truth — stop hardcoding 90px */
+  --nav-height-sub:    52px;
+  --nav-rail-width:    248px;
+  --nav-rail-collapsed: 64px;
+  --footer-height:     64px;
+
+  --row-height-comfortable: 56px;
+  --row-height-default:     48px;
+  --row-height-compact:     40px;
+
+  /* App shell — design-system/02-LAYOUT.md Part C.2. Replaces the 9
+     conflicting nav-height constants that used to live only in
+     shared/ui/section-navigator-data.ts (MAIN_NAV_H, SUB_NAV_H, which had
+     drifted to two different values in two different files, plus
+     SECTION_NAV_H, MOBILE_NAV_H and 5 more worker- and shop-portal
+     aliases). Every sticky offset and scroll-margin below is DERIVED,
+     never a literal, so changing one of the four base heights re-stacks
+     everything. */
+  --shell-topbar-h:          72px;
+  --shell-topbar-h-mobile:   56px;
+  --shell-groupbar-h:        52px;
+  --shell-groupbar-h-mobile: 0px;
+  --shell-sectionbar-h:      48px;
+  --shell-footer-h:          64px;
+  --shell-mobilenav-h:       64px;
+
+  --shell-chrome-h: calc(var(--shell-topbar-h) + var(--shell-groupbar-h));
+  --shell-chrome-h-full: calc(var(--shell-chrome-h) + var(--shell-sectionbar-h));
+  --shell-content-min-h: calc(100dvh - var(--shell-chrome-h) - var(--shell-footer-h));
+  --shell-sticky-offset: var(--shell-chrome-h);
+  --scroll-margin-anchor: calc(var(--shell-chrome-h-full) + var(--space-4));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — page gutters tighten on smaller viewports
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1279px) { :root { --gutter-page-x: var(--space-8); } }
+@media (max-width: 1023px) { :root { --gutter-page-x: var(--space-6); --gap-section: var(--space-8); } }
+@media (max-width: 767px) {
+  :root {
+    --gutter-page-x: var(--space-5);
+    --pad-card: var(--space-5);
+    --shell-topbar-h: var(--shell-topbar-h-mobile);
+    --shell-groupbar-h: var(--shell-groupbar-h-mobile);
+  }
+}
+@media (max-width: 479px)  { :root { --gutter-page-x: var(--space-4); --pad-card: var(--space-4); --gap-card: var(--space-4); } }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE — semantic layer only. Primitives are inverted by remapping,
+   not by redefining the ramps. This is why the two-layer split matters.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark {
+  --surface-canvas:         #14100D;
+  --surface-raised:         #1D1814;
+  --surface-raised-hover:   #262019;
+  --surface-sunken:         #100C0A;
+  --surface-overlay:        #262019;
+  --surface-inverse:        var(--bk-neutral-25);
+  --surface-brand:          var(--bk-burgundy-800);
+  --surface-brand-hover:    var(--bk-burgundy-700);
+  --surface-brand-active:   var(--bk-burgundy-900);
+  --surface-brand-subtle:   rgba(110, 15, 45, 0.22);
+  --surface-accent-subtle:  rgba(200, 155, 71, 0.14);
+  --surface-success-subtle: rgba(31, 119, 78, 0.18);
+  --surface-warning-subtle: rgba(141, 88, 2, 0.20);
+  --surface-danger-subtle:  rgba(171, 56, 50, 0.18);
+  --surface-info-subtle:    rgba(10, 106, 167, 0.18);
+  --surface-disabled:       #262019;
+  --surface-scrim:          rgba(0, 0, 0, 0.64);
+
+  --text-primary:     #F7F4F1;
+  --text-secondary:   #C4BDB6;
+  --text-tertiary:    #9C948C;
+  --text-placeholder: #6B645D;
+  --text-disabled:    #57514B;
+  --text-brand:       #F0A8BC;
+  --text-brand-hover: #F7C4D2;
+  --text-accent:      var(--bk-gold-300);
+  --text-success:     var(--bk-green-400);
+  --text-warning:     var(--bk-amber-300);
+  --text-danger:      var(--bk-red-300);
+  --text-info:        var(--bk-blue-300);
+  --text-on-brand:    #FFFFFF;
+  --text-on-inverse:  var(--bk-neutral-900);
+
+  --border-subtle:  #262019;
+  --border-default: #362F28;
+  --border-strong:  #4A4239;
+  --border-focus:   var(--bk-burgundy-400);
+
+  /* Chart series lightened for dark surfaces */
+  --chart-1: #E4849B;
+  --chart-2: #DFAE4F;
+  --chart-3: #5FA9DA;
+  --chart-4: #E0A6C1;
+  --chart-5: #4FAFAF;
+  --chart-6: #B6BE7E;
+  --chart-7: #B393D5;
+  --chart-8: #8ECBA8;
+
+  --chart-grid: #262019;
+  --chart-axis: #4A4239;
+  --chart-tooltip-bg: var(--bk-neutral-25);
+  --chart-tooltip-fg: var(--bk-neutral-900);
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.35);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.45), 0 1px 2px -1px rgba(0,0,0,0.40);
+  --shadow-md:  0 4px 8px -2px rgba(0,0,0,0.48), 0 2px 4px -2px rgba(0,0,0,0.40);
+  --shadow-lg:  0 12px 20px -6px rgba(0,0,0,0.55), 0 4px 8px -4px rgba(0,0,0,0.40);
+  --shadow-xl:  0 24px 40px -12px rgba(0,0,0,0.62), 0 8px 16px -8px rgba(0,0,0,0.45);
+  --shadow-2xl: 0 40px 64px -20px rgba(0,0,0,0.70);
+  --shadow-brand: 0 4px 14px -4px rgba(110,15,45,0.55);
+  --shadow-focus: 0 0 0 3px rgba(241,142,160,0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE — applied to the whole document
+   ═══════════════════════════════════════════════════════════════════════════ */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--text-body-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-primary);
+  background-color: var(--surface-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv05' 1, 'ss01' 1;   /* Inter: disambiguated l, single-storey a */
+}
+
+/* Focus visibility — restores what `button:focus { outline: none }` removed.
+   WCAG 2.4.7 / 2.4.11 */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Every numeric surface gets aligned digits */
+:where(table, .tabular, [data-numeric]) {
+  font-variant-numeric: var(--numeric-tabular);
+}
+
+/* Every anchorable page section, once, globally — design-system/02-LAYOUT.md
+   Part C.3 / J.3. Forward-compatible with the PageShell/Section components;
+   today's SectionNavigator computes its own equivalent offset directly from
+   the corrected MAIN_NAV_H/SUB_NAV_H/SECTION_NAV_H constants (see
+   shared/ui/section-navigator-data.ts), so this rule is additive, not yet
+   load-bearing anywhere. */
+[data-section] {
+  scroll-margin-top: var(--scroll-margin-anchor);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITY CLASSES
+   Use these instead of hand-setting fontSize/fontWeight/letterSpacing.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bk-display-2xl { font: var(--weight-regular) var(--text-display-2xl-fluid)/var(--leading-none) var(--font-display); letter-spacing: var(--tracking-tighter); }
+.bk-display-xl  { font: var(--weight-regular) var(--text-display-xl-fluid)/1.05 var(--font-display); letter-spacing: var(--tracking-tight); }
+.bk-display-lg  { font: var(--weight-regular) var(--text-display-lg-fluid)/var(--leading-tight) var(--font-display); letter-spacing: var(--tracking-tight); }
+.bk-display-md  { font: var(--weight-medium) var(--text-display-md)/var(--leading-tight) var(--font-display); letter-spacing: var(--tracking-tight); }
+
+.bk-title-lg { font: var(--weight-semibold) var(--text-title-lg)/1.25 var(--font-display); letter-spacing: var(--tracking-snug); }
+.bk-title-md { font: var(--weight-semibold) var(--text-title-md)/var(--leading-snug) var(--font-ui); letter-spacing: var(--tracking-snug); }
+.bk-title-sm { font: var(--weight-semibold) var(--text-title-sm)/1.35 var(--font-ui); letter-spacing: var(--tracking-snug); }
+
+.bk-body-lg { font: var(--weight-regular) var(--text-body-lg)/var(--leading-normal) var(--font-ui); }
+.bk-body-md { font: var(--weight-regular) var(--text-body-md)/var(--leading-normal) var(--font-ui); }
+.bk-body-sm { font: var(--weight-regular) var(--text-body-sm)/1.45 var(--font-ui); }
+
+.bk-label-lg { font: var(--weight-medium) var(--text-label-lg)/1.4 var(--font-ui); }
+.bk-label-md { font: var(--weight-medium) var(--text-label-md)/1.4 var(--font-ui); }
+.bk-label-sm { font: var(--weight-medium) var(--text-label-sm)/1.35 var(--font-ui); letter-spacing: 0.005em; }
+
+.bk-caption { font: var(--weight-regular) var(--text-caption)/1.4 var(--font-ui); color: var(--text-tertiary); }
+
+/* ★ THE TABLE-HEADER FIX: 12px / 600 / 5.92:1 — replaces 10px / 500 / 4.11:1 */
+.bk-overline {
+  font: var(--weight-semibold) var(--text-overline)/var(--leading-snug) var(--font-ui);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* Entity codes: WV-002, BATCH-086, INV-2024-0142, PO-… , saree codes */
+.bk-code-md { font: var(--weight-medium) var(--text-code-md)/1.4 var(--font-code); letter-spacing: var(--tracking-normal); font-variant-numeric: var(--numeric-tabular); }
+.bk-code-sm { font: var(--weight-medium) var(--text-code-sm)/1.35 var(--font-code); letter-spacing: var(--tracking-normal); font-variant-numeric: var(--numeric-tabular); }
+
+/* Metrics always use tabular figures so KPI rows align */
+.bk-metric-lg { font: var(--weight-semibold) var(--text-metric-lg)/var(--leading-tight) var(--font-ui); letter-spacing: var(--tracking-tight); font-variant-numeric: var(--numeric-tabular); }
+.bk-metric-md { font: var(--weight-semibold) var(--text-metric-md)/1.15 var(--font-ui); letter-spacing: var(--tracking-snug); font-variant-numeric: var(--numeric-tabular); }
+.bk-metric-sm { font: var(--weight-semibold) var(--text-metric-sm)/1.2 var(--font-ui); letter-spacing: var(--tracking-snug); font-variant-numeric: var(--numeric-tabular); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — one rule, no per-component work
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0.01ms;
+    --duration-fast:    0.01ms;
+    --duration-normal:  0.01ms;
+    --duration-slow:    0.01ms;
+    --duration-slower:  0.01ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HIGH CONTRAST / FORCED COLORS
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-contrast: more) {
+  :root {
+    --text-tertiary:  var(--bk-neutral-700);
+    --border-default: var(--bk-neutral-400);
+    --border-subtle:  var(--bk-neutral-300);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT RECIPES — design-system/02-LAYOUT.md Part F.2
+   Responsive by construction via auto-fit/minmax, no media queries needed
+   for most of these. Replaces the 138+ hardcoded gridTemplateColumns:
+   "1fr 1fr" instances, and (once a section adopts one of these) removes
+   that section's dependency on styles/mobile.css's blanket
+   grid-to-flex-column override.
+   minmax(0, 1fr) is used everywhere, never bare 1fr — plain 1fr lets long
+   unbreakable content (invoice numbers, codes) blow out the column, one of
+   the causes behind the horizontal-overflow bugs `overflow-x: hidden` used
+   to mask.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bk-layout-cards { display: grid; gap: var(--gap-card); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.bk-layout-stats { display: grid; gap: var(--gap-card); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.bk-layout-wide  { display: grid; gap: var(--gap-card); grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+.bk-layout-form  { display: grid; gap: var(--space-4);  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.bk-layout-split { display: grid; gap: var(--gap-card); grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  .bk-layout-split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+
+.bk-layout-detail { display: grid; gap: var(--gap-card); grid-template-columns: 1fr; }
+@media (min-width: 1024px) {
+  .bk-layout-detail { grid-template-columns: minmax(0, 1fr) minmax(320px, 380px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAILWIND v4 BRIDGE
+   Maps the semantic layer onto Tailwind's @theme so `bg-surface-raised`,
+   `text-tertiary`, `border-default` etc. work as utilities.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@theme inline {
+  --color-surface-canvas:       var(--surface-canvas);
+  --color-surface-raised:       var(--surface-raised);
+  --color-surface-sunken:       var(--surface-sunken);
+  --color-surface-overlay:      var(--surface-overlay);
+  --color-surface-inverse:      var(--surface-inverse);
+  --color-surface-brand:        var(--surface-brand);
+  --color-surface-brand-subtle: var(--surface-brand-subtle);
+
+  --color-text-primary:     var(--text-primary);
+  --color-text-secondary:   var(--text-secondary);
+  --color-text-tertiary:    var(--text-tertiary);
+  --color-text-brand:       var(--text-brand);
+  --color-text-accent:      var(--text-accent);
+  --color-text-success:     var(--text-success);
+  --color-text-warning:     var(--text-warning);
+  --color-text-danger:      var(--text-danger);
+  --color-text-info:        var(--text-info);
+  --color-text-on-brand:    var(--text-on-brand);
+
+  --color-border-subtle:  var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong:  var(--border-strong);
+  --color-border-focus:   var(--border-focus);
+
+  --font-display: var(--font-display);
+  --font-ui:      var(--font-ui);
+  --font-code:    var(--font-code);
+}

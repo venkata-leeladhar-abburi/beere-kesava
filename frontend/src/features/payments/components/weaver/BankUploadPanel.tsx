@@ -160,7 +160,7 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
               Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>Weaver ID · Name · Batch No · Loom Number · No of Sarees · Amount · Deduction</span>. System will auto-match weavers and flag unmatched rows.
             </div>
             {result ? (
@@ -224,8 +224,8 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
                   {s.icon}
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{s.label}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.label}</div>
                 </div>
               </div>
             ))}
@@ -237,7 +237,7 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <CheckCircle2 size={16} color={T.green} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Matched Payments</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
                 {result.matched.map((m, i) => (
@@ -249,37 +249,37 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
                         <Pip initials={m.weaverRecord.initials} bg={m.weaverRecord.bg} size={36} />
                         <div>
                           <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2 }}>{m.weaverRecord.name}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.royalBurgundy, marginTop: 1 }}>{m.weaverRecord.id}</div>
+                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 1 }}>{m.weaverRecord.id}</div>
                         </div>
                       </div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: "rgba(30,102,64,0.10)", color: T.green, flexShrink: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: "rgba(30,102,64,0.10)", color: T.green, flexShrink: 0 }}>
                         <CheckCircle2 size={11} />Matched ✓
                       </span>
                     </div>
                     {/* Details */}
                     <div style={{ padding: "0 16px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px 14px" }}>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Batch No</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Batch No</div>
                         <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{m.batchNo}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Loom Number</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Loom Number</div>
                         <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>Loom {m.loomNumber}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>No of Sarees</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>No of Sarees</div>
                         <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{m.noOfSarees}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Amount</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Amount</div>
                         <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amount.toLocaleString("en-IN")}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Deduction</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Deduction</div>
                         <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{m.deduction.toLocaleString("en-IN")}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Net Paid</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>Net Paid</div>
                         <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{(m.amount - m.deduction).toLocaleString("en-IN")}</div>
                       </div>
                     </div>
@@ -295,7 +295,7 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <AlertTriangle size={16} color={T.crimson} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Unmatched Rows</span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {result.unmatched.map((u, i) => (
@@ -304,9 +304,9 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
                       <div>
                         <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.crimson, lineHeight: 1.2 }}>{u.weaverName || "(No Name)"}</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>ID: {u.weaverId || "—"}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>ID: {u.weaverId || "—"}</div>
                       </div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: "rgba(192,57,43,0.10)", color: T.crimson, flexShrink: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: "rgba(192,57,43,0.10)", color: T.crimson, flexShrink: 0 }}>
                         <AlertTriangle size={11} />Unmatched ⚠
                       </span>
                     </div>
@@ -319,7 +319,7 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
                         { label: "Deduction",  value: `₹${u.deduction.toLocaleString("en-IN")}` },
                       ].map(f => (
                         <div key={f.label}>
-                          <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>{f.label}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 2 }}>{f.label}</div>
                           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{f.value}</div>
                         </div>
                       ))}

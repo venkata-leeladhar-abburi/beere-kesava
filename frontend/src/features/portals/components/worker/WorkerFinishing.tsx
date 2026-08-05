@@ -25,7 +25,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <div style={{ width: 4, height: 24, background: C.gold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: C.dark, margin: 0 }}>Finishing</h2>
+            <h2 style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.dark, margin: 0 }}>Finishing</h2>
           </div>
           <p style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "0 0 0 14px" }}>Assign sarees to finishing staff and receive them back after finishing.</p>
         </div>
@@ -44,7 +44,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
             </div>
             <div>
               <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 20, color: s.col, lineHeight: 1 }}>{s.val}</div>
-              <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginTop: 2 }}>{s.label}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
             </div>
           </div>
         ))}
@@ -73,7 +73,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
             <Package size={20} color={activeAction === "assign" ? "#FFF" : C.burg} />
           </div>
           <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "assign" ? "#FFF" : C.text, marginBottom: 3 }}>Assign Sarees</div>
-          <div style={{ fontFamily: F.u, fontSize: 11, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {readySarees.length} ready · assign to finishing staff
           </div>
         </button>
@@ -96,7 +96,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
             <ArrowDownToLine size={20} color={activeAction === "receive" ? "#FFF" : C.green} />
           </div>
           <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "receive" ? "#FFF" : C.text, marginBottom: 3 }}>Receive Back</div>
-          <div style={{ fontFamily: F.u, fontSize: 11, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {awaiting.length} awaiting · mark as received
           </div>
         </button>

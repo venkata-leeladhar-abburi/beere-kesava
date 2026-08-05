@@ -23,28 +23,28 @@ export function DispatchInstructionsBlock({ batchId }: { batchId: string }) {
   if (myDispatches.length === 0) return null;
   return (
     <div>
-      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>DISPATCH INSTRUCTIONS</div>
+      <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>DISPATCH INSTRUCTIONS</div>
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
         {myDispatches.map(d => (
           <div key={d.id} style={{ background: "rgba(107,26,42,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>{d.instructions}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.5 }}>{d.instructions}</div>
             {(d.colorSlipImage || d.designGraphImage) && (
               <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                 {d.colorSlipImage && (
                   <div>
                     <img src={d.colorSlipImage} alt="Color Slip" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
-                    <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Color Slip</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Color Slip</div>
                   </div>
                 )}
                 {d.designGraphImage && (
                   <div>
                     <img src={d.designGraphImage} alt="Design Graph" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
-                    <div style={{ fontFamily: F.u, fontSize: 9.5, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Design Graph</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Design Graph</div>
                   </div>
                 )}
               </div>
             )}
-            <div style={{ fontFamily: F.u, fontSize: 10.5, color: C.muted, marginTop: 8 }}>{d.sentAt}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 8 }}>{d.sentAt}</div>
           </div>
         ))}
       </div>
@@ -58,10 +58,10 @@ export function MaterialsGivenBlock({ batchId }: { batchId: string }) {
   if (!summary) return null;
   return (
     <div>
-      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>MATERIALS GIVEN</div>
+      <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>MATERIALS GIVEN</div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(196,146,58,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
         <Package size={14} color={C.gold} />
-        <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>{summary}</span>
+        <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{summary}</span>
       </div>
     </div>
   );

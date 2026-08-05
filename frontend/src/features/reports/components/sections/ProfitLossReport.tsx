@@ -66,8 +66,8 @@ export function ProfitLossReport() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={pnlMonthlyData} barGap={6}>
               <CartesianGrid key="pnl-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} width={42} />
+              <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} width={42} />
               <Tooltip key="pnl-tip" content={<ChartTip prefix="₹" />} />
               <Bar key="pnl-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[4,4,0,0] as any} />
               <Bar key="pnl-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[4,4,0,0] as any} opacity={0.8} />
@@ -90,9 +90,9 @@ export function ProfitLossReport() {
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{d.name}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                   </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: d.color }}>₹{(d.value / 100000).toFixed(1)}L</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{(d.value / 100000).toFixed(1)}L</span>
                 </div>
                 <AnimBar pct={Math.round((d.value / 1280000) * 100)} color={d.color} height={5} />
               </div>
@@ -106,7 +106,7 @@ export function ProfitLossReport() {
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.08)", overflow: "hidden" }}>
           <div style={{ padding: "20px 24px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 600, color: T.luxuryBrown }}>Profit & Loss Summary — All Firms</div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 600, color: T.luxuryBrown }}>Profit & Loss Summary — All Firms</div>
           </div>
 
           {!hasData && (
@@ -119,7 +119,7 @@ export function ProfitLossReport() {
             {/* INCOME */}
             <tbody>
               <tr style={{ background: T.greenBg }}>
-                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ INCOME</td>
+                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ INCOME</td>
               </tr>
               <tr style={{ borderBottom: `1px solid rgba(30,102,64,0.10)` }}>
                 <td style={ledgerLabelStyle}>Wholesale Sales</td>
@@ -140,7 +140,7 @@ export function ProfitLossReport() {
 
               {/* EXPENSES */}
               <tr style={{ background: T.crimsonBg }}>
-                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.crimson, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ EXPENSES</td>
+                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ EXPENSES</td>
               </tr>
               <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
                 <td style={ledgerLabelStyle}>Weaver Payments</td>
@@ -174,7 +174,7 @@ export function ProfitLossReport() {
               {/* NET PROFIT / LOSS */}
               <tr style={{ background: "rgba(200,155,71,0.12)", borderBottom: `2px solid rgba(200,155,71,0.30)` }}>
                 <td style={{ ...ledgerLabelStyle, fontFamily: F.display, fontSize: 20, fontWeight: 700, color: netProfit >= 0 ? T.antiqueGold : T.crimson }}>{netProfit >= 0 ? "Net Profit" : "Net Loss"}</td>
-                <td style={{ fontFamily: F.display, fontSize: 32, fontWeight: 700, color: netProfit >= 0 ? T.antiqueGold : T.crimson, padding: "16px 20px", textAlign: "right" }}>₹{Math.abs(netProfit).toLocaleString("en-IN")}</td>
+                <td style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: netProfit >= 0 ? T.antiqueGold : T.crimson, padding: "16px 20px", textAlign: "right" }}>₹{Math.abs(netProfit).toLocaleString("en-IN")}</td>
               </tr>
             </tbody>
           </table>
@@ -209,7 +209,7 @@ export function ProfitLossReport() {
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{f.name}</span></td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{f.income.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>₹{f.expenses.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 15, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{f.net >= 0 ? "₹" : "−₹"}{Math.abs(f.net).toLocaleString("en-IN")}</td>
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{f.net >= 0 ? "₹" : "−₹"}{Math.abs(f.net).toLocaleString("en-IN")}</td>
                   </tr>
                 ))}
               </tbody>

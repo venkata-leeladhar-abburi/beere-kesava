@@ -98,10 +98,10 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
           </div>
           {!compact && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 15, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 14, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
                 Beere Kesava
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase" }}>
                 Accountant Portal
               </div>
             </div>
@@ -128,7 +128,7 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
                     <span style={{
-                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5,
+                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
                       color: isActive ? T.warmCream : "rgba(245,232,208,0.72)", whiteSpace: "nowrap",
                     }}>{item.label}</span>
                   </div>
@@ -146,7 +146,7 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
             <UserRound size={17} color={T.warmCream} />
           </button>
           <button onClick={onBack} title="Switch portal"
-            style={{ padding: "8px 14px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(255,255,255,0.06)", cursor: "pointer", color: T.warmCream, fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, display: compact ? "none" : "flex", alignItems: "center", gap: 6 }}>
+            style={{ padding: "8px 14px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(255,255,255,0.06)", cursor: "pointer", color: T.warmCream, fontFamily: F.ui, fontWeight: 600, fontSize: 12, display: compact ? "none" : "flex", alignItems: "center", gap: 6 }}>
             Switch Portal
           </button>
           <button onClick={onLogout} title="Log out"
@@ -179,7 +179,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
   };
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <TopNav
         active={active}
         set={setTab}

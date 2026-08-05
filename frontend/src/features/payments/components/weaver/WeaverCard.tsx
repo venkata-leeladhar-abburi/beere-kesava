@@ -59,7 +59,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
           <div>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25 }}>{w.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
             </div>
           </div>
@@ -69,25 +69,25 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
 
       {/* Body */}
       <div style={{ padding: "0 20px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
+        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
           Sarees completed: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{completedSarees}</span>
           {w.uploadedBatchNo ? (
-            <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 11.5, fontFamily: F.mono, fontWeight: 600 }}>
+            <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 12, fontFamily: F.mono, fontWeight: 600 }}>
               Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
             </span>
           ) : (
-            breakdown && <span style={{ color: T.taupe, display: "block", marginTop: 2, fontSize: 11.5 }}>({breakdown})</span>
+            breakdown && <span style={{ color: T.taupe, display: "block", marginTop: 2, fontSize: 12 }}>({breakdown})</span>
           )}
         </div>
 
         {/* Financial Breakdown */}
         <div style={{ background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontFamily: F.ui, color: T.taupe }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.taupe }}>
             <span>Gross Charges</span>
             <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}>₹{charges.toLocaleString("en-IN")}</span>
           </div>
           {((w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance) > 0) && (
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontFamily: F.ui, color: T.crimson }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.crimson }}>
               <span>Deductions</span>
               <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−₹{(w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance).toLocaleString("en-IN")}</span>
             </div>

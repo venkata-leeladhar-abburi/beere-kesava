@@ -38,7 +38,7 @@ export function InfoStrip({ children, style }: { children: React.ReactNode; styl
   return (
     <div style={{
       background: T.cream, borderRadius: 8, padding: "8px 12px",
-      fontFamily: F.mono, fontSize: 11, color: T.taupe, ...style,
+      fontFamily: F.mono, fontSize: 12, color: T.taupe, ...style,
     }}>
       {children}
     </div>
@@ -90,7 +90,7 @@ export function TypePill({ type, typeColor }: { type: string; typeColor: string 
   return (
     <span style={{
       background: bg, color, borderRadius: 6,
-      padding: "3px 8px", fontFamily: F.ui, fontSize: 11, fontWeight: 500,
+      padding: "3px 8px", fontFamily: F.ui, fontSize: 12, fontWeight: 500,
       whiteSpace: "nowrap",
     }}>
       {type}

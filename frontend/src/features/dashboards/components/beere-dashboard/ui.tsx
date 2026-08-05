@@ -317,7 +317,7 @@ function SectionHeader({ title, actionText = "View All →", small, onAction }: 
         transition={{ duration: 0.18 }}
         style={{
           display: "flex", alignItems: "center", gap: 5,
-          fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.royalBurgundy,
+          fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.royalBurgundy,
           cursor: onAction ? "pointer" : "default",
           padding: "7px 16px", borderRadius: 10,
           border: `1px solid ${onAction ? "rgba(110,15,45,0.16)" : "transparent"}`,

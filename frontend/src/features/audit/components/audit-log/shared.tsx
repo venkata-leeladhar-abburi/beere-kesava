@@ -60,7 +60,7 @@ export function StatCol({
         {/* Label */}
         <div style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
+          fontSize: 12,
           textTransform: "uppercase" as const,
           color: "rgba(255,255,255,0.50)",
           letterSpacing: "0.8px",
@@ -112,7 +112,7 @@ export function PaginationBtn({
         background: active ? "#6E0F2D" : "transparent",
         color: active ? "#fff" : disabled ? "rgba(139,112,96,0.4)" : "#6E0F2D",
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "default" : "pointer",
         display: "inline-flex",

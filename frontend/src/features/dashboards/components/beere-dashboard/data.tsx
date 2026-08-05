@@ -55,7 +55,7 @@ export const MATS = [
     extra: (
       <div style={{ display: "flex", gap: 6, margin: "10px 0 6px" }}>
         {["Polyester","Silk Fast"].map(p => (
-          <span key={p} style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" as const, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 6, padding: "4px 10px" }}>{p}</span>
+          <span key={p} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" as const, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 6, padding: "4px 10px" }}>{p}</span>
         ))}
       </div>
     ) as React.ReactNode,

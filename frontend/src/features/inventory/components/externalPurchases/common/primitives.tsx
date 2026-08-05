@@ -27,7 +27,7 @@ export function StatusPill({ status }: { status: string }) {
       style={{
         fontFamily: F.ui,
         fontWeight: 600,
-        fontSize: 11,
+        fontSize: 12,
         color: s.color,
         background: s.bg,
         borderRadius: 999,

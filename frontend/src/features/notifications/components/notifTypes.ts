@@ -26,7 +26,7 @@ export const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   warmCream:     "#F5E8D0",
   green:         "#1E6640",
   borderDef:     "rgba(110,15,45,0.10)",

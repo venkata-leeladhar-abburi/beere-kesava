@@ -44,11 +44,11 @@ export function BatchCreationStatsHeader({
         <div style={{ position: "absolute", right: -40, bottom: -60, width: 320, height: 320, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.14)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", right: 60, bottom: -10, width: 180, height: 180, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.08)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 10 }}>
             Since 1999 · Production
           </div>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>Batch Creation</h1>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontStyle: "italic", color: T.antiqueGold, marginBottom: 12 }}>& Management</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontStyle: "italic", color: T.antiqueGold, marginBottom: 12 }}>& Management</div>
           <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.55)", maxWidth: 500, margin: 0, lineHeight: 1.6 }}>
             Create a new production batch, assign weavers, design codes, and bulk orders to individual sarees, then finalize or save as draft.
           </p>
@@ -66,8 +66,8 @@ export function BatchCreationStatsHeader({
           ].flatMap((s, i, arr) => {
             const cell = (
               <div key={s.label} style={{ padding: "20px 28px", background: s.gold ? "linear-gradient(135deg, rgba(200,155,71,0.18) 0%, rgba(200,155,71,0.08) 100%)" : undefined, borderTop: s.gold ? `3px solid ${T.antiqueGold}` : undefined }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9, color: s.gold ? T.goldLight : "rgba(255,255,255,0.40)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>{s.label}</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, color: s.gold ? T.goldLight : "#fff", lineHeight: 1 }}>{s.val}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: s.gold ? T.goldLight : "rgba(255,255,255,0.40)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>{s.label}</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: s.gold ? T.goldLight : "#fff", lineHeight: 1 }}>{s.val}</div>
               </div>
             );
             return i < arr.length - 1 ? [cell, <div key={`d${i}`} style={{ background: "rgba(255,255,255,0.08)" }} />] : [cell];

@@ -41,7 +41,7 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
               <td style={{ ...td, fontFamily: F.display, fontWeight: 700, color: i < 3 ? T.antiqueGold : T.taupe }}>{i + 1}</td>
               <td style={td}>
                 <div style={{ fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{r.sub}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.sub}</div>
               </td>
               <td style={{ ...td, minWidth: 150 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -67,7 +67,7 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
       {/* Load more / show less */}
       {ranks.length > RANK_PAGE && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, paddingTop: 16 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             Showing {visible.length} of {ranks.length}
           </span>
           {remaining > 0 ? (
@@ -105,18 +105,18 @@ export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
           <Card key={b.l} pad={18}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               {b.icon}
-              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>{b.l}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>{b.l}</span>
             </div>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{b.r?.name || "—"}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>{b.r?.sub || ""}</div>
             <div style={{ display: "flex", gap: 18 }}>
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Sold</div>
-                <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: T.royalBurgundy }}>{b.r?.sold ?? 0}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Sold</div>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}>{b.r?.sold ?? 0}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Net Revenue</div>
-                <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: T.green }}>{inr(b.r?.revenue ?? 0)}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>Net Revenue</div>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.green }}>{inr(b.r?.revenue ?? 0)}</div>
               </div>
             </div>
           </Card>

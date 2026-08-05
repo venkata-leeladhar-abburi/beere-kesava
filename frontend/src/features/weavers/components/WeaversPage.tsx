@@ -48,7 +48,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   }
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PageHeader />
       <StatsStrip />
       <WarpRequestsSection />

@@ -7,7 +7,7 @@ const C = {
   burgundyHover: "#8B1A2E",
   gold:          "#C4923A",
   textPrimary:   "#1A0A0F",
-  textMuted:     "#8B7060",
+  textMuted:     "#69635E",
   green:         "#1E6640",
   crimson:       "#C0392B",
   inputBg:       "#FFF8E7",
@@ -104,9 +104,9 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(107,26,42,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
           <Phone size={32} color={C.burgundy} />
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 34, color: C.textPrimary, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
-        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
-        <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 17, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.textPrimary, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
+        <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
+        <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
         <button onClick={onBack} style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: C.gold, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
           Change Number
         </button>
@@ -134,7 +134,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
             onPaste={handlePaste}
             style={{
               width: 54, height: 64, textAlign: "center" as const,
-              fontFamily: F.mono, fontWeight: 700, fontSize: 26,
+              fontFamily: F.mono, fontWeight: 700, fontSize: 24,
               color: error ? C.crimson : C.textPrimary,
               background: C.inputBg,
               border: `${d || focused === i ? 2 : 1.5}px solid ${error ? C.crimson : d || focused === i ? C.burgundy : C.borderStrong}`,
@@ -189,7 +189,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
           background: otp.length === 6 ? (hovered ? C.burgundyHover : C.burgundy) : "rgba(107,26,42,0.22)",
           border: "none", borderRadius: 999, cursor: otp.length === 6 ? "pointer" : "default",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          fontFamily: F.ui, fontWeight: 700, fontSize: 17, color: "#FFFFFF",
+          fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: "#FFFFFF",
           transition: "background 0.18s",
           boxShadow: otp.length === 6 ? "0 4px 24px rgba(107,26,42,0.30)" : "none",
         }}

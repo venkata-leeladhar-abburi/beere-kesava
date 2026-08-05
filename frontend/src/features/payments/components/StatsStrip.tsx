@@ -58,13 +58,13 @@ export function StatsStrip() {
 
             {/* Text */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: s.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: s.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {s.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: s.gold ? T.goldLight : s.crimson ? "#F47B72" : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: s.gold ? T.goldLight : s.crimson ? "#F47B72" : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
                 <AnimCount raw={s.value} />
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: s.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: s.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
                 {s.sub}
               </div>
             </div>

@@ -44,7 +44,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <Star size={24} color={T.antiqueGold} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Customers by Purchase Value</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Top 10 Customers by Purchase Value</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Wholesale and retail combined</p>
               </div>
             </div>
@@ -64,8 +64,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               { label: "Avg Spend", val: "₹7.95L", color: T.greenMid },
             ].map((s, i) => (
               <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: s.color }}>{s.val}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: s.color }}>{s.val}</div>
               </div>
             ))}
           </div>
@@ -81,9 +81,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               return (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
                   <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: "50%", background: rankBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: rankColor }}>{i + 1}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
                   </div>
-                  <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12.5, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {c.name}
                   </div>
                   <div style={{ flex: 1, height: 7, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
@@ -109,7 +109,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <IndianRupee size={24} color={T.royalBurgundy} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Wholesale vs Retail Revenue Split</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Wholesale vs Retail Revenue Split</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Revenue from each sales channel</p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-              <span style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.luxuryBrown }}>₹32.6L</span>
+              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>₹32.6L</span>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Total Revenue</span>
             </div>
           </div>
@@ -154,7 +154,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <Users size={24} color={T.greenMid} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning Customers</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>New vs Returning Customers</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Last 6 months trend</p>
               </div>
             </div>
@@ -193,7 +193,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <Calendar size={24} color={T.antiqueGold} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Buy Most Often</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Buy Most Often</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>By number of purchases — all time</p>
               </div>
             </div>
@@ -211,15 +211,15 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
                 </div>
-                <div style={{ flex: 1, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
+                <div style={{ flex: 1, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
                 <div style={{ flex: 2 }}>
                   <div style={{ height: 10, background: "rgba(200,155,71,0.13)", borderRadius: 5 }}>
                     <div style={{ width: `${(fb.count/25)*100}%`, height: "100%", background: i === 0 ? T.royalBurgundy : T.antiqueGold, borderRadius: 5 }} />
                   </div>
                 </div>
                 <div style={{ width: 120, textAlign: "right" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
                 </div>
               </div>
             ))}
@@ -234,7 +234,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <AlertTriangle size={24} color={T.crimson} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Have Not Bought Recently</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customers Who Have Not Bought Recently</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>No purchase in 6 months — consider reaching out</p>
               </div>
             </div>
@@ -255,8 +255,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   </div>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{al.name}</span>
-                      <span style={{ padding: "2px 8px", background: al.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: al.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 11, borderRadius: 5, fontWeight: 600, fontFamily: F.ui }}>{al.type}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{al.name}</span>
+                      <span style={{ padding: "2px 8px", background: al.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: al.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 12, borderRadius: 5, fontWeight: 600, fontFamily: F.ui }}>{al.type}</span>
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Last purchase: {al.time}</div>
                   </div>
@@ -280,7 +280,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <MapPin size={24} color={T.greenMid} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — State-wise Distribution</h3>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — State-wise Distribution</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
               </div>
             </div>
@@ -306,7 +306,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{loc.state}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{loc.state}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{loc.count} customers</div>
                 </div>
                 <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, minWidth: 52, textAlign: "right" }}>{loc.pct}%</div>
@@ -355,7 +355,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-              <span style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: T.luxuryBrown }}>5</span>
+              <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>5</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>States</span>
             </div>
           </div>

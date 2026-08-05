@@ -154,8 +154,8 @@ export function SupplierAnalytics() {
       <FadeUp>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Supplier Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Supplier Analytics</h2>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
         </div>
 
         {/* Timeline scope — drives every chart in this section */}
@@ -168,7 +168,7 @@ export function SupplierAnalytics() {
               { label: "EXPECTED MARGIN", value: `${margin.pct.toFixed(0)}%`, color: T.greenMid },
             ].map(k => (
               <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
               </div>
             ))}
@@ -179,7 +179,7 @@ export function SupplierAnalytics() {
       {buys.length === 0 ? (
         <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
           <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
-          <div style={{ fontFamily: F.display, fontSize: 17, color: T.taupe }}>No supplier purchases recorded in this period.</div>
+          <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No supplier purchases recorded in this period.</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
         </div>
       ) : (

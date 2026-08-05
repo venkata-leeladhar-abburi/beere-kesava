@@ -11,7 +11,7 @@ const T = {
   antiqueGold:   "#C89B47",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 const F = {
@@ -27,8 +27,8 @@ function StatChip({ label, value, tone = "plain" }: { label: string; value: stri
   const bd = tone === "gold" ? "rgba(200,155,71,0.38)" : tone === "green" ? "rgba(30,102,64,0.35)" : tone === "red" ? "rgba(224,82,82,0.35)" : "rgba(255,253,249,0.15)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: bg, border: `1px solid ${bd}`, borderRadius: 99, padding: "9px 18px" }}>
-      <span style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: c }}>{value}</span>
-      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
+      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c }}>{value}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
     </div>
   );
 }
@@ -108,18 +108,18 @@ export function FinishingTrackingPage() {
   }, [quotations, search, dateFilter]);
 
   return (
-    <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: "100vh" }}>
+    <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: "100dvh" }}>
       {/* HERO */}
       <section style={{ background: G.card, padding: "44px 40px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
             PRODUCTION · FINISHING
           </div>
           <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: "#FFFDF9", margin: 0, lineHeight: 1.12 }}>
             Finishing Assignment &amp; Receiving
           </h1>
-          <p style={{ fontFamily: F.ui, fontSize: 14.5, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 720 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 720 }}>
             Every saree sent to finishing staff, who assigned it, and what came back — plus every bulk-order
             quotation routed through finishing. The same tracking Worker Staff sees, visible here for admin and superadmin.
           </p>
@@ -144,7 +144,7 @@ export function FinishingTrackingPage() {
               <Search size={16} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Search saree code, weaver, saree type, finishing staff…"
-                style={{ width: "100%", height: 42, paddingLeft: 42, paddingRight: 14, fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 11, outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", height: 42, paddingLeft: 42, paddingRight: 14, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 11, outline: "none", boxSizing: "border-box" }} />
             </div>
             <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
               {[
@@ -154,7 +154,7 @@ export function FinishingTrackingPage() {
                 { key: "damaged", label: "Received · Damaged" },
               ].map(f => (
                 <button key={f.key} onClick={() => setStatusFilter(f.key as typeof statusFilter)}
-                  style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, padding: "8px 14px", borderRadius: 99, cursor: "pointer", background: statusFilter === f.key ? T.royalBurgundy : "transparent", color: statusFilter === f.key ? "#FFFDF9" : T.taupe, border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)` }}>
+                  style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "8px 14px", borderRadius: 99, cursor: "pointer", background: statusFilter === f.key ? T.royalBurgundy : "transparent", color: statusFilter === f.key ? "#FFFDF9" : T.taupe, border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)` }}>
                   {f.label}
                 </button>
               ))}

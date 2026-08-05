@@ -25,7 +25,7 @@ export function StaffPickerModal({ onSelect, onClose }: {
         style={{ position: "relative", width: "100%", maxWidth: 420, margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)", maxHeight: "70vh", display: "flex", flexDirection: "column" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <span style={{ fontFamily: F.d, fontSize: 17, fontWeight: 700, color: C.text }}>Select Finishing Staff</span>
+          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Select Finishing Staff</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
             <X size={20} color={C.muted} />
           </button>
@@ -48,7 +48,7 @@ export function StaffPickerModal({ onSelect, onClose }: {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{m.firstName} {m.lastName}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>{m.empId}{m.specialisation ? ` · ${m.specialisation}` : ""}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{m.empId}{m.specialisation ? ` · ${m.specialisation}` : ""}</div>
                 </div>
                 {sel && <CheckCircle2 size={18} color={C.burg} />}
               </button>

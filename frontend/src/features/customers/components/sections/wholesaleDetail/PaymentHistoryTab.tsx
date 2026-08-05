@@ -29,11 +29,11 @@ export function PaymentHistoryTab({
             ].filter(p => matchesDateFilter(p.date, wholesalePaymentDateFilter)).map(p => (
               <tr key={p.rec} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                 <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{p.rec}</td>
-                <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{p.date}</td>
+                <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{p.date}</td>
                 <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{p.utr}</td>
                 <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>{p.amt}</td>
                 <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 14, color: T.crimson }}>{p.ded}</td>
-                <td style={{ padding: "14px 16px" }}><span style={{ background: T.greenBg, color: T.green, padding: "3px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>{p.status}</span></td>
+                <td style={{ padding: "14px 16px" }}><span style={{ background: T.greenBg, color: T.green, padding: "3px 8px", borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{p.status}</span></td>
               </tr>
             ))}
           </tbody>

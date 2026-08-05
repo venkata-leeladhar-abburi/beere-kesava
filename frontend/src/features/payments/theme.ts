@@ -2,20 +2,20 @@
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 export const T = {
-  silkCream:     "#F7F2EA",
-  warmIvory:     "#FFFDF9",
-  royalBurgundy: "#6E0F2D",
-  deepWine:      "#4A061B",
+  silkCream:     semantic.surface.canvas,
+  warmIvory:     semantic.surface.raised,
+  royalBurgundy: brand.burgundy[900],
+  deepWine:      brand.burgundy[950],
   darkBurgundy:  "#3D0E1A",
-  antiqueGold:   "#C89B47",
+  antiqueGold:   brand.gold[500],
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
-  green:         "#1E6640",
+  taupe:         semantic.text.tertiary,
+  green:         semantic.text.success,
   greenBg:       "rgba(30,102,64,0.09)",
   greenMid:      "#2D9158",
-  crimson:       "#C0392B",
+  crimson:       semantic.text.danger,
   crimsonBg:     "rgba(192,57,43,0.08)",
   orange:        "#E67E22",
   borderDef:     "rgba(110,15,45,0.10)",
@@ -23,9 +23,9 @@ export const T = {
 };
 
 export const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  display: fonts.display,
+  ui:      fonts.ui,
+  mono:    fonts.code,
 };
 
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -40,5 +40,6 @@ export type { BulkOrder };
 import { useFirms } from "../firms/contexts/FirmsContext";
 export { useFirms };
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../shared/ui/DateFilterBar";
+import { brand, fonts, semantic } from '@/design-system/tokens';
 export { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter };
 export type { DateFilterState };

@@ -50,20 +50,20 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
         return (
           <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
             <div style={{ minWidth: 140 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
             </div>
             <div style={{ flex: 1, minWidth: 160 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
             </div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, minWidth: 70 }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
-            <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
+            <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
               {q.status.replace("-", " ")}
             </div>
             <button onClick={() => canDispatch && onDispatch(q)} disabled={!canDispatch}
               title={canDispatch ? "Dispatch the received sarees from this quotation" : "Waiting on finishing to complete"}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: canDispatch ? `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)` : "rgba(139,112,96,0.12)", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 12.5, color: canDispatch ? "#FFF" : T.taupe, cursor: canDispatch ? "pointer" : "not-allowed", whiteSpace: "nowrap" as const }}>
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: canDispatch ? `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)` : "rgba(139,112,96,0.12)", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: canDispatch ? "#FFF" : T.taupe, cursor: canDispatch ? "pointer" : "not-allowed", whiteSpace: "nowrap" as const }}>
               <Truck size={13} /> Dispatch
             </button>
           </div>

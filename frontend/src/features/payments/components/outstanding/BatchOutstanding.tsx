@@ -60,8 +60,8 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
           { l: "Expected Sale Value", v: inr(totalVal), c: T.green },
         ].map(k => (
           <div key={k.l} style={{ flex: "1 1 170px", background: T.warmCream, borderRadius: 12, padding: "13px 16px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
-            <div style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: k.c }}>{k.v}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 5 }}>{k.l}</div>
+            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.c }}>{k.v}</div>
           </div>
         ))}
       </div>
@@ -81,7 +81,7 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
                   style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{g.key}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{g.key}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{parts || "—"}</div>
                   </div>
                   <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -92,7 +92,7 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
                       { l: "Value", v: inr(val), c: T.royalBurgundy },
                     ].map(k => (
                       <div key={k.l} style={{ textAlign: "right", minWidth: 62 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
                         <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                       </div>
                     ))}

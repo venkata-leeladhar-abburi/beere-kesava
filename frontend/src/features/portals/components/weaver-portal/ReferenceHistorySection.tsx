@@ -60,7 +60,7 @@ export function ReferenceHistorySection({
                   padding: "8px 16px", borderRadius: 999, border: `1px solid ${historyTab === t.id ? C.burg : C.bdr}`,
                   background: historyTab === t.id ? C.burg : "transparent",
                   color: historyTab === t.id ? "#FFF" : C.muted,
-                  fontFamily: F.u, fontWeight: 600, fontSize: 12.5, cursor: "pointer"
+                  fontFamily: F.u, fontWeight: 600, fontSize: 12, cursor: "pointer"
                 }}>{t.label}</button>
               ))}
             </div>
@@ -177,7 +177,7 @@ export function ReferenceHistorySection({
                     <div key={i} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                         <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</span>
-                        <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{s.batchId}</span>
+                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</span>
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginBottom: 8 }}>
                         Type: {s.sareeTypeCode} · Loom {s.loom}

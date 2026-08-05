@@ -36,7 +36,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Directory</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Directory</h2>
           </div>
           <motion.button onClick={onAddClick} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             style={{ padding: "10px 22px", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 16px rgba(110,15,45,0.22)" }}>
@@ -52,13 +52,13 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {["All", "Active", "Overdue", "Inactive"].map(s => (
-              <button key={s} onClick={() => setStatusFilter(s)} style={{ padding: "8px 16px", borderRadius: 20, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer", background: statusFilter === s ? T.royalBurgundy : "transparent", color: statusFilter === s ? "#FFF" : T.taupe, border: statusFilter === s ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.15s" }}>{s}</button>
+              <button key={s} onClick={() => setStatusFilter(s)} style={{ padding: "8px 16px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", background: statusFilter === s ? T.royalBurgundy : "transparent", color: statusFilter === s ? "#FFF" : T.taupe, border: statusFilter === s ? "none" : `1.5px solid rgba(110,15,45,0.18)`, transition: "all 0.15s" }}>{s}</button>
             ))}
           </div>
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
             {MATERIAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={ratingFilter} onChange={e => setRatingFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
+          <select value={ratingFilter} onChange={e => setRatingFilter(e.target.value)} style={{ padding: "9px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer", outline: "none" }}>
             <option value="All Ratings">All Ratings</option>
             <option value="5">5 Stars</option>
             <option value="4">4 Stars</option>

@@ -131,8 +131,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   if (!isMobile) {
     return (
       <ShopPriceContext.Provider value={canSeePrices}>
-      <div style={{ minHeight: "100vh", background: "#F8F4F0", fontFamily: F.u }}>
-        <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
+      <div style={{ minHeight: "100dvh", background: "#F8F4F0", fontFamily: F.u }}>
         <style>{SECTION_NAV_GLOBAL_STYLE}</style>
 
         <DesktopTopNav
@@ -213,8 +212,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   // ── Mobile / Tablet Layout ──────────────────────────────────────────────
   return (
     <ShopPriceContext.Provider value={canSeePrices}>
-    <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100vh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
-      <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
+    <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
       {!showReturn && (
         <MobileHeader

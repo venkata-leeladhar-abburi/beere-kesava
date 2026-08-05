@@ -14,7 +14,7 @@ const T = {
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   warmCream:     "#F5E8D0",
   borderDef:     "rgba(110,15,45,0.10)",
 };
@@ -76,7 +76,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
   const jariCount   = ALL_PURCHASES.filter(p => p.type === "Jari").length;
 
   return (
-    <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
       <section style={{ background: G.card, padding: "48px 56px 0", position: "relative", overflow: "hidden" }}>
@@ -96,7 +96,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 20, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
               Since 1999 · Purchase Records
             </span>
           </motion.div>
@@ -140,9 +140,9 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
                   <m.Icon size={18} color={m.hi ? T.antiqueGold : "rgba(245,232,208,0.70)"} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 8.5, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 3 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 28, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 10.5, color: "rgba(245,232,208,0.55)", marginTop: 2 }}>{m.sub}</div>
+                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 3 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(245,232,208,0.55)", marginTop: 2 }}>{m.sub}</div>
                 </div>
               </div>
             ))}
@@ -161,8 +161,8 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           ] as const).map(f => (
             <button key={f.key} onClick={() => setTypeFilter(f.key as "all" | MatType)}
               style={{ height: "100%", padding: "0 18px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, borderBottom: typeFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
-              <span style={{ fontFamily: F.ui, fontWeight: typeFilter === f.key ? 600 : 400, fontSize: 13.5, color: typeFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: typeFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: typeFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
+              <span style={{ fontFamily: F.ui, fontWeight: typeFilter === f.key ? 600 : 400, fontSize: 13, color: typeFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: typeFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: typeFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
             </button>
           ))}
 
@@ -175,7 +175,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
               style={{ border: "none", background: "none", outline: "none", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, width: 240 }}
             />
           </div>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} purchase{filtered.length !== 1 ? "s" : ""}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} purchase{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
@@ -186,7 +186,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <ShoppingBag size={28} color={T.taupe} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, marginBottom: 8 }}>No purchases found</div>
+            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>No purchases found</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Try adjusting your search or filter.</div>
           </div>
         ) : (

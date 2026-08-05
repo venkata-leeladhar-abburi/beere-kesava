@@ -53,9 +53,9 @@ export function ProductionAnalyticsSection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px" }}>Production Analytics</h2>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px" }}>Production Analytics</h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px", lineHeight: 1.6 }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", lineHeight: 1.6 }}>
               Charts and numbers showing how production is going this month — weekly output, stage pipeline, top weavers, designs, and bulk orders.
             </p>
           </div>
@@ -85,8 +85,8 @@ export function ProductionAnalyticsSection() {
               {WEEKLY_DATA.map(d => (
                 <div key={d.week} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>/{d.dispatched}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>/{d.dispatched}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
                     <motion.div
@@ -148,7 +148,7 @@ export function ProductionAnalyticsSection() {
 
             <div style={{ marginTop: 18, background: T.warmCream, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>Total active batches</span>
-              <span style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.luxuryBrown }}>24</span>
+              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>24</span>
             </div>
           </div>
 
@@ -180,7 +180,7 @@ export function ProductionAnalyticsSection() {
                   </div>
                   <div style={{ flexShrink: 0, textAlign: "right" }}>
                     <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{w.sarees}</span>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>sarees</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>sarees</div>
                   </div>
                 </div>
               ))}
@@ -244,7 +244,7 @@ export function ProductionAnalyticsSection() {
                       <label key={key} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: checked ? "rgba(110,15,45,0.05)" : "transparent", border: `1px solid ${checked ? "rgba(110,15,45,0.18)" : T.borderDef}`, transition: "all 0.15s" }}>
                         <input type="checkbox" checked={checked} onChange={() => setExportIncludes(prev => ({ ...prev, [key]: !prev[key] }))}
                           style={{ width: 16, height: 16, accentColor: T.royalBurgundy, cursor: "pointer" }} />
-                        <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
                       </label>
                     ))}
                   </div>

@@ -28,7 +28,7 @@ export function LowStockDialog({
                   <AlertTriangle size={24} color="#FF8080" />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: "#FFF" }}>Report Low Stock</div>
+                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Report Low Stock</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Send an alert to Admin & Superadmin</div>
                 </div>
                 <button onClick={onClose} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.10)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -40,8 +40,8 @@ export function LowStockDialog({
               {/* Stock status */}
               <div style={{ background: "rgba(192,57,43,0.06)", border: `1.5px solid rgba(192,57,43,0.22)`, borderRadius: 14, padding: "18px 20px", marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Current shop stock</span>
-                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: C.crim }}>84</span>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Current shop stock</span>
+                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.crim }}>84</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
                   <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Minimum threshold</span>
@@ -54,10 +54,10 @@ export function LowStockDialog({
               </div>
               {/* Priority */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 12 }}>Priority level</div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 12 }}>Priority level</div>
                 <div style={{ display: "flex", gap: 12 }}>
                   {(["urgent", "normal"] as const).map(p => (
-                    <button key={p} onClick={() => setPriority(p)} style={{ flex: 1, height: 48, borderRadius: 12, border: `2px solid ${priority === p ? (p === "urgent" ? C.crim : C.burg) : C.bdr}`, background: priority === p ? (p === "urgent" ? "rgba(192,57,43,0.08)" : "rgba(107,26,42,0.06)") : "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 15, color: priority === p ? (p === "urgent" ? C.crim : C.burg) : C.muted, cursor: "pointer" }}>
+                    <button key={p} onClick={() => setPriority(p)} style={{ flex: 1, height: 48, borderRadius: 12, border: `2px solid ${priority === p ? (p === "urgent" ? C.crim : C.burg) : C.bdr}`, background: priority === p ? (p === "urgent" ? "rgba(192,57,43,0.08)" : "rgba(107,26,42,0.06)") : "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: priority === p ? (p === "urgent" ? C.crim : C.burg) : C.muted, cursor: "pointer" }}>
                       {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
                     </button>
                   ))}
@@ -65,9 +65,9 @@ export function LowStockDialog({
               </div>
               {/* Message */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 10 }}>Additional note <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span></div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Additional note <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span></div>
                 <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="E.g. Festival orders incoming — need Kanjivaram and plain silks urgently..." rows={3}
-                  style={{ width: "100%", minHeight: 100, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 14, padding: "14px 16px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }} />
+                  style={{ width: "100%", minHeight: 100, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 14, padding: "14px 16px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }} />
               </div>
               {/* Recipients note */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(107,26,42,0.05)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
@@ -76,10 +76,10 @@ export function LowStockDialog({
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.muted, cursor: "pointer" }}>
+                <button onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>
                   Cancel
                 </button>
-                <button onClick={onSend} style={{ flex: 2, height: 52, borderRadius: 999, border: "none", background: C.crim, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 18px rgba(192,57,43,0.35)" }}>
+                <button onClick={onSend} style={{ flex: 2, height: 52, borderRadius: 999, border: "none", background: C.crim, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 18px rgba(192,57,43,0.35)" }}>
                   <Send size={17} /> Send Report to Admin
                 </button>
               </div>

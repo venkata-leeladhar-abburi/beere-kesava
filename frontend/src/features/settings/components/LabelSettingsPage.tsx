@@ -39,7 +39,7 @@ export function LabelSettingsPage() {
     setScanFields((f) => ({ ...f, [key]: !f[key] }));
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 80 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 80 }}>
       {/* PAGE HEADER */}
       <div
         style={{
@@ -54,7 +54,7 @@ export function LabelSettingsPage() {
         <div
           style={{
             fontFamily: F.mono,
-            fontSize: 9,
+            fontSize: 12,
             color: T.antiqueGold,
             opacity: 0.5,
             letterSpacing: 2,
@@ -83,7 +83,7 @@ export function LabelSettingsPage() {
             fontFamily: F.display,
             fontWeight: 500,
             fontStyle: "italic",
-            fontSize: 28,
+            fontSize: 30,
             color: T.antiqueGold,
             marginTop: 2,
             marginBottom: 14,

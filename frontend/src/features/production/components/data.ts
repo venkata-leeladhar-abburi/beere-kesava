@@ -87,7 +87,7 @@ export const WEEKLY_DATA = [
   { week: "W4", produced: 54, dispatched: 42 },
 ];
 export const STAGE_FUNNEL = [
-  { label: "Weaving in Progress",    count: 14, color: "#C4923A",    widthPct: 100 },
+  { label: "Weaving in Progress",    count: 14, color: "#845E04",    widthPct: 100 },
   { label: "Submitted — Waiting QC", count: 5,  color: T.blueGray,   widthPct: 62  },
   { label: "Quality Check Passed",   count: 3,  color: T.green,      widthPct: 42  },
   { label: "In Stock — Ready for Sale", count: 2,  color: T.green, widthPct: 26  },

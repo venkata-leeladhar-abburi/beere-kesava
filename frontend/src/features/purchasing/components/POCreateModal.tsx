@@ -131,7 +131,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   };
 
   const inputStyle: React.CSSProperties = {
-    width: "100%", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown,
+    width: "100%", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
     border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10,
     padding: "10px 14px", outline: "none", background: T.warmIvory, boxSizing: "border-box" as const,
   };
@@ -189,10 +189,10 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", marginBottom: 4 }}>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 4 }}>
                   Create Purchase Order
                 </div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, letterSpacing: "0.5px" }}>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "0.5px" }}>
                   New material request to vendor — requires Superadmin approval
                 </div>
               </div>
@@ -243,15 +243,15 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                         <option key={f.id} value={f.id}>{f.firmName}</option>
                       ))}
                     </select>
-                    {errors.firm && <div style={{ color: T.crimson, fontSize: 11.5, marginTop: 4 }}>{errors.firm}</div>}
+                    {errors.firm && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.firm}</div>}
                     {selectedFirm && (
                       <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.firmName}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.firmName}</span>
                         {selectedFirm.gstNumber && (
-                          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>GST: {selectedFirm.gstNumber}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>GST: {selectedFirm.gstNumber}</span>
                         )}
                         {selectedFirm.bankName && (
-                          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.bankName}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.bankName}</span>
                         )}
                       </div>
                     )}
@@ -279,7 +279,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                 {/* MATERIALS */}
                 <div>
                   <div style={sectionTitleStyle}><FileText size={15} color={T.royalBurgundy} /> Materials to Order</div>
-                  <p style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, margin: "0 0 14px", lineHeight: 1.5 }}>
+                  <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 14px", lineHeight: 1.5 }}>
                     What materials are you ordering from this vendor?
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -347,7 +347,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     <label style={labelStyle}>Urgency</label>
                     <div style={{ display: "flex", gap: 12 }}>
                       {(["Normal", "Urgent"] as const).map(u => (
-                        <label key={u} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: urgency === u ? T.luxuryBrown : T.taupe, fontWeight: urgency === u ? 600 : 400 }}>
+                        <label key={u} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: urgency === u ? T.luxuryBrown : T.taupe, fontWeight: urgency === u ? 600 : 400 }}>
                           <input
                             type="radio"
                             value={u}
@@ -370,7 +370,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     whileTap={{ scale: 0.97 }}
                     style={{
                       width: "100%", height: 52, borderRadius: 11, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 700, fontSize: 14.5,
+                      fontFamily: F.ui, fontWeight: 700, fontSize: 14,
                       background: T.royalBurgundy, color: "#FFFDF9", border: "none",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
@@ -383,7 +383,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     whileTap={{ scale: 0.97 }}
                     style={{
                       width: "100%", height: 44, borderRadius: 10, cursor: "pointer",
-                      fontFamily: F.ui, fontWeight: 500, fontSize: 13.5,
+                      fontFamily: F.ui, fontWeight: 500, fontSize: 13,
                       background: "transparent", color: T.taupe,
                       border: `1.5px solid rgba(110,15,45,0.18)`,
                     }}
@@ -400,7 +400,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                 padding: "24px 22px",
                 background: T.silkCream,
               }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe, textAlign: "center", marginBottom: 14, letterSpacing: "0.4px", textTransform: "uppercase" }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, textAlign: "center", marginBottom: 14, letterSpacing: "0.4px", textTransform: "uppercase" }}>
                   PO Document Preview
                 </div>
                 <PODocPreview
@@ -415,7 +415,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                   urgency={urgency}
                   today={todayDisplay}
                 />
-                <div style={{ marginTop: 14, fontFamily: F.ui, fontSize: 11, color: T.taupe, textAlign: "center", fontStyle: "italic" }}>
+                <div style={{ marginTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, textAlign: "center", fontStyle: "italic" }}>
                   This preview updates live as you fill the form
                 </div>
               </div>

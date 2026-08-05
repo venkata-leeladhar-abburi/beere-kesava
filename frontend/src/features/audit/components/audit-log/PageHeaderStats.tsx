@@ -21,7 +21,7 @@ export function PageHeaderStats() {
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
             <span style={{
               fontFamily: F.mono,
-              fontSize: 9,
+              fontSize: 12,
               color: `${T.antiqueGold}80`,
               letterSpacing: "1.5px",
               textTransform: "uppercase",

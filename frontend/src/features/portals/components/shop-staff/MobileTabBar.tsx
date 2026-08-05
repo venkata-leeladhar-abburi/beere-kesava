@@ -34,7 +34,7 @@ export function MobileTabBar({
                 <span style={{ position: "absolute" as const, top: -3, right: -7, width: 7, height: 7, background: C.crim, borderRadius: "50%" }} />
               )}
               {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
-              <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
             </div>
           </button>
         );

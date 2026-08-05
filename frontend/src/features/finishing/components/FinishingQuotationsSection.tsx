@@ -6,7 +6,7 @@ import { Quotation } from "../contexts/FinishingContext";
 const T = {
   royalBurgundy: "#6E0F2D",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   crimson:       "#C0392B",
   green:         "#1E6640",
   orange:        "#E67E22",
@@ -19,7 +19,7 @@ const F = {
 };
 
 function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
+  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
 }
 
 function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
@@ -34,9 +34,9 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
   return <Pill label={s.label} color={s.color} bg={s.bg} />;
 }
 
-const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
+const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
-const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.royalBurgundy };
+const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 interface FinishingQuotationsSectionProps {
   filteredQuotations: Quotation[];
@@ -81,14 +81,14 @@ export function FinishingQuotationsSection({
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                       <Building2 size={12} color={T.taupe} /> {qt.customerName}{qt.customerCity ? ` · ${qt.customerCity}` : ""} · {qt.quotationDate}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
                       <UserRound size={12} color={T.taupe} /> Raised by <strong style={{ color: T.luxuryBrown }}>{qt.raisedBy}</strong>
                       {qt.finishingStaffName && <> · Assigned to <strong style={{ color: T.luxuryBrown }}>{qt.finishingStaffName}</strong></>}
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: T.luxuryBrown, lineHeight: 1 }}>{received}/{qt.sarees.length}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px", marginTop: 3 }}>Received</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px", marginTop: 3 }}>Received</div>
                   </div>
                 </button>
                 <AnimatePresence initial={false}>

@@ -42,7 +42,7 @@ const C = {
   green: "#1E6640",
   crim: "#C0392B",
   text: "#1A0A0F",
-  muted: "#8B7060",
+  muted: "#69635E",
   bdr: "rgba(139,26,46,0.12)",
   cream: "#F0E8D0",
   inp: "#FFF8E7",
@@ -99,7 +99,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
             { label: "TOTAL PRODUCED", val: d ? `${d.total} sarees` : "—" },
           ].map(x => (
             <div key={x.label} style={{ background: C.cream, borderRadius: 10, padding: "10px 12px" }}>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{x.label}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{x.label}</div>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{x.val}</div>
             </div>
           ))}
@@ -107,21 +107,21 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
 
         {d?.desc && (
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>DESCRIPTION</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>DESCRIPTION</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{d.desc}</div>
           </div>
         )}
 
         {d?.notesForWeaver && (
           <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid rgba(196,146,58,0.25)`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>NOTES FOR YOU</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>NOTES FOR YOU</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{d.notesForWeaver}</div>
           </div>
         )}
 
         {d?.designGraph && (
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>DESIGN GRAPH DRAWING</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>DESIGN GRAPH DRAWING</div>
             <img src={d.designGraph} alt="Design Graph Drawing" style={{ width: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 8, cursor: "pointer", border: `1px solid ${C.bdr}` }} onClick={() => setShowGraphModal(true)} />
           </div>
         )}
@@ -130,14 +130,14 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
           <div style={{ flex: 1, background: d?.hasGraph ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasGraph ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7, cursor: d?.designGraph ? "pointer" : "default" }} onClick={() => d?.designGraph && setShowGraphModal(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => d?.designGraph && setShowGraphModal(true))?.(); } }}>
             <Layers size={13} color={d?.hasGraph ? C.green : C.muted} />
             <div>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>DESIGN GRAPH</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>DESIGN GRAPH</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: d?.hasGraph ? C.green : C.muted, fontWeight: 600 }}>{d?.hasGraph ? "View Graph ✓" : "Not uploaded"}</div>
             </div>
           </div>
           <div style={{ flex: 1, background: d?.hasColorSlip ? "rgba(30,102,64,0.08)" : C.cream, border: `1px solid ${d?.hasColorSlip ? "rgba(30,102,64,0.20)" : C.bdr}`, borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7 }}>
             <Palette size={13} color={d?.hasColorSlip ? C.green : C.muted} />
             <div>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>COLOR SLIP</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>COLOR SLIP</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: d?.hasColorSlip ? C.green : C.muted, fontWeight: 600 }}>{d?.hasColorSlip ? "Uploaded ✓" : "Not uploaded"}</div>
             </div>
           </div>
@@ -174,8 +174,8 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
       {/* Header */}
       <div style={{ background: C.dark, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontFamily: F.m, fontSize: 11, color: "rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 6, padding: "3px 9px" }}>{typeCode}</span>
-          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: "#FFF" }}>{typeName}</span>
+          <span style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 6, padding: "3px 9px" }}>{typeCode}</span>
+          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{typeName}</span>
         </div>
         <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 999, background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <X size={13} color="#FFF" />
@@ -188,25 +188,25 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         {/* Making charge + weight */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
           <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid rgba(196,146,58,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹{r?.charge ?? "—"}</div>
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 2 }}>per saree</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>per saree</div>
           </div>
           <div style={{ background: C.cream, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>STANDARD WEIGHT</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>STANDARD WEIGHT</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text }}>{r?.stdWeight ?? "—"}g</div>
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 2 }}>grams</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>grams</div>
           </div>
         </div>
 
         {/* Prices */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>RETAIL PRICE</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>RETAIL PRICE</div>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>₹{r ? Number(r.retail).toLocaleString("en-IN") : "—"}</div>
           </div>
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>WHOLESALE PRICE</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>WHOLESALE PRICE</div>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>₹{r ? Number(r.wholesale).toLocaleString("en-IN") : "—"}</div>
           </div>
         </div>
@@ -214,7 +214,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         {/* Material breakdown */}
         {r && (
           <div>
-            <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 8 }}>MATERIAL WEIGHT BREAKDOWN</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 8 }}>MATERIAL WEIGHT BREAKDOWN</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
               {[
                 { label: "WARP",   val: `${r.warpWeight}g` },
@@ -222,7 +222,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
                 { label: "JARI",   val: `${r.jariWeight} reels` },
               ].map(m => (
                 <div key={m.label} style={{ background: C.cream, borderRadius: 10, padding: "10px 12px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 4 }}>{m.label}</div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.val}</div>
                 </div>
               ))}
@@ -285,8 +285,8 @@ function StatusBadge({ label, color, bg }: { label: string; color: string; bg: s
 function HeroHeader({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
   return (
     <div style={{ background: C.dark, padding: "24px 20px 22px" }}>
-      <div style={{ fontFamily: F.m, fontSize: 9, letterSpacing: 3, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", marginBottom: 6 }}>{eyebrow}</div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: "#FFF", lineHeight: 1.15, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", marginBottom: 6 }}>{eyebrow}</div>
+      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1.15, marginBottom: 4 }}>{title}</div>
       <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>{sub}</div>
     </div>
   );
@@ -319,7 +319,7 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
               </div>
             )}
             <div style={{ padding: "8px 10px" }}>
-              <div style={{ fontFamily: F.m, fontSize: 10, color: C.burg, marginBottom: 2 }}>{code}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 2 }}>{code}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.3 }}>{d?.name || "—"}</div>
             </div>
           </button>

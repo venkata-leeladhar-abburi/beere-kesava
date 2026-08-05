@@ -60,7 +60,6 @@ export function WeaverPortal({ onBack }: { onBack?: () => void }) {
 
   return (
     <>
-      <style>{`html, body { overflow-x: hidden; max-width: 100%; }`}</style>
       {isMobile
         ? <MobileWeaverPortal onBack={onBack} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />
         : <DesktopWeaverPortal onBack={onBack} bp={bp} active={active} setActive={setActive} onProfile={() => setShowProfileModal(true)} />}
@@ -89,7 +88,7 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
             </span>
           </div>
 
-          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
+          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
             {role === "admin" ? "Ravi Shankar" : role === "superadmin" ? "Venkata Leeladhar Abburi" : role === "shop" ? "Priya Sharma" : "Ravi Kumar"}
           </div>
           
@@ -98,7 +97,7 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
           </div>
 
           <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#C4923A" }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#845E04" }}>
               {role === "admin" ? "Store Administrator" : role === "superadmin" ? "Super Administrator" : role === "shop" ? "Showroom Sales Staff" : "Master Handloom Weaver"}
             </span>
           </div>
@@ -106,7 +105,7 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
 
         {/* Details List */}
         <div style={{ padding: "24px 24px" }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600, color: "#8B7060", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#69635E", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
@@ -117,8 +116,8 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
               ...(role === "weaver" ? [{ label: "Loom Assignment", value: "Loom 2 & Loom 5 (Active)" }] : [])
             ].map(item => (
               <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#8B7060" }}>{item.label}</span>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#69635E" }}>{item.label}</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
               </div>
             ))}
           </div>

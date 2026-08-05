@@ -39,8 +39,8 @@ export function OverdueAlertsReport() {
 
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 8 }}>
         <Clock size={14} color={T.antiqueGold} />
-        <span style={{ fontFamily: F.ui, fontSize: 12.5, color: "#7B5C18" }}>This report always shows today's live status. Period filter does not apply.</span>
-        <span style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, marginLeft: "auto" }}>Live as of 01 Jun 2026 · 9:00 AM</span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7B5C18" }}>This report always shows today's live status. Period filter does not apply.</span>
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginLeft: "auto" }}>Live as of 01 Jun 2026 · 9:00 AM</span>
       </div>
 
       {/* 4 alert cards */}
@@ -70,17 +70,17 @@ export function OverdueAlertsReport() {
                 {overdueCustomers.map((r, i) => (
                   <tr key={r.inv} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.inv}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span></td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.overdue.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, color: T.crimson, fontWeight: 600 }}>{r.dueDate}</td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span>
                     </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.lastReminder}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastReminder}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
+                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
                         <MessageSquare size={11} />Send WhatsApp Reminder
                       </button>
                     </td>
@@ -109,15 +109,15 @@ export function OverdueAlertsReport() {
               <tbody>
                 {lowStockMaterials.map((r, i) => (
                   <tr key={r.batch} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
                     <td style={TD}>{r.sub}</td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.batch}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span></td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.current} kg</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>{r.minimum} kg</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage} kg</td>
                     <td style={TD}><span style={{ color: T.taupe }}>{r.lastOrder}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
+                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
                         <Package size={11} />Create Purchase Order
                       </button>
                     </td>
@@ -146,14 +146,14 @@ export function OverdueAlertsReport() {
               {lateWeavers.map((r, i) => (
                 <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.code}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{r.batch}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.code}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span></td>
                   <td style={{ ...TD, color: T.crimson, fontWeight: 600 }}>{r.expected}</td>
-                  <td style={{ ...TD, textAlign: "center" }}><span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.crimson }}>{r.days}d late</span></td>
+                  <td style={{ ...TD, textAlign: "center" }}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d late</span></td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.done}</td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.remaining}</td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
+                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
                       <MessageSquare size={11} />Send Message
                     </button>
                   </td>
@@ -182,17 +182,17 @@ export function OverdueAlertsReport() {
               {bulkOrders.map((r, i) => (
                 <tr key={r.order} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.order}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span></td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.ordered}</td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.produced}</td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage}</td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11.5 }}>{r.deadline}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.deadline}</span></td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span>
                   </td>
                   <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.status} type="bad" /></td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
                       <Eye size={11} />View Order
                     </button>
                   </td>

@@ -25,7 +25,7 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
       <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 130px", padding: "10px 16px", background: T.silkCream, borderBottom: `1px solid ${T.borderDef}` }}>
           {["Saree", "Amount (₹)"].map((h, i) => (
-            <div key={h} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i ? "right" as const : "left" as const }}>{h}</div>
+            <div key={h} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i ? "right" as const : "left" as const }}>{h}</div>
           ))}
         </div>
         {sarees.map((s, i) => {
@@ -38,11 +38,11 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
                 <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 7, flexWrap: "wrap" as const }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy }}>{sId}</span>
-                    {bId && <span style={{ fontFamily: F.mono, fontSize: 9.5, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{bId}</span>}
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{sId}</span>
+                    {bId && <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{bId}</span>}
                     <StatusBadge status={s.inventoryStatus} />
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                     {s.sareeTypeCode || s.designCode} · {s.sareeType} · Weaver: {s.weaverName}
                   </div>
                 </div>
@@ -66,8 +66,8 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderGold}`, paddingTop: 8, marginTop: 2 }}>
-          <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-          <span style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: T.royalBurgundy }}>₹{(subtotal + gstAmount).toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
+          <span style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}>₹{(subtotal + gstAmount).toLocaleString("en-IN")}</span>
         </div>
       </div>
     </div>

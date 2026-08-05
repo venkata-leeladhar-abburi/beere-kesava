@@ -18,7 +18,7 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
   };
   const s = cfg[status];
   return (
-    <span style={{ background: s.bg, color: s.color, borderRadius: 999, padding: "3px 10px", fontFamily: F.u, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const }}>{s.label}</span>
+    <span style={{ background: s.bg, color: s.color, borderRadius: 999, padding: "3px 10px", fontFamily: F.u, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const }}>{s.label}</span>
   );
 }
 
@@ -113,10 +113,10 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                       <Building2 size={12} color={C.muted} /> {q.customerName}{q.customerCity ? ` · ${q.customerCity}` : ""} · {q.quotationDate}
                     </div>
                     {q.finishingStaffName && (
-                      <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 2 }}>Finishing: <strong style={{ color: C.text }}>{q.finishingStaffName}</strong></div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Finishing: <strong style={{ color: C.text }}>{q.finishingStaffName}</strong></div>
                     )}
                   </div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, textAlign: "right" as const }}>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "right" as const }}>
                     <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 18, color: C.text, lineHeight: 1 }}>{received}/{q.sarees.length}</div>
                     received
                   </div>
@@ -126,12 +126,12 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                 {(pendingSarees.length > 0 || inFinishingSarees.length > 0) && (
                   <div style={{ display: "flex", gap: 14, padding: "8px 14px 0", flexWrap: "wrap" as const }}>
                     {pendingSarees.length > 0 && (
-                      <button onClick={() => selectAllOfStatus(q, "pending")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 11.5, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                      <button onClick={() => selectAllOfStatus(q, "pending")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
                         <CheckSquare size={13} color={C.muted} /> Select all pending ({pendingSarees.length})
                       </button>
                     )}
                     {inFinishingSarees.length > 0 && (
-                      <button onClick={() => selectAllOfStatus(q, "in-finishing")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 11.5, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                      <button onClick={() => selectAllOfStatus(q, "in-finishing")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
                         <CheckSquare size={13} color={C.muted} /> Select all in finishing ({inFinishingSarees.length})
                       </button>
                     )}
@@ -155,14 +155,14 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                         )}
                         <div style={{ flex: 1 }}>
                           <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.sareeId}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
                         </div>
                         <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                          <span style={{ fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: s.finishingStatus === "received" ? C.green : s.finishingStatus === "in-finishing" ? "#B85C00" : C.muted }}>
+                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.finishingStatus === "received" ? C.green : s.finishingStatus === "in-finishing" ? "#B85C00" : C.muted }}>
                             {s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
                           </span>
                           {s.finishingStaffName && (
-                            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted, marginTop: 2 }}>{s.finishingStaffName}</div>
+                            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.finishingStaffName}</div>
                           )}
                         </div>
                       </div>

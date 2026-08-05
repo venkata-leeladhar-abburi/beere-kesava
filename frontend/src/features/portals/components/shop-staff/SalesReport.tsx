@@ -60,8 +60,8 @@ function SalesReport() {
     <div style={{ paddingBottom: 32 }}>
       {/* Hero */}
       <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · SALES REPORT</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 34, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Sales Report</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · SALES REPORT</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Sales Report</div>
         <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold, marginBottom: 10 }}>Daily and monthly overview</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", lineHeight: 1.5 }}>This report is also visible to Admin and Superadmin.</div>
       </div>
@@ -82,19 +82,19 @@ function SalesReport() {
         <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, letterSpacing: 0.5, color: "rgba(255,255,255,0.60)", marginBottom: 6 }}>Sarees Sold Today</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: "#FFF", lineHeight: 1 }}>{dailySales.length}</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1 }}>{dailySales.length}</div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>13 Jun 2026</div>
         </div>
         {canSeePrices && (
           <>
             <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Revenue Today</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Revenue Today</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>{dailySales.length} transactions</div>
             </div>
             <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹18,40,000</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>June 2026</div>
             </div>
@@ -102,8 +102,8 @@ function SalesReport() {
         )}
         <div style={{ flex: "1 1 100%", background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.crim, marginBottom: 6 }}>Returns This Month</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.crim, lineHeight: 1.1 }}>3 returns</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.crim, marginBottom: 6 }}>Returns This Month</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim, lineHeight: 1.1 }}>3 returns</div>
           </div>
           {canSeePrices && <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>₹26,000</div>}
         </div>
@@ -132,7 +132,7 @@ function SalesReport() {
                 <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
                 <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)"} />
               </div>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{s.customer}</div>
+              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{s.customer}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
             </div>
             {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
@@ -141,7 +141,7 @@ function SalesReport() {
         {/* Total row */}
         {canSeePrices && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
-            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>Total (Today)</span>
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total (Today)</span>
             <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{fmtINR(totalToday)}</span>
           </div>
         )}
@@ -162,7 +162,7 @@ function SalesReport() {
         ].map((s, i) => (
           <Card key={i} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 5 }}>{s.label}</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 19, color: i < 3 ? C.text : C.crim }}>{s.val}</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: i < 3 ? C.text : C.crim }}>{s.val}</div>
           </Card>
         ))}
       </div>
@@ -174,10 +174,10 @@ function SalesReport() {
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: i < topCustomers.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 21, color: i === 0 ? C.gold : C.text, width: 30, flexShrink: 0 }}>{i + 1}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{c.name}</div>
+              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>{c.purchases} purchases</div>
             </div>
-            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 15, color: C.gold, flexShrink: 0 }}>{c.amt}</div>}
+            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.gold, flexShrink: 0 }}>{c.amt}</div>}
           </div>
         ))}
       </Card>
@@ -187,8 +187,8 @@ function SalesReport() {
       <Card style={{ margin: "0 20px", padding: "18px 12px" }}>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={designData} layout="vertical" margin={{ left: 4, right: 24, top: 0, bottom: 0 }}>
-            <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12.5, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
+            <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
             <Tooltip
               contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
               formatter={(v: number) => [`${v} sarees`, "Sold"]}
@@ -206,7 +206,7 @@ function SalesReport() {
         <div key={i} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
           <div style={{ flex: 1, minWidth: 180 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
-              <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.muted }}>{r.date}</span>
+              <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
               <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{r.id}</span>
             </div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 3 }}>{r.customer} · {r.reason}</div>
@@ -250,12 +250,12 @@ function SalesReport() {
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 22 }}>
                       Your <strong style={{ color: C.text }}>Today's Sales</strong> report has been exported as <strong style={{ color: C.text }}>{exportFormat.toUpperCase()}</strong>. Check your downloads folder.
                     </div>
-                    <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer" }}>Done</button>
+                    <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Done</button>
                   </div>
                 ) : (
                   <>
                     <div style={{ marginBottom: 22 }}>
-                      <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 12 }}>Export format</div>
+                      <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 12 }}>Export format</div>
                       <div style={{ display: "flex", gap: 10 }}>
                         {([
                           { key: "pdf" as const, label: "PDF", icon: "📄", desc: "Print-ready" },
@@ -265,7 +265,7 @@ function SalesReport() {
                           <button key={f.key} onClick={() => setExportFormat(f.key)} style={{ flex: 1, padding: "14px 8px", borderRadius: 14, border: `2px solid ${exportFormat === f.key ? C.burg : C.bdr}`, background: exportFormat === f.key ? "rgba(107,26,42,0.06)" : "#FFF", cursor: "pointer", textAlign: "center" as const }}>
                             <div style={{ fontSize: 20, marginBottom: 5 }}>{f.icon}</div>
                             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: exportFormat === f.key ? C.burg : C.text, marginBottom: 2 }}>{f.label}</div>
-                            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{f.desc}</div>
+                            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{f.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -280,7 +280,7 @@ function SalesReport() {
                       ))}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                      <button onClick={() => setExportDone(true)} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                      <button onClick={() => setExportDone(true)} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
                         <FileText size={17} /> Export as {exportFormat.toUpperCase()}
                       </button>
                       <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ width: "100%", height: 50, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Cancel</button>

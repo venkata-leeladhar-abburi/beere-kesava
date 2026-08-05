@@ -22,7 +22,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlWeaverOpen, setDlWeaverOpen] = useState(false);
   const [dlDefectOpen, setDlDefectOpen] = useState(false);
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}` };
 
   const totalDeduction = DEFECTIVE_DATA.reduce((sum, r) => sum + parseInt(r.deduction.replace(/[₹,]/g, "")), 0);
@@ -48,7 +48,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         </div>
 
         <div style={{ background: "rgba(192,57,43,0.05)", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 10, padding: "10px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 15 }}>🔒</span>
+          <span style={{ fontSize: 14 }}>🔒</span>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>This is a view-only section. Defective sarees are managed by the system automatically. Deductions have already been applied to the relevant weavers.</span>
         </div>
 
@@ -57,22 +57,22 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})` }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Shield size={14} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.antiqueGold, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>Superadmin Only — Not visible to Admin</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>Superadmin Only — Not visible to Admin</span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Deductions Applied This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 4 }}>
+                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 4 }}>
                   ₹{totalDeduction.toLocaleString("en-IN")}
                 </div>
-                <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe }}>🔒 Full deduction details visible to Superadmin only</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>🔒 Full deduction details visible to Superadmin only</div>
               </div>
               <div style={{ borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Defective Sarees All Time</div>
-                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, marginBottom: 4 }}>
+                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, marginBottom: 4 }}>
                   48 sarees
                 </div>
-                <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe }}>🔒 Superadmin only — not visible to Admin</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>🔒 Superadmin only — not visible to Admin</div>
               </div>
             </div>
           </div>
@@ -116,12 +116,12 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                 <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#FFF" }}>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{row.id}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{row.weaver}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{row.batch}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.batch}</span></td>
                   <td style={TD}>{row.sareeType}</td>
                   <td style={TD}>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" as const }}>
                       {row.defects.map(d => (
-                        <span key={d} style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 999 }}>{d}</span>
+                        <span key={d} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 999 }}>{d}</span>
                       ))}
                     </div>
                   </td>
@@ -129,7 +129,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   <td style={TD}>
                     <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.crimson, display: "block" }}>{row.deduction}</span>
                     {superadmin && (
-                      <span style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, display: "block", marginTop: 3 }}>🔒 Full deduction details visible to Superadmin only</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, display: "block", marginTop: 3 }}>🔒 Full deduction details visible to Superadmin only</span>
                     )}
                   </td>
                   <td style={TD}>
@@ -210,12 +210,12 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 11, padding: "14px 16px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.crimson, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Defective Sarees</div>
-                    <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.crimson }}>{DEFECTIVE_DATA.length}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Defective Sarees</div>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson }}>{DEFECTIVE_DATA.length}</div>
                   </div>
                   <div style={{ background: "rgba(200,155,71,0.07)", border: "1px solid rgba(200,155,71,0.22)", borderRadius: 11, padding: "14px 16px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: "#8B6018", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Total Deductions</div>
-                    <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: "#8B6018" }}>₹{DEFECTIVE_DATA.reduce((s, r) => s + parseInt(r.deduction.replace(/[₹,]/g, "")), 0).toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Total Deductions</div>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: "#8B6018" }}>₹{DEFECTIVE_DATA.reduce((s, r) => s + parseInt(r.deduction.replace(/[₹,]/g, "")), 0).toLocaleString("en-IN")}</div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
@@ -256,15 +256,15 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     { label: "QC Date",     val: viewDefect.qcDate,   mono: false },
                   ].map(r => (
                     <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{r.label}</div>
-                      <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{r.label}</div>
+                      <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{ background: "rgba(192,57,43,0.06)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 11, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Deduction Applied to Weaver</div>
-                    <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.crimson }}>{viewDefect.deduction}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson }}>{viewDefect.deduction}</div>
                   </div>
                   <SealWarning size={36} color={T.crimson} weight="duotone" />
                 </div>

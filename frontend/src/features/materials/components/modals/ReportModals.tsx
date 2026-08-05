@@ -26,7 +26,7 @@ export function FullReportsModal({ open, onClose }: { open: boolean; onClose: ()
             >
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>{r.icon}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, marginBottom: 4 }}>{r.title}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 4 }}>{r.title}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.5 }}>{r.desc}</div>
               </div>
               <Download size={16} color={T.taupe} style={{ flexShrink: 0, marginTop: 4 }} />
@@ -58,16 +58,16 @@ export function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClos
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, marginBottom: 3 }}>{entry.weaver}</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>{entry.weaver}</div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{entry.weaverId}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe }}>{entry.batch}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{entry.weaverId}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.batch}</span>
                   </div>
                 </div>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: statusColors[entry.status] || T.taupe, background: `${statusColors[entry.status] || T.silkCream}18`, padding: "4px 10px", borderRadius: 20 }}>{entry.status}</span>
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 6 }}>{entry.materials}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{entry.date}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.date}</div>
             </motion.div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(30,102,64,0.12)", border: "2px solid rgba(30,102,64,0.30)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
               <Check size={32} color={T.green} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.green, marginBottom: 8 }}>Report Downloaded!</div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.green, marginBottom: 8 }}>Report Downloaded!</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Your report has been saved successfully.</div>
           </div>
         ) : (
@@ -114,7 +114,7 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
                   <div style={{ width: 42, height: 42, borderRadius: 11, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{f.icon}</div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{f.fmt}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{f.desc}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{f.desc}</div>
                   </div>
                 </div>
               ))}
@@ -166,14 +166,14 @@ export function ThresholdsModal({ open, onClose, thresholds, onSave }: {
           <div style={{ flex: 1 }} />
           <input type="number" value={warp} onChange={e => setWarp(parseFloat(e.target.value) || 0)} style={inputStyle} />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 4 kg</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 4 kg</span>
         </div>
         <div style={rowStyle}>
           <span style={chipStyle("#7A5E1C", "rgba(200,155,71,0.13)")}>Resham</span>
           <div style={{ flex: 1 }} />
           <input type="number" value={resham} onChange={e => setResham(parseFloat(e.target.value) || 0)} style={inputStyle} />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 2 kg</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 2 kg</span>
         </div>
         <div style={rowStyle}>
           <span style={chipStyle(T.luxuryBrown, "rgba(59,35,20,0.09)")}>Jari</span>
@@ -182,12 +182,12 @@ export function ThresholdsModal({ open, onClose, thresholds, onSave }: {
           <div style={{ display: "flex", border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, overflow: "hidden" }}>
             {(["Buns", "Reels"] as const).map(u => (
               <button key={u} onClick={() => setJari(prev => ({ ...prev, unit: u }))}
-                style={{ padding: "7px 12px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, cursor: "pointer", border: "none", background: jari.unit === u ? T.royalBurgundy : "#FFFFFF", color: jari.unit === u ? "#FFFDF9" : T.taupe }}>
+                style={{ padding: "7px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: jari.unit === u ? T.royalBurgundy : "#FFFFFF", color: jari.unit === u ? "#FFFDF9" : T.taupe }}>
                 {u}
               </button>
             ))}
           </div>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginLeft: 8 }}>Current: 6 Buns / 24 Reels</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 6 Buns / 24 Reels</span>
         </div>
         <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
           <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -226,13 +226,13 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
           initial={{ x: 360, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 360, opacity: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 32 }}
           onClick={e => e.stopPropagation()}
-          style={{ width: 430, maxWidth: "95vw", height: "100vh", background: "#FFFDF9", display: "flex", flexDirection: "column", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto" }}
+          style={{ width: 430, maxWidth: "95vw", height: "100dvh", background: "#FFFDF9", display: "flex", flexDirection: "column", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto" }}
         >
           <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 24px 20px", flexShrink: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 4 }}>Purchase Order</div>
-                <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 4 }}>Purchase Order</div>
+                <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
               </div>
               <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.10)", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X size={16} />
@@ -247,7 +247,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
           <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
             <div style={{ background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
               <div style={{ background: "rgba(110,15,45,0.04)", padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Vendor Details</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Vendor Details</div>
               </div>
               <div style={{ padding: "14px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
@@ -267,8 +267,8 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                     { label: "Delivery By",   val: po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—" },
                   ].map(r => (
                     <div key={r.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px" }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 4 }}>{r.label}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 4 }}>{r.label}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
                     </div>
                   ))}
                 </div>
@@ -277,21 +277,21 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
 
             <div style={{ background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
               <div style={{ background: "rgba(110,15,45,0.04)", padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Materials Ordered</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Materials Ordered</div>
               </div>
               <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
                 {po.materials.map((m, mi) => {
                   const mt = MT[m.materialType] || MT.Warp;
                   return (
                     <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: T.silkCream, borderRadius: 10 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase" as const, color: mt.col, background: mt.bg, padding: "3px 9px", borderRadius: 6, flexShrink: 0, marginTop: 1 }}>{m.materialType}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase" as const, color: mt.col, background: mt.bg, padding: "3px 9px", borderRadius: 6, flexShrink: 0, marginTop: 1 }}>{m.materialType}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{m.subtype || m.description || "—"}</div>
-                        {m.description && m.subtype && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{m.description}</div>}
+                        {m.description && m.subtype && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{m.description}</div>}
                       </div>
                       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                         <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</div>
-                        {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, marginTop: 1 }}>₹{m.pricePerUnit.toLocaleString("en-IN")}/{m.unit}</div>}
+                        {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 1 }}>₹{m.pricePerUnit.toLocaleString("en-IN")}/{m.unit}</div>}
                       </div>
                     </div>
                   );
@@ -315,14 +315,14 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {po.notesVendor && (
                   <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Note to Vendor</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.55, fontStyle: "italic" }}>"{po.notesVendor}"</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Note to Vendor</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.55, fontStyle: "italic" }}>"{po.notesVendor}"</div>
                   </div>
                 )}
                 {po.notesAdmin && (
                   <div style={{ background: "rgba(200,155,71,0.05)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 14px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Admin Note</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.55 }}>{po.notesAdmin}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: T.taupe, marginBottom: 6 }}>Admin Note</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.55 }}>{po.notesAdmin}</div>
                   </div>
                 )}
               </div>
@@ -353,8 +353,8 @@ export function RecentReceivedDetailModal({ item, onClose }: { item: typeof RECE
             { label: "PO Reference", value: item.po },
           ].map(row => (
             <div key={row.label} style={{ background: T.silkCream, borderRadius: 12, padding: "14px 16px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>{row.label}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{row.value}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>{row.label}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{row.value}</div>
             </div>
           ))}
         </div>

@@ -12,7 +12,7 @@ import { SAWeaverSection } from "./SAWeaverSection";
 
 function SAHero() {
   return (
-    <section style={{ position: "relative", height: "calc(100vh - 90px - 160px)", minHeight: 380, overflow: "hidden", background: "#0D0207" }}>
+    <section style={{ position: "relative", height: "calc(100dvh - 90px - 160px)", minHeight: 380, overflow: "hidden", background: "#0D0207" }}>
       <motion.img src={imgHero} alt="Beere Kesava Showroom"
         initial={{ scale: 1.18, opacity: 0 }}
         animate={{ scale: 1.0, opacity: 1 }}
@@ -25,8 +25,8 @@ function SAHero() {
       <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65, delay: 0.6, ease: EASE }}
         style={{ position: "absolute", top: 28, right: 28, zIndex: 10, display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 999, background: "rgba(196,146,58,0.18)", border: "1px solid rgba(196,146,58,0.42)", backdropFilter: "blur(12px)" }}
       >
-        <Shield size={13} color="#C4923A" />
-        <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11.5, color: "#E8A84A", letterSpacing: "1.5px", textTransform: "uppercase" }}>Superadmin Access</span>
+        <Shield size={13} color="#845E04" />
+        <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "#845E04", letterSpacing: "1.5px", textTransform: "uppercase" }}>Superadmin Access</span>
       </motion.div>
 
       <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "0 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
@@ -34,7 +34,7 @@ function SAHero() {
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
           <div style={{ width: 24, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 9.5, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
             Since 1999 · Superadmin Overview
           </span>
         </motion.div>
@@ -98,13 +98,13 @@ function SAMetricsBar() {
               style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : m.crimsonHi ? "rgba(192,57,43,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : m.crimsonHi ? "rgba(192,57,43,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
             >{m.ico}</motion.div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : m.crimsonHi ? "rgba(232,120,110,1)" : "rgba(245,232,208,0.90)" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : m.crimsonHi ? "rgba(232,120,110,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 44, color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: m.hi ? "rgba(231,201,131,0.95)" : m.crimsonHi ? "rgba(240,128,128,0.90)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : m.crimsonHi ? "rgba(240,128,128,0.90)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
                 {m.sub}
               </div>
             </div>
@@ -118,9 +118,9 @@ function SAMetricsBar() {
 function SAAlertStrip() {
   return (
     <div style={{ margin: "36px 48px 0", padding: "14px 22px", borderRadius: 14, background: "rgba(196,146,58,0.10)", border: "none", borderLeft: "3px solid #C4923A", display: "flex", alignItems: "center", gap: 12 }}>
-      <Shield size={16} color="#C4923A" />
+      <Shield size={16} color="#845E04" />
       <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.luxuryBrown, letterSpacing: "0.1px" }}>
-        You are in <strong style={{ color: "#C4923A" }}>Superadmin mode</strong>. All data is visible and editable. Actions here affect the entire system.
+        You are in <strong style={{ color: "#845E04" }}>Superadmin mode</strong>. All data is visible and editable. Actions here affect the entire system.
       </span>
     </div>
   );
@@ -150,7 +150,7 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
           >
             {a.badge && (
               <div style={{ position: "absolute", top: 14, right: 14, width: 22, height: 22, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 11, color: "#fff" }}>{a.badge}</span>
+                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#fff" }}>{a.badge}</span>
               </div>
             )}
             <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.60)", border: `1px solid ${a.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -190,7 +190,7 @@ function SARawMaterial() {
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: m.accent, opacity: 0.7 }} />
             </div>
             <div style={{ padding: "22px 24px 26px" }}>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 26, color: T.luxuryBrown, letterSpacing: "-0.2px", lineHeight: 1.1, marginBottom: 3 }}>{m.name}</div>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 24, color: T.luxuryBrown, letterSpacing: "-0.2px", lineHeight: 1.1, marginBottom: 3 }}>{m.name}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, marginBottom: 20, letterSpacing: "0.1px" }}>{m.sub}</div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: m.accent, lineHeight: 1.0, marginBottom: 4, ...NUM }}>
                 <AnimatedNumber raw={m.stock.replace(" kg", "")} />{m.stock.includes("kg") ? " kg" : ""}

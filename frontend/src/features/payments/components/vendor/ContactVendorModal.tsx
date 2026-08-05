@@ -53,7 +53,7 @@ Thank you.`;
               <Phone size={22} color="#FFFDF9" />
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: "#FFFDF9" }}>Contact Vendor</div>
+              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>Contact Vendor</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div>
             </div>
           </div>
@@ -87,11 +87,11 @@ Thank you.`;
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{v.vendor}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, marginTop: 2 }}>{v.poNumber}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{v.poNumber}</div>
                     </div>
                     <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{bal.toLocaleString("en-IN")}</div>
-                      {v.daysOverdue && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2 }}>{v.daysOverdue}d overdue</div>}
+                      {v.daysOverdue && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2 }}>{v.daysOverdue}d overdue</div>}
                     </div>
                     {isSelected && <div style={{ width: 20, height: 20, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CheckCircle2 size={12} color="#FFF" /></div>}
                   </div>
@@ -113,7 +113,7 @@ Thank you.`;
                   { label: "Phone Number",    val: contact.phone,          icon: "📞" },
                 ].map(row => (
                   <div key={row.label}>
-                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{row.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{row.label}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
                       <span>{row.icon}</span>{row.val}
                     </div>
@@ -123,7 +123,7 @@ Thank you.`;
               {/* Quick action buttons */}
               <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10 }}>
                 <a href={`tel:${contact.phone}`}
-                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.06)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green }}>
+                  style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textDecoration: "none", border: `1.5px solid rgba(30,102,64,0.22)`, borderRadius: 9, background: "rgba(30,102,64,0.06)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green }}>
                   📞 Call Now
                 </a>
               </div>
@@ -149,7 +149,7 @@ Thank you.`;
               width: "100%", height: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               border: "none", borderRadius: 12,
               background: sent ? T.green : `linear-gradient(135deg, ${T.royalBurgundy}, ${T.deepWine})`,
-              fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: "#FFFDF9",
+              fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFFDF9",
               cursor: sending || sent ? "default" : "pointer",
               transition: "background 0.3s ease",
               opacity: sending ? 0.8 : 1,

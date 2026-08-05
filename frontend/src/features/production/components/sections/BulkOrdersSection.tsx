@@ -36,8 +36,8 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           <PhStatusIcon size={24} color={cfg.iconColor} weight="fill" />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 4 }}>{o.customer}</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, letterSpacing: "0.3px" }}>{o.ref}</div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 4 }}>{o.customer}</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.3px" }}>{o.ref}</div>
         </div>
       </div>
 
@@ -57,7 +57,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
             <CheckCircle size={20} color={T.royalBurgundy} weight="regular" />
           </div>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.4px", marginBottom: 3 }}>Delivery Deadline</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.4px", marginBottom: 3 }}>Delivery Deadline</div>
             <div style={{ fontFamily: F.ui, fontSize: 15.5, fontWeight: 700, color: T.luxuryBrown }}>{o.due}</div>
           </div>
         </div>
@@ -67,10 +67,10 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         <div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <span style={{ fontFamily: F.display, fontSize: 32, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{o.done}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, marginLeft: 6 }}>of {o.total} sarees done</span>
+              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{o.done}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginLeft: 6 }}>of {o.total} sarees done</span>
             </div>
-            <span style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: cfg.barColor }}>{pct}%</span>
+            <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: cfg.barColor }}>{pct}%</span>
           </div>
           <div style={{ height: 9, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 8 }}>
             <motion.div
@@ -82,20 +82,20 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
             />
           </div>
           {remaining > 0 && (
-            <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{remaining} more sarees needed to complete</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{remaining} more sarees needed to complete</div>
           )}
         </div>
 
         {o.shortage && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px" }}>
             <WarningCircle size={17} color={T.crimson} weight="fill" />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.crimson }}>Shortage: {o.shortage} sarees</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson }}>Shortage: {o.shortage} sarees</span>
           </div>
         )}
         {o.overdueBy && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 10, padding: "10px 13px" }}>
             <Clock size={17} color={T.crimson} weight="fill" />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.crimson }}>Overdue by {o.overdueBy} day{o.overdueBy === 1 ? "" : "s"}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson }}>Overdue by {o.overdueBy} day{o.overdueBy === 1 ? "" : "s"}</span>
           </div>
         )}
 
@@ -103,14 +103,14 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(200,155,71,0.07)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
             <CurrencyInr size={16} color={T.antiqueGold} weight="bold" />
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
-            <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}>₹{(o.amountDue ?? 0).toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}>₹{(o.amountDue ?? 0).toLocaleString("en-IN")}</span>
           </div>
         )}
 
         {superadmin && tallied && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
             <CheckCircle size={16} color={T.green} weight="fill" />
-            <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.green }}>Tallied by {talliedBy}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>Tallied by {talliedBy}</span>
           </div>
         )}
 
@@ -156,7 +156,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
                 <ShoppingBag size={26} color="#FFFDF9" weight="fill" />
               </div>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Bulk Orders — Production Progress</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Bulk Orders — Production Progress</div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Track wholesale customer orders and delivery deadlines</div>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
             <div style={{ margin: "20px 28px 0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderLeft: `4px solid ${T.antiqueGold}`, borderRadius: 12, padding: "14px 18px" }}>
                 <WarningCircle size={20} color={T.antiqueGold} weight="fill" />
-                <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: "#8B6018" }}>{atRiskCount} bulk order{atRiskCount > 1 ? "s are" : " is"} at risk of missing their deadline. Check the orders below and take action.</span>
+                <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#8B6018" }}>{atRiskCount} bulk order{atRiskCount > 1 ? "s are" : " is"} at risk of missing their deadline. Check the orders below and take action.</span>
               </div>
             </div>
           )}

@@ -102,7 +102,7 @@ export function WarpRequestPage() {
             </Card>
           </div>
           <div style={{ margin: "0 20px" }}>
-            <button disabled style={{ width: "100%", height: 56, background: "#E0D5CC", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.muted, cursor: "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <button disabled style={{ width: "100%", height: 56, background: "#E0D5CC", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <Shield size={18} /> Warp Request — Locked
             </button>
           </div>
@@ -113,7 +113,7 @@ export function WarpRequestPage() {
           <div style={{ margin: "16px 20px", background: "rgba(30,102,64,0.10)", border: `1px solid ${C.green}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 10 }}>
             <Check size={18} color={C.green} style={{ marginTop: 2, flexShrink: 0 }} />
             <div>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.green, marginBottom: 4 }}>Warp Request Unlocked!</div>
+              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.green, marginBottom: 4 }}>Warp Request Unlocked!</div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>You have submitted 50% of your batch. You can now request additional raw material.</div>
             </div>
           </div>
@@ -133,13 +133,13 @@ export function WarpRequestPage() {
             <Card style={{ padding: 20 }}>
               {/* Batch Reference */}
               <div style={{ marginBottom: 18 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 8 }}>Batch Reference</div>
+                <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 8 }}>Batch Reference</div>
                 <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14 }}>BATCH-{selectedBatch}</div>
               </div>
 
               {/* Material checkboxes */}
               <div style={{ marginBottom: 18 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 12 }}>What material do you need? *</div>
+                <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 12 }}>What material do you need? *</div>
                 {(["warp", "resham", "jari"] as const).map(mat => (
                   <label key={mat} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", cursor: "pointer", borderBottom: mat !== "jari" ? `1px solid ${C.bdr}` : "none" }}>
                     <div
@@ -150,7 +150,7 @@ export function WarpRequestPage() {
                       }}>
                       {materials[mat] && <Check size={14} color="#FFF" />}
                     </div>
-                    <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text }}>
+                    <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text }}>
                       {mat === "warp" ? "More Warp" : mat === "resham" ? "More Resham" : "More Jari"}
                     </span>
                   </label>
@@ -160,7 +160,7 @@ export function WarpRequestPage() {
               {/* Amount fields per checked material */}
               {(["warp", "resham", "jari"] as const).filter(m => materials[m]).map(mat => (
                 <div key={mat} style={{ marginBottom: 14 }}>
-                  <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 6 }}>
+                  <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>
                     {mat === "warp" ? "Warp amount (kg):" : mat === "resham" ? "Resham amount (kg) and color:" : "Jari amount (reels):"}
                   </label>
                   <input
@@ -173,12 +173,12 @@ export function WarpRequestPage() {
 
               {/* Reason */}
               <div style={{ marginBottom: 4 }}>
-                <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 6 }}>Why do you need more material?</label>
+                <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>Why do you need more material?</label>
                 <textarea
                   value={reason} onChange={e => setReason(e.target.value)}
                   placeholder="Example: Extra sarees needed for a big order"
                   rows={3}
-                  style={{ width: "100%", minHeight: 100, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "12px 16px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }}
+                  style={{ width: "100%", minHeight: 100, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "12px 16px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }}
                 />
               </div>
             </Card>
@@ -187,7 +187,7 @@ export function WarpRequestPage() {
           <div style={{ margin: isMobile ? "0 20px" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "80%" : 560, padding: isMobile ? undefined : "0 20px", display: "flex", justifyContent: isMobile ? undefined : "flex-end" }}>
             <button
               onClick={() => (materials.warp || materials.resham || materials.jari) ? setSubmitted(true) : undefined}
-              style={{ width: isMobile ? "100%" : 200, height: 56, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              style={{ width: isMobile ? "100%" : 200, height: 56, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <Send size={18} /> Send Warp Request
             </button>
           </div>
@@ -206,7 +206,7 @@ export function WarpRequestPage() {
           return PREV_REQUESTS.map((r, i) => (
             <div key={i} style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted }}>{r.date}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2 }}>{r.material}</div>
               </div>
               <StatusBadge label={r.status} color={r.color} bg={r.bg} />

@@ -20,7 +20,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
             <CheckCircle2 size={30} color={C.green} />
           </div>
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Design Saved</div>
-          <div style={{ fontFamily: F.m, fontSize: 15, color: C.burg }}>{designCode}</div>
+          <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{designCode}</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Color slip has been linked to the design.</div>
           <button onClick={() => setSaved(false)} style={{ ...btnGhost, width: "auto", padding: "0 28px" }}>Back to Design Planning</button>
         </div>
@@ -65,7 +65,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
               <div style={{ textAlign: "center", marginBottom: 14 }}>
                 <Camera size={36} color={C.gold} style={{ margin: "0 auto 8px" }} />
                 <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 4 }}>Take a clear photo of the color slip paper</div>
-                <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>Must show: border color, body design, pallu details</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Must show: border color, body design, pallu details</div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setHasPhoto(true)} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -79,7 +79,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
           ) : (
             <div style={{ ...card, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 72, height: 72, background: "linear-gradient(135deg, #F0E8D0, #E8D5A0)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${C.bdr}`, flexShrink: 0 }}>
-                <span style={{ fontSize: 28 }}>🎨</span>
+                <span style={{ fontSize: 30 }}>🎨</span>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>

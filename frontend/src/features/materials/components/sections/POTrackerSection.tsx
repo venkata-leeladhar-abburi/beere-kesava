@@ -47,7 +47,7 @@ export function POTrackerSection({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 4, height: 26, borderRadius: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)", flexShrink: 0 }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 32, color: T.luxuryBrown, letterSpacing: "-0.3px", lineHeight: 1.15 }}>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: T.luxuryBrown, letterSpacing: "-0.3px", lineHeight: 1.15 }}>
             Purchase Orders
           </span>
         </div>
@@ -118,10 +118,10 @@ export function POTrackerSection({
 
                 <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
                       {po.poNumber}
                     </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
                       {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
@@ -142,29 +142,29 @@ export function POTrackerSection({
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
                       {po.materials.map((m, mi) => {
                         const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
                         return (
                           <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
                             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
                                 {m.materialType}
                               </span>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 {(m.subtype || m.description) ? (
                                   <>
-                                    <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
                                       {m.subtype || m.description}
                                     </div>
                                     {m.description && m.subtype && (
-                                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
+                                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, marginTop: 1 }}>
                                         {m.description}
                                       </div>
                                     )}
                                   </>
                                 ) : (
-                                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>—</div>
+                                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
                                 )}
                               </div>
                               <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1 }}>
@@ -174,7 +174,7 @@ export function POTrackerSection({
 
                             <div style={{ paddingLeft: 60, marginTop: 4 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
                                 <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
                                   {m.invoiceAmount ? `₹${m.invoiceAmount.toLocaleString("en-IN")}` : "Not yet invoiced"}
                                 </span>
@@ -188,7 +188,7 @@ export function POTrackerSection({
                   {(po.deliveryDate || po.notesVendor) && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18, paddingLeft: 2 }}>
                       {po.deliveryDate && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
                           <span style={{ color: T.taupe }}>Deadline:</span>
                           <span style={{ fontWeight: 600, color: T.royalBurgundy }}>
                             {new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
@@ -235,7 +235,7 @@ export function POTrackerSection({
                         whileTap={{ scale: 0.98 }}
                         style={{
                           flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
-                          fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                          fontFamily: F.ui, fontWeight: 700, fontSize: 12,
                           background: T.green, color: "#FFFFFF", border: "none",
                           display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                         }}
@@ -255,7 +255,7 @@ export function POTrackerSection({
                         whileTap={{ scale: 0.98 }}
                         style={{
                           flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
-                          fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                          fontFamily: F.ui, fontWeight: 700, fontSize: 12,
                           background: "transparent", color: T.royalBurgundy,
                           border: `1.5px solid rgba(110,15,45,0.22)`,
                           display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
@@ -271,7 +271,7 @@ export function POTrackerSection({
                       style={{
                         flex: po.status === "pending" ? 1 : 0.8,
                         height: 38, borderRadius: 10, cursor: "pointer",
-                        fontFamily: F.ui, fontWeight: 700, fontSize: 12.5,
+                        fontFamily: F.ui, fontWeight: 700, fontSize: 12,
                         background: "rgba(110,15,45,0.04)", color: T.royalBurgundy,
                         border: `1.5px solid rgba(110,15,45,0.16)`,
                         display: "flex", alignItems: "center", justifyContent: "center",

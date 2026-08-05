@@ -5,7 +5,7 @@ const T = {
   royalBurgundy: "#6E0F2D",
   green:         "#1E6640",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 
@@ -61,7 +61,7 @@ export function SariTagPrintSettings({
         overflowY: "auto", display: "flex", flexDirection: "column",
       }}
     >
-      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 15, color: T.luxuryBrown, marginBottom: 24 }}>
+      <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, marginBottom: 24 }}>
         Print Settings
       </div>
 

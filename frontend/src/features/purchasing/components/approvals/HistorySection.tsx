@@ -100,7 +100,7 @@ export function HistorySection({
         }}>
           {["Date & Time", "Type", "Requested By", "Details", "Decision", "Notified"].map(h => (
             <span key={h} style={{
-              fontFamily: F.mono, fontSize: 9, color: T.taupe,
+              fontFamily: F.mono, fontSize: 12, color: T.taupe,
               textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 600,
             }}>
               {h}
@@ -122,7 +122,7 @@ export function HistorySection({
               alignItems: "center",
             }}
           >
-            <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{row.date}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>
             <TypePill type={row.type} typeColor={row.typeColor} />
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>
@@ -130,13 +130,13 @@ export function HistorySection({
               background: row.decision === "Approved" ? T.greenBg : T.crimsonBg,
               color: row.decision === "Approved" ? T.green : T.crimson,
               borderRadius: 6, padding: "3px 10px",
-              fontFamily: F.ui, fontSize: 11, fontWeight: 600,
+              fontFamily: F.ui, fontSize: 12, fontWeight: 600,
               display: "inline-flex", alignItems: "center", gap: 4,
             }}>
               {row.decision === "Approved" ? <Check size={11} /> : <X size={11} />}
               {row.decision}
             </span>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
               <Check size={11} /> Sent
             </span>
           </div>
@@ -144,7 +144,7 @@ export function HistorySection({
       </div>
 
       {/* Permanent record note */}
-      <div style={{ textAlign: "right", marginTop: 10, fontFamily: F.mono, fontSize: 10, color: T.taupe }}>
+      <div style={{ textAlign: "right", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
         🔒 This history is permanent and cannot be edited or deleted.
       </div>
 

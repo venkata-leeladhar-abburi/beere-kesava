@@ -12,7 +12,7 @@ import { SectionHeader, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
-  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, color: T.taupe, letterSpacing: "0.6px", textTransform: "uppercase" as const, padding: "14px 16px", textAlign: "left" as const, whiteSpace: "nowrap" as const, borderBottom: `1px solid rgba(110,15,45,0.08)`, background: T.silkCream };
+  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "0.6px", textTransform: "uppercase" as const, padding: "14px 16px", textAlign: "left" as const, whiteSpace: "nowrap" as const, borderBottom: `1px solid rgba(110,15,45,0.08)`, background: T.silkCream };
   const TD: React.CSSProperties = { padding: "14px 16px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const };
   const BTN: React.CSSProperties = { display: "flex", alignItems: "center", gap: 5, height: 32, padding: "0 12px", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const };
   return (
@@ -55,27 +55,27 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
                 style={{ background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}
               >
                 <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>
                 </td>
                 <td style={TD}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: mt.col, background: mt.bg, padding: "5px 11px", borderRadius: 20, letterSpacing: "0.3px" }}>{r.type}</span>
                 </td>
-                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>{r.details}</span></td>
-                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span></td>
-                <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.taupe }}>{r.date}</span></td>
+                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.details}</span></td>
+                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span></td>
+                <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.date}</span></td>
                 <td style={TD}>
-                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
                     {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received * 4} Reels)` : "kg"}</span>
                   </span>
                 </td>
                 <td style={TD}>
-                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.taupe }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.taupe }}>
                     {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given * 4} Reels)` : "kg"}</span>
                   </span>
                 </td>
                 <td style={TD}>
                   <div>
-                    <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: sc.color }}>
+                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: sc.color }}>
                       {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining * 4} Reels)` : "kg"}</span>
                     </span>
                     <div style={{ width: 64, height: 4, background: "rgba(110,15,45,0.08)", borderRadius: 2, marginTop: 5 }}>
@@ -84,7 +84,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
                   </div>
                 </td>
                 <td style={TD}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 20, whiteSpace: "nowrap" as const }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 20, whiteSpace: "nowrap" as const }}>
                     {sc.icon} {sc.text}
                   </span>
                 </td>
@@ -135,11 +135,11 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
               </div>
               <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, background: "rgba(110,15,45,0.05)", display: "inline-block", padding: "3px 8px", borderRadius: 6, marginBottom: 8, letterSpacing: "0.3px" }}>{r.id}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.05)", display: "inline-block", padding: "3px 8px", borderRadius: 6, marginBottom: 8, letterSpacing: "0.3px" }}>{r.id}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.vendor}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
                     <Calendar size={12} color={T.taupe} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Received {r.date}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Received {r.date}</span>
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
@@ -154,13 +154,13 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
                         {r.type === "Jari" ? (
                           <>
                             <div>{s.val} Buns</div>
-                            <div style={{ fontSize: 11, fontWeight: 500, color: T.taupe, marginTop: 2 }}>{s.val * 4} Reels</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: T.taupe, marginTop: 2 }}>{s.val * 4} Reels</div>
                           </>
                         ) : (
                           s.val
                         )}
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                         {s.label} {r.type === "Jari" ? "" : "kg"}
                       </div>
                     </div>
@@ -168,18 +168,18 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
                 </div>
                 <div style={{ marginBottom: 16, flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Stock remaining</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: sc.color }}>{remPct}%</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Stock remaining</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: sc.color }}>{remPct}%</span>
                   </div>
                   <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 3 }}>
                     <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 3 }} />
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <motion.button onClick={() => onViewDetails(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 9, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  <motion.button onClick={() => onViewDetails(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                     <FileText size={14} /> View Details
                   </motion.button>
-                  <motion.button onClick={() => onPrintBarcode(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  <motion.button onClick={() => onPrintBarcode(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                     <QrCode size={14} /> Print Barcode
                   </motion.button>
                 </div>
@@ -255,7 +255,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={isMobile ? "Search batch / vendor..." : "Search by batch number or vendor name..."}
-              style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, border: "none", outline: "none", background: "transparent", width: isMobile ? "100%" : 240, minWidth: 0 }}
+              style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, border: "none", outline: "none", background: "transparent", width: isMobile ? "100%" : 240, minWidth: 0 }}
             />
           </div>
 
@@ -268,7 +268,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
                 background: statusFilter !== "All Status" ? T.royalBurgundy : "#FFFFFF",
                 color: statusFilter !== "All Status" ? "#FFFDF9" : T.taupe,
                 border: statusFilter !== "All Status" ? "none" : `1px solid ${T.borderDef}`,
-                borderRadius: 10, padding: "7px 14px", fontFamily: F.ui, fontSize: 12.5, cursor: "pointer",
+                borderRadius: 10, padding: "7px 14px", fontFamily: F.ui, fontSize: 12, cursor: "pointer",
               }}
             >
               <Filter size={12} /> {statusFilter} {statusDropOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -296,7 +296,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
                         style={{
                           display: "flex", alignItems: "center", gap: 10, width: "100%",
                           padding: "10px 16px", background: "transparent", border: "none",
-                          fontFamily: F.ui, fontSize: 13.5, fontWeight: statusFilter === f ? 700 : 500,
+                          fontFamily: F.ui, fontSize: 13, fontWeight: statusFilter === f ? 700 : 500,
                           color: statusFilter === f ? colors[f] : T.luxuryBrown, cursor: "pointer",
                           textAlign: "left",
                         }}
@@ -320,7 +320,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
                 key={v}
                 onClick={() => setView(v as "table" | "card")}
                 whileHover={{ scale: 1.03 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFFFFF", color: view === v ? "#FFFDF9" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}`, transition: "all 0.2s" }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFFFFF", color: view === v ? "#FFFDF9" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}`, transition: "all 0.2s" }}
               >
                 <Icon size={13} /> {label}
               </motion.button>

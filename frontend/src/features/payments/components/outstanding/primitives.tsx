@@ -21,15 +21,15 @@ export function StatChip({ label, value, tone = "plain" }: { label: string; valu
   const bd = tone === "gold" ? "rgba(200,155,71,0.38)" : tone === "green" ? "rgba(30,102,64,0.35)" : tone === "red" ? "rgba(224,82,82,0.35)" : "rgba(255,253,249,0.15)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: bg, border: `1px solid ${bd}`, borderRadius: 99, padding: "9px 18px" }}>
-      <span style={{ fontFamily: F.display, fontSize: 21, fontWeight: 700, color: c }}>{value}</span>
-      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
+      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c }}>{value}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
     </div>
   );
 }
 
 export function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
   return (
-    <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
+    <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>
       {label}
     </span>
   );
@@ -62,13 +62,13 @@ export function SectionTitle({ title, sub, right }: { title: string; sub?: strin
 }
 
 export const th: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase",
+  fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase",
   letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap",
 };
 export const td: React.CSSProperties = {
   fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle",
 };
-export const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12.5, fontWeight: 600, color: T.royalBurgundy };
+export const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 export function ScrollTable({ children }: { children: React.ReactNode }) {
   return (
@@ -101,7 +101,7 @@ export function ExportBtn({ onClick }: { onClick: () => void }) {
   if (!useDownloadsAllowed()) return null;
   return (
     <motion.button onClick={onClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-      style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 16px", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+      style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
       <Download size={14} /> Export CSV
     </motion.button>
   );

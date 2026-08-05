@@ -9,7 +9,7 @@ const DFB_T = {
   royalBurgundy: "#6E0F2D",
   luxuryBrown: "#3B2314",
   warmCream: "#F5E8D0",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   borderDef: "rgba(110,15,45,0.10)",
 };
 const DFB_F = {

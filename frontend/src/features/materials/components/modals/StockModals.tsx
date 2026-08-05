@@ -36,7 +36,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
     padding: "11px 14px", outline: "none", background: T.warmIvory, boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.taupe,
+    fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe,
     letterSpacing: "0.3px", marginBottom: 6, display: "block",
   };
 
@@ -49,7 +49,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(30,102,64,0.12)", border: "2px solid rgba(30,102,64,0.30)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
               <Check size={32} color={T.green} />
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.green, marginBottom: 8 }}>Stock Added Successfully!</div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.green, marginBottom: 8 }}>Stock Added Successfully!</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>The new batch has been recorded and is now in the system.</div>
           </div>
         ) : (
@@ -198,7 +198,7 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
           <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "6px 14px", borderRadius: 8, letterSpacing: "0.3px" }}>{batch.id}</span>
           <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: mt.col, background: mt.bg, padding: "6px 14px", borderRadius: 20 }}>{batch.type}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 20 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 20 }}>
             {sc.icon} {sc.text}
           </span>
         </div>
@@ -211,8 +211,8 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
             { label: "Material Type", value: batch.type },
           ].map(row => (
             <div key={row.label} style={{ background: T.silkCream, borderRadius: 12, padding: "14px 16px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>{row.label}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{row.value}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 5 }}>{row.label}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{row.value}</div>
             </div>
           ))}
         </div>
@@ -235,7 +235,7 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
                   row.value
                 )}
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 4 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
                 {row.label} {batch.type === "Jari" ? "" : "(kg)"}
               </div>
             </div>
@@ -287,7 +287,7 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
       <ModalHeader title="Print Barcode" subtitle={`Barcode label for batch ${batch.id}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
         <div style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{batch.type} — {batch.details}</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>
 
@@ -300,9 +300,9 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
           <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, letterSpacing: "3px", marginBottom: 14 }}>{batch.id}</div>
 
           <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: F.mono, fontSize: 11, color: mt.col, background: mt.bg, padding: "4px 12px", borderRadius: 6, letterSpacing: "1px" }}>{batch.type}</span>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Received: {batch.received} kg</span>
-            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Remaining: {batch.remaining} kg</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: mt.col, background: mt.bg, padding: "4px 12px", borderRadius: 6, letterSpacing: "1px" }}>{batch.type}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Received: {batch.received} kg</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Remaining: {batch.remaining} kg</span>
           </div>
         </div>
 

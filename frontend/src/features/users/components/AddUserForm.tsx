@@ -124,7 +124,7 @@ export function AddUserForm({
                       <Phone size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                       <input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="+91 98765 43210" type="tel" style={{ ...inputStyle, paddingLeft: 36 }} onFocus={FieldFocus} onBlur={FieldBlur} />
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 5, display: "flex", alignItems: "center", gap: 5 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5, display: "flex", alignItems: "center", gap: 5 }}>
                       <Shield size={10} color={T.antiqueGold} /> This number will be used for OTP login via WhatsApp
                     </div>
                   </div>
@@ -168,7 +168,7 @@ export function AddUserForm({
                       <Hash size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
                       <input readOnly value={autoEmpId} style={{ ...inputStyle, paddingLeft: 36, background: "rgba(245,232,208,0.40)", color: T.royalBurgundy, cursor: "default", fontFamily: F.mono, fontWeight: 600 }} />
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 5 }}>Assigned automatically as the next ID in sequence.</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5 }}>Assigned automatically as the next ID in sequence.</div>
                   </div>
 
                   {/* Access Level — Admin only */}
@@ -189,13 +189,13 @@ export function AddUserForm({
                             const Icon = lvl === "Full Access" ? ShieldCheck : ShieldHalf;
                             return (
                               <button key={lvl} type="button" onClick={() => setAccessLevel(lvl)}
-                                style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "9px 12px", borderRadius: 10, cursor: "pointer", background: on ? m.bg : "#FFF8F0", border: `1.5px solid ${on ? m.border : "rgba(110,15,45,0.14)"}`, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: on ? m.color : T.taupe, transition: "all 0.15s" }}>
+                                style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "9px 12px", borderRadius: 10, cursor: "pointer", background: on ? m.bg : "#FFF8F0", border: `1.5px solid ${on ? m.border : "rgba(110,15,45,0.14)"}`, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: on ? m.color : T.taupe, transition: "all 0.15s" }}>
                                 <Icon size={14} color={on ? m.color : T.taupe} /> {lvl}
                               </button>
                             );
                           })}
                         </div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 6, lineHeight: 1.5 }}>{ACCESS_LEVEL_META[accessLevel].desc}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6, lineHeight: 1.5 }}>{ACCESS_LEVEL_META[accessLevel].desc}</div>
                       </motion.div>
                     )}
                   </AnimatePresence>

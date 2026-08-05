@@ -68,7 +68,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
                 justifyContent: "space-between",
                 alignItems: "center",
               }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13.5, color: "#1E6640", fontWeight: 600 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: "#1E6640", fontWeight: 600 }}>
                   ✓ Purchase Order {successPOId} submitted for Superadmin approval. You will be notified when it is approved or rejected.
                 </span>
                 <button

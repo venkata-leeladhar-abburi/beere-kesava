@@ -19,7 +19,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
               {TABLE_COLS.map(c => (
-                <th key={c} style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
+                <th key={c} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
               ))}
             </tr>
           </thead>
@@ -38,7 +38,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   <td style={TD}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <PhMapPin size={14} color={T.taupe} weight="fill" />
-                      <span style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>{r.village}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.village}</span>
                     </div>
                   </td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span></td>
@@ -49,11 +49,11 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                     </div>
                   </td>
                   <td style={TD}>
-                    <span style={{ display: "inline-flex", alignItems: "center", fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
                       {r.status === "active" ? "● Weaving" : r.status === "qc" ? "● QC Check" : "○ Idle"}
                     </span>
                   </td>
-                  <td style={TD}><span style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.antiqueGold }}>{r.thisMonth}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{r.thisMonth}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(r.passRate) }}>{r.passRate}%</span></td>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown }}>{r.totalEver}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span></td>
@@ -63,7 +63,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                       onClick={() => onSelect(r.id)}
                       whileHover={{ scale: 1.04, background: "rgba(110,15,45,0.10)" }}
                       whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 15px", fontFamily: F.ui, fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+                      style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 15px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                     >
                       <PhEye size={18} weight="regular" /> View
                     </motion.button>

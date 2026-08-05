@@ -4,27 +4,36 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 const T = {
   royalBurgundy: "#6E0F2D",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   borderDef: "rgba(110,15,45,0.10)",
 };
 const F = {
   ui: "'Inter', sans-serif",
 };
 
-// Sticky-stack layout constants — shared across both dashboards (identical navbars).
-export const MAIN_NAV_H = 90;
-export const SUB_NAV_H = 66;
-export const SECTION_NAV_H = 56;
-export const MOBILE_NAV_H = 60;
+// Sticky-stack layout constants — re-pointed at the app-shell tokens in
+// design-system/02-LAYOUT.md Part C.2 (single source of truth: 4 base
+// heights, not 9 independently-drifting ones). Names are UNCHANGED from
+// before this migration so every existing import keeps working — only the
+// values moved. This is also the fix for the documented SUB_NAV_H bug: the
+// admin dashboard's TopNav used to shadow this with its own local
+// `const SUB_NAV_H = 60`, 6px off from this file's old value of 66; that
+// shadow has been removed (see beere-dashboard/components/TopNav.tsx) so
+// every consumer now derives from this one constant, currently 52.
+export const MAIN_NAV_H = 72;      // was 90  — --shell-topbar-h
+export const SUB_NAV_H = 52;       // was 66  — --shell-groupbar-h
+export const SECTION_NAV_H = 48;   // was 56  — --shell-sectionbar-h
+export const MOBILE_NAV_H = 64;    // was 60  — --shell-mobilenav-h
 
-// Worker portal — different nav-bar heights, reuses this same component/pattern.
+// Worker portal — previously its own independent heights; now the same
+// shell geometry as everything else, aliased under its existing names.
 export const WORKER_MOBILE_HEADER_H = 56;
-export const WORKER_TOPNAV_H = 72;
-export const WORKER_SECTION_NAV_H = 52;
+export const WORKER_TOPNAV_H = MAIN_NAV_H;
+export const WORKER_SECTION_NAV_H = SECTION_NAV_H;
 
-// Shop Staff portal — different nav-bar heights, reuses this same component/pattern.
+// Shop Staff portal — same alignment.
 export const SHOP_MOBILE_HEADER_H = 56;
-export const SHOP_SECTION_NAV_H = 52;
+export const SHOP_SECTION_NAV_H = SECTION_NAV_H;
 
 export interface SectionNavItem { id: string; label: string; }
 

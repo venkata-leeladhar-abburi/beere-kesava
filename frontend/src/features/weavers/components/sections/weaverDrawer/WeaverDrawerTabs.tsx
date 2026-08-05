@@ -25,8 +25,8 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                       {/* Batch Header */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
                         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
-                          <span style={{ fontFamily: F.ui, fontSize: 11, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" }}>{b.status}</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" }}>{b.status}</span>
                         </div>
                         {b.dueDate && (
                           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -37,8 +37,8 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
 
                       {/* Progress Bar */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>Progress: {completedSareesInBatch} of {weaverSareesInBatch.length} sarees done</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 13.5, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Progress: {completedSareesInBatch} of {weaverSareesInBatch.length} sarees done</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
                       </div>
                       <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 16 }}>
                         <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }} />
@@ -49,19 +49,19 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
                           <thead>
                             <tr style={{ background: T.warmCream }}>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Dispatch</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Dispatch</th>
+                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
                             </tr>
                           </thead>
                           <tbody>
                             {weaverSareesInBatch.map((row, idx) => {
                               let qcLabel = "In Production";
                               let qcBg = "rgba(139,112,96,0.08)";
-                              let qcColorVal = T.taupe;
+                              let qcColorVal: string = T.taupe;
 
                               if (row.qcPassed === true) {
                                 qcLabel = "QC Passed";
@@ -77,48 +77,48 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                                 <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
                                   <td style={{ padding: "9px 10px" }}>
                                     {row.sareeId ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>
+                                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>
                                         {row.sareeId}
                                       </span>
                                     ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>—</span>
+                                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>
                                     )}
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
                                     {row.weaverLoom ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.antiqueGold }}>
+                                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold }}>
                                         L{row.weaverLoom}
                                       </span>
                                     ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
                                     )}
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
                                     {row.sareeTypeCode ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.luxuryBrown }}>
+                                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>
                                         {row.sareeTypeCode}
                                       </span>
                                     ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
                                     )}
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
-                                    <span style={{ fontFamily: F.ui, fontSize: 11, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                                    <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
                                       {row.bulkOrderLabel || "General Stock"}
                                     </span>
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
                                     {idx === 0 && batchDispatches.length > 0 ? (
                                       <button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
                                         <PaperPlaneTilt size={11} weight="bold" /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
                                       </button>
                                     ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 11 }}>—</span>
+                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
                                     )}
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
                                       <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />
                                       {qcLabel}
                                     </span>
@@ -133,11 +133,11 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                   );
                 })
               ) : (
-                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
                   No batch history found for this weaver.
                 </div>
               )}
-              <div style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onNavigate?.("Production"))?.(); } }}>See All Batches →</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, cursor: "pointer", textAlign: "right", marginTop: 8 }} onClick={() => onNavigate?.("Production")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onNavigate?.("Production"))?.(); } }}>See All Batches →</div>
             </div>
   );
 }
@@ -151,25 +151,25 @@ export function DispatchesTab({ dispatchGroups, dispatchDateFilter, setDispatchD
                 dispatchGroups.map(group => (
                   <div key={group.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       {group.records.map(h => (
                         <div key={h.id} style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
+                            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                               <Calendar size={12} /> Sent on {h.sentAt}
                             </div>
                           </div>
-                          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
                             <strong>Instructions:</strong> {h.instructions}
                           </div>
                           <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
                             {h.colorSlipImage && (
                               <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
                                 <img src={h.colorSlipImage} alt="Color slip"
                                   onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — ${h.id}` })}
                                   style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
@@ -177,14 +177,14 @@ export function DispatchesTab({ dispatchGroups, dispatchDateFilter, setDispatchD
                             )}
                             {h.designGraphImage && (
                               <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
                                 <img src={h.designGraphImage} alt="Design graph"
                                   onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — ${h.id}` })}
                                   style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
                               </div>
                             )}
                             {!h.colorSlipImage && !h.designGraphImage && (
-                              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontStyle: "italic" }}>No files attached</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>No files attached</span>
                             )}
                           </div>
                         </div>
@@ -193,7 +193,7 @@ export function DispatchesTab({ dispatchGroups, dispatchDateFilter, setDispatchD
                   </div>
                 ))
               ) : (
-                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
                   No design dispatches found for this weaver.
                 </div>
               )}
@@ -208,14 +208,14 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
               <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
                 <div style={{ flex: 1, background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "20px" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown }}>Total Paid Ever</div>
-                  <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: T.luxuryBrown }}>{weaver.totalPaid}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>{weaver.totalPaid}</div>
                 </div>
               </div>
 
               <SectionPill label="Payment History" />
               <DateFilterBar filter={paymentDateFilter} onChange={setPaymentDateFilter} />
               {filteredWeaverPayments.length === 0 ? (
-                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" }}>
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" }}>
                   {weaverPayments.length === 0 ? "No payment records found. Payments appear here after Excel upload on the Payments page." : "No payments found for the selected period."}
                 </div>
               ) : (
@@ -223,19 +223,19 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
                   {filteredWeaverPayments.map(p => (
                     <div key={p.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
                       <div>
-                        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Amount Paid</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Amount Paid</div>
                         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>UTR Number</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>UTR Number</div>
                         <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{p.utrNumber}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Firm Name</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Firm Name</div>
                         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{p.firmName}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Payment Date</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Payment Date</div>
                         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{p.paymentDate}</div>
                       </div>
                     </div>
@@ -251,7 +251,7 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
             <div>
               <SectionPill label="Materials Issued — Batch Wise" />
               {materialRecords.length === 0 ? (
-                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontStyle: "italic" }}>
+                <div style={{ background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic" }}>
                   No materials issued to this weaver yet. Use the Issue Material page to record material handovers.
                 </div>
               ) : (() => {
@@ -272,7 +272,7 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                           {/* Batch header */}
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, flexWrap: "wrap", gap: 10 }}>
                             <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{b.batchId}</span>
-                            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} returned</span>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} returned</span>
                           </div>
 
                           {/* Stats strip — issued / returned / outstanding */}
@@ -283,9 +283,9 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                               { label: "Outstanding", value: fmtKg(b.outstandingGrams), sub: "still with weaver", color: outColor },
                             ].map((s, i) => (
                               <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
-                                <div style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
-                                <div style={{ fontFamily: F.mono, fontSize: 19, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                                {s.sub && <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3 }}>{s.sub}</div>}
+                                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
+                                <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                                {s.sub && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>{s.sub}</div>}
                               </div>
                             ))}
                           </div>
@@ -296,8 +296,8 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                               <div key={r.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                    <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px", fontWeight: 700 }}>{r.id}</span>
-                                    <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px", fontWeight: 700 }}>{r.id}</span>
+                                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
                                   </div>
                                   {r.signatureCaptured ? (
                                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5 }}><Check size={12} /> Signed</span>
@@ -311,10 +311,10 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>
                                         {m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}
                                       </span>
-                                      {m.description && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.description}</span>}
-                                      {m.materialType === "Jari" && <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{m.jariType} · {m.jariGrade} · {m.jariColor}</span>}
-                                      <span style={{ fontFamily: F.mono, fontSize: 12.5, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                                      <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                                      {m.description && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.description}</span>}
+                                      {m.materialType === "Jari" && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.jariType} · {m.jariGrade} · {m.jariColor}</span>}
+                                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
+                                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
                                     </div>
                                   ))}
                                 </div>

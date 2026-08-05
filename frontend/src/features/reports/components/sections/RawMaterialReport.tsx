@@ -69,8 +69,8 @@ export function RawMaterialReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawReceivedData} barGap={4}>
               <CartesianGrid key="rm-recv-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="rm-recv-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="rm-recv-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
+              <XAxis key="rm-recv-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="rm-recv-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-recv-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
               <Bar key="rm-recv-may" dataKey="may" name="May 2026" fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
               <Bar key="rm-recv-apr" dataKey="apr" name="April 2026" fill={T.antiqueGold} radius={[4,4,0,0] as any} opacity={0.6} />
@@ -90,8 +90,8 @@ export function RawMaterialReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawGivenData} barGap={4}>
               <CartesianGrid key="rm-gvn-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="rm-gvn-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="rm-gvn-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
+              <XAxis key="rm-gvn-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="rm-gvn-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-gvn-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
               <Bar key="rm-gvn-may" dataKey="may" name="May 2026" fill={T.green} radius={[4,4,0,0] as any} />
               <Bar key="rm-gvn-apr" dataKey="apr" name="April 2026" fill={T.green} radius={[4,4,0,0] as any} opacity={0.4} />
@@ -135,17 +135,17 @@ export function RawMaterialReport() {
               <tbody>
                 {rawMaterialRows.map((r, i) => (
                   <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.type === "WARP" ? T.royalBurgundy : r.type === "RESHAM" ? T.antiqueGold : T.green}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
                     <td style={TD}>{r.sub}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.open} {r.unit}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{r.recv > 0 ? `${r.recv} ${r.unit}` : "—"}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson }}>{r.given > 0 ? `${r.given} ${r.unit}` : "—"}</td>
                     <td style={{ ...TD, textAlign: "right" }}>
                       <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
-                      {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
+                      {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
                     </td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>
                     </td>
                   </tr>
                 ))}
@@ -190,17 +190,17 @@ export function RawMaterialReport() {
                 <tbody>
                   {rawReceiptRows.map((r, i) => (
                     <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.materialType === "Warp" ? T.royalBurgundy : r.materialType === "Resham" ? T.antiqueGold : T.green}` }}>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span></td>
+                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span></td>
                       <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</td>
                       <td style={TD}>{r.vendor}</td>
                       <td style={TD}>{r.firmName}</td>
                       <td style={TD}>
-                        <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{r.materialType}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{r.materialType}</span>
                       </td>
                       <td style={TD}>{r.description}</td>
                       <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.quantity}</td>
                       <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.unit}</td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{r.poReference}</td>
+                      <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</td>
                       <td style={{ ...TD, fontSize: 12, color: T.taupe }}>{r.notes || "—"}</td>
                     </tr>
                   ))}

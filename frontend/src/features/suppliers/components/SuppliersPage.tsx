@@ -131,7 +131,7 @@ export function SuppliersPage() {
   }
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
       <SuppliersHero
         suppliersCount={suppliers.length}
         purchases={purchases}

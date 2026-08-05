@@ -11,7 +11,7 @@ export function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: 
   const [preview, setPreview] = useState<string | null>(null);
 
   if (rows.length === 0) {
-    return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees match this filter.</div>;
+    return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</div>;
   }
 
   return (
@@ -21,7 +21,7 @@ export function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: 
           <thead>
             <tr style={{ background: T.silkCream }}>
               {["Photo", "Saree ID", "Serial No.", "Purchase Order", "Quantity", "Type", "Colour", "Weight", "Purchase Date", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
-                <th key={h} style={{ padding: "11px 14px", fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                <th key={h} style={{ padding: "11px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>
@@ -38,18 +38,18 @@ export function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: 
                     </div>
                   )}
                 </td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: T.royalBurgundy }}>{s.id}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.luxuryBrown }}>{s.id.includes("-INV-") ? s.id.split("-")[1] : "—"}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{s.purchaseId}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{s.quantity} pcs</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.sareeType || "—"}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.color || "—"}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.id}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{s.id.includes("-INV-") ? s.id.split("-")[1] : "—"}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.purchaseId}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.quantity} pcs</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeType || "—"}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.weight || "—"}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.date}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
                 <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: "#8B6018" }}>{formatINR(s.finalAmount)}</td>
-                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.green }}>{formatINR((s.finalAmount - s.price) * s.quantity)}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatINR(s.finalAmount)}</td>
+                <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR((s.finalAmount - s.price) * s.quantity)}</td>
               </tr>
             ))}
           </tbody>

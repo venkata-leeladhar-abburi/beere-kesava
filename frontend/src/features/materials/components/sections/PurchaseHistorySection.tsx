@@ -20,7 +20,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         onAction={onDownloadReport}
         actionVariant="gold"
       />
-      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: T.taupe, margin: "0 0 16px", lineHeight: 1.6 }}>
+      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 16px", lineHeight: 1.6 }}>
         This shows everything that was ever purchased and received — from the day this system was started until today. You can also filter by a specific date range.
       </p>
 
@@ -63,14 +63,14 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 16px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 24 }}>
           <div style={{ padding: "22px 26px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14.5, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
               <thead>
                 <tr style={{ background: T.silkCream }}>
                   {["Vendor Name", "Material Supplied", "Total Purchased", "Total Paid", "Orders", "Last Purchase"].map(h => (
-                    <th key={h} style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", padding: "14px 18px", textAlign: "left", borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" }}>{h}</th>
+                    <th key={h} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", padding: "14px 18px", textAlign: "left", borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -82,28 +82,28 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                     transition={{ duration: 0.38, delay: i * 0.05, ease: EASE }}
                     style={{ background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}
                   >
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14.5, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.name}</td>
+                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.name}</td>
                     <td style={{ padding: "15px 18px", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
                         {v.materials.map(m => {
                           const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp;
-                          return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
+                          return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
                         })}
                       </div>
                     </td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
+                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
                         {v.totals.map((t, idx) => <div key={idx}>{t}</div>)}
                       </div>
                     </td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.mono, fontWeight: 700, fontSize: 14.5, color: T.antiqueGold, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.paid}</td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontSize: 14.5, color: T.taupe, textAlign: "center", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.orders}</td>
+                    <td style={{ padding: "15px 18px", fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.antiqueGold, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.paid}</td>
+                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.orders}</td>
                     <td style={{ padding: "15px 18px", fontFamily: F.mono, fontSize: 13, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.last}</td>
                   </motion.tr>
                 ))}
                 <tr style={{ background: T.warmCream }}>
-                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.ui, fontWeight: 600, fontSize: 15, color: T.taupe }}>Grand Total across all vendors:</td>
-                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.display, fontWeight: 700, fontSize: 22, color: T.antiqueGold, textAlign: "right" }}>₹57,28,000</td>
+                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.taupe }}>Grand Total across all vendors:</td>
+                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.antiqueGold, textAlign: "right" }}>₹57,28,000</td>
                 </tr>
               </tbody>
             </table>
@@ -127,7 +127,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                         <motion.div initial={{ height: 0 }} whileInView={{ height: `${(d.Resham / maxVal) * 100}%` }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.08, ease: EASE }} style={{ width: 12, background: T.antiqueGold, borderRadius: "4px 4px 0 0", minHeight: 2 }} />
                         <motion.div initial={{ height: 0 }} whileInView={{ height: `${(d.Jari / maxVal) * 100}%` }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.16, ease: EASE }} style={{ width: 12, background: T.luxuryBrown, borderRadius: "4px 4px 0 0", minHeight: 2 }} />
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe, letterSpacing: "0.5px" }}>{d.month}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "0.5px" }}>{d.month}</span>
                     </div>
                   ))}
                 </div>
@@ -137,7 +137,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
               {[["Warp", T.royalBurgundy], ["Resham", T.antiqueGold], ["Jari", T.luxuryBrown]].map(([name, color]) => (
                 <div key={name} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div style={{ width: 12, height: 12, borderRadius: 3, background: color, flexShrink: 0 }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>{name}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{name}</span>
                 </div>
               ))}
             </div>
@@ -161,10 +161,10 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                   <div key={s.name}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                       <div style={{ width: 12, height: 12, borderRadius: 3, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 15, color: T.luxuryBrown, flex: 1 }}>{s.name}</span>
+                      <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{s.name}</span>
                       <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: s.color }}>{s.pct}%</span>
                     </div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13.5, color: T.antiqueGold, paddingLeft: 22 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.antiqueGold, paddingLeft: 22 }}>{s.value}</div>
                     <AnimatedBar pct={s.pct} color={s.color} height={5} trackBg="rgba(110,15,45,0.07)" />
                   </div>
                 ))}

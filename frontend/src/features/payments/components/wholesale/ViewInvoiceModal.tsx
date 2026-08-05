@@ -24,7 +24,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
         <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{firmName}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
           </div>
           <button onClick={onClose} style={{ background: "transparent", border: "none", color: "#FFF", cursor: "pointer", display: "flex", padding: 4 }}><X size={20} /></button>
         </div>
@@ -34,33 +34,33 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{inv.id}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>Date: {inv.invoiceDate}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Date: {inv.invoiceDate}</div>
               {bulkOrderData && (
                 <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
                     <ShoppingBag size={10} color={T.royalBurgundy} />
-                    <span style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
                     {bulkOrderData.sareeType || "Sarees"} · {bulkOrderData.design || "Design"}
                   </div>
                 </div>
               )}
             </div>
             <div style={{ textAlign: "right", maxWidth: "55%" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Bill To</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Bill To</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{inv.customer}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{inv.city || "G-12, Silk Plaza, Madhapur, Hyderabad - 500081"}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{dispatch?.customerPhone || "+91 98450 11223"}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {dispatch?.gstPct ? "36AAAAA1111A1Z1" : "—"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{inv.city || "G-12, Silk Plaza, Madhapur, Hyderabad - 500081"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{dispatch?.customerPhone || "+91 98450 11223"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {dispatch?.gstPct ? "36AAAAA1111A1Z1" : "—"}</div>
             </div>
           </div>
           
           {/* Items */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Item</div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>Amount (₹)</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Item</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>Amount (₹)</div>
             </div>
             {dispatch?.sareeIds ? (
               <div style={{ maxHeight: 200, overflowY: "auto" }}>
@@ -68,12 +68,12 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
                   <div key={sid} style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>{sid}</span>
+                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{sid}</span>
                         {bulkOrderData?.batches && bulkOrderData.batches.length > 0 && (
-                           <span style={{ fontFamily: F.mono, fontSize: 9, background: "rgba(200,155,71,0.12)", color: T.antiqueGold, padding: "2px 5px", borderRadius: 4, border: `1px solid rgba(200,155,71,0.2)` }}>{bulkOrderData.batches[0]}</span>
+                           <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(200,155,71,0.12)", color: T.antiqueGold, padding: "2px 5px", borderRadius: 4, border: `1px solid rgba(200,155,71,0.2)` }}>{bulkOrderData.batches[0]}</span>
                         )}
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, marginTop: 2 }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Type"}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Type"}</div>
                     </div>
                     <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{pricePerSaree.toLocaleString("en-IN")}</div>
                   </div>
@@ -83,9 +83,9 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
               <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy, fontWeight: 600 }}>Bulk Order Production</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>Bulk Order Production</span>
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Sarees"}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{bulkOrderData?.design || "Design"} · {bulkOrderData?.sareeType || "Sarees"}</div>
                 </div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{inv.total.toLocaleString("en-IN")}</div>
               </div>
@@ -112,17 +112,17 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
 
           {/* Dispatch details */}
           <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
             {bulkOrderData && (
               <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Bulk Order: </span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bulk Order: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderData.ref}</span>
               </div>
             )}
             {bulkOrderData?.batches && bulkOrderData.batches.length > 0 && (
               <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(200,155,71,0.06)", border: `1px solid rgba(200,155,71,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>Production Batch: </span>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{bulkOrderData.batches.join(", ")}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Production Batch: </span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{bulkOrderData.batches.join(", ")}</span>
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
@@ -133,8 +133,8 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
                 ["Date", dispatch?.dispatchDate || inv.invoiceDate],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe }}>{k}: </span>
-                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.luxuryBrown }}>{v}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}: </span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{v}</span>
                 </div>
               ))}
             </div>

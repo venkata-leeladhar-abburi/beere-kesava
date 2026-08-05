@@ -12,7 +12,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
   return (
     <section id="mat-recent" style={{ padding: `44px ${px}px 0` }}>
       <SectionHeader title="Recently Received from Vendors" action="View All Purchases" actionIcon={<Package size={15} />} actionVariant="outline" onAction={onViewAllPurchases} />
-      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: T.taupe, margin: "0 0 22px", lineHeight: 1.65 }}>
+      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 22px", lineHeight: 1.65 }}>
         These are the last few deliveries of raw material to the factory — most recent first.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: isMobile ? 16 : 22, alignItems: "stretch" }}>
@@ -35,17 +35,17 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
                 <div style={{ background: typeGrad, padding: "18px 20px 20px", position: "relative", overflow: "hidden" }}>
                   <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.10)", pointerEvents: "none" }} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.90)", background: "rgba(255,255,255,0.18)", padding: "4px 12px", borderRadius: 6, letterSpacing: "2px", textTransform: "uppercase" as const }}>{r.type}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 10.5, color: "rgba(255,255,255,0.70)", letterSpacing: "0.5px" }}>#{r.po.split("-").slice(-1)[0]}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.90)", background: "rgba(255,255,255,0.18)", padding: "4px 12px", borderRadius: 6, letterSpacing: "2px", textTransform: "uppercase" as const }}>{r.type}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.70)", letterSpacing: "0.5px" }}>#{r.po.split("-").slice(-1)[0]}</span>
                   </div>
-                  <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 34, color: "#FFFFFF", lineHeight: 1, marginBottom: 4, letterSpacing: "-0.5px" }}>{r.quantity}</div>
+                  <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 38, color: "#FFFFFF", lineHeight: 1, marginBottom: 4, letterSpacing: "-0.5px" }}>{r.quantity}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", fontWeight: 500 }}>{r.description}</div>
                 </div>
 
                 <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", flex: 1, gap: 14 }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: typeLight, borderRadius: 8, padding: "5px 10px", alignSelf: "flex-start" }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: typeAccent }} />
-                    <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 600, color: typeAccent }}>{r.date}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: typeAccent }}>{r.date}</span>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -53,8 +53,8 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>{initials}</span>
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13.5, color: T.luxuryBrown, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.vendor}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{r.vendorCity}</div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.vendor}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.vendorCity}</div>
                     </div>
                   </div>
 
@@ -62,18 +62,18 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>Firm</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>Firm</span>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: typeAccent, textAlign: "right" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.firmName}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>PO Ref</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1.3px", textTransform: "uppercase" as const, color: T.taupe }}>PO Ref</span>
                       <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 5 }}>{r.po}</span>
                     </div>
                   </div>
 
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "7px 12px", alignSelf: "flex-start" }}>
                     <CheckCircle2 size={13} color={T.green} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green }}>Entry Complete</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green }}>Entry Complete</span>
                   </div>
                 </div>
 

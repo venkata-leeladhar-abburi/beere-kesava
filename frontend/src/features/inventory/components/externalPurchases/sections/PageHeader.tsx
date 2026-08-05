@@ -21,7 +21,7 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
         <div
           style={{
             fontFamily: F.mono,
-            fontSize: 9,
+            fontSize: 12,
             color: T.antiqueGold,
             opacity: 0.5,
             letterSpacing: 2,
@@ -48,7 +48,7 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
             fontFamily: F.display,
             fontWeight: 500,
             fontStyle: "italic",
-            fontSize: 28,
+            fontSize: 30,
             color: T.antiqueGold,
             marginTop: 2,
             marginBottom: 14,

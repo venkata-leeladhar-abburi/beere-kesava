@@ -41,8 +41,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
     "Defect Analysis": false,
   });
 
-  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", padding: "10px 14px", textAlign: "left" as const, background: "#F3EEE8", borderBottom: `2px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, padding: "11px 14px", verticalAlign: "middle" as const, whiteSpace: "nowrap" as const };
+  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", padding: "10px 14px", textAlign: "left" as const, background: "#F3EEE8", borderBottom: `2px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "11px 14px", verticalAlign: "middle" as const, whiteSpace: "nowrap" as const };
 
   return (
     <div id="prod-history" style={{ padding: "40px 40px 0" }}>
@@ -59,7 +59,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               <rect x="21.5" y="12" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
             </svg>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
               <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
             </div>
           </div>
@@ -130,7 +130,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                       {(() => {
                         const rec = getSareeTypeByName(b.sareeType);
                         return (
-                          <ClickableCode onClick={rec && onSareeTypeClick ? () => onSareeTypeClick(rec.code) : undefined} style={{ fontSize: 12.5, fontWeight: 500 }}>{b.sareeType}</ClickableCode>
+                          <ClickableCode onClick={rec && onSareeTypeClick ? () => onSareeTypeClick(rec.code) : undefined} style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</ClickableCode>
                         );
                       })()}
                     </div>
@@ -163,8 +163,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                   </td>
                   <td style={{ ...TD, textAlign: "center" }}>
                     {b.bulkOrder
-                      ? <span style={{ fontFamily: F.mono, fontSize: 11, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
-                      : <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, fontStyle: "italic" }}>General Stock</span>}
+                      ? <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+                      : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>}
                   </td>
                   <td style={{ ...TD, textAlign: "center" }}>
                     <motion.button whileHover={{ scale: 1.08 }} style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${T.borderDef}`, background: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.royalBurgundy }}>
@@ -176,17 +176,17 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             </tbody>
           </table>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderTop: `1px solid ${T.borderDef}` }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Showing 1 to 10 of 25 entries</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing 1 to 10 of 25 entries</span>
             <div style={{ display: "flex", gap: 4 }}>
               {["Prev", "1", "2", "3", "Next"].map(p => (
                 <button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}
-                  style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${p === String(currentPage) ? T.royalBurgundy : T.borderDef}`, background: p === String(currentPage) ? T.royalBurgundy : "#fff", color: p === String(currentPage) ? "#FFFDF9" : T.luxuryBrown, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${p === String(currentPage) ? T.royalBurgundy : T.borderDef}`, background: p === String(currentPage) ? T.royalBurgundy : "#fff", color: p === String(currentPage) ? "#FFFDF9" : T.luxuryBrown, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                   {p}
                 </button>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Rows per page</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Rows per page</span>
               <HistoryDropBtn label="10" />
             </div>
           </div>
@@ -202,7 +202,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {["Today", "This Week", "This Month", "Last 3 Months", "This Year"].map(p => (
                     <motion.button key={p} onClick={() => setRPeriod(p)} whileHover={{ scale: 1.03 }}
-                      style={{ padding: "8px 14px", borderRadius: 99, border: rPeriod === p ? "none" : `1.5px solid rgba(110,15,45,0.18)`, background: rPeriod === p ? T.royalBurgundy : "transparent", color: rPeriod === p ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
+                      style={{ padding: "8px 14px", borderRadius: 99, border: rPeriod === p ? "none" : `1.5px solid rgba(110,15,45,0.18)`, background: rPeriod === p ? T.royalBurgundy : "transparent", color: rPeriod === p ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
                       {p}
                     </motion.button>
                   ))}
@@ -227,7 +227,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                     <label key={key} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "9px 14px", borderRadius: 10, background: checked ? "rgba(110,15,45,0.05)" : "transparent", border: `1px solid ${checked ? "rgba(110,15,45,0.16)" : T.borderDef}`, transition: "all 0.15s" }}>
                       <input type="checkbox" checked={checked} onChange={() => setRIncludes(prev => ({ ...prev, [key]: !prev[key] }))}
                         style={{ width: 16, height: 16, accentColor: T.royalBurgundy, cursor: "pointer" }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: checked ? 700 : 400, color: checked ? T.luxuryBrown : T.taupe }}>{key}</span>
                     </label>
                   ))}
                 </div>

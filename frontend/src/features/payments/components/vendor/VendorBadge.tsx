@@ -12,7 +12,7 @@ export const VENDOR_STATUS_CFG: Record<VendorStatus, { bg: string; color: string
 export function VendorBadge({ status }: { status: VendorStatus }) {
   const c = VENDOR_STATUS_CFG[status];
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 11, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: "nowrap" as const }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: "nowrap" as const }}>
       {c.label}
     </span>
   );

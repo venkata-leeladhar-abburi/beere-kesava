@@ -13,7 +13,7 @@ const T = {
   royalBurgundy: "#6E0F2D",
   deepWine: "#4A061B",
   luxuryBrown: "#3B2314",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   borderDef: "rgba(110,15,45,0.10)",
 };
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif" };
@@ -76,7 +76,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       {/* Page Header */}
       <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "34px 48px", color: "#FFFDF9" }}>
         <button 
@@ -90,7 +90,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
             <ShoppingBag size={28} />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontFamily: F.display, fontSize: 32, fontWeight: 700 }}>All Bulk Orders</h1>
+            <h1 style={{ margin: 0, fontFamily: F.display, fontSize: 30, fontWeight: 700 }}>All Bulk Orders</h1>
             <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.68)", fontSize: 14 }}>Complete wholesale customer production order queue.</p>
           </div>
         </div>
@@ -116,7 +116,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
       />
 
       {/* Grid count summary */}
-      <div style={{ padding: "24px 48px 0", fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>
+      <div style={{ padding: "24px 48px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
         Showing <span style={{ fontWeight: 700, color: T.luxuryBrown }}>{filteredOrders.length}</span> of {bulkOrders.length} wholesale orders
       </div>
 
@@ -124,8 +124,8 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
       <div style={{ padding: "12px 48px 48px" }}>
         {filteredOrders.length === 0 ? (
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center", boxShadow: "0 4px 18px rgba(74,6,27,0.03)" }}>
-            <span style={{ fontSize: 28, display: "block", marginBottom: 12 }}>🔍</span>
-            <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>No wholesale orders found</div>
+            <span style={{ fontSize: 30, display: "block", marginBottom: 12 }}>🔍</span>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>No wholesale orders found</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Try adjusting your filters or search keywords.</div>
           </div>
         ) : (

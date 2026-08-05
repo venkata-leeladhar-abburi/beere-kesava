@@ -9,10 +9,8 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
-import { SectionNavigator, MAIN_NAV_H } from '../../../../../shared/ui/SectionNavigator';
+import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H } from '../../../../../shared/ui/SectionNavigator';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
-
-const SUB_NAV_H = 60;
 
 export function TopNav({
   active,
@@ -85,10 +83,10 @@ export function TopNav({
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: T.warmCream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>
                 Beere Kesava
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 10.5, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>
                 And Brothers Silks
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 8.5, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase" }}>
                 Since 1999
               </div>
             </div>
@@ -126,7 +124,7 @@ export function TopNav({
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
                     <span style={{
-                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5,
+                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
                       color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
                       whiteSpace: "nowrap", letterSpacing: "0.1px",
                       transition: "color 0.2s",
@@ -240,8 +238,8 @@ export function TopNav({
               <div style={{ position: "absolute", top: 48, right: 0, width: 360, background: "#FFFDF9", borderRadius: 16, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
                 <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
-                    <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: F.mono, fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
+                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
+                    <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
                   </div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
                 </div>
@@ -260,7 +258,7 @@ export function TopNav({
                       <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: n.urgent ? "#C0392B" : T.luxuryBrown, marginBottom: 2 }}>{n.title}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{n.body}</div>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, flexShrink: 0, marginTop: 2 }}>{n.time}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0, marginTop: 2 }}>{n.time}</span>
                   </div>
                 ))}
                 <div style={{ padding: "12px 20px", textAlign: "center" as const }}>
@@ -282,18 +280,18 @@ export function TopNav({
               <div style={{ width: 30, height: 30, borderRadius: 9, background: G.button, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px rgba(0,0,0,0.35)` }}>
                 <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 13, color: T.warmCream }}>BK</span>
               </div>
-              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: T.warmCream, letterSpacing: "0.1px" }}>Admin</span>}
+              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>Admin</span>}
               <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
             </motion.div>
             {showProfile && (
               <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
                 <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 42, height: 42, borderRadius: "50%", background: G.button, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px rgba(110,15,45,0.25)` }}>
-                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 15, color: T.warmCream }}>BK</span>
+                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream }}>BK</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>Admin User</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
@@ -303,13 +301,13 @@ export function TopNav({
                     <UserRound size={15} color={T.taupe} /> View Profile
                   </button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
+                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
                   <button onClick={() => {
                     setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("shop");
                     navigate("/shop");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
@@ -319,7 +317,7 @@ export function TopNav({
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("worker");
                     navigate("/worker");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, textAlign: "left" as const }}
+                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
                     onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
                     <Package size={14} color={T.taupe} /> Worker Staff Portal
@@ -362,7 +360,7 @@ export function TopNav({
                   onClick={() => set(p.key)}
                   style={{
                     position: "relative",
-                    fontFamily: F.ui, fontWeight: isActive ? 600 : 500, fontSize: 13.5,
+                    fontFamily: F.ui, fontWeight: isActive ? 600 : 500, fontSize: 13,
                     color: isActive ? "#FFFFFF" : T.luxuryBrown,
                     background: "transparent",
                     border: "none", borderRadius: 10,

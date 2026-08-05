@@ -189,7 +189,7 @@ export function ExternalPurchasesPage() {
     <div
       style={{
         background: T.silkCream,
-        minHeight: "100vh",
+        minHeight: "100dvh",
         paddingBottom: 80,
       }}
     >

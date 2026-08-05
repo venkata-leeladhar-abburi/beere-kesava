@@ -38,8 +38,8 @@ function CustomerProfiles() {
     <div style={{ paddingBottom: 32 }}>
       {/* Hero */}
       <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · CUSTOMER PROFILES</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 34, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Customer Profiles</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · CUSTOMER PROFILES</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Customer Profiles</div>
         <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>All retail customers</div>
       </div>
 
@@ -47,26 +47,26 @@ function CustomerProfiles() {
       <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, padding: "16px 20px 4px" }}>
         <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.gold, marginBottom: 6 }}>Total Customers</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.gold, marginBottom: 6 }}>Total Customers</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold, lineHeight: 1 }}>242</div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Active this year</div>
         </div>
         <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.text, marginBottom: 6 }}>New Signups</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.text, lineHeight: 1.2 }}>+14</div>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 6 }}>New Signups</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>+14</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>June 2026</div>
         </div>
         {canSeePrices ? (
           <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>Top Spender</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.burg, lineHeight: 1.2 }}>₹1,84,000</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Top Spender</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹1,84,000</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
           </div>
         ) : (
           <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.burg, marginBottom: 6 }}>Most Frequent</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.burg, lineHeight: 1.2 }}>18 visits</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Most Frequent</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>18 visits</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
           </div>
         )}
@@ -76,7 +76,7 @@ function CustomerProfiles() {
       <div style={{ padding: "16px 20px 8px" }}>
         <div style={{ position: "relative" as const, marginBottom: 12 }}>
           <Search size={18} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
         </div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
           {["All", "Highest Spend", "Most Frequent", "Recent Visit", "Has Returns"].map(s => (
@@ -131,7 +131,7 @@ function CustomerProfiles() {
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                   <div style={{ width: 60, height: 60, borderRadius: "50%", background: C.burg, border: "3px solid rgba(196,146,58,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(107,26,42,0.40)" }}>
-                    <span style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF" }}>{activeCustomer.initials}</span>
+                    <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF" }}>{activeCustomer.initials}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" as const }}>
@@ -155,8 +155,8 @@ function CustomerProfiles() {
                     { label: "Last Visit", val: activeCustomer.last, color: C.text },
                   ].map(s => (
                     <div key={s.label} style={{ background: "#F8F4F0", borderRadius: 14, padding: "12px 10px", textAlign: "center" as const }}>
-                      <div style={{ fontFamily: F.u, fontSize: 10.5, color: C.muted, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" as const, marginBottom: 6 }}>{s.label}</div>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: s.color, lineHeight: 1.25 }}>{s.val}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" as const, marginBottom: 6 }}>{s.label}</div>
+                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: s.color, lineHeight: 1.25 }}>{s.val}</div>
                     </div>
                   ))}
                 </div>
@@ -170,8 +170,8 @@ function CustomerProfiles() {
                       <ShoppingBag size={17} color={C.burg} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.burg, marginBottom: 2 }}>{p.id}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.text }}>{p.design}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 2 }}>{p.id}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{p.design}</div>
                       <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.date}</div>
                     </div>
                     {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0 }}>{p.price}</div>}
@@ -195,7 +195,7 @@ function CustomerProfiles() {
                 </div>
                 {/* Actions */}
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                  <button style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                  <button style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
                     <ShoppingBag size={17} /> Record New Sale
                   </button>
                   <button onClick={() => setSelected(null)} style={{ width: "100%", height: 50, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Close</button>

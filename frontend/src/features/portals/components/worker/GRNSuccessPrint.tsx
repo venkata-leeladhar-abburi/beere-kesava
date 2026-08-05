@@ -50,17 +50,17 @@ export function GRNPrintView({ selectedPO, receivedQty, receivedUnit, grnBatchId
 
   return (
     <div style={{ paddingBottom: 24 }}>
-      <div style={{ padding: "14px 20px 0", fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>Barcode Labels</div>
+      <div style={{ padding: "14px 20px 0", fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>Barcode Labels</div>
       <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
         {batches.map((b, i) => (
           <div key={i} style={{ ...card, padding: 14 }}>
             <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.id}</div>
-            <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 10 }}>{b.type} · {b.qty}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>{b.type} · {b.qty}</div>
             <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
               <span style={{ fontFamily: F.m, fontSize: 6, color: "#FFF", letterSpacing: 2 }}>||| | || ||| ||</span>
             </div>
-            <button style={{ width: "100%", background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 7, padding: "5px 0", fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+            <button style={{ width: "100%", background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 7, padding: "5px 0", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
               <Printer size={11} /> Print
             </button>
           </div>

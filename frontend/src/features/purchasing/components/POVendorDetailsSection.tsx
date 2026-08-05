@@ -65,7 +65,7 @@ export function POVendorDetailsSection({
           ))}
           <option value={-99} style={{ color: T.antiqueGold }}>+ Add New Vendor</option>
         </select>
-        {errors.vendor && <div style={{ color: T.crimson, fontSize: 11.5, marginTop: 4 }}>{errors.vendor}</div>}
+        {errors.vendor && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.vendor}</div>}
         {vendor && (
           <div style={{ marginTop: 14, background: "linear-gradient(135deg, rgba(110,15,45,0.04) 0%, rgba(110,15,45,0.02) 100%)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 14, overflow: "hidden" }}>
             {/* Vendor header */}
@@ -76,42 +76,42 @@ export function POVendorDetailsSection({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, lineHeight: 1.2 }}>{vendor.name}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{vendor.id || "VEN-XXX"}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{vendor.id || "VEN-XXX"}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {vendor.city}</span>
                 </div>
               </div>
               <div style={{ background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 10px", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>{vendor.terms || "Net 30"}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{vendor.terms || "Net 30"}</span>
               </div>
             </div>
             {/* Detail grid */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
               <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)`, borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{vendor.phone || "—"}</div>
               </div>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Payment Terms</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Payment Terms</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{vendor.terms || "—"}</div>
               </div>
               <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>GST Number</div>
-                <div style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{vendor.gstCode || "—"}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>GST Number</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{vendor.gstCode || "—"}</div>
               </div>
               <div style={{ padding: "12px 16px" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>City</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>City</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{vendor.city || "—"}</div>
               </div>
             </div>
             {/* Contact Name */}
             <div style={{ padding: "12px 16px", borderTop: `1px solid rgba(110,15,45,0.07)` }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Contact Name</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Contact Name</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{vendorContact || "—"}</div>
             </div>
             {/* Address */}
             <div style={{ padding: "12px 16px", borderTop: `1px solid rgba(110,15,45,0.07)`, background: "rgba(247,242,234,0.5)" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Address</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, lineHeight: 1.5 }}>{vendor.address || "—"}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Address</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>{vendor.address || "—"}</div>
             </div>
           </div>
         )}
@@ -120,15 +120,15 @@ export function POVendorDetailsSection({
       {/* Add Vendor inline form */}
       {showAddVendor && (
         <div style={{ background: "rgba(200,155,71,0.06)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
-          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12.5, color: T.antiqueGold, marginBottom: 10 }}>New Vendor Details</div>
+          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.antiqueGold, marginBottom: 10 }}>New Vendor Details</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {["Vendor Name", "City & State"].map(p => (
-              <input key={p} placeholder={p} style={{ ...inputStyle, fontSize: 12.5 }} />
+              <input key={p} placeholder={p} style={{ ...inputStyle, fontSize: 12 }} />
             ))}
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Cancel</motion.button>
-            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", background: T.antiqueGold, cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown }}>Add Vendor</motion.button>
+            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Cancel</motion.button>
+            <motion.button onClick={() => setShowAddVendor(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", background: T.antiqueGold, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>Add Vendor</motion.button>
           </div>
         </div>
       )}
@@ -142,7 +142,7 @@ export function POVendorDetailsSection({
           onChange={e => { setDeliveryDate(e.target.value); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
           style={inputStyle}
         />
-        {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 11.5, marginTop: 4 }}>{errors.deliveryDate}</div>}
+        {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.deliveryDate}</div>}
       </div>
     </div>
   );

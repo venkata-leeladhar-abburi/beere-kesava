@@ -6,7 +6,7 @@ import { Check, Clock, Pencil, Send } from "lucide-react";
 
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#8B7060",
+  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
   bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", inp: "#FFF8E7", white: "#FFFFFF",
 };
 const F = {
@@ -118,25 +118,25 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
             </div>
             <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
               <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{m.quantity} {m.unit}</div>
-              <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{m.grnBatchId}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{m.grnBatchId}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted }}>Issued by {r.issuedBy}{r.signatureTimestamp ? ` · Signed on ${new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : ""}</div>
+      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Issued by {r.issuedBy}{r.signatureTimestamp ? ` · Signed on ${new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : ""}</div>
 
       {isPending && (
         <div style={{ marginTop: 18, paddingTop: 18, borderTop: `1px dashed ${C.bdr}` }}>
-          <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Collect Your Signature</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Collect Your Signature</div>
           <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 10, marginBottom: sigMethod !== "none" ? 12 : 0 }}>
             <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Pencil size={15} color={sigMethod === "here" ? "#FFF" : C.burg} />
               </div>
               <div>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.text }}>Sign here on this screen</div>
-                <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Draw your signature now</div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Sign here on this screen</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Draw your signature now</div>
               </div>
             </button>
             <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
@@ -144,8 +144,8 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
                 <Send size={15} color={sigMethod === "remote" ? "#FFF" : C.burg} />
               </div>
               <div>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.text }}>Send to my phone</div>
-                <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>Sign remotely on your own device</div>
+                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Send to my phone</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sign remotely on your own device</div>
               </div>
             </button>
           </div>
@@ -157,14 +157,14 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
             </div>
           )}
           {sigMethod === "remote" && !requestSent && (
-            <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 44, border: `1.5px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 13.5, color: C.gold, cursor: "pointer", marginBottom: 12 }}>
+            <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 44, border: `1.5px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.gold, cursor: "pointer", marginBottom: 12 }}>
               Send Signature Request to My Phone
             </button>
           )}
           {sigMethod === "remote" && requestSent && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
               <Check size={14} color={C.green} />
-              <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.green, fontWeight: 600 }}>Request sent to your phone!</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600 }}>Request sent to your phone!</span>
             </div>
           )}
           {sigMethod !== "none" && (

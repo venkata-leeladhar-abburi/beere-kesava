@@ -51,7 +51,7 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
         Series received for this batch, weighed at receipt by worker staff. Enter the final weight for each series — this becomes the weight used against the weaver's outstanding material.
       </div>
       {series.length === 0 ? (
-        <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.taupe, padding: "20px 0", textAlign: "center" }}>
+        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "20px 0", textAlign: "center" }}>
           No series have been received for this batch yet.
         </div>
       ) : (
@@ -61,16 +61,16 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     <span style={{ width: 10, height: 10, borderRadius: "50%", background: (s.color || "#ccc").toLowerCase(), border: "1px solid rgba(0,0,0,0.15)" }} />
                     {s.color || "—"}
                   </span>
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>· Worker entry: {(s.weightGrams / 1000).toFixed(3)} kg</span>
-                  {s.tallied && <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green }}>· Tallied</span>}
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· Worker entry: {(s.weightGrams / 1000).toFixed(3)} kg</span>
+                  {s.tallied && <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green }}>· Tallied</span>}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <label style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
                 <input
                   type="number" min={0} step={0.001}
                   value={weights[s.id] ?? ""}
@@ -150,7 +150,7 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
               ))}
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Weavers</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Weavers</span>
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
                 {b.weavers.map(w => w.name).join(" + ")}
               </span>
@@ -160,7 +160,7 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
           <div style={{ background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <CalendarBlank size={17} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
-              <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown }}>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                 {b.submitted ? (
                   <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Submitted <strong style={{ fontFamily: F.mono }}>{b.submitted}</strong></span>
                 ) : (
@@ -192,17 +192,17 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
             {(b.finishingDone !== undefined || b.qcPassed !== undefined || b.late) && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
                 {b.finishingDone !== undefined && (
-                  <div style={{ background: "rgba(30,102,64,0.05)", border: `1px solid rgba(30,102,64,0.15)`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.green, fontWeight: 600 }}>
+                  <div style={{ background: "rgba(30,102,64,0.05)", border: `1px solid rgba(30,102,64,0.15)`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 600 }}>
                     ✨ Finishing: {b.finishingDone} of {b.total}
                   </div>
                 )}
                 {b.qcPassed !== undefined && (
-                  <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.royalBurgundy, fontWeight: 600 }}>
+                  <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>
                     ✓ QC Passed: {b.qcPassed} {b.done - b.qcPassed > 0 && `(Rejected: ${b.done - b.qcPassed})`}
                   </div>
                 )}
                 {b.late && (
-                  <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 11.5, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                     <WarningCircle size={13} weight="fill" /> Running {b.late}d late
                   </div>
                 )}
@@ -243,7 +243,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 140px 150px 140px 150px 120px 120px 130px 90px", padding: "12px 20px", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-        {cols.map(h => <div key={h} style={{ fontFamily: F.mono, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>{h}</div>)}
+        {cols.map(h => <div key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>{h}</div>)}
       </div>
       {batches.map((b, i) => {
         const cfg = STAGE_CFG[b.stage];
@@ -252,7 +252,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
         return (
           <div key={b.id} style={{ display: "grid", gridTemplateColumns: "140px 1fr 140px 150px 140px 150px 120px 120px 130px 90px", alignItems: "center", padding: "14px 20px", background: i % 2 === 1 ? "rgba(247,242,234,0.55)" : "#FFFFFF", borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.border}`, minHeight: 64 }}>
             <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
-            <div><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></div>
+            <div><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></div>
             <div style={{ display: "flex", gap: 6 }}>{b.weavers.map(w => <Pip key={w.id} initials={w.initials} bg={w.bg} size={28} />)}</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.sareeTypeName}</div></div>
@@ -262,9 +262,9 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
                 <div style={{ height: "100%", width: `${pct}%`, background: cfg.border, borderRadius: 99 }} />
               </div>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{b.started}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} weight="fill" /> {b.late}d late</div>}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13.5, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} weight="fill" /> {b.late}d late</div>}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
             <div>
               <div style={{ display: "flex", gap: 6 }}>
                 <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
@@ -292,7 +292,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1400 }}>
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-              {headers.map(h => <th key={h} style={{ fontFamily: F.mono, fontSize: 9.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
+              {headers.map(h => <th key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -302,19 +302,19 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
               return (
                 <tr key={b.id} style={{ background: i % 2 === 1 ? "rgba(247,242,234,0.50)" : "#FFFFFF", borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.border}` }}>
                   <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700, whiteSpace: "nowrap" }}>{b.id}</td>
-                  <td style={{ padding: "14px 16px" }}><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></td>
+                  <td style={{ padding: "14px 16px" }}><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></td>
                   <td style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} <span style={{ color: T.taupe }}>({w.id})</span></div>)}
                     </div>
                   </td>
                   <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe, maxWidth: 200, lineHeight: 1.5 }}>{b.materials}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200, lineHeight: 1.5 }}>{b.materials}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>{b.started}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: b.late ? T.crimson : T.taupe, whiteSpace: "nowrap", fontWeight: b.late ? 600 : 400 }}>{b.submitted ?? b.expected}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 17, color: T.luxuryBrown, textAlign: "center" }}>{b.total}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 17, color: T.antiqueGold, textAlign: "center" }}>{b.done}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 17, color: T.green, textAlign: "center" }}>{b.qcPassed ?? "—"}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.luxuryBrown, textAlign: "center" }}>{b.total}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.antiqueGold, textAlign: "center" }}>{b.done}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.green, textAlign: "center" }}>{b.qcPassed ?? "—"}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{b.rate}</td>
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</td>
                   <td style={{ padding: "14px 16px" }}>

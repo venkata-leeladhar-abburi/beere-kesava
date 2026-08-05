@@ -136,7 +136,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" };
 
   return (
-    <div style={{ padding: "40px 56px", background: T.silkCream, minHeight: "100vh" }}>
+    <div style={{ padding: "40px 56px", background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
         <motion.button onClick={onBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
           style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
@@ -156,9 +156,9 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       <FadeUp>
         <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{supplier.initials}</div>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{supplier.initials}</div>
             <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, margin: "0 0 6px" }}>{supplier.name}</h2>
+              <h2 style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, margin: "0 0 6px" }}>{supplier.name}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{supplier.city}, {supplier.state}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Package size={13} color={T.antiqueGold} />{supplier.specialty}</span>
@@ -173,8 +173,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               { label: "OUTSTANDING",     value: formatINR(stats.outstanding),    color: stats.outstanding > 0 ? "#F87171" : T.goldLight },
             ].map(m => (
               <div key={m.label} style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>{m.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: m.color }}>{m.value}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: m.color }}>{m.value}</div>
               </div>
             ))}
           </div>

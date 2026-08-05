@@ -53,7 +53,7 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", marginBottom: 2 }}>Receive Sarees</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
             </div>
             <button onClick={() => setShowManual(true)}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: 12, fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", cursor: "pointer" }}>

@@ -37,13 +37,13 @@ export function ApprovalsHeader({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 2 }}>
         {/* Left copy */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 9, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 10 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 10 }}>
             SINCE 1999 · SUPERADMIN · APPROVALS
           </div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 42, color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>
             Approvals
           </div>
-          <div style={{ fontFamily: F.display, fontStyle: "italic", fontSize: 28, color: T.antiqueGold, marginBottom: 12 }}>
+          <div style={{ fontFamily: F.display, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 12 }}>
             &amp; Pending Actions
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, lineHeight: 1.6 }}>

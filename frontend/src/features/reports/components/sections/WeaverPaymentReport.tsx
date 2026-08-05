@@ -52,8 +52,8 @@ export function WeaverPaymentReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weaverPayMonthly}>
               <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(1)}L`} width={44} />
+              <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(1)}L`} width={44} />
               <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
               <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                 {weaverPayMonthly.map((e, i) => (
@@ -76,7 +76,7 @@ export function WeaverPaymentReport() {
               </PieChart>
               <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
                 <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.crimson }}>₹18,400</div>
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>TOTAL DEDUCTIONS</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
               </div>
             </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>

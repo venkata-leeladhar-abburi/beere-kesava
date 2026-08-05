@@ -8,7 +8,7 @@ import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11,
+      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12,
       fontWeight: 700, color, background: `${color}1A`, borderRadius: 99, padding: "3px 9px", whiteSpace: "nowrap",
     }}>
       <span style={{ width: 5, height: 5, borderRadius: "50%", background: color }} />
@@ -135,7 +135,7 @@ export function MainSareesTable({
                         ? <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap" }}>
                             {r.defects.map(d => (
                               <span key={d} style={{
-                                fontFamily: F.ui, fontSize: 10.5, fontWeight: 600, color: qc.color,
+                                fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: qc.color,
                                 background: `${qc.color}1A`, borderRadius: 5, padding: "2px 7px",
                               }}>{d}</span>
                             ))}

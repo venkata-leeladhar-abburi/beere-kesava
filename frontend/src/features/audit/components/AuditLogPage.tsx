@@ -14,7 +14,7 @@ export function AuditLogPage() {
   const [periodFilter, setPeriodFilter] = useState("Today");
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif" }}>
       <PageHeaderStats />
 
       {/* Section wrapper — clears stats strip */}

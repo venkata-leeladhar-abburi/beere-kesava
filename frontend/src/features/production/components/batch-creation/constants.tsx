@@ -13,7 +13,7 @@ export const T = {
   goldLight:     "#E7C983",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   green:         "#1E6640",
   red:           "#C0392B",
   amber:         "#B7791F",
@@ -35,7 +35,7 @@ export const G = {
 export const WEAVERS = [
   { id: "WV-001", name: "Ravi Kumar",   initials: "RK", loom: 2, bg: "#6E0F2D" },
   { id: "WV-002", name: "Padma Veni",   initials: "PV", loom: 1, bg: "#C4923A" },
-  { id: "WV-003", name: "Suresh Murti", initials: "SM", loom: 2, bg: "#8B7060" },
+  { id: "WV-003", name: "Suresh Murti", initials: "SM", loom: 2, bg: "#69635E" },
   { id: "WV-005", name: "Anand K.",     initials: "AK", loom: 1, bg: "#4A061B" },
   { id: "WV-012", name: "Meena R.",     initials: "MR", loom: 3, bg: "#A05080" },
   { id: "WV-018", name: "Lakshmi D.",   initials: "LD", loom: 1, bg: "#C4923A" },
@@ -74,7 +74,7 @@ export const lbl: React.CSSProperties = {
 };
 
 export const th: React.CSSProperties = {
-  padding: "10px 14px", textAlign: "left", fontFamily: F.ui, fontSize: 11,
+  padding: "10px 14px", textAlign: "left", fontFamily: F.ui, fontSize: 12,
   fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px",
   borderBottom: `1px solid ${T.borderDef}`,
 };

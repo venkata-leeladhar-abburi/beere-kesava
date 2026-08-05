@@ -17,7 +17,7 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 22, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Recent Activity</span>
+          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Recent Activity</span>
         </div>
         <button onClick={() => onNavigate("Notifications")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
       </motion.div>
@@ -38,10 +38,10 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
               {a.icon}
             </motion.div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14.5, color: "rgba(245,232,208,0.97)", lineHeight: 1.6, marginBottom: 6, letterSpacing: "0.05px" }}>{a.text}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: "rgba(245,232,208,0.97)", lineHeight: 1.6, marginBottom: 6, letterSpacing: "0.05px" }}>{a.text}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 5, height: 5, borderRadius: "50%", background: a.bg, boxShadow: `0 0 6px ${a.glow}` }} />
-                <span style={{ fontFamily: F.mono, fontSize: 11.5, color: "rgba(245,232,208,0.78)", letterSpacing: "0.3px" }}>{a.time}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(245,232,208,0.78)", letterSpacing: "0.3px" }}>{a.time}</span>
               </div>
             </div>
           </motion.div>

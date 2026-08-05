@@ -19,16 +19,16 @@ function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onC
       <div onClick={e => e.stopPropagation()} style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <AlertTriangle size={18} color={C.crim} />
-          <span style={{ fontFamily: F.d, fontSize: 15, fontWeight: 700, color: C.text }}>Photo Required</span>
+          <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>Photo Required</span>
         </div>
         <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
           Take a photo of the defect as proof. This is required to complete the rejection.
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          <button onClick={onCapture} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
             <Camera size={13} /> Take Photo
           </button>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          <button onClick={onCapture} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
             <UploadCloud size={13} /> Upload from Gallery
           </button>
         </div>
@@ -87,7 +87,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
         style={{ position: "relative", width: "100%", maxWidth: isMobile ? 420 : "min(600px, 100vw)", margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 32px", maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <span style={{ fontFamily: F.d, fontSize: 17, fontWeight: 700, color: C.text }}>Verify Condition</span>
+          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Verify Condition</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
             <X size={20} color={C.muted} />
           </button>
@@ -121,7 +121,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
               </div>
 
               {/* Condition radio */}
-              <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Condition</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Condition</div>
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                 {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
                   <button key={val} onClick={() => { setBulkCondition(val); if (val === "damaged" && !bulkDamagePhotoUrl) setPhotoPromptFor("bulk"); }}
@@ -138,11 +138,11 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 4 }}>
                       <div style={{ display: isMobile ? "flex" : "grid", flexDirection: "column", gridTemplateColumns: isMobile ? undefined : "1fr 1fr", gap: 10 }}>
                         <div>
-                          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Damage Type <span style={{ color: C.crim }}>*</span></div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Damage Type <span style={{ color: C.crim }}>*</span></div>
                           <input value={bulkDamageType} onChange={e => setBulkDamageType(e.target.value)} placeholder="e.g. Stain, Thread break" style={{ ...inputStyle, height: 44, fontSize: 13 }} />
                         </div>
                         <div>
-                          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Severity</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Severity</div>
                           <div style={{ position: "relative" }}>
                             <select value={bulkDamageSev} onChange={e => setBulkDamageSev(e.target.value as VerifData["damageSeverity"])} style={{ ...inputStyle, height: 44, fontSize: 13, appearance: "none", paddingRight: 32, cursor: "pointer" }}>
                               <option value="">Select severity…</option>
@@ -153,18 +153,18 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Notes</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Notes</div>
                         <textarea value={bulkDamageNotes} onChange={e => setBulkDamageNotes(e.target.value)} placeholder="Additional details…" rows={2} style={{ ...inputStyle, height: "auto", padding: "10px 14px", resize: "none", fontSize: 13, lineHeight: 1.5 }} />
                       </div>
                       <div>
-                        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Photo <span style={{ color: C.crim, fontWeight: 400 }}>— Required</span></div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Photo <span style={{ color: C.crim, fontWeight: 400 }}>— Required</span></div>
                         {bulkDamagePhotoUrl ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
                             <div style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Camera size={14} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <button onClick={() => setPhotoPromptFor("bulk")} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
+                            <button onClick={() => setPhotoPromptFor("bulk")} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
                           </div>
                         ) : (
                           <button onClick={() => setPhotoPromptFor("bulk")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 40, border: `1.5px dashed ${C.crim}`, borderRadius: 10, background: "rgba(192,57,43,0.04)", fontFamily: F.u, fontSize: 13, color: C.crim, cursor: "pointer" }}>
@@ -186,7 +186,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                 return (
                   <div key={a.id} style={{ border: `1px solid rgba(107,26,42,0.12)`, borderRadius: 12, padding: "12px 14px" }}>
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 4 }}>{a.sareeId}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginBottom: 10 }}>{a.designCode} · {a.sareeType}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>{a.designCode} · {a.sareeType}</div>
                     <div style={{ display: "flex", gap: 6, marginBottom: d.condition === "damaged" ? 10 : 0 }}>
                       {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
                         <button key={val} onClick={() => { update({ condition: val }); if (val === "damaged" && !d.damagePhotoUrl) setPhotoPromptFor(a.id); }}
@@ -212,10 +212,10 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                               <Camera size={12} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <button onClick={() => setPhotoPromptFor(a.id)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
+                            <button onClick={() => setPhotoPromptFor(a.id)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
                           </div>
                         ) : (
-                          <button onClick={() => setPhotoPromptFor(a.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 38, border: `1.5px dashed ${C.crim}`, borderRadius: 9, background: "rgba(192,57,43,0.04)", fontFamily: F.u, fontSize: 12.5, color: C.crim, cursor: "pointer" }}>
+                          <button onClick={() => setPhotoPromptFor(a.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 38, border: `1.5px dashed ${C.crim}`, borderRadius: 9, background: "rgba(192,57,43,0.04)", fontFamily: F.u, fontSize: 12, color: C.crim, cursor: "pointer" }}>
                             <Camera size={14} color={C.crim} /> Take Photo of Defect <span style={{ color: C.crim }}>*</span>
                           </button>
                         )}

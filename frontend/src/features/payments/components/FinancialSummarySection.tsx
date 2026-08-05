@@ -12,7 +12,7 @@ import { ActionModal } from "./common/primitives";
 export function SummaryLineItem({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 0", borderBottom: `1px solid ${T.borderDef}` }}>
-      <span style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>{label}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{label}</span>
       <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color }}>{value}</span>
     </div>
   );
@@ -31,15 +31,15 @@ export function FinancialSummarySection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>This Month's Financial Summary</h2>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>This Month's Financial Summary</h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px" }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
               A clear view of all money coming in and going out this month.
             </p>
           </div>
           <DownloadGate>
             <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
               <Download size={15} />Download Report
             </motion.button>
           </DownloadGate>
@@ -60,10 +60,10 @@ export function FinancialSummarySection() {
                 <ArrowDownCircle size={15} color={T.green} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_IN)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_IN)}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {COMING_IN.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
                   <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
@@ -71,7 +71,7 @@ export function FinancialSummarySection() {
               ))}
             </div>
             <div style={{ marginTop: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>
                 <span>Collected Target</span>
                 <span style={{ fontWeight: 700 }}>{pctIn}%</span>
               </div>
@@ -91,10 +91,10 @@ export function FinancialSummarySection() {
                 <ArrowUpCircle size={15} color={T.crimson} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_OUT)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_OUT)}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {GOING_OUT.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
                   <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
@@ -102,7 +102,7 @@ export function FinancialSummarySection() {
               ))}
             </div>
             <div style={{ marginTop: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>
                 <span>Expense Ratio</span>
                 <span style={{ fontWeight: 700 }}>{pctOut}%</span>
               </div>
@@ -122,7 +122,7 @@ export function FinancialSummarySection() {
                 <Wallet size={15} color={T.royalBurgundy} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(NET)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(NET)}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
             </p>
@@ -140,7 +140,7 @@ export function FinancialSummarySection() {
                 <CalendarClock size={15} color={T.antiqueGold} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 32, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(IF_ALL)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(IF_ALL)}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>

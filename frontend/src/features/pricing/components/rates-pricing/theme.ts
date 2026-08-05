@@ -1,20 +1,21 @@
 import React from "react";
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 // ═══════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════════════
 export const T = {
-  silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
-  deepWine: "#4A061B", darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
+  silkCream: semantic.surface.canvas, warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
+  deepWine: brand.burgundy[950], darkBurgundy: "#3D0E1A", antiqueGold: "#C89B47",
   goldLight: "#E7C983", luxuryBrown: "#3B2314", warmCream: "#F5E8D0",
-  taupe: "#8B7060", green: "#1E6640", crimson: "#C0392B",
+  taupe: semantic.text.tertiary, green: "#1E6640", crimson: "#C0392B",
   borderDef: "rgba(110,15,45,0.10)", borderGold: "rgba(200,155,71,0.22)",
   cream: "#F0E8D0",
 };
 export const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui: "'Inter', sans-serif",
-  mono: "'JetBrains Mono', monospace",
+  display: fonts.display,
+  ui: fonts.ui,
+  mono: fonts.code,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -43,7 +44,7 @@ export const inputStyle: React.CSSProperties = {
 
 export const labelStyle: React.CSSProperties = {
   fontFamily: F.ui,
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: 600,
   color: T.taupe,
   textTransform: "uppercase" as const,
@@ -54,7 +55,7 @@ export const labelStyle: React.CSSProperties = {
 
 export const thStyle: React.CSSProperties = {
   fontFamily: F.mono,
-  fontSize: 9,
+  fontSize: 12,
   fontWeight: 600,
   letterSpacing: "0.10em",
   textTransform: "uppercase" as const,

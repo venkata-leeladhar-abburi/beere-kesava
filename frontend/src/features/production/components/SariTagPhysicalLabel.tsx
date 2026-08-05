@@ -3,7 +3,7 @@ import React from "react";
 const T = {
   royalBurgundy: "#6E0F2D",
   antiqueGold:   "#C89B47",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
 };
 
 const F = {
@@ -99,14 +99,14 @@ export function SariTagPhysicalLabel({
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
               {showBranding && (
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 11, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
                   BKB Silks
                 </div>
               )}
             </div>
 
             <div style={{ textAlign: "center", marginBottom: 4 }}>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 15, color: "#1A1A1A", letterSpacing: "1px" }}>
+              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: "#1A1A1A", letterSpacing: "1px" }}>
                 {saree.id}
               </div>
             </div>
@@ -117,7 +117,7 @@ export function SariTagPhysicalLabel({
               </div>
             </div>
 
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, fontFamily: F.ui, fontSize: 9, color: "#1A1A1A" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, fontFamily: F.ui, fontSize: 12, color: "#1A1A1A" }}>
               <div><strong>{saree.sareeTypeCode || saree.sareeType}</strong></div>
               <div style={{ color: T.taupe }}>Source: External Purchase</div>
               <div style={{ color: T.taupe }}>{saree.supplier || "—"}</div>
@@ -139,11 +139,11 @@ export function SariTagPhysicalLabel({
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
               {showBranding && (
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 11, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
                   BKB Silks
                 </div>
               )}
-              <div style={{ fontFamily: F.mono, fontSize: 8, color: T.taupe, marginLeft: "auto" }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: "auto" }}>
                 {saree.sareeType}
               </div>
             </div>
@@ -152,7 +152,7 @@ export function SariTagPhysicalLabel({
               <div style={{ width: "100%", maxWidth: 280 }}>
                 <BarcodeStrip code={saree.id} />
               </div>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 10, color: "#1A1A1A", marginTop: 4, letterSpacing: "1.5px" }}>
+              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: "#1A1A1A", marginTop: 4, letterSpacing: "1.5px" }}>
                 {saree.id}
               </div>
             </div>
@@ -160,23 +160,23 @@ export function SariTagPhysicalLabel({
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, gap: 8 }}>
               {showWeaver && (
                 <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 8, color: T.antiqueGold, fontWeight: 600 }}>WEAVER</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 9, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>WEAVER</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
                     {saree.weaver || "Own Factory"}
                   </div>
                 </div>
               )}
               {showDate && (
                 <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 8, color: T.antiqueGold, fontWeight: 600 }}>QC DATE</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 9, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>QC DATE</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
                     {saree.qcDate}
                   </div>
                 </div>
               )}
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 8, color: T.antiqueGold, fontWeight: 600 }}>WEIGHT</div>
-                <div style={{ fontFamily: F.ui, fontSize: 9, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>WEIGHT</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "#1A1A1A", fontWeight: 500, marginTop: 1 }}>
                   {saree.weight}
                 </div>
               </div>
@@ -198,15 +198,15 @@ export function SariTagPhysicalLabel({
 
       <div style={{ textAlign: "center" }}>
         {isExternal ? (
-          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
             External Purchase · {saree.supplier || "—"}
           </div>
         ) : (
           <>
-            <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
               {saree.design} · {saree.sareeType}
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
               {saree.source === "factory"
                 ? `Own Factory · Loom ${saree.loom}`
                 : `Outsourced · ${saree.weaver}`}

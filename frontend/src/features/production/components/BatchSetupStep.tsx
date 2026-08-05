@@ -30,7 +30,7 @@ export function BatchSetupStep({
   return (
     <>
       <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", marginBottom: 24, boxShadow: "0 2px 12px rgba(74,6,27,0.05)" }}>
-        <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>1</span>
           </div>

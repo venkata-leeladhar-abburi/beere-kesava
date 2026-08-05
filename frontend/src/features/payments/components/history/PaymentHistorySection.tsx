@@ -35,7 +35,7 @@ export function PaymentHistorySection() {
 
   const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); };
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
   const viewOptions = [
@@ -58,16 +58,16 @@ export function PaymentHistorySection() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
                 Payment History
               </h2>
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px" }}>
+            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
               Complete history of all payments made and received. Use filters to find specific transactions.
             </p>
           </div>
           <DownloadGate>
-            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13.5, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
+            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
               <Download size={15} color={T.antiqueGold} />Download All Transactions
             </button>
           </DownloadGate>
@@ -151,7 +151,7 @@ export function PaymentHistorySection() {
             {filtered.length === 0 && (
               <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>No transactions match your filters.</div>
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
               </div>
             )}
           </div>
@@ -163,7 +163,7 @@ export function PaymentHistorySection() {
             {filtered.length === 0 ? (
               <div style={{ padding: "60px 0", textAlign: "center" as const }}>
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe }}>No transactions match your filters.</div>
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
               </div>
             ) : filtered.map((r, i) => {
               const typeCfg = HIST_TYPE_CFG[r.type];
@@ -190,7 +190,7 @@ export function PaymentHistorySection() {
                   {/* Party + Type */}
                   <div style={{ flex: "0 0 200px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
-                    <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+                    <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
                   </div>
 
                   {/* Description */}
@@ -200,8 +200,8 @@ export function PaymentHistorySection() {
 
                   {/* Ref + PO */}
                   <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 11.5, color: T.royalBurgundy, fontWeight: 600 }}>{r.refNo}</div>
-                    {r.invoicePO && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.refNo}</div>
+                    {r.invoicePO && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
                   </div>
 
                   {/* Date */}
@@ -209,21 +209,21 @@ export function PaymentHistorySection() {
 
                   {/* Amount */}
                   <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
+                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
                       {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
                     </div>
-                    {r.utr && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.green, marginTop: 2 }}>{r.utr}</div>}
+                    {r.utr && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
                   </div>
 
                   {/* Status badge */}
-                  <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
+                  <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
                     {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
                   </span>
 
                   {/* Mode + Recorded */}
                   <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     <div>{r.mode}</div>
-                    <div style={{ marginTop: 2, fontSize: 11 }}>{r.recordedBy}</div>
+                    <div style={{ marginTop: 2, fontSize: 12 }}>{r.recordedBy}</div>
                   </div>
 
                   {/* View button */}

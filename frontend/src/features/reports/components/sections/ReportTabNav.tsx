@@ -85,7 +85,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                 </div>
                 <div style={{
                   fontFamily: F.mono,
-                  fontSize: 12.5,
+                  fontSize: 12,
                   color: active ? "rgba(200,155,71,0.82)" : "rgba(245,232,208,0.28)",
                   letterSpacing: "0.3px",
                   marginTop: 3,
@@ -140,7 +140,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                   border: `1.5px solid ${active ? T.royalBurgundy : T.borderDef}`,
                   background: active ? T.royalBurgundy : "#FFFFFF",
                   color: active ? "#FFFDF9" : disabled ? "rgba(139,112,96,0.30)" : T.taupe,
-                  fontFamily: F.ui, fontSize: 15, fontWeight: active ? 700 : 500,
+                  fontFamily: F.ui, fontSize: 14, fontWeight: active ? 700 : 500,
                   cursor: disabled ? "default" : "pointer",
                   transition: "all 0.18s",
                   whiteSpace: "nowrap" as const,
@@ -155,7 +155,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
         {activeTab === "overdue" && (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <AlertTriangle size={15} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.ui, fontSize: 15, color: T.antiqueGold, fontStyle: "italic" }}>Live status — no period filter applies.</span>
+            <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontStyle: "italic" }}>Live status — no period filter applies.</span>
           </div>
         )}
 
@@ -164,7 +164,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
 
         {/* Compare period toggle */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 500, color: T.taupe, whiteSpace: "nowrap" as const }}>Compare period</span>
+          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 500, color: T.taupe, whiteSpace: "nowrap" as const }}>Compare period</span>
           <div
             onClick={() => setCompareOn(!compareOn)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setCompareOn(!compareOn))?.(); } }}
             style={{ width: 50, height: 28, borderRadius: 14, background: compareOn ? T.royalBurgundy : "rgba(110,15,45,0.12)", cursor: "pointer", position: "relative" as const, transition: "background 0.22s", flexShrink: 0 }}
@@ -186,10 +186,10 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
 
           {/* Download buttons */}
           <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
               <FileText size={16} />Download PDF
             </button>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: "none", borderRadius: 10, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: "#FFFDF9", cursor: "pointer", boxShadow: "0 2px 10px rgba(110,15,45,0.30)" }}>
+            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: "none", borderRadius: 10, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#FFFDF9", cursor: "pointer", boxShadow: "0 2px 10px rgba(110,15,45,0.30)" }}>
               <Download size={16} />Download Excel
             </button>
           </div>

@@ -12,7 +12,7 @@ const T = {
   antiqueGold:   "#C89B47",
   luxuryBrown:   "#3B2314",
   warmCream:     "#F5E8D0",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 const F = {
@@ -79,7 +79,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const externalCount   = ALL_STOCK.filter(s => s.source === "external").length;
 
   return (
-    <div style={{ minHeight: "calc(100vh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
       <section style={{ background: G.card, padding: "52px 56px 0", position: "relative", overflow: "hidden" }}>
@@ -95,13 +95,13 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
                 PRODUCTION · INVENTORY
               </div>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 44, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
                 Sarees In Stock
               </h1>
-              <p style={{ fontFamily: F.ui, fontSize: 15, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 560 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 560 }}>
                 All sarees ready for sale or assignment to finishing staff — produced on our factory looms,
                 woven by our weavers, or bought in from external suppliers.
               </p>
@@ -117,7 +117,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
               { label: "External Purchases", value: String(externalCount),  gold: true,  greenAccent: false },
             ].map(c => (
               <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, background: c.gold ? "rgba(200,155,71,0.20)" : c.greenAccent ? "rgba(30,102,64,0.18)" : "rgba(255,253,249,0.10)", border: `1px solid ${c.gold ? "rgba(200,155,71,0.40)" : c.greenAccent ? "rgba(30,102,64,0.35)" : "rgba(255,253,249,0.15)"}`, borderRadius: 99, padding: "9px 18px" }}>
-                <span style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: c.gold ? T.antiqueGold : c.greenAccent ? "#6DCE9A" : "#FFFDF9" }}>{c.value}</span>
+                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c.gold ? T.antiqueGold : c.greenAccent ? "#6DCE9A" : "#FFFDF9" }}>{c.value}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: c.gold ? T.antiqueGold : c.greenAccent ? "rgba(109,206,154,0.85)" : "rgba(255,253,249,0.68)" }}>{c.label}</span>
               </div>
             ))}
@@ -156,7 +156,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
               ))}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Source</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>Source</span>
               {[
                 { key: "all",        label: "All Sources"   },
                 { key: "factory",    label: "🏭 Factory"     },

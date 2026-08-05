@@ -56,7 +56,7 @@ export function AnimBar({ pct, color, height = 6, delay = 0 }: { pct: number; co
 }
 
 // ── Shared Table Styles ───────────────────────────────────────────────────────
-export const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+export const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 export const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
 // ── ChartCard ─────────────────────────────────────────────────────────────────
@@ -70,13 +70,13 @@ export function ChartCard({ title, sub, icon, children }: { title: string; sub?:
               {icon}
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
               {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
             </div>
           </div>
         ) : (
           <>
-            <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
             {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
           </>
         )}
@@ -109,7 +109,7 @@ export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false
         {icon}
       </div>
       <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, lineHeight: 1.4 }}>{label}</div>
-      <div style={{ fontFamily: F.display, fontSize: 34, fontWeight: 700, color: valColor, lineHeight: 1.1 }}>
+      <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: valColor, lineHeight: 1.1 }}>
         <AnimCount raw={value} />
       </div>
       {sub && <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: "auto" }}>{sub}</div>}
@@ -150,9 +150,9 @@ export function TabTitle({ title, sub }: { title: string; sub: string }) {
     <div style={{ marginBottom: 26 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
         <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-        <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
+        <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
       </div>
-      <p style={{ fontFamily: F.ui, fontSize: 15, color: T.taupe, margin: "0 0 0 16px", maxWidth: 760, lineHeight: 1.65 }}>{sub}</p>
+      <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", maxWidth: 760, lineHeight: 1.65 }}>{sub}</p>
     </div>
   );
 }
@@ -162,11 +162,11 @@ export function ChartTip({ active, payload, label, prefix = "", suffix = "" }: a
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
       {payload.map((p: any, i: number) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
-          <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>{p.name}:</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
           <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{prefix}{typeof p.value === "number" ? p.value.toLocaleString("en-IN") : p.value}{suffix}</span>
         </div>
       ))}
@@ -197,13 +197,13 @@ export function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeT
         </svg>
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{value}</span>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{unit}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{unit}</span>
         </div>
       </div>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 3 }}>{label}</div>
-        {footNote && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
-        {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: F.mono, fontSize: 11, fontWeight: 700 }}>{badge}</span>}
+        {footNote && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
+        {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: F.mono, fontSize: 12, fontWeight: 700 }}>{badge}</span>}
       </div>
     </div>
   );
@@ -245,7 +245,7 @@ export function SectionHeader({ title, action }: { title: string; action?: React
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{ width: 3, height: 22, background: T.antiqueGold, borderRadius: 99 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 21, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
+          <h2 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
         </div>
       </div>
       {action}

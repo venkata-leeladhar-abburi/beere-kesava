@@ -81,7 +81,7 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
                 Saree Tag Preview
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.80)", marginTop: 2 }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", marginTop: 2 }}>
                 {saree.id}
               </div>
             </div>

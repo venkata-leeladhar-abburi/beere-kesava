@@ -51,22 +51,22 @@ export function LoomThroughputAndAvailability({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, background: passRate >= 90 ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", padding: "4px 10px", borderRadius: 20 }}>
             <TrendingUp size={13} color={passRate >= 90 ? T.green : T.crimson} />
-            <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: passRate >= 90 ? T.green : T.crimson }}>{failed} rejected</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: passRate >= 90 ? T.green : T.crimson }}>{failed} rejected</span>
           </div>
         </div>
         <div style={{ fontFamily: F.display, fontSize: 42, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "10px 0 2px" }}>{produced}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{pipeline} sarees still in the pipeline across active batches</div>
         {monthly.length === 0 ? (
-          <div style={{ padding: "60px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees completed in this period.</div>
+          <div style={{ padding: "60px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees completed in this period.</div>
         ) : (
           <ResponsiveContainer width="100%" height={208}>
             <ComposedChart data={monthly} barSize={26}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
+              <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
               <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
               <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
               <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
               <Bar name="Passed QC" dataKey="passed" fill={T.goldLight} radius={[5, 5, 0, 0]} />
               <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
@@ -92,7 +92,7 @@ export function LoomThroughputAndAvailability({
           </ResponsiveContainer>
           <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
             <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{utilRate}%</div>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 3 }}>running</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>running</div>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
@@ -100,9 +100,9 @@ export function LoomThroughputAndAvailability({
             <div key={d.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
-                <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{d.name}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
               </div>
-              <span style={{ fontFamily: F.mono, fontSize: 12.5, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
             </div>
           ))}
         </div>
@@ -153,8 +153,8 @@ export function LoomMaterialDesignRow({
             <ResponsiveContainer width="100%" height={186}>
               <BarChart data={byMaterial} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 9.5, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
+                <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
+                <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
                 <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
                   formatter={(v: any, _n: any, p: any) => [`${v} ${p.payload.unit}`, p.payload.type]} />
                 <Bar dataKey="qty" radius={[5, 5, 0, 0]}>
@@ -162,7 +162,7 @@ export function LoomMaterialDesignRow({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               <span>Warp drawn {warpKg.toFixed(1)} kg</span>
               <span style={{ color: T.luxuryBrown, fontWeight: 700 }}>
                 {produced ? `${(warpKg / produced).toFixed(2)} kg/saree` : "—"}
@@ -181,8 +181,8 @@ export function LoomMaterialDesignRow({
         <ResponsiveContainer width="100%" height={186}>
           <BarChart data={byDesign} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-            <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+            <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
             <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
               formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
             <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
@@ -190,7 +190,7 @@ export function LoomMaterialDesignRow({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-        <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+        <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           <span>{byDesign.length} designs</span>
           <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byDesign[0]?.type ?? "—"}</span>
         </div>
@@ -207,7 +207,7 @@ export function LoomMaterialDesignRow({
             data={[{ name: "Pass", value: passRate, fill: laQcColor(passRate) }]}>
             <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
             <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{passRate}%</text>
-            <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 10.5, fill: T.taupe }}>QC PASS RATE</text>
+            <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>QC PASS RATE</text>
           </RadialBarChart>
         </ResponsiveContainer>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
@@ -218,7 +218,7 @@ export function LoomMaterialDesignRow({
             { label: "Looms Down", value: String(looms.filter(l => l.status === "maintenance").length) },
           ].map(k => (
             <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
-              <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
               <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
             </div>
           ))}

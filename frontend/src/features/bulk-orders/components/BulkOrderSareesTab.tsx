@@ -6,7 +6,7 @@ const T = {
   silkCream: "#F7F2EA",
   royalBurgundy: "#6E0F2D",
   luxuryBrown: "#3B2314",
-  taupe: "#8B7060",
+  taupe: "#69635E",
   greenBg: "rgba(30,102,64,0.09)",
   greenMid: "#2D9158",
   crimson: "#C0392B",
@@ -39,7 +39,7 @@ function StatusPill({ status }: { status: LinkedSaree["status"] }) {
     "Damaged — Review Needed": { bg: T.crimsonBg, color: T.crimson },
   };
   const c = cfg[status] ?? cfg["QC Passed"];
-  return <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, background: c.bg, color: c.color, padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" as const }}>{status}</span>;
+  return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" as const }}>{status}</span>;
 }
 
 interface BulkOrderSareesTabProps {
@@ -89,19 +89,19 @@ export function BulkOrderSareesTab({
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…"
             style={{ width: "100%", padding: "9px 12px 9px 36px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" as const }} />
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
           {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <option key={s} value={s}>{s === "All" ? "All Statuses" : s}</option>)}
         </select>
-        <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+        <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
           {batchOptions.map(b => <option key={b} value={b}>{b === "All" ? "All Batches" : b}</option>)}
         </select>
-        <select value={dispatchFilter} onChange={e => setDispatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+        <select value={dispatchFilter} onChange={e => setDispatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
           {["All", "Dispatched", "Not Dispatched"].map(s => <option key={s} value={s}>{s === "All" ? "All Dispatch" : s}</option>)}
         </select>
-        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
           {weaverOptions.map(w => <option key={w} value={w}>{w === "All" ? "All Weavers" : w}</option>)}
         </select>
-        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
+        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
           {sareeTypeOptions.map(t => <option key={t} value={t}>{t === "All" ? "All Saree Types" : t}</option>)}
         </select>
       </div>
@@ -111,7 +111,7 @@ export function BulkOrderSareesTab({
           <thead>
             <tr style={{ background: T.silkCream }}>
               {["Saree ID", "Design / Type", "Weaver", "Batch", "Status", "Quotation", "Dispatch"].map(h => (
-                <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 10, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>
@@ -119,25 +119,25 @@ export function BulkOrderSareesTab({
             {filteredSarees.map((s, i) => (
               <tr key={s.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
                 <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{s.weaverName}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11.5, color: T.luxuryBrown }}>{s.batchId || "—"}</td>
+                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</td>
+                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</td>
+                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</td>
                 <td style={{ padding: "13px 16px" }}><StatusPill status={s.status} /></td>
-                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 11, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</td>
+                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</td>
                 <td style={{ padding: "13px 16px" }}>
                   {s.dispatch ? (
                     <button onClick={() => setDispatchPanel(s.dispatch!)}
-                      style={{ display: "flex", alignItems: "center", gap: 6, background: T.greenBg, border: "none", borderRadius: 8, padding: "6px 11px", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.greenMid, cursor: "pointer" }}>
+                      style={{ display: "flex", alignItems: "center", gap: 6, background: T.greenBg, border: "none", borderRadius: 8, padding: "6px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.greenMid, cursor: "pointer" }}>
                       <Truck size={12} /> {s.dispatch.lrNumber || "View"}
                     </button>
                   ) : (
-                    <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>Not dispatched</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
                   )}
                 </td>
               </tr>
             ))}
             {filteredSarees.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: "40px 16px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13.5, color: T.taupe }}>No sarees match this filter.</td></tr>
+              <tr><td colSpan={7} style={{ padding: "40px 16px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</td></tr>
             )}
           </tbody>
         </table>

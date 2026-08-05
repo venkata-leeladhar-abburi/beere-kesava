@@ -36,7 +36,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "10px 12px", borderBottom: `1px solid ${T.borderDef}` };
 
   return (
@@ -52,7 +52,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{weaver.name}</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, marginTop: 2 }}>{weaver.id}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />
           <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
@@ -109,20 +109,20 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                 {payments.map((p, i) => (
                   <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, alignItems: "center" }}>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
-                      <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
+                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.utrNumber}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{p.firmName}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.firmName}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 9, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown }}>{p.paymentDate}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.paymentDate}</div>
                     </div>
                   </div>
                 ))}
@@ -151,7 +151,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                           onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
                           style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, cursor: "pointer" }}>{row.sareeTypeCode}</span>
                       )}
-                      <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, color: b.status === "active" ? T.green : T.antiqueGold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.13)", padding: "3px 10px", borderRadius: 20, marginLeft: "auto" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: b.status === "active" ? T.green : T.antiqueGold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.13)", padding: "3px 10px", borderRadius: 20, marginLeft: "auto" }}>
                         {b.status === "active" ? "Active" : "Draft"}
                       </span>
                     </div>

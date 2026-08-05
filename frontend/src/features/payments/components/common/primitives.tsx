@@ -16,7 +16,7 @@ export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string;
 export function StatusBadge({ status }: { status: "Paid" | "Pending" }) {
   const paid = status === "Paid";
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: paid ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", color: paid ? T.green : "#8B6018" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: paid ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", color: paid ? T.green : "#8B6018" }}>
       {paid ? <CheckCircle2 size={11} /> : <Clock size={11} />}{status}
     </span>
   );
@@ -42,7 +42,7 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
       <div style={{ position: "fixed", inset: 0, background: "rgba(44,24,16,0.60)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ background: "#FFFDF9", borderRadius: 20, padding: 48, maxWidth: 480, width: "100%", textAlign: "center" }}>
           <CheckCircle2 size={48} color={T.green} style={{ margin: "0 auto 16px" }} />
-          <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Success</div>
+          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Success</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 24 }}>
             Action completed successfully.
           </div>

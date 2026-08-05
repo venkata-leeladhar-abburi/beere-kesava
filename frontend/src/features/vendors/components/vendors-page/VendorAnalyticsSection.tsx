@@ -153,8 +153,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
       <FadeUp>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
+          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Analytics</h2>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         </div>
 
         {/* Timeline scope — drives every chart in this section */}
@@ -162,11 +162,11 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           <DateFilterBar filter={analyticsFilter} onChange={setAnalyticsFilter} />
           <div style={{ display: "flex", gap: 20, marginBottom: 16 }}>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>SPEND IN PERIOD</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>SPEND IN PERIOD</div>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{L(totalSpendRaw)}</div>
             </div>
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>PURCHASE ORDERS</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>PURCHASE ORDERS</div>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{totalOrdersInPeriod}</div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         {rows.length === 0 && (
           <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
             <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
-            <div style={{ fontFamily: F.display, fontSize: 17, color: T.taupe }}>No vendor purchases recorded in this period.</div>
+            <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No vendor purchases recorded in this period.</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
           </div>
         )}
@@ -192,19 +192,19 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               {trendDelta !== null && (
                 <div style={{ display: "flex", alignItems: "center", gap: 6, background: trendDelta >= 0 ? T.greenBg : T.crimsonBg, padding: "4px 10px", borderRadius: 20 }}>
                   <TrendingUp size={13} color={trendDelta >= 0 ? T.greenMid : T.crimson} style={{ transform: trendDelta >= 0 ? "none" : "scaleY(-1)" }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: trendDelta >= 0 ? T.greenMid : T.crimson }}>{trendDelta >= 0 ? "+" : ""}{trendDelta}% vs prev month</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: trendDelta >= 0 ? T.greenMid : T.crimson }}>{trendDelta >= 0 ? "+" : ""}{trendDelta}% vs prev month</span>
                 </div>
               )}
             </div>
             <ResponsiveContainer width="100%" height={210}>
               <ComposedChart data={spendByMonth} barSize={28}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="l" hide />
                 <YAxis yAxisId="r" orientation="right" hide />
                 <RechartsTooltip contentStyle={tipStyle}
                   formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, paddingTop: 8 }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                 <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
                 <Line yAxisId="r" name="Orders" dataKey="orders" stroke={T.antiqueGold} strokeWidth={2.5}
                   dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
@@ -247,18 +247,18 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
-                <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={210}>
               <BarChart data={topVendors} layout="vertical" barSize={20} margin={{ left: 8, right: 56 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
                 <XAxis type="number" hide />
-                <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 11.5, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
                 <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
                   formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
-                <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 11, fontWeight: 700, fill: T.luxuryBrown }}>
+                <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                   {topVendors.map((v, i) => (
                     <Cell key={v.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
                   ))}
@@ -268,10 +268,10 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
               {topVendors.map((v, i) => (
                 <div key={v.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 11, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.initials}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{totalSpendRaw ? Math.round((v.spend / totalSpendRaw) * 100) : 0}% share</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.initials}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{totalSpendRaw ? Math.round((v.spend / totalSpendRaw) * 100) : 0}% share</div>
                   </div>
                 </div>
               ))}
@@ -285,14 +285,14 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>Unsettled dues by vendor · current balance, not period-scoped</div>
             <div style={{ background: totalOutstanding > 0 ? T.crimsonBg : T.greenBg, borderRadius: 14, padding: "16px 18px", marginBottom: 16 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
               <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: totalOutstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{L(totalOutstanding)}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>
                 {outstandingList.length} of {vendors.length} vendors pending settlement
               </div>
             </div>
             {outstandingList.length === 0 ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12.5, color: T.greenMid }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.greenMid }}>
                 <CheckCircle2 size={14} /> All vendor accounts are settled.
               </div>
             ) : (
@@ -301,12 +301,12 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <div key={v.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{v.name}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.crimson }}>₹{v.outstanding}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>₹{v.outstanding}</span>
                     </div>
                     <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                       <div style={{ width: `${(v.out / (outstandingList[0].out || 1)) * 100}%`, height: "100%", borderRadius: 4, background: `linear-gradient(90deg,#C0392B,#E74C3C)` }} />
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>Terms {v.terms} · last order {v.lastOrder}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Terms {v.terms} · last order {v.lastOrder}</div>
                   </div>
                 ))}
               </div>
@@ -328,8 +328,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 return (
                   <div key={v.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{v.name}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: col }}>{v.onTime}%</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{v.name}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: col }}>{v.onTime}%</span>
                     </div>
                     <div style={{ height: 6, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                       <div style={{ width: `${v.onTime}%`, height: "100%", borderRadius: 4, background: col }} />
@@ -349,14 +349,14 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             <ResponsiveContainer width="100%" height={168}>
               <BarChart data={spendByState} barSize={22}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis hide />
                 <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
                   formatter={(v: any, _n: any, p: any) => [L(v), p.payload.state]} />
                 <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 11.5, color: T.taupe }}>
+            <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               <span>{spendByState.length} states supplying</span>
               <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {spendByState[0]?.state ?? "—"}</span>
             </div>
@@ -373,7 +373,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 data={[{ name: "On-time", value: avgOnTime, fill: avgOnTime >= 90 ? T.greenMid : avgOnTime >= 80 ? T.antiqueGold : T.crimson }]}>
                 <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
                 <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgOnTime}%</text>
-                <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 11, fill: T.taupe }}>ON-TIME DELIVERY</text>
+                <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>ON-TIME DELIVERY</text>
               </RadialBarChart>
             </ResponsiveContainer>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
@@ -384,7 +384,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 { label: "At-Risk Vendors", value: String(reliability.filter(v => v.onTime < 80).length) },
               ].map(k => (
                 <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 9.5, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4 }}>{k.label.toUpperCase()}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4 }}>{k.label.toUpperCase()}</div>
                   <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
                 </div>
               ))}

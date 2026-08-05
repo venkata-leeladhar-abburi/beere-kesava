@@ -70,7 +70,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 <opt.Icon size={22} color={source === opt.key ? C.burg : C.muted} />
               </div>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 2 }}>{opt.title}</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{opt.sub}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{opt.sub}</div>
             </button>
           ))}
         </div>
@@ -80,7 +80,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           <div style={{ margin: "10px 16px 0" }}>
             <FieldLabel>Loom Number</FieldLabel>
             <input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="e.g. 3"
-              style={{ ...inputStyle, fontFamily: F.m, fontSize: 15, height: 46 }} />
+              style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, height: 46 }} />
             {loomNum && (
               <div style={{ marginTop: 8, display: "inline-flex", background: "rgba(107,26,42,0.10)", padding: "5px 10px", borderRadius: 7 }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg }}>BKB-L{loomNum}-001</span>
@@ -103,11 +103,11 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                     <button key={w.code} onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
                       style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", background: "none", border: "none", borderBottom: `1px solid ${C.bdr}`, cursor: "pointer" }}>
                       <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: F.d, fontSize: 11, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
+                        <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
                       </div>
                       <div style={{ textAlign: "left" }}>
                         <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{w.name}</div>
-                        <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{w.code} · {w.looms} Looms</div>
+                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{w.code} · {w.looms} Looms</div>
                       </div>
                     </button>
                   ))}
@@ -121,10 +121,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{selectedWeaver.name}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{selectedWeaver.code} · {selectedWeaver.looms} looms</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{selectedWeaver.code} · {selectedWeaver.looms} looms</div>
                 </div>
                 <div style={{ display: "inline-flex", background: "rgba(107,26,42,0.10)", padding: "4px 9px", borderRadius: 6 }}>
-                  <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 600, color: C.burg }}>{selectedWeaver.name.split(" ")[0].toUpperCase()}-L{selectedWeaver.looms}-001</span>
+                  <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{selectedWeaver.name.split(" ")[0].toUpperCase()}-L{selectedWeaver.looms}-001</span>
                 </div>
               </div>
             )}
@@ -160,7 +160,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
                   <button key={u} onClick={() => setWarpUnit(u)}
-                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${warpUnit === u ? C.burg : C.bdr}`, background: warpUnit === u ? C.burg : "#FFF", color: warpUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${warpUnit === u ? C.burg : C.bdr}`, background: warpUnit === u ? C.burg : "#FFF", color: warpUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                     {u}
                   </button>
                 ))}
@@ -168,10 +168,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ position: "relative" }}>
                 <input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
                   style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.burg }}>{warpUnit}</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>{warpUnit}</span>
               </div>
               {warpQty && (
-                <div style={{ fontFamily: F.u, fontSize: 10, color: C.burg, fontWeight: 600 }}>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.burg, fontWeight: 600 }}>
                   = {warpUnit === "kg" ? `${(parseFloat(warpQty) * 1000).toFixed(0)} g` : `${(parseFloat(warpQty) / 1000).toFixed(3)} kg`}
                 </div>
               )}
@@ -188,7 +188,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
                   <button key={u} onClick={() => setReshamUnit(u)}
-                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${reshamUnit === u ? C.burg : C.bdr}`, background: reshamUnit === u ? C.burg : "#FFF", color: reshamUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${reshamUnit === u ? C.burg : C.bdr}`, background: reshamUnit === u ? C.burg : "#FFF", color: reshamUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                     {u}
                   </button>
                 ))}
@@ -196,10 +196,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ position: "relative" }}>
                 <input type="number" value={reshamQty} onChange={e => setReshamQty(e.target.value)} placeholder="0"
                   style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#7A5E1C" }}>{reshamUnit}</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#7A5E1C" }}>{reshamUnit}</span>
               </div>
               {reshamQty && (
-                <div style={{ fontFamily: F.u, fontSize: 10, color: "#7A5E1C", fontWeight: 600 }}>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: "#7A5E1C", fontWeight: 600 }}>
                   = {reshamUnit === "kg" ? `${(parseFloat(reshamQty) * 1000).toFixed(0)} g` : `${(parseFloat(reshamQty) / 1000).toFixed(3)} kg`}
                 </div>
               )}
@@ -220,7 +220,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6 }}>
                 {["Poly", "Silk"].map((t, i) => (
                   <button key={t} onClick={() => setJariType(i === 0 ? "Polyester" : "Silk Fast")}
-                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : C.bdr}`, background: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : "#FFF", color: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
+                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : C.bdr}`, background: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : "#FFF", color: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
                     {t}
                   </button>
                 ))}
@@ -231,7 +231,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {["1G", "2G", "3G", "4G"].map(g => (
                   <button key={g} onClick={() => setJariGrade(g)}
-                    style={{ padding: "4px 8px", borderRadius: 6, border: `1px solid ${jariGrade === g ? C.burg : C.bdr}`, background: jariGrade === g ? C.burg : "#FFF", color: jariGrade === g ? "#FFF" : C.text, fontFamily: F.u, fontSize: 10, cursor: "pointer" }}>
+                    style={{ padding: "4px 8px", borderRadius: 6, border: `1px solid ${jariGrade === g ? C.burg : C.bdr}`, background: jariGrade === g ? C.burg : "#FFF", color: jariGrade === g ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, cursor: "pointer" }}>
                     {g}
                   </button>
                 ))}
@@ -246,7 +246,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6 }}>
                 {(["Reels", "Buns"] as const).map(u => (
                   <button key={u} onClick={() => setJariUnit(u)}
-                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariUnit === u ? C.burg : C.bdr}`, background: jariUnit === u ? C.burg : "#FFF", color: jariUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariUnit === u ? C.burg : C.bdr}`, background: jariUnit === u ? C.burg : "#FFF", color: jariUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                     {u}
                   </button>
                 ))}
@@ -257,10 +257,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ position: "relative" }}>
                 <input type="number" value={jariQty} onChange={e => setJariQty(e.target.value)} placeholder="0"
                   style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 42, height: 44 }} />
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 10.5, fontWeight: 700, color: C.gold }}>{jariUnit}</span>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.gold }}>{jariUnit}</span>
               </div>
               {jariQty && (
-                <div style={{ marginTop: 4, fontFamily: F.u, fontSize: 10, color: C.gold }}>
+                <div style={{ marginTop: 4, fontFamily: F.u, fontSize: 12, color: C.gold }}>
                   = {jariUnit === "Reels" ? `${Math.round(parseFloat(jariQty) / 4)} Buns` : `${Math.round(parseFloat(jariQty) * 4)} Reels`}
                   <span style={{ color: C.muted }}> (1 Bun = 4 Reels)</span>
                 </div>
@@ -285,7 +285,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <PenLine size={20} color={sigMethod === "here" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Sign Here</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>On this phone</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>On this phone</div>
           </button>
 
           <button onClick={() => { setSigMethod(sigMethod === "remote" ? "none" : "remote"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
@@ -295,7 +295,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <Send size={20} color={sigMethod === "remote" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Send Request</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>Weaver's phone</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Weaver's phone</div>
           </button>
         </div>
 
@@ -308,20 +308,20 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 <>
                   <PenLine size={26} color={C.muted} style={{ marginBottom: 8 }} />
                   <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Weaver signs here</span>
-                  <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 4 }}>Tap to sign</span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Tap to sign</span>
                 </>
               ) : (
                 <div style={{ padding: 14, textAlign: "center" }}>
-                  <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 26, color: C.dark }}>
+                  <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 24, color: C.dark }}>
                     {selectedWeaver ? selectedWeaver.name : "Weaver"}
                   </div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.green, marginTop: 5, display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, marginTop: 5, display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
                     <CheckCircle2 size={11} /> Signature captured
                   </div>
                 </div>
               )}
               {signed && (
-                <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.gold, cursor: "pointer" }}>
+                <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>
                   Clear
                 </button>
               )}
@@ -336,15 +336,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${C.green}`, borderRadius: 10, padding: 14, textAlign: "center" }}>
                 <CheckCircle2 size={22} color={C.green} style={{ margin: "0 auto 8px" }} />
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.green, marginBottom: 4 }}>Signature Received!</div>
-                <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>Signed: 11:45 AM · 11 Jun 2026</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>Signed: 11:45 AM · 11 Jun 2026</div>
               </div>
             ) : remoteSent ? (
               <div style={{ background: "rgba(196,146,58,0.10)", border: `1px solid ${C.gold}`, borderRadius: 10, padding: 14, textAlign: "center" }}>
                 <Clock size={22} color={C.gold} style={{ margin: "0 auto 6px" }} />
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 4 }}>Waiting for Signature…</div>
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                  <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.gold, cursor: "pointer" }}>Resend</button>
-                  <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 11, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+                  <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Resend</button>
+                  <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
                 </div>
               </div>
             ) : (

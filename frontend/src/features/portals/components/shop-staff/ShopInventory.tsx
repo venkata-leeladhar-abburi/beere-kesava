@@ -75,8 +75,8 @@ function ShopInventory() {
     <div style={{ paddingBottom: 32 }}>
       {/* Hero */}
       <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · SHOP INVENTORY</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 34, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Shop Inventory</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · SHOP INVENTORY</div>
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Shop Inventory</div>
         <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>Current stock in the shop</div>
       </div>
 
@@ -85,18 +85,18 @@ function ShopInventory() {
         <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, letterSpacing: 0.5, color: "rgba(255,255,255,0.60)", marginBottom: 6 }}>Total Sarees in Shop</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 32, color: "#FFF", lineHeight: 1 }}>84 <span style={{ fontSize: 18, fontWeight: 500, color: "rgba(255,255,255,0.60)" }}>sarees</span></div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1 }}>84 <span style={{ fontSize: 18, fontWeight: 500, color: "rgba(255,255,255,0.60)" }}>sarees</span></div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Currently<br />stocked</div>
         </div>
         <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Available for Sale</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.text, lineHeight: 1.1 }}>76 sarees</div>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Available for Sale</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, lineHeight: 1.1 }}>76 sarees</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>Ready for customers</div>
         </div>
         <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(192,57,43,0.12)", border: `1px solid rgba(192,57,43,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12.5, color: C.crim, marginBottom: 6 }}>Low Stock Threshold</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 26, color: C.crim, lineHeight: 1.1 }}>Below 15</div>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.crim, marginBottom: 6 }}>Low Stock Threshold</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.crim, lineHeight: 1.1 }}>Below 15</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.crim, opacity: 0.8, marginTop: 4 }}>Alert active</div>
         </div>
       </div>
@@ -105,7 +105,7 @@ function ShopInventory() {
       <Card style={{ margin: "16px 20px", padding: "16px" }}>
         <div style={{ position: "relative" as const, marginBottom: 14 }}>
           <Search size={18} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 15, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
         </div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4, marginBottom: 12 }}>
           {filters.map(f => (
@@ -114,7 +114,7 @@ function ShopInventory() {
         </div>
         {/* Loom selection pills */}
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Loom</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Loom</div>
           <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
             {["All Looms", ...looms].map(l => {
               const isSel = l === "All Looms" ? loomFilter.length === 0 : loomFilter.includes(l);
@@ -128,7 +128,7 @@ function ShopInventory() {
         </div>
         {/* Weaver selection pills */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Weaver</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" as const }}>Weaver</div>
           <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
             {["All Weavers", ...weavers].map(w => {
               const isSel = w === "All Weavers" ? weaverFilter.length === 0 : weaverFilter.includes(w);
@@ -140,7 +140,7 @@ function ShopInventory() {
             })}
           </div>
         </div>
-        <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>Showing {filtered.length} sarees · {filtered.filter(s => s.status === "available").length} available · {filtered.filter(s => s.status === "reserved").length} reserved</div>
+        <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>Showing {filtered.length} sarees · {filtered.filter(s => s.status === "available").length} available · {filtered.filter(s => s.status === "reserved").length} reserved</div>
       </Card>
 
       {/* Inventory list */}
@@ -154,15 +154,15 @@ function ShopInventory() {
                 ? <Chip label="🏭 Factory" color={C.green} bg="rgba(30,102,64,0.10)" />
                 : <Chip label="📦 External" color={C.gold} bg="rgba(196,146,58,0.12)" />}
             </div>
-            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 17, color: C.text, marginBottom: 3 }}>{s.name}</div>
-            <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted, marginBottom: 8, lineHeight: 1.4 }}>{s.design !== "External" && `${s.design} · `}{s.sareeColor} · {s.type}</div>
+            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 3 }}>{s.name}</div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8, lineHeight: 1.4 }}>{s.design !== "External" && `${s.design} · `}{s.sareeColor} · {s.type}</div>
             {s.weaver && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" as const }}>
                 <Chip label={`🧵 ${s.weaver}`} color={C.burg} bg="rgba(107,26,42,0.08)" />
                 {s.loom && <Chip label={`Loom ${s.loom}`} color={TEAL} bg="rgba(15,118,110,0.10)" />}
               </div>
             )}
-            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 21, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>}
+            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>}
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, lineHeight: 1.4 }}>{s.received} {s.src === "factory" ? "· From factory dispatch" : "· External purchase"}</div>
             {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(196,146,58,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
@@ -178,8 +178,8 @@ function ShopInventory() {
 
       {/* Low stock notice */}
       <div style={{ margin: "8px 20px", background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "18px" }}>
-        <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 15, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>⚠ Only 84 sarees in stock. Stock is below the alert threshold.</div>
-        <Btn label="Report to Admin" icon={<Send size={16} />} style={{ width: "100%", height: 54, background: C.burg, fontSize: 15 }} />
+        <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>⚠ Only 84 sarees in stock. Stock is below the alert threshold.</div>
+        <Btn label="Report to Admin" icon={<Send size={16} />} style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }} />
       </div>
     </div>
   );

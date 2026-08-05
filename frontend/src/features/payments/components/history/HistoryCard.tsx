@@ -46,9 +46,9 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 15.5, fontWeight: 700, color: T.luxuryBrown, marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.party}</div>
-          <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+          <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
         </div>
-        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
+        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
           {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
         </span>
       </div>
@@ -56,49 +56,49 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
       {/* Body / Amount */}
       <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.06)`, flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>
             {isReceipt ? "Amount Received" : "Amount Paid"}
           </div>
-          <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 800, color: isReceipt ? T.green : T.crimson }}>
+          <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: isReceipt ? T.green : T.crimson }}>
             {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
           </div>
         </div>
         <div style={{ textAlign: "right" as const }}>
-          <div style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>Date</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 700 }}>{r.date}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>Date</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 700 }}>{r.date}</div>
         </div>
       </div>
 
       {/* Meta Grid */}
       <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px", flexShrink: 0, borderBottom: `1px solid rgba(110,15,45,0.06)` }}>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{r.refNo}</span>
         </div>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.invoicePO ?? "—"}</span>
         </div>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Payment Mode</div>
-          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 500 }}>{r.mode}</span>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Payment Mode</div>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 500 }}>{r.mode}</span>
         </div>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Recorded By</div>
-          <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{r.recordedBy}</span>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Recorded By</div>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.recordedBy}</span>
         </div>
       </div>
 
       {/* UTR / Description info */}
       <div style={{ padding: "14px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>Description</div>
-          <p style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.5, margin: 0 }}>{r.description}</p>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>Description</div>
+          <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.5, margin: 0 }}>{r.description}</p>
         </div>
         {r.utr && (
           <div style={{ borderTop: `1px dashed rgba(110,15,45,0.08)`, paddingTop: 8, marginTop: 4 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 9.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>UTR / Reference ID</div>
-            <span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.green, fontWeight: 700 }}>{r.utr}</span>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>UTR / Reference ID</div>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, fontWeight: 700 }}>{r.utr}</span>
           </div>
         )}
       </div>
@@ -109,7 +109,7 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
           style={{
             flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 10, background: "#fff",
-            fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
+            fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
             transition: "all 0.15s ease"
           }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
@@ -118,7 +118,7 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
           <Eye size={13} /> View Details
         </button>
         {isPaid ? (
-          <button style={{ flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.green, cursor: "default" }}>
+          <button style={{ flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green, cursor: "default" }}>
             <BadgeCheck size={14} /> Completed
           </button>
         ) : (
@@ -126,7 +126,7 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
             style={{
               flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               border: "none", borderRadius: 10, background: T.royalBurgundy,
-              fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
+              fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
               transition: "all 0.2s ease"
             }}
             onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}

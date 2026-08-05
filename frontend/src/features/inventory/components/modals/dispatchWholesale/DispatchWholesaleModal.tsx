@@ -123,9 +123,9 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
                   <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
+                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 10, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
                 </div>
                 {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)", margin: "0 4px" }} />}
               </div>
@@ -161,7 +161,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
 
               {/* Bulk Order linkage */}
               <div style={{ marginTop: 18 }}>
-                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
                 <div style={{ position: "relative" }}>
                   <select
                     value={bulkOrderRef}
@@ -182,10 +182,10 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                       <ShoppingBag size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
                       </div>
                       <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
                       </div>
                     </div>
                   ) : null;
@@ -205,7 +205,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                 <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const }}>
                   <FileText size={26} color={T.taupe} style={{ marginBottom: 10 }} />
                   <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>No open quotations for this customer</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 5 }}>Continue to the tax invoice and add sarees there.</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5 }}>Continue to the tax invoice and add sarees there.</div>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -220,16 +220,16 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" as const }}>
                             <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
-                            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, textTransform: "capitalize" as const, color: q.status === "received" ? T.green : "#8B6018", background: q.status === "received" ? T.greenBg : "rgba(200,155,71,0.14)", borderRadius: 20, padding: "2px 9px" }}>{q.status.replace(/-/g, " ")}</span>
-                            {q.bulkOrderRef && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 6px", borderRadius: 4 }}>{q.bulkOrderRef}</span>}
+                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, color: q.status === "received" ? T.green : "#8B6018", background: q.status === "received" ? T.greenBg : "rgba(200,155,71,0.14)", borderRadius: 20, padding: "2px 9px" }}>{q.status.replace(/-/g, " ")}</span>
+                            {q.bulkOrderRef && <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 6px", borderRadius: 4 }}>{q.bulkOrderRef}</span>}
                           </div>
                           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                             {q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}
                           </div>
                         </div>
                         <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                          <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>₹{q.grandTotal.toLocaleString("en-IN")}</div>
-                          {on && <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
+                          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{q.grandTotal.toLocaleString("en-IN")}</div>
+                          {on && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
                         </div>
                         {on && <CheckCircle2 size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />}
                       </button>
@@ -262,7 +262,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               {chosenQuotation && (
                 <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 10 }}>
                   <FileText size={15} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                     Prefilled from quotation <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong> — edit freely.
                   </span>
                 </div>
@@ -303,10 +303,10 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                     <ShoppingBag size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
                     </div>
                     <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: linked.status === "on-track" ? T.green : T.crimson }}>{linked.status}</span>
                     </div>
                   </div>
                 ) : null;

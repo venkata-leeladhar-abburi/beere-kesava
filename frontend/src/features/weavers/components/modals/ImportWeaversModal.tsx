@@ -127,10 +127,10 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
           style={{ border: `2px dashed rgba(110,15,45,0.25)`, background: "rgba(110,15,45,0.03)", borderRadius: 14, padding: "32px 20px", textAlign: "center", cursor: "pointer" }}
         >
           <UploadSimple size={28} color={T.royalBurgundy} style={{ marginBottom: 10 }} />
-          <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown }}>
+          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
             {fileName ? fileName : "Click to choose a file"}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
           <input
             ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
             onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f); }}
@@ -140,7 +140,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
         {parsing && <div style={{ marginTop: 16, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Reading file…</div>}
 
         {error && (
-          <div style={{ marginTop: 16, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "14px 16px", fontFamily: F.ui, fontSize: 13.5, color: "#C0392B" }}>
+          <div style={{ marginTop: 16, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
             {error}
           </div>
         )}
@@ -159,8 +159,8 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
                 <div style={{ maxHeight: 220, overflowY: "auto" }}>
                   {valid.map((v, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 13.5, color: T.luxuryBrown, fontWeight: 600 }}>{v.name}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>{v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{v.name}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}</span>
                     </div>
                   ))}
                 </div>
@@ -168,7 +168,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
             )}
 
             {invalid.length > 0 && (
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: "#C0392B" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B" }}>
                 {invalid.map((b, i) => <div key={i}>Row {b.row}: {b.reason}</div>)}
               </div>
             )}
@@ -176,11 +176,11 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
         )}
 
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 28, borderTop: `1px solid ${T.borderDef}`, paddingTop: 20 }}>
-          <button onClick={() => { reset(); onClose(); }} style={{ padding: "12px 22px", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "transparent", color: T.taupe, fontFamily: F.ui, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={() => { reset(); onClose(); }} style={{ padding: "12px 22px", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "transparent", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
           <motion.button
             disabled={valid.length === 0} onClick={handleConfirm}
             whileHover={valid.length > 0 ? { scale: 1.02 } : {}}
-            style={{ padding: "12px 26px", borderRadius: 10, border: "none", background: valid.length > 0 ? T.royalBurgundy : "rgba(110,15,45,0.25)", color: "#FFFDF9", fontFamily: F.ui, fontSize: 14.5, fontWeight: 700, cursor: valid.length > 0 ? "pointer" : "not-allowed" }}
+            style={{ padding: "12px 26px", borderRadius: 10, border: "none", background: valid.length > 0 ? T.royalBurgundy : "rgba(110,15,45,0.25)", color: "#FFFDF9", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: valid.length > 0 ? "pointer" : "not-allowed" }}
           >
             Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
           </motion.button>

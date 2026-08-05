@@ -87,7 +87,7 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4F0", fontFamily: F.u }}>
+    <div style={{ minHeight: "100dvh", background: "#F8F4F0", fontFamily: F.u }}>
       <TopNav
         isTablet={isTablet} NAV={NAV} active={active} showNotifs={showNotifs}
         setActive={setActive} setShowNotifs={setShowNotifs}

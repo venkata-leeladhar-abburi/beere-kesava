@@ -60,7 +60,7 @@ export function ReportsSection({
                 <div key={i} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < 4 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                   <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{s.time}</div>
                   <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{s.design}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
                   {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
@@ -68,7 +68,7 @@ export function ReportsSection({
               ))}
               {canSeePrices && (
                 <div style={{ padding: "16px 24px", background: "#FAFAF8", borderTop: `1px solid ${C.bdr}`, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>Total Today:</span>
+                  <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>Total Today:</span>
                   <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹40,700</span>
                 </div>
               )}
@@ -90,7 +90,7 @@ export function ReportsSection({
                       <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{r.date}</span>
                       <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{r.id}</span>
                     </div>
-                    <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{r.customer} · {r.reason}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{r.customer} · {r.reason}</div>
                   </div>
                   {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}>{r.amt}</div>}
                 </div>
@@ -103,11 +103,11 @@ export function ReportsSection({
             <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, padding: "24px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
                 <BarChart2 size={20} color={C.burg} />
-                <span style={{ fontFamily: F.u, fontSize: 17, fontWeight: 700, color: C.text }}>Sales by Design</span>
+                <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Sales by Design</span>
               </div>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={designData} layout="vertical" margin={{ left: 8, right: 24, top: 0, bottom: 0 }}>
-                  <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
+                  <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={64} />
                   <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
                   <Bar dataKey="count" radius={[0, 5, 5, 0]}>
@@ -132,7 +132,7 @@ export function ReportsSection({
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 24px", borderBottom: i < 4 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
                   <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 22, color: i === 0 ? C.gold : C.text, width: 30, textAlign: "center" as const }}>{i + 1}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>{c.name}</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>{c.name}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{c.purchases} purchases</div>
                   </div>
                   {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{c.amt}</div>}

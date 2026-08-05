@@ -73,12 +73,12 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.60)", marginBottom: 2 }}>{greeting},</div>
-            <div style={{ fontFamily: F.d, fontSize: 19, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
+            <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
             <div style={{ marginTop: 5, display: "inline-block", background: "rgba(196,146,58,0.25)", border: "1px solid rgba(196,146,58,0.45)", borderRadius: 999, padding: "2px 10px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.gold }}>Floor Supervisor · WK-042</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Floor Supervisor · WK-042</span>
             </div>
           </div>
-          <div style={{ fontFamily: F.m, fontSize: 10, color: "rgba(255,255,255,0.50)", background: "rgba(255,255,255,0.09)", padding: "5px 9px", borderRadius: 7, textAlign: "right" as const }}>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.50)", background: "rgba(255,255,255,0.09)", padding: "5px 9px", borderRadius: 7, textAlign: "right" as const }}>
             {today}
           </div>
         </div>
@@ -93,14 +93,14 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
         ].map((s, i) => (
           <div key={i} style={{ padding: "12px 8px", textAlign: "center" as const, borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: s.col, marginBottom: 2 }}>{s.val}</div>
-            <div style={{ fontFamily: F.u, fontSize: 10, color: C.muted }}>{s.label}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Navigation Cards */}
       <div style={{ padding: "20px 16px 4px" }}>
-        <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>
           Quick Access
         </div>
         <div style={{ display: "grid", gridTemplateColumns: cols(1, 2, 3), gap: 12 }}>
@@ -136,8 +136,8 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
                   <Icon size={22} color={card.iconColor} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: F.d, fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 4 }}>{card.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, lineHeight: 1.4 }}>{card.sub}</div>
+                  <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>{card.label}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>{card.sub}</div>
                 </div>
                 <ChevronRight size={16} color={C.muted} style={{ flexShrink: 0 }} />
               </button>
@@ -160,9 +160,9 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.4, marginBottom: 2 }}>{a.desc}</div>
-              <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{a.time}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
             </div>
-            <div style={{ fontFamily: F.m, fontSize: 11, color: C.burg, flexShrink: 0, background: "rgba(107,26,42,0.06)", padding: "2px 7px", borderRadius: 6 }}>{a.id}</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(107,26,42,0.06)", padding: "2px 7px", borderRadius: 6 }}>{a.id}</div>
           </div>
         ))}
       </div>

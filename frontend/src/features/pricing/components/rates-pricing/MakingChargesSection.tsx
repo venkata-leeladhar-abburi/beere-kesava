@@ -96,8 +96,8 @@ export function MakingChargesSection({
                   </td>
                   <td style={tdStyle}>₹{parseInt(row.retail).toLocaleString("en-IN")}</td>
                   <td style={tdStyle}>₹{parseInt(row.wholesale).toLocaleString("en-IN")}</td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11 }}>{row.stdWeight}g</td>
-                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{row.changed}</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12 }}>{row.stdWeight}g</td>
+                  <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.changed}</td>
                   <td style={{ ...tdStyle }}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button
@@ -162,7 +162,7 @@ export function MakingChargesSection({
                                 <div>
                                   <label style={labelStyle} htmlFor="short-code">Short Code</label>
                                   <input id="short-code" value={row.code} readOnly style={{ ...inputStyle, background: "#EDE5D8", color: T.taupe, cursor: "not-allowed" }} />
-                                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
+                                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
                                 </div>
                                 <div>
                                   <label style={labelStyle} htmlFor="description">Description</label>
@@ -191,7 +191,7 @@ export function MakingChargesSection({
                                   <input id="standard-weight-g" type="number" value={editVals.stdWeight ?? row.stdWeight} onChange={e => setEditVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
                                 </div>
                                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
-                                  <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+                                  <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                     <div>
                                       <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>
@@ -271,7 +271,7 @@ export function MakingChargesSection({
             style={{ overflow: "hidden", marginTop: 12 }}
           >
             <div style={{ ...cardStyle, padding: 24 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, marginBottom: 18 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 18 }}>
                 New Saree Type
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 18 }}>
@@ -316,7 +316,7 @@ export function MakingChargesSection({
                     <input id="standard-weight-g-2" type="number" value={newVals.stdWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
                   </div>
                   <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <div>
                         <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>

@@ -9,7 +9,7 @@ export function StatusPill({ status }: { status: string }) {
     overdue: { bg: "rgba(192,57,43,0.08)", color: "#C0392B", label: "Overdue" },
   };
   const s = map[status] ?? map.active;
-  return <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 20 }}>{s.label}</span>;
+  return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 20 }}>{s.label}</span>;
 }
 
 export function StarRating({ rating }: { rating: number }) {

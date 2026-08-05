@@ -90,6 +90,25 @@ jobs:
       - run: npm ci
       - run: npm run test
 
+  design-system:
+    # BK Loom design-system gates (design-system/01-FOUNDATIONS.md onward).
+    # check:contrast fails if any token pair regresses below its required
+    # WCAG ratio; check:tokens fails if the CSS and TS token mirrors drift
+    # apart. Both are cheap, deterministic, and specifically close the class
+    # of bug that shipped #8B7060 (a 4.11:1 label colour) across the app.
+    name: Design system (contrast + token drift)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check:contrast
+      - run: npm run check:tokens
+
   build:
     name: Build + bundle size
     runs-on: ubuntu-latest

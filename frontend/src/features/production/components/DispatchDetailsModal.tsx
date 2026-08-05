@@ -9,7 +9,7 @@ const T = {
   warmIvory:     "#FFFDF9",
   royalBurgundy: "#6E0F2D",
   luxuryBrown:   "#3B2314",
-  taupe:         "#8B7060",
+  taupe:         "#69635E",
   borderDef:     "rgba(110,15,45,0.10)",
 };
 const F = {
@@ -26,7 +26,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
         transition={{ duration: 0.2 }}
         style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
         <div style={{ paddingTop: 16 }}>{children}</div>
@@ -42,14 +42,14 @@ export function DispatchDetailsModal({ weaverName, records, onClose }: { weaverN
         {records.map(d => (
           <div key={d.id} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.sentAt}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.sentAt}</span>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55, marginBottom: d.colorSlipImage ? 12 : 0 }}>{d.instructions}</div>
             {d.colorSlipImage && (
               <div>
-                <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 6 }}>Color Slip</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 6 }}>Color Slip</div>
                 <img src={d.colorSlipImage} alt="Color slip" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
               </div>
             )}

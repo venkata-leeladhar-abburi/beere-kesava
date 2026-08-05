@@ -52,7 +52,7 @@ export function WarpSection({
         {/* Batch selector */}
         <div style={{ display: "flex", gap: 14, marginBottom: 36 }}>
           {(["086", "089"] as const).map(b => (
-            <button key={b} onClick={() => setWarpBatch(b)} style={{ padding: "12px 32px", borderRadius: 999, border: `2px solid ${C.burg}`, background: warpBatch === b ? C.burg : "transparent", color: warpBatch === b ? "#FFF" : C.burg, fontFamily: F.m, fontSize: 15, cursor: "pointer", fontWeight: 700, transition: "all 0.15s" }}>
+            <button key={b} onClick={() => setWarpBatch(b)} style={{ padding: "12px 32px", borderRadius: 999, border: `2px solid ${C.burg}`, background: warpBatch === b ? C.burg : "transparent", color: warpBatch === b ? "#FFF" : C.burg, fontFamily: F.m, fontSize: 14, cursor: "pointer", fontWeight: 700, transition: "all 0.15s" }}>
               BATCH-{b}
             </button>
           ))}
@@ -63,7 +63,7 @@ export function WarpSection({
             <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
               <Check size={52} color={C.green} />
             </div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 36, color: C.text, marginBottom: 16 }}>Warp Request Sent!</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Warp Request Sent!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 36 }}>Your request has been sent to worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
             <button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} style={{ display: "block", width: "100%", height: 60, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF", cursor: "pointer" }}>
               ← Back to Warp Requests
@@ -80,7 +80,7 @@ export function WarpSection({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.green }}>Warp Request Unlocked for BATCH-{warpBatch}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, marginTop: 4 }}>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>
                     You have submitted {warpBatch === "086" ? "3 of 5 (60%)" : "4 of 8 (50%)"} sarees — warp request is now available.
                   </div>
                 </div>
@@ -97,7 +97,7 @@ export function WarpSection({
                       <div onClick={() => setMaterials(m => ({ ...m, [mat]: !m[mat] }))} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setMaterials(m => ({ ...m, [mat]: !m[mat] })))?.(); } }} style={{ width: 28, height: 28, borderRadius: 8, border: `2px solid ${materials[mat] ? C.burg : C.bdr}`, background: materials[mat] ? C.burg : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                         {materials[mat] && <Check size={16} color="#FFF" />}
                       </div>
-                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 17, color: C.text }}>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>
                         {mat === "warp" ? "More Warp" : mat === "resham" ? "More Resham" : "More Jari"}
                       </span>
                     </label>
@@ -134,7 +134,7 @@ export function WarpSection({
                   <Info size={22} color={C.gold} />
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.text }}>System Rule</div>
                 </div>
-                <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, lineHeight: 1.75 }}>You can raise a warp request only after submitting 50% of your batch. This ensures enough progress before more materials are allocated.</div>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.75 }}>You can raise a warp request only after submitting 50% of your batch. This ensures enough progress before more materials are allocated.</div>
               </div>
 
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>

@@ -56,7 +56,7 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
       {pending.length > 0 && (
         <div style={{ background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 12, padding: "12px 14px", marginBottom: 16, display: "flex", gap: 10, alignItems: "flex-start" }}>
           <Clock size={16} color="#8B6018" style={{ flexShrink: 0, marginTop: 1 }} />
-          <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.text, lineHeight: 1.55 }}>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.55 }}>
             <strong>{pending.length} dispatch{pending.length > 1 ? "es" : ""}</strong> still need LR and transport details. Tap <strong>Complete Details</strong> on the row to fill them in.
           </div>
         </div>

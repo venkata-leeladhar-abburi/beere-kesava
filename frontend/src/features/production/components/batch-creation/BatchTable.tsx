@@ -140,15 +140,15 @@ export function BatchTable({
       <div style={{ padding: "12px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexWrap: "wrap" }}>
         <div style={{ position: "relative", flex: "1 1 200px" }}>
           <MagnifyingGlass size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, boxSizing: "border-box" }} />
+          <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, boxSizing: "border-box" }} />
         </div>
-        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
           {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
         </select>
-        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
           {sareeTypeOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</option>)}
         </select>
-        <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12.5, background: "#FFF", cursor: "pointer" }}>
+        <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
           {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
         </select>
       </div>
@@ -206,7 +206,7 @@ export function BatchTable({
                         {row.sareeId}
                       </button>
                     ) : (
-                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 11 }}>— assign weaver</span>
+                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>— assign weaver</span>
                     )}
                   </td>
                   <td style={{ ...td, minWidth: 150 }}>
@@ -251,7 +251,7 @@ export function BatchTable({
                   <td style={{ ...td, minWidth: 110 }}>
                     {row.sareeTypeCode ? (
                       <button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
-                        style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                        style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
                         {row.sareeTypeCode}
                       </button>
                     ) : <EmptyCell />}
@@ -270,7 +270,7 @@ export function BatchTable({
                   {materialsCellSpan[row.serial] !== undefined && (
                     <td style={{ ...td, minWidth: 170, verticalAlign: "middle" }} rowSpan={materialsCellSpan[row.serial]}>
                       {materialsText ? (
-                        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{materialsText}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{materialsText}</span>
                       ) : <EmptyCell />}
                     </td>
                   )}

@@ -32,7 +32,7 @@ export function ReportsHeader() {
         {/* Eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{ width: 36, height: 2, background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))` }} />
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(200,155,71,0.85)", letterSpacing: "3px", textTransform: "uppercase" as const, fontWeight: 600 }}>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.85)", letterSpacing: "3px", textTransform: "uppercase" as const, fontWeight: 600 }}>
             Beere Kanchi Silks · Reports &amp; Analytics
           </span>
         </div>
@@ -41,7 +41,7 @@ export function ReportsHeader() {
           <h1 style={{ fontFamily: F.display, fontSize: 72, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.0, letterSpacing: "-1px" }}>
             Reports
           </h1>
-          <div style={{ fontFamily: F.display, fontSize: 40, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400, letterSpacing: "-0.4px", marginTop: 6, lineHeight: 1.1 }}>
+          <div style={{ fontFamily: F.display, fontSize: 38, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400, letterSpacing: "-0.4px", marginTop: 6, lineHeight: 1.1 }}>
             &amp; Business Analytics
           </div>
         </div>
@@ -105,13 +105,13 @@ export function ReportsStatsStrip() {
             </div>
             {/* Text */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 10.5, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 40, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
                 <AnimCount raw={m.val} />
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12.5, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>
                 {m.sub}
               </div>
             </div>

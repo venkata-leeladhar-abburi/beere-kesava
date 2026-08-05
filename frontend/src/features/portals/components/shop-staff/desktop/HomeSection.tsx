@@ -48,8 +48,8 @@ export function HomeSection({
                 <ShoppingBag size={34} color={C.dark} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 28, color: C.text, marginBottom: 6 }}>New Retail Sale</div>
-                <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted }}>Record a sale at the counter — scan saree barcode, select payment, generate bill</div>
+                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 6 }}>New Retail Sale</div>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Record a sale at the counter — scan saree barcode, select payment, generate bill</div>
               </div>
               <button onClick={() => setActive("sale")} style={{ height: 56, padding: "0 28px", borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
                 <ArrowUpRight size={18} /> Start New Sale
@@ -71,10 +71,10 @@ export function HomeSection({
                       <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
                       <div>
                         <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                        {s.ext && <span style={{ fontFamily: F.u, fontSize: 10, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                        {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
                       </div>
                     </div>
-                    <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>{s.customer}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design.split("·")[0]?.trim()}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
                     {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
@@ -91,8 +91,8 @@ export function HomeSection({
                   <RotateCcw size={22} color={C.crim} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.m, fontSize: 15, fontWeight: 700, color: C.burg, marginBottom: 4 }}>RAVI-L2-007</div>
-                  <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>RAVI-L2-007</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>9:10 AM</div>
@@ -110,7 +110,7 @@ export function HomeSection({
                 <AlertTriangle size={24} color={C.crim} />
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.crim }}>Stock Alert</div>
               </div>
-              <div style={{ fontFamily: F.u, fontSize: 15, color: C.text, marginBottom: 6 }}>Only <strong>84 sarees</strong> remaining in shop stock.</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginBottom: 6 }}>Only <strong>84 sarees</strong> remaining in shop stock.</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18 }}>Stock is running low. Notify admin to arrange restocking from factory.</div>
               {invLowStockSent ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.25)", borderRadius: 12, padding: "12px 16px" }}>
@@ -118,7 +118,7 @@ export function HomeSection({
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.green }}>Admin & Superadmin have been notified</span>
                 </div>
               ) : (
-                <button onClick={() => setShowInvLowStockDialog(true)} style={{ width: "100%", height: 48, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <button onClick={() => setShowInvLowStockDialog(true)} style={{ width: "100%", height: 48, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   <Send size={16} /> Report Low Stock to Admin
                 </button>
               )}
@@ -127,8 +127,8 @@ export function HomeSection({
             {/* Quick Actions */}
             <div style={{ background: C.dark, borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.20)" }}>
               <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
-                <div style={{ fontFamily: F.u, fontSize: 15, color: "rgba(255,255,255,0.70)" }}>Navigate to key operations</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.70)" }}>Navigate to key operations</div>
               </div>
               {[
                 { label: "New Retail Sale", sub: "Record a sale at counter", tab: "sale" as TabId, icon: <ShoppingBag size={18} color={C.gold} /> },
@@ -141,7 +141,7 @@ export function HomeSection({
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>{a.label}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>{a.label}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>
                   </div>
                   <ArrowRight size={15} color="rgba(255,255,255,0.30)" />
@@ -155,7 +155,7 @@ export function HomeSection({
                     <RotateCcw size={18} color={C.crim} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>Process Return</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>Process Return</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>Handle customer returns</div>
                   </div>
                   <ArrowRight size={15} color="rgba(255,255,255,0.30)" />

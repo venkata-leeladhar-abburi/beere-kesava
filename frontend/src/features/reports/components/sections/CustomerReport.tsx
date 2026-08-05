@@ -73,8 +73,8 @@ export function CustomerReport() {
             {[...topCustomers].sort((a, b) => b.total - a.total).map((c, i) => (
               <div key={c.name}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{c.name}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold }}>₹{(c.total / 100000).toFixed(1)}L</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>₹{(c.total / 100000).toFixed(1)}L</span>
                 </div>
                 <AnimBar pct={Math.round((c.total / 900000) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
               </div>
@@ -86,8 +86,8 @@ export function CustomerReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={custMonthly} barGap={4}>
               <CartesianGrid key="cust-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 10, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
+              <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
               <Tooltip key="cust-tip" content={<ChartTip suffix=" customers" />} />
               <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
               <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={T.antiqueGold}   radius={[4,4,0,0] as any} opacity={0.7} />
@@ -111,7 +111,7 @@ export function CustomerReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: d.color }}>₹{(d.value / 100000).toFixed(1)}L</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{(d.value / 100000).toFixed(1)}L</span>
               </div>
             ))}
           </div>
@@ -134,7 +134,7 @@ export function CustomerReport() {
         ))}
         <div style={{ flex: 1, position: "relative", minWidth: 200 }}>
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." style={{ width: "100%", height: 36, padding: "0 10px 0 30px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <input aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." style={{ width: "100%", height: 36, padding: "0 10px 0 30px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
         </div>
       </div>
 
@@ -161,13 +161,13 @@ export function CustomerReport() {
                     <td style={{ ...TD, textAlign: "center" }}>
                       <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
                     </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{r.phone}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span></td>
                     <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.purchases}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.spend.toLocaleString("en-IN")}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>
                       {r.due > 0 ? `₹${r.due.toLocaleString("en-IN")}` : "— Nil"}
                     </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 11.5, color: T.taupe }}>{r.lastPurchase}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
                       <StatusPill label={r.status} type={r.status === "Active" ? "ok" : "bad"} />
                     </td>
@@ -188,28 +188,28 @@ export function CustomerReport() {
             {custRows.map(r => (
               <div key={r.name} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{r.name}</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{r.name}</div>
                   <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {r.type === "Wholesale" ? (
                     <>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>City: <span style={{ color: T.luxuryBrown }}>—</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Address: <span style={{ color: T.luxuryBrown }}>—</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>GST Code: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>—</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City: <span style={{ color: T.luxuryBrown }}>—</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Address: <span style={{ color: T.luxuryBrown }}>—</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST Code: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>—</span></div>
                     </>
                   ) : (
                     <>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Total Purchases: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{r.purchases}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>Last Purchase: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.lastPurchase}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Purchases: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{r.purchases}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last Purchase: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.lastPurchase}</span></div>
                     </>
                   )}
                 </div>
                 <DownloadGate>
                   <button onClick={() => downloadCustomerData(r)}
-                    style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12.5, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
+                    style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>
                     ↓ Download Data
                   </button>
                 </DownloadGate>

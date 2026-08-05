@@ -92,7 +92,7 @@ export function QuickActionsSidebar({
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFF" }}>
                     Dispatch to Shop
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
                     {selectedCount > 0 ? `${selectedCount} saree${selectedCount > 1 ? "s" : ""} ready` : "Select sarees first"}
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export function QuickActionsSidebar({
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
                     Dispatch to Wholesale
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
                     With tax invoice generation
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export function QuickActionsSidebar({
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
                     Raise Quotation
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 1 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>
                     Send to finishing before dispatch
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export function QuickActionsSidebar({
               <div key={b.label} style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.label}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: b.color }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: b.color }}>
                     {b.val} <span style={{ color: T.taupe, fontWeight: 400 }}>({pct}%)</span>
                   </span>
                 </div>

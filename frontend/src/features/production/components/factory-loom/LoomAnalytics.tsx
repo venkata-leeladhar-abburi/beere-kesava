@@ -157,8 +157,8 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       <FadeUp>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 26, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Loom Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 10.5, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
+          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Loom Analytics</h2>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
@@ -170,7 +170,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
               { label: "LOOM UTILISATION", value: `${utilRate}%`, color: utilRate >= 70 ? T.green : T.crimson },
             ].map(k => (
               <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
               </div>
             ))}
@@ -208,7 +208,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 {[{ c: T.green, t: "≥95%" }, { c: "#8B6018", t: "85–94%" }, { c: T.crimson, t: "<85%" }].map(g => (
                   <div key={g.t} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <div style={{ width: 9, height: 9, borderRadius: 3, background: g.c }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{g.t}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.t}</span>
                   </div>
                 ))}
               </div>
@@ -221,7 +221,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
                   formatter={(v: any, _n: any, p: any) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.loomNumber} — ${p.payload.operatorName}`]} />
                 <Bar dataKey="produced" radius={[0, 6, 6, 0]}
-                  label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, fill: T.luxuryBrown }}>
+                  label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                   {rankedLooms.map(l => <Cell key={l.id} fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)} />)}
                 </Bar>
               </BarChart>
@@ -232,8 +232,8 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 return (
                   <div key={l.id} style={{ flex: 1, minWidth: 0, background: i === 0 && l.produced > 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 && l.produced > 0 ? T.borderGold : T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 10.5, color: sc.color, marginTop: 4, fontWeight: 700 }}>{sc.label}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: sc.color, marginTop: 4, fontWeight: 700 }}>{sc.label}</div>
                   </div>
                 );
               })}
@@ -247,26 +247,26 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
             </div>
             <div style={cardSub}>Active batches by nearest due date</div>
             <div style={{ background: overdueCount ? "rgba(192,57,43,0.08)" : "rgba(30,102,64,0.09)", borderRadius: 14, padding: "14px 18px", margin: "16px 0" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 9.5, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>PAST DUE</div>
-              <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: overdueCount ? T.crimson : T.green, lineHeight: 1 }}>{overdueCount}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 6 }}>of {batchProgress.length} active batches</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>PAST DUE</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: overdueCount ? T.crimson : T.green, lineHeight: 1 }}>{overdueCount}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>of {batchProgress.length} active batches</div>
             </div>
             {batchProgress.length === 0 ? (
-              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>No active batches on the floor.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>No active batches on the floor.</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {batchProgress.map(b => (
                   <div key={b.batchId}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: b.overdue ? T.crimson : b.daysLeft !== null && b.daysLeft <= 5 ? "#E67E22" : T.taupe }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: b.overdue ? T.crimson : b.daysLeft !== null && b.daysLeft <= 5 ? "#E67E22" : T.taupe }}>
                         {b.daysLeft === null ? b.dueDate : b.overdue ? `${Math.abs(b.daysLeft)}d overdue` : `${b.daysLeft}d left`}
                       </span>
                     </div>
                     <div style={{ height: 8, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                       <div style={{ width: `${b.pct}%`, height: "100%", borderRadius: 4, background: b.overdue ? "linear-gradient(90deg,#C0392B,#E74C3C)" : `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
                       <span>{b.loomName} · {b.designCode}</span>
                       <span>{b.completedCount}/{b.sareeCount} · {b.pct}%</span>
                     </div>

@@ -97,7 +97,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
           <Check size={36} color={C.green} />
         </div>
-        <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 22, color: C.text, marginBottom: 12 }}>Materials Confirmed!</div>
+        <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Materials Confirmed!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
         <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14, marginBottom: 28 }}>{confirmedRecord.id}</div>
         <button onClick={resetToPending} style={{ display: "block", width: "100%", height: 52, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 16, color: "#FFF", cursor: "pointer", marginBottom: 10 }}>
@@ -142,11 +142,11 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                     {m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}
                   </span>
                 </div>
-                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.gold, textAlign: "center" as const, marginBottom: 4 }}>
+                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, textAlign: "center" as const, marginBottom: 4 }}>
                   {m.quantity} {m.unit}{m.materialType === "Jari" ? ` (${m.jariType} · ${m.jariGrade} · ${m.jariColor})` : ""}
                 </div>
                 {m.description && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const, marginBottom: 4 }}>{m.description}</div>}
-                <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, textAlign: "center" as const }}>From batch: {m.grnBatchId}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "center" as const }}>From batch: {m.grnBatchId}</div>
               </div>
             ))}
           </div>
@@ -213,7 +213,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                         <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
                       </div>
                     ) : (
-                      <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 48, border: `1px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.gold, cursor: "pointer" }}>
+                      <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 48, border: `1px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.gold, cursor: "pointer" }}>
                         Send Signature Request
                       </button>
                     )}
@@ -280,7 +280,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                 { label: "Outstanding", value: fmtKg(matSummary.outstandingGrams), color: outColor },
               ].map(s => (
                 <div key={s.label} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 12px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>{s.label}</div>
                   <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
                 </div>
               ))}
@@ -301,7 +301,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                     <div key={b.batchId} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflow: "hidden" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 6 }}>
                         <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</span>
-                        <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
+                        <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{b.sareesReceived} saree{b.sareesReceived !== 1 ? "s" : ""} submitted</span>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${C.bdr}` }}>
                         {[
@@ -310,7 +310,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                           { label: "Outstanding", value: fmtKg(b.outstandingGrams), color: b.outstandingGrams > 0 ? C.crim : C.green },
                         ].map((s, i) => (
                           <div key={s.label} style={{ padding: "10px 14px", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-                            <div style={{ fontFamily: F.u, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
+                            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
                             <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</div>
                           </div>
                         ))}

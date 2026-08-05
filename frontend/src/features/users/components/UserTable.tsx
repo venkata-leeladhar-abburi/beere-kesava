@@ -47,7 +47,7 @@ export function UserTable({
             {["All Roles", "Finishing Staff"].map(pill => (
               <button key={pill}
                 onClick={() => { setRoleFilter(pill); setPage(1); }}
-                style={{ padding: "5px 12px", borderRadius: 999, border: `1px solid ${roleFilter === pill ? "rgba(44,74,139,0.40)" : T.borderDef}`, background: roleFilter === pill ? "rgba(44,74,139,0.09)" : "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: roleFilter === pill ? T.blue : T.taupe, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const }}
+                style={{ padding: "5px 12px", borderRadius: 999, border: `1px solid ${roleFilter === pill ? "rgba(44,74,139,0.40)" : T.borderDef}`, background: roleFilter === pill ? "rgba(44,74,139,0.09)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: roleFilter === pill ? T.blue : T.taupe, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const }}
               >{pill}</button>
             ))}
           </div>
@@ -76,7 +76,7 @@ export function UserTable({
         {/* Header */}
         <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 170px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderTop: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, minWidth: 980 }}>
           {["Emp ID", "Full Name", "Role", "Access", "Mobile Number", "Portal Access", "Date Added", "Status", "Actions"].map(col => (
-            <div key={col} style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{col}</div>
+            <div key={col} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{col}</div>
           ))}
         </div>
 
@@ -95,12 +95,12 @@ export function UserTable({
 
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg, ${ROLE_COLORS[u.role]?.text ?? T.taupe}, ${T.darkBurgundy})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 11, color: "#FFF" }}>{u.firstName[0]}{u.lastName[0]}</span>
+                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{u.firstName[0]}{u.lastName[0]}</span>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{u.firstName} {u.lastName}</div>
                   {fm?.specialisation && (
-                    <div style={{ fontFamily: F.ui, fontSize: 10, color: T.blue, marginTop: 1 }}>{fm.specialisation}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.blue, marginTop: 1 }}>{fm.specialisation}</div>
                   )}
                 </div>
               </div>
@@ -109,14 +109,14 @@ export function UserTable({
               <div>{u.accessLevel ? <AccessBadge level={u.accessLevel} /> : <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(139,112,96,0.45)" }}>—</span>}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{u.mobile}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{u.portal}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{u.dateAdded}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{u.dateAdded}</div>
               <div><StatusBadge status={u.status} /></div>
 
               {/* Actions */}
               <div style={{ display: "flex", gap: 5 }}>
                 <button
                   onClick={() => fm && setEditingMember(fm)}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 9px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 9px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
@@ -124,7 +124,7 @@ export function UserTable({
                 </button>
                 <button
                   onClick={() => onToggleStatus(u)}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.crimson, cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.crimson, cursor: "pointer" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = T.crimsonBg; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
@@ -133,7 +133,7 @@ export function UserTable({
                 {fm && (
                   <button
                     onClick={() => setViewingMember(fm)}
-                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(44,74,139,0.22)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.blue, cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(44,74,139,0.22)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.blue, cursor: "pointer" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(44,74,139,0.07)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                   >

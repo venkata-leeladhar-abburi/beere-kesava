@@ -43,10 +43,10 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
       <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
         {/* Top row: PO number + Date */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <span onClick={onViewPO} style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default" }}>
+          <span onClick={onViewPO} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default" }}>
             {vp.poNumber}
           </span>
-          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
             {vp.dueDate}
           </span>
         </div>
@@ -70,17 +70,17 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         {/* Materials Grid */}
         {matchedPO && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
             {matchedPO.materials.map((m, mi) => {
               const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
               return (
                 <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 6, borderBottom: mi < matchedPO.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < matchedPO.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", flexShrink: 0 }}>
                       {m.materialType}
                     </span>
                     {m.subtype && (
-                      <span style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.subtype}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.subtype}</span>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }} />
                     <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5 }}>
@@ -91,7 +91,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                   <div style={{ paddingLeft: 60 }}>
                     {m.invoiceAmount ? (
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Invoice Amount</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
                         <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
                           ₹{m.invoiceAmount.toLocaleString("en-IN")}
                         </span>
@@ -103,7 +103,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                           value={invoiceDrafts[mi] || ""}
                           onChange={e => setInvoiceDrafts(prev => ({ ...prev, [mi]: e.target.value }))}
                           placeholder="Invoice amount in ₹"
-                          style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 11, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" as const }}
+                          style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 12, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" as const }}
                         />
                         <button
                           onClick={(e) => {
@@ -113,7 +113,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                               setMaterialInvoiceAmount(matchedPO.id, mi, val);
                             }
                           }}
-                          style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
+                          style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
                         >
                           Save
                         </button>

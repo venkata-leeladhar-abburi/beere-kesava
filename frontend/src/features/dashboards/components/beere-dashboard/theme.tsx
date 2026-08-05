@@ -4,24 +4,24 @@ import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _img
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
 
 const T = {
-  silkCream:      "#F7F2EA",
-  warmIvory:      "#FFFDF9",
-  royalBurgundy:  "#6E0F2D",
+  silkCream:      semantic.surface.canvas,
+  warmIvory:      semantic.surface.raised,
+  royalBurgundy:  brand.burgundy[900],
   darkBurgundy:   "#3D0E1A",
-  deepWine:       "#4A061B",
-  antiqueGold:    "#C89B47",
+  deepWine:       brand.burgundy[950],
+  antiqueGold:    brand.gold[500],
   goldLight:      "#E7C983",
   luxuryBrown:    "#3B2314",
   ivoryCream:     "#F7F2EA",
   pureWhite:      "#FFFDF9",
-  crimson:        "#6E0F2D",
+  crimson:        semantic.text.danger,
   mahogany:       "#4A061B",
   gold:           "#C89B47",
   deepBlack:      "#3B2314",
   burgundy:       "#3D2030",
-  taupe:          "#8B7060",
+  taupe:          semantic.text.tertiary,
   warmCream:      "#F5E8D0",
-  green:          "#1E6640",
+  green:          semantic.text.success,
   borderDef:      "rgba(110,15,45,0.10)",
   borderMed:      "rgba(110,15,45,0.20)",
   borderGold:     "rgba(200,155,71,0.22)",
@@ -32,9 +32,9 @@ const T = {
 };
 
 const F = {
-  display: "'Plus Jakarta Sans', sans-serif",
-  ui:      "'Inter', sans-serif",
-  mono:    "'JetBrains Mono', monospace",
+  display: fonts.display,
+  ui:      fonts.ui,
+  mono:    fonts.code,
 };
 
 const NUM: React.CSSProperties = {
@@ -59,6 +59,7 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 import { LayoutDashboard, Factory, Package, IndianRupee, Users, Settings2 } from "lucide-react";
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 export type NavPage = { key: string; label: string };
 export type NavGroup = { key: string; label: string; icon: React.ElementType; pages: NavPage[] };
 
@@ -118,12 +119,6 @@ function findNavGroup(pageKey: string): NavGroup {
 
 
 const GLOBAL_STYLE = `
-  /* Safety net: no element on this dashboard should ever be able to force a
-     horizontal scrollbar / blank gap on the page itself. Internal rows that
-     need more space than the viewport (e.g. the top nav's group tabs) scroll
-     within themselves instead. */
-  html, body { overflow-x: hidden; max-width: 100%; }
-
   /* Override ALL Tailwind v4 oklch CSS variables with hex/rgb equivalents
      so Motion never reads oklch when sampling computed styles for animation */
   :root {
@@ -156,11 +151,7 @@ const GLOBAL_STYLE = `
     color: #3B2314;
   }
 
-  /* Prevent motion.button from inheriting any oklch background */
-  button { background-color: rgba(0,0,0,0); }
-
   * { box-sizing: border-box; }
-  button:focus { outline: none; }
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: #F7F2EA; }
   ::-webkit-scrollbar-thumb { background: rgba(110,15,45,0.16); border-radius: 3px; }

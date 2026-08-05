@@ -107,18 +107,18 @@ export function FactoryLoomPage() {
   };
   const handleEdit = (l: FactoryLoom) => { setEditLoom(l); setShowModal(true); setSelected(null); };
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 11, fontWeight: 500, color: T.taupe, letterSpacing: "1.4px", textTransform: "uppercase" as const, padding: "13px 18px", textAlign: "left" as const, borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { padding: "13px 18px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const, fontFamily: F.ui, fontSize: 13.5 };
+  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.4px", textTransform: "uppercase" as const, padding: "13px 18px", textAlign: "left" as const, borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, whiteSpace: "nowrap" as const };
+  const TD: React.CSSProperties = { padding: "13px 18px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const, fontFamily: F.ui, fontSize: 13 };
 
   if (selected) return <LoomDetailPage loom={selected} onBack={() => setSelected(null)} onEdit={handleEdit} />;
 
   return (
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100vh" }}>
+    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ background: T.darkBurgundy, position: "relative" as const, overflow: "hidden", minHeight: 190, display: "flex", alignItems: "stretch" }}>
         <div style={{ flex: 1, padding: "44px 56px", zIndex: 10, position: "relative" as const }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · PEOPLE</span>
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · PEOPLE</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
             <div>
@@ -173,7 +173,7 @@ export function FactoryLoomPage() {
             </div>
             <div style={{ display: "flex", gap: 5 }}>
               {([["card", LayoutGrid, "Card"], ["table", LayoutList, "Table"]] as const).map(([v, Icon, label]) => (
-                <motion.button key={v} onClick={() => setView(v as any)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 13px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFF", color: view === v ? "#FFF" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}` }}>
+                <motion.button key={v} onClick={() => setView(v as any)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 13px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFF", color: view === v ? "#FFF" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}` }}>
                   <Icon size={13} />{label}
                 </motion.button>
               ))}

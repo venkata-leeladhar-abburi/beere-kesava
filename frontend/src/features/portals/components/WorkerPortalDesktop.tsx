@@ -29,7 +29,7 @@ function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
         <div style={{ width: 4, height: 24, background: C.gold, borderRadius: 2 }} />
-        <h2 style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: C.dark, margin: 0 }}>{title}</h2>
+        <h2 style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.dark, margin: 0 }}>{title}</h2>
       </div>
       {subtitle && <p style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "0 0 0 14px" }}>{subtitle}</p>}
     </div>
@@ -43,18 +43,18 @@ function DesktopProfile() {
 
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, borderRadius: 18, padding: "28px 36px", marginBottom: 24, display: "flex", alignItems: "center", gap: 28 }}>
         <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.d, fontSize: 28, fontWeight: 700, color: "#FFF" }}>RK</span>
+          <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>RK</span>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: F.d, fontSize: 26, fontWeight: 700, color: "#FFF", marginBottom: 6 }}>Ravi Kumar</div>
+          <div style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF", marginBottom: 6 }}>Ravi Kumar</div>
           <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>WK-042 · Floor Supervisor</div>
-          <div style={{ fontFamily: F.m, fontSize: 13, color: "#C4923A", marginTop: 4 }}>Morning Shift · 6:00 AM – 2:00 PM</div>
+          <div style={{ fontFamily: F.m, fontSize: 13, color: "#845E04", marginTop: 4 }}>Morning Shift · 6:00 AM – 2:00 PM</div>
         </div>
         <div style={{ display: "flex", gap: 24 }}>
           {[{ val: "8 yrs", label: "Tenure" }, { val: "Active", label: "Status" }, { val: "4", label: "Batches Today" }].map((s, i) => (
             <div key={i} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{s.val}</div>
-              <div style={{ fontFamily: F.u, fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{s.label}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -118,7 +118,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F4EFE6", fontFamily: F.u }}>
+    <div style={{ minHeight: "100dvh", background: "#F4EFE6", fontFamily: F.u }}>
       <WorkerTopNav
         active={activeTab}
         onSelect={setActiveTab}
@@ -167,11 +167,11 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
                       ].map((w, i) => (
                         <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < 2 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                           <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span style={{ fontFamily: F.d, fontSize: 11, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
+                            <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.dark }}>{w.name}</div>
-                            <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{w.batch} · {w.progress} sarees</div>
+                            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{w.batch} · {w.progress} sarees</div>
                           </div>
                         </div>
                       ))}

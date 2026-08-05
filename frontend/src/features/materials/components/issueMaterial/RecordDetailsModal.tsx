@@ -28,7 +28,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
               { label: "Status", val: record.status.replace("-", " ") },
             ].map(r => (
               <div key={r.label} style={{ background: "#FFF", borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.borderDef}` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{r.label}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{r.label}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, textTransform: "capitalize" as const }}>{r.val}</div>
               </div>
             ))}
@@ -41,7 +41,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
                 <thead style={{ background: T.warmCream }}>
                   <tr>
                     {["Type", "Details", "Qty", "GRN Batch"].map(h => (
-                      <th key={h} style={{ padding: "9px 14px", textAlign: "left" as const, fontFamily: F.mono, fontSize: 10.5, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
+                      <th key={h} style={{ padding: "9px 14px", textAlign: "left" as const, fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -49,7 +49,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
                   {record.materials.map((m, i) => (
                     <tr key={i} style={{ borderTop: `1px solid ${T.borderDef}` }}>
                       <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>{materialIcon(m.materialType)} {m.materialType}</td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                         {m.materialType === "Warp" ? m.warpSubtype : m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || m.jariColor || "—")}
                       </td>
                       <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</td>
@@ -72,7 +72,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             <SectionPill label="Stock Impact" />
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
               {record.materials.map((m, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
+                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
                   <CheckCircle2 size={13} color={T.green} /> Reduced {m.quantity} {m.unit} from <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{m.grnBatchId}</span>
                 </div>
               ))}
@@ -82,7 +82,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
           {record.signatureCaptured && record.signatureTimestamp && (
             <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
               <CheckCircle2 size={14} color={T.green} />
-              <span style={{ fontFamily: F.ui, fontSize: 12.5, color: T.green }}>Signed on {new Date(record.signatureTimestamp).toLocaleString("en-IN")}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>Signed on {new Date(record.signatureTimestamp).toLocaleString("en-IN")}</span>
             </div>
           )}
 

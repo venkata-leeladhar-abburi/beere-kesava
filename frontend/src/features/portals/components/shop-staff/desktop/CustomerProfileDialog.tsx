@@ -23,7 +23,7 @@ export function CustomerProfileDialog({
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "32px 32px 28px", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.burg, border: "3px solid rgba(196,146,58,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(107,26,42,0.40)" }}>
-                  <span style={{ fontFamily: F.d, fontSize: 28, fontWeight: 700, color: "#FFF" }}>{customer!.initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{customer!.initials}</span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -48,7 +48,7 @@ export function CustomerProfileDialog({
                   { label: "Last Visit", val: customer!.last, sub: "most recent", color: C.text },
                 ].map(s => (
                   <div key={s.label} style={{ background: "#F8F4F0", borderRadius: 14, padding: "16px 14px" }}>
-                    <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" as const, marginBottom: 8 }}>{s.label}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" as const, marginBottom: 8 }}>{s.label}</div>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: s.color, lineHeight: 1.2, marginBottom: 3 }}>{s.val}</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sub}</div>
                   </div>

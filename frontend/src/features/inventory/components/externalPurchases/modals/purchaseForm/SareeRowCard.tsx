@@ -45,7 +45,7 @@ export function SareeRowCard({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
             title="Serial number in this purchase"
-            style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 11, color: "#FFF", background: T.royalBurgundy, borderRadius: 6, padding: "3px 8px" }}
+            style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: "#FFF", background: T.royalBurgundy, borderRadius: 6, padding: "3px 8px" }}
           >
             #{idx + 1}
           </span>
@@ -119,10 +119,10 @@ export function SareeRowCard({
         </div>
         <div>
           <label style={labelStyle}>Buying Price</label>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
+          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
             {formatINR(buying)}
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
             {formatINR(price)} × {quantity}
           </div>
         </div>
@@ -142,36 +142,36 @@ export function SareeRowCard({
         </div>
         <div>
           <label style={labelStyle}>Selling Price</label>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
+          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
             {formatINR(selling)}
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
             {formatINR(computeFinalAmount(price, sellPercent))} × {quantity}
           </div>
         </div>
         <div>
           <label style={labelStyle}>Profit</label>
-          <div style={{ ...inputStyle, height: 36, fontSize: 12.5, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
+          <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
             {formatINR(profit)}
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe, marginTop: 3 }}>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
             selling − buying
           </div>
         </div>
       </div>
       {/* Every piece under this serial gets its own tag code */}
       <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "9px 11px", marginBottom: 10 }}>
-        <div style={{ fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 6 }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 6 }}>
           Saree codes ({quantity})
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {Array.from({ length: Math.min(quantity, 24) }, (_, p) => (
-            <span key={p} style={{ fontFamily: F.mono, fontSize: 10.5, color: T.royalBurgundy, background: "#FFF", border: `1px solid ${T.borderGold}`, borderRadius: 5, padding: "2px 7px" }}>
+            <span key={p} style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "#FFF", border: `1px solid ${T.borderGold}`, borderRadius: 5, padding: "2px 7px" }}>
               {pieceCodeFromLineCode(code, p + 1)}
             </span>
           ))}
           {quantity > 24 && (
-            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, alignSelf: "center" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center" }}>
               +{quantity - 24} more
             </span>
           )}
@@ -206,7 +206,7 @@ export function SareeRowCard({
               style={{ height: 68, border: `1.5px dashed ${T.borderGold}`, borderRadius: 8, background: T.silkCream, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, cursor: "pointer", color: T.taupe }}
             >
               <UploadCloud size={16} />
-              <span style={{ fontFamily: F.ui, fontSize: 10.5 }}>Upload photo</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12 }}>Upload photo</span>
               <input
                 type="file"
                 accept="image/*"

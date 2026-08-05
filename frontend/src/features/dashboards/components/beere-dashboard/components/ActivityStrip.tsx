@@ -19,7 +19,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 5 }}>
               <div style={{ width: 3, height: 20, borderRadius: 2, background: G.gold }} />
-              <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 26, color: T.warmCream, letterSpacing: "-0.2px" }}>Recent Activity</span>
+              <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 24, color: T.warmCream, letterSpacing: "-0.2px" }}>Recent Activity</span>
             </div>
             <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.75)", paddingLeft: 13, letterSpacing: "0.1px" }}>Live operational feed</span>
           </div>
@@ -57,7 +57,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: "rgba(245,232,208,0.97)", lineHeight: 1.65, flex: 1, letterSpacing: "0.05px" }}>{a.text}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: a.bg, boxShadow: `0 0 8px ${a.glow}` }} />
-                <span style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(245,232,208,0.70)", letterSpacing: "0.3px" }}>{a.time}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(245,232,208,0.70)", letterSpacing: "0.3px" }}>{a.time}</span>
               </div>
             </motion.div>
           ))}

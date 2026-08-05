@@ -37,7 +37,7 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
               <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>{card.name}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 4 }}>{card.desc}</div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 36, color: card.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{card.stock}</div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: card.stockColor, lineHeight: 1, margin: "18px 0 8px" }}>{card.stock}</div>
               </div>
             </motion.div>
           </FadeUp>
@@ -97,7 +97,7 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
           <div style={{
             display: "inline-flex", alignItems: "center", width: "fit-content", gap: 6,
             background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, fontFamily: F.mono,
-            fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, marginTop: 4,
+            fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, marginTop: 4,
           }}>
             {thisMonthRecords.length} {thisMonthRecords.length === 1 ? "Issuance" : "Issuances"}
           </div>
@@ -112,14 +112,14 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {s.icon}
-                <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   {s.label}
                 </span>
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: s.color, marginTop: 4 }}>
                 {s.val}
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 500 }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
                 {s.sub}
               </div>
             </div>

@@ -69,10 +69,10 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                   placeholder="0"
                   style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 52px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
                 />
-                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
               </div>
               {row.quantity && (
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold, marginTop: 4 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
                 </div>
               )}
@@ -97,10 +97,10 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                   placeholder="0"
                   style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
                 />
-                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>
+                <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>
               </div>
               {row.quantity && (
-                <div style={{ fontFamily: F.mono, fontSize: 11, color: T.antiqueGold }}>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>
                   = {(row.warpReshamUnit || "kg") === "kg" ? `${(parseFloat(row.quantity) * 1000).toFixed(0)} g` : `${(parseFloat(row.quantity) / 1000).toFixed(3)} kg`}
                 </div>
               )}
