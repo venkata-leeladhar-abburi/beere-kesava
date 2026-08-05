@@ -3,6 +3,7 @@ import type { MaterialIssueRecord } from "../../../materials/contexts/MaterialIs
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { motion } from "motion/react";
 import { Check, Clock, Pencil, Send } from "lucide-react";
+import { Button } from "../../../../shared/ui/primitives";
 
 const C = {
   burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
@@ -64,9 +65,9 @@ export function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) =>
           </div>
         )}
         {hasSig && (
-          <button onClick={clear} style={{ position: "absolute", bottom: 8, right: 12, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>
+          <Button onClick={clear} variant="link" className="absolute bottom-2 right-3 text-xs text-[#C4923A]">
             Clear
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -130,7 +131,14 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
         <div style={{ marginTop: 18, paddingTop: 18, borderTop: `1px dashed ${C.bdr}` }}>
           <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Collect Your Signature</div>
           <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 10, marginBottom: sigMethod !== "none" ? 12 : 0 }}>
-            <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
+            <Button
+              onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")}
+              variant="ghost"
+              className={
+                "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
+                (sigMethod === "here" ? "border-[1.5px] border-[#6B1A2A]" : "border-[1.5px] border-[rgba(139,26,46,0.12)]")
+              }
+            >
               <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Pencil size={15} color={sigMethod === "here" ? "#FFF" : C.burg} />
               </div>
@@ -138,8 +146,15 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Sign here on this screen</div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Draw your signature now</div>
               </div>
-            </button>
-            <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: "#F8F4F0", border: `1.5px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: "12px 16px", cursor: "pointer", textAlign: "left" as const }}>
+            </Button>
+            <Button
+              onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")}
+              variant="ghost"
+              className={
+                "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
+                (sigMethod === "remote" ? "border-[1.5px] border-[#6B1A2A]" : "border-[1.5px] border-[rgba(139,26,46,0.12)]")
+              }
+            >
               <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "remote" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Send size={15} color={sigMethod === "remote" ? "#FFF" : C.burg} />
               </div>
@@ -147,7 +162,7 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Send to my phone</div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sign remotely on your own device</div>
               </div>
-            </button>
+            </Button>
           </div>
           {sigMethod === "here" && (
             <div style={{ marginBottom: 12 }}>
@@ -157,9 +172,9 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
             </div>
           )}
           {sigMethod === "remote" && !requestSent && (
-            <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 44, border: `1.5px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.gold, cursor: "pointer", marginBottom: 12 }}>
+            <Button onClick={() => setRequestSent(true)} fullWidth className="h-11 border-[1.5px] border-[#C4923A] bg-transparent rounded-full font-semibold text-[13px] text-[#C4923A] mb-3">
               Send Signature Request to My Phone
-            </button>
+            </Button>
           )}
           {sigMethod === "remote" && requestSent && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
@@ -168,11 +183,16 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
             </div>
           )}
           {sigMethod !== "none" && (
-            <button
+            <Button
               onClick={handleConfirm} disabled={!canConfirm}
-              style={{ width: "100%", height: 46, background: canConfirm ? C.green : "#C8C0B8", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: canConfirm ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              fullWidth
+              className={
+                "h-[46px] border-none rounded-full font-bold text-sm text-white " +
+                (canConfirm ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C8C0B8]")
+              }
+            >
               <Check size={16} /> Confirm Material Receipt
-            </button>
+            </Button>
           )}
         </div>
       )}

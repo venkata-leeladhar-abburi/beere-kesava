@@ -2,6 +2,7 @@ import React from "react";
 import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
 import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
 import { DSH } from "./DSH";
+import { Button } from "../../../../../shared/ui/primitives";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -51,9 +52,9 @@ export function HomeSection({
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 6 }}>New Retail Sale</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Record a sale at the counter — scan saree barcode, select payment, generate bill</div>
               </div>
-              <button onClick={() => setActive("sale")} style={{ height: 56, padding: "0 28px", borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+              <Button onClick={() => setActive("sale")} className="h-14 px-7 rounded-full bg-[#6B1A2A] border-none font-bold text-base text-white gap-2 shrink-0 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
                 <ArrowUpRight size={18} /> Start New Sale
-              </button>
+              </Button>
             </div>
 
             {/* Recent Sales */}
@@ -118,9 +119,9 @@ export function HomeSection({
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.green }}>Admin & Superadmin have been notified</span>
                 </div>
               ) : (
-                <button onClick={() => setShowInvLowStockDialog(true)} style={{ width: "100%", height: 48, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <Button onClick={() => setShowInvLowStockDialog(true)} fullWidth className="h-12 bg-[#6B1A2A] border-none rounded-full font-bold text-sm text-white gap-2">
                   <Send size={16} /> Report Low Stock to Admin
-                </button>
+                </Button>
               )}
             </div>
 
@@ -136,21 +137,25 @@ export function HomeSection({
                 { label: "Customer Profiles", sub: "Browse customer records", tab: "customers" as TabId, icon: <Users size={18} color={C.gold} /> },
                 { label: "Sales Reports", sub: "Analytics and trends", tab: "reports" as TabId, icon: <BarChart2 size={18} color={C.gold} /> },
               ].map((a, i) => (
-                <button key={a.tab} onClick={() => setActive(a.tab)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "17px 24px", border: "none", borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.07)" : "none", background: "transparent", cursor: "pointer", textAlign: "left" as const }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <Button
+                  key={a.tab}
+                  onClick={() => setActive(a.tab)}
+                  variant="ghost"
+                  className={
+                    "flex items-center gap-3.5 w-full h-auto px-6 py-[17px] border-none rounded-none bg-transparent justify-start text-left hover:bg-white/5 " +
+                    (i < 3 ? "border-b border-white/[0.07]" : "")
+                  }
+                >
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>{a.label}</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>
                   </div>
                   <ArrowRight size={15} color="rgba(255,255,255,0.30)" />
-                </button>
+                </Button>
               ))}
               <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-                <button onClick={() => setShowReturn(true)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" as const }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = "0.7"}
-                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                <Button onClick={() => setShowReturn(true)} variant="ghost" className="flex items-center gap-3.5 w-full h-auto border-none bg-transparent justify-start text-left p-0 hover:opacity-70 hover:bg-transparent">
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(192,57,43,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <RotateCcw size={18} color={C.crim} />
                   </div>
@@ -159,7 +164,7 @@ export function HomeSection({
                     <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>Handle customer returns</div>
                   </div>
                   <ArrowRight size={15} color="rgba(255,255,255,0.30)" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>

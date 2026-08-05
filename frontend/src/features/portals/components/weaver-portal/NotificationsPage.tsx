@@ -26,6 +26,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import {
   C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, WNFilter, WeaverNotif, WNPriority
 } from './theme';
+import { Button, IconButton } from '../../../../shared/ui/primitives';
 
 
 export function NotificationsPage() {
@@ -80,13 +81,14 @@ export function NotificationsPage() {
               </motion.p>
             </div>
             {unread > 0 && (
-              <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
-                onClick={markAllRead}
-                whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.18)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(200,155,71,0.09)", color: WN_T.antiqueGold, fontFamily: F.u, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                <Check size={15} /> Mark all read
-              </motion.button>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+                <Button
+                  onClick={markAllRead}
+                  className="flex items-center gap-2 px-[22px] py-2.5 h-auto rounded-xl border border-[rgba(200,155,71,0.30)] bg-[rgba(200,155,71,0.09)] text-[#C89B47] font-semibold text-[13px] hover:bg-[rgba(200,155,71,0.18)]"
+                >
+                  <Check size={15} /> Mark all read
+                </Button>
+              </motion.div>
             )}
           </div>
 
@@ -122,12 +124,17 @@ export function NotificationsPage() {
             const count = f.key === "all" ? WN_DATA.length : WN_DATA.filter(n => n.priority === f.key).length;
             const cfg = f.key !== "all" ? WN_PRIORITY[f.key] : null;
             return (
-              <button key={f.key} onClick={() => setFilter(f.key)}
-                style={{ height: "100%", padding: isMobile ? "0 14px" : "0 22px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, position: "relative" as const, borderBottom: isActive ? `2px solid ${WN_T.royalBurgundy}` : "2px solid transparent", flexShrink: 0, whiteSpace: "nowrap" as const }}>
+              <Button key={f.key} onClick={() => setFilter(f.key)} variant="ghost"
+                className={
+                  (isMobile ? "px-3.5 " : "px-[22px] ") +
+                  "h-full border-none bg-transparent rounded-none flex items-center gap-2 relative shrink-0 whitespace-nowrap border-b-2 " +
+                  (isActive ? "border-b-[#6E0F2D]" : "border-b-transparent")
+                }
+              >
                 {cfg && <cfg.Icon size={14} color={isActive ? WN_T.royalBurgundy : cfg.color} />}
                 <span style={{ fontFamily: F.u, fontWeight: isActive ? 600 : 400, fontSize: 13, color: isActive ? WN_T.royalBurgundy : WN_T.taupe, whiteSpace: "nowrap" as const }}>{f.label}</span>
                 <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: isActive ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: isActive ? WN_T.royalBurgundy : WN_T.taupe }}>{count}</span>
-              </button>
+              </Button>
             );
           })}
           {!isMobile && (
@@ -201,29 +208,39 @@ export function NotificationsPage() {
                                 </span>
                                 <span style={{ fontFamily: F.m, fontSize: 12, color: WN_T.taupe }}>{n.date} · {n.time}</span>
                                 {n.action && (
-                                  <motion.button
-                                    onClick={e => { e.stopPropagation(); markRead(n.id); }}
-                                    whileHover={{ scale: 1.05, backgroundColor: WN_T.royalBurgundy, color: "#FFFDF9" }}
-                                    whileTap={{ scale: 0.97 }}
-                                    style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 16px", borderRadius: 10, border: `1.5px solid ${WN_T.royalBurgundy}`, background: "rgba(0,0,0,0)", color: WN_T.royalBurgundy, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const }}>
-                                    {n.action} <ArrowRight size={12} />
-                                  </motion.button>
+                                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="ml-auto">
+                                    <Button
+                                      onClick={e => { e.stopPropagation(); markRead(n.id); }}
+                                      size="sm"
+                                      className="inline-flex items-center gap-1.5 rounded-[10px] border-[1.5px] border-[#6E0F2D] bg-transparent text-[#6E0F2D] font-semibold text-xs whitespace-nowrap hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                                    >
+                                      {n.action} <ArrowRight size={12} />
+                                    </Button>
+                                  </motion.div>
                                 )}
                               </div>
                             </div>
 
                             {/* Read/unread toggle */}
-                            <motion.button
-                              onClick={e => {
-                                e.stopPropagation();
-                                if (isRead) setReadIds(prev => { const s = new Set(prev); s.delete(n.id); return s; });
-                                else markRead(n.id);
-                              }}
+                            <motion.div
                               whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.93 }}
-                              title={isRead ? "Mark unread" : "Mark read"}
-                              style={{ width: 30, height: 30, borderRadius: "50%", border: `1.5px solid ${isRead ? WN_T.borderDef : pcfg.color}`, background: isRead ? "rgba(0,0,0,0)" : pcfg.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginTop: 2 }}>
-                              <Check size={13} color={isRead ? WN_T.taupe : pcfg.color} />
-                            </motion.button>
+                              className="shrink-0 mt-0.5"
+                              style={{ "--n-border": isRead ? WN_T.borderDef : pcfg.color, "--n-bg": isRead ? "rgba(0,0,0,0)" : pcfg.bg, "--n-color": isRead ? WN_T.taupe : pcfg.color } as React.CSSProperties}
+                            >
+                              <IconButton
+                                icon={Check}
+                                label={isRead ? "Mark unread" : "Mark read"}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  if (isRead) setReadIds(prev => { const s = new Set(prev); s.delete(n.id); return s; });
+                                  else markRead(n.id);
+                                }}
+                                title={isRead ? "Mark unread" : "Mark read"}
+                                shape="circle"
+                                size="sm"
+                                className="border-[1.5px] border-[var(--n-border)] bg-[var(--n-bg)] text-[var(--n-color)]"
+                              />
+                            </motion.div>
                           </div>
                         </div>
                       </motion.div>
@@ -269,10 +286,16 @@ export function NotificationsPage() {
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 12, fontWeight: 600, color: pcfg.color, background: pcfg.bg, border: `1px solid ${pcfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
                         <PIcon size={12} /> {pcfg.label}
                       </span>
-                      <motion.button onClick={() => setSelected(null)} whileHover={{ scale: 1.1, backgroundColor: "rgba(110,15,45,0.06)" }} whileTap={{ scale: 0.93 }}
-                        style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${WN_T.borderDef}`, background: "rgba(0,0,0,0)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                        <X size={14} color={WN_T.taupe} />
-                      </motion.button>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.93 }}>
+                        <IconButton
+                          icon={X}
+                          label="Close"
+                          onClick={() => setSelected(null)}
+                          shape="circle"
+                          size="sm"
+                          className="border border-[rgba(110,15,45,0.10)] bg-transparent text-[#69635E] hover:bg-[rgba(110,15,45,0.06)]"
+                        />
+                      </motion.div>
                     </div>
                     <div style={{ padding: "24px 24px 28px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
@@ -302,19 +325,24 @@ export function NotificationsPage() {
                         ))}
                       </div>
                       {selected.action && (
-                        <motion.button
-                          whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.28)" }}
-                          whileTap={{ scale: 0.98 }}
-                          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "14px", borderRadius: 14, border: "none", background: WN_G.button, color: "#FFFDF9", fontFamily: F.u, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(110,15,45,0.22)", marginBottom: 10 }}>
-                          {selected.action} <ArrowRight size={15} />
-                        </motion.button>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mb-2.5">
+                          <Button
+                            fullWidth
+                            className="flex items-center justify-center gap-2 h-auto py-3.5 rounded-[14px] border-none text-[#FFFDF9] font-bold text-sm shadow-[0_4px_16px_rgba(110,15,45,0.22)] bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)]"
+                          >
+                            {selected.action} <ArrowRight size={15} />
+                          </Button>
+                        </motion.div>
                       )}
-                      <motion.button onClick={() => markRead(selected.id)}
-                        whileHover={{ scale: 1.02, backgroundColor: "rgba(110,15,45,0.06)" }}
-                        whileTap={{ scale: 0.98 }}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px", borderRadius: 14, border: `1px solid ${WN_T.borderDef}`, background: "rgba(0,0,0,0)", color: WN_T.taupe, fontFamily: F.u, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                        <Check size={14} /> Mark as read
-                      </motion.button>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          onClick={() => markRead(selected.id)}
+                          fullWidth
+                          className="flex items-center justify-center gap-2 h-auto py-3 rounded-[14px] border border-[rgba(110,15,45,0.10)] bg-transparent text-[#69635E] font-medium text-[13px] hover:bg-[rgba(110,15,45,0.06)]"
+                        >
+                          <Check size={14} /> Mark as read
+                        </Button>
+                      </motion.div>
                     </div>
                   </div>
                 );

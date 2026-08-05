@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check } from "lucide-react";
 import { MaterialIssueRecord } from "../../../materials/contexts/MaterialIssueContext";
 import { C, F, SectionTitle } from "./theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface SareeLogItem {
   batchId: string;
@@ -42,10 +43,14 @@ export function ReferenceHistorySection({
 
   return (
     <div style={{ marginTop: 28 }}>
-      <button onClick={() => setHistoryOpen(v => !v)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Button
+        onClick={() => setHistoryOpen(v => !v)}
+        variant="ghost"
+        className="w-full h-auto bg-transparent border-none px-5 py-0 flex items-center justify-between"
+      >
         <SectionTitle title="Complete Reference History" />
         <ChevronRight size={18} color={C.muted} style={{ transform: historyOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
-      </button>
+      </Button>
       <AnimatePresence>
         {historyOpen && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
@@ -56,12 +61,16 @@ export function ReferenceHistorySection({
                 { id: "batches", label: "Weaving Batches" },
                 { id: "sarees", label: "Saree Work Log" }
               ].map(t => (
-                <button key={t.id} onClick={() => setHistoryTab(t.id as any)} style={{
-                  padding: "8px 16px", borderRadius: 999, border: `1px solid ${historyTab === t.id ? C.burg : C.bdr}`,
-                  background: historyTab === t.id ? C.burg : "transparent",
-                  color: historyTab === t.id ? "#FFF" : C.muted,
-                  fontFamily: F.u, fontWeight: 600, fontSize: 12, cursor: "pointer"
-                }}>{t.label}</button>
+                <Button
+                  key={t.id}
+                  onClick={() => setHistoryTab(t.id as any)}
+                  size="sm"
+                  className={
+                    historyTab === t.id
+                      ? "rounded-full px-4 py-2 h-auto border border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold"
+                      : "rounded-full px-4 py-2 h-auto border border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold"
+                  }
+                >{t.label}</Button>
               ))}
             </div>
 

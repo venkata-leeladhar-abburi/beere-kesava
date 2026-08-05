@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Flower2, Clock, Layers, Package } from "lucide-react";
 import { SareeRow } from "../../../production/contexts/BatchContext";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 // Shared tokens
 const C = {
@@ -71,11 +72,19 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
               {sareeTypePairs.map(([code, name]) => (
-                <button key={code} onClick={() => setExpandedType(expandedType === code ? null : code)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 5, background: expandedType === code ? C.dark : "rgba(61,14,26,0.04)", border: `1.5px solid ${expandedType === code ? C.dark : C.bdr}`, borderRadius: 8, padding: "5px 12px", cursor: "pointer" }}>
+                <Button
+                  key={code}
+                  onClick={() => setExpandedType(expandedType === code ? null : code)}
+                  size="sm"
+                  className={
+                    expandedType === code
+                      ? "inline-flex items-center gap-1.5 bg-[#3D0E1A] border-[1.5px] border-[#3D0E1A] rounded-lg px-3 py-1 h-auto text-white"
+                      : "inline-flex items-center gap-1.5 bg-[rgba(61,14,26,0.04)] border-[1.5px] border-[rgba(139,26,46,0.12)] rounded-lg px-3 py-1 h-auto text-[#1A0A0F]"
+                  }
+                >
                   <Layers size={11} color={expandedType === code ? "#FFF" : C.text} />
                   <span style={{ fontFamily: F.u, fontSize: 12, color: expandedType === code ? "#FFF" : C.text }}>{name}</span>
-                </button>
+                </Button>
               ))}
             </div>
             <AnimatePresence>
@@ -180,16 +189,18 @@ export function BatchQuickFilterPills({ value, onChange }: { value: BatchQuickFi
         {BATCH_QUICK_FILTERS.map(f => {
           const isActive = value === f.id;
           return (
-            <button key={f.id} onClick={() => onChange(f.id)} style={{
-              flexShrink: 0, padding: "8px 16px", borderRadius: 999,
-              border: isActive ? "none" : `1px solid ${C.bdr}`,
-              background: isActive ? C.burg : "#FFFFFF",
-              color: isActive ? "#FFFFFF" : C.text,
-              fontFamily: F.u, fontSize: 13, fontWeight: isActive ? 600 : 400,
-              cursor: "pointer", whiteSpace: "nowrap" as const,
-            }}>
+            <Button
+              key={f.id}
+              onClick={() => onChange(f.id)}
+              size="sm"
+              className={
+                isActive
+                  ? "flex-shrink-0 rounded-full px-4 py-2 h-auto border-none bg-[#6B1A2A] text-white font-semibold whitespace-nowrap"
+                  : "flex-shrink-0 rounded-full px-4 py-2 h-auto border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] font-normal whitespace-nowrap"
+              }
+            >
               {f.label}
-            </button>
+            </Button>
           );
         })}
       </div>

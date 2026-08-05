@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Search, Star } from "lucide-react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
+import { Button, Input } from "../../../../../shared/ui/primitives";
 
 type ShopCustomer = { name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
 
@@ -40,12 +41,17 @@ export function CustomersSection({
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         {/* Search + filter */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 32 }}>
-          <div style={{ flex: 1, position: "relative" as const }}>
-            <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-            <input aria-label="Search by name or phone number..." placeholder="Search by name or phone number..." style={{ width: "100%", height: 50, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 18px 0 44px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const, boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }} />
+          <div style={{ flex: 1 }}>
+            <Input aria-label="Search by name or phone number..." placeholder="Search by name or phone number..." iconLeft={Search} size="lg" containerClassName="h-[50px] rounded-xl shadow-[0_2px_12px_rgba(44,24,16,0.06)]" />
           </div>
           {["All", "Highest Spend", "Most Frequent", "Regular Only"].map(f => (
-            <button key={f} style={{ padding: "11px 20px", borderRadius: 999, border: `1px solid ${C.bdr}`, background: f === "All" ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: f === "All" ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const, fontWeight: f === "All" ? 600 : 400 }}>{f}</button>
+            <Button
+              key={f}
+              className={
+                "px-5 py-2.5 h-auto rounded-full border border-[rgba(139,26,46,0.12)] whitespace-nowrap " +
+                (f === "All" ? "bg-[#6B1A2A] text-white font-semibold" : "bg-white text-[#69635E] font-normal")
+              }
+            >{f}</Button>
           ))}
         </div>
 
@@ -79,9 +85,9 @@ export function CustomersSection({
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Last visit: <strong style={{ color: C.text }}>{c.last}</strong></div>
-                <button onClick={() => setSelectedCustomer(c)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", boxShadow: "0 2px 10px rgba(107,26,42,0.28)" }}>
+                <Button onClick={() => setSelectedCustomer(c)} size="sm" className="rounded-full bg-[#6B1A2A] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)]">
                   View Profile <ArrowRight size={13} color="#FFF" />
-                </button>
+                </Button>
               </div>
             </motion.div>
           ))}

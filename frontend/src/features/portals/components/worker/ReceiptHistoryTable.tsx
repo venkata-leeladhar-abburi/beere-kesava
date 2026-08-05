@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
-import { C, F, card, inputStyle } from "./tokens";
+import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { Button, Input } from "../../../../shared/ui/primitives";
 
 export interface ReceiptRecord {
   grnId: string;
@@ -79,10 +80,14 @@ export function ReceiptHistoryTable({ receiptHistory, compact = false }: Receipt
 
   return (
     <div style={{ padding: compact ? 0 : "8px 0" }}>
-      <div style={{ position: "relative", marginBottom: compact ? 10 : 12 }}>
-        <Search size={14} color={C.muted} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-        <input value={historySearch} onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }} placeholder="Search by GRN ID, PO number, or vendor..."
-          style={{ ...inputStyle, height: compact ? 40 : 42, paddingLeft: 34, fontSize: compact ? 13 : 13.5 }} />
+      <div style={{ marginBottom: compact ? 10 : 12 }}>
+        <Input
+          value={historySearch}
+          onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }}
+          placeholder="Search by GRN ID, PO number, or vendor..."
+          iconLeft={Search}
+          containerClassName={compact ? "h-10" : "h-[42px]"}
+        />
       </div>
 
       <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
@@ -124,10 +129,18 @@ export function ReceiptHistoryTable({ receiptHistory, compact = false }: Receipt
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: compact ? "10px 14px" : "12px 16px", borderTop: `1px solid ${C.bdr}` }}>
             <span style={{ fontFamily: F.u, fontSize: compact ? 11.5 : 12.5, color: C.muted }}>Page {historyPage} of {totalPages}</span>
             <div style={{ display: "flex", gap: compact ? 6 : 8 }}>
-              <button onClick={() => setHistoryPage(p => Math.max(1, p - 1))} disabled={historyPage === 1}
-                style={{ padding: compact ? "4px 10px" : "6px 12px", borderRadius: compact ? 6 : 8, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: compact ? 11 : 12, color: C.text, cursor: historyPage === 1 ? "default" : "pointer", opacity: historyPage === 1 ? 0.5 : 1 }}>Prev</button>
-              <button onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))} disabled={historyPage === totalPages}
-                style={{ padding: compact ? "4px 10px" : "6px 12px", borderRadius: compact ? 6 : 8, border: `1px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontSize: compact ? 11 : 12, color: C.text, cursor: historyPage === totalPages ? "default" : "pointer", opacity: historyPage === totalPages ? 0.5 : 1 }}>Next</button>
+              <Button
+                onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                disabled={historyPage === 1}
+                size="sm"
+                className={"h-auto rounded-md border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
+              >Prev</Button>
+              <Button
+                onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))}
+                disabled={historyPage === totalPages}
+                size="sm"
+                className={"h-auto rounded-md border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
+              >Next</Button>
             </div>
           </div>
         )}

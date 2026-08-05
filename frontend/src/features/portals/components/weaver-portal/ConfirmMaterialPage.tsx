@@ -15,6 +15,7 @@ import {
   C, F, SectionTitle, Card, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, CURRENT_WEAVER_ID
 } from './theme';
 import { ReferenceHistorySection } from "./ReferenceHistorySection";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
@@ -100,12 +101,12 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Materials Confirmed!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
         <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14, marginBottom: 28 }}>{confirmedRecord.id}</div>
-        <button onClick={resetToPending} style={{ display: "block", width: "100%", height: 52, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 16, color: "#FFF", cursor: "pointer", marginBottom: 10 }}>
+        <Button onClick={resetToPending} fullWidth className="block h-[52px] bg-[#6B1A2A] border-none rounded-full font-semibold text-base text-white mb-2.5">
           View More Pending Receipts
-        </button>
-        <button onClick={onGoToBatches} style={{ display: "block", width: "100%", height: 48, background: "none", border: `1px solid ${C.bdr}`, borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>
+        </Button>
+        <Button onClick={onGoToBatches} fullWidth className="block h-12 bg-transparent border border-[rgba(139,26,46,0.12)] rounded-full font-semibold text-sm text-[#69635E]">
           ← Go to My Batches
-        </button>
+        </Button>
       </div>
     );
   }
@@ -177,10 +178,15 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
 
           <div style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, gap: 12, margin: "0 20px 10px" }}>
             <div style={{ flex: 1 }}>
-              <button onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")} style={{
-                width: "100%", background: C.white, border: `1px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
-                cursor: "pointer", textAlign: "left" as const,
-              }}>
+              <Button
+                onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")}
+                variant="ghost"
+                fullWidth
+                className={
+                  "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
+                  (sigMethod === "here" ? "border border-[#6B1A2A]" : "border border-[rgba(139,26,46,0.12)]")
+                }
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 20 }}>📱</span>
                   <div>
@@ -188,14 +194,19 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>If the worker is with you, sign directly below</div>
                   </div>
                 </div>
-              </button>
+              </Button>
             </div>
 
             <div style={{ flex: 1 }}>
-              <button onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")} style={{
-                width: "100%", background: C.white, border: `1px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, padding: 16,
-                cursor: "pointer", textAlign: "left" as const, marginBottom: sigMethod === "remote" ? 10 : 0,
-              }}>
+              <Button
+                onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")}
+                variant="ghost"
+                fullWidth
+                className={
+                  "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
+                  (sigMethod === "remote" ? "border border-[#6B1A2A] mb-2.5" : "border border-[rgba(139,26,46,0.12)]")
+                }
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 20 }}>📲</span>
                   <div>
@@ -203,7 +214,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Worker will send you a notification to sign on your own device</div>
                   </div>
                 </div>
-              </button>
+              </Button>
               <AnimatePresence>
                 {sigMethod === "remote" && (
                   <motion.div key="remote" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -213,9 +224,9 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                         <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
                       </div>
                     ) : (
-                      <button onClick={() => setRequestSent(true)} style={{ width: "100%", height: 48, border: `1px solid ${C.gold}`, background: "transparent", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.gold, cursor: "pointer" }}>
+                      <Button onClick={() => setRequestSent(true)} fullWidth className="h-12 border border-[#C4923A] bg-transparent rounded-full font-semibold text-sm text-[#C4923A]">
                         Send Signature Request
-                      </button>
+                      </Button>
                     )}
                   </motion.div>
                 )}
@@ -237,16 +248,16 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             <div style={{ background: C.cream, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>By signing and confirming, you agree that you have received all the materials listed above. This record is permanent.</span>
             </div>
-            <button
+            <Button
               onClick={handleConfirm}
-              style={{
-                width: "100%", height: 56, background: canConfirm ? C.green : "#C0C0C0",
-                border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 16, color: "#FFF",
-                cursor: canConfirm ? "pointer" : "not-allowed",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              }}>
+              fullWidth
+              className={
+                "h-14 border-none rounded-full font-semibold text-base text-white " +
+                (canConfirm ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C0C0C0]")
+              }
+            >
               <Check size={20} /> Confirm Material Receipt
-            </button>
+            </Button>
           </div>
         </>
       ) : (
@@ -257,7 +268,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 10 }}>No pending material receipt</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 20 }}>All material receipts are confirmed. Nothing pending.</div>
-            <button onClick={onGoToBatches} style={{ width: "100%", height: 48, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Go to My Batches</button>
+            <Button onClick={onGoToBatches} fullWidth className="h-12 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white">Go to My Batches</Button>
           </Card>
         </div>
       )}

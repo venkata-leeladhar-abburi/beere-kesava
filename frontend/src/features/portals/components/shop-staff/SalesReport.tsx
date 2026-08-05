@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { C, F, TEAL, Card, Btn, Chip, useCanSeePrices } from './theme';
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 function SalesReport() {
   const canSeePrices = useCanSeePrices();
   const [period, setPeriod] = useState<"today" | "week" | "month" | "3months">("today");
@@ -112,7 +113,14 @@ function SalesReport() {
       {/* Period toggle */}
       <div style={{ padding: "16px 20px 4px", display: "flex", gap: 8 }}>
         {periods.map(p => (
-          <button key={p.id} onClick={() => setPeriod(p.id)} style={{ flex: 1, padding: "10px 0", borderRadius: 999, border: `1px solid ${period === p.id ? C.burg : C.bdr}`, background: period === p.id ? C.burg : C.white, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: period === p.id ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>{p.label}</button>
+          <Button
+            key={p.id}
+            onClick={() => setPeriod(p.id)}
+            className={
+              "flex-1 py-2.5 h-auto rounded-full border whitespace-nowrap " +
+              (period === p.id ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-white text-[#69635E] font-semibold")
+            }
+          >{p.label}</Button>
         ))}
       </div>
 
@@ -120,9 +128,9 @@ function SalesReport() {
       <div id="shoprep-today-sales" style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
         <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
         <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>Today's Sales — 13 Jun 2026</span>
-        <button onClick={() => { setExportDone(false); setShowExport(true); }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", boxShadow: "0 2px 10px rgba(107,26,42,0.28)", flexShrink: 0 }}>
+        <Button onClick={() => { setExportDone(false); setShowExport(true); }} size="sm" className="gap-1.5 rounded-full bg-[#6B1A2A] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)] shrink-0">
           <FileText size={14} color="#FFF" /> Export
-        </button>
+        </Button>
       </div>
       <Card style={{ margin: "0 20px", overflow: "hidden", padding: 0 }}>
         {dailySales.map((s, i) => (
@@ -236,9 +244,14 @@ function SalesReport() {
                   <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div>
                 </div>
-                <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                  <X size={18} color="rgba(255,255,255,0.70)" />
-                </button>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={() => { setShowExport(false); setExportDone(false); }}
+                  variant="ghost"
+                  shape="circle"
+                  className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
+                />
               </div>
               <div style={{ padding: "22px 20px 28px", overflowY: "auto" as const }}>
                 {exportDone ? (
@@ -250,7 +263,7 @@ function SalesReport() {
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 22 }}>
                       Your <strong style={{ color: C.text }}>Today's Sales</strong> report has been exported as <strong style={{ color: C.text }}>{exportFormat.toUpperCase()}</strong>. Check your downloads folder.
                     </div>
-                    <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Done</button>
+                    <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white">Done</Button>
                   </div>
                 ) : (
                   <>
@@ -262,11 +275,19 @@ function SalesReport() {
                           { key: "csv" as const, label: "CSV", icon: "📊", desc: "Spreadsheet" },
                           { key: "excel" as const, label: "Excel", icon: "📗", desc: "Advanced" },
                         ]).map(f => (
-                          <button key={f.key} onClick={() => setExportFormat(f.key)} style={{ flex: 1, padding: "14px 8px", borderRadius: 14, border: `2px solid ${exportFormat === f.key ? C.burg : C.bdr}`, background: exportFormat === f.key ? "rgba(107,26,42,0.06)" : "#FFF", cursor: "pointer", textAlign: "center" as const }}>
+                          <Button
+                            key={f.key}
+                            onClick={() => setExportFormat(f.key)}
+                            variant="ghost"
+                            className={
+                              "flex-1 h-auto py-3.5 px-2 rounded-2xl border-2 text-center flex-col " +
+                              (exportFormat === f.key ? "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-[rgba(139,26,46,0.12)] bg-white")
+                            }
+                          >
                             <div style={{ fontSize: 20, marginBottom: 5 }}>{f.icon}</div>
                             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: exportFormat === f.key ? C.burg : C.text, marginBottom: 2 }}>{f.label}</div>
                             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{f.desc}</div>
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -280,10 +301,10 @@ function SalesReport() {
                       ))}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                      <button onClick={() => setExportDone(true)} style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                      <Button onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
                         <FileText size={17} /> Export as {exportFormat.toUpperCase()}
-                      </button>
-                      <button onClick={() => { setShowExport(false); setExportDone(false); }} style={{ width: "100%", height: 50, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Cancel</button>
+                      </Button>
+                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
                     </div>
                   </>
                 )}

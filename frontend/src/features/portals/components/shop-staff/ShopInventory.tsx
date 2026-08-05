@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { C, F, TEAL, Card, Btn, Chip } from './theme';
+import { Button, Input } from "../../../../shared/ui/primitives";
 function ShopInventory() {
   const canSeePrices = useCanSeePrices();
   const { isMobile } = useResponsive();
@@ -103,13 +104,20 @@ function ShopInventory() {
 
       {/* Search + Filter */}
       <Card style={{ margin: "16px 20px", padding: "16px" }}>
-        <div style={{ position: "relative" as const, marginBottom: 14 }}>
-          <Search size={18} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+        <div style={{ marginBottom: 14 }}>
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" iconLeft={Search} size="lg" containerClassName="rounded-xl h-12" />
         </div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4, marginBottom: 12 }}>
           {filters.map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${filter === f ? C.burg : C.bdr}`, background: filter === f ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: filter === f ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>{f}</button>
+            <Button
+              key={f}
+              onClick={() => setFilter(f)}
+              size="sm"
+              className={
+                "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
+                (filter === f ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+              }
+            >{f}</Button>
           ))}
         </div>
         {/* Loom selection pills */}
@@ -119,9 +127,17 @@ function ShopInventory() {
             {["All Looms", ...looms].map(l => {
               const isSel = l === "All Looms" ? loomFilter.length === 0 : loomFilter.includes(l);
               return (
-                <button key={l} onClick={() => toggleLoomFilter(l)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                <Button
+                  key={l}
+                  onClick={() => toggleLoomFilter(l)}
+                  size="sm"
+                  className={
+                    "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
+                    (isSel ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                  }
+                >
                   {l === "All Looms" ? "All Looms" : `Loom ${l}`}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -133,9 +149,17 @@ function ShopInventory() {
             {["All Weavers", ...weavers].map(w => {
               const isSel = w === "All Weavers" ? weaverFilter.length === 0 : weaverFilter.includes(w);
               return (
-                <button key={w} onClick={() => toggleWeaverFilter(w)} style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 999, border: `1px solid ${isSel ? C.burg : C.bdr}`, background: isSel ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: isSel ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                <Button
+                  key={w}
+                  onClick={() => toggleWeaverFilter(w)}
+                  size="sm"
+                  className={
+                    "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
+                    (isSel ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                  }
+                >
                   {w}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -168,8 +192,8 @@ function ShopInventory() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
               <Chip label={s.status === "available" ? "✓ Available" : "Reserved for Customer"} color={s.status === "available" ? C.green : C.gold} bg={s.status === "available" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)"} />
               <div style={{ display: "flex", gap: 8 }}>
-                <button style={{ height: 38, padding: "0 16px", borderRadius: 999, border: `1px solid ${C.bdr}`, background: "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.muted, cursor: "pointer" }}>View</button>
-                <button style={{ height: 38, padding: "0 16px", borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer" }}>Sell</button>
+                <Button size="sm" className="h-[38px] px-4 rounded-full border border-[rgba(139,26,46,0.12)] bg-transparent font-semibold text-[13px] text-[#69635E]">View</Button>
+                <Button size="sm" className="h-[38px] px-4 rounded-full border-none bg-[#6B1A2A] font-semibold text-[13px] text-white">Sell</Button>
               </div>
             </div>
           </div>

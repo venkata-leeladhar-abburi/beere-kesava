@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { C, F, TEAL, Card, Btn, Chip, CUSTOMER_PURCHASES, useCanSeePrices } from './theme';
+import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
   const [search, setSearch] = useState("");
@@ -74,13 +75,20 @@ function CustomerProfiles() {
 
       {/* Search + Filter */}
       <div style={{ padding: "16px 20px 8px" }}>
-        <div style={{ position: "relative" as const, marginBottom: 12 }}>
-          <Search size={18} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone" style={{ width: "100%", height: 48, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px 0 42px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+        <div style={{ marginBottom: 12 }}>
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone" iconLeft={Search} size="lg" containerClassName="h-12 rounded-xl" />
         </div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4 }}>
           {["All", "Highest Spend", "Most Frequent", "Recent Visit", "Has Returns"].map(s => (
-            <button key={s} onClick={() => setSort(s)} style={{ flexShrink: 0, padding: "8px 15px", borderRadius: 999, border: `1px solid ${sort === s ? C.burg : C.bdr}`, background: sort === s ? C.burg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: sort === s ? "#FFF" : C.muted, cursor: "pointer", whiteSpace: "nowrap" as const }}>{s}</button>
+            <Button
+              key={s}
+              onClick={() => setSort(s)}
+              size="sm"
+              className={
+                "shrink-0 rounded-full px-[15px] py-2 h-auto whitespace-nowrap border " +
+                (sort === s ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+              }
+            >{s}</Button>
           ))}
         </div>
       </div>
@@ -106,9 +114,9 @@ function CustomerProfiles() {
               {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(196,146,58,0.12)" />}
               <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />
             </div>
-            <button onClick={() => setSelected(i)} style={{ width: "100%", height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer", boxShadow: "0 2px 10px rgba(107,26,42,0.28)" }}>
+            <Button onClick={() => setSelected(i)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6B1A2A] border-none font-semibold text-sm text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)]">
               <UserRound size={16} /> View Profile <ArrowRight size={14} />
-            </button>
+            </Button>
           </Card>
         ))}
       </div>
@@ -140,9 +148,14 @@ function CustomerProfiles() {
                     </div>
                     <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div>
                   </div>
-                  <button onClick={() => setSelected(null)} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                    <X size={18} color="rgba(255,255,255,0.70)" />
-                  </button>
+                  <IconButton
+                    icon={X}
+                    label="Close"
+                    onClick={() => setSelected(null)}
+                    variant="ghost"
+                    shape="circle"
+                    className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
+                  />
                 </div>
               </div>
               {/* Body */}
@@ -195,10 +208,10 @@ function CustomerProfiles() {
                 </div>
                 {/* Actions */}
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                  <button style={{ width: "100%", height: 52, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                  <Button fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
                     <ShoppingBag size={17} /> Record New Sale
-                  </button>
-                  <button onClick={() => setSelected(null)} style={{ width: "100%", height: 50, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Close</button>
+                  </Button>
+                  <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
                 </div>
               </div>
             </motion.div>

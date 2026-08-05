@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ShoppingBag, Star, X } from "lucide-react";
 import { C, F, CUSTOMER_PURCHASES } from "../theme";
 import type { ShopCustomer } from "./CustomersSection";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 export function CustomerProfileDialog({
   customer, onClose, canSeePrices, isTablet,
@@ -33,9 +34,14 @@ export function CustomerProfileDialog({
                   <div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer!.phone}</div>
                   {customer!.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,146,58,0.20)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
                 </div>
-                <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: "50%", width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                  <X size={18} color="rgba(255,255,255,0.70)" />
-                </button>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={onClose}
+                  variant="ghost"
+                  shape="circle"
+                  className="bg-white/10 text-white/70 w-[38px] h-[38px] shrink-0"
+                />
               </div>
             </div>
             {/* Body */}
@@ -74,10 +80,10 @@ export function CustomerProfileDialog({
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={onClose} style={{ flex: 1, height: 50, borderRadius: 999, border: `1.5px solid ${C.bdr}`, background: "#FFF", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "pointer" }}>Close</button>
-                <button style={{ flex: 2, height: 50, borderRadius: 999, border: "none", background: C.burg, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 16px rgba(107,26,42,0.30)" }}>
+                <Button onClick={onClose} className="flex-1 h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
+                <Button className="flex-[2] h-[50px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
                   <ShoppingBag size={16} /> Record New Sale for {customer!.name.split(" ")[1] || customer!.name.split(" ")[0]}
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>

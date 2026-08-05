@@ -26,6 +26,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import {
   C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
+import { Button, Input, Textarea, Field } from '../../../../shared/ui/primitives';
 
 
 export function WarpRequestPage() {
@@ -53,9 +54,9 @@ export function WarpRequestPage() {
         </div>
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Request Sent!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 28 }}>Your request has been sent to the worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-        <button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} style={{ width: "100%", height: 52, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 16, color: "#FFF", cursor: "pointer" }}>
+        <Button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="h-[52px] bg-[#6B1A2A] border-none rounded-full font-semibold text-base text-white">
           ← Back to Warp Requests
-        </button>
+        </Button>
       </div>
     );
   }
@@ -69,12 +70,16 @@ export function WarpRequestPage() {
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginBottom: 10 }}>Which batch?</div>
         <div style={{ display: "flex", gap: 10 }}>
           {(["086", "089"] as const).map(b => (
-            <button key={b} onClick={() => setSelectedBatch(b)} style={{
-              padding: "8px 20px", borderRadius: 999, border: `1px solid ${C.burg}`,
-              background: selectedBatch === b ? C.burg : "transparent",
-              color: selectedBatch === b ? "#FFF" : C.burg,
-              fontFamily: F.m, fontSize: 12, cursor: "pointer", fontWeight: 600,
-            }}>BATCH-{b}</button>
+            <Button
+              key={b}
+              onClick={() => setSelectedBatch(b)}
+              size="sm"
+              className={
+                selectedBatch === b
+                  ? "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-[#6B1A2A] font-semibold text-xs text-white"
+                  : "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-transparent font-semibold text-xs text-[#6B1A2A]"
+              }
+            >BATCH-{b}</Button>
           ))}
         </div>
       </div>
@@ -102,9 +107,9 @@ export function WarpRequestPage() {
             </Card>
           </div>
           <div style={{ margin: "0 20px" }}>
-            <button disabled style={{ width: "100%", height: 56, background: "#E0D5CC", border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, cursor: "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <Button disabled fullWidth className="h-14 bg-[#E0D5CC] border-none rounded-full font-semibold text-sm text-[#69635E]">
               <Shield size={18} /> Warp Request — Locked
-            </button>
+            </Button>
           </div>
         </>
       ) : (
@@ -163,10 +168,12 @@ export function WarpRequestPage() {
                   <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>
                     {mat === "warp" ? "Warp amount (kg):" : mat === "resham" ? "Resham amount (kg) and color:" : "Jari amount (reels):"}
                   </label>
-                  <input
+                  <Input
                     value={amounts[mat]} onChange={e => setAmounts(a => ({ ...a, [mat]: e.target.value }))}
                     placeholder={mat === "warp" ? "e.g. 3" : mat === "resham" ? "e.g. 500g Red" : "e.g. 4 reels"}
-                    style={{ width: "100%", height: 56, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 16, color: C.text, outline: "none", boxSizing: "border-box" as const }}
+                    size="lg"
+                    className="font-mono"
+                    containerClassName="rounded-xl h-14"
                   />
                 </div>
               ))}
@@ -174,22 +181,23 @@ export function WarpRequestPage() {
               {/* Reason */}
               <div style={{ marginBottom: 4 }}>
                 <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>Why do you need more material?</label>
-                <textarea
+                <Textarea
                   value={reason} onChange={e => setReason(e.target.value)}
                   placeholder="Example: Extra sarees needed for a big order"
                   rows={3}
-                  style={{ width: "100%", minHeight: 100, background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "12px 16px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none", boxSizing: "border-box" as const }}
+                  className="rounded-[14px] min-h-[100px] resize-none"
                 />
               </div>
             </Card>
           </div>
 
           <div style={{ margin: isMobile ? "0 20px" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "80%" : 560, padding: isMobile ? undefined : "0 20px", display: "flex", justifyContent: isMobile ? undefined : "flex-end" }}>
-            <button
+            <Button
               onClick={() => (materials.warp || materials.resham || materials.jari) ? setSubmitted(true) : undefined}
-              style={{ width: isMobile ? "100%" : 200, height: 56, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              className={isMobile ? "w-full h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white" : "w-[200px] h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white"}
+            >
               <Send size={18} /> Send Warp Request
-            </button>
+            </Button>
           </div>
         </>
       )}
