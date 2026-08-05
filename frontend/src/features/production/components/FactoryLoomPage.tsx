@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   Plus, Search, Edit2,
   LayoutGrid, LayoutList, FileText,
 } from "lucide-react";
-import { FactoryLoom, FACTORY_LOOMS_LIST } from "../data/factoryLooms";
+import { FactoryLoom } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
 import { STATUS_CFG, LoomBatch, LoomMaterial, LoomSaree } from "./factory-loom/types";
 import { SAMPLE_BATCHES, SAMPLE_MATERIALS, SAMPLE_SAREES } from "./factory-loom/sampleData";
@@ -13,10 +13,34 @@ import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
 import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
 import { FadeUp } from "./factory-loom/theme";
+import { ApiError } from "../../../shared/api/client";
+import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
+
+function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
+  return {
+    id: l.id,
+    loomNumber: l.loomNumber,
+    location: l.location ?? "",
+    operatorName: l.operatorName ?? "",
+    operatorPhone: l.operatorPhone ?? "",
+    status: l.status.toLowerCase() as FactoryLoom["status"],
+    installedYear: l.installedYear ? String(l.installedYear) : "",
+    notes: l.notes ?? "",
+  };
+}
+
+const FRONTEND_TO_BACKEND_STATUS: Record<FactoryLoom["status"], BackendLoomStatus> = {
+  active: "ACTIVE",
+  idle: "IDLE",
+  maintenance: "MAINTENANCE",
+};
 
 // ── Main Page Export ──────────────────────────────────────────────────────────
 export function FactoryLoomPage() {
-  const [looms, setLooms] = useState<FactoryLoom[]>(FACTORY_LOOMS_LIST);
+  const [looms, setLooms] = useState<FactoryLoom[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [view, setView] = useState<"card"|"table">("card");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
@@ -27,14 +51,59 @@ export function FactoryLoomPage() {
   const [materials] = useState<LoomMaterial[]>(SAMPLE_MATERIALS);
   const [sarees] = useState<LoomSaree[]>(SAMPLE_SAREES);
 
+  const loadLooms = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await factoryLoomsApi.list();
+      setLooms(res.items.map(backendLoomToFrontend));
+    } catch (err) {
+      setLoadError(err instanceof ApiError ? err.message : "Could not reach the server.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadLooms(); }, [loadLooms]);
+
   const filtered = looms.filter(l => {
     const ms = !search || l.loomNumber.toLowerCase().includes(search.toLowerCase()) || l.operatorName.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase());
     return ms && (sf === "all" || l.status === sf);
   });
 
-  const handleAddOrEdit = (l: FactoryLoom) => {
-    setLooms(prev => prev.find(x => x.id === l.id) ? prev.map(x => x.id === l.id ? l : x) : [...prev, l]);
-    setEditLoom(null);
+  const handleAddOrEdit = async (l: FactoryLoom) => {
+    setSaveError(null);
+    try {
+      if (editLoom) {
+        const updated = await factoryLoomsApi.update(l.id, {
+          location: l.location,
+          operatorName: l.operatorName,
+          operatorPhone: l.operatorPhone,
+          status: FRONTEND_TO_BACKEND_STATUS[l.status],
+          installedYear: l.installedYear ? Number(l.installedYear) : undefined,
+          notes: l.notes,
+        });
+        setLooms(prev => prev.map(x => (x.id === l.id ? backendLoomToFrontend(updated) : x)));
+      } else {
+        const created = await factoryLoomsApi.create({
+          loomNumber: l.loomNumber,
+          location: l.location,
+          operatorName: l.operatorName,
+          operatorPhone: l.operatorPhone,
+          installedYear: l.installedYear ? Number(l.installedYear) : undefined,
+          notes: l.notes,
+        });
+        // create() always defaults to ACTIVE server-side; patch if a different status was chosen.
+        const final =
+          l.status !== "active"
+            ? await factoryLoomsApi.update(created.id, { status: FRONTEND_TO_BACKEND_STATUS[l.status] })
+            : created;
+        setLooms(prev => [backendLoomToFrontend(final), ...prev]);
+      }
+      setEditLoom(null);
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.message : "Could not save this loom. Please try again.");
+    }
   };
   const handleEdit = (l: FactoryLoom) => { setEditLoom(l); setShowModal(true); setSelected(null); };
 
@@ -64,6 +133,16 @@ export function FactoryLoomPage() {
         </div>
         {[320, 460].map((sz, i) => <div key={i} style={{ position: "absolute" as const, right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.03})`, pointerEvents: "none" as const }} />)}
       </div>
+
+      {(loadError || saveError) && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>{loadError ? `Could not load factory looms: ${loadError}` : saveError}</span>
+          {loadError && <button onClick={() => void loadLooms()} style={{ background: "transparent", border: `1px solid ${T.crimson}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, cursor: "pointer" }}>Retry</button>}
+        </div>
+      )}
+      {loading && !loadError && (
+        <div style={{ padding: "10px 56px", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>Loading factory looms…</div>
+      )}
 
       {/* Stats */}
       <div style={{ background: "#FFF", borderBottom: `1px solid ${T.borderDef}`, padding: "14px 56px", display: "flex", gap: 28 }}>

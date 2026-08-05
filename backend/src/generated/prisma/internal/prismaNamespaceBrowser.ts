@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  IdCounter: 'IdCounter',
   Permission: 'Permission',
   RolePermission: 'RolePermission',
   UserPermissionOverride: 'UserPermissionOverride',
@@ -106,6 +107,14 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const IdCounterScalarFieldEnum = {
+  prefix: 'prefix',
+  value: 'value'
+} as const
+
+export type IdCounterScalarFieldEnum = (typeof IdCounterScalarFieldEnum)[keyof typeof IdCounterScalarFieldEnum]
 
 
 export const PermissionScalarFieldEnum = {
@@ -438,7 +447,10 @@ export const DispatchRecordScalarFieldEnum = {
   firmId: 'firmId',
   paymentDueDate: 'paymentDueDate',
   bulkOrderRef: 'bulkOrderRef',
-  quotationRef: 'quotationRef'
+  quotationRef: 'quotationRef',
+  pendingTransport: 'pendingTransport',
+  pendingReceipt: 'pendingReceipt',
+  notes: 'notes'
 } as const
 
 export type DispatchRecordScalarFieldEnum = (typeof DispatchRecordScalarFieldEnum)[keyof typeof DispatchRecordScalarFieldEnum]
@@ -608,6 +620,7 @@ export const FirmScalarFieldEnum = {
   firmName: 'firmName',
   gstNumber: 'gstNumber',
   address: 'address',
+  purchaseAmount: 'purchaseAmount',
   accountNumber: 'accountNumber',
   ifscCode: 'ifscCode',
   bankName: 'bankName',

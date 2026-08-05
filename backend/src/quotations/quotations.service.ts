@@ -1,0 +1,141 @@
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { PaginatedResult } from "../common/pagination";
+import { Prisma, QuotationSareeStatus, QuotationStatus } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateQuotationDto } from "./dto/create-quotation.dto";
+import { ListQuotationsQueryDto } from "./dto/list-quotations-query.dto";
+import { ReceiveQuotationSareesDto } from "./dto/receive-quotation-sarees.dto";
+
+const QUOTATION_ID_PREFIX = "QUO";
+
+const include = { sarees: true, customer: true, bulkOrder: true } satisfies Prisma.QuotationInclude;
+
+@Injectable()
+export class QuotationsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
+  ) {}
+
+  async create(dto: CreateQuotationDto) {
+    const raisedBy = await this.prisma.user.findUnique({ where: { id: dto.raisedById } });
+    if (!raisedBy) {
+      throw new NotFoundException(`User ${dto.raisedById} not found`);
+    }
+    if (dto.customerId) {
+      const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
+      if (!customer) {
+        throw new NotFoundException(`Customer ${dto.customerId} not found`);
+      }
+    }
+
+    const subtotal = dto.sarees.reduce((sum, s) => sum + s.price, 0);
+    const gstPct = dto.applyGst ? (dto.gstPct ?? 0) : 0;
+    const grandTotal = subtotal + (subtotal * gstPct) / 100;
+
+    const quotationNumber = await this.idGenerator.nextFormatted(QUOTATION_ID_PREFIX);
+
+    const quotation = await this.prisma.quotation.create({
+      data: {
+        quotationNumber,
+        customerId: dto.customerId,
+        bulkOrderRef: dto.bulkOrderRef,
+        applyGst: dto.applyGst ?? false,
+        gstPct: dto.applyGst ? dto.gstPct : undefined,
+        subtotal,
+        grandTotal,
+        firmId: dto.firmId,
+        raisedById: dto.raisedById,
+      },
+    });
+
+    await this.prisma.quotationSaree.createMany({
+      data: dto.sarees.map((s) => ({ quotationId: quotation.id, sareeId: s.sareeId, price: s.price })),
+    });
+
+    return this.findOne(quotation.id);
+  }
+
+  async findAll(
+    query: ListQuotationsQueryDto,
+  ): Promise<PaginatedResult<Prisma.QuotationGetPayload<{ include: typeof include }>>> {
+    const where: Prisma.QuotationWhereInput = {
+      status: query.status,
+      customerId: query.customerId,
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.quotation.findMany({
+        where,
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+        orderBy: { quotationDate: "desc" },
+        include,
+      }),
+      this.prisma.quotation.count({ where }),
+    ]);
+
+    return { items, total, page: query.page, pageSize: query.pageSize };
+  }
+
+  async findOne(id: string) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id }, include });
+    if (!quotation) {
+      throw new NotFoundException(`Quotation ${id} not found`);
+    }
+    return quotation;
+  }
+
+  // Marks every saree on the quotation as in-finishing — the quotation-driven
+  // parallel to a plain FinishingAssignment (frontend's assignQuotationFinishing).
+  async assignFinishing(id: string) {
+    const quotation = await this.findOne(id);
+    if (quotation.status !== QuotationStatus.RAISED) {
+      throw new BadRequestException(
+        `Quotation must be RAISED to assign finishing (currently ${quotation.status})`,
+      );
+    }
+    await this.prisma.$transaction([
+      this.prisma.quotationSaree.updateMany({
+        where: { quotationId: id },
+        data: { finishingStatus: QuotationSareeStatus.IN_FINISHING },
+      }),
+      this.prisma.quotation.update({
+        where: { id },
+        data: { status: QuotationStatus.IN_FINISHING },
+      }),
+    ]);
+    return this.findOne(id);
+  }
+
+  // Marks a subset (or all) of the quotation's sarees as received, then
+  // recomputes the quotation-level status: RECEIVED once every saree is in,
+  // PARTIALLY_RECEIVED otherwise.
+  async receive(id: string, dto: ReceiveQuotationSareesDto) {
+    const quotation = await this.findOne(id);
+    const ids = new Set(quotation.sarees.map((s) => s.sareeId));
+    const missing = dto.sareeIds.filter((sareeId) => !ids.has(sareeId));
+    if (missing.length > 0) {
+      throw new BadRequestException(`Saree(s) not on this quotation: ${missing.join(", ")}`);
+    }
+
+    await this.prisma.quotationSaree.updateMany({
+      where: { quotationId: id, sareeId: { in: dto.sareeIds } },
+      data: { finishingStatus: QuotationSareeStatus.RECEIVED },
+    });
+
+    const remaining = await this.prisma.quotationSaree.count({
+      where: { quotationId: id, finishingStatus: { not: QuotationSareeStatus.RECEIVED } },
+    });
+
+    await this.prisma.quotation.update({
+      where: { id },
+      data: {
+        status: remaining === 0 ? QuotationStatus.RECEIVED : QuotationStatus.PARTIALLY_RECEIVED,
+      },
+    });
+
+    return this.findOne(id);
+  }
+}

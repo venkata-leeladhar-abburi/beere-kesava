@@ -1,0 +1,79 @@
+import { InjectQueue } from "@nestjs/bullmq";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Queue } from "bullmq";
+import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
+import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
+import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
+import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
+import { ImportResult, PaymentsService } from "./payments.service";
+import { WEAVER_PAYMENTS_IMPORT_QUEUE } from "./weaver-payments-import.processor";
+
+// NOTE: RBAC guards intentionally not yet applied — see the same note in
+// src/users/users.controller.ts.
+@Controller("payments")
+export class PaymentsController {
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    @InjectQueue(WEAVER_PAYMENTS_IMPORT_QUEUE) private readonly importQueue: Queue,
+  ) {}
+
+  @Post("weavers")
+  createWeaverPayment(@Body() dto: CreateWeaverPaymentDto) {
+    return this.paymentsService.createWeaverPayment(dto);
+  }
+
+  @Get("weavers")
+  findAllWeaverPayments(@Query() query: ListWeaverPaymentsQueryDto) {
+    return this.paymentsService.findAllWeaverPayments(query);
+  }
+
+  @Post("weavers/import")
+  @UseInterceptors(FileInterceptor("file"))
+  async importWeaverPayments(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException("No file uploaded");
+    }
+    const job = await this.importQueue.add("import", {
+      fileBase64: file.buffer.toString("base64"),
+    });
+    return { jobId: job.id };
+  }
+
+  @Get("weavers/import/:jobId/status")
+  async getImportStatus(@Param("jobId") jobId: string) {
+    const job = await this.importQueue.getJob(jobId);
+    if (!job) {
+      throw new NotFoundException(`Import job ${jobId} not found`);
+    }
+    const state = await job.getState();
+    const result = state === "completed" ? (job.returnvalue as ImportResult) : undefined;
+    return {
+      jobId: job.id,
+      state,
+      result,
+      failedReason: state === "failed" ? job.failedReason : undefined,
+    };
+  }
+
+  @Post("vendors")
+  createVendorPayment(@Body() dto: CreateVendorPaymentDto) {
+    return this.paymentsService.createVendorPayment(dto);
+  }
+
+  @Get("vendors")
+  findAllVendorPayments(@Query() query: ListVendorPaymentsQueryDto) {
+    return this.paymentsService.findAllVendorPayments(query);
+  }
+}

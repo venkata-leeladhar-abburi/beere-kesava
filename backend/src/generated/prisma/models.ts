@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/IdCounter'
 export type * from './models/Permission'
 export type * from './models/RolePermission'
 export type * from './models/UserPermissionOverride'

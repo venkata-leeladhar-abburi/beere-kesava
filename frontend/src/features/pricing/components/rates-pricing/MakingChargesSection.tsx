@@ -6,11 +6,13 @@ import { SectionTitle, GoldLink, JariWeightField, SareeTypeCombobox } from "./sh
 import type { SareeTypeRecord } from "./sareeTypeData";
 
 export function MakingChargesSection({
-  rates, setRates, onView,
+  rates, setRates, onView, onPersistEdit, onPersistNew,
 }: {
   rates: SareeTypeRecord[];
   setRates: React.Dispatch<React.SetStateAction<SareeTypeRecord[]>>;
   onView: (row: SareeTypeRecord) => void;
+  onPersistEdit?: (code: string, updates: Partial<SareeTypeRecord>) => void;
+  onPersistNew?: (entry: SareeTypeRecord) => void;
 }) {
   const [editRow, setEditRow] = useState<number | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -29,6 +31,7 @@ export function MakingChargesSection({
 
   function saveEdit(i: number) {
     setRates(prev => prev.map((r, idx) => idx === i ? { ...r, ...editVals, changed: "Just now" } as SareeTypeRecord : r));
+    onPersistEdit?.(rates[i].code, editVals);
     setEditRow(null);
   }
 
@@ -48,6 +51,7 @@ export function MakingChargesSection({
       changed: "Just now",
     };
     setRates(prev => [entry, ...prev]);
+    onPersistNew?.(entry);
     setNewVals({});
     setShowNewForm(false);
   }

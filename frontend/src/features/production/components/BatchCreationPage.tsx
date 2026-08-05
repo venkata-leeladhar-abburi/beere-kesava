@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { FloppyDisk, CheckCircle } from "@phosphor-icons/react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
@@ -6,12 +6,13 @@ import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
-import { FACTORY_LOOMS_LIST } from "../data/factoryLooms";
 import { DispatchDetailsModal } from "./DispatchDetailsModal";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
+import { weaversApi } from "../../../shared/api/weavers";
+import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 
-import { T, F, G, WEAVERS, SAREE_TYPE_RECORDS, rowComplete } from "./batch-creation/constants";
+import { T, F, G, SAREE_TYPE_RECORDS, rowComplete } from "./batch-creation/constants";
 import {
   WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
   SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
@@ -23,13 +24,38 @@ import { BatchTable } from "./batch-creation/BatchTable";
 import { DraftsTab } from "./batch-creation/DraftsTab";
 import { BatchCreationStatsHeader } from "./BatchCreationStatsHeader";
 import { BatchSetupStep } from "./BatchSetupStep";
-import { useBatchFormHandlers } from "./useBatchFormHandlers";
+import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHandlers";
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { dispatches } = useDesignLibrary();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
+
+  // Real weaver/factory-loom directories for the picker modals — replaces
+  // the old static WEAVERS/FACTORY_LOOMS_LIST mocks so assigned ids are
+  // always real backend records (required for batch-row assignment to
+  // validate server-side).
+  const [weavers, setWeavers] = useState<WeaverOption[]>([]);
+  const [looms, setLooms] = useState<LoomOption[]>([]);
+  const [directoryError, setDirectoryError] = useState<string | null>(null);
+
+  const loadDirectories = useCallback(async () => {
+    try {
+      const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
+      setWeavers(weaversRes.items.map(w => ({ id: w.id, name: w.name, initials: w.initials, looms: w.looms })));
+      setLooms(loomsRes.items.map(l => ({
+        id: l.id, loomNumber: l.loomNumber, location: l.location ?? "", status: l.status,
+        operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
+        installedYear: l.installedYear, notes: l.notes ?? "",
+      })));
+      setDirectoryError(null);
+    } catch (err) {
+      setDirectoryError(err instanceof Error ? err.message : "Could not load weavers/looms.");
+    }
+  }, []);
+
+  useEffect(() => { void loadDirectories(); }, [loadDirectories]);
 
   // ── Tab: "new" or "drafts"
   const [tab, setTab] = useState<"new" | "drafts">("new");
@@ -54,8 +80,8 @@ export function BatchCreationPage() {
   // ── Card view modals
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
-  const [viewWeaver, setViewWeaver] = useState<typeof WEAVERS[0] | null>(null);
-  const [viewFactoryLoom, setViewFactoryLoom] = useState<typeof FACTORY_LOOMS_LIST[0] | null>(null);
+  const [viewWeaver, setViewWeaver] = useState<WeaverOption | null>(null);
+  const [viewFactoryLoom, setViewFactoryLoom] = useState<LoomOption | null>(null);
   const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: any[] } | null>(null);
@@ -175,12 +201,19 @@ export function BatchCreationPage() {
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100vh", fontFamily: F.ui }}>
+      {directoryError && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Could not load weavers/factory looms: {directoryError}</span>
+          <button onClick={() => void loadDirectories()} style={{ background: "transparent", border: `1px solid ${T.red}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.red, cursor: "pointer" }}>Retry</button>
+        </div>
+      )}
 
       {/* Header & Stats Banner */}
       <BatchCreationStatsHeader
         active={active}
         drafts={drafts}
         batches={batches}
+        weaversActiveCount={weavers.length}
         tab={tab}
         setTab={setTab}
         editingBatchId={editingBatchId}
@@ -213,6 +246,8 @@ export function BatchCreationPage() {
           {/* Step 2+3: Table */}
           {generated && rows.length > 0 && (
             <BatchTable
+              weavers={weavers}
+              looms={looms}
               rows={rows}
               displayRows={displayRows}
               selected={selected}
@@ -286,13 +321,13 @@ export function BatchCreationPage() {
 
       {/* ── Picker modals ── */}
       <AnimatePresence>
-        {picker === "weaver"     && <WeaverPickerModal     key="wp" onClose={() => setPicker(null)} onSelect={applyWeaver} />}
+        {picker === "weaver"     && <WeaverPickerModal     key="wp" weavers={weavers} onClose={() => setPicker(null)} onSelect={applyWeaver} />}
         {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
-        {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
+        {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" looms={looms} onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
         {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
         {picker === "saretype"   && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
         {loomPickerRow && loomPickerRow.weaverId && (() => {
-          const w = WEAVERS.find(x => x.id === loomPickerRow.weaverId);
+          const w = weavers.find(x => x.id === loomPickerRow.weaverId);
           return w ? (
             <WeaverLoomPickerModal key="wlp" weaver={w} current={loomPickerRow.weaverLoom}
               onClose={() => setLoomPickerRow(null)}

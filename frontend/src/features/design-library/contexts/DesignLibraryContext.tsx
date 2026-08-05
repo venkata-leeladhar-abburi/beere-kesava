@@ -1,5 +1,25 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BackendDesign, designLibraryApi } from "../../../shared/api/design-library";
+
+function backendDesignToEntry(d: BackendDesign): DesignEntry {
+  return {
+    code: d.code,
+    name: d.name,
+    typeCode: d.typeCode,
+    typeName: d.typeName,
+    desc: d.description ?? "",
+    color: d.color ?? "",
+    weaverName: "",
+    notesForWeaver: d.notesForWeaver ?? "",
+    colorSlipPhoto: d.colorSlipPhotoUrl,
+    designGraph: d.designGraphUrl,
+    batches: 0,
+    total: 0,
+    hasColorSlip: Boolean(d.colorSlipPhotoUrl),
+    hasGraph: Boolean(d.designGraphUrl),
+  };
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface DesignEntry {
@@ -135,10 +155,9 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: designs = INITIAL_DESIGNS } = useQuery({
+  const { data: designs = [] } = useQuery({
     queryKey: DESIGNS_KEY,
-    queryFn: () => Promise.resolve(INITIAL_DESIGNS),
-    initialData: INITIAL_DESIGNS,
+    queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
   });
 
   const { data: dispatches = INITIAL_DISPATCHES } = useQuery({
@@ -147,16 +166,33 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     initialData: INITIAL_DISPATCHES,
   });
 
+  // Real backend create — the design library is a real Phase 2 module, so
+  // codes created here must exist server-side for batch-row assignment to
+  // later succeed (see BatchContext / assignRow validation).
   const addDesignMutation = useMutation({
-    mutationFn: (d: DesignEntry) => Promise.resolve(d),
-    onSuccess: (d) =>
+    mutationFn: (d: DesignEntry) =>
+      designLibraryApi.create({
+        code: d.code,
+        name: d.name || d.code,
+        typeCode: d.typeCode || "GEN",
+        typeName: d.typeName || "General",
+        description: d.desc || undefined,
+        color: d.color || undefined,
+        notesForWeaver: d.notesForWeaver || undefined,
+      }),
+    onSuccess: (created) =>
       queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev => {
         const list = prev ?? [];
-        if (list.some(x => x.code === d.code)) return list;
-        return [d, ...list];
+        const entry = backendDesignToEntry(created);
+        if (list.some(x => x.code === entry.code)) return list;
+        return [entry, ...list];
       }),
   });
 
+  // Local-only: notesForWeaver/weaverName patches used for the design-detail
+  // UI don't have a backend PATCH surface wired yet, so keep this optimistic
+  // and client-side (matches the previous mock behaviour) rather than
+  // silently failing against the API.
   const updateDesignMutation = useMutation({
     mutationFn: (args: { code: string; patch: Partial<DesignEntry> }) => Promise.resolve(args),
     onSuccess: ({ code, patch }) =>

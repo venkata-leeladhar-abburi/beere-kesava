@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { SareeRow, generateSareeId } from "../contexts/BatchContext";
-import { WEAVERS } from "./batch-creation/constants";
-import { FACTORY_LOOMS_LIST } from "../data/factoryLooms";
 import type { ActivePicker } from "./batch-creation/types";
+
+// Minimal shapes accepted by the row-mutation helpers below — real data now
+// comes from the backend (see WeaverOption/LoomOption in PickerModals.tsx),
+// not the old static WEAVERS/FACTORY_LOOMS_LIST mocks.
+export interface WeaverOption { id: string; name: string; initials: string; looms: number }
+export interface LoomOption {
+  id: string; loomNumber: string; location: string; status: string;
+  operatorName: string; operatorPhone: string; installedYear: number | null; notes: string;
+}
 
 export function useBatchFormHandlers(bulkOrders: any[]) {
   const [rows, setRows] = useState<SareeRow[]>([]);
@@ -32,7 +39,7 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
     setSelected(prev => { const n = new Set(prev); if (n.has(serial)) n.delete(serial); else n.add(serial); return n; });
   }
 
-  function applyWeaver(w: typeof WEAVERS[0]) {
+  function applyWeaver(w: WeaverOption) {
     const seqMap: Record<string, number> = {};
     rows.forEach(r => {
       if (r.weaverId === w.id && r.sareeId) {
@@ -68,7 +75,7 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
     setLoomPickerRow(null);
   }
 
-  function applyFactoryLoom(loom: typeof FACTORY_LOOMS_LIST[0]) {
+  function applyFactoryLoom(loom: LoomOption) {
     const seqMap: Record<string, number> = {};
     rows.forEach(r => {
       if (r.factoryLoomId === loom.id && r.sareeId) {
@@ -87,7 +94,8 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
         ...r, recipientType: "factoryLoom" as const,
         weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
         factoryLoomId: loom.id, factoryLoomNumber: loom.loomNumber,
-        sareeId: `${loom.id}-${String(seq).padStart(3, "0")}`,
+        // Matches backend buildSareeId(): {loomNumber}-{seq3}, not {id}-{seq3}.
+        sareeId: `${loom.loomNumber}-${String(seq).padStart(3, "0")}`,
       };
     }));
     setPicker(null);

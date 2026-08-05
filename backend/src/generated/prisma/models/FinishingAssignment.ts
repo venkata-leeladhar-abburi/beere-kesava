@@ -254,6 +254,7 @@ export type FinishingAssignmentWhereInput = {
   damageNotes?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
+  batchSareeRow?: Prisma.XOR<Prisma.BatchSareeRowScalarRelationFilter, Prisma.BatchSareeRowWhereInput>
   finishingStaff?: Prisma.XOR<Prisma.FinishingStaffScalarRelationFilter, Prisma.FinishingStaffWhereInput>
   assignedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   quotation?: Prisma.XOR<Prisma.QuotationNullableScalarRelationFilter, Prisma.QuotationWhereInput> | null
@@ -274,6 +275,7 @@ export type FinishingAssignmentOrderByWithRelationInput = {
   damageNotes?: Prisma.SortOrderInput | Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   quotationRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  batchSareeRow?: Prisma.BatchSareeRowOrderByWithRelationInput
   finishingStaff?: Prisma.FinishingStaffOrderByWithRelationInput
   assignedBy?: Prisma.UserOrderByWithRelationInput
   quotation?: Prisma.QuotationOrderByWithRelationInput
@@ -281,10 +283,10 @@ export type FinishingAssignmentOrderByWithRelationInput = {
 
 export type FinishingAssignmentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  sareeId?: string
   AND?: Prisma.FinishingAssignmentWhereInput | Prisma.FinishingAssignmentWhereInput[]
   OR?: Prisma.FinishingAssignmentWhereInput[]
   NOT?: Prisma.FinishingAssignmentWhereInput | Prisma.FinishingAssignmentWhereInput[]
-  sareeId?: Prisma.StringFilter<"FinishingAssignment"> | string
   designCode?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   sareeType?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   finishingStaffId?: Prisma.StringFilter<"FinishingAssignment"> | string
@@ -297,10 +299,11 @@ export type FinishingAssignmentWhereUniqueInput = Prisma.AtLeast<{
   damageNotes?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
+  batchSareeRow?: Prisma.XOR<Prisma.BatchSareeRowScalarRelationFilter, Prisma.BatchSareeRowWhereInput>
   finishingStaff?: Prisma.XOR<Prisma.FinishingStaffScalarRelationFilter, Prisma.FinishingStaffWhereInput>
   assignedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   quotation?: Prisma.XOR<Prisma.QuotationNullableScalarRelationFilter, Prisma.QuotationWhereInput> | null
-}, "id">
+}, "id" | "sareeId">
 
 export type FinishingAssignmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -344,7 +347,6 @@ export type FinishingAssignmentScalarWhereWithAggregatesInput = {
 
 export type FinishingAssignmentCreateInput = {
   id?: string
-  sareeId: string
   designCode?: string | null
   sareeType?: string | null
   assignedDate?: Date | string
@@ -354,6 +356,7 @@ export type FinishingAssignmentCreateInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
@@ -378,7 +381,6 @@ export type FinishingAssignmentUncheckedCreateInput = {
 
 export type FinishingAssignmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -388,6 +390,7 @@ export type FinishingAssignmentUpdateInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
@@ -429,7 +432,6 @@ export type FinishingAssignmentCreateManyInput = {
 
 export type FinishingAssignmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,6 +468,11 @@ export type FinishingAssignmentListRelationFilter = {
 
 export type FinishingAssignmentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type FinishingAssignmentNullableScalarRelationFilter = {
+  is?: Prisma.FinishingAssignmentWhereInput | null
+  isNot?: Prisma.FinishingAssignmentWhereInput | null
 }
 
 export type FinishingAssignmentCountOrderByAggregateInput = {
@@ -559,6 +566,38 @@ export type FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput =
   update?: Prisma.FinishingAssignmentUpdateWithWhereUniqueWithoutAssignedByInput | Prisma.FinishingAssignmentUpdateWithWhereUniqueWithoutAssignedByInput[]
   updateMany?: Prisma.FinishingAssignmentUpdateManyWithWhereWithoutAssignedByInput | Prisma.FinishingAssignmentUpdateManyWithWhereWithoutAssignedByInput[]
   deleteMany?: Prisma.FinishingAssignmentScalarWhereInput | Prisma.FinishingAssignmentScalarWhereInput[]
+}
+
+export type FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput = {
+  create?: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+  connectOrCreate?: Prisma.FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput
+  connect?: Prisma.FinishingAssignmentWhereUniqueInput
+}
+
+export type FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput = {
+  create?: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+  connectOrCreate?: Prisma.FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput
+  connect?: Prisma.FinishingAssignmentWhereUniqueInput
+}
+
+export type FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput = {
+  create?: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+  connectOrCreate?: Prisma.FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput
+  upsert?: Prisma.FinishingAssignmentUpsertWithoutBatchSareeRowInput
+  disconnect?: Prisma.FinishingAssignmentWhereInput | boolean
+  delete?: Prisma.FinishingAssignmentWhereInput | boolean
+  connect?: Prisma.FinishingAssignmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FinishingAssignmentUpdateToOneWithWhereWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUpdateWithoutBatchSareeRowInput>, Prisma.FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput>
+}
+
+export type FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput = {
+  create?: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+  connectOrCreate?: Prisma.FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput
+  upsert?: Prisma.FinishingAssignmentUpsertWithoutBatchSareeRowInput
+  disconnect?: Prisma.FinishingAssignmentWhereInput | boolean
+  delete?: Prisma.FinishingAssignmentWhereInput | boolean
+  connect?: Prisma.FinishingAssignmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FinishingAssignmentUpdateToOneWithWhereWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUpdateWithoutBatchSareeRowInput>, Prisma.FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput>
 }
 
 export type FinishingAssignmentCreateNestedManyWithoutFinishingStaffInput = {
@@ -659,7 +698,6 @@ export type FinishingAssignmentUncheckedUpdateManyWithoutQuotationNestedInput = 
 
 export type FinishingAssignmentCreateWithoutAssignedByInput = {
   id?: string
-  sareeId: string
   designCode?: string | null
   sareeType?: string | null
   assignedDate?: Date | string
@@ -669,6 +707,7 @@ export type FinishingAssignmentCreateWithoutAssignedByInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
 }
@@ -735,9 +774,8 @@ export type FinishingAssignmentScalarWhereInput = {
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
 }
 
-export type FinishingAssignmentCreateWithoutFinishingStaffInput = {
+export type FinishingAssignmentCreateWithoutBatchSareeRowInput = {
   id?: string
-  sareeId: string
   designCode?: string | null
   sareeType?: string | null
   assignedDate?: Date | string
@@ -747,6 +785,87 @@ export type FinishingAssignmentCreateWithoutFinishingStaffInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
+  assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
+  quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
+}
+
+export type FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput = {
+  id?: string
+  designCode?: string | null
+  sareeType?: string | null
+  finishingStaffId: string
+  assignedById: string
+  assignedDate?: Date | string
+  status?: $Enums.FinishingAssignmentStatus
+  condition?: $Enums.FinishingCondition | null
+  damageType?: string | null
+  damageSeverity?: $Enums.DamageSeverity | null
+  damageNotes?: string | null
+  damagePhotoUrl?: string | null
+  quotationRef?: string | null
+}
+
+export type FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput = {
+  where: Prisma.FinishingAssignmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+}
+
+export type FinishingAssignmentUpsertWithoutBatchSareeRowInput = {
+  update: Prisma.XOR<Prisma.FinishingAssignmentUpdateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput>
+  create: Prisma.XOR<Prisma.FinishingAssignmentCreateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput>
+  where?: Prisma.FinishingAssignmentWhereInput
+}
+
+export type FinishingAssignmentUpdateToOneWithWhereWithoutBatchSareeRowInput = {
+  where?: Prisma.FinishingAssignmentWhereInput
+  data: Prisma.XOR<Prisma.FinishingAssignmentUpdateWithoutBatchSareeRowInput, Prisma.FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput>
+}
+
+export type FinishingAssignmentUpdateWithoutBatchSareeRowInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumFinishingAssignmentStatusFieldUpdateOperationsInput | $Enums.FinishingAssignmentStatus
+  condition?: Prisma.NullableEnumFinishingConditionFieldUpdateOperationsInput | $Enums.FinishingCondition | null
+  damageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
+  damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
+  assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
+  quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
+}
+
+export type FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  finishingStaffId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedById?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumFinishingAssignmentStatusFieldUpdateOperationsInput | $Enums.FinishingAssignmentStatus
+  condition?: Prisma.NullableEnumFinishingConditionFieldUpdateOperationsInput | $Enums.FinishingCondition | null
+  damageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
+  damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type FinishingAssignmentCreateWithoutFinishingStaffInput = {
+  id?: string
+  designCode?: string | null
+  sareeType?: string | null
+  assignedDate?: Date | string
+  status?: $Enums.FinishingAssignmentStatus
+  condition?: $Enums.FinishingCondition | null
+  damageType?: string | null
+  damageSeverity?: $Enums.DamageSeverity | null
+  damageNotes?: string | null
+  damagePhotoUrl?: string | null
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
 }
@@ -795,7 +914,6 @@ export type FinishingAssignmentUpdateManyWithWhereWithoutFinishingStaffInput = {
 
 export type FinishingAssignmentCreateWithoutQuotationInput = {
   id?: string
-  sareeId: string
   designCode?: string | null
   sareeType?: string | null
   assignedDate?: Date | string
@@ -805,6 +923,7 @@ export type FinishingAssignmentCreateWithoutQuotationInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
 }
@@ -869,7 +988,6 @@ export type FinishingAssignmentCreateManyAssignedByInput = {
 
 export type FinishingAssignmentUpdateWithoutAssignedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -879,6 +997,7 @@ export type FinishingAssignmentUpdateWithoutAssignedByInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
 }
@@ -933,7 +1052,6 @@ export type FinishingAssignmentCreateManyFinishingStaffInput = {
 
 export type FinishingAssignmentUpdateWithoutFinishingStaffInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -943,6 +1061,7 @@ export type FinishingAssignmentUpdateWithoutFinishingStaffInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
 }
@@ -997,7 +1116,6 @@ export type FinishingAssignmentCreateManyQuotationInput = {
 
 export type FinishingAssignmentUpdateWithoutQuotationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sareeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1007,6 +1125,7 @@ export type FinishingAssignmentUpdateWithoutQuotationInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
 }
@@ -1060,6 +1179,7 @@ export type FinishingAssignmentSelect<ExtArgs extends runtime.Types.Extensions.I
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
@@ -1080,6 +1200,7 @@ export type FinishingAssignmentSelectCreateManyAndReturn<ExtArgs extends runtime
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
@@ -1100,6 +1221,7 @@ export type FinishingAssignmentSelectUpdateManyAndReturn<ExtArgs extends runtime
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
@@ -1124,16 +1246,19 @@ export type FinishingAssignmentSelectScalar = {
 
 export type FinishingAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sareeId" | "designCode" | "sareeType" | "finishingStaffId" | "assignedById" | "assignedDate" | "status" | "condition" | "damageType" | "damageSeverity" | "damageNotes" | "damagePhotoUrl" | "quotationRef", ExtArgs["result"]["finishingAssignment"]>
 export type FinishingAssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
 }
 export type FinishingAssignmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
 }
 export type FinishingAssignmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   quotation?: boolean | Prisma.FinishingAssignment$quotationArgs<ExtArgs>
@@ -1142,6 +1267,7 @@ export type FinishingAssignmentIncludeUpdateManyAndReturn<ExtArgs extends runtim
 export type $FinishingAssignmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "FinishingAssignment"
   objects: {
+    batchSareeRow: Prisma.$BatchSareeRowPayload<ExtArgs>
     finishingStaff: Prisma.$FinishingStaffPayload<ExtArgs>
     assignedBy: Prisma.$UserPayload<ExtArgs>
     quotation: Prisma.$QuotationPayload<ExtArgs> | null
@@ -1555,6 +1681,7 @@ readonly fields: FinishingAssignmentFieldRefs;
  */
 export interface Prisma__FinishingAssignmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  batchSareeRow<T extends Prisma.BatchSareeRowDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRowDefaultArgs<ExtArgs>>): Prisma.Prisma__BatchSareeRowClient<runtime.Types.Result.GetResult<Prisma.$BatchSareeRowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   finishingStaff<T extends Prisma.FinishingStaffDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinishingStaffDefaultArgs<ExtArgs>>): Prisma.Prisma__FinishingStaffClient<runtime.Types.Result.GetResult<Prisma.$FinishingStaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   quotation<T extends Prisma.FinishingAssignment$quotationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinishingAssignment$quotationArgs<ExtArgs>>): Prisma.Prisma__QuotationClient<runtime.Types.Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>

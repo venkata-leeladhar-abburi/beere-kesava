@@ -531,11 +531,6 @@ export type SareeTypeRateSumOrderByAggregateInput = {
   jariWeightG?: Prisma.SortOrder
 }
 
-export type SareeTypeRateScalarRelationFilter = {
-  is?: Prisma.SareeTypeRateWhereInput
-  isNot?: Prisma.SareeTypeRateWhereInput
-}
-
 export type SareeTypeRateNullableScalarRelationFilter = {
   is?: Prisma.SareeTypeRateWhereInput | null
   isNot?: Prisma.SareeTypeRateWhereInput | null
@@ -555,10 +550,12 @@ export type SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput = {
   connect?: Prisma.SareeTypeRateWhereUniqueInput
 }
 
-export type SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput = {
+export type SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput = {
   create?: Prisma.XOR<Prisma.SareeTypeRateCreateWithoutBatchSareeRowsInput, Prisma.SareeTypeRateUncheckedCreateWithoutBatchSareeRowsInput>
   connectOrCreate?: Prisma.SareeTypeRateCreateOrConnectWithoutBatchSareeRowsInput
   upsert?: Prisma.SareeTypeRateUpsertWithoutBatchSareeRowsInput
+  disconnect?: Prisma.SareeTypeRateWhereInput | boolean
+  delete?: Prisma.SareeTypeRateWhereInput | boolean
   connect?: Prisma.SareeTypeRateWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SareeTypeRateUpdateToOneWithWhereWithoutBatchSareeRowsInput, Prisma.SareeTypeRateUpdateWithoutBatchSareeRowsInput>, Prisma.SareeTypeRateUncheckedUpdateWithoutBatchSareeRowsInput>
 }

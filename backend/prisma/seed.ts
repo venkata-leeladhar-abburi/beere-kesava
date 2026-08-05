@@ -145,6 +145,7 @@ const FIRMS = [
     firmName: "Surat Zari Works",
     gstNumber: "24ABCDE1234F1Z5",
     address: "Plot 42, GIDC Industrial Area, Katargam, Surat, Gujarat – 395004",
+    purchaseAmount: 1920000,
     accountNumber: "001234567890",
     ifscCode: "SBIN0001234",
     bankName: "State Bank of India",
@@ -155,6 +156,7 @@ const FIRMS = [
     firmName: "Kanchipuram Silks",
     gstNumber: "33FGHIJ5678K2L6",
     address: "No. 7, Silk Weavers Street, Kanchipuram, Tamil Nadu – 631501",
+    purchaseAmount: 3750000,
     accountNumber: "009876543210",
     ifscCode: "HDFC0002345",
     bankName: "HDFC Bank",
@@ -165,6 +167,7 @@ const FIRMS = [
     firmName: "Sri Venkateswara Textiles",
     gstNumber: "37KLMNO9012P3Q7",
     address: "D.No. 18-2-45, MG Road, Ongole, Andhra Pradesh – 523001",
+    purchaseAmount: 2800000,
     accountNumber: "001122334455",
     ifscCode: "ANDB0003456",
     bankName: "Andhra Bank",
@@ -175,6 +178,7 @@ const FIRMS = [
     firmName: "Lakshmi Silk Traders",
     gstNumber: "29PQRST3456U4V8",
     address: "Shop 5, Silk Market, Commercial Street, Bengaluru, Karnataka – 560001",
+    purchaseAmount: 1540000,
     accountNumber: "005544332211",
     ifscCode: "ICIC0004567",
     bankName: "ICICI Bank",
@@ -185,12 +189,46 @@ const FIRMS = [
     firmName: "AK Traders",
     gstNumber: null,
     address: "Hyderabad, Telangana – 500001",
+    purchaseAmount: 860000,
     accountNumber: null,
     ifscCode: null,
     bankName: null,
     contactPersonName: "Anwar Khan",
     contactPersonPhone: "9700112233",
   },
+];
+
+// Copied verbatim from the frontend's FirmsContext.tsx INITIAL_FINANCIALS mock.
+// "Misc Income"/"Misc Expense" categories encode the frontend's MiscEntry.type
+// on the wire, since the backend's FirmFinancialEntry only has kind INCOME/EXPENSE/MISC.
+const FIRM_FINANCIAL_ENTRIES: {
+  firmName: string;
+  kind: "INCOME" | "EXPENSE" | "MISC";
+  category: string;
+  description: string;
+  amount: number;
+  date: string;
+  notes?: string;
+}[] = [
+  { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale order — Mysore Crepe batch", amount: 420000, date: "2026-06-10" },
+  { firmName: "Surat Zari Works", kind: "INCOME", category: "Retail Sale", description: "Retail walk-in — Heavy Zari collection", amount: 85000, date: "2026-06-18" },
+  { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Kanjivaram special order", amount: 310000, date: "2026-06-25" },
+  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payment — Padma Veni (June)", amount: 95000, date: "2026-06-05" },
+  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Material Purchase", description: "Raw silk purchase — Bangalore supplier", amount: 215000, date: "2026-06-12" },
+  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Factory Maintenance", description: "Factory electricity & maintenance", amount: 18000, date: "2026-06-20" },
+  { firmName: "Surat Zari Works", kind: "MISC", category: "Misc Expense", description: "Festival bonus to staff", amount: 25000, date: "2026-06-15", notes: "Eid bonus — 5 staff members" },
+
+  { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale dispatch — Kanchipuram bundle", amount: 780000, date: "2026-06-08" },
+  { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Retail Sale", description: "Retail silk sale — premium segment", amount: 120000, date: "2026-06-22" },
+  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Material Purchase", description: "Zari thread bulk purchase", amount: 340000, date: "2026-06-03" },
+  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Salaries", description: "Staff salaries — June", amount: 180000, date: "2026-06-01" },
+  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Shop Maintenance", description: "Shop air-conditioning repair", amount: 22000, date: "2026-06-14" },
+
+  { firmName: "Sri Venkateswara Textiles", kind: "INCOME", category: "Wholesale Sale", description: "Gadwal Cotton wholesale", amount: 290000, date: "2026-06-12" },
+  { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payments — June batch", amount: 145000, date: "2026-06-04" },
+  { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Material Purchase", description: "Cotton yarn purchase", amount: 98000, date: "2026-06-09" },
+  { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Expense", description: "Exhibition participation fee", amount: 15000, date: "2026-06-18", notes: "Handloom expo Hyderabad" },
+  { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Income", description: "Commission from referral", amount: 8500, date: "2026-06-20", notes: "Referral fee from Suresh Traders" },
 ];
 
 // Copied verbatim from frontend/src/features/pricing/components/rates-pricing/sareeTypeData.ts (INITIAL_RATES).
@@ -257,6 +295,65 @@ const SAREE_TYPE_RATES = [
   },
 ];
 
+// Copied verbatim from frontend/src/features/production/data/factoryLooms.ts (INITIAL_LOOMS).
+const FACTORY_LOOMS = [
+  {
+    loomNumber: "Loom F-01",
+    location: "Factory Floor A",
+    operatorName: "Srinivas Kumar",
+    operatorPhone: "98765 11001",
+    status: "ACTIVE" as const,
+    installedYear: 2018,
+    notes: "Main production loom for premium sarees",
+  },
+  {
+    loomNumber: "Loom F-02",
+    location: "Factory Floor A",
+    operatorName: "Mahesh Reddy",
+    operatorPhone: "87654 22002",
+    status: "ACTIVE" as const,
+    installedYear: 2020,
+    notes: "Dobby specialised for border patterns",
+  },
+  {
+    loomNumber: "Loom F-03",
+    location: "Factory Floor B",
+    operatorName: "Ramesh Naidu",
+    operatorPhone: "76543 33003",
+    status: "IDLE" as const,
+    installedYear: 2019,
+    notes: "Currently awaiting new batch assignment",
+  },
+  {
+    loomNumber: "Loom F-04",
+    location: "Factory Floor B",
+    operatorName: "Suresh Babu",
+    operatorPhone: "65432 44004",
+    status: "MAINTENANCE" as const,
+    installedYear: 2015,
+    notes: "Scheduled maintenance — resume in 3 days",
+  },
+  {
+    loomNumber: "Loom F-05",
+    location: "Factory Floor C",
+    operatorName: "Venkateswara Rao",
+    operatorPhone: "54321 55005",
+    status: "ACTIVE" as const,
+    installedYear: 2022,
+    notes: "New high-speed loom",
+  },
+];
+
+async function seedFactoryLooms(): Promise<void> {
+  for (const loom of FACTORY_LOOMS) {
+    await prisma.factoryLoom.upsert({
+      where: { loomNumber: loom.loomNumber },
+      update: loom,
+      create: loom,
+    });
+  }
+}
+
 async function seedPermissions(): Promise<Map<string, string>> {
   const keyToId = new Map<string, string>();
 
@@ -302,6 +399,27 @@ async function seedFirms(): Promise<void> {
   }
 }
 
+async function seedFirmFinancialEntries(): Promise<void> {
+  const existingCount = await prisma.firmFinancialEntry.count();
+  if (existingCount > 0) return; // already seeded (or real entries exist) — don't duplicate
+
+  for (const entry of FIRM_FINANCIAL_ENTRIES) {
+    const firm = await prisma.firm.findFirst({ where: { firmName: entry.firmName } });
+    if (!firm) continue;
+    await prisma.firmFinancialEntry.create({
+      data: {
+        firmId: firm.id,
+        kind: entry.kind,
+        category: entry.category,
+        description: entry.description,
+        amount: entry.amount,
+        date: new Date(entry.date),
+        notes: entry.notes,
+      },
+    });
+  }
+}
+
 async function seedSareeTypeRates(): Promise<void> {
   for (const rate of SAREE_TYPE_RATES) {
     await prisma.sareeTypeRate.upsert({
@@ -322,8 +440,14 @@ async function main(): Promise<void> {
   await seedFirms();
   console.log(`Seeded ${FIRMS.length} firms`);
 
+  await seedFirmFinancialEntries();
+  console.log(`Seeded firm financial entries`);
+
   await seedSareeTypeRates();
   console.log(`Seeded ${SAREE_TYPE_RATES.length} saree type rates`);
+
+  await seedFactoryLooms();
+  console.log(`Seeded ${FACTORY_LOOMS.length} factory looms`);
 }
 
 main()

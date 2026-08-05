@@ -302,10 +302,6 @@ export type PermissionScalarRelationFilter = {
   isNot?: Prisma.PermissionWhereInput
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
-}
-
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }

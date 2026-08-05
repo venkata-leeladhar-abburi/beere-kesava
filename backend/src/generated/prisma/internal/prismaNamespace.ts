@@ -397,6 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  IdCounter: 'IdCounter',
   Permission: 'Permission',
   RolePermission: 'RolePermission',
   UserPermissionOverride: 'UserPermissionOverride',
@@ -451,10 +452,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "auditLog" | "notification"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "auditLog" | "notification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    IdCounter: {
+      payload: Prisma.$IdCounterPayload<ExtArgs>
+      fields: Prisma.IdCounterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IdCounterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IdCounterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        findFirst: {
+          args: Prisma.IdCounterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IdCounterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        findMany: {
+          args: Prisma.IdCounterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>[]
+        }
+        create: {
+          args: Prisma.IdCounterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        createMany: {
+          args: Prisma.IdCounterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IdCounterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>[]
+        }
+        delete: {
+          args: Prisma.IdCounterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        update: {
+          args: Prisma.IdCounterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        deleteMany: {
+          args: Prisma.IdCounterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IdCounterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IdCounterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>[]
+        }
+        upsert: {
+          args: Prisma.IdCounterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdCounterPayload>
+        }
+        aggregate: {
+          args: Prisma.IdCounterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIdCounter>
+        }
+        groupBy: {
+          args: Prisma.IdCounterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IdCounterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IdCounterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IdCounterCountAggregateOutputType> | number
+        }
+      }
+    }
     Permission: {
       payload: Prisma.$PermissionPayload<ExtArgs>
       fields: Prisma.PermissionFieldRefs
@@ -3380,6 +3455,14 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const IdCounterScalarFieldEnum = {
+  prefix: 'prefix',
+  value: 'value'
+} as const
+
+export type IdCounterScalarFieldEnum = (typeof IdCounterScalarFieldEnum)[keyof typeof IdCounterScalarFieldEnum]
+
+
 export const PermissionScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -3710,7 +3793,10 @@ export const DispatchRecordScalarFieldEnum = {
   firmId: 'firmId',
   paymentDueDate: 'paymentDueDate',
   bulkOrderRef: 'bulkOrderRef',
-  quotationRef: 'quotationRef'
+  quotationRef: 'quotationRef',
+  pendingTransport: 'pendingTransport',
+  pendingReceipt: 'pendingReceipt',
+  notes: 'notes'
 } as const
 
 export type DispatchRecordScalarFieldEnum = (typeof DispatchRecordScalarFieldEnum)[keyof typeof DispatchRecordScalarFieldEnum]
@@ -3880,6 +3966,7 @@ export const FirmScalarFieldEnum = {
   firmName: 'firmName',
   gstNumber: 'gstNumber',
   address: 'address',
+  purchaseAmount: 'purchaseAmount',
   accountNumber: 'accountNumber',
   ifscCode: 'ifscCode',
   bankName: 'bankName',
@@ -4065,6 +4152,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -4124,20 +4225,6 @@ export type EnumActiveStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'ActiveStatus[]'
  */
 export type ListEnumActiveStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ActiveStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -4781,6 +4868,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  idCounter?: Prisma.IdCounterOmit
   permission?: Prisma.PermissionOmit
   rolePermission?: Prisma.RolePermissionOmit
   userPermissionOverride?: Prisma.UserPermissionOverrideOmit

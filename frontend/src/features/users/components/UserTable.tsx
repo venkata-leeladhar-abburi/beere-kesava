@@ -20,9 +20,7 @@ interface UserTableProps {
   filtered: TableRow[];
   totalPages: number;
   ROWS_PER_PAGE: number;
-  customUsers: TableRow[];
-  setCustomUsers: React.Dispatch<React.SetStateAction<TableRow[]>>;
-  toggleStatus: (id: string) => void;
+  onToggleStatus: (row: TableRow) => void;
   setEditingMember: (m: FinishingStaffMember | null) => void;
   setViewingMember: (m: FinishingStaffMember | null) => void;
   cardStyle: React.CSSProperties;
@@ -32,7 +30,7 @@ interface UserTableProps {
 export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
-  totalPages, ROWS_PER_PAGE, customUsers, setCustomUsers, toggleStatus,
+  totalPages, ROWS_PER_PAGE, onToggleStatus,
   setEditingMember, setViewingMember, cardStyle, inputStyle
 }: UserTableProps) {
   return (
@@ -125,12 +123,7 @@ export function UserTable({
                   <Edit2 size={11} color={T.royalBurgundy} /> Edit
                 </button>
                 <button
-                  onClick={() => {
-                    if (fm) { toggleStatus(fm.id); return; }
-                    if (customUsers.some(c => c.empId === u.empId)) {
-                      setCustomUsers(prev => prev.map(c => c.empId === u.empId ? { ...c, status: c.status === "Active" ? "Inactive" : "Active" } : c));
-                    }
-                  }}
+                  onClick={() => onToggleStatus(u)}
                   style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.crimson, cursor: "pointer" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = T.crimsonBg; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}

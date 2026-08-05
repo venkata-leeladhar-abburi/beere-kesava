@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Search, ChevronDown, UserPlus, CheckCircle2, Edit2,
@@ -13,12 +13,33 @@ import {
   ROLE_TO_PORTAL, ROLE_COLORS, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
   FieldFocus, FieldBlur,
 } from "./theme";
-import { nextEmployeeId, todayFormatted, TableRow, STATIC_USERS } from "./utils";
+import { formatBackendDate, TableRow } from "./utils";
 import { SectionTitle, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
 import { UserTable } from "./UserTable";
 import { AddUserForm } from "./AddUserForm";
+import { ApiError } from "../../../shared/api/client";
+import {
+  BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
+  backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
+} from "../../../shared/api/users";
+
+function backendUserToTableRow(u: BackendUser): TableRow {
+  const frontendRole = BACKEND_TO_FRONTEND_ROLE[u.role];
+  return {
+    empId: u.empId,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    role: frontendRole,
+    mobile: u.mobile,
+    portal: ROLE_TO_PORTAL[frontendRole] ?? "",
+    dateAdded: formatBackendDate(u.dateAdded),
+    status: u.status === "ACTIVE" ? "Active" : "Inactive",
+    accessLevel: frontendRole === "Admin" ? backendAccessLevelToFrontend(u.accessLevel) : undefined,
+    backendId: u.id,
+  };
+}
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
   "Admin": Shield,
@@ -43,9 +64,31 @@ export function AddUserPage() {
   const [notes,          setNotes]          = useState("");
   const [showSuccess,    setShowSuccess]    = useState(false);
   const [createdUser,    setCreatedUser]    = useState<{ name: string; role: string; mobile: string; empId: string; accessLevel?: AccessLevel } | null>(null);
-  // Non-finishing users created here (Admin / Worker / Weaver / Shop Staff) —
-  // finishing staff persist through FinishingStaffContext instead.
-  const [customUsers,    setCustomUsers]    = useState<TableRow[]>([]);
+  const [submitError,    setSubmitError]    = useState<string | null>(null);
+  const [submitting,     setSubmitting]     = useState(false);
+
+  // Users fetched from the real backend (Admin / Worker Staff / Weaver / Shop
+  // Staff / Accountant). Finishing Staff has no backend User equivalent — it
+  // stays on FinishingStaffContext, its own domain (see backend architecture
+  // doc §4: finishing_staff is a separate table from users).
+  const [backendUsers,   setBackendUsers]   = useState<TableRow[]>([]);
+  const [loadError,      setLoadError]      = useState<string | null>(null);
+  const [loading,        setLoading]        = useState(true);
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await usersApi.list();
+      setBackendUsers(res.items.map(backendUserToTableRow));
+    } catch (err) {
+      setLoadError(err instanceof ApiError ? err.message : "Could not reach the server.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadUsers(); }, [loadUsers]);
 
   // ── Table state ─────────────────────────────────────────────────────────
   const [searchQ,        setSearchQ]        = useState("");
@@ -64,38 +107,62 @@ export function AddUserPage() {
   const canSubmit = firstName.trim() && lastName.trim() && mobile.trim() && role;
 
   // ── Build unified table rows ─────────────────────────────────────────────
-  // Static non-finishing rows + locally-created non-finishing rows + finishing
-  // staff from the shared context.
+  // Backend-sourced users + finishing staff from the shared context.
   const allRows: TableRow[] = useMemo(() => [
-    ...STATIC_USERS.map(u => ({ ...u })),
-    ...customUsers,
+    ...backendUsers,
     ...members.map(m => ({
       empId: m.empId, firstName: m.firstName, lastName: m.lastName,
       role: "Finishing Staff", mobile: m.mobile,
       portal: "Finishing Staff (No Portal)", dateAdded: m.dateAdded,
       status: m.status, finishingMember: m,
     })),
-  ], [members, customUsers]);
+  ], [members, backendUsers]);
 
-  // The Employee ID field is never typed — it's always one past the highest
-  // EMP-### seen across every existing user record.
-  const autoEmpId = useMemo(() => nextEmployeeId(allRows.map(u => u.empId)), [allRows]);
+  // Finishing Staff IDs aren't backend-generated (no User row exists for
+  // them), so keep a lightweight local next-id fallback for that path only.
+  const nextFinishingEmpId = useMemo(() => {
+    const maxNum = allRows.reduce((max, u) => {
+      const m = u.empId.match(/(\d+)\s*$/);
+      return m ? Math.max(max, parseInt(m[1], 10)) : max;
+    }, 0);
+    return `EMP-${String(maxNum + 1).padStart(3, "0")}`;
+  }, [allRows]);
 
-  function handleSubmit() {
-    if (!canSubmit) return;
-    const empId = autoEmpId;
+  async function handleSubmit() {
+    if (!canSubmit || submitting) return;
+    setSubmitError(null);
+
     if (isFinishing) {
+      const empId = nextFinishingEmpId;
       addMember({ empId, firstName, lastName, mobile, email, specialisation, notes, status: "Active" });
-    } else {
-      setCustomUsers(prev => [...prev, {
-        empId, firstName, lastName, role, mobile,
-        portal: ROLE_TO_PORTAL[role] ?? "", dateAdded: todayFormatted(), status: "Active",
-        ...(isAdmin ? { accessLevel } : {}),
-      }]);
+      setCreatedUser({ name: `${firstName} ${lastName}`, role, mobile, empId });
+      setShowSuccess(true);
+      resetForm();
+      return;
     }
-    setCreatedUser({ name: `${firstName} ${lastName}`, role, mobile, empId, accessLevel: isAdmin ? accessLevel : undefined });
-    setShowSuccess(true);
-    resetForm();
+
+    setSubmitting(true);
+    try {
+      const created = await usersApi.create({
+        firstName,
+        lastName,
+        mobile,
+        email: email.trim() || undefined,
+        role: FRONTEND_TO_BACKEND_ROLE[role],
+        accessLevel: isAdmin ? frontendAccessLevelToBackend(accessLevel) : undefined,
+      });
+      setBackendUsers(prev => [backendUserToTableRow(created), ...prev]);
+      setCreatedUser({
+        name: `${firstName} ${lastName}`, role, mobile, empId: created.empId,
+        accessLevel: isAdmin ? accessLevel : undefined,
+      });
+      setShowSuccess(true);
+      resetForm();
+    } catch (err) {
+      setSubmitError(err instanceof ApiError ? err.message : "Could not create the user. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function resetForm() {
@@ -103,7 +170,23 @@ export function AddUserPage() {
     setRole(""); setAccessLevel("Full Access"); setSpecialisation(""); setNotes("");
   }
 
-  function handleCancel() { resetForm(); setShowSuccess(false); }
+  function handleCancel() { resetForm(); setShowSuccess(false); setSubmitError(null); }
+
+  async function handleToggleStatus(row: TableRow) {
+    if (row.finishingMember) {
+      toggleStatus(row.finishingMember.id);
+      return;
+    }
+    if (!row.backendId) return;
+    const nextStatus = row.status === "Active" ? "INACTIVE" : "ACTIVE";
+    try {
+      const updated = await usersApi.updateStatus(row.backendId, nextStatus);
+      setBackendUsers(prev => prev.map(u => (u.backendId === row.backendId ? backendUserToTableRow(updated) : u)));
+    } catch {
+      // Non-fatal — the row simply won't reflect the change; a toast/error
+      // banner here would be the next improvement once a notification system exists.
+    }
+  }
 
   const filtered = useMemo(() => allRows.filter(u => {
     const q = searchQ.toLowerCase();
@@ -241,6 +324,11 @@ export function AddUserPage() {
           transition={{ duration: 0.5, delay: 0.18, ease: EASE }}
           style={{ marginBottom: 40 }}
         >
+          {submitError && (
+            <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+              {submitError}
+            </div>
+          )}
           <AddUserForm
             showSuccess={showSuccess}
             setShowSuccess={setShowSuccess}
@@ -258,18 +346,28 @@ export function AddUserPage() {
             role={role}
             setRole={setRole}
             portal={portal}
-            autoEmpId={autoEmpId}
+            autoEmpId={isFinishing ? nextFinishingEmpId : "Assigned automatically on save"}
             accessLevel={accessLevel}
             setAccessLevel={setAccessLevel}
             specialisation={specialisation}
             setSpecialisation={setSpecialisation}
             notes={notes}
             setNotes={setNotes}
-            canSubmit={Boolean(canSubmit)}
+            canSubmit={Boolean(canSubmit) && !submitting}
             handleSubmit={handleSubmit}
             handleCancel={handleCancel}
           />
         </motion.div>
+
+        {loadError && (
+          <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>Could not load users from the server: {loadError}</span>
+            <button onClick={() => void loadUsers()} style={{ background: "transparent", border: `1px solid ${T.crimson}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, cursor: "pointer" }}>Retry</button>
+          </div>
+        )}
+        {loading && !loadError && (
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>Loading users…</div>
+        )}
 
         {/* ── ALL USERS TABLE ──────────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26, ease: EASE }}>
@@ -287,9 +385,7 @@ export function AddUserPage() {
             filtered={filtered}
             totalPages={totalPages}
             ROWS_PER_PAGE={ROWS_PER_PAGE}
-            customUsers={customUsers}
-            setCustomUsers={setCustomUsers}
-            toggleStatus={toggleStatus}
+            onToggleStatus={row => void handleToggleStatus(row)}
             setEditingMember={setEditingMember}
             setViewingMember={setViewingMember}
             cardStyle={cardStyle}

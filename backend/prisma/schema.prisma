@@ -226,6 +226,16 @@ enum NotificationTargetType {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// ID generation — DB-side counters so business IDs (EMP-NNN, PO-2026-NNN, ...)
+// never collide, per Backend_Architecture_Design.pdf §6.1.
+// ─────────────────────────────────────────────────────────────────────────
+
+model IdCounter {
+  prefix String @id // e.g. "EMP", "PO-2026", "ORD-2026", "MIR-2026"
+  value  Int    @default(0)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // RBAC
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -414,22 +424,26 @@ model BatchSareeRow {
   batchId       String
   batch         Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
   serial        Int
-  sareeId       String?       @unique
-  recipientType RecipientType
+  sareeId       String?        @unique
+  // Nullable: a batch is created with N empty slots up front and each row is
+  // assigned a recipient/design/type afterward (see architecture doc — rows
+  // exist unassigned in draft batches until dispatched to a weaver/loom).
+  recipientType RecipientType?
   weaverId      String?
-  weaver        Weaver?       @relation(fields: [weaverId], references: [id])
+  weaver        Weaver?        @relation(fields: [weaverId], references: [id])
   factoryLoomId String?
-  factoryLoom   FactoryLoom?  @relation(fields: [factoryLoomId], references: [id])
-  designCode    String
-  design        DesignLibrary @relation(fields: [designCode], references: [code])
-  sareeTypeCode String
-  sareeType     SareeTypeRate @relation(fields: [sareeTypeCode], references: [code])
+  factoryLoom   FactoryLoom?   @relation(fields: [factoryLoomId], references: [id])
+  designCode    String?
+  design        DesignLibrary? @relation(fields: [designCode], references: [code])
+  sareeTypeCode String?
+  sareeType     SareeTypeRate? @relation(fields: [sareeTypeCode], references: [code])
   bulkOrderRef  String?
-  bulkOrder     BulkOrder?    @relation(fields: [bulkOrderRef], references: [ref])
+  bulkOrder     BulkOrder?     @relation(fields: [bulkOrderRef], references: [ref])
   qcPassed      Boolean?
   createdAt     DateTime      @default(now())
 
-  qcRecord QcRecord?
+  qcRecord             QcRecord?
+  finishingAssignment  FinishingAssignment?
 
   @@unique([batchId, serial])
   @@index([weaverId])
@@ -531,7 +545,8 @@ model FinishingStaff {
 
 model FinishingAssignment {
   id               String                    @id @default(uuid())
-  sareeId          String
+  sareeId          String                    @unique
+  batchSareeRow    BatchSareeRow             @relation(fields: [sareeId], references: [sareeId])
   designCode       String?
   sareeType        String?
   finishingStaffId String
@@ -651,6 +666,11 @@ model DispatchRecord {
   bulkOrderRef     String?
   bulkOrder        BulkOrder?   @relation(fields: [bulkOrderRef], references: [ref])
   quotationRef     String?
+  // "Skip transport/invoicing details for now, dispatch anyway, fill them in
+  // later" — matches the frontend's ResumeDispatchModal / DispatchDetailsModal flow.
+  pendingTransport Boolean      @default(false)
+  pendingReceipt   Boolean      @default(false)
+  notes            String?
 
   sarees DispatchSaree[]
 
@@ -847,6 +867,7 @@ model Firm {
   firmName           String
   gstNumber          String?
   address            String?
+  purchaseAmount     Decimal? @db.Decimal(14, 2)
   accountNumber      String?
   ifscCode           String?
   bankName           String?

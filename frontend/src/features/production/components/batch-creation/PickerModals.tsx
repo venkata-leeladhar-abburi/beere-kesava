@@ -5,9 +5,19 @@ import {
 } from "@phosphor-icons/react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { FACTORY_LOOMS_LIST } from "../../data/factoryLooms";
-import { T, F, WEAVERS, SAREE_TYPES_BRIEF, fld, lbl } from "./constants";
+import { T, F, SAREE_TYPES_BRIEF, fld, lbl } from "./constants";
 import { Pip } from "./constants";
+import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
+
+// Deterministic pip colour from a stable palette, keyed by id, so real
+// weavers (fetched from the backend) still get a consistent avatar colour
+// without needing a "bg" field the backend doesn't have.
+const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#8B7060", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
+export function pipColor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return PIP_PALETTE[hash % PIP_PALETTE.length];
+}
 
 // ─── Generic picker shell ──────────────────────────────────────────────────────
 export function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
@@ -28,24 +38,24 @@ export function PickerShell({ title, onClose, children, width = 480 }: { title: 
 }
 
 // ── Weaver Picker ─────────────────────────────────────────────────────────────
-export function WeaverPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (w: typeof WEAVERS[0]) => void }) {
+export function WeaverPickerModal({ weavers, onClose, onSelect }: { weavers: WeaverOption[]; onClose: () => void; onSelect: (w: WeaverOption) => void }) {
   const [sel, setSel] = useState<string | null>(null);
   return (
     <PickerShell title="Assign Weaver" onClose={onClose}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px" }}>
-        {WEAVERS.map(w => (
+        {weavers.map(w => (
           <button key={w.id} onClick={() => setSel(w.id)}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", border: `2px solid ${sel === w.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === w.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
-            <Pip initials={w.initials} bg={w.bg} size={34} />
+            <Pip initials={w.initials} bg={pipColor(w.id)} size={34} />
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{w.id} · L{w.loom}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{w.looms} loom{w.looms !== 1 ? "s" : ""}</div>
             </div>
           </button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const w = WEAVERS.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
+        <motion.button onClick={() => { const w = weavers.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
           whileHover={sel ? { scale: 1.02 } : undefined}
           style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
           Assign Weaver
@@ -249,14 +259,14 @@ export function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => voi
 
 // ── Per-weaver Loom Picker (capped to that weaver's own loom count) ──────────
 export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
-  weaver: typeof WEAVERS[0]; current: number | null; onClose: () => void; onSelect: (loomNum: number) => void;
+  weaver: WeaverOption; current: number | null; onClose: () => void; onSelect: (loomNum: number) => void;
 }) {
   const [sel, setSel] = useState<number | null>(current);
-  const LOOMS = Array.from({ length: weaver.loom }, (_, i) => i + 1);
+  const LOOMS = Array.from({ length: weaver.looms }, (_, i) => i + 1);
   return (
     <PickerShell title={`Select Loom for ${weaver.name}`} onClose={onClose} width={400}>
       <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
-        {weaver.name} operates {weaver.loom} loom{weaver.loom !== 1 ? "s" : ""}.
+        {weaver.name} operates {weaver.looms} loom{weaver.looms !== 1 ? "s" : ""}.
       </div>
       <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
         {LOOMS.map(loom => (
@@ -287,13 +297,13 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
 }
 
 // ── Factory Loom Picker (assigns a factory loom instead of a weaver) ─────────
-export function FactoryLoomPickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (loom: typeof FACTORY_LOOMS_LIST[0]) => void }) {
+export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: LoomOption[]; onClose: () => void; onSelect: (loom: LoomOption) => void }) {
   const [sel, setSel] = useState<string | null>(null);
-  const statusColor = (s: string) => s === "active" ? T.green : s === "maintenance" ? T.red : T.taupe;
+  const statusColor = (s: string) => s.toLowerCase() === "active" ? T.green : s.toLowerCase() === "maintenance" ? T.red : T.taupe;
   return (
     <PickerShell title="Assign Factory Loom" onClose={onClose}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 24px" }}>
-        {FACTORY_LOOMS_LIST.map(l => (
+        {looms.map(l => (
           <button key={l.id} onClick={() => setSel(l.id)}
             style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `2px solid ${sel === l.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === l.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -301,14 +311,14 @@ export function FactoryLoomPickerModal({ onClose, onSelect }: { onClose: () => v
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{l.id} · {l.location}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe }}>{l.location}</div>
             </div>
-            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status.toLowerCase()}</span>
           </button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const l = FACTORY_LOOMS_LIST.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
+        <motion.button onClick={() => { const l = looms.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
           whileHover={sel ? { scale: 1.02 } : undefined}
           style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
           Assign Factory Loom

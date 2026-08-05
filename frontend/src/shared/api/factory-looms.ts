@@ -1,0 +1,48 @@
+import { apiClient } from "./client";
+
+export type BackendLoomStatus = "ACTIVE" | "IDLE" | "MAINTENANCE";
+
+export interface BackendFactoryLoom {
+  id: string;
+  loomNumber: string;
+  location: string | null;
+  operatorName: string | null;
+  operatorPhone: string | null;
+  status: BackendLoomStatus;
+  installedYear: number | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CreateFactoryLoomPayload {
+  loomNumber: string;
+  location?: string;
+  operatorName?: string;
+  operatorPhone?: string;
+  installedYear?: number;
+  notes?: string;
+}
+
+// status is settable via update but not accepted on create (defaults to ACTIVE server-side).
+export interface UpdateFactoryLoomPayload extends Omit<CreateFactoryLoomPayload, "loomNumber"> {
+  status?: BackendLoomStatus;
+}
+
+export const factoryLoomsApi = {
+  list: (pageSize = 100) =>
+    apiClient.get<PaginatedResponse<BackendFactoryLoom>>(`/factory-looms?pageSize=${pageSize}`),
+
+  create: (payload: CreateFactoryLoomPayload) =>
+    apiClient.post<BackendFactoryLoom>("/factory-looms", payload),
+
+  update: (id: string, payload: UpdateFactoryLoomPayload) =>
+    apiClient.patch<BackendFactoryLoom>(`/factory-looms/${id}`, payload),
+};

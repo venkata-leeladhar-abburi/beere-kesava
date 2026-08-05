@@ -226,11 +226,11 @@ export type BatchSareeRowGroupByOutputType = {
   batchId: string
   serial: number
   sareeId: string | null
-  recipientType: $Enums.RecipientType
+  recipientType: $Enums.RecipientType | null
   weaverId: string | null
   factoryLoomId: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode: string | null
+  sareeTypeCode: string | null
   bulkOrderRef: string | null
   qcPassed: boolean | null
   createdAt: Date
@@ -264,21 +264,22 @@ export type BatchSareeRowWhereInput = {
   batchId?: Prisma.StringFilter<"BatchSareeRow"> | string
   serial?: Prisma.IntFilter<"BatchSareeRow"> | number
   sareeId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
-  recipientType?: Prisma.EnumRecipientTypeFilter<"BatchSareeRow"> | $Enums.RecipientType
+  recipientType?: Prisma.EnumRecipientTypeNullableFilter<"BatchSareeRow"> | $Enums.RecipientType | null
   weaverId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
-  designCode?: Prisma.StringFilter<"BatchSareeRow"> | string
-  sareeTypeCode?: Prisma.StringFilter<"BatchSareeRow"> | string
+  designCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  sareeTypeCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   qcPassed?: Prisma.BoolNullableFilter<"BatchSareeRow"> | boolean | null
   createdAt?: Prisma.DateTimeFilter<"BatchSareeRow"> | Date | string
   batch?: Prisma.XOR<Prisma.BatchScalarRelationFilter, Prisma.BatchWhereInput>
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
-  design?: Prisma.XOR<Prisma.DesignLibraryScalarRelationFilter, Prisma.DesignLibraryWhereInput>
-  sareeType?: Prisma.XOR<Prisma.SareeTypeRateScalarRelationFilter, Prisma.SareeTypeRateWhereInput>
+  design?: Prisma.XOR<Prisma.DesignLibraryNullableScalarRelationFilter, Prisma.DesignLibraryWhereInput> | null
+  sareeType?: Prisma.XOR<Prisma.SareeTypeRateNullableScalarRelationFilter, Prisma.SareeTypeRateWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
   qcRecord?: Prisma.XOR<Prisma.QcRecordNullableScalarRelationFilter, Prisma.QcRecordWhereInput> | null
+  finishingAssignment?: Prisma.XOR<Prisma.FinishingAssignmentNullableScalarRelationFilter, Prisma.FinishingAssignmentWhereInput> | null
 }
 
 export type BatchSareeRowOrderByWithRelationInput = {
@@ -286,11 +287,11 @@ export type BatchSareeRowOrderByWithRelationInput = {
   batchId?: Prisma.SortOrder
   serial?: Prisma.SortOrder
   sareeId?: Prisma.SortOrderInput | Prisma.SortOrder
-  recipientType?: Prisma.SortOrder
+  recipientType?: Prisma.SortOrderInput | Prisma.SortOrder
   weaverId?: Prisma.SortOrderInput | Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrderInput | Prisma.SortOrder
-  designCode?: Prisma.SortOrder
-  sareeTypeCode?: Prisma.SortOrder
+  designCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  sareeTypeCode?: Prisma.SortOrderInput | Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
   qcPassed?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -301,6 +302,7 @@ export type BatchSareeRowOrderByWithRelationInput = {
   sareeType?: Prisma.SareeTypeRateOrderByWithRelationInput
   bulkOrder?: Prisma.BulkOrderOrderByWithRelationInput
   qcRecord?: Prisma.QcRecordOrderByWithRelationInput
+  finishingAssignment?: Prisma.FinishingAssignmentOrderByWithRelationInput
 }
 
 export type BatchSareeRowWhereUniqueInput = Prisma.AtLeast<{
@@ -312,21 +314,22 @@ export type BatchSareeRowWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.BatchSareeRowWhereInput | Prisma.BatchSareeRowWhereInput[]
   batchId?: Prisma.StringFilter<"BatchSareeRow"> | string
   serial?: Prisma.IntFilter<"BatchSareeRow"> | number
-  recipientType?: Prisma.EnumRecipientTypeFilter<"BatchSareeRow"> | $Enums.RecipientType
+  recipientType?: Prisma.EnumRecipientTypeNullableFilter<"BatchSareeRow"> | $Enums.RecipientType | null
   weaverId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
-  designCode?: Prisma.StringFilter<"BatchSareeRow"> | string
-  sareeTypeCode?: Prisma.StringFilter<"BatchSareeRow"> | string
+  designCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  sareeTypeCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   qcPassed?: Prisma.BoolNullableFilter<"BatchSareeRow"> | boolean | null
   createdAt?: Prisma.DateTimeFilter<"BatchSareeRow"> | Date | string
   batch?: Prisma.XOR<Prisma.BatchScalarRelationFilter, Prisma.BatchWhereInput>
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
-  design?: Prisma.XOR<Prisma.DesignLibraryScalarRelationFilter, Prisma.DesignLibraryWhereInput>
-  sareeType?: Prisma.XOR<Prisma.SareeTypeRateScalarRelationFilter, Prisma.SareeTypeRateWhereInput>
+  design?: Prisma.XOR<Prisma.DesignLibraryNullableScalarRelationFilter, Prisma.DesignLibraryWhereInput> | null
+  sareeType?: Prisma.XOR<Prisma.SareeTypeRateNullableScalarRelationFilter, Prisma.SareeTypeRateWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
   qcRecord?: Prisma.XOR<Prisma.QcRecordNullableScalarRelationFilter, Prisma.QcRecordWhereInput> | null
+  finishingAssignment?: Prisma.XOR<Prisma.FinishingAssignmentNullableScalarRelationFilter, Prisma.FinishingAssignmentWhereInput> | null
 }, "id" | "sareeId" | "batchId_serial">
 
 export type BatchSareeRowOrderByWithAggregationInput = {
@@ -334,11 +337,11 @@ export type BatchSareeRowOrderByWithAggregationInput = {
   batchId?: Prisma.SortOrder
   serial?: Prisma.SortOrder
   sareeId?: Prisma.SortOrderInput | Prisma.SortOrder
-  recipientType?: Prisma.SortOrder
+  recipientType?: Prisma.SortOrderInput | Prisma.SortOrder
   weaverId?: Prisma.SortOrderInput | Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrderInput | Prisma.SortOrder
-  designCode?: Prisma.SortOrder
-  sareeTypeCode?: Prisma.SortOrder
+  designCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  sareeTypeCode?: Prisma.SortOrderInput | Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
   qcPassed?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -357,11 +360,11 @@ export type BatchSareeRowScalarWhereWithAggregatesInput = {
   batchId?: Prisma.StringWithAggregatesFilter<"BatchSareeRow"> | string
   serial?: Prisma.IntWithAggregatesFilter<"BatchSareeRow"> | number
   sareeId?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
-  recipientType?: Prisma.EnumRecipientTypeWithAggregatesFilter<"BatchSareeRow"> | $Enums.RecipientType
+  recipientType?: Prisma.EnumRecipientTypeNullableWithAggregatesFilter<"BatchSareeRow"> | $Enums.RecipientType | null
   weaverId?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
   factoryLoomId?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
-  designCode?: Prisma.StringWithAggregatesFilter<"BatchSareeRow"> | string
-  sareeTypeCode?: Prisma.StringWithAggregatesFilter<"BatchSareeRow"> | string
+  designCode?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
+  sareeTypeCode?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
   bulkOrderRef?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
   qcPassed?: Prisma.BoolNullableWithAggregatesFilter<"BatchSareeRow"> | boolean | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BatchSareeRow"> | Date | string
@@ -371,16 +374,17 @@ export type BatchSareeRowCreateInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateInput = {
@@ -388,31 +392,33 @@ export type BatchSareeRowUncheckedCreateInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateInput = {
@@ -420,15 +426,16 @@ export type BatchSareeRowUncheckedUpdateInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowCreateManyInput = {
@@ -436,11 +443,11 @@ export type BatchSareeRowCreateManyInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -450,7 +457,7 @@ export type BatchSareeRowUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,11 +467,11 @@ export type BatchSareeRowUncheckedUpdateManyInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -753,8 +760,8 @@ export type BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput = {
   deleteMany?: Prisma.BatchSareeRowScalarWhereInput | Prisma.BatchSareeRowScalarWhereInput[]
 }
 
-export type EnumRecipientTypeFieldUpdateOperationsInput = {
-  set?: $Enums.RecipientType
+export type NullableEnumRecipientTypeFieldUpdateOperationsInput = {
+  set?: $Enums.RecipientType | null
 }
 
 export type NullableBoolFieldUpdateOperationsInput = {
@@ -773,6 +780,20 @@ export type BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput = {
   upsert?: Prisma.BatchSareeRowUpsertWithoutQcRecordInput
   connect?: Prisma.BatchSareeRowWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.BatchSareeRowUpdateToOneWithWhereWithoutQcRecordInput, Prisma.BatchSareeRowUpdateWithoutQcRecordInput>, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordInput>
+}
+
+export type BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput = {
+  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput>
+  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutFinishingAssignmentInput
+  connect?: Prisma.BatchSareeRowWhereUniqueInput
+}
+
+export type BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput = {
+  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput>
+  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutFinishingAssignmentInput
+  upsert?: Prisma.BatchSareeRowUpsertWithoutFinishingAssignmentInput
+  connect?: Prisma.BatchSareeRowWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BatchSareeRowUpdateToOneWithWhereWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUpdateWithoutFinishingAssignmentInput>, Prisma.BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput>
 }
 
 export type BatchSareeRowCreateNestedManyWithoutBulkOrderInput = {
@@ -821,15 +842,16 @@ export type BatchSareeRowCreateWithoutWeaverInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutWeaverInput = {
@@ -837,14 +859,15 @@ export type BatchSareeRowUncheckedCreateWithoutWeaverInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutWeaverInput = {
@@ -881,11 +904,11 @@ export type BatchSareeRowScalarWhereInput = {
   batchId?: Prisma.StringFilter<"BatchSareeRow"> | string
   serial?: Prisma.IntFilter<"BatchSareeRow"> | number
   sareeId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
-  recipientType?: Prisma.EnumRecipientTypeFilter<"BatchSareeRow"> | $Enums.RecipientType
+  recipientType?: Prisma.EnumRecipientTypeNullableFilter<"BatchSareeRow"> | $Enums.RecipientType | null
   weaverId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
-  designCode?: Prisma.StringFilter<"BatchSareeRow"> | string
-  sareeTypeCode?: Prisma.StringFilter<"BatchSareeRow"> | string
+  designCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  sareeTypeCode?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
   qcPassed?: Prisma.BoolNullableFilter<"BatchSareeRow"> | boolean | null
   createdAt?: Prisma.DateTimeFilter<"BatchSareeRow"> | Date | string
@@ -895,15 +918,16 @@ export type BatchSareeRowCreateWithoutFactoryLoomInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutFactoryLoomInput = {
@@ -911,14 +935,15 @@ export type BatchSareeRowUncheckedCreateWithoutFactoryLoomInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutFactoryLoomInput = {
@@ -951,15 +976,16 @@ export type BatchSareeRowCreateWithoutDesignInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutDesignInput = {
@@ -967,14 +993,15 @@ export type BatchSareeRowUncheckedCreateWithoutDesignInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  sareeTypeCode: string
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutDesignInput = {
@@ -1007,15 +1034,16 @@ export type BatchSareeRowCreateWithoutSareeTypeInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutSareeTypeInput = {
@@ -1023,14 +1051,15 @@ export type BatchSareeRowUncheckedCreateWithoutSareeTypeInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
+  designCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutSareeTypeInput = {
@@ -1063,30 +1092,32 @@ export type BatchSareeRowCreateWithoutBatchInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutBatchInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutBatchInput = {
@@ -1119,15 +1150,16 @@ export type BatchSareeRowCreateWithoutQcRecordInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutQcRecordInput = {
@@ -1135,14 +1167,15 @@ export type BatchSareeRowUncheckedCreateWithoutQcRecordInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutQcRecordInput = {
@@ -1165,15 +1198,16 @@ export type BatchSareeRowUpdateWithoutQcRecordInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutQcRecordInput = {
@@ -1181,29 +1215,111 @@ export type BatchSareeRowUncheckedUpdateWithoutQcRecordInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+}
+
+export type BatchSareeRowCreateWithoutFinishingAssignmentInput = {
+  id?: string
+  serial: number
+  sareeId?: string | null
+  recipientType?: $Enums.RecipientType | null
+  qcPassed?: boolean | null
+  createdAt?: Date | string
+  batch: Prisma.BatchCreateNestedOneWithoutRowsInput
+  weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
+  factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
+  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+}
+
+export type BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput = {
+  id?: string
+  batchId: string
+  serial: number
+  sareeId?: string | null
+  recipientType?: $Enums.RecipientType | null
+  weaverId?: string | null
+  factoryLoomId?: string | null
+  designCode?: string | null
+  sareeTypeCode?: string | null
+  bulkOrderRef?: string | null
+  qcPassed?: boolean | null
+  createdAt?: Date | string
+  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+}
+
+export type BatchSareeRowCreateOrConnectWithoutFinishingAssignmentInput = {
+  where: Prisma.BatchSareeRowWhereUniqueInput
+  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput>
+}
+
+export type BatchSareeRowUpsertWithoutFinishingAssignmentInput = {
+  update: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput>
+  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput>
+  where?: Prisma.BatchSareeRowWhereInput
+}
+
+export type BatchSareeRowUpdateToOneWithWhereWithoutFinishingAssignmentInput = {
+  where?: Prisma.BatchSareeRowWhereInput
+  data: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutFinishingAssignmentInput, Prisma.BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput>
+}
+
+export type BatchSareeRowUpdateWithoutFinishingAssignmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  serial?: Prisma.IntFieldUpdateOperationsInput | number
+  sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
+  qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
+  weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
+  factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
+  bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
+  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+}
+
+export type BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  batchId?: Prisma.StringFieldUpdateOperationsInput | string
+  serial?: Prisma.IntFieldUpdateOperationsInput | number
+  sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
+  weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowCreateWithoutBulkOrderInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
-  design: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
-  sareeType: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
+  design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
+  sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutBulkOrderInput = {
@@ -1211,14 +1327,15 @@ export type BatchSareeRowUncheckedCreateWithoutBulkOrderInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
   qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutBulkOrderInput = {
@@ -1252,10 +1369,10 @@ export type BatchSareeRowCreateManyWeaverInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -1265,15 +1382,16 @@ export type BatchSareeRowUpdateWithoutWeaverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutWeaverInput = {
@@ -1281,14 +1399,15 @@ export type BatchSareeRowUncheckedUpdateWithoutWeaverInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutWeaverInput = {
@@ -1296,10 +1415,10 @@ export type BatchSareeRowUncheckedUpdateManyWithoutWeaverInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1310,10 +1429,10 @@ export type BatchSareeRowCreateManyFactoryLoomInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -1323,15 +1442,16 @@ export type BatchSareeRowUpdateWithoutFactoryLoomInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutFactoryLoomInput = {
@@ -1339,14 +1459,15 @@ export type BatchSareeRowUncheckedUpdateWithoutFactoryLoomInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomInput = {
@@ -1354,10 +1475,10 @@ export type BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1368,10 +1489,10 @@ export type BatchSareeRowCreateManyDesignInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  sareeTypeCode: string
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -1381,15 +1502,16 @@ export type BatchSareeRowUpdateWithoutDesignInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutDesignInput = {
@@ -1397,14 +1519,15 @@ export type BatchSareeRowUncheckedUpdateWithoutDesignInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutDesignInput = {
@@ -1412,10 +1535,10 @@ export type BatchSareeRowUncheckedUpdateManyWithoutDesignInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1426,10 +1549,10 @@ export type BatchSareeRowCreateManySareeTypeInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
+  designCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -1439,15 +1562,16 @@ export type BatchSareeRowUpdateWithoutSareeTypeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutSareeTypeInput = {
@@ -1455,14 +1579,15 @@ export type BatchSareeRowUncheckedUpdateWithoutSareeTypeInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutSareeTypeInput = {
@@ -1470,10 +1595,10 @@ export type BatchSareeRowUncheckedUpdateManyWithoutSareeTypeInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1483,11 +1608,11 @@ export type BatchSareeRowCreateManyBatchInput = {
   id?: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   bulkOrderRef?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
@@ -1497,41 +1622,43 @@ export type BatchSareeRowUpdateWithoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1542,11 +1669,11 @@ export type BatchSareeRowCreateManyBulkOrderInput = {
   batchId: string
   serial: number
   sareeId?: string | null
-  recipientType: $Enums.RecipientType
+  recipientType?: $Enums.RecipientType | null
   weaverId?: string | null
   factoryLoomId?: string | null
-  designCode: string
-  sareeTypeCode: string
+  designCode?: string | null
+  sareeTypeCode?: string | null
   qcPassed?: boolean | null
   createdAt?: Date | string
 }
@@ -1555,15 +1682,16 @@ export type BatchSareeRowUpdateWithoutBulkOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
-  design?: Prisma.DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput
-  sareeType?: Prisma.SareeTypeRateUpdateOneRequiredWithoutBatchSareeRowsNestedInput
+  design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
+  sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutBulkOrderInput = {
@@ -1571,14 +1699,15 @@ export type BatchSareeRowUncheckedUpdateWithoutBulkOrderInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateManyWithoutBulkOrderInput = {
@@ -1586,11 +1715,11 @@ export type BatchSareeRowUncheckedUpdateManyWithoutBulkOrderInput = {
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  recipientType?: Prisma.EnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType
+  recipientType?: Prisma.NullableEnumRecipientTypeFieldUpdateOperationsInput | $Enums.RecipientType | null
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  designCode?: Prisma.StringFieldUpdateOperationsInput | string
-  sareeTypeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  designCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sareeTypeCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qcPassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1613,10 +1742,11 @@ export type BatchSareeRowSelect<ExtArgs extends runtime.Types.Extensions.Interna
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
   qcRecord?: boolean | Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>
+  finishingAssignment?: boolean | Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>
 }, ExtArgs["result"]["batchSareeRow"]>
 
 export type BatchSareeRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1635,8 +1765,8 @@ export type BatchSareeRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
 }, ExtArgs["result"]["batchSareeRow"]>
 
@@ -1656,8 +1786,8 @@ export type BatchSareeRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
 }, ExtArgs["result"]["batchSareeRow"]>
 
@@ -1681,25 +1811,26 @@ export type BatchSareeRowInclude<ExtArgs extends runtime.Types.Extensions.Intern
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
   qcRecord?: boolean | Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>
+  finishingAssignment?: boolean | Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>
 }
 export type BatchSareeRowIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
 }
 export type BatchSareeRowIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
-  design?: boolean | Prisma.DesignLibraryDefaultArgs<ExtArgs>
-  sareeType?: boolean | Prisma.SareeTypeRateDefaultArgs<ExtArgs>
+  design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
+  sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
 }
 
@@ -1709,21 +1840,22 @@ export type $BatchSareeRowPayload<ExtArgs extends runtime.Types.Extensions.Inter
     batch: Prisma.$BatchPayload<ExtArgs>
     weaver: Prisma.$WeaverPayload<ExtArgs> | null
     factoryLoom: Prisma.$FactoryLoomPayload<ExtArgs> | null
-    design: Prisma.$DesignLibraryPayload<ExtArgs>
-    sareeType: Prisma.$SareeTypeRatePayload<ExtArgs>
+    design: Prisma.$DesignLibraryPayload<ExtArgs> | null
+    sareeType: Prisma.$SareeTypeRatePayload<ExtArgs> | null
     bulkOrder: Prisma.$BulkOrderPayload<ExtArgs> | null
     qcRecord: Prisma.$QcRecordPayload<ExtArgs> | null
+    finishingAssignment: Prisma.$FinishingAssignmentPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     batchId: string
     serial: number
     sareeId: string | null
-    recipientType: $Enums.RecipientType
+    recipientType: $Enums.RecipientType | null
     weaverId: string | null
     factoryLoomId: string | null
-    designCode: string
-    sareeTypeCode: string
+    designCode: string | null
+    sareeTypeCode: string | null
     bulkOrderRef: string | null
     qcPassed: boolean | null
     createdAt: Date
@@ -2124,10 +2256,11 @@ export interface Prisma__BatchSareeRowClient<T, Null = never, ExtArgs extends ru
   batch<T extends Prisma.BatchDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchDefaultArgs<ExtArgs>>): Prisma.Prisma__BatchClient<runtime.Types.Result.GetResult<Prisma.$BatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   weaver<T extends Prisma.BatchSareeRow$weaverArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$weaverArgs<ExtArgs>>): Prisma.Prisma__WeaverClient<runtime.Types.Result.GetResult<Prisma.$WeaverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   factoryLoom<T extends Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>>): Prisma.Prisma__FactoryLoomClient<runtime.Types.Result.GetResult<Prisma.$FactoryLoomPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  design<T extends Prisma.DesignLibraryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DesignLibraryDefaultArgs<ExtArgs>>): Prisma.Prisma__DesignLibraryClient<runtime.Types.Result.GetResult<Prisma.$DesignLibraryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  sareeType<T extends Prisma.SareeTypeRateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SareeTypeRateDefaultArgs<ExtArgs>>): Prisma.Prisma__SareeTypeRateClient<runtime.Types.Result.GetResult<Prisma.$SareeTypeRatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  design<T extends Prisma.BatchSareeRow$designArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$designArgs<ExtArgs>>): Prisma.Prisma__DesignLibraryClient<runtime.Types.Result.GetResult<Prisma.$DesignLibraryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  sareeType<T extends Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>>): Prisma.Prisma__SareeTypeRateClient<runtime.Types.Result.GetResult<Prisma.$SareeTypeRatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   bulkOrder<T extends Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>>): Prisma.Prisma__BulkOrderClient<runtime.Types.Result.GetResult<Prisma.$BulkOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   qcRecord<T extends Prisma.BatchSareeRow$qcRecordArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>>): Prisma.Prisma__QcRecordClient<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  finishingAssignment<T extends Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>>): Prisma.Prisma__FinishingAssignmentClient<runtime.Types.Result.GetResult<Prisma.$FinishingAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2608,6 +2741,44 @@ export type BatchSareeRow$factoryLoomArgs<ExtArgs extends runtime.Types.Extensio
 }
 
 /**
+ * BatchSareeRow.design
+ */
+export type BatchSareeRow$designArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DesignLibrary
+   */
+  select?: Prisma.DesignLibrarySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DesignLibrary
+   */
+  omit?: Prisma.DesignLibraryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DesignLibraryInclude<ExtArgs> | null
+  where?: Prisma.DesignLibraryWhereInput
+}
+
+/**
+ * BatchSareeRow.sareeType
+ */
+export type BatchSareeRow$sareeTypeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SareeTypeRate
+   */
+  select?: Prisma.SareeTypeRateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SareeTypeRate
+   */
+  omit?: Prisma.SareeTypeRateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SareeTypeRateInclude<ExtArgs> | null
+  where?: Prisma.SareeTypeRateWhereInput
+}
+
+/**
  * BatchSareeRow.bulkOrder
  */
 export type BatchSareeRow$bulkOrderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2643,6 +2814,25 @@ export type BatchSareeRow$qcRecordArgs<ExtArgs extends runtime.Types.Extensions.
    */
   include?: Prisma.QcRecordInclude<ExtArgs> | null
   where?: Prisma.QcRecordWhereInput
+}
+
+/**
+ * BatchSareeRow.finishingAssignment
+ */
+export type BatchSareeRow$finishingAssignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinishingAssignment
+   */
+  select?: Prisma.FinishingAssignmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinishingAssignment
+   */
+  omit?: Prisma.FinishingAssignmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinishingAssignmentInclude<ExtArgs> | null
+  where?: Prisma.FinishingAssignmentWhereInput
 }
 
 /**

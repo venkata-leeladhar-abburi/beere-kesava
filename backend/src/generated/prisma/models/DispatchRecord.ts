@@ -59,6 +59,9 @@ export type DispatchRecordMinAggregateOutputType = {
   paymentDueDate: Date | null
   bulkOrderRef: string | null
   quotationRef: string | null
+  pendingTransport: boolean | null
+  pendingReceipt: boolean | null
+  notes: string | null
 }
 
 export type DispatchRecordMaxAggregateOutputType = {
@@ -80,6 +83,9 @@ export type DispatchRecordMaxAggregateOutputType = {
   paymentDueDate: Date | null
   bulkOrderRef: string | null
   quotationRef: string | null
+  pendingTransport: boolean | null
+  pendingReceipt: boolean | null
+  notes: string | null
 }
 
 export type DispatchRecordCountAggregateOutputType = {
@@ -101,6 +107,9 @@ export type DispatchRecordCountAggregateOutputType = {
   paymentDueDate: number
   bulkOrderRef: number
   quotationRef: number
+  pendingTransport: number
+  pendingReceipt: number
+  notes: number
   _all: number
 }
 
@@ -138,6 +147,9 @@ export type DispatchRecordMinAggregateInputType = {
   paymentDueDate?: true
   bulkOrderRef?: true
   quotationRef?: true
+  pendingTransport?: true
+  pendingReceipt?: true
+  notes?: true
 }
 
 export type DispatchRecordMaxAggregateInputType = {
@@ -159,6 +171,9 @@ export type DispatchRecordMaxAggregateInputType = {
   paymentDueDate?: true
   bulkOrderRef?: true
   quotationRef?: true
+  pendingTransport?: true
+  pendingReceipt?: true
+  notes?: true
 }
 
 export type DispatchRecordCountAggregateInputType = {
@@ -180,6 +195,9 @@ export type DispatchRecordCountAggregateInputType = {
   paymentDueDate?: true
   bulkOrderRef?: true
   quotationRef?: true
+  pendingTransport?: true
+  pendingReceipt?: true
+  notes?: true
   _all?: true
 }
 
@@ -288,6 +306,9 @@ export type DispatchRecordGroupByOutputType = {
   paymentDueDate: Date | null
   bulkOrderRef: string | null
   quotationRef: string | null
+  pendingTransport: boolean
+  pendingReceipt: boolean
+  notes: string | null
   _count: DispatchRecordCountAggregateOutputType | null
   _avg: DispatchRecordAvgAggregateOutputType | null
   _sum: DispatchRecordSumAggregateOutputType | null
@@ -332,6 +353,9 @@ export type DispatchRecordWhereInput = {
   paymentDueDate?: Prisma.DateTimeNullableFilter<"DispatchRecord"> | Date | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
+  pendingTransport?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  pendingReceipt?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  notes?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
   customer?: Prisma.XOR<Prisma.CustomerNullableScalarRelationFilter, Prisma.CustomerWhereInput> | null
   firm?: Prisma.XOR<Prisma.FirmNullableScalarRelationFilter, Prisma.FirmWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
@@ -357,6 +381,9 @@ export type DispatchRecordOrderByWithRelationInput = {
   paymentDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
   quotationRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingTransport?: Prisma.SortOrder
+  pendingReceipt?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
   firm?: Prisma.FirmOrderByWithRelationInput
   bulkOrder?: Prisma.BulkOrderOrderByWithRelationInput
@@ -385,6 +412,9 @@ export type DispatchRecordWhereUniqueInput = Prisma.AtLeast<{
   paymentDueDate?: Prisma.DateTimeNullableFilter<"DispatchRecord"> | Date | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
+  pendingTransport?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  pendingReceipt?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  notes?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
   customer?: Prisma.XOR<Prisma.CustomerNullableScalarRelationFilter, Prisma.CustomerWhereInput> | null
   firm?: Prisma.XOR<Prisma.FirmNullableScalarRelationFilter, Prisma.FirmWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
@@ -410,6 +440,9 @@ export type DispatchRecordOrderByWithAggregationInput = {
   paymentDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
   quotationRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingTransport?: Prisma.SortOrder
+  pendingReceipt?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DispatchRecordCountOrderByAggregateInput
   _avg?: Prisma.DispatchRecordAvgOrderByAggregateInput
   _max?: Prisma.DispatchRecordMaxOrderByAggregateInput
@@ -439,6 +472,9 @@ export type DispatchRecordScalarWhereWithAggregatesInput = {
   paymentDueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"DispatchRecord"> | Date | string | null
   bulkOrderRef?: Prisma.StringNullableWithAggregatesFilter<"DispatchRecord"> | string | null
   quotationRef?: Prisma.StringNullableWithAggregatesFilter<"DispatchRecord"> | string | null
+  pendingTransport?: Prisma.BoolWithAggregatesFilter<"DispatchRecord"> | boolean
+  pendingReceipt?: Prisma.BoolWithAggregatesFilter<"DispatchRecord"> | boolean
+  notes?: Prisma.StringNullableWithAggregatesFilter<"DispatchRecord"> | string | null
 }
 
 export type DispatchRecordCreateInput = {
@@ -457,6 +493,9 @@ export type DispatchRecordCreateInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   customer?: Prisma.CustomerCreateNestedOneWithoutDispatchRecordsInput
   firm?: Prisma.FirmCreateNestedOneWithoutDispatchRecordsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutDispatchRecordsInput
@@ -482,6 +521,9 @@ export type DispatchRecordUncheckedCreateInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   sarees?: Prisma.DispatchSareeUncheckedCreateNestedManyWithoutDispatchInput
 }
 
@@ -501,6 +543,9 @@ export type DispatchRecordUpdateInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneWithoutDispatchRecordsNestedInput
   firm?: Prisma.FirmUpdateOneWithoutDispatchRecordsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutDispatchRecordsNestedInput
@@ -526,6 +571,9 @@ export type DispatchRecordUncheckedUpdateInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sarees?: Prisma.DispatchSareeUncheckedUpdateManyWithoutDispatchNestedInput
 }
 
@@ -548,6 +596,9 @@ export type DispatchRecordCreateManyInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
 }
 
 export type DispatchRecordUpdateManyMutationInput = {
@@ -566,6 +617,9 @@ export type DispatchRecordUpdateManyMutationInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DispatchRecordUncheckedUpdateManyInput = {
@@ -587,6 +641,9 @@ export type DispatchRecordUncheckedUpdateManyInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DispatchRecordListRelationFilter = {
@@ -618,6 +675,9 @@ export type DispatchRecordCountOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  pendingTransport?: Prisma.SortOrder
+  pendingReceipt?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
 }
 
 export type DispatchRecordAvgOrderByAggregateInput = {
@@ -646,6 +706,9 @@ export type DispatchRecordMaxOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  pendingTransport?: Prisma.SortOrder
+  pendingReceipt?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
 }
 
 export type DispatchRecordMinOrderByAggregateInput = {
@@ -667,6 +730,9 @@ export type DispatchRecordMinOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   bulkOrderRef?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  pendingTransport?: Prisma.SortOrder
+  pendingReceipt?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
 }
 
 export type DispatchRecordSumOrderByAggregateInput = {
@@ -841,6 +907,9 @@ export type DispatchRecordCreateWithoutBulkOrderInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   customer?: Prisma.CustomerCreateNestedOneWithoutDispatchRecordsInput
   firm?: Prisma.FirmCreateNestedOneWithoutDispatchRecordsInput
   sarees?: Prisma.DispatchSareeCreateNestedManyWithoutDispatchInput
@@ -864,6 +933,9 @@ export type DispatchRecordUncheckedCreateWithoutBulkOrderInput = {
   firmId?: string | null
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   sarees?: Prisma.DispatchSareeUncheckedCreateNestedManyWithoutDispatchInput
 }
 
@@ -915,6 +987,9 @@ export type DispatchRecordScalarWhereInput = {
   paymentDueDate?: Prisma.DateTimeNullableFilter<"DispatchRecord"> | Date | string | null
   bulkOrderRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
+  pendingTransport?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  pendingReceipt?: Prisma.BoolFilter<"DispatchRecord"> | boolean
+  notes?: Prisma.StringNullableFilter<"DispatchRecord"> | string | null
 }
 
 export type DispatchRecordCreateWithoutSareesInput = {
@@ -933,6 +1008,9 @@ export type DispatchRecordCreateWithoutSareesInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   customer?: Prisma.CustomerCreateNestedOneWithoutDispatchRecordsInput
   firm?: Prisma.FirmCreateNestedOneWithoutDispatchRecordsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutDispatchRecordsInput
@@ -957,6 +1035,9 @@ export type DispatchRecordUncheckedCreateWithoutSareesInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
 }
 
 export type DispatchRecordCreateOrConnectWithoutSareesInput = {
@@ -991,6 +1072,9 @@ export type DispatchRecordUpdateWithoutSareesInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneWithoutDispatchRecordsNestedInput
   firm?: Prisma.FirmUpdateOneWithoutDispatchRecordsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutDispatchRecordsNestedInput
@@ -1015,6 +1099,9 @@ export type DispatchRecordUncheckedUpdateWithoutSareesInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DispatchRecordCreateWithoutFirmInput = {
@@ -1033,6 +1120,9 @@ export type DispatchRecordCreateWithoutFirmInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   customer?: Prisma.CustomerCreateNestedOneWithoutDispatchRecordsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutDispatchRecordsInput
   sarees?: Prisma.DispatchSareeCreateNestedManyWithoutDispatchInput
@@ -1056,6 +1146,9 @@ export type DispatchRecordUncheckedCreateWithoutFirmInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   sarees?: Prisma.DispatchSareeUncheckedCreateNestedManyWithoutDispatchInput
 }
 
@@ -1101,6 +1194,9 @@ export type DispatchRecordCreateWithoutCustomerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   firm?: Prisma.FirmCreateNestedOneWithoutDispatchRecordsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutDispatchRecordsInput
   sarees?: Prisma.DispatchSareeCreateNestedManyWithoutDispatchInput
@@ -1124,6 +1220,9 @@ export type DispatchRecordUncheckedCreateWithoutCustomerInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
   sarees?: Prisma.DispatchSareeUncheckedCreateNestedManyWithoutDispatchInput
 }
 
@@ -1171,6 +1270,9 @@ export type DispatchRecordCreateManyBulkOrderInput = {
   firmId?: string | null
   paymentDueDate?: Date | string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
 }
 
 export type DispatchRecordUpdateWithoutBulkOrderInput = {
@@ -1189,6 +1291,9 @@ export type DispatchRecordUpdateWithoutBulkOrderInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneWithoutDispatchRecordsNestedInput
   firm?: Prisma.FirmUpdateOneWithoutDispatchRecordsNestedInput
   sarees?: Prisma.DispatchSareeUpdateManyWithoutDispatchNestedInput
@@ -1212,6 +1317,9 @@ export type DispatchRecordUncheckedUpdateWithoutBulkOrderInput = {
   firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sarees?: Prisma.DispatchSareeUncheckedUpdateManyWithoutDispatchNestedInput
 }
 
@@ -1233,6 +1341,9 @@ export type DispatchRecordUncheckedUpdateManyWithoutBulkOrderInput = {
   firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DispatchRecordCreateManyFirmInput = {
@@ -1253,6 +1364,9 @@ export type DispatchRecordCreateManyFirmInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
 }
 
 export type DispatchRecordUpdateWithoutFirmInput = {
@@ -1271,6 +1385,9 @@ export type DispatchRecordUpdateWithoutFirmInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneWithoutDispatchRecordsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutDispatchRecordsNestedInput
   sarees?: Prisma.DispatchSareeUpdateManyWithoutDispatchNestedInput
@@ -1294,6 +1411,9 @@ export type DispatchRecordUncheckedUpdateWithoutFirmInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sarees?: Prisma.DispatchSareeUncheckedUpdateManyWithoutDispatchNestedInput
 }
 
@@ -1315,6 +1435,9 @@ export type DispatchRecordUncheckedUpdateManyWithoutFirmInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DispatchRecordCreateManyCustomerInput = {
@@ -1335,6 +1458,9 @@ export type DispatchRecordCreateManyCustomerInput = {
   paymentDueDate?: Date | string | null
   bulkOrderRef?: string | null
   quotationRef?: string | null
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: string | null
 }
 
 export type DispatchRecordUpdateWithoutCustomerInput = {
@@ -1353,6 +1479,9 @@ export type DispatchRecordUpdateWithoutCustomerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firm?: Prisma.FirmUpdateOneWithoutDispatchRecordsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutDispatchRecordsNestedInput
   sarees?: Prisma.DispatchSareeUpdateManyWithoutDispatchNestedInput
@@ -1376,6 +1505,9 @@ export type DispatchRecordUncheckedUpdateWithoutCustomerInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sarees?: Prisma.DispatchSareeUncheckedUpdateManyWithoutDispatchNestedInput
 }
 
@@ -1397,6 +1529,9 @@ export type DispatchRecordUncheckedUpdateManyWithoutCustomerInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bulkOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingTransport?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pendingReceipt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1449,6 +1584,9 @@ export type DispatchRecordSelect<ExtArgs extends runtime.Types.Extensions.Intern
   paymentDueDate?: boolean
   bulkOrderRef?: boolean
   quotationRef?: boolean
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: boolean
   customer?: boolean | Prisma.DispatchRecord$customerArgs<ExtArgs>
   firm?: boolean | Prisma.DispatchRecord$firmArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.DispatchRecord$bulkOrderArgs<ExtArgs>
@@ -1475,6 +1613,9 @@ export type DispatchRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   paymentDueDate?: boolean
   bulkOrderRef?: boolean
   quotationRef?: boolean
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: boolean
   customer?: boolean | Prisma.DispatchRecord$customerArgs<ExtArgs>
   firm?: boolean | Prisma.DispatchRecord$firmArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.DispatchRecord$bulkOrderArgs<ExtArgs>
@@ -1499,6 +1640,9 @@ export type DispatchRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   paymentDueDate?: boolean
   bulkOrderRef?: boolean
   quotationRef?: boolean
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: boolean
   customer?: boolean | Prisma.DispatchRecord$customerArgs<ExtArgs>
   firm?: boolean | Prisma.DispatchRecord$firmArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.DispatchRecord$bulkOrderArgs<ExtArgs>
@@ -1523,9 +1667,12 @@ export type DispatchRecordSelectScalar = {
   paymentDueDate?: boolean
   bulkOrderRef?: boolean
   quotationRef?: boolean
+  pendingTransport?: boolean
+  pendingReceipt?: boolean
+  notes?: boolean
 }
 
-export type DispatchRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "dispatchDate" | "lrNumber" | "transportCompany" | "vehicleNumber" | "driverName" | "customerId" | "invoiceNumber" | "invoiceDate" | "pricePerSaree" | "totalAmount" | "gstPct" | "grandTotal" | "firmId" | "paymentDueDate" | "bulkOrderRef" | "quotationRef", ExtArgs["result"]["dispatchRecord"]>
+export type DispatchRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "dispatchDate" | "lrNumber" | "transportCompany" | "vehicleNumber" | "driverName" | "customerId" | "invoiceNumber" | "invoiceDate" | "pricePerSaree" | "totalAmount" | "gstPct" | "grandTotal" | "firmId" | "paymentDueDate" | "bulkOrderRef" | "quotationRef" | "pendingTransport" | "pendingReceipt" | "notes", ExtArgs["result"]["dispatchRecord"]>
 export type DispatchRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.DispatchRecord$customerArgs<ExtArgs>
   firm?: boolean | Prisma.DispatchRecord$firmArgs<ExtArgs>
@@ -1571,6 +1718,9 @@ export type $DispatchRecordPayload<ExtArgs extends runtime.Types.Extensions.Inte
     paymentDueDate: Date | null
     bulkOrderRef: string | null
     quotationRef: string | null
+    pendingTransport: boolean
+    pendingReceipt: boolean
+    notes: string | null
   }, ExtArgs["result"]["dispatchRecord"]>
   composites: {}
 }
@@ -2016,6 +2166,9 @@ export interface DispatchRecordFieldRefs {
   readonly paymentDueDate: Prisma.FieldRef<"DispatchRecord", 'DateTime'>
   readonly bulkOrderRef: Prisma.FieldRef<"DispatchRecord", 'String'>
   readonly quotationRef: Prisma.FieldRef<"DispatchRecord", 'String'>
+  readonly pendingTransport: Prisma.FieldRef<"DispatchRecord", 'Boolean'>
+  readonly pendingReceipt: Prisma.FieldRef<"DispatchRecord", 'Boolean'>
+  readonly notes: Prisma.FieldRef<"DispatchRecord", 'String'>
 }
     
 

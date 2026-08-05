@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BackendBatch, batchesApi } from "../../../shared/api/batches";
+import { weaversApi } from "../../../shared/api/weavers";
+import { factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { SAREE_TYPES_BRIEF } from "../components/batch-creation/constants";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -53,152 +57,111 @@ interface BatchContextValue {
 
 const BatchContext = createContext<BatchContextValue | null>(null);
 
-const INITIAL_BATCHES: BatchRecord[] = [
-  {
-    batchId: "BATCH-094",
-    totalCount: 10,
-    dueDate: "2026-07-20",
-    status: "active",
-    createdAt: "2026-06-28T08:00:00.000Z",
-    updatedAt: "2026-06-28T08:00:00.000Z",
-    rows: [
-      { serial: 1,  sareeId: "RAVI-L2-001",  weaverId: "WV-001", weaverName: "Ravi Kumar",   weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: "ORD-2026-041", bulkOrderLabel: "Lakshmi Silks · ORD-041", qcPassed: true },
-      { serial: 2,  sareeId: "RAVI-L2-002",  weaverId: "WV-001", weaverName: "Ravi Kumar",   weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: "ORD-2026-041", bulkOrderLabel: "Lakshmi Silks · ORD-041", qcPassed: true },
-      { serial: 3,  sareeId: "RAVI-L2-003",  weaverId: "WV-001", weaverName: "Ravi Kumar",   weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: "ORD-2026-041", bulkOrderLabel: "Lakshmi Silks · ORD-041", qcPassed: false },
-      { serial: 4,  sareeId: "PADMA-L1-001", weaverId: "WV-002", weaverName: "Padma Veni",   weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: "ORD-2026-041", bulkOrderLabel: "Lakshmi Silks · ORD-041" },
-      { serial: 5,  sareeId: "PADMA-L1-002", weaverId: "WV-002", weaverName: "Padma Veni",   weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: "ORD-2026-041", bulkOrderLabel: "Lakshmi Silks · ORD-041" },
-      { serial: 6,  sareeId: "ANAND-L3-001", weaverId: "WV-005", weaverName: "Anand K.",     weaverInitials: "AK", weaverLoom: 3, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 7,  sareeId: "ANAND-L3-002", weaverId: "WV-005", weaverName: "Anand K.",     weaverInitials: "AK", weaverLoom: 3, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 8,  sareeId: "ANAND-L3-003", weaverId: "WV-005", weaverName: "Anand K.",     weaverInitials: "AK", weaverLoom: 3, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 9,  sareeId: "MEENA-L4-001", weaverId: "WV-012", weaverName: "Meena R.",     weaverInitials: "MR", weaverLoom: 4, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 10, sareeId: "MEENA-L4-002", weaverId: "WV-012", weaverName: "Meena R.",     weaverInitials: "MR", weaverLoom: 4, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade",   bulkOrderRef: null, bulkOrderLabel: null },
-    ],
-  },
-  {
-    batchId: "BATCH-093",
-    totalCount: 8,
-    dueDate: "2026-07-15",
-    status: "active",
-    createdAt: "2026-06-25T09:30:00.000Z",
-    updatedAt: "2026-06-25T09:30:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "SURESH-L2-001", weaverId: "WV-007", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padmavathi Textiles · ORD-038" },
-      { serial: 2, sareeId: "SURESH-L2-002", weaverId: "WV-007", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padmavathi Textiles · ORD-038" },
-      { serial: 3, sareeId: "SURESH-L2-003", weaverId: "WV-007", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padmavathi Textiles · ORD-038" },
-      { serial: 4, sareeId: "SURESH-L2-004", weaverId: "WV-007", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padmavathi Textiles · ORD-038" },
-      { serial: 5, sareeId: "KAMALA-L1-001", weaverId: "WV-031", weaverName: "Kamala B.",    weaverInitials: "KB", weaverLoom: 1, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padmavathi Textiles · ORD-038" },
-      { serial: 6, sareeId: "KAMALA-L1-002", weaverId: "WV-031", weaverName: "Kamala B.",    weaverInitials: "KB", weaverLoom: 1, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 7, sareeId: "VENKAT-L3-001", weaverId: "WV-024", weaverName: "Venkat Rao",   weaverInitials: "VR", weaverLoom: 3, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 8, sareeId: "VENKAT-L3-002", weaverId: "WV-024", weaverName: "Venkat Rao",   weaverInitials: "VR", weaverLoom: 3, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari",     bulkOrderRef: null, bulkOrderLabel: null },
-    ],
-  },
-  {
-    batchId: "BATCH-091",
-    totalCount: 6,
-    dueDate: "2026-07-10",
-    status: "draft",
-    createdAt: "2026-06-22T11:00:00.000Z",
-    updatedAt: "2026-06-22T11:00:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "LAKSHMI-L2-001", weaverId: "WV-018", weaverName: "Lakshmi D.",  weaverInitials: "LD", weaverLoom: 2, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Vijaya Silk House · ORD-035" },
-      { serial: 2, sareeId: "LAKSHMI-L2-002", weaverId: "WV-018", weaverName: "Lakshmi D.",  weaverInitials: "LD", weaverLoom: 2, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Vijaya Silk House · ORD-035" },
-      { serial: 3, sareeId: "LAKSHMI-L2-003", weaverId: "WV-018", weaverName: "Lakshmi D.",  weaverInitials: "LD", weaverLoom: 2, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Vijaya Silk House · ORD-035" },
-      { serial: 4, sareeId: null,              weaverId: null,     weaverName: null,           weaverInitials: null, weaverLoom: null, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Vijaya Silk House · ORD-035" },
-      { serial: 5, sareeId: null,              weaverId: null,     weaverName: null,           weaverInitials: null, weaverLoom: null, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 6, sareeId: null,              weaverId: null,     weaverName: null,           weaverInitials: null, weaverLoom: null, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: null, bulkOrderLabel: null },
-    ],
-  },
-  {
-    batchId: "BATCH-078",
-    totalCount: 4,
-    dueDate: "2026-05-30",
-    status: "completed",
-    createdAt: "2026-05-10T08:00:00.000Z",
-    updatedAt: "2026-05-28T10:00:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "RAVI-L2-004", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
-      { serial: 2, sareeId: "RAVI-L2-005", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
-      { serial: 3, sareeId: "RAVI-L2-006", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
-      { serial: 4, sareeId: "RAVI-L2-007", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
-    ],
-  },
-  // ── In-house factory loom batches (saree ids match the sales ledger BKB-F-0X-NNN scheme) ──
-  {
-    batchId: "BATCH-088",
-    totalCount: 3,
-    dueDate: "2026-07-05",
-    status: "completed",
-    createdAt: "2026-06-20T08:00:00.000Z",
-    updatedAt: "2026-06-22T10:00:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "BKB-F-01-001", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
-      { serial: 2, sareeId: "BKB-F-01-002", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
-      { serial: 3, sareeId: "BKB-F-01-003", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: "ORD-2026-038", bulkOrderLabel: "Padma Stores · ORD-038", qcPassed: true },
-    ],
-  },
-  {
-    batchId: "BATCH-090",
-    totalCount: 4,
-    dueDate: "2026-07-28",
-    status: "active",
-    createdAt: "2026-06-24T09:00:00.000Z",
-    updatedAt: "2026-06-27T09:00:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "BKB-F-01-004", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: false },
-      { serial: 2, sareeId: "BKB-F-01-005", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null, qcPassed: true },
-      { serial: 3, sareeId: "BKB-F-01-006", recipientType: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 4, sareeId: "BKB-F-02-001", recipientType: "factoryLoom", factoryLoomId: "FL-002", factoryLoomNumber: "Loom F-02", weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null, designCode: "BKB-019", sareeTypeCode: "BS-004", sareeTypeName: "Bridal Special", bulkOrderRef: null, bulkOrderLabel: null },
-    ],
-  },
-  {
-    batchId: "BATCH-095",
-    totalCount: 14,
-    dueDate: "2026-08-01",
-    status: "active",
-    createdAt: "2026-07-01T08:00:00.000Z",
-    updatedAt: "2026-07-01T08:00:00.000Z",
-    rows: [
-      { serial: 1, sareeId: "RAVI-L2-009", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
-      { serial: 2, sareeId: "PADMA-L1-006", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
-      { serial: 3, sareeId: "BKB-L3-003", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: "ORD-2026-035", bulkOrderLabel: "Padmavathi Textiles · ORD-035" },
-      { serial: 4, sareeId: "RAVI-L2-008", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 5, sareeId: "PADMA-L1-005", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 6, sareeId: "BKB-L3-002", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 7, sareeId: "BKB-INV-001", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 8, sareeId: "BKB-INV-002", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 9, sareeId: "BKB-INV-003", weaverId: "WV-003", weaverName: "Loom 3", weaverInitials: "L3", weaverLoom: 3, designCode: "BKB-022", sareeTypeCode: "PS-002", sareeTypeName: "Kanjivaram", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 10, sareeId: "BKB-INV-004", weaverId: "WV-004", weaverName: "Suresh Murti", weaverInitials: "SM", weaverLoom: 2, designCode: "BKB-038", sareeTypeCode: "HZ-003", sareeTypeName: "Gadwal Cotton", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 11, sareeId: "BKB-INV-005", weaverId: "WV-005", weaverName: "Loom 1", weaverInitials: "L1", weaverLoom: 1, designCode: "BKB-019", sareeTypeCode: "PS-002", sareeTypeName: "Mysore Crepe", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 12, sareeId: "BKB-INV-006", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-052", sareeTypeCode: "BS-004", sareeTypeName: "Pochampally Ikat", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 13, sareeId: "BKB-INV-007", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverInitials: "RK", weaverLoom: 2, designCode: "BKB-031", sareeTypeCode: "HZ-003", sareeTypeName: "Heavy Zari", bulkOrderRef: null, bulkOrderLabel: null },
-      { serial: 14, sareeId: "BKB-INV-008", weaverId: "WV-002", weaverName: "Padma Veni", weaverInitials: "PV", weaverLoom: 1, designCode: "BKB-045", sareeTypeCode: "SB-001", sareeTypeName: "Self Brocade", bulkOrderRef: null, bulkOrderLabel: null },
-    ],
-  },
-];
-
 const QUERY_KEY = ["batches"] as const;
+
+const SAREE_TYPE_NAME: Record<string, string> = Object.fromEntries(
+  SAREE_TYPES_BRIEF.map(t => [t.code, t.name]),
+);
+
+function backendBatchToRecord(
+  b: BackendBatch,
+  weaverLookup: Map<string, { name: string; initials: string }>,
+  loomLookup: Map<string, string>,
+): BatchRecord {
+  return {
+    batchId: b.id,
+    totalCount: b.totalCount,
+    dueDate: b.dueDate,
+    status: b.status === "DRAFT" ? "draft" : b.status === "ACTIVE" ? "active" : "completed",
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+    rows: b.rows.map((r): SareeRow => {
+      const weaver = r.weaverId ? weaverLookup.get(r.weaverId) : undefined;
+      return {
+        serial: r.serial,
+        sareeId: r.sareeId,
+        recipientType: r.recipientType === "WEAVER" ? "weaver" : r.recipientType === "FACTORY_LOOM" ? "factoryLoom" : undefined,
+        weaverId: r.weaverId,
+        weaverName: weaver?.name ?? null,
+        weaverInitials: weaver?.initials ?? null,
+        weaverLoom: null,
+        factoryLoomId: r.factoryLoomId,
+        factoryLoomNumber: r.factoryLoomId ? (loomLookup.get(r.factoryLoomId) ?? null) : null,
+        designCode: r.designCode,
+        sareeTypeCode: r.sareeTypeCode,
+        sareeTypeName: r.sareeTypeCode ? (SAREE_TYPE_NAME[r.sareeTypeCode] ?? r.sareeTypeCode) : null,
+        bulkOrderRef: r.bulkOrderRef,
+        bulkOrderLabel: r.bulkOrderRef,
+        qcPassed: r.qcPassed ?? undefined,
+      };
+    }),
+  };
+}
 
 export function BatchProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [pendingOpenBatchId, setPendingOpenBatchId] = useState<string | null>(null);
 
-  const { data: batches = INITIAL_BATCHES } = useQuery({
+  const { data: batches = [] } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => Promise.resolve(INITIAL_BATCHES),
-    initialData: INITIAL_BATCHES,
+    queryFn: async () => {
+      const [batchesRes, weaversRes, loomsRes] = await Promise.all([
+        batchesApi.list(),
+        weaversApi.list(),
+        factoryLoomsApi.list(),
+      ]);
+      const weaverLookup = new Map(
+        weaversRes.items.map(w => [w.id, { name: w.name, initials: w.initials }]),
+      );
+      const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.loomNumber]));
+      return batchesRes.items.map(b => backendBatchToRecord(b, weaverLookup, loomLookup));
+    },
   });
 
+  // Persists a full BatchRecord: creates the batch server-side if it doesn't
+  // exist yet (the client-guessed batchId is only a display preview — the
+  // real id comes back from POST /batches), then assigns every row that has
+  // a recipient + design + saree type set. Re-running this on an already
+  // assigned row is safe: saree-id generation is deterministic given the
+  // same inputs, so it's idempotent.
   const saveDraftMutation = useMutation({
-    mutationFn: (batch: BatchRecord) => Promise.resolve(batch),
-    onSuccess: (batch) =>
-      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev => {
-        const list = prev ?? [];
-        const exists = list.find(b => b.batchId === batch.batchId);
-        if (exists) return list.map(b => b.batchId === batch.batchId ? { ...batch, updatedAt: new Date().toISOString() } : b);
-        return [{ ...batch, status: batch.status || "draft", updatedAt: new Date().toISOString() }, ...list];
-      }),
+    mutationFn: async (batch: BatchRecord) => {
+      const existing = queryClient
+        .getQueryData<BatchRecord[]>(QUERY_KEY)
+        ?.find(b => b.batchId === batch.batchId);
+
+      const realBatchId = existing
+        ? batch.batchId
+        : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate })).id;
+
+      for (const row of batch.rows) {
+        const recipientType = row.weaverId ? "WEAVER" : row.factoryLoomId ? "FACTORY_LOOM" : null;
+        if (!recipientType || !row.designCode || !row.sareeTypeCode) continue;
+
+        await batchesApi.assignRow(realBatchId, row.serial, {
+          recipientType,
+          weaverId: row.weaverId ?? undefined,
+          factoryLoomId: row.factoryLoomId ?? undefined,
+          designCode: row.designCode,
+          sareeTypeCode: row.sareeTypeCode,
+          loomNumber: row.weaverLoom ?? undefined,
+        });
+      }
+
+      return realBatchId;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      // eslint-disable-next-line no-console -- surface save failures instead of failing silently
+      console.error("Failed to save batch draft:", err);
+    },
   });
 
+  // Local-only — nothing currently calls updateBatch with real persisted
+  // fields; kept as an optimistic client patch so the exported context shape
+  // stays stable for any future/indirect caller.
   const updateBatchMutation = useMutation({
     mutationFn: (args: { batchId: string; patch: Partial<BatchRecord> }) => Promise.resolve(args),
     onSuccess: ({ batchId, patch }) =>
@@ -208,11 +171,14 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const finalizeBatchMutation = useMutation({
-    mutationFn: (batchId: string) => Promise.resolve(batchId),
-    onSuccess: (batchId) =>
-      queryClient.setQueryData<BatchRecord[]>(QUERY_KEY, prev =>
-        (prev ?? []).map(b => b.batchId === batchId ? { ...b, status: "active", updatedAt: new Date().toISOString() } : b)
-      ),
+    mutationFn: (batchId: string) => batchesApi.finalize(batchId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      // eslint-disable-next-line no-console -- surface finalize failures instead of failing silently
+      console.error("Failed to finalize batch:", err);
+    },
   });
 
   const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutate(batch);
@@ -223,7 +189,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     const allNums = batches
       .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
       .filter(n => n > 0);
-    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 93;
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 0;
     return `BATCH-${String(maxNum + 1).padStart(3, "0")}`;
   }, [batches]);
 

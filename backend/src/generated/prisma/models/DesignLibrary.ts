@@ -485,11 +485,6 @@ export type DesignLibraryMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type DesignLibraryScalarRelationFilter = {
-  is?: Prisma.DesignLibraryWhereInput
-  isNot?: Prisma.DesignLibraryWhereInput
-}
-
 export type DesignLibraryNullableScalarRelationFilter = {
   is?: Prisma.DesignLibraryWhereInput | null
   isNot?: Prisma.DesignLibraryWhereInput | null
@@ -543,10 +538,12 @@ export type DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput = {
   connect?: Prisma.DesignLibraryWhereUniqueInput
 }
 
-export type DesignLibraryUpdateOneRequiredWithoutBatchSareeRowsNestedInput = {
+export type DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput = {
   create?: Prisma.XOR<Prisma.DesignLibraryCreateWithoutBatchSareeRowsInput, Prisma.DesignLibraryUncheckedCreateWithoutBatchSareeRowsInput>
   connectOrCreate?: Prisma.DesignLibraryCreateOrConnectWithoutBatchSareeRowsInput
   upsert?: Prisma.DesignLibraryUpsertWithoutBatchSareeRowsInput
+  disconnect?: Prisma.DesignLibraryWhereInput | boolean
+  delete?: Prisma.DesignLibraryWhereInput | boolean
   connect?: Prisma.DesignLibraryWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.DesignLibraryUpdateToOneWithWhereWithoutBatchSareeRowsInput, Prisma.DesignLibraryUpdateWithoutBatchSareeRowsInput>, Prisma.DesignLibraryUncheckedUpdateWithoutBatchSareeRowsInput>
 }

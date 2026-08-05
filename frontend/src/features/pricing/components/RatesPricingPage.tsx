@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { T, F } from "./rates-pricing/theme";
 import { MakingChargesSection } from "./rates-pricing/MakingChargesSection";
@@ -8,6 +8,36 @@ import { JariSettingsSection } from "./rates-pricing/JariSettingsSection";
 import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 import { INITIAL_RATES, type SareeTypeRecord } from "./rates-pricing/sareeTypeData";
+import { ratesApi, type BackendRate } from "../../../shared/api/rates";
+
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "Today";
+  if (days === 1) return "1 day ago";
+  if (days < 7) return `${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks === 1) return "1 week ago";
+  if (weeks < 5) return `${weeks} weeks ago`;
+  const months = Math.floor(days / 30);
+  return months <= 1 ? "1 month ago" : `${months} months ago`;
+}
+
+function toRecord(backend: BackendRate): SareeTypeRecord {
+  return {
+    code: backend.code,
+    type: backend.type,
+    description: backend.description ?? "",
+    charge: String(Math.round(Number(backend.makingCharge))),
+    retail: String(Math.round(Number(backend.retailPrice))),
+    wholesale: String(Math.round(Number(backend.wholesalePrice))),
+    stdWeight: String(Math.round(Number(backend.stdWeightG))),
+    warpWeight: String(Math.round(Number(backend.warpWeightG))),
+    reshamWeight: String(Math.round(Number(backend.reshamWeightG))),
+    jariWeight: String(Math.round(Number(backend.jariWeightG))),
+    changed: timeAgo(backend.updatedAt),
+  };
+}
 
 const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -27,9 +57,51 @@ export type { JariUnit } from "./rates-pricing/jariUtils";
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 export function RatesPricingPage() {
-  // Saree types — mutable state so new additions persist in session
+  // Saree types — fetched from the backend; setRates keeps optimistic local edits
   const [rates, setRates] = useState<SareeTypeRecord[]>(INITIAL_RATES);
   const [viewCard, setViewCard] = useState<SareeTypeRecord | null>(null);
+
+  useEffect(() => {
+    ratesApi
+      .list()
+      .then((res) => setRates(res.items.map(toRecord)))
+      .catch(() => {
+        // keep the local seed as a fallback if the backend is unreachable
+      });
+  }, []);
+
+  function persistEdit(code: string, updates: Partial<SareeTypeRecord>) {
+    ratesApi
+      .update(code, {
+        type: updates.type,
+        description: updates.description,
+        makingCharge: updates.charge !== undefined ? Number(updates.charge) : undefined,
+        retailPrice: updates.retail !== undefined ? Number(updates.retail) : undefined,
+        wholesalePrice: updates.wholesale !== undefined ? Number(updates.wholesale) : undefined,
+        stdWeightG: updates.stdWeight !== undefined ? Number(updates.stdWeight) : undefined,
+        warpWeightG: updates.warpWeight !== undefined ? Number(updates.warpWeight) : undefined,
+        reshamWeightG: updates.reshamWeight !== undefined ? Number(updates.reshamWeight) : undefined,
+        jariWeightG: updates.jariWeight !== undefined ? Number(updates.jariWeight) : undefined,
+      })
+      .catch((err: unknown) => console.error("Failed to save rate change", err));
+  }
+
+  function persistNew(entry: SareeTypeRecord) {
+    ratesApi
+      .create({
+        code: entry.code,
+        type: entry.type,
+        description: entry.description || undefined,
+        makingCharge: Number(entry.charge),
+        retailPrice: Number(entry.retail),
+        wholesalePrice: Number(entry.wholesale),
+        stdWeightG: Number(entry.stdWeight),
+        warpWeightG: Number(entry.warpWeight),
+        reshamWeightG: Number(entry.reshamWeight),
+        jariWeightG: Number(entry.jariWeight),
+      })
+      .catch((err: unknown) => console.error("Failed to create rate", err));
+  }
 
   return (
     <>
@@ -104,7 +176,13 @@ export function RatesPricingPage() {
       </motion.div>
 
       {/* 3. SECTION A — MAKING CHARGE RATES */}
-      <MakingChargesSection rates={rates} setRates={setRates} onView={setViewCard} />
+      <MakingChargesSection
+        rates={rates}
+        setRates={setRates}
+        onView={setViewCard}
+        onPersistEdit={persistEdit}
+        onPersistNew={persistNew}
+      />
 
       {/* 4. SECTION B — RAW MATERIAL DEDUCTION RATES */}
       <DeductionRatesSection />

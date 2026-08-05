@@ -1,11 +1,12 @@
 import React from "react";
-import { T, F, G, WEAVERS } from "./batch-creation/constants";
+import { T, F, G } from "./batch-creation/constants";
 import { BatchRecord } from "../contexts/BatchContext";
 
 interface BatchCreationStatsHeaderProps {
   active: BatchRecord[];
   drafts: BatchRecord[];
   batches: BatchRecord[];
+  weaversActiveCount: number;
   tab: "new" | "drafts";
   setTab: (tab: "new" | "drafts") => void;
   editingBatchId: string | null;
@@ -23,6 +24,7 @@ export function BatchCreationStatsHeader({
   active,
   drafts,
   batches,
+  weaversActiveCount,
   tab,
   setTab,
   editingBatchId,
@@ -60,7 +62,7 @@ export function BatchCreationStatsHeader({
             { label: "Active Batches",   val: active.length    },
             { label: "Draft Batches",    val: drafts.length    },
             { label: "Total Sarees",     val: [...active, ...drafts].reduce((s, b) => s + b.totalCount, 0) },
-            { label: "Weavers Active",   val: WEAVERS.length, gold: true },
+            { label: "Weavers Active",   val: weaversActiveCount, gold: true },
           ].flatMap((s, i, arr) => {
             const cell = (
               <div key={s.label} style={{ padding: "20px 28px", background: s.gold ? "linear-gradient(135deg, rgba(200,155,71,0.18) 0%, rgba(200,155,71,0.08) 100%)" : undefined, borderTop: s.gold ? `3px solid ${T.antiqueGold}` : undefined }}>

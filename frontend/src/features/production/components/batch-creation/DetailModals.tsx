@@ -1,12 +1,12 @@
 import React from "react";
 import { Factory } from "@phosphor-icons/react";
 import { useBatches, SareeRow } from "../../contexts/BatchContext";
-import { FACTORY_LOOMS_LIST } from "../../data/factoryLooms";
-import { T, F, WEAVERS, Pip } from "./constants";
-import { PickerShell } from "./PickerModals";
+import { T, F, Pip } from "./constants";
+import { PickerShell, pipColor } from "./PickerModals";
+import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 
 // ── Detail Modals ────────────────────────────────────────────────────────────
-export function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS[0]; onClose: () => void }) {
+export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; onClose: () => void }) {
   const { batches } = useBatches();
   const weaverBatches = batches.filter(b => b.rows.some(r => r.weaverId === weaver.id));
   const activeBatch = weaverBatches.find(b => b.status === "active");
@@ -20,7 +20,7 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS
       <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Pip initials={weaver.initials} bg={weaver.bg} size={48} />
+            <Pip initials={weaver.initials} bg={pipColor(weaver.id)} size={48} />
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
                 <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{weaver.name}</span>
@@ -40,7 +40,7 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Looms Owned</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{weaver.loom} Loom{weaver.loom !== 1 ? "s" : ""}</div>
+            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{weaver.looms} Loom{weaver.looms !== 1 ? "s" : ""}</div>
           </div>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Experience</div>
@@ -60,10 +60,11 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: typeof WEAVERS
   );
 }
 
-export function FactoryLoomDetailsModal({ loom, onClose }: { loom: typeof FACTORY_LOOMS_LIST[0]; onClose: () => void }) {
+export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; onClose: () => void }) {
   const { batches } = useBatches();
-  const statusColor = loom.status === "active" ? T.green : loom.status === "maintenance" ? T.red : T.taupe;
-  const statusBg = loom.status === "active" ? "rgba(30,102,64,0.10)" : loom.status === "maintenance" ? "rgba(192,57,43,0.09)" : "rgba(139,112,96,0.10)";
+  const statusLower = loom.status.toLowerCase();
+  const statusColor = statusLower === "active" ? T.green : statusLower === "maintenance" ? T.red : T.taupe;
+  const statusBg = statusLower === "active" ? "rgba(30,102,64,0.10)" : statusLower === "maintenance" ? "rgba(192,57,43,0.09)" : "rgba(139,112,96,0.10)";
   const loomBatches = batches.filter(b => b.rows.some(r => r.factoryLoomId === loom.id));
   const activeBatchesCount = loomBatches.filter(b => b.status === "active").length;
   const totalBatchesCount = loomBatches.length;
@@ -84,7 +85,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: typeof FACTOR
           </div>
           <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: statusColor, background: statusBg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const, textTransform: "capitalize" as const }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor }} />
-            {loom.status}
+            {statusLower}
           </span>
         </div>
         <div style={{ height: 1, background: T.borderDef }} />

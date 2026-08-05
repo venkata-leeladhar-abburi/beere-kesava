@@ -20,8 +20,18 @@ export type FirmModel = runtime.Types.Result.DefaultSelection<Prisma.$FirmPayloa
 
 export type AggregateFirm = {
   _count: FirmCountAggregateOutputType | null
+  _avg: FirmAvgAggregateOutputType | null
+  _sum: FirmSumAggregateOutputType | null
   _min: FirmMinAggregateOutputType | null
   _max: FirmMaxAggregateOutputType | null
+}
+
+export type FirmAvgAggregateOutputType = {
+  purchaseAmount: runtime.Decimal | null
+}
+
+export type FirmSumAggregateOutputType = {
+  purchaseAmount: runtime.Decimal | null
 }
 
 export type FirmMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type FirmMinAggregateOutputType = {
   firmName: string | null
   gstNumber: string | null
   address: string | null
+  purchaseAmount: runtime.Decimal | null
   accountNumber: string | null
   ifscCode: string | null
   bankName: string | null
@@ -42,6 +53,7 @@ export type FirmMaxAggregateOutputType = {
   firmName: string | null
   gstNumber: string | null
   address: string | null
+  purchaseAmount: runtime.Decimal | null
   accountNumber: string | null
   ifscCode: string | null
   bankName: string | null
@@ -55,6 +67,7 @@ export type FirmCountAggregateOutputType = {
   firmName: number
   gstNumber: number
   address: number
+  purchaseAmount: number
   accountNumber: number
   ifscCode: number
   bankName: number
@@ -65,11 +78,20 @@ export type FirmCountAggregateOutputType = {
 }
 
 
+export type FirmAvgAggregateInputType = {
+  purchaseAmount?: true
+}
+
+export type FirmSumAggregateInputType = {
+  purchaseAmount?: true
+}
+
 export type FirmMinAggregateInputType = {
   id?: true
   firmName?: true
   gstNumber?: true
   address?: true
+  purchaseAmount?: true
   accountNumber?: true
   ifscCode?: true
   bankName?: true
@@ -83,6 +105,7 @@ export type FirmMaxAggregateInputType = {
   firmName?: true
   gstNumber?: true
   address?: true
+  purchaseAmount?: true
   accountNumber?: true
   ifscCode?: true
   bankName?: true
@@ -96,6 +119,7 @@ export type FirmCountAggregateInputType = {
   firmName?: true
   gstNumber?: true
   address?: true
+  purchaseAmount?: true
   accountNumber?: true
   ifscCode?: true
   bankName?: true
@@ -143,6 +167,18 @@ export type FirmAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: FirmAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: FirmSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: FirmMinAggregateInputType
@@ -173,6 +209,8 @@ export type FirmGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: FirmCountAggregateInputType | true
+  _avg?: FirmAvgAggregateInputType
+  _sum?: FirmSumAggregateInputType
   _min?: FirmMinAggregateInputType
   _max?: FirmMaxAggregateInputType
 }
@@ -182,6 +220,7 @@ export type FirmGroupByOutputType = {
   firmName: string
   gstNumber: string | null
   address: string | null
+  purchaseAmount: runtime.Decimal | null
   accountNumber: string | null
   ifscCode: string | null
   bankName: string | null
@@ -189,6 +228,8 @@ export type FirmGroupByOutputType = {
   contactPersonPhone: string | null
   createdAt: Date
   _count: FirmCountAggregateOutputType | null
+  _avg: FirmAvgAggregateOutputType | null
+  _sum: FirmSumAggregateOutputType | null
   _min: FirmMinAggregateOutputType | null
   _max: FirmMaxAggregateOutputType | null
 }
@@ -216,6 +257,7 @@ export type FirmWhereInput = {
   firmName?: Prisma.StringFilter<"Firm"> | string
   gstNumber?: Prisma.StringNullableFilter<"Firm"> | string | null
   address?: Prisma.StringNullableFilter<"Firm"> | string | null
+  purchaseAmount?: Prisma.DecimalNullableFilter<"Firm"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.StringNullableFilter<"Firm"> | string | null
   ifscCode?: Prisma.StringNullableFilter<"Firm"> | string | null
   bankName?: Prisma.StringNullableFilter<"Firm"> | string | null
@@ -235,6 +277,7 @@ export type FirmOrderByWithRelationInput = {
   firmName?: Prisma.SortOrder
   gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchaseAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   ifscCode?: Prisma.SortOrderInput | Prisma.SortOrder
   bankName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -257,6 +300,7 @@ export type FirmWhereUniqueInput = Prisma.AtLeast<{
   firmName?: Prisma.StringFilter<"Firm"> | string
   gstNumber?: Prisma.StringNullableFilter<"Firm"> | string | null
   address?: Prisma.StringNullableFilter<"Firm"> | string | null
+  purchaseAmount?: Prisma.DecimalNullableFilter<"Firm"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.StringNullableFilter<"Firm"> | string | null
   ifscCode?: Prisma.StringNullableFilter<"Firm"> | string | null
   bankName?: Prisma.StringNullableFilter<"Firm"> | string | null
@@ -276,6 +320,7 @@ export type FirmOrderByWithAggregationInput = {
   firmName?: Prisma.SortOrder
   gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchaseAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   ifscCode?: Prisma.SortOrderInput | Prisma.SortOrder
   bankName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -283,8 +328,10 @@ export type FirmOrderByWithAggregationInput = {
   contactPersonPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.FirmCountOrderByAggregateInput
+  _avg?: Prisma.FirmAvgOrderByAggregateInput
   _max?: Prisma.FirmMaxOrderByAggregateInput
   _min?: Prisma.FirmMinOrderByAggregateInput
+  _sum?: Prisma.FirmSumOrderByAggregateInput
 }
 
 export type FirmScalarWhereWithAggregatesInput = {
@@ -295,6 +342,7 @@ export type FirmScalarWhereWithAggregatesInput = {
   firmName?: Prisma.StringWithAggregatesFilter<"Firm"> | string
   gstNumber?: Prisma.StringNullableWithAggregatesFilter<"Firm"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Firm"> | string | null
+  purchaseAmount?: Prisma.DecimalNullableWithAggregatesFilter<"Firm"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.StringNullableWithAggregatesFilter<"Firm"> | string | null
   ifscCode?: Prisma.StringNullableWithAggregatesFilter<"Firm"> | string | null
   bankName?: Prisma.StringNullableWithAggregatesFilter<"Firm"> | string | null
@@ -308,6 +356,7 @@ export type FirmCreateInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -327,6 +376,7 @@ export type FirmUncheckedCreateInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -346,6 +396,7 @@ export type FirmUpdateInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -365,6 +416,7 @@ export type FirmUncheckedUpdateInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -384,6 +436,7 @@ export type FirmCreateManyInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -397,6 +450,7 @@ export type FirmUpdateManyMutationInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -410,6 +464,7 @@ export type FirmUncheckedUpdateManyInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -428,6 +483,7 @@ export type FirmCountOrderByAggregateInput = {
   firmName?: Prisma.SortOrder
   gstNumber?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  purchaseAmount?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   ifscCode?: Prisma.SortOrder
   bankName?: Prisma.SortOrder
@@ -436,11 +492,16 @@ export type FirmCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
+export type FirmAvgOrderByAggregateInput = {
+  purchaseAmount?: Prisma.SortOrder
+}
+
 export type FirmMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   firmName?: Prisma.SortOrder
   gstNumber?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  purchaseAmount?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   ifscCode?: Prisma.SortOrder
   bankName?: Prisma.SortOrder
@@ -454,12 +515,17 @@ export type FirmMinOrderByAggregateInput = {
   firmName?: Prisma.SortOrder
   gstNumber?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  purchaseAmount?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   ifscCode?: Prisma.SortOrder
   bankName?: Prisma.SortOrder
   contactPersonName?: Prisma.SortOrder
   contactPersonPhone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type FirmSumOrderByAggregateInput = {
+  purchaseAmount?: Prisma.SortOrder
 }
 
 export type FirmScalarRelationFilter = {
@@ -566,6 +632,7 @@ export type FirmCreateWithoutQuotationsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -584,6 +651,7 @@ export type FirmUncheckedCreateWithoutQuotationsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -618,6 +686,7 @@ export type FirmUpdateWithoutQuotationsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -636,6 +705,7 @@ export type FirmUncheckedUpdateWithoutQuotationsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -654,6 +724,7 @@ export type FirmCreateWithoutDispatchRecordsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -672,6 +743,7 @@ export type FirmUncheckedCreateWithoutDispatchRecordsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -706,6 +778,7 @@ export type FirmUpdateWithoutDispatchRecordsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -724,6 +797,7 @@ export type FirmUncheckedUpdateWithoutDispatchRecordsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -742,6 +816,7 @@ export type FirmCreateWithoutFinancialEntriesInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -760,6 +835,7 @@ export type FirmUncheckedCreateWithoutFinancialEntriesInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -794,6 +870,7 @@ export type FirmUpdateWithoutFinancialEntriesInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -812,6 +889,7 @@ export type FirmUncheckedUpdateWithoutFinancialEntriesInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -830,6 +908,7 @@ export type FirmCreateWithoutWeaverPaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -848,6 +927,7 @@ export type FirmUncheckedCreateWithoutWeaverPaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -882,6 +962,7 @@ export type FirmUpdateWithoutWeaverPaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -900,6 +981,7 @@ export type FirmUncheckedUpdateWithoutWeaverPaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -918,6 +1000,7 @@ export type FirmCreateWithoutVendorPaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -936,6 +1019,7 @@ export type FirmUncheckedCreateWithoutVendorPaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -970,6 +1054,7 @@ export type FirmUpdateWithoutVendorPaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -988,6 +1073,7 @@ export type FirmUncheckedUpdateWithoutVendorPaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1006,6 +1092,7 @@ export type FirmCreateWithoutInvoicePaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -1024,6 +1111,7 @@ export type FirmUncheckedCreateWithoutInvoicePaymentsInput = {
   firmName: string
   gstNumber?: string | null
   address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: string | null
   ifscCode?: string | null
   bankName?: string | null
@@ -1058,6 +1146,7 @@ export type FirmUpdateWithoutInvoicePaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1076,6 +1165,7 @@ export type FirmUncheckedUpdateWithoutInvoicePaymentsInput = {
   firmName?: Prisma.StringFieldUpdateOperationsInput | string
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1170,6 +1260,7 @@ export type FirmSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   firmName?: boolean
   gstNumber?: boolean
   address?: boolean
+  purchaseAmount?: boolean
   accountNumber?: boolean
   ifscCode?: boolean
   bankName?: boolean
@@ -1190,6 +1281,7 @@ export type FirmSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   firmName?: boolean
   gstNumber?: boolean
   address?: boolean
+  purchaseAmount?: boolean
   accountNumber?: boolean
   ifscCode?: boolean
   bankName?: boolean
@@ -1203,6 +1295,7 @@ export type FirmSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   firmName?: boolean
   gstNumber?: boolean
   address?: boolean
+  purchaseAmount?: boolean
   accountNumber?: boolean
   ifscCode?: boolean
   bankName?: boolean
@@ -1216,6 +1309,7 @@ export type FirmSelectScalar = {
   firmName?: boolean
   gstNumber?: boolean
   address?: boolean
+  purchaseAmount?: boolean
   accountNumber?: boolean
   ifscCode?: boolean
   bankName?: boolean
@@ -1224,7 +1318,7 @@ export type FirmSelectScalar = {
   createdAt?: boolean
 }
 
-export type FirmOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firmName" | "gstNumber" | "address" | "accountNumber" | "ifscCode" | "bankName" | "contactPersonName" | "contactPersonPhone" | "createdAt", ExtArgs["result"]["firm"]>
+export type FirmOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firmName" | "gstNumber" | "address" | "purchaseAmount" | "accountNumber" | "ifscCode" | "bankName" | "contactPersonName" | "contactPersonPhone" | "createdAt", ExtArgs["result"]["firm"]>
 export type FirmInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   financialEntries?: boolean | Prisma.Firm$financialEntriesArgs<ExtArgs>
   weaverPayments?: boolean | Prisma.Firm$weaverPaymentsArgs<ExtArgs>
@@ -1252,6 +1346,7 @@ export type $FirmPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     firmName: string
     gstNumber: string | null
     address: string | null
+    purchaseAmount: runtime.Decimal | null
     accountNumber: string | null
     ifscCode: string | null
     bankName: string | null
@@ -1691,6 +1786,7 @@ export interface FirmFieldRefs {
   readonly firmName: Prisma.FieldRef<"Firm", 'String'>
   readonly gstNumber: Prisma.FieldRef<"Firm", 'String'>
   readonly address: Prisma.FieldRef<"Firm", 'String'>
+  readonly purchaseAmount: Prisma.FieldRef<"Firm", 'Decimal'>
   readonly accountNumber: Prisma.FieldRef<"Firm", 'String'>
   readonly ifscCode: Prisma.FieldRef<"Firm", 'String'>
   readonly bankName: Prisma.FieldRef<"Firm", 'String'>
