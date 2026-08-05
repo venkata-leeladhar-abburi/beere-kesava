@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, Search, TrendingUp } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { INVOICES } from "../../data/invoices";
+import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
 import { EASE, F, T, useBulkOrders, BulkOrder, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
@@ -16,11 +17,44 @@ import { RecordPaymentModal } from "./RecordPaymentModal";
 import { ViewInvoiceModal } from "./ViewInvoiceModal";
 import { WholesaleTableView } from "./WholesaleTableView";
 
+const INVOICES_QUERY_KEY = ["invoices"] as const;
+
+function backendStatusToFrontend(status: BackendInvoice["status"]): Invoice["status"] {
+  if (status === "PAID") return "Paid";
+  if (status === "PARTIAL") return "Partial";
+  if (status === "OVERDUE") return "Overdue";
+  return "Pending";
+}
+
+function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
+  return {
+    id: inv.id,
+    customer: inv.customer?.name ?? "Unknown Customer",
+    city: inv.customer?.city ?? "—",
+    invoiceDate: new Date(inv.invoiceDate).toLocaleDateString("en-IN"),
+    dueDate: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-IN") : "—",
+    total: Number(inv.total),
+    paid: Number(inv.paid),
+    status: backendStatusToFrontend(inv.status),
+    payments: inv.payments.map(p => ({
+      amount: Number(p.amount),
+      date: new Date(p.date).toLocaleDateString("en-IN"),
+      utr: p.utr ?? "",
+      method: p.method ?? "",
+    })),
+  };
+}
+
 export function WholesaleCollectionsSection() {
   const { dispatches } = useFinishing();
   const { bulkOrders } = useBulkOrders();
-  const { firms, addIncomeEntry } = useFirms();
-  const [invoices, setInvoices] = useState<Invoice[]>(INVOICES);
+  const { addIncomeEntry } = useFirms();
+  const queryClient = useQueryClient();
+
+  const { data: invoices = [] } = useQuery({
+    queryKey: INVOICES_QUERY_KEY,
+    queryFn: async () => (await invoicesApi.list()).items.map(backendInvoiceToFrontend),
+  });
   const [view, setView] = useState<"card" | "list" | "table">("card");
   const [search, setSearch] = useState("");
 
@@ -34,29 +68,36 @@ export function WholesaleCollectionsSection() {
   const [filterType, setFilterType] = useState("All Invoice Types");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
+  const createInvoiceMutation = useMutation({
+    mutationFn: invoicesApi.create,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to create invoice for dispatch:", err);
+    },
+  });
+
+  // A wholesale dispatch with an invoiceNumber means an invoice should exist
+  // for it — but Invoice has no FK back to a Dispatch (invoiceNumber is a
+  // free-text field on DispatchRecord, not an id), so a real Invoice is
+  // created here the first time we see a wholesale dispatch whose customer
+  // has no invoice yet for that exact total, rather than fabricating a fake
+  // client-side Invoice object like before.
   useEffect(() => {
-    setInvoices(prev => {
-      const updated = [...prev];
-      dispatches.forEach(d => {
-        if (d.type === "wholesale" && d.invoiceNumber) {
-          const exists = updated.some(i => i.id === d.invoiceNumber);
-          if (!exists) {
-            updated.push({
-              id: d.invoiceNumber,
-              customer: d.customerName || "Wholesale Customer",
-              city: "Surat",
-              invoiceDate: d.invoiceDate || new Date().toLocaleDateString("en-IN"),
-              dueDate: d.paymentDueDate || new Date().toLocaleDateString("en-IN"),
-              total: d.grandTotal || d.totalAmount || 0,
-              paid: 0,
-              status: "Pending",
-              payments: []
-            });
-          }
-        }
-      });
-      return updated;
+    dispatches.forEach(d => {
+      if (d.type !== "wholesale" || !d.invoiceNumber || !d.customerId) return;
+      const total = d.grandTotal || d.totalAmount || 0;
+      const alreadyInvoiced = invoices.some(i => i.customer && total === i.total);
+      if (!alreadyInvoiced && !createInvoiceMutation.isPending) {
+        createInvoiceMutation.mutate({
+          customerId: d.customerId,
+          dueDate: d.paymentDueDate,
+          total,
+        });
+      }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the dispatch list itself changes
   }, [dispatches]);
 
   const matchBulkOrder = (invId: string): BulkOrder | undefined => {
@@ -64,33 +105,39 @@ export function WholesaleCollectionsSection() {
     return bulkOrders.find(o => o.ref.split("-").pop() === suffix);
   };
 
+  const recordPaymentMutation = useMutation({
+    mutationFn: (args: { id: string; amount: number; utr: string; method: string; firmId: string }) =>
+      invoicesApi.recordPayment(args.id, { amount: args.amount, utr: args.utr || undefined, method: args.method || undefined, firmId: args.firmId || undefined }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to record invoice payment:", err);
+      toast.error("Failed to record payment");
+    },
+  });
+
   const handleSavePayment = (amount: number, firmId: string, utr: string, date: string, method: string) => {
     if (!recordPayment) return;
-    const firm = firms.find(f => f.id === firmId);
-
-    setInvoices(prev => prev.map(i => {
-      if (i.id === recordPayment.id) {
-        const newPaid = Math.min(i.total, i.paid + amount);
-        const newPayments = [
-          ...(i.payments || []),
-          { amount, date, utr, method, firmName: firm ? firm.firmName : "Surat Zari Works" }
-        ];
-        return {
-          ...i,
-          paid: newPaid,
-          status: newPaid >= i.total ? "Paid" : "Partial",
-          payments: newPayments
-        };
-      }
-      return i;
-    }));
-    addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
+    recordPaymentMutation.mutate({ id: recordPayment.id, amount, utr, method, firmId });
+    if (firmId) {
+      addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
+    }
     toast.success(`Payment of ₹${amount.toLocaleString("en-IN")} recorded for ${recordPayment.customer}`);
     setRecordPayment(null);
   };
 
   const overdueInvs = invoices.filter(i => i.status === "Overdue");
   const overdueTotal = overdueInvs.reduce((s, i) => s + (i.total - i.paid), 0);
+
+  // Real aggregates from the invoices actually fetched — the underlying
+  // Invoice model has no separate "collected this week" concept, so these
+  // are all-time totals rather than the fixed calendar windows the old
+  // mock numbers implied.
+  const totalInvoiced = invoices.reduce((s, i) => s + i.total, 0);
+  const totalOutstanding = invoices.reduce((s, i) => s + (i.total - i.paid), 0);
+  const totalCollected = invoices.reduce((s, i) => s + i.paid, 0);
+  const formatRupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.customer.toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase());
@@ -133,8 +180,8 @@ export function WholesaleCollectionsSection() {
             {
               icon: <Receipt size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
-              label: "Total Invoiced This Month",
-              value: "₹52,80,000",
+              label: "Total Invoiced",
+              value: formatRupees(totalInvoiced),
               sub: "Across all wholesale customers",
               hi: false, crimson: false,
             },
@@ -142,23 +189,23 @@ export function WholesaleCollectionsSection() {
               icon: <CircleAlert size={22} color={T.crimson} />,
               iconBg: "rgba(192,57,43,0.08)",
               label: "Total Outstanding",
-              value: "₹18,40,000",
+              value: formatRupees(totalOutstanding),
               sub: "Yet to be collected",
               hi: false, crimson: true,
             },
             {
-              icon: <TrendingUp size={22} color={T.green} />,
-              iconBg: "rgba(30,102,64,0.08)",
-              label: "Collected This Week",
-              value: "₹6,20,000",
-              sub: "Payments received this week",
-              hi: false, crimson: false, green: true,
+              icon: <TrendingUp size={22} color={T.crimson} />,
+              iconBg: "rgba(192,57,43,0.08)",
+              label: "Overdue",
+              value: formatRupees(overdueTotal),
+              sub: `${overdueInvs.length} invoice${overdueInvs.length !== 1 ? "s" : ""} overdue`,
+              hi: false, crimson: true,
             },
             {
               icon: <BadgeCheck size={22} color={T.antiqueGold} />,
               iconBg: "rgba(200,155,71,0.16)",
-              label: "Total Collected This Month",
-              value: "₹32,60,000",
+              label: "Total Collected",
+              value: formatRupees(totalCollected),
               sub: "Payments received this month",
               hi: true, crimson: false,
             },

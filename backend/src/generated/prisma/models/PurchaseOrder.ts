@@ -43,6 +43,7 @@ export type PurchaseOrderMinAggregateOutputType = {
   urgency: string | null
   status: $Enums.PurchaseOrderStatus | null
   grnId: string | null
+  rejectionReason: string | null
   createdAt: Date | null
 }
 
@@ -55,6 +56,7 @@ export type PurchaseOrderMaxAggregateOutputType = {
   urgency: string | null
   status: $Enums.PurchaseOrderStatus | null
   grnId: string | null
+  rejectionReason: string | null
   createdAt: Date | null
 }
 
@@ -67,6 +69,7 @@ export type PurchaseOrderCountAggregateOutputType = {
   urgency: number
   status: number
   grnId: number
+  rejectionReason: number
   createdAt: number
   _all: number
 }
@@ -89,6 +92,7 @@ export type PurchaseOrderMinAggregateInputType = {
   urgency?: true
   status?: true
   grnId?: true
+  rejectionReason?: true
   createdAt?: true
 }
 
@@ -101,6 +105,7 @@ export type PurchaseOrderMaxAggregateInputType = {
   urgency?: true
   status?: true
   grnId?: true
+  rejectionReason?: true
   createdAt?: true
 }
 
@@ -113,6 +118,7 @@ export type PurchaseOrderCountAggregateInputType = {
   urgency?: true
   status?: true
   grnId?: true
+  rejectionReason?: true
   createdAt?: true
   _all?: true
 }
@@ -212,6 +218,7 @@ export type PurchaseOrderGroupByOutputType = {
   urgency: string | null
   status: $Enums.PurchaseOrderStatus
   grnId: string | null
+  rejectionReason: string | null
   createdAt: Date
   _count: PurchaseOrderCountAggregateOutputType | null
   _avg: PurchaseOrderAvgAggregateOutputType | null
@@ -247,6 +254,7 @@ export type PurchaseOrderWhereInput = {
   urgency?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   status?: Prisma.EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
   grnId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrder"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
 }
@@ -260,6 +268,7 @@ export type PurchaseOrderOrderByWithRelationInput = {
   urgency?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   grnId?: Prisma.SortOrderInput | Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   vendor?: Prisma.VendorOrderByWithRelationInput
 }
@@ -276,6 +285,7 @@ export type PurchaseOrderWhereUniqueInput = Prisma.AtLeast<{
   urgency?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   status?: Prisma.EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
   grnId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrder"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
 }, "id" | "poNumber">
@@ -289,6 +299,7 @@ export type PurchaseOrderOrderByWithAggregationInput = {
   urgency?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   grnId?: Prisma.SortOrderInput | Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.PurchaseOrderCountOrderByAggregateInput
   _avg?: Prisma.PurchaseOrderAvgOrderByAggregateInput
@@ -309,6 +320,7 @@ export type PurchaseOrderScalarWhereWithAggregatesInput = {
   urgency?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
   status?: Prisma.EnumPurchaseOrderStatusWithAggregatesFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
   grnId?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
+  rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PurchaseOrder"> | Date | string
 }
 
@@ -320,6 +332,7 @@ export type PurchaseOrderCreateInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
   vendor: Prisma.VendorCreateNestedOneWithoutPurchaseOrdersInput
 }
@@ -333,6 +346,7 @@ export type PurchaseOrderUncheckedCreateInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
 }
 
@@ -344,6 +358,7 @@ export type PurchaseOrderUpdateInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   vendor?: Prisma.VendorUpdateOneRequiredWithoutPurchaseOrdersNestedInput
 }
@@ -357,6 +372,7 @@ export type PurchaseOrderUncheckedUpdateInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -369,6 +385,7 @@ export type PurchaseOrderCreateManyInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
 }
 
@@ -380,6 +397,7 @@ export type PurchaseOrderUpdateManyMutationInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -392,6 +410,7 @@ export type PurchaseOrderUncheckedUpdateManyInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -414,6 +433,7 @@ export type PurchaseOrderCountOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   grnId?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -430,6 +450,7 @@ export type PurchaseOrderMaxOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   grnId?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -442,6 +463,7 @@ export type PurchaseOrderMinOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   grnId?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -503,6 +525,7 @@ export type PurchaseOrderCreateWithoutVendorInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
 }
 
@@ -514,6 +537,7 @@ export type PurchaseOrderUncheckedCreateWithoutVendorInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
 }
 
@@ -555,6 +579,7 @@ export type PurchaseOrderScalarWhereInput = {
   urgency?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   status?: Prisma.EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
   grnId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrder"> | Date | string
 }
 
@@ -566,6 +591,7 @@ export type PurchaseOrderCreateManyVendorInput = {
   urgency?: string | null
   status?: $Enums.PurchaseOrderStatus
   grnId?: string | null
+  rejectionReason?: string | null
   createdAt?: Date | string
 }
 
@@ -577,6 +603,7 @@ export type PurchaseOrderUpdateWithoutVendorInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -588,6 +615,7 @@ export type PurchaseOrderUncheckedUpdateWithoutVendorInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -599,6 +627,7 @@ export type PurchaseOrderUncheckedUpdateManyWithoutVendorInput = {
   urgency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
   grnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -613,6 +642,7 @@ export type PurchaseOrderSelect<ExtArgs extends runtime.Types.Extensions.Interna
   urgency?: boolean
   status?: boolean
   grnId?: boolean
+  rejectionReason?: boolean
   createdAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrder"]>
@@ -626,6 +656,7 @@ export type PurchaseOrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   urgency?: boolean
   status?: boolean
   grnId?: boolean
+  rejectionReason?: boolean
   createdAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrder"]>
@@ -639,6 +670,7 @@ export type PurchaseOrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   urgency?: boolean
   status?: boolean
   grnId?: boolean
+  rejectionReason?: boolean
   createdAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrder"]>
@@ -652,10 +684,11 @@ export type PurchaseOrderSelectScalar = {
   urgency?: boolean
   status?: boolean
   grnId?: boolean
+  rejectionReason?: boolean
   createdAt?: boolean
 }
 
-export type PurchaseOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "poNumber" | "vendorId" | "deliveryDate" | "totalValue" | "urgency" | "status" | "grnId" | "createdAt", ExtArgs["result"]["purchaseOrder"]>
+export type PurchaseOrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "poNumber" | "vendorId" | "deliveryDate" | "totalValue" | "urgency" | "status" | "grnId" | "rejectionReason" | "createdAt", ExtArgs["result"]["purchaseOrder"]>
 export type PurchaseOrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
 }
@@ -680,6 +713,7 @@ export type $PurchaseOrderPayload<ExtArgs extends runtime.Types.Extensions.Inter
     urgency: string | null
     status: $Enums.PurchaseOrderStatus
     grnId: string | null
+    rejectionReason: string | null
     createdAt: Date
   }, ExtArgs["result"]["purchaseOrder"]>
   composites: {}
@@ -1113,6 +1147,7 @@ export interface PurchaseOrderFieldRefs {
   readonly urgency: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly status: Prisma.FieldRef<"PurchaseOrder", 'PurchaseOrderStatus'>
   readonly grnId: Prisma.FieldRef<"PurchaseOrder", 'String'>
+  readonly rejectionReason: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly createdAt: Prisma.FieldRef<"PurchaseOrder", 'DateTime'>
 }
     

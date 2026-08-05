@@ -1,0 +1,68 @@
+import React, { createContext, useContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
+
+// Thin real-backend directory of Customer{id,name,type,...} records — the
+// FK target for BulkOrder.customerId, Quotation.customerId, and
+// Dispatch.customerId. The richer analytics dashboard in CustomersPage.tsx
+// (spend, order counts, payment-dues messaging) still runs on local mock
+// data: that history comes from Sales, a separate system that isn't wired
+// yet, so faking it here would just be a differently-shaped mock. This
+// context is the real directory other real flows (Bulk Orders, Quotations,
+// Dispatch) resolve customer ids against.
+export type Customer = BackendCustomer;
+
+interface CustomersContextValue {
+  customers: Customer[];
+  wholesaleCustomers: Customer[];
+  retailCustomers: Customer[];
+  addCustomer: (payload: CreateCustomerPayload) => Promise<Customer>;
+  updateCustomer: (id: string, payload: UpdateCustomerPayload) => void;
+}
+
+const CustomersContext = createContext<CustomersContextValue | null>(null);
+
+const QUERY_KEY = ["customers"] as const;
+
+export function CustomersProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
+
+  const { data: customers = [] } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => (await customersApi.list()).items,
+  });
+
+  const addCustomerMutation = useMutation({
+    mutationFn: (payload: CreateCustomerPayload) => customersApi.create(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: (args: { id: string; payload: UpdateCustomerPayload }) =>
+      customersApi.update(args.id, args.payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+
+  const addCustomer = (payload: CreateCustomerPayload) => addCustomerMutation.mutateAsync(payload);
+  const updateCustomer = (id: string, payload: UpdateCustomerPayload) =>
+    updateCustomerMutation.mutate({ id, payload });
+
+  const wholesaleCustomers = customers.filter(c => c.type === "WHOLESALE");
+  const retailCustomers = customers.filter(c => c.type === "RETAIL");
+
+  return (
+    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, addCustomer, updateCustomer }}>
+      {children}
+    </CustomersContext.Provider>
+  );
+}
+
+export function useCustomers(): CustomersContextValue {
+  const ctx = useContext(CustomersContext);
+  if (!ctx) throw new Error("useCustomers must be used inside CustomersProvider");
+  return ctx;
+}

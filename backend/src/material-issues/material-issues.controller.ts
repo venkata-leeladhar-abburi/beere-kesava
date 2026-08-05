@@ -1,4 +1,18 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { signatureUploadOptions } from "../common/storage/upload.config";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
 import { MaterialIssuesService } from "./material-issues.service";
@@ -27,8 +41,12 @@ export class MaterialIssuesController {
 
   @Post(":id/sign")
   @HttpCode(HttpStatus.OK)
-  sign(@Param("id") id: string) {
-    return this.materialIssuesService.sign(id);
+  @UseInterceptors(FileInterceptor("signature", signatureUploadOptions()))
+  sign(@Param("id") id: string, @UploadedFile() signature?: Express.Multer.File) {
+    if (!signature) {
+      throw new BadRequestException("A signature image file is required");
+    }
+    return this.materialIssuesService.sign(id, signature);
   }
 
   @Post(":id/cancel")

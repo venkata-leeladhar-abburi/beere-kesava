@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
 import { ListPurchaseOrdersQueryDto } from "./dto/list-purchase-orders-query.dto";
+import { RejectPurchaseOrderDto } from "./dto/reject-purchase-order.dto";
 import { PurchaseOrdersService } from "./purchase-orders.service";
 
 // NOTE: RBAC guards intentionally not yet applied — see the same note in
@@ -33,8 +34,8 @@ export class PurchaseOrdersController {
 
   @Post(":id/reject")
   @HttpCode(HttpStatus.OK)
-  reject(@Param("id") id: string) {
-    return this.purchaseOrdersService.reject(id);
+  reject(@Param("id") id: string, @Body() dto: RejectPurchaseOrderDto) {
+    return this.purchaseOrdersService.reject(id, dto);
   }
 
   @Post(":id/grn")

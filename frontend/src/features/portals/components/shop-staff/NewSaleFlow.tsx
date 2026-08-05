@@ -9,6 +9,8 @@ import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
 import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
+import { ApiError } from "../../../../shared/api/client";
+import { scanApi } from "../../../../shared/api/scan";
 
 export function NewSaleFlow() {
   const canSeePrices = useCanSeePrices();
@@ -28,7 +30,8 @@ export function NewSaleFlow() {
   const [showCustomerList, setShowCustomerList] = useState(false);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
 
-  const saree = { id: "PADMA-L1-004", design: "BKB-045", name: "Cream Zari Border Saree", type: "Self Brocade · SB-001", typeCode: "SB-001", weight: "842 grams", weaver: "Padma Veni" };
+  const [saree, setSaree] = useState({ id: "", design: "", name: "", type: "", typeCode: "", weight: "—", weaver: "" });
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const originalPrice = Number(getSareeTypeByCode(saree.typeCode)?.retail ?? 0);
   const [soldPrice, setSoldPrice] = useState(originalPrice);
@@ -50,7 +53,32 @@ export function NewSaleFlow() {
     )
     : prevCustomers;
 
-  const handleScan = () => setSareeFound(true);
+  const handleScan = async () => {
+    const id = manualId.trim();
+    if (!id) {
+      setScanError("Enter a saree ID to look it up (no live camera decoding yet).");
+      return;
+    }
+    setScanError(null);
+    try {
+      const result = await scanApi.lookup(id);
+      const typeCode = result.sareeType?.code ?? "";
+      const nextSaree = {
+        id: result.sareeId,
+        design: result.design?.code ?? "—",
+        name: result.design?.name ?? result.sareeType?.type ?? "—",
+        type: result.sareeType ? `${result.sareeType.type} · ${result.sareeType.code}` : "—",
+        typeCode,
+        weight: "—",
+        weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.loomNumber}` : "—"),
+      };
+      setSaree(nextSaree);
+      setSoldPrice(Number(getSareeTypeByCode(typeCode)?.retail ?? 0));
+      setSareeFound(true);
+    } catch (err) {
+      setScanError(err instanceof ApiError ? err.message : "Could not find this saree.");
+    }
+  };
 
   const handleSelectCustomer = (cust: Customer) => {
     setSelectedCustomer(cust);
@@ -170,6 +198,7 @@ export function NewSaleFlow() {
           isMobile={isMobile}
           fmtPrice={fmtPrice}
           handleScan={handleScan}
+          scanError={scanError}
           onBack={() => setStep(1)}
           onNext={() => setStep(3)}
         />

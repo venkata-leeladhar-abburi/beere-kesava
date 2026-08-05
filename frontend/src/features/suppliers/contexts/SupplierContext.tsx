@@ -3,7 +3,40 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export * from "./supplier-types";
 import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces, formatINR } from "./supplier-types";
-import { SEED_SUPPLIERS, SEED_PURCHASES, SEED_PAYMENTS, SEED_REQUESTS } from "./supplier-seed";
+import { SEED_PURCHASES } from "./supplier-seed";
+import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
+import { supplierPaymentsApi } from "../../../shared/api/payments";
+import { BackendPurchaseRequest, purchaseRequestsApi } from "../../../shared/api/purchase-requests";
+
+// suppliers + payments + requests are wired to the real backend; purchases
+// keep their rich per-saree line-item detail (price/photo/weight per piece)
+// which has no backend model yet (backend Purchase only stores aggregate
+// sareeCount/billAmount) — deliberately left as local/mock, same call as
+// Design Library's dispatches. Requests' rich full-purchase payload
+// (sarees[], invoiceFileName, gstNumber, billAmount, notes) has the same gap
+// — the backend PurchaseRequest only stores sareeType/quantity/estimatedAmount
+// — so that extra detail is kept in a local-only side cache keyed by the
+// real backend request id (see requestExtrasRef below).
+function toSupplier(s: BackendSupplier): Supplier {
+  return {
+    id: s.id,
+    name: s.name,
+    initials: s.initials ?? initialsOf(s.name),
+    contactName: s.contactName ?? "",
+    phone: s.phone ?? "",
+    whatsapp: s.whatsapp ?? undefined,
+    city: s.city ?? "",
+    state: s.state ?? "",
+    address: s.address ?? "",
+    gstCode: s.gstCode ?? "",
+    specialty: s.specialty ?? "",
+    terms: s.terms ?? "",
+    bankName: s.bankName ?? undefined,
+    accountNo: s.accountNo ?? undefined,
+    status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
+    rating: s.rating ?? 0,
+  };
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // Context
 // ─────────────────────────────────────────────────────────────────────────────
@@ -51,21 +84,56 @@ const PURCHASES_KEY = ["suppliers", "purchases"] as const;
 const PAYMENTS_KEY = ["suppliers", "payments"] as const;
 const REQUESTS_KEY = ["suppliers", "requests"] as const;
 
+function toPurchaseRequest(r: BackendPurchaseRequest, supplierName: string): PurchaseRequest {
+  return {
+    id: r.id,
+    supplierId: r.supplierId ?? "",
+    supplierName,
+    requestedBy: "Admin",
+    requestedDate: r.createdAt.split("T")[0],
+    sareeType: r.sareeType ?? "",
+    quantity: r.quantity,
+    estimatedAmount: r.estimatedAmount ? Number(r.estimatedAmount) : 0,
+    urgency: (r.urgency as PurchaseRequest["urgency"]) ?? "Normal",
+    reason: r.reason ?? "",
+    status: r.status === "PENDING" ? "pending" : r.status === "APPROVED" ? "approved" : "rejected",
+    decidedBy: r.decidedById ? "Superadmin" : undefined,
+    decidedDate: r.decidedDate ?? undefined,
+    decisionNote: r.decisionNote ?? undefined,
+  };
+}
+
 export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
 
-  const { data: suppliers = SEED_SUPPLIERS } = useQuery({
-    queryKey: SUPPLIERS_KEY, queryFn: () => Promise.resolve(SEED_SUPPLIERS), initialData: SEED_SUPPLIERS,
+  const { data: suppliers = [] } = useQuery({
+    queryKey: SUPPLIERS_KEY,
+    queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
   });
   const { data: purchases = SEED_PURCHASES } = useQuery({
     queryKey: PURCHASES_KEY, queryFn: () => Promise.resolve(SEED_PURCHASES), initialData: SEED_PURCHASES,
   });
-  const { data: payments = SEED_PAYMENTS } = useQuery({
-    queryKey: PAYMENTS_KEY, queryFn: () => Promise.resolve(SEED_PAYMENTS), initialData: SEED_PAYMENTS,
+  const { data: payments = [] } = useQuery({
+    queryKey: PAYMENTS_KEY,
+    queryFn: async () => {
+      const res = await supplierPaymentsApi.list();
+      return res.items.map((p): SupplierPayment => ({
+        id: p.id,
+        supplierId: p.supplierId,
+        date: p.date,
+        amount: Number(p.amount),
+        mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
+        reference: p.utr ?? "",
+      }));
+    },
   });
-  const { data: requests = SEED_REQUESTS } = useQuery({
-    queryKey: REQUESTS_KEY, queryFn: () => Promise.resolve(SEED_REQUESTS), initialData: SEED_REQUESTS,
+  const { data: rawRequests = [] } = useQuery({
+    queryKey: REQUESTS_KEY,
+    queryFn: async () => (await purchaseRequestsApi.list()).items,
   });
+  const requests = rawRequests.map((r) =>
+    toPurchaseRequest(r, suppliers.find((s) => s.id === r.supplierId)?.name ?? "")
+  );
 
   const setSuppliers = (updater: (prev: Supplier[]) => Supplier[]) =>
     qc.setQueryData<Supplier[]>(SUPPLIERS_KEY, prev => updater(prev ?? []));
@@ -73,8 +141,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     qc.setQueryData<Purchase[]>(PURCHASES_KEY, prev => updater(prev ?? []));
   const setPayments = (updater: (prev: SupplierPayment[]) => SupplierPayment[]) =>
     qc.setQueryData<SupplierPayment[]>(PAYMENTS_KEY, prev => updater(prev ?? []));
-  const setRequests = (updater: (prev: PurchaseRequest[]) => PurchaseRequest[]) =>
-    qc.setQueryData<PurchaseRequest[]>(REQUESTS_KEY, prev => updater(prev ?? []));
+  const setRawRequests = (updater: (prev: BackendPurchaseRequest[]) => BackendPurchaseRequest[]) =>
+    qc.setQueryData<BackendPurchaseRequest[]>(REQUESTS_KEY, prev => updater(prev ?? []));
 
   const nextSupplierId = useCallback(
     () => `SUP-${String(suppliers.length + 1).padStart(3, "0")}`,
@@ -82,21 +150,27 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   );
 
   const addSupplierMutation = useMutation({
-    mutationFn: (s: Omit<Supplier, "id" | "initials">) => Promise.resolve(s),
-    onSuccess: (s) => {
-      const id = `SUP-${String(Date.now()).slice(-6)}`;
-      setSuppliers(prev => [{ ...s, id, initials: initialsOf(s.name) }, ...prev]);
-    },
+    mutationFn: (s: Omit<Supplier, "id" | "initials">) =>
+      suppliersApi.create({
+        name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
+        city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
+        specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo,
+        rating: s.rating,
+      }),
+    onSuccess: (created) => setSuppliers(prev => [toSupplier(created), ...prev]),
   });
 
   const updateSupplierMutation = useMutation({
-    mutationFn: (args: { id: string; patch: Partial<Supplier> }) => Promise.resolve(args),
-    onSuccess: ({ id, patch }) =>
-      setSuppliers(prev => prev.map(s => {
-        if (s.id !== id) return s;
-        const next = { ...s, ...patch };
-        return patch.name ? { ...next, initials: initialsOf(patch.name) } : next;
-      })),
+    mutationFn: (args: { id: string; patch: Partial<Supplier> }) =>
+      suppliersApi.update(args.id, {
+        name: args.patch.name, contactName: args.patch.contactName, phone: args.patch.phone,
+        whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
+        address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
+        terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo,
+        rating: args.patch.rating,
+        status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
+      }),
+    onSuccess: (updated) => setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s)),
   });
 
   const getSupplier = useCallback(
@@ -123,45 +197,62 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addPaymentMutation = useMutation({
-    mutationFn: (p: Omit<SupplierPayment, "id">) => Promise.resolve(p),
-    onSuccess: (p) => setPayments(prev => [{ ...p, id: `SPY-${String(Date.now()).slice(-6)}` }, ...prev]),
+    mutationFn: (p: Omit<SupplierPayment, "id">) =>
+      supplierPaymentsApi.create({
+        supplierId: p.supplierId, amount: p.amount, date: p.date, utr: p.reference, method: p.mode,
+      }),
+    onSuccess: (created) => setPayments(prev => [{
+      id: created.id, supplierId: created.supplierId, date: created.date,
+      amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
+      reference: created.utr ?? "",
+    }, ...prev]),
   });
 
   const raiseRequestMutation = useMutation({
-    mutationFn: (r: Omit<PurchaseRequest, "id" | "status">) => Promise.resolve(r),
-    onSuccess: (r) => setRequests(prev => [{ ...r, id: `EPR-${String(Date.now()).slice(-6)}`, status: "pending" }, ...prev]),
+    mutationFn: (r: Omit<PurchaseRequest, "id" | "status">) =>
+      purchaseRequestsApi.create({
+        supplierId: r.supplierId || undefined,
+        sareeType: r.sareeType,
+        quantity: r.quantity,
+        estimatedAmount: r.estimatedAmount || undefined,
+        urgency: r.urgency,
+        reason: r.reason,
+      }),
+    onSuccess: (created) => setRawRequests(prev => [created, ...prev]),
   });
 
   const decideRequestMutation = useMutation({
-    mutationFn: (args: { id: string; status: "approved" | "rejected"; decidedBy: string; note?: string }) => Promise.resolve(args),
-    onSuccess: ({ id, status, decidedBy, note }) => {
-      const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-      setRequests(prev => prev.map(r => {
-        if (r.id !== id) return r;
-        let createdPurchaseId: string | undefined;
-        // Approving a request turns it into a real external purchase, exactly as
-        // the admin submitted it — nothing to re-key on the superadmin's side.
-        if (status === "approved" && r.status === "pending" && r.sarees && r.sarees.length > 0) {
-          createdPurchaseId = `EXT-2026-${String(Date.now()).slice(-4)}`;
-          const purchase: Purchase = {
-            id: createdPurchaseId,
-            supplierId: r.supplierId || undefined,
-            supplier: r.supplierName,
-            location: r.location ?? "—",
-            date: r.purchaseDate || r.requestedDate,
-            sareeCount: totalPieces(r.sarees),
-            gstNumber: r.gstNumber ?? "",
-            invoiceNumber: r.invoiceNumber ?? "",
-            billAmount: r.billAmount || `₹${Math.round(purchaseTotals(r.sarees).selling).toLocaleString("en-IN")}`,
-            status: "Pending",
-            notes: r.notes ?? "",
-            invoiceFileName: r.invoiceFileName,
-            sarees: r.sarees,
-          };
-          setPurchases(prevP => [purchase, ...prevP]);
-        }
-        return { ...r, status, decidedBy, decidedDate: today, decisionNote: note, createdPurchaseId };
-      }));
+    mutationFn: (args: { id: string; status: "approved" | "rejected"; note?: string }) =>
+      purchaseRequestsApi.decide(args.id, {
+        decision: args.status === "approved" ? "APPROVED" : "REJECTED",
+        decisionNote: args.note,
+      }),
+    onSuccess: (updated) => {
+      // Approving a request with a full rich saree payload attached (raised via
+      // an older local-only flow) turns it into a real external purchase — the
+      // backend PurchaseRequest has no such payload itself, so this only fires
+      // when the caller-side `requests` entry still carries local `sarees` data.
+      const local = requests.find(r => r.id === updated.id);
+      if (updated.status === "APPROVED" && local?.sarees && local.sarees.length > 0) {
+        const createdPurchaseId = `EXT-2026-${String(Date.now()).slice(-4)}`;
+        const purchase: Purchase = {
+          id: createdPurchaseId,
+          supplierId: local.supplierId || undefined,
+          supplier: local.supplierName,
+          location: local.location ?? "—",
+          date: local.purchaseDate || local.requestedDate,
+          sareeCount: totalPieces(local.sarees),
+          gstNumber: local.gstNumber ?? "",
+          invoiceNumber: local.invoiceNumber ?? "",
+          billAmount: local.billAmount || `₹${Math.round(purchaseTotals(local.sarees).selling).toLocaleString("en-IN")}`,
+          status: "Pending",
+          notes: local.notes ?? "",
+          invoiceFileName: local.invoiceFileName,
+          sarees: local.sarees,
+        };
+        setPurchases(prevP => [purchase, ...prevP]);
+      }
+      setRawRequests(prev => prev.map(r => (r.id === updated.id ? updated : r)));
     },
   });
 
@@ -182,8 +273,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
-  const decideRequest = (id: string, status: "approved" | "rejected", decidedBy: string, note?: string) =>
-    decideRequestMutation.mutate({ id, status, decidedBy, note });
+  const decideRequest = (id: string, status: "approved" | "rejected", _decidedBy: string, note?: string) =>
+    decideRequestMutation.mutate({ id, status, note });
 
   const statsFor = useCallback((supplierId: string) => {
     const supplier = suppliers.find(s => s.id === supplierId);

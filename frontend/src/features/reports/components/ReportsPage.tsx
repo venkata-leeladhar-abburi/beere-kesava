@@ -13,6 +13,8 @@ import { WholesaleSalesReport } from "./sections/WholesaleSalesReport";
 import { ProfitLossReport } from "./sections/ProfitLossReport";
 import { CustomerReport } from "./sections/CustomerReport";
 import { OverdueAlertsReport } from "./sections/OverdueAlertsReport";
+import { OutstandingPaymentsReport } from "./sections/OutstandingPaymentsReport";
+import { LiveSummarySnapshot } from "./sections/LiveSummarySnapshot";
 import { ScheduledReportsSection } from "./sections/ScheduledReportsSection";
 import { DownloadHistorySection } from "./sections/DownloadHistorySection";
 import { ReportsFooter } from "./sections/ReportsFooter";
@@ -32,6 +34,7 @@ export function ReportsPage() {
     "raw-material":   <RawMaterialReport />,
     "production":     <SareeProductionReport />,
     "outstanding":    <OutstandingPage embedded />,
+    "outstanding-payments": <OutstandingPaymentsReport />,
     "weaver-payment": <WeaverPaymentReport />,
     "retail":         <RetailSalesReport />,
     "wholesale":      <WholesaleSalesReport />,
@@ -45,6 +48,7 @@ export function ReportsPage() {
       <ReportsHeader />
       <div style={{ paddingBottom: 36, background: T.silkCream }}>
         <ReportsStatsStrip />
+        <LiveSummarySnapshot />
       </div>
       <ReportTabNav
         activeTab={activeTab} setActiveTab={setActiveTab}

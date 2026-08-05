@@ -25,6 +25,7 @@ import { PaymentsModule } from "./payments/payments.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { PurchaseOrdersModule } from "./purchase-orders/purchase-orders.module";
 import { PurchaseRequestsModule } from "./purchase-requests/purchase-requests.module";
+import { PurchasesModule } from "./purchases/purchases.module";
 import { QcModule } from "./qc/qc.module";
 import { QuotationsModule } from "./quotations/quotations.module";
 import { RatesModule } from "./rates/rates.module";
@@ -58,6 +59,7 @@ import { WeaversModule } from "./weavers/weavers.module";
     DesignLibraryModule,
     PurchaseOrdersModule,
     PurchaseRequestsModule,
+    PurchasesModule,
     ApprovalsModule,
     FactoryLoomsModule,
     BatchesModule,

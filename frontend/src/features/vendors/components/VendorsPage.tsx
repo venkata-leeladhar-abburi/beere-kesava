@@ -1,22 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { T } from "./vendors-page/theme";
 import { Vendor } from "./vendors-page/types";
-import { INITIAL_VENDORS } from "./vendors-page/data";
 import { VendorsHeroStats } from "./vendors-page/VendorsHeroStats";
 import { AddVendorModal } from "./vendors-page/AddVendorModal";
 import { VendorAnalyticsSection } from "./vendors-page/VendorAnalyticsSection";
 import { VendorDirectorySection } from "./vendors-page/VendorDirectorySection";
 import { VendorProfile } from "./vendors-page/VendorProfile";
+import { BackendVendor, vendorsApi } from "../../../shared/api/vendors";
+
+// totalOrders/totalSpend/outstanding/lastOrder have no backend column yet
+// (would need a PurchaseOrder aggregation query) — left at placeholder
+// values until that's built, same call as Customers' derived stats.
+function toVendor(v: BackendVendor): Vendor {
+  return {
+    id: v.id,
+    name: v.name,
+    initials: v.initials ?? v.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase(),
+    contactName: v.contactName ?? "",
+    phone: v.phone ?? "",
+    whatsapp: v.whatsapp ?? undefined,
+    city: v.city ?? "",
+    state: v.state ?? "",
+    address: v.address ?? "",
+    gstCode: v.gstCode ?? "",
+    type: v.specialty ?? "",
+    terms: v.terms ?? "",
+    bankName: v.bankName ?? undefined,
+    accountNo: v.accountNo ?? undefined,
+    status: v.status === "ACTIVE" ? "active" : v.status === "INACTIVE" ? "inactive" : "overdue",
+    totalOrders: 0,
+    totalSpend: "0",
+    outstanding: "0",
+    lastOrder: "—",
+    rating: v.rating ?? 0,
+  };
+}
 
 export function VendorsPage() {
-  const [vendors, setVendors] = useState<Vendor[]>(INITIAL_VENDORS);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
+  useEffect(() => {
+    vendorsApi.list().then(res => setVendors(res.items.map(toVendor))).catch(() => setVendors([]));
+  }, []);
+
   const nextId = `VEN-${String(vendors.length + 1).padStart(3, "0")}`;
 
-  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={(v) => { setVendors(prev => prev.map(old => old.id === v.id ? v : old)); setSelectedVendor(v); }} />;
+  const handleSave = async (v: Vendor) => {
+    const created = await vendorsApi.create({
+      name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
+      city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
+      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
+      rating: v.rating,
+    });
+    setVendors(p => [toVendor(created), ...p]);
+    setShowAddForm(false);
+  };
+
+  const handleUpdate = async (v: Vendor) => {
+    const updated = await vendorsApi.update(v.id, {
+      name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
+      city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
+      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
+      rating: v.rating, status: v.status.toUpperCase(),
+    });
+    const merged = { ...toVendor(updated), totalOrders: v.totalOrders, totalSpend: v.totalSpend, outstanding: v.outstanding, lastOrder: v.lastOrder };
+    setVendors(prev => prev.map(old => old.id === merged.id ? merged : old));
+    setSelectedVendor(merged);
+  };
+
+  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} />;
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
@@ -27,7 +82,7 @@ export function VendorsPage() {
           <AddVendorModal
             nextId={nextId}
             onCancel={() => setShowAddForm(false)}
-            onSave={v => { setVendors(p => [v, ...p]); setShowAddForm(false); }}
+            onSave={v => { void handleSave(v); }}
           />
         )}
       </AnimatePresence>

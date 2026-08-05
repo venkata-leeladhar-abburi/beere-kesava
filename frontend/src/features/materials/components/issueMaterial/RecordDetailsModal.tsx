@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { CheckCircle2, X } from "lucide-react";
 import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
+import { resolveSignatureUrl } from "../../../../shared/api/material-issues";
 import { EASE, F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { materialIcon } from "./materialFormatters";
@@ -80,9 +81,19 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
           </div>
 
           {record.signatureCaptured && record.signatureTimestamp && (
-            <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
-              <CheckCircle2 size={14} color={T.green} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>Signed on {new Date(record.signatureTimestamp).toLocaleString("en-IN")}</span>
+            <div>
+              <SectionPill label="Signature" />
+              <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, marginBottom: record.signatureUrl ? 10 : 0 }}>
+                <CheckCircle2 size={14} color={T.green} />
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>Signed on {new Date(record.signatureTimestamp).toLocaleString("en-IN")}</span>
+              </div>
+              {record.signatureUrl && (
+                <img
+                  src={resolveSignatureUrl(record.signatureUrl) ?? undefined}
+                  alt={`${record.weaverName ?? "Weaver"}'s signature`}
+                  style={{ maxHeight: 100, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 8 }}
+                />
+              )}
             </div>
           )}
 

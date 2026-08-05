@@ -35,6 +35,7 @@ export type MaterialIssueRecordMinAggregateOutputType = {
   signatureMethod: $Enums.SignatureMethod | null
   signatureCaptured: boolean | null
   signatureTimestamp: Date | null
+  signatureUrl: string | null
   status: $Enums.MaterialIssueStatus | null
   notes: string | null
 }
@@ -50,6 +51,7 @@ export type MaterialIssueRecordMaxAggregateOutputType = {
   signatureMethod: $Enums.SignatureMethod | null
   signatureCaptured: boolean | null
   signatureTimestamp: Date | null
+  signatureUrl: string | null
   status: $Enums.MaterialIssueStatus | null
   notes: string | null
 }
@@ -65,6 +67,7 @@ export type MaterialIssueRecordCountAggregateOutputType = {
   signatureMethod: number
   signatureCaptured: number
   signatureTimestamp: number
+  signatureUrl: number
   status: number
   notes: number
   _all: number
@@ -82,6 +85,7 @@ export type MaterialIssueRecordMinAggregateInputType = {
   signatureMethod?: true
   signatureCaptured?: true
   signatureTimestamp?: true
+  signatureUrl?: true
   status?: true
   notes?: true
 }
@@ -97,6 +101,7 @@ export type MaterialIssueRecordMaxAggregateInputType = {
   signatureMethod?: true
   signatureCaptured?: true
   signatureTimestamp?: true
+  signatureUrl?: true
   status?: true
   notes?: true
 }
@@ -112,6 +117,7 @@ export type MaterialIssueRecordCountAggregateInputType = {
   signatureMethod?: true
   signatureCaptured?: true
   signatureTimestamp?: true
+  signatureUrl?: true
   status?: true
   notes?: true
   _all?: true
@@ -200,6 +206,7 @@ export type MaterialIssueRecordGroupByOutputType = {
   signatureMethod: $Enums.SignatureMethod | null
   signatureCaptured: boolean
   signatureTimestamp: Date | null
+  signatureUrl: string | null
   status: $Enums.MaterialIssueStatus
   notes: string | null
   _count: MaterialIssueRecordCountAggregateOutputType | null
@@ -236,6 +243,7 @@ export type MaterialIssueRecordWhereInput = {
   signatureMethod?: Prisma.EnumSignatureMethodNullableFilter<"MaterialIssueRecord"> | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFilter<"MaterialIssueRecord"> | boolean
   signatureTimestamp?: Prisma.DateTimeNullableFilter<"MaterialIssueRecord"> | Date | string | null
+  signatureUrl?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
@@ -256,6 +264,7 @@ export type MaterialIssueRecordOrderByWithRelationInput = {
   signatureMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureCaptured?: Prisma.SortOrder
   signatureTimestamp?: Prisma.SortOrderInput | Prisma.SortOrder
+  signatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   weaver?: Prisma.WeaverOrderByWithRelationInput
@@ -279,6 +288,7 @@ export type MaterialIssueRecordWhereUniqueInput = Prisma.AtLeast<{
   signatureMethod?: Prisma.EnumSignatureMethodNullableFilter<"MaterialIssueRecord"> | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFilter<"MaterialIssueRecord"> | boolean
   signatureTimestamp?: Prisma.DateTimeNullableFilter<"MaterialIssueRecord"> | Date | string | null
+  signatureUrl?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
@@ -299,6 +309,7 @@ export type MaterialIssueRecordOrderByWithAggregationInput = {
   signatureMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureCaptured?: Prisma.SortOrder
   signatureTimestamp?: Prisma.SortOrderInput | Prisma.SortOrder
+  signatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MaterialIssueRecordCountOrderByAggregateInput
@@ -320,6 +331,7 @@ export type MaterialIssueRecordScalarWhereWithAggregatesInput = {
   signatureMethod?: Prisma.EnumSignatureMethodNullableWithAggregatesFilter<"MaterialIssueRecord"> | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolWithAggregatesFilter<"MaterialIssueRecord"> | boolean
   signatureTimestamp?: Prisma.DateTimeNullableWithAggregatesFilter<"MaterialIssueRecord"> | Date | string | null
+  signatureUrl?: Prisma.StringNullableWithAggregatesFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusWithAggregatesFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableWithAggregatesFilter<"MaterialIssueRecord"> | string | null
 }
@@ -331,6 +343,7 @@ export type MaterialIssueRecordCreateInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
@@ -351,6 +364,7 @@ export type MaterialIssueRecordUncheckedCreateInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
@@ -363,6 +377,7 @@ export type MaterialIssueRecordUpdateInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
@@ -383,6 +398,7 @@ export type MaterialIssueRecordUncheckedUpdateInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
@@ -399,6 +415,7 @@ export type MaterialIssueRecordCreateManyInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -410,6 +427,7 @@ export type MaterialIssueRecordUpdateManyMutationInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -425,6 +443,7 @@ export type MaterialIssueRecordUncheckedUpdateManyInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -450,6 +469,7 @@ export type MaterialIssueRecordCountOrderByAggregateInput = {
   signatureMethod?: Prisma.SortOrder
   signatureCaptured?: Prisma.SortOrder
   signatureTimestamp?: Prisma.SortOrder
+  signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
 }
@@ -465,6 +485,7 @@ export type MaterialIssueRecordMaxOrderByAggregateInput = {
   signatureMethod?: Prisma.SortOrder
   signatureCaptured?: Prisma.SortOrder
   signatureTimestamp?: Prisma.SortOrder
+  signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
 }
@@ -480,6 +501,7 @@ export type MaterialIssueRecordMinOrderByAggregateInput = {
   signatureMethod?: Prisma.SortOrder
   signatureCaptured?: Prisma.SortOrder
   signatureTimestamp?: Prisma.SortOrder
+  signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
 }
@@ -686,6 +708,7 @@ export type MaterialIssueRecordCreateWithoutIssuedByInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
@@ -704,6 +727,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutIssuedByInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
@@ -749,6 +773,7 @@ export type MaterialIssueRecordScalarWhereInput = {
   signatureMethod?: Prisma.EnumSignatureMethodNullableFilter<"MaterialIssueRecord"> | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFilter<"MaterialIssueRecord"> | boolean
   signatureTimestamp?: Prisma.DateTimeNullableFilter<"MaterialIssueRecord"> | Date | string | null
+  signatureUrl?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
 }
@@ -760,6 +785,7 @@ export type MaterialIssueRecordCreateWithoutWeaverInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
@@ -778,6 +804,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutWeaverInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
@@ -816,6 +843,7 @@ export type MaterialIssueRecordCreateWithoutFactoryLoomInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
@@ -834,6 +862,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutFactoryLoomInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
@@ -872,6 +901,7 @@ export type MaterialIssueRecordCreateWithoutBatchInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
@@ -890,6 +920,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutBatchInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
@@ -928,6 +959,7 @@ export type MaterialIssueRecordCreateWithoutItemsInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
@@ -947,6 +979,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutItemsInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -974,6 +1007,7 @@ export type MaterialIssueRecordUpdateWithoutItemsInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
@@ -993,6 +1027,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutItemsInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1007,6 +1042,7 @@ export type MaterialIssueRecordCreateManyIssuedByInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -1018,6 +1054,7 @@ export type MaterialIssueRecordUpdateWithoutIssuedByInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
@@ -1036,6 +1073,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutIssuedByInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
@@ -1051,6 +1089,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1065,6 +1104,7 @@ export type MaterialIssueRecordCreateManyWeaverInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -1076,6 +1116,7 @@ export type MaterialIssueRecordUpdateWithoutWeaverInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
@@ -1094,6 +1135,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutWeaverInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
@@ -1109,6 +1151,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutWeaverInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1123,6 +1166,7 @@ export type MaterialIssueRecordCreateManyFactoryLoomInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -1134,6 +1178,7 @@ export type MaterialIssueRecordUpdateWithoutFactoryLoomInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
@@ -1152,6 +1197,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutFactoryLoomInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
@@ -1167,6 +1213,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1181,6 +1228,7 @@ export type MaterialIssueRecordCreateManyBatchInput = {
   signatureMethod?: $Enums.SignatureMethod | null
   signatureCaptured?: boolean
   signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
 }
@@ -1192,6 +1240,7 @@ export type MaterialIssueRecordUpdateWithoutBatchInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
@@ -1210,6 +1259,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutBatchInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
@@ -1225,6 +1275,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutBatchInput = {
   signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
   signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1271,6 +1322,7 @@ export type MaterialIssueRecordSelect<ExtArgs extends runtime.Types.Extensions.I
   signatureMethod?: boolean
   signatureCaptured?: boolean
   signatureTimestamp?: boolean
+  signatureUrl?: boolean
   status?: boolean
   notes?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
@@ -1292,6 +1344,7 @@ export type MaterialIssueRecordSelectCreateManyAndReturn<ExtArgs extends runtime
   signatureMethod?: boolean
   signatureCaptured?: boolean
   signatureTimestamp?: boolean
+  signatureUrl?: boolean
   status?: boolean
   notes?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
@@ -1311,6 +1364,7 @@ export type MaterialIssueRecordSelectUpdateManyAndReturn<ExtArgs extends runtime
   signatureMethod?: boolean
   signatureCaptured?: boolean
   signatureTimestamp?: boolean
+  signatureUrl?: boolean
   status?: boolean
   notes?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
@@ -1330,11 +1384,12 @@ export type MaterialIssueRecordSelectScalar = {
   signatureMethod?: boolean
   signatureCaptured?: boolean
   signatureTimestamp?: boolean
+  signatureUrl?: boolean
   status?: boolean
   notes?: boolean
 }
 
-export type MaterialIssueRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "weaverId" | "factoryLoomId" | "loomNumber" | "batchId" | "issuedById" | "issuedAt" | "signatureMethod" | "signatureCaptured" | "signatureTimestamp" | "status" | "notes", ExtArgs["result"]["materialIssueRecord"]>
+export type MaterialIssueRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "weaverId" | "factoryLoomId" | "loomNumber" | "batchId" | "issuedById" | "issuedAt" | "signatureMethod" | "signatureCaptured" | "signatureTimestamp" | "signatureUrl" | "status" | "notes", ExtArgs["result"]["materialIssueRecord"]>
 export type MaterialIssueRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
@@ -1376,6 +1431,7 @@ export type $MaterialIssueRecordPayload<ExtArgs extends runtime.Types.Extensions
     signatureMethod: $Enums.SignatureMethod | null
     signatureCaptured: boolean
     signatureTimestamp: Date | null
+    signatureUrl: string | null
     status: $Enums.MaterialIssueStatus
     notes: string | null
   }, ExtArgs["result"]["materialIssueRecord"]>
@@ -1816,6 +1872,7 @@ export interface MaterialIssueRecordFieldRefs {
   readonly signatureMethod: Prisma.FieldRef<"MaterialIssueRecord", 'SignatureMethod'>
   readonly signatureCaptured: Prisma.FieldRef<"MaterialIssueRecord", 'Boolean'>
   readonly signatureTimestamp: Prisma.FieldRef<"MaterialIssueRecord", 'DateTime'>
+  readonly signatureUrl: Prisma.FieldRef<"MaterialIssueRecord", 'String'>
   readonly status: Prisma.FieldRef<"MaterialIssueRecord", 'MaterialIssueStatus'>
   readonly notes: Prisma.FieldRef<"MaterialIssueRecord", 'String'>
 }

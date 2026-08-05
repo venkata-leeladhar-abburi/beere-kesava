@@ -424,6 +424,7 @@ export const ModelName = {
   SaleRecord: 'SaleRecord',
   ReturnRecord: 'ReturnRecord',
   Supplier: 'Supplier',
+  SupplierPayment: 'SupplierPayment',
   Vendor: 'Vendor',
   Purchase: 'Purchase',
   PurchaseOrder: 'PurchaseOrder',
@@ -452,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "auditLog" | "notification"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "auditLog" | "notification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2454,6 +2455,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SupplierPayment: {
+      payload: Prisma.$SupplierPaymentPayload<ExtArgs>
+      fields: Prisma.SupplierPaymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupplierPaymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupplierPaymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        findFirst: {
+          args: Prisma.SupplierPaymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupplierPaymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        findMany: {
+          args: Prisma.SupplierPaymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>[]
+        }
+        create: {
+          args: Prisma.SupplierPaymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        createMany: {
+          args: Prisma.SupplierPaymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupplierPaymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>[]
+        }
+        delete: {
+          args: Prisma.SupplierPaymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        update: {
+          args: Prisma.SupplierPaymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupplierPaymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupplierPaymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupplierPaymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupplierPaymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupplierPaymentPayload>
+        }
+        aggregate: {
+          args: Prisma.SupplierPaymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupplierPayment>
+        }
+        groupBy: {
+          args: Prisma.SupplierPaymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupplierPaymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupplierPaymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupplierPaymentCountAggregateOutputType> | number
+        }
+      }
+    }
     Vendor: {
       payload: Prisma.$VendorPayload<ExtArgs>
       fields: Prisma.VendorFieldRefs
@@ -3637,6 +3712,7 @@ export const MaterialIssueRecordScalarFieldEnum = {
   signatureMethod: 'signatureMethod',
   signatureCaptured: 'signatureCaptured',
   signatureTimestamp: 'signatureTimestamp',
+  signatureUrl: 'signatureUrl',
   status: 'status',
   notes: 'notes'
 } as const
@@ -3890,6 +3966,19 @@ export const SupplierScalarFieldEnum = {
 export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
 
 
+export const SupplierPaymentScalarFieldEnum = {
+  id: 'id',
+  supplierId: 'supplierId',
+  amount: 'amount',
+  date: 'date',
+  utr: 'utr',
+  method: 'method',
+  firmId: 'firmId'
+} as const
+
+export type SupplierPaymentScalarFieldEnum = (typeof SupplierPaymentScalarFieldEnum)[keyof typeof SupplierPaymentScalarFieldEnum]
+
+
 export const VendorScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -3936,6 +4025,7 @@ export const PurchaseOrderScalarFieldEnum = {
   urgency: 'urgency',
   status: 'status',
   grnId: 'grnId',
+  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt'
 } as const
 
@@ -4895,6 +4985,7 @@ export type GlobalOmitConfig = {
   saleRecord?: Prisma.SaleRecordOmit
   returnRecord?: Prisma.ReturnRecordOmit
   supplier?: Prisma.SupplierOmit
+  supplierPayment?: Prisma.SupplierPaymentOmit
   vendor?: Prisma.VendorOmit
   purchase?: Prisma.PurchaseOmit
   purchaseOrder?: Prisma.PurchaseOrderOmit

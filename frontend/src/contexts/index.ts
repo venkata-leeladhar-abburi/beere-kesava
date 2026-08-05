@@ -20,6 +20,8 @@ export { WeaverPaymentsProvider, useWeaverPayments } from "../features/weavers/c
 export { FinishingStaffProvider, useFinishingStaff } from "../features/finishing/contexts/FinishingStaffContext";
 export { FinishingProvider, useFinishing } from "../features/finishing/contexts/FinishingContext";
 export { SalesProvider, useSales } from "../features/customers/contexts/SalesContext";
+export { CustomersProvider, useCustomers } from "../features/customers/contexts/CustomersContext";
+export type { Customer } from "../features/customers/contexts/CustomersContext";
 export { SupplierProvider, useSuppliers } from "../features/suppliers/contexts/SupplierContext";
 export type { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest } from "../features/suppliers/contexts/SupplierContext";
 export { QcProvider, useQc, computeQcPayment, makingChargeFor, QC_RESULT_LABEL } from "../features/qc/contexts/QcContext";

@@ -4,6 +4,7 @@ export type ReportTabKey =
   | "raw-material"
   | "production"
   | "outstanding"
+  | "outstanding-payments"
   | "weaver-payment"
   | "retail"
   | "wholesale"

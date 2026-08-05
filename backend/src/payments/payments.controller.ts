@@ -13,8 +13,10 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Queue } from "bullmq";
+import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
 import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
+import { ListSupplierPaymentsQueryDto } from "./dto/list-supplier-payments-query.dto";
 import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
 import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
 import { ImportResult, PaymentsService } from "./payments.service";
@@ -75,5 +77,15 @@ export class PaymentsController {
   @Get("vendors")
   findAllVendorPayments(@Query() query: ListVendorPaymentsQueryDto) {
     return this.paymentsService.findAllVendorPayments(query);
+  }
+
+  @Post("suppliers")
+  createSupplierPayment(@Body() dto: CreateSupplierPaymentDto) {
+    return this.paymentsService.createSupplierPayment(dto);
+  }
+
+  @Get("suppliers")
+  findAllSupplierPayments(@Query() query: ListSupplierPaymentsQueryDto) {
+    return this.paymentsService.findAllSupplierPayments(query);
   }
 }

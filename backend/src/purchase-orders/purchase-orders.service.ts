@@ -5,6 +5,7 @@ import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
 import { ListPurchaseOrdersQueryDto } from "./dto/list-purchase-orders-query.dto";
+import { RejectPurchaseOrderDto } from "./dto/reject-purchase-order.dto";
 
 @Injectable()
 export class PurchaseOrdersService {
@@ -27,15 +28,16 @@ export class PurchaseOrdersService {
         poNumber,
         vendorId: dto.vendorId,
         deliveryDate: dto.deliveryDate,
-        totalValue: dto.totalValue,
+        totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,
       },
+      include: { vendor: true },
     });
   }
 
   async findAll(
     query: ListPurchaseOrdersQueryDto,
-  ): Promise<PaginatedResult<Prisma.PurchaseOrderGetPayload<object>>> {
+  ): Promise<PaginatedResult<Prisma.PurchaseOrderGetPayload<{ include: { vendor: true } }>>> {
     const where: Prisma.PurchaseOrderWhereInput = {
       status: query.status,
       vendorId: query.vendorId,
@@ -44,6 +46,7 @@ export class PurchaseOrdersService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.purchaseOrder.findMany({
         where,
+        include: { vendor: true },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdAt: "desc" },
@@ -55,7 +58,10 @@ export class PurchaseOrdersService {
   }
 
   async findOne(id: string) {
-    const po = await this.prisma.purchaseOrder.findUnique({ where: { id } });
+    const po = await this.prisma.purchaseOrder.findUnique({
+      where: { id },
+      include: { vendor: true },
+    });
     if (!po) {
       throw new NotFoundException(`Purchase order ${id} not found`);
     }
@@ -68,15 +74,17 @@ export class PurchaseOrdersService {
     return this.prisma.purchaseOrder.update({
       where: { id },
       data: { status: PurchaseOrderStatus.APPROVED },
+      include: { vendor: true },
     });
   }
 
-  async reject(id: string) {
+  async reject(id: string, dto: RejectPurchaseOrderDto) {
     const po = await this.findOne(id);
     this.assertStatus(po.status, PurchaseOrderStatus.PENDING, "rejected");
     return this.prisma.purchaseOrder.update({
       where: { id },
-      data: { status: PurchaseOrderStatus.REJECTED },
+      data: { status: PurchaseOrderStatus.REJECTED, rejectionReason: dto.reason },
+      include: { vendor: true },
     });
   }
 
@@ -90,6 +98,7 @@ export class PurchaseOrdersService {
     return this.prisma.purchaseOrder.update({
       where: { id },
       data: { status: PurchaseOrderStatus.RECEIVED, grnId },
+      include: { vendor: true },
     });
   }
 

@@ -469,6 +469,7 @@ model MaterialIssueRecord {
   signatureMethod    SignatureMethod?
   signatureCaptured  Boolean             @default(false)
   signatureTimestamp DateTime?
+  signatureUrl       String?
   status             MaterialIssueStatus @default(PENDING_SIGNATURE)
   notes              String?
 
@@ -780,6 +781,21 @@ model Supplier {
 
   purchases        Purchase[]
   purchaseRequests PurchaseRequest[]
+  payments         SupplierPayment[]
+}
+
+model SupplierPayment {
+  id         String   @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  amount     Decimal  @db.Decimal(12, 2)
+  date       DateTime @default(now())
+  utr        String?
+  method     String?
+  firmId     String?
+  firm       Firm?    @relation(fields: [firmId], references: [id])
+
+  @@index([supplierId])
 }
 
 model Vendor {
@@ -831,6 +847,7 @@ model PurchaseOrder {
   urgency      String?
   status       PurchaseOrderStatus @default(PENDING)
   grnId        String?
+  rejectionReason String?
   createdAt    DateTime            @default(now())
 
   @@index([vendorId])
@@ -878,6 +895,7 @@ model Firm {
   financialEntries FirmFinancialEntry[]
   weaverPayments   WeaverPayment[]
   vendorPayments   VendorPayment[]
+  supplierPayments SupplierPayment[]
   invoicePayments  InvoicePayment[]
   quotations       Quotation[]
   dispatchRecords  DispatchRecord[]

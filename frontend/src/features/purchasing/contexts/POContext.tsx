@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface POItem {
@@ -34,74 +35,26 @@ export interface PurchaseOrder {
   raisedBy: string;
 }
 
-// ─── Sample PO data ───────────────────────────────────────────────────────────
-const INITIAL_POS: PurchaseOrder[] = [
-  {
-    id: "PO-2026-020",
-    poNumber: "PO-2026-020",
-    vendor: "Surat Zari Works",
-    vendorCity: "Surat, GJ",
-    deliveryDate: "2026-06-25",
-    materials: [
-      { materialType: "Jari", subtype: "Polyester 2G Gold", quantity: 6, unit: "Buns", pricePerUnit: 32000, subtotal: 192000 },
-    ],
-    totalValue: 192000,
-    urgency: "Normal",
-    status: "received",
-    submittedDate: "2026-06-10",
-    approvedDate: "2026-06-11",
-    grnId: "GRN-2026-031",
-    raisedBy: "Admin (MK)",
-  },
-  {
-    id: "PO-2026-021",
-    poNumber: "PO-2026-021",
-    vendor: "Kanchipuram Silks",
-    vendorCity: "Kanchipuram, TN",
-    deliveryDate: "2026-06-28",
-    materials: [
-      { materialType: "Resham", subtype: "Red", quantity: 30, unit: "kg", pricePerUnit: 7500, subtotal: 225000 },
-      { materialType: "Resham", subtype: "Gold", quantity: 25, unit: "kg", pricePerUnit: 6000, subtotal: 150000 },
-    ],
-    totalValue: 375000,
-    urgency: "Normal",
-    status: "approved",
-    submittedDate: "2026-06-15",
-    approvedDate: "2026-06-16",
-    raisedBy: "Admin (RK)",
-  },
-  {
-    id: "PO-2026-022",
-    poNumber: "PO-2026-022",
-    vendor: "Sri Venkateswara Textiles",
-    vendorCity: "Ongole, AP",
-    deliveryDate: "2026-06-30",
-    materials: [
-      { materialType: "Warp", subtype: "Cotton/Silk", quantity: 50, unit: "kg", pricePerUnit: 2800, subtotal: 140000 },
-    ],
-    totalValue: 140000,
-    urgency: "Normal",
-    status: "approved",
-    submittedDate: "2026-06-19",
-    approvedDate: "2026-06-20",
-    raisedBy: "Admin (BK)",
-  },
-  {
-    id: "PO-2026-023",
-    poNumber: "PO-2026-023",
-    vendor: "Sri Venkateswara Textiles",
-    vendorCity: "Ongole, AP",
-    deliveryDate: "2026-07-05",
-    materials: [
-      { materialType: "Warp", subtype: "Cotton/Silk", quantity: 50, unit: "kg", pricePerUnit: 2800, subtotal: 140000 },
-    ],
-    totalValue: 140000,
-    urgency: "Normal",
-    status: "pending",
-    submittedDate: "2026-06-21",
-    raisedBy: "Admin (BK)",
-  },
-];
+// materials[] line items have no backend model yet (PurchaseOrder only
+// stores aggregate totalValue) — kept local-only per PO after creation,
+// same call as Suppliers' per-saree purchase lines.
+function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): PurchaseOrder {
+  return {
+    id: po.id,
+    poNumber: po.poNumber,
+    vendor: po.vendor.name,
+    vendorCity: po.vendor.city ?? "",
+    vendorContact: po.vendor.contactName ?? undefined,
+    deliveryDate: po.deliveryDate ?? "",
+    materials,
+    totalValue: Number(po.totalValue),
+    urgency: (po.urgency as PurchaseOrder["urgency"]) ?? "Normal",
+    status: po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received",
+    submittedDate: po.createdAt.split("T")[0],
+    grnId: po.grnId ?? undefined,
+    raisedBy: "",
+  };
+}
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface POContextValue {
@@ -120,10 +73,9 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: pos = INITIAL_POS } = useQuery({
+  const { data: pos = [] } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => Promise.resolve(INITIAL_POS),
-    initialData: INITIAL_POS,
+    queryFn: async () => (await purchaseOrdersApi.list()).items.map(po => toPurchaseOrder(po)),
   });
 
   const setPos = (updater: (prev: PurchaseOrder[]) => PurchaseOrder[]) => {
@@ -136,11 +88,11 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   });
 
   const approvePOMutation = useMutation({
-    mutationFn: (id: string) => Promise.resolve(id),
-    onSuccess: (id) =>
+    mutationFn: (id: string) => purchaseOrdersApi.approve(id),
+    onSuccess: (updated) =>
       setPos(prev =>
         prev.map(p =>
-          p.id === id
+          p.id === updated.id
             ? { ...p, status: "approved" as const, approvedDate: new Date().toISOString().split("T")[0] }
             : p
         )
@@ -148,12 +100,12 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   });
 
   const rejectPOMutation = useMutation({
-    mutationFn: (args: { id: string; reason?: string }) => Promise.resolve(args),
-    onSuccess: ({ id, reason }) =>
+    mutationFn: (args: { id: string; reason?: string }) => purchaseOrdersApi.reject(args.id, args.reason),
+    onSuccess: (updated) =>
       setPos(prev =>
         prev.map(p =>
-          p.id === id
-            ? { ...p, status: "rejected" as const, rejectionReason: reason }
+          p.id === updated.id
+            ? { ...p, status: "rejected" as const, rejectionReason: updated.rejectionReason ?? undefined }
             : p
         )
       ),

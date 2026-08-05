@@ -1,76 +1,235 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export * from "./finishing-types";
 import { ReadySaree, FinishingAssignment, FinishingReturn, DispatchRecord, Quotation, QuotationSaree, FinishingContextValue } from "./finishing-types";
-import { SEED_READY, SEED_ASSIGNMENTS, SEED_RETURNS, SEED_DISPATCHES, SEED_QUOTATIONS } from "./finishing-seed";
+import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
+import {
+  BackendFinishingAssignment,
+  BackendFinishingCondition,
+  BackendDamageSeverity,
+  finishingAssignmentsApi,
+} from "../../../shared/api/finishing";
+import { qcApi } from "../../../shared/api/qc";
+import { BackendDispatchRecord, BackendDispatchType, dispatchApi } from "../../../shared/api/dispatch";
+import { BackendQuotation, quotationsApi } from "../../../shared/api/quotations";
+import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
+import { weaversApi } from "../../../shared/api/weavers";
+import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
 
 const READY_KEY = ["finishing", "readySarees"] as const;
 const ASSIGNMENTS_KEY = ["finishing", "assignments"] as const;
-const RETURNS_KEY = ["finishing", "returns"] as const;
 const DISPATCHES_KEY = ["finishing", "dispatches"] as const;
 const QUOTATIONS_KEY = ["finishing", "quotations"] as const;
 
-const todayLabel = () => new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", BackendDamageSeverity> = {
+  Minor: "MINOR", Moderate: "MODERATE", Severe: "SEVERE",
+};
+
+function backendAssignmentToFrontend(a: BackendFinishingAssignment): FinishingAssignment {
+  return {
+    id: a.id,
+    sareeId: a.sareeId,
+    designCode: a.designCode ?? a.batchSareeRow.designCode ?? "—",
+    sareeTypeCode: a.sareeType ?? undefined,
+    sareeType: a.sareeType ? (getSareeTypeByCode(a.sareeType)?.type ?? a.sareeType) : "—",
+    weaverName: a.batchSareeRow.weaver?.name ?? "—",
+    // Backend doesn't track the QC-pass date separately on the assignment —
+    // assignedDate is the closest available timestamp.
+    qcPassDate: a.assignedDate,
+    finishingStaffId: a.finishingStaffId,
+    finishingStaffName: `${a.finishingStaff.firstName} ${a.finishingStaff.lastName}`,
+    assignedDate: a.assignedDate,
+    assignedBy: "Admin (Kesava Rao)",
+    batchId: a.batchSareeRow.batchId,
+    status: a.status === "AWAITING_RETURN" ? "awaiting-return" : "returned",
+    quotationRef: a.quotationRef ?? undefined,
+  };
+}
+
+// A "return" isn't a separate backend record — it's a RETURNED-status
+// assignment carrying its own condition/damage fields. Derived here instead
+// of fetched, since the backend merges the two concepts onto one row.
+function assignmentToReturn(a: BackendFinishingAssignment): FinishingReturn {
+  return {
+    id: a.id,
+    assignmentId: a.id,
+    sareeId: a.sareeId,
+    designCode: a.designCode ?? a.batchSareeRow.designCode ?? "—",
+    sareeTypeCode: a.sareeType ?? undefined,
+    sareeType: a.sareeType ? (getSareeTypeByCode(a.sareeType)?.type ?? a.sareeType) : "—",
+    weaverName: a.batchSareeRow.weaver?.name ?? "—",
+    condition: a.condition === "DAMAGED" ? "damaged" : "perfect",
+    damageType: a.damageType ?? undefined,
+    damageSeverity: a.damageSeverity === "MINOR" ? "Minor" : a.damageSeverity === "MODERATE" ? "Moderate" : a.damageSeverity === "SEVERE" ? "Severe" : undefined,
+    damageNotes: a.damageNotes ?? undefined,
+    damagePhotoUrl: a.damagePhotoUrl ?? undefined,
+    receivedBy: "Worker Staff",
+    // Backend doesn't store a separate returned-at timestamp — assignedDate is the closest available.
+    receivedDate: a.assignedDate,
+    inventoryStatus: a.condition === "DAMAGED" ? "Damaged — Review Needed" : "Ready for Dispatch",
+    quotationRef: a.quotationRef ?? undefined,
+  };
+}
+
+function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
+  return {
+    id: d.id,
+    type: d.type === "WHOLESALE" ? "wholesale" : "shop",
+    sareeIds: d.sarees.map(s => s.sareeId),
+    dispatchDate: d.dispatchDate,
+    lrNumber: d.lrNumber ?? "",
+    transportCompany: d.transportCompany ?? "",
+    vehicleNumber: d.vehicleNumber ?? "",
+    driverName: d.driverName ?? undefined,
+    notes: d.notes ?? undefined,
+    customerId: d.customerId ?? undefined,
+    invoiceNumber: d.invoiceNumber ?? undefined,
+    invoiceDate: d.invoiceDate ?? undefined,
+    pricePerSaree: d.pricePerSaree ? Number(d.pricePerSaree) : undefined,
+    totalAmount: Number(d.totalAmount),
+    gstPct: d.gstPct ? Number(d.gstPct) : undefined,
+    grandTotal: Number(d.grandTotal),
+    firmId: d.firmId ?? undefined,
+    paymentDueDate: d.paymentDueDate ?? undefined,
+    bulkOrderRef: d.bulkOrderRef ?? undefined,
+    pendingTransport: d.pendingTransport,
+    pendingReceipt: d.pendingReceipt,
+    quotationRef: d.quotationRef ?? undefined,
+  };
+}
+
+const QUOTATION_STATUS_FROM_BACKEND: Record<BackendQuotation["status"], Quotation["status"]> = {
+  RAISED: "raised",
+  IN_FINISHING: "in-finishing",
+  PARTIALLY_RECEIVED: "partially-received",
+  RECEIVED: "received",
+  DISPATCHED: "dispatched",
+};
+
+function backendQuotationToFrontend(
+  q: BackendQuotation,
+  rowLookup: Map<string, BackendBatchSareeRow>,
+  weaverLookup: Map<string, string>,
+): Quotation {
+  const sarees: QuotationSaree[] = q.sarees.map((s) => {
+    const row = rowLookup.get(s.sareeId);
+    return {
+      sareeId: s.sareeId,
+      designCode: row?.designCode ?? "—",
+      sareeTypeCode: row?.sareeTypeCode ?? undefined,
+      sareeType: row?.sareeTypeCode ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode) : "—",
+      weaverName: (row?.weaverId ? weaverLookup.get(row.weaverId) : undefined) ?? "—",
+      finishingStatus: s.finishingStatus === "PENDING" ? "pending" : s.finishingStatus === "IN_FINISHING" ? "in-finishing" : "received",
+    };
+  });
+  return {
+    id: q.id,
+    quotationNumber: q.quotationNumber,
+    quotationDate: q.quotationDate,
+    customerId: q.customerId ?? "",
+    customerName: q.customer?.name ?? "—",
+    customerCity: q.customer?.city ?? undefined,
+    customerPhone: q.customer?.phone ?? undefined,
+    customerAddress: q.customer?.address ?? undefined,
+    customerGst: q.customer?.gstCode ?? undefined,
+    bulkOrderRef: q.bulkOrderRef ?? undefined,
+    sarees,
+    prices: Object.fromEntries(q.sarees.map(s => [s.sareeId, s.price])),
+    applyGst: q.applyGst,
+    gstPct: q.gstPct ?? "0",
+    firmId: q.firmId ?? undefined,
+    notes: undefined,
+    subtotal: Number(q.subtotal),
+    grandTotal: Number(q.grandTotal),
+    raisedBy: "Admin (Kesava Rao)",
+    status: QUOTATION_STATUS_FROM_BACKEND[q.status],
+    createdAt: new Date(q.createdAt).getTime(),
+  };
+}
 
 export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
 
-  const { data: readySarees = SEED_READY } = useQuery({
-    queryKey: READY_KEY, queryFn: () => Promise.resolve(SEED_READY), initialData: SEED_READY,
+  const { data: readySarees = [] } = useQuery({
+    queryKey: READY_KEY,
+    queryFn: async () => {
+      const records = await qcApi.readyForFinishing();
+      return records.map((r): ReadySaree => ({
+        id: r.sareeId,
+        designCode: r.batchSareeRow.designCode ?? r.batchSareeRow.design?.code ?? "—",
+        sareeType: r.batchSareeRow.sareeType?.type ?? "—",
+        sareeTypeCode: r.batchSareeRow.sareeTypeCode ?? undefined,
+        weaverName: r.batchSareeRow.weaver?.name ?? "Factory Loom",
+        weaverId: r.weaverId ?? undefined,
+        bulkOrderRef: r.batchSareeRow.bulkOrderRef ?? undefined,
+        qcPassDate: r.qcDate,
+        status: "qc-passed-pending-finishing",
+      }));
+    },
   });
-  const { data: assignments = SEED_ASSIGNMENTS } = useQuery({
-    queryKey: ASSIGNMENTS_KEY, queryFn: () => Promise.resolve(SEED_ASSIGNMENTS), initialData: SEED_ASSIGNMENTS,
+  const { data: backendAssignments = [] } = useQuery({
+    queryKey: ASSIGNMENTS_KEY,
+    queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
-  const { data: returns = SEED_RETURNS } = useQuery({
-    queryKey: RETURNS_KEY, queryFn: () => Promise.resolve(SEED_RETURNS), initialData: SEED_RETURNS,
+  const { data: dispatches = [] } = useQuery({
+    queryKey: DISPATCHES_KEY,
+    queryFn: async () => (await dispatchApi.list()).items.map(backendDispatchToFrontend),
   });
-  const { data: dispatches = SEED_DISPATCHES } = useQuery({
-    queryKey: DISPATCHES_KEY, queryFn: () => Promise.resolve(SEED_DISPATCHES), initialData: SEED_DISPATCHES,
+  const { data: quotations = [] } = useQuery({
+    queryKey: QUOTATIONS_KEY,
+    queryFn: async () => {
+      const [quotationsRes, batchesRes, weaversRes] = await Promise.all([
+        quotationsApi.list(),
+        batchesApi.list(),
+        weaversApi.list(),
+      ]);
+      const rowLookup = new Map(
+        batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
+      );
+      const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
+      return quotationsRes.items.map(q => backendQuotationToFrontend(q, rowLookup, weaverLookup));
+    },
   });
-  const { data: quotations = SEED_QUOTATIONS } = useQuery({
-    queryKey: QUOTATIONS_KEY, queryFn: () => Promise.resolve(SEED_QUOTATIONS), initialData: SEED_QUOTATIONS,
-  });
+  const assignments = useMemo(
+    () => backendAssignments.map(backendAssignmentToFrontend),
+    [backendAssignments],
+  );
+  const returns = useMemo(
+    () => backendAssignments.filter(a => a.status === "RETURNED").map(assignmentToReturn),
+    [backendAssignments],
+  );
 
-  const setReadySarees = (updater: (prev: ReadySaree[]) => ReadySaree[]) =>
-    qc.setQueryData<ReadySaree[]>(READY_KEY, prev => updater(prev ?? []));
-  const setAssignments = (updater: (prev: FinishingAssignment[]) => FinishingAssignment[]) =>
-    qc.setQueryData<FinishingAssignment[]>(ASSIGNMENTS_KEY, prev => updater(prev ?? []));
-  const setReturns = (updater: (prev: FinishingReturn[]) => FinishingReturn[]) =>
-    qc.setQueryData<FinishingReturn[]>(RETURNS_KEY, prev => updater(prev ?? []));
   const setDispatches = (updater: (prev: DispatchRecord[]) => DispatchRecord[]) =>
     qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => updater(prev ?? []));
   const setQuotations = (updater: (prev: Quotation[]) => Quotation[]) =>
     qc.setQueryData<Quotation[]>(QUOTATIONS_KEY, prev => updater(prev ?? []));
 
   const assignSareesMutation = useMutation({
-    mutationFn: (args: { sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) => Promise.resolve(args),
-    onSuccess: ({ sareeIds, staff, assignedBy }) => {
-      const today = todayLabel();
-      const selected = readySarees.filter(s => sareeIds.includes(s.id));
-      const newAssignments: FinishingAssignment[] = selected.map((s, i) => ({
-        id: `FA-${Date.now()}-${i}`,
-        sareeId: s.id,
-        designCode: s.designCode,
-        sareeTypeCode: s.sareeTypeCode,
-        sareeType: s.sareeType,
-        weaverName: s.weaverName,
-        qcPassDate: s.qcPassDate,
-        finishingStaffId: staff.id,
-        finishingStaffName: staff.name,
-        assignedDate: today,
-        assignedBy,
-        status: "awaiting-return",
-      }));
-      setAssignments(prev => [...prev, ...newAssignments]);
-      setReadySarees(prev => prev.filter(s => !sareeIds.includes(s.id)));
+    mutationFn: (args: { sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
+      finishingAssignmentsApi.create({
+        sareeIds: args.sareeIds,
+        finishingStaffId: args.staff.id,
+        assignedById: STOPGAP_ACTING_USER_ID,
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+      void qc.invalidateQueries({ queryKey: READY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to assign sarees to finishing:", err);
     },
   });
 
+  // readySarees is now always derived from the backend's QC-passed-but-
+  // unassigned query, so there's nothing local left to insert — this just
+  // re-triggers that query (e.g. right after a QC record was just saved).
   const addReadySareeMutation = useMutation({
-    mutationFn: (saree: ReadySaree) => Promise.resolve(saree),
-    onSuccess: (saree) => setReadySarees(prev => prev.some(s => s.id === saree.id) ? prev : [saree, ...prev]),
+    mutationFn: (_saree: ReadySaree) => Promise.resolve(),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: READY_KEY });
+    },
   });
 
   const receiveReturnMutation = useMutation({
@@ -78,167 +237,122 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       assignmentId: string; sareeId: string; condition: "perfect" | "damaged";
       damageType?: string; damageSeverity?: "Minor" | "Moderate" | "Severe";
       damageNotes?: string; damagePhotoUrl?: string; receivedBy: string; receivedDate: string;
-    }) => Promise.resolve(params),
-    onSuccess: (params) => {
-      const assignment = assignments.find(a => a.id === params.assignmentId)
-        ?? SEED_ASSIGNMENTS.find(a => a.id === params.assignmentId);
-      const ret: FinishingReturn = {
-        id: `FR-${Date.now()}`,
-        assignmentId: params.assignmentId,
-        sareeId: params.sareeId,
-        designCode: assignment?.designCode ?? "—",
-        sareeTypeCode: assignment?.sareeTypeCode,
-        sareeType: assignment?.sareeType ?? "—",
-        weaverName: assignment?.weaverName ?? "—",
-        condition: params.condition,
+    }) => {
+      const condition: BackendFinishingCondition = params.condition === "damaged" ? "DAMAGED" : "PERFECT";
+      return finishingAssignmentsApi.receiveReturn(params.assignmentId, {
+        condition,
         damageType: params.damageType,
-        damageSeverity: params.damageSeverity,
+        damageSeverity: params.damageSeverity ? DAMAGE_SEVERITY_TO_BACKEND[params.damageSeverity] : undefined,
         damageNotes: params.damageNotes,
         damagePhotoUrl: params.damagePhotoUrl,
-        receivedBy: params.receivedBy,
-        receivedDate: params.receivedDate,
-        inventoryStatus: params.condition === "perfect" ? "Ready for Dispatch" : "Damaged — Review Needed",
-      };
-      setReturns(prev => [...prev, ret]);
-      setAssignments(prev => prev.map(a => a.id === params.assignmentId ? { ...a, status: "returned" } : a));
+      });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to record finishing return:", err);
     },
   });
 
+  // NOTE(backend precondition): POST /dispatch only accepts sareeIds that
+  // already have an InventoryRecord with status FINISHING_COMPLETE — i.e.
+  // sarees that went through a real finishing receive. A saree dispatched
+  // directly from readySarees (skipping finishing) has no InventoryRecord
+  // yet and the real call will 404; that mismatch is a genuine gap between
+  // this UI's "skip finishing" shortcut and the backend's business rule,
+  // not something to paper over here.
   const dispatchSareesMutation = useMutation({
-    mutationFn: (args: { id: string; sareeIds: string[]; record: Omit<DispatchRecord, "id"> }) => Promise.resolve(args),
-    onSuccess: ({ id, sareeIds, record }) => {
-      const fullRecord: DispatchRecord = { ...record, id, sareeIds };
-      setDispatches(prev => [...prev, fullRecord]);
-
-      // Move any dispatched sarees that are currently in readySarees to returns
-      const currentReady = qc.getQueryData<ReadySaree[]>(READY_KEY) ?? [];
-      const remaining = currentReady.filter(s => !sareeIds.includes(s.id));
-      const moved = currentReady.filter(s => sareeIds.includes(s.id));
-      qc.setQueryData<ReadySaree[]>(READY_KEY, remaining);
-      if (moved.length > 0) {
-        setReturns(oldReturns => [
-          ...oldReturns,
-          ...moved.map((s, idx) => ({
-            id: `FR-${Date.now()}-${idx}`,
-            assignmentId: "DIRECT-DISPATCH",
-            sareeId: s.id,
-            designCode: s.designCode,
-            sareeType: s.sareeType,
-            weaverName: s.weaverName,
-            condition: "perfect" as const,
-            receivedBy: "Admin Direct Dispatch",
-            receivedDate: todayLabel(),
-            inventoryStatus: "Dispatched" as const,
-            dispatchId: id,
-          })),
-        ]);
-      }
-
-      setAssignments(prev => prev.map(a =>
-        sareeIds.includes(a.sareeId) ? { ...a, status: "returned" } : a
-      ));
-
-      setReturns(prev => prev.map(r =>
-        sareeIds.includes(r.sareeId)
-          ? { ...r, inventoryStatus: "Dispatched", dispatchId: id }
-          : r
-      ));
+    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id"> }) => {
+      const type: BackendDispatchType = args.record.type === "wholesale" ? "WHOLESALE" : "SHOP";
+      return dispatchApi.create({
+        type,
+        sareeIds: args.sareeIds,
+        lrNumber: args.record.lrNumber || undefined,
+        transportCompany: args.record.transportCompany || undefined,
+        vehicleNumber: args.record.vehicleNumber || undefined,
+        driverName: args.record.driverName,
+        notes: args.record.notes,
+        bulkOrderRef: args.record.bulkOrderRef,
+        quotationRef: args.record.quotationRef,
+        pendingTransport: args.record.pendingTransport,
+        pendingReceipt: args.record.pendingReceipt,
+        customerId: args.record.customerId,
+        invoiceNumber: args.record.invoiceNumber,
+        pricePerSaree: args.record.pricePerSaree,
+        gstPct: args.record.gstPct,
+        firmId: args.record.firmId,
+        paymentDueDate: args.record.paymentDueDate,
+      });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
+      void qc.invalidateQueries({ queryKey: READY_KEY });
+      void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to dispatch sarees:", err);
     },
   });
 
+  // NOTE(backend gap): there is no PATCH /dispatch/:id endpoint yet, so this
+  // stays an optimistic client-only patch until one exists.
   const updateDispatchMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<DispatchRecord> }) => Promise.resolve(args),
     onSuccess: ({ id, patch }) => setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d)),
   });
 
   const raiseQuotationMutation = useMutation({
-    mutationFn: (args: { id: string; q: Omit<Quotation, "id" | "createdAt"> }) => Promise.resolve(args),
-    onSuccess: ({ id, q }) => setQuotations(prev => [{ ...q, id, createdAt: Date.now() }, ...prev]),
+    mutationFn: (q: Omit<Quotation, "id" | "createdAt">) =>
+      quotationsApi.create({
+        customerId: q.customerId || undefined,
+        bulkOrderRef: q.bulkOrderRef,
+        applyGst: q.applyGst,
+        gstPct: q.applyGst ? Number(q.gstPct) : undefined,
+        firmId: q.firmId,
+        raisedById: STOPGAP_ACTING_USER_ID,
+        sarees: q.sarees.map(s => ({ sareeId: s.sareeId, price: Number(q.prices[s.sareeId] ?? 0) })),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to raise quotation:", err);
+    },
   });
 
+  // NOTE(backend gap): POST /quotations/:id/assign-finishing takes no body —
+  // it marks every pending saree on the whole quotation as in-finishing in
+  // one shot and doesn't record a finishing-staff assignment at all (no
+  // FinishingAssignment rows are created for quotation sarees). The
+  // per-saree / per-staff selection this UI offers isn't something the
+  // backend supports yet, so sareeIds/staff are accepted for interface
+  // compatibility but not sent.
   const assignQuotationFinishingMutation = useMutation({
-    mutationFn: (args: { quotationId: string; sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) => Promise.resolve(args),
-    onSuccess: ({ quotationId, sareeIds, staff, assignedBy }) => {
-      const today = todayLabel();
-      const q = quotations.find(x => x.id === quotationId);
-      if (!q) return;
-      const toAssign = q.sarees.filter(s => sareeIds.includes(s.sareeId) && s.finishingStatus === "pending");
-      if (toAssign.length === 0) return;
-
-      setQuotations(prev => prev.map(x => {
-        if (x.id !== quotationId) return x;
-        const sarees = x.sarees.map(s =>
-          sareeIds.includes(s.sareeId) && s.finishingStatus === "pending"
-            ? { ...s, finishingStatus: "in-finishing" as const, finishingStaffName: staff.name }
-            : s
-        );
-        const allAssignedOrBeyond = sarees.every(s => s.finishingStatus !== "pending");
-        const anyReceived = sarees.some(s => s.finishingStatus === "received");
-        const status = anyReceived
-          ? (allAssignedOrBeyond && sarees.every(s => s.finishingStatus === "received") ? "received" : "partially-received")
-          : allAssignedOrBeyond ? "in-finishing" : x.status === "raised" ? "in-finishing" : x.status;
-        return { ...x, status, finishingStaffId: staff.id, finishingStaffName: staff.name, assignedDate: today, sarees };
-      }));
-
-      const stamp = Date.now();
-      const newAssignments: FinishingAssignment[] = toAssign.map((s, i) => ({
-        id: `FA-QT-${stamp}-${i}`,
-        sareeId: s.sareeId,
-        designCode: s.designCode,
-        sareeTypeCode: s.sareeTypeCode,
-        sareeType: s.sareeType,
-        weaverName: s.weaverName,
-        qcPassDate: q.quotationDate,
-        finishingStaffId: staff.id,
-        finishingStaffName: staff.name,
-        assignedDate: today,
-        assignedBy,
-        status: "awaiting-return",
-        quotationRef: q.quotationNumber,
-      }));
-      setAssignments(a => [...a, ...newAssignments]);
+    mutationFn: (args: { quotationId: string; sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
+      quotationsApi.assignFinishing(args.quotationId),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to assign quotation to finishing:", err);
     },
   });
 
   const receiveQuotationSareesMutation = useMutation({
-    mutationFn: (args: { quotationId: string; sareeIds: string[]; receivedBy: string }) => Promise.resolve(args),
-    onSuccess: ({ quotationId, sareeIds, receivedBy }) => {
-      const today = todayLabel();
-      const q = quotations.find(x => x.id === quotationId);
-      if (!q) return;
-
-      setQuotations(prev => prev.map(x => {
-        if (x.id !== quotationId) return x;
-        const sarees = x.sarees.map(s =>
-          sareeIds.includes(s.sareeId) ? { ...s, finishingStatus: "received" as const } : s
-        );
-        const allReceived = sarees.every(s => s.finishingStatus === "received");
-        const anyReceived = sarees.some(s => s.finishingStatus === "received");
-        return { ...x, sarees, status: allReceived ? "received" : anyReceived ? "partially-received" : x.status };
-      }));
-
-      const stamp = Date.now();
-      const newReturns: FinishingReturn[] = q.sarees
-        .filter(s => sareeIds.includes(s.sareeId))
-        .map((s, i) => ({
-          id: `FR-QT-${stamp}-${i}`,
-          assignmentId: `QT:${quotationId}`,
-          sareeId: s.sareeId,
-          designCode: s.designCode,
-          sareeTypeCode: s.sareeTypeCode,
-          sareeType: s.sareeType,
-          weaverName: s.weaverName,
-          condition: "perfect" as const,
-          receivedBy,
-          receivedDate: today,
-          inventoryStatus: "Ready for Dispatch" as const,
-          quotationRef: q.quotationNumber,
-        }));
-      setReturns(r => [...r, ...newReturns]);
-      setAssignments(a => a.map(as => sareeIds.includes(as.sareeId) ? { ...as, status: "returned" as const } : as));
+    mutationFn: (args: { quotationId: string; sareeIds: string[]; receivedBy: string }) =>
+      quotationsApi.receiveSarees(args.quotationId, args.sareeIds),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to receive quotation sarees:", err);
     },
   });
 
+  // NOTE(backend gap): there is no endpoint to mark a quotation dispatched
+  // (status only advances via assign-finishing/receive), so this stays an
+  // optimistic client-only patch until one exists.
   const markQuotationDispatchedMutation = useMutation({
     mutationFn: (quotationId: string) => Promise.resolve(quotationId),
     onSuccess: (quotationId) => setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q)),
@@ -249,16 +363,19 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const addReadySaree = (saree: ReadySaree) => addReadySareeMutation.mutate(saree);
   const receiveReturn = (params: Parameters<FinishingContextValue["receiveReturn"]>[0]) => receiveReturnMutation.mutate(params);
 
+  // Kept synchronous (returns a locally-generated id) for existing callers
+  // that chain a follow-up local-only call (markQuotationDispatched) right
+  // after — the real dispatch record's own id isn't otherwise consumed.
   const dispatchSarees = (sareeIds: string[], record: Omit<DispatchRecord, "id">): string => {
     const id = `DISP-${Date.now()}`;
-    dispatchSareesMutation.mutate({ id, sareeIds, record });
+    dispatchSareesMutation.mutate({ sareeIds, record });
     return id;
   };
   const updateDispatch = (id: string, patch: Partial<DispatchRecord>) => updateDispatchMutation.mutate({ id, patch });
 
   const raiseQuotation = (q: Omit<Quotation, "id" | "createdAt">): string => {
     const id = `QT-${Date.now()}`;
-    raiseQuotationMutation.mutate({ id, q });
+    raiseQuotationMutation.mutate(q);
     return id;
   };
   const assignQuotationFinishing = (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>

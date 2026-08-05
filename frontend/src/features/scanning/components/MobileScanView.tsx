@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Copy, Check } from "lucide-react";
 import { IconButton } from "../../../shared/ui/primitives";
+import { scanApi, ScanLookupResult } from "../../../shared/api/scan";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -24,7 +27,7 @@ const F = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES & DEFAULTS
+// TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 interface SareeData {
   id:               string;
@@ -37,16 +40,22 @@ interface SareeData {
   status:           string;
 }
 
-const DEFAULT_SAREE: SareeData = {
-  id:              "PADMA-L1-001",
-  weaver:          "Padma Veni",
-  fabricType:      "Kanchipuram Pure Silk",
-  colour:          "Deep Maroon",
-  jariType:        "PLY-2G-Gold",
-  dispatchDate:    "10 Jun 2026",
-  productionStage: "Quality Check Passed",
-  status:          "Dispatched",
-};
+function resultToSareeData(r: ScanLookupResult): SareeData {
+  return {
+    id: r.sareeId,
+    weaver: r.weaver?.name ?? r.factoryLoom?.loomNumber ?? "Unknown",
+    fabricType: r.sareeType?.type ?? "—",
+    colour: "—",
+    jariType: "—",
+    dispatchDate: "—",
+    productionStage: r.finishing?.status
+      ? `Finishing: ${r.finishing.status}`
+      : r.qc?.result
+        ? `QC: ${r.qc.result}`
+        : "In Production",
+    status: r.inventoryStatus ?? "In Production",
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DETAIL ROWS CONFIG
@@ -65,16 +74,56 @@ function detailRows(saree: SareeData) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
-export function MobileScanView({ saree = DEFAULT_SAREE }: { saree?: SareeData }) {
+// The saree prop lets callers (e.g. tests, or a future in-app scan trigger)
+// pass a preloaded result directly. Reached via the bare "/scan" route
+// (typically from a QR code), the sareeId comes from the ?id= query param
+// and is looked up for real against GET /scan/:sareeId.
+export function MobileScanView({ saree }: { saree?: SareeData }) {
   const [copied, setCopied] = useState(false);
+  const [searchParams] = useSearchParams();
+  const sareeId = searchParams.get("id") ?? searchParams.get("sareeId");
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["scan", sareeId],
+    queryFn: () => scanApi.lookup(sareeId!),
+    enabled: !saree && !!sareeId,
+  });
+
+  const resolved: SareeData | null = saree ?? (data ? resultToSareeData(data) : null);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(saree.id).catch(() => {});
+    if (!resolved) return;
+    navigator.clipboard.writeText(resolved.id).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const rows = detailRows(saree);
+  if (!saree && !sareeId) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.taupe, textAlign: "center", padding: 24 }}>
+        No saree code provided. Scan a saree's QR code to view its details.
+      </div>
+    );
+  }
+
+  if (!saree && isLoading) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.taupe }}>
+        Looking up {sareeId}…
+      </div>
+    );
+  }
+
+  if (!saree && (isError || !resolved)) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.crimson, textAlign: "center", padding: 24 }}>
+        Couldn't find a saree with code "{sareeId}".
+      </div>
+    );
+  }
+
+  const currentSaree = resolved!;
+  const rows = detailRows(currentSaree);
 
   return (
     <div
@@ -148,7 +197,7 @@ export function MobileScanView({ saree = DEFAULT_SAREE }: { saree?: SareeData })
               letterSpacing: "1px",
             }}
           >
-            {saree.id}
+            {currentSaree.id}
           </span>
           <IconButton
             onClick={handleCopy}
@@ -176,7 +225,7 @@ export function MobileScanView({ saree = DEFAULT_SAREE }: { saree?: SareeData })
                 letterSpacing: "0.3px",
               }}
             >
-              {saree.status}
+              {currentSaree.status}
             </span>
           </div>
         </div>

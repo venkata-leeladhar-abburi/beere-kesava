@@ -78,6 +78,7 @@ export const ModelName = {
   SaleRecord: 'SaleRecord',
   ReturnRecord: 'ReturnRecord',
   Supplier: 'Supplier',
+  SupplierPayment: 'SupplierPayment',
   Vendor: 'Vendor',
   Purchase: 'Purchase',
   PurchaseOrder: 'PurchaseOrder',
@@ -291,6 +292,7 @@ export const MaterialIssueRecordScalarFieldEnum = {
   signatureMethod: 'signatureMethod',
   signatureCaptured: 'signatureCaptured',
   signatureTimestamp: 'signatureTimestamp',
+  signatureUrl: 'signatureUrl',
   status: 'status',
   notes: 'notes'
 } as const
@@ -544,6 +546,19 @@ export const SupplierScalarFieldEnum = {
 export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
 
 
+export const SupplierPaymentScalarFieldEnum = {
+  id: 'id',
+  supplierId: 'supplierId',
+  amount: 'amount',
+  date: 'date',
+  utr: 'utr',
+  method: 'method',
+  firmId: 'firmId'
+} as const
+
+export type SupplierPaymentScalarFieldEnum = (typeof SupplierPaymentScalarFieldEnum)[keyof typeof SupplierPaymentScalarFieldEnum]
+
+
 export const VendorScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -590,6 +605,7 @@ export const PurchaseOrderScalarFieldEnum = {
   urgency: 'urgency',
   status: 'status',
   grnId: 'grnId',
+  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt'
 } as const
 

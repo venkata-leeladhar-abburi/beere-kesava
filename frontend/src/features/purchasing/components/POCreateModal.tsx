@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { useFirms } from "../../firms/contexts/FirmsContext";
-import { T, F, VENDORS, ExtItem, emptyItem } from "./POTypesAndVendors";
+import { T, F, Vendor, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
 import { POMaterialRow } from "./POMaterialRow";
 import { POVendorDetailsSection } from "./POVendorDetailsSection";
 import { Button, IconButton, Input, Textarea, Select, SelectItem, RadioGroup, RadioField } from "../../../shared/ui/primitives";
+import { vendorsApi } from "../../../shared/api/vendors";
+import { purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 
 const poFormSchema = z
   .object({
@@ -37,6 +39,16 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
   const todayDisplay = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
   const { firms } = useFirms();
+
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    vendorsApi.list().then(res => setVendors(res.items.map(v => ({
+      id: v.id, name: v.name, city: v.city ?? "", type: v.specialty ?? "",
+      phone: v.phone ?? "", terms: v.terms ?? "", gstCode: v.gstCode ?? "",
+      address: v.address ?? "", contactName: v.contactName ?? "",
+    })))).catch(() => setVendors([]));
+  }, [open]);
 
   const [selectedFirmId, setSelectedFirmId] = useState("");
   const [selectedVendorIdx, setSelectedVendorIdx] = useState<number>(-1);
@@ -72,7 +84,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     }
   }, [open, nextPONumber]);
 
-  const vendor = selectedVendorIdx >= 0 ? VENDORS[selectedVendorIdx] : null;
+  const vendor = selectedVendorIdx >= 0 ? vendors[selectedVendorIdx] : null;
   const selectedFirm = firms.find(f => f.id === selectedFirmId) ?? null;
 
   const validate = (): boolean => {
@@ -100,11 +112,16 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     return false;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
+    const created = await purchaseOrdersApi.create({
+      vendorId: vendor!.id,
+      deliveryDate: deliveryDate || undefined,
+      urgency,
+    });
     const po: PurchaseOrder = {
-      id: poNumber,
-      poNumber,
+      id: created.id,
+      poNumber: created.poNumber,
       vendor: vendor!.name,
       vendorCity: vendor!.city,
       vendorContact: vendorContact || undefined,
@@ -119,7 +136,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
         pricePerUnit: 0,
         subtotal: 0,
       })),
-      totalValue: 0,
+      totalValue: Number(created.totalValue),
       notesVendor: notesVendor || undefined,
       notesAdmin: notesAdmin || undefined,
       urgency,
@@ -250,6 +267,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
                 {/* VENDOR DETAILS */}
                 <POVendorDetailsSection
+                  vendors={vendors}
                   selectedVendorIdx={selectedVendorIdx}
                   setSelectedVendorIdx={setSelectedVendorIdx}
                   vendorContact={vendorContact}
@@ -334,7 +352,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                 {/* Footer buttons */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
                   <Button
-                    onClick={handleSubmit}
+                    onClick={() => { void handleSubmit(); }}
                     variant="primary" size="lg" fullWidth iconLeft={ClipboardList}
                   >
                     Submit for Superadmin Approval

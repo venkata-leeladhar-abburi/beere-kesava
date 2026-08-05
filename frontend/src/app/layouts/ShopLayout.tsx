@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
-  FirmsProvider, DesignLibraryProvider, BulkOrderProvider, BatchProvider, SalesProvider,
+  FirmsProvider, DesignLibraryProvider, BulkOrderProvider, BatchProvider, SalesProvider, CustomersProvider,
 } from "../../contexts";
 
 // FinishingProvider / QcProvider are mounted once in App.tsx so finishing and QC
@@ -13,6 +13,7 @@ import {
 // uses (see ShopStaffPortal's "inventory" tab), which pulls from all of these.
 const ShopContexts = composeProviders([
   SalesProvider,
+  CustomersProvider,
   FirmsProvider,
   BulkOrderProvider,
   DesignLibraryProvider,

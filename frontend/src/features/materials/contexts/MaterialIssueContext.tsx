@@ -1,5 +1,16 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  BackendJariGrade,
+  BackendMaterialIssueRecord,
+  BackendMaterialType,
+  BackendWarpSubtype,
+  CreateMaterialIssuePayload,
+  materialIssuesApi,
+} from "../../../shared/api/material-issues";
+import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
+import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
@@ -28,149 +39,87 @@ export interface MaterialIssueRecord {
   signatureMethod: "here" | "remote";
   signatureCaptured: boolean;
   signatureTimestamp?: string;
+  signatureUrl?: string;    // resolved URL of the captured signature image (HERE method only)
   notes?: string;
   status: "pending-signature" | "signed" | "cancelled";
 }
 
-// ─── Seed data ────────────────────────────────────────────────────────────────
-const INITIAL_ISSUE_RECORDS: MaterialIssueRecord[] = [
-  {
-    id: "MIR-2026-001",
-    weaverId: "WV-001",
-    weaverName: "Ravi Kumar",
-    loomNumber: 2,
-    batchId: "BATCH-094",
+// ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
+const MATERIAL_TYPE_TO_BACKEND: Record<IssuedMaterialItem["materialType"], BackendMaterialType> = {
+  Warp: "WARP",
+  Resham: "RESHAM",
+  Jari: "JARI",
+};
+const MATERIAL_TYPE_FROM_BACKEND: Record<BackendMaterialType, IssuedMaterialItem["materialType"]> = {
+  WARP: "Warp",
+  RESHAM: "Resham",
+  JARI: "Jari",
+};
+const WARP_SUBTYPE_TO_BACKEND: Record<string, BackendWarpSubtype> = {
+  "Resham Warp": "RESHAM_WARP",
+  "Jari Warp": "JARI_WARP",
+};
+const WARP_SUBTYPE_FROM_BACKEND: Record<BackendWarpSubtype, "Resham Warp" | "Jari Warp"> = {
+  RESHAM_WARP: "Resham Warp",
+  JARI_WARP: "Jari Warp",
+};
+const JARI_GRADE_TO_BACKEND: Record<string, BackendJariGrade> = {
+  "1G": "G1", "2G": "G2", "3G": "G3", "4G": "G4", "5G": "G5",
+};
+const JARI_GRADE_FROM_BACKEND: Record<BackendJariGrade, "1G" | "2G" | "3G" | "4G" | "5G"> = {
+  G1: "1G", G2: "2G", G3: "3G", G4: "4G", G5: "5G",
+};
+
+function backendItemToFrontend(item: BackendMaterialIssueRecord["items"][number]): IssuedMaterialItem {
+  return {
+    materialType: MATERIAL_TYPE_FROM_BACKEND[item.materialType],
+    warpSubtype: item.warpSubtype ? WARP_SUBTYPE_FROM_BACKEND[item.warpSubtype] : undefined,
+    quantity: Number(item.quantity),
+    unit: item.unit,
+    jariType: item.jariType === "Polyester" || item.jariType === "Silk Fast" ? item.jariType : undefined,
+    jariGrade: item.jariGrade ? JARI_GRADE_FROM_BACKEND[item.jariGrade] : undefined,
+    jariColor: item.jariColor ?? undefined,
+    grnBatchId: item.grnBatchId ?? "",
+  };
+}
+
+function backendRecordToFrontend(
+  r: BackendMaterialIssueRecord,
+  weaverLookup: Map<string, string>,
+  loomLookup: Map<string, string>,
+): MaterialIssueRecord {
+  return {
+    id: r.id,
+    weaverId: r.weaverId ?? undefined,
+    weaverName: r.weaverId ? weaverLookup.get(r.weaverId) : undefined,
+    loomNumber: r.loomNumber ? Number(r.loomNumber) : undefined,
+    batchId: r.batchId ?? undefined,
+    factoryLoomId: r.factoryLoomId ?? undefined,
+    factoryLoomNumber: r.factoryLoomId ? loomLookup.get(r.factoryLoomId) : undefined,
     issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-07-01T09:15:00.000Z",
-    materials: [
-      { materialType: "Warp", warpSubtype: "Jari Warp", description: "Cotton/Silk blend", quantity: 4.5, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-      { materialType: "Resham", description: "Red Resham", quantity: 0.8, unit: "kg", grnBatchId: "GRN-2026-JUN-002" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-07-01T09:22:00.000Z",
-    notes: "Batch BATCH-094 handover.",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-002",
-    weaverId: "WV-002",
-    weaverName: "Padma Veni",
-    loomNumber: 1,
-    batchId: "BATCH-094",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-07-02T11:40:00.000Z",
-    materials: [
-      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 8, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
-      { materialType: "Warp", warpSubtype: "Resham Warp", quantity: 3, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-    ],
-    signatureMethod: "remote",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-07-02T13:05:00.000Z",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-003",
-    weaverId: "WV-001",
-    weaverName: "Ravi Kumar",
-    loomNumber: 2,
-    batchId: "BATCH-094",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-07-03T10:00:00.000Z",
-    materials: [
-      { materialType: "Resham", description: "Maroon Resham", quantity: 1.2, unit: "kg", grnBatchId: "GRN-2026-JUN-002" },
-      { materialType: "Jari", jariType: "Silk Fast", jariGrade: "1G", jariColor: "Silver", quantity: 2, unit: "Buns", grnBatchId: "GRN-2026-JUN-003" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: false,
-    notes: "Awaiting weaver signature at next visit.",
-    status: "pending-signature",
-  },
-  {
-    id: "MIR-2026-004",
-    weaverId: "WV-005",
-    weaverName: "Anand K.",
-    loomNumber: 3,
-    batchId: "BATCH-094",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-07-03T14:20:00.000Z",
-    materials: [
-      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 3.6, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 5, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-07-03T14:28:00.000Z",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-009",
-    factoryLoomId: "FL-001",
-    factoryLoomNumber: "Loom F-01",
-    batchId: "BATCH-090",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-06-24T09:15:00.000Z",
-    materials: [
-      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 6, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 8, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-06-24T09:25:00.000Z",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-010",
-    factoryLoomId: "FL-001",
-    factoryLoomNumber: "Loom F-01",
-    batchId: "BATCH-088",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-06-20T08:30:00.000Z",
-    materials: [
-      { materialType: "Warp", description: "Pure Silk Warp", quantity: 4.5, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-      { materialType: "Resham", description: "Red Resham", quantity: 1.2, unit: "kg", grnBatchId: "GRN-2026-JUN-002" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-06-20T08:40:00.000Z",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-005",
-    factoryLoomId: "FL-002",
-    factoryLoomNumber: "Loom F-02",
-    batchId: "BATCH-094",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-07-04T10:30:00.000Z",
-    materials: [
-      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 5, unit: "kg", grnBatchId: "GRN-2026-JUN-001" },
-      { materialType: "Resham", description: "Gold Resham", quantity: 1.5, unit: "kg", grnBatchId: "GRN-2026-JUN-002" },
-      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 6, unit: "Reels", grnBatchId: "GRN-2026-JUN-003" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-07-04T10:40:00.000Z",
-    status: "signed",
-  },
-  {
-    id: "MIR-2026-006",
-    weaverId: "WV-001",
-    weaverName: "Ravi Kumar",
-    loomNumber: 2,
-    batchId: "BATCH-078",
-    issuedBy: "Admin (Kesava Rao)",
-    issuedAt: "2026-05-10T08:30:00.000Z",
-    materials: [
-      { materialType: "Warp", description: "Cotton/Silk blend", quantity: 3, unit: "kg", grnBatchId: "GRN-2026-MAY-001" },
-      { materialType: "Jari", jariType: "Polyester", jariGrade: "2G", jariColor: "Gold", quantity: 4, unit: "Reels", grnBatchId: "GRN-2026-MAY-002" },
-    ],
-    signatureMethod: "here",
-    signatureCaptured: true,
-    signatureTimestamp: "2026-05-10T08:40:00.000Z",
-    notes: "Batch BATCH-078 handover.",
-    status: "signed",
-  },
-];
+    issuedAt: r.issuedAt,
+    materials: r.items.map(backendItemToFrontend),
+    signatureMethod: r.signatureMethod === "REMOTE" ? "remote" : "here",
+    signatureCaptured: r.signatureCaptured,
+    signatureTimestamp: r.signatureTimestamp ?? undefined,
+    signatureUrl: r.signatureUrl ?? undefined,
+    notes: r.notes ?? undefined,
+    status: r.status === "PENDING_SIGNATURE" ? "pending-signature" : r.status === "SIGNED" ? "signed" : "cancelled",
+  };
+}
+
+function frontendItemToPayload(m: IssuedMaterialItem): CreateMaterialIssuePayload["items"][number] {
+  return {
+    materialType: MATERIAL_TYPE_TO_BACKEND[m.materialType],
+    warpSubtype: m.warpSubtype ? WARP_SUBTYPE_TO_BACKEND[m.warpSubtype] : undefined,
+    quantity: m.quantity,
+    unit: m.unit,
+    jariType: m.jariType,
+    jariGrade: m.jariGrade ? JARI_GRADE_TO_BACKEND[m.jariGrade] : undefined,
+    jariColor: m.jariColor,
+    grnBatchId: m.grnBatchId || undefined,
+  };
+}
 
 // ─── Material weight conversion ───────────────────────────────────────────────
 // One reel of Jari weighs 230 grams; a Bun is 4 reels (see IssueMaterialPage).
@@ -193,6 +142,10 @@ export function materialItemToGrams(m: IssuedMaterialItem): number {
 }
 
 // ─── Received sarees (returned by weaver, weighed by worker staff) ─────────────
+// NOTE(backend gap): there is no backend model for tracking returned/weighed
+// sarees yet — MaterialIssuesModule only covers the outbound issuance record.
+// This stays local/mock (like the remote-signature confirmation flow below)
+// until that's built; wiring it here would just be a differently-shaped mock.
 export interface ReceivedSareeRecord {
   id: string;          // Saree ID e.g. "RAVI-L2-004"
   weaverId: string;
@@ -205,13 +158,7 @@ export interface ReceivedSareeRecord {
   status: "received" | "defective";
 }
 
-// Seed received sarees so outstanding material is meaningful in the demo.
-const INITIAL_RECEIVED_SAREES: ReceivedSareeRecord[] = [
-  { id: "RAVI-L2-001",  weaverId: "WV-001", batchId: "BATCH-094", weightGrams: 842, receivedAt: "2026-07-05T10:00:00.000Z", color: "Gold",  status: "received" },
-  { id: "RAVI-L2-002",  weaverId: "WV-001", batchId: "BATCH-094", weightGrams: 918, receivedAt: "2026-07-06T10:00:00.000Z", color: "Maroon", status: "received" },
-  { id: "PADMA-L1-001", weaverId: "WV-002", batchId: "BATCH-094", weightGrams: 856, receivedAt: "2026-07-05T11:00:00.000Z", color: "Red",   status: "received" },
-  { id: "ANAND-L3-001", weaverId: "WV-005", batchId: "BATCH-094", weightGrams: 774, receivedAt: "2026-07-06T09:00:00.000Z", color: "Cream", status: "received" },
-];
+const INITIAL_RECEIVED_SAREES: ReceivedSareeRecord[] = [];
 
 // ─── Outstanding material summary ─────────────────────────────────────────────
 export interface WeaverMaterialSummary {
@@ -249,10 +196,24 @@ function summarize(records: MaterialIssueRecord[], received: ReceivedSareeRecord
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
+export interface AddIssueRecordInput {
+  weaverId?: string;
+  weaverName?: string;
+  loomNumber?: number;
+  factoryLoomId?: string;
+  factoryLoomNumber?: string;
+  batchId?: string;
+  materials: IssuedMaterialItem[];
+  signatureMethod: "here" | "remote";
+  notes?: string;
+  /** PNG blob captured from the on-screen signature canvas (HERE method only). */
+  signatureBlob?: Blob | null;
+}
+
 interface MaterialIssueContextValue {
   issueRecords: MaterialIssueRecord[];
   receivedSarees: ReceivedSareeRecord[];
-  addIssueRecord: (record: Omit<MaterialIssueRecord, "id">) => MaterialIssueRecord;
+  addIssueRecord: (input: AddIssueRecordInput) => Promise<MaterialIssueRecord>;
   addReceivedSaree: (rec: ReceivedSareeRecord) => void;
   getRecordsForWeaver: (weaverId: string) => MaterialIssueRecord[];
   getReceivedForWeaver: (weaverId: string) => ReceivedSareeRecord[];
@@ -271,10 +232,18 @@ const RECEIVED_SAREES_KEY = ["materialIssue", "receivedSarees"] as const;
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: issueRecords = INITIAL_ISSUE_RECORDS } = useQuery({
+  const { data: issueRecords = [] } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
-    queryFn: () => Promise.resolve(INITIAL_ISSUE_RECORDS),
-    initialData: INITIAL_ISSUE_RECORDS,
+    queryFn: async () => {
+      const [issuesRes, weaversRes, loomsRes] = await Promise.all([
+        materialIssuesApi.list(),
+        weaversApi.list(),
+        factoryLoomsApi.list(),
+      ]);
+      const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
+      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.loomNumber]));
+      return issuesRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup));
+    },
   });
 
   const { data: receivedSarees = INITIAL_RECEIVED_SAREES } = useQuery({
@@ -284,9 +253,29 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   });
 
   const addIssueRecordMutation = useMutation({
-    mutationFn: (record: MaterialIssueRecord) => Promise.resolve(record),
-    onSuccess: (record) =>
-      queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev => [record, ...(prev ?? [])]),
+    mutationFn: async (input: AddIssueRecordInput) => {
+      const created = await materialIssuesApi.create({
+        weaverId: input.weaverId,
+        factoryLoomId: input.factoryLoomId,
+        loomNumber: input.loomNumber,
+        batchId: input.batchId,
+        issuedById: STOPGAP_ACTING_USER_ID,
+        signatureMethod: input.signatureMethod === "remote" ? "REMOTE" : "HERE",
+        notes: input.notes,
+        items: input.materials.map(frontendItemToPayload),
+      });
+
+      if (input.signatureMethod === "here" && input.signatureBlob) {
+        return materialIssuesApi.sign(created.id, input.signatureBlob);
+      }
+      // Remote signing has no real device/SMS integration yet (same gap as
+      // OTP auth) — the record is created but stays PENDING_SIGNATURE
+      // server-side until that lands.
+      return created;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
+    },
   });
 
   const addReceivedSareeMutation = useMutation({
@@ -315,20 +304,13 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       ),
   });
 
-  const addIssueRecord = (record: Omit<MaterialIssueRecord, "id">): MaterialIssueRecord => {
-    // Compute next MIR number from the current cache.
-    const allNums = issueRecords
-      .map(r => {
-        const m = r.id.match(/MIR-\d{4}-(\d+)/);
-        return m ? parseInt(m[1] ?? "0", 10) : 0;
-      })
-      .filter(n => n > 0);
-    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 3;
-    const nextId = `MIR-2026-${String(maxNum + 1).padStart(3, "0")}`;
-
-    const newRecord: MaterialIssueRecord = { ...record, id: nextId };
-    addIssueRecordMutation.mutate(newRecord);
-    return newRecord;
+  const addIssueRecord = async (input: AddIssueRecordInput): Promise<MaterialIssueRecord> => {
+    const created = await addIssueRecordMutation.mutateAsync(input);
+    const weaverLookup = new Map(input.weaverId && input.weaverName ? [[input.weaverId, input.weaverName]] : []);
+    const loomLookup = new Map(
+      input.factoryLoomId && input.factoryLoomNumber ? [[input.factoryLoomId, input.factoryLoomNumber]] : [],
+    );
+    return backendRecordToFrontend(created, weaverLookup, loomLookup);
   };
 
   const getRecordsForWeaver = useCallback((weaverId: string) => {

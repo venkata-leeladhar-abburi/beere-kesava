@@ -6,13 +6,14 @@ import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
   BatchProvider, MaterialIssueProvider, FirmsProvider,
-  WeaverPaymentsProvider, SalesProvider,
+  WeaverPaymentsProvider, SalesProvider, CustomersProvider,
 } from "../../contexts";
 
 // FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
 // finishing data is shared across worker, admin, superadmin and accountant.
 const AccountantContexts = composeProviders([
   SalesProvider,
+  CustomersProvider,
   WeaverPaymentsProvider,
   FirmsProvider,
   POProvider,

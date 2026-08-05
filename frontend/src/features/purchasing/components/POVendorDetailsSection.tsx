@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Package } from "lucide-react";
-import { T, F, VENDORS, Vendor } from "./POTypesAndVendors";
+import { T, F, Vendor } from "./POTypesAndVendors";
 import { Input, Button, Select, SelectItem } from "../../../shared/ui/primitives";
 
 interface POVendorDetailsSectionProps {
+  vendors: Vendor[];
   selectedVendorIdx: number;
   setSelectedVendorIdx: (idx: number) => void;
   vendorContact: string;
@@ -21,6 +22,7 @@ interface POVendorDetailsSectionProps {
 }
 
 export function POVendorDetailsSection({
+  vendors,
   selectedVendorIdx,
   setSelectedVendorIdx,
   vendorContact,
@@ -48,7 +50,7 @@ export function POVendorDetailsSection({
             const v = parseInt(val);
             if (v === -99) { setShowAddVendor(true); return; }
             setSelectedVendorIdx(v);
-            const sel = VENDORS[v];
+            const sel = vendors[v];
             if (sel) {
               setVendorContact(sel.contactName || "");
             } else {
@@ -58,7 +60,7 @@ export function POVendorDetailsSection({
           }}
         >
           <SelectItem value="-1">Select vendor…</SelectItem>
-          {VENDORS.map((v, i) => (
+          {vendors.map((v, i) => (
             <SelectItem key={i} value={String(i)}>{v.name} · {v.city}</SelectItem>
           ))}
           <SelectItem value="-99">+ Add New Vendor</SelectItem>

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
+import { signatureFileToUrl } from "../common/storage/upload.config";
 import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -100,7 +101,7 @@ export class MaterialIssuesService {
     return record;
   }
 
-  async sign(id: string) {
+  async sign(id: string, signature: Express.Multer.File) {
     const record = await this.findOne(id);
     if (record.status !== MaterialIssueStatus.PENDING_SIGNATURE) {
       throw new BadRequestException(
@@ -113,6 +114,7 @@ export class MaterialIssuesService {
         status: MaterialIssueStatus.SIGNED,
         signatureCaptured: true,
         signatureTimestamp: new Date(),
+        signatureUrl: signatureFileToUrl(signature),
       },
       include: includeItems,
     });

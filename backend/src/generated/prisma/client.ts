@@ -175,6 +175,11 @@ export type ReturnRecord = Prisma.ReturnRecordModel
  */
 export type Supplier = Prisma.SupplierModel
 /**
+ * Model SupplierPayment
+ * 
+ */
+export type SupplierPayment = Prisma.SupplierPaymentModel
+/**
  * Model Vendor
  * 
  */

@@ -1,14 +1,16 @@
 import React from "react";
 import { CheckCircle2, Clock, PenLine, Send } from "lucide-react";
 import { F, T } from "./theme";
+import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
 
 // ── Signature capture block (mirrors WorkerWeavers WeaverSigBlock, T/F tokens) ─
-export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, signed, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed }: {
+export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, signed, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed, canvasRef }: {
   weaverName: string; weaverPhone: string;
   sigMethod: "none" | "here" | "remote"; setSigMethod: (m: "none" | "here" | "remote") => void;
   signed: boolean; setSigned: (v: boolean) => void;
   remoteSent: boolean; setRemoteSent: (v: boolean) => void;
   remoteConfirmed: boolean; setRemoteConfirmed: (v: boolean) => void;
+  canvasRef: React.RefObject<SignatureCanvasHandle | null>;
 }) {
   return (
     <div>
@@ -41,28 +43,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
 
       {sigMethod === "here" && (
         <div style={{ marginTop: 14 }}>
-          <div onClick={() => setSigned(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSigned(true))?.(); } }} style={{
-            background: "#FFF", border: `1.5px solid ${signed ? "rgba(30,102,64,0.35)" : T.borderDef}`, borderRadius: 14,
-            height: 150, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center",
-            cursor: "crosshair", position: "relative" as const,
-          }}>
-            {!signed ? (
-              <>
-                <PenLine size={30} color={T.taupe} style={{ marginBottom: 10, opacity: 0.6 }} />
-                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Tap to sign as {weaverName}</span>
-              </>
-            ) : (
-              <div style={{ textAlign: "center" as const }}>
-                <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: 30, color: T.darkBurgundy }}>{weaverName}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5, justifyContent: "center" }}>
-                  <CheckCircle2 size={13} /> Signature captured
-                </div>
-              </div>
-            )}
-            {signed && (
-              <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute" as const, bottom: 10, right: 14, background: "none", border: "none", fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Clear</button>
-            )}
-          </div>
+          <SignatureCanvas ref={canvasRef} weaverName={weaverName} onChange={setSigned} />
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import { ArrowRight, Check, Inbox } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
@@ -6,6 +6,64 @@ import { Button, IconButton } from "../../../shared/ui/primitives";
 import { UnifiedNotif, Priority, T, F, PRIORITY, CATEGORIES } from "./notifTypes";
 import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
+import { BackendNotification, connectNotificationsSocket, notificationsApi } from "../../../shared/api/notifications";
+import { useAuth, Role } from "../../../contexts/AuthContext";
+
+const ROLE_TO_BACKEND: Record<Role, string> = {
+  admin: "ADMIN",
+  superadmin: "SUPERADMIN",
+  worker: "WORKER",
+  weaver: "WEAVER",
+  shop: "SHOP",
+  accountant: "ACCOUNTANT",
+};
+
+// Backend Notification rows only carry a `type` string + free-form JSON
+// payload (no title/body/priority/category) — this table is the only place
+// that turns a real backend event into the rich display shape below. Only
+// "invoice_overdue" (from the Day-45 overdue-payment job) is emitted by any
+// backend module today; unknown types fall back to a generic info card so
+// new notification types never disappear silently.
+const TYPE_CONFIG: Record<string, {
+  category: UnifiedNotif["category"];
+  priority: Priority;
+  title: (payload: Record<string, unknown>) => string;
+  body: (payload: Record<string, unknown>) => string;
+}> = {
+  invoice_overdue: {
+    category: "payment",
+    priority: "critical",
+    title: p => `Invoice Overdue${p.invoiceNumber ? ` — ${String(p.invoiceNumber)}` : ""}`,
+    body: p => `Outstanding amount ₹${Number(p.outstandingAmount ?? 0).toLocaleString("en-IN")} is more than 45 days overdue.`,
+  },
+};
+
+function formatRelativeTime(iso: string): string {
+  const now = Date.now();
+  const then = new Date(iso).getTime();
+  const diffMin = Math.round((now - then) / 60000);
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHrs = Math.round(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  const diffDays = Math.round(diffHrs / 24);
+  if (diffDays === 1) return "Yesterday";
+  return `${diffDays} days ago`;
+}
+
+function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
+  const cfg = TYPE_CONFIG[n.type];
+  const payload = n.payload ?? {};
+  return {
+    id: n.id,
+    priority: cfg?.priority ?? "info",
+    category: cfg?.category ?? "payment",
+    title: cfg ? cfg.title(payload) : n.type,
+    body: cfg ? cfg.body(payload) : JSON.stringify(payload),
+    time: formatRelativeTime(n.createdAt),
+    read: n.readAt !== null,
+  };
+}
 
 const imgNotifHero = "https://images.unsplash.com/photo-1633613286991-611fe299c4be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -35,38 +93,6 @@ const G = {
   gold:   "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
 };
 
-const INITIAL_NOTIFS: UnifiedNotif[] = [
-  { id: "w-1", priority: "info",     category: "weaver", title: "Warp Request Raised — Ravi Kumar", body: "Ravi Kumar (WV-001) raised a warp request for BATCH-086 — 3 kg yarn needed.", time: "10 min ago", read: false },
-  { id: "w-2", priority: "success",  category: "weaver", title: "Warp Request Approved — Padma Veni", body: "Padma Veni's (WV-002) warp request for BATCH-086 was approved by Admin.", time: "1h ago", read: false },
-  { id: "w-3", priority: "warning",  category: "weaver", title: "Warp Request Rejected — Suresh Murti", body: "Suresh Murti's warp request was rejected — insufficient warp yarn stock in primary rack.", time: "3h ago", read: false },
-  { id: "w-4", priority: "info",     category: "weaver", title: "Batch Assigned to Weaver — Padma Veni", body: "BATCH-086 assigned to Padma Veni — Design BKB-051, 6 sarees expected.", time: "Yesterday", read: true },
-  { id: "w-5", priority: "success",  category: "weaver", title: "Weaver Confirmed Material Receipt", body: "Ravi Kumar confirmed receipt of Warp and Resham for BATCH-089.", time: "Yesterday", read: true },
-  { id: "w-6", priority: "success",  category: "weaver", title: "Payment Credited to Weaver — ₹6,300", body: "₹6,300 credited to Ravi Kumar (WV-001) for completion of Batch 088 — UTR202604301122.", time: "2 days ago", read: true },
-  { id: "w-7", priority: "warning",  category: "weaver", title: "Weaver Absence — Anand Kumar", body: "Anand Kumar has been absent for 2 consecutive working days. Batch 090 may face significant delays. Consider reassigning work.", time: "3 days ago", read: true },
-
-  { id: "p-1", priority: "info",     category: "production", title: "New Batch 092 Initiated — Suresh Murti", body: "Batch 092 has been started with Suresh Murti. Design: Kanjivaram Heavy Zari. Expected completion: 12 working days. 6 sarees allocated.", time: "Just now", read: false },
-  { id: "p-2", priority: "success",  category: "production", title: "Batch 089 Completed — Ravi Kumar", body: "Ravi Kumar has successfully completed 3 sarees in Batch 089. Quality control inspection is now pending.", time: "2h ago", read: false },
-  { id: "p-3", priority: "success",  category: "production", title: "QC Cleared — 12 Sarees, Batch 086", body: "Quality check has passed for all 12 sarees in Batch 086. Items are now ready for finishing operations.", time: "8:15 AM", read: true },
-  { id: "p-4", priority: "warning",  category: "production", title: "QC Rejection — 2 Sarees, Batch 084", body: "2 sarees from Batch 084 failed quality check inspection. Issues: irregular zari pattern on saree #3 and minor defects on saree #7.", time: "11:30 AM", read: true },
-  { id: "p-5", priority: "info",     category: "production", title: "Batch 090 Created — Anand K.", body: "BATCH-090 created for Anand K. — Design BKB-047, 6 sarees.", time: "Yesterday", read: true },
-
-  { id: "m-1", priority: "critical", category: "material", title: "Jari Stock Below Minimum Threshold", body: "Current Jari inventory stands at 8 kg against the minimum threshold of 15 kg. Recommended reorder quantity is 20 kg.", time: "4h ago", read: false, action: "Order Now" },
-  { id: "m-2", priority: "info",     category: "material", title: "Warp Issued to Weaver — Padma Veni", body: "Worker staff issued 4 kg warp yarn to Padma Veni for Batch 091. Raw material inventory has been updated.", time: "9:30 AM", read: true },
-  { id: "m-3", priority: "info",     category: "material", title: "PO Created — Surat Zari Works", body: "PO-2026-023 created for Surat Zari Works — 5 Buns Polyester 2G Gold.", time: "Yesterday", read: true },
-  { id: "m-4", priority: "success",  category: "material", title: "PO Approved by Superadmin", body: "PO-2026-021 approved by Superadmin — awaiting vendor delivery.", time: "Yesterday", read: true },
-  { id: "m-5", priority: "success",  category: "material", title: "Warp Stock Replenished — 50 kg", body: "50 kg of warp yarn received from Coimbatore Yarns Pvt. Ltd. against PO #PO-2024-044. Inventory has been updated.", time: "2 days ago", read: true },
-
-  { id: "pay-1", priority: "critical", category: "payment", title: "2 Invoices Overdue — ₹2.4L Pending", body: "Invoice #INV-2024-089 (₹1.2L) and #INV-2024-091 (₹1.2L) are overdue by more than 7 days. Follow-up is required.", time: "10:00 AM", read: false, action: "View Invoices" },
-  { id: "pay-2", priority: "success",  category: "payment", title: "Payment Received — ₹85,000", body: "Full payment of ₹85,000 received from Meenakshi Textiles for Invoice #INV-2024-087. The outstanding balance is cleared.", time: "1:15 PM", read: true },
-  { id: "pay-3", priority: "warning",  category: "payment", title: "Payment Discrepancy Alert", body: "1 bank credit of ₹12,500 could not be matched to any weaver or wholesale account — review manually.", time: "Yesterday", read: true },
-  { id: "pay-4", priority: "info",     category: "payment", title: "Excel Payment File Uploaded", body: "Payment sheet for May 2026 uploaded — 84 weaver payment records processed successfully.", time: "2 days ago", read: true },
-
-  { id: "d-1", priority: "critical", category: "dispatch", title: "Low Stock Alert — Shop Inventory", body: "Shop Staff reported only 12 sarees remaining in the retail shop showroom. Restocking is required immediately.", time: "Just now", read: false, action: "Review Stock" },
-  { id: "d-2", priority: "success",  category: "dispatch", title: "Order Confirmed — Lakshmi Silks", body: "Lakshmi Silks has confirmed a wholesale order for 40 sarees from the Kanjivaram series.", time: "3:45 PM", read: true },
-  { id: "d-3", priority: "info",     category: "dispatch", title: "Dispatch Completed — Wholesale Order", body: "24 sarees have been dispatched to Maheshwari Textiles Pvt. Ltd. Tracking ID: BKS-DSP-2024-112.", time: "Yesterday", read: true },
-  { id: "d-4", priority: "success",  category: "dispatch", title: "Shop Restocking — 18 Sarees Dispatched", body: "18 sarees have been dispatched from the finishing unit to the Beere Kesava retail shop.", time: "Yesterday", read: true },
-];
-
 type Filter = "all" | Priority;
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all",      label: "All Priorities" },
@@ -91,25 +117,54 @@ function FadeUp({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 }
 
 export function NotificationsPage() {
-  const [notifications, setNotifications] = useState<UnifiedNotif[]>(INITIAL_NOTIFS);
+  const { role } = useAuth();
+  const backendRole = role ? ROLE_TO_BACKEND[role] : undefined;
+
+  const [notifications, setNotifications] = useState<UnifiedNotif[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [filter, setFilter]                 = useState<Filter>("all");
   const [selected, setSelected]             = useState<UnifiedNotif | null>(null);
   const [dateFilter, setDateFilter]         = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
-  const markRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    if (selected && selected.id === id) {
-      setSelected(prev => prev ? { ...prev, read: true } : null);
-    }
-  };
+  useEffect(() => {
+    notificationsApi.list({ role: backendRole }).then(res => {
+      setNotifications(res.items.map(toUnifiedNotif));
+    }).catch(() => setNotifications([]));
+  }, [backendRole]);
 
+  // Live push — backend gateway emits to `role:<ROLE>` rooms (no per-user
+  // auth yet, so we can only reliably subscribe by role).
+  useEffect(() => {
+    if (!backendRole) return;
+    const socket = connectNotificationsSocket({ role: backendRole });
+    socket.on("notification", (raw: BackendNotification) => {
+      setNotifications(prev => prev.some(n => n.id === raw.id) ? prev : [toUnifiedNotif(raw), ...prev]);
+    });
+    return () => { socket.disconnect(); };
+  }, [backendRole]);
+
+  const markRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setSelected(prev => prev && prev.id === id ? { ...prev, read: true } : prev);
+    notificationsApi.markRead(id).catch(() => {
+      // Real backend state didn't change — revert the optimistic update.
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: false } : n));
+    });
+  }, []);
+
+  // NOTE: the backend has no "mark unread" endpoint (Notification.readAt is
+  // a one-way timestamp) — toggling back to unread is local-UI-only and
+  // doesn't persist across a refresh.
   const toggleRead = (id: string) => {
+    const target = notifications.find(n => n.id === id);
+    if (target && !target.read) { markRead(id); return; }
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
   };
 
   const markAllRead = () => {
+    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    unreadIds.forEach(id => { notificationsApi.markRead(id).catch(() => {}); });
   };
 
   const categoryFiltered = activeCategory === "all" ? notifications : notifications.filter(n => n.category === activeCategory);

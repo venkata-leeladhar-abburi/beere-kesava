@@ -3,8 +3,10 @@ import * as ExcelJS from "exceljs";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
 import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
+import { ListSupplierPaymentsQueryDto } from "./dto/list-supplier-payments-query.dto";
 import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
 import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
 
@@ -58,6 +60,42 @@ export class PaymentsService {
         orderBy: { paymentDate: "desc" },
       }),
       this.prisma.weaverPayment.count({ where }),
+    ]);
+    return { items, total, page: query.page, pageSize: query.pageSize };
+  }
+
+  async createSupplierPayment(dto: CreateSupplierPaymentDto) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
+    if (!supplier) {
+      throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
+    }
+    return this.prisma.supplierPayment.create({
+      data: {
+        supplierId: dto.supplierId,
+        amount: dto.amount,
+        date: dto.date ? new Date(dto.date) : undefined,
+        utr: dto.utr,
+        method: dto.method,
+        firmId: dto.firmId,
+      },
+    });
+  }
+
+  async findAllSupplierPayments(
+    query: ListSupplierPaymentsQueryDto,
+  ): Promise<PaginatedResult<Prisma.SupplierPaymentGetPayload<object>>> {
+    const where: Prisma.SupplierPaymentWhereInput = {
+      supplierId: query.supplierId,
+      firmId: query.firmId,
+    };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.supplierPayment.findMany({
+        where,
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+        orderBy: { date: "desc" },
+      }),
+      this.prisma.supplierPayment.count({ where }),
     ]);
     return { items, total, page: query.page, pageSize: query.pageSize };
   }

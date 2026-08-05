@@ -1,8 +1,8 @@
 import React from "react";
 import { Factory, Search } from "lucide-react";
-import { FactoryLoom, FACTORY_LOOMS_LIST } from "../../../production/data/factoryLooms";
+import { FactoryLoom } from "../../../production/data/factoryLooms";
 import { BatchRecord } from "../../../production/contexts/BatchContext";
-import { F, STATUS_CFG, T, WeaverLite, WEAVERS } from "./theme";
+import { F, STATUS_CFG, T, WeaverLite } from "./theme";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 
 export function RecipientSelector({
@@ -13,6 +13,7 @@ export function RecipientSelector({
   selectedFactoryLoom, setSelectedLoomId,
   selectedBatchId, setSelectedBatchId,
   weaverBatches, loomBatches,
+  weavers, looms,
 }: {
   recipientType: "weaver" | "factoryLoom";
   setRecipientType: (t: "weaver" | "factoryLoom") => void;
@@ -23,10 +24,11 @@ export function RecipientSelector({
   selectedFactoryLoom: FactoryLoom | null; setSelectedLoomId: (id: string | null) => void;
   selectedBatchId: string | null; setSelectedBatchId: (id: string | null) => void;
   weaverBatches: BatchRecord[]; loomBatches: BatchRecord[];
+  weavers: WeaverLite[]; looms: FactoryLoom[];
 }) {
   const filteredWeavers = weaverSearch.length >= 1
-    ? WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase()) || w.id.toLowerCase().includes(weaverSearch.toLowerCase()))
-    : WEAVERS;
+    ? weavers.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase()) || w.id.toLowerCase().includes(weaverSearch.toLowerCase()))
+    : weavers;
 
   return (
     <>
@@ -127,7 +129,7 @@ export function RecipientSelector({
       {recipientType === "factoryLoom" && (
         !selectedFactoryLoom ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
-            {FACTORY_LOOMS_LIST.map(loom => (
+            {looms.map(loom => (
               <Button key={loom.id} onClick={() => { setSelectedLoomId(loom.id); setSelectedBatchId(null); }} variant="secondary" size="lg"
                 className="flex-col items-start h-auto py-3.5 px-4 text-left">
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>

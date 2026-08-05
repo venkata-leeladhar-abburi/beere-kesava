@@ -1,20 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
-import { useMaterialIssue, MaterialIssueRecord, IssuedMaterialItem } from "../contexts/MaterialIssueContext";
-import { FACTORY_LOOMS_LIST } from "../../production/data/factoryLooms";
+import { useMaterialIssue, MaterialIssueRecord } from "../contexts/MaterialIssueContext";
+import { FactoryLoom } from "../../production/data/factoryLooms";
 import { useBatches } from "../../production/contexts/BatchContext";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { weaversApi } from "../../../shared/api/weavers";
+import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 
-import { F, GrnBatch, INITIAL_GRN_BATCHES, MaterialRowState, T, WEAVERS, emptyRow } from "./issueMaterial/theme";
+import { F, GrnBatch, INITIAL_GRN_BATCHES, MaterialRowState, T, WeaverLite, emptyRow } from "./issueMaterial/theme";
 import { SectionPill } from "./issueMaterial/primitives";
 import { RecipientSelector } from "./issueMaterial/RecipientSelector";
 import { MaterialRowEditor } from "./issueMaterial/MaterialRowEditor";
 import { SignatureBlock } from "./issueMaterial/SignatureBlock";
+import { SignatureCanvasHandle } from "./issueMaterial/SignatureCanvas";
 import { RecordDetailsModal } from "./issueMaterial/RecordDetailsModal";
 import { IssuanceHistorySection } from "./issueMaterial/IssuanceHistorySection";
 import { summarizeMaterials } from "./issueMaterial/materialFormatters";
+
+// Deterministic avatar colors for weavers fetched from the backend (no bg field there).
+const WEAVER_AVATAR_COLORS = ["#5A3E6B", "#9B6B8A", "#2D6B6B", "#4A6B4A", "#2D7D6B", "#4A5E7A", "#7A2040"];
+function avatarColorFor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return WEAVER_AVATAR_COLORS[hash % WEAVER_AVATAR_COLORS.length]!;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
@@ -23,6 +34,33 @@ export function IssueMaterialPage() {
   const { issueRecords, addIssueRecord } = useMaterialIssue();
   const { batches } = useBatches();
   const [grnBatches, setGrnBatches] = useState<GrnBatch[]>(INITIAL_GRN_BATCHES);
+
+  // Real weaver/factory-loom directories — replaces the old static
+  // WEAVERS/FACTORY_LOOMS_LIST mocks so issued-to ids are always real
+  // backend records (required for material-issue creation to validate
+  // server-side), mirroring the same swap done in BatchCreationPage.tsx.
+  const [weavers, setWeavers] = useState<WeaverLite[]>([]);
+  const [looms, setLooms] = useState<FactoryLoom[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
+      if (cancelled) return;
+      setWeavers(weaversRes.items.map(w => ({
+        id: w.id, name: w.name, village: w.village ?? "", initials: w.initials,
+        bg: avatarColorFor(w.id), status: w.status === "ACTIVE" ? "active" : "idle",
+        looms: w.looms, phone: w.phone,
+      })));
+      setLooms(loomsRes.items.map(l => ({
+        id: l.id, loomNumber: l.loomNumber, location: l.location ?? "",
+        operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
+        status: l.status === "ACTIVE" ? "active" : l.status === "MAINTENANCE" ? "maintenance" : "idle",
+        installedYear: l.installedYear ? String(l.installedYear) : "", notes: l.notes ?? "",
+      })));
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Step 1 — recipient type toggle
   const [recipientType, setRecipientType] = useState<"weaver" | "factoryLoom">("weaver");
@@ -60,9 +98,11 @@ export function IssueMaterialPage() {
   const ROWS_PER_PAGE = 15;
 
   const [selectedLoom, setSelectedLoom] = useState<number | "">("");
+  const canvasRef = useRef<SignatureCanvasHandle | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const selectedWeaver = WEAVERS.find(w => w.id === selectedWeaverId) || null;
-  const selectedFactoryLoom = FACTORY_LOOMS_LIST.find(l => l.id === selectedLoomId) || null;
+  const selectedWeaver = weavers.find(w => w.id === selectedWeaverId) || null;
+  const selectedFactoryLoom = looms.find(l => l.id === selectedLoomId) || null;
 
   const weaverBatches = selectedWeaver
     ? batches.filter(b => b.status !== "completed" && b.rows.some(r => r.weaverId === selectedWeaver.id))
@@ -98,13 +138,13 @@ export function IssueMaterialPage() {
     setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
   }
 
-  function handleConfirm() {
-    if (!canConfirm) return;
+  async function handleConfirm() {
+    if (!canConfirm || submitting) return;
     if (recipientType === "weaver" && !selectedWeaver) return;
     if (recipientType === "factoryLoom" && !selectedFactoryLoom) return;
 
-    const materials: IssuedMaterialItem[] = validRows.map(r => {
-      const base: IssuedMaterialItem = {
+    const materials = validRows.map(r => {
+      const base: MaterialIssueRecord["materials"][number] = {
         materialType: r.materialType,
         quantity: parseFloat(r.quantity),
         unit: r.materialType === "Jari" ? r.jariUnit : (r.warpReshamUnit || "kg"),
@@ -116,29 +156,32 @@ export function IssueMaterialPage() {
       return base;
     });
 
-    const record = addIssueRecord({
-      ...(recipientType === "weaver"
-        ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
-        : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
-      batchId: selectedBatchId || undefined,
-      issuedBy: "Admin (Kesava Rao)",
-      issuedAt: new Date().toISOString(),
-      materials,
-      signatureMethod: sigMethod === "remote" ? "remote" : "here",
-      signatureCaptured: true,
-      signatureTimestamp: new Date().toISOString(),
-      notes: notes || undefined,
-      status: "signed",
-    });
+    setSubmitting(true);
+    try {
+      const signatureBlob = sigMethod === "here" ? await canvasRef.current?.toBlob() ?? null : null;
 
-    // Reduce GRN batch remaining quantities
-    setGrnBatches(prev => prev.map(g => {
-      const used = materials.filter(m => m.grnBatchId === g.grnBatchId).reduce((s, m) => s + m.quantity, 0);
-      return used > 0 ? { ...g, availableQty: Math.max(0, g.availableQty - used) } : g;
-    }));
+      const record = await addIssueRecord({
+        ...(recipientType === "weaver"
+          ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
+          : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
+        batchId: selectedBatchId || undefined,
+        materials,
+        signatureMethod: sigMethod === "remote" ? "remote" : "here",
+        signatureBlob,
+        notes: notes || undefined,
+      });
 
-    setSuccessRecord(record);
-    resetForm();
+      // Reduce GRN batch remaining quantities
+      setGrnBatches(prev => prev.map(g => {
+        const used = materials.filter(m => m.grnBatchId === g.grnBatchId).reduce((s, m) => s + m.quantity, 0);
+        return used > 0 ? { ...g, availableQty: Math.max(0, g.availableQty - used) } : g;
+      }));
+
+      setSuccessRecord(record);
+      resetForm();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // History filtering
@@ -210,6 +253,7 @@ export function IssueMaterialPage() {
             selectedFactoryLoom={selectedFactoryLoom} setSelectedLoomId={setSelectedLoomId}
             selectedBatchId={selectedBatchId} setSelectedBatchId={setSelectedBatchId}
             weaverBatches={weaverBatches} loomBatches={loomBatches}
+            weavers={weavers} looms={looms}
           />
 
           {/* STEP 2 — Materials */}
@@ -239,12 +283,13 @@ export function IssueMaterialPage() {
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}
               remoteConfirmed={remoteConfirmed} setRemoteConfirmed={setRemoteConfirmed}
+              canvasRef={canvasRef}
             />
           </div>
 
           {/* Confirm */}
-          <Button onClick={handleConfirm} disabled={!canConfirm} variant="primary" size="lg" fullWidth iconLeft={Check} className="mt-8">
-            Confirm Issuance
+          <Button onClick={() => void handleConfirm()} disabled={!canConfirm || submitting} variant="primary" size="lg" fullWidth iconLeft={Check} className="mt-8">
+            {submitting ? "Issuing…" : "Confirm Issuance"}
           </Button>
         </div>
 

@@ -26,6 +26,7 @@ interface ScanSareeStepProps {
   isMobile?: boolean;
   fmtPrice: (n: number) => string;
   handleScan: () => void;
+  scanError?: string | null;
   onBack: () => void;
   onNext: () => void;
 }
@@ -43,6 +44,7 @@ export function ScanSareeStep({
   isMobile,
   fmtPrice,
   handleScan,
+  scanError,
   onBack,
   onNext,
 }: ScanSareeStepProps) {
@@ -103,9 +105,12 @@ export function ScanSareeStep({
                 style={{ flex: 1, height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none" }}
               />
               {manualId.length > 3 && (
-                <button onClick={() => setSareeFound(true)} style={{ height: 52, borderRadius: 12, background: C.burg, border: "none", padding: "0 20px", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Find</button>
+                <button onClick={handleScan} style={{ height: 52, borderRadius: 12, background: C.burg, border: "none", padding: "0 20px", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Find</button>
               )}
             </div>
+            {scanError && (
+              <div style={{ marginTop: 10, fontFamily: F.u, fontSize: 12.5, color: "#C0392B" }}>{scanError}</div>
+            )}
           </div>
           <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
             <Btn label="← Back" variant="ghost" onClick={onBack} style={{ flex: 1 }} />

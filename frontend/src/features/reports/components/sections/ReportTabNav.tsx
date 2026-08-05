@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing } from "lucide-react";
+import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing, Wallet } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -9,6 +9,7 @@ const REPORT_TABS: ReportTab[] = [
   { key: "raw-material",   Icon: Package,       label: "Raw Material",     desc: "Stock & flow",      iconColor: "#8B6018",        iconBg: "rgba(200,155,71,0.22)"  },
   { key: "production",     Icon: Scissors,      label: "Saree Production", desc: "Output & batches",  iconColor: "#FFFDF9",        iconBg: "rgba(245,232,208,0.16)" },
   { key: "outstanding",    Icon: Boxes,         label: "Outstanding Stock", desc: "Unsold by source", iconColor: "#E67E22",        iconBg: "rgba(230,126,34,0.20)"  },
+  { key: "outstanding-payments", Icon: Wallet,  label: "Outstanding Payments", desc: "Unpaid invoices & orders", iconColor: "#E05252", iconBg: "rgba(224,82,82,0.20)" },
   { key: "weaver-payment", Icon: Users,         label: "Weaver Payments",  desc: "Making charges",    iconColor: "#2D9158",        iconBg: "rgba(45,145,88,0.20)"   },
   { key: "retail",         Icon: Store,         label: "Retail Sales",     desc: "Walk-in & direct",  iconColor: "#4A7FB5",        iconBg: "rgba(74,127,181,0.20)"  },
   { key: "wholesale",      Icon: Boxes,         label: "Wholesale Sales",  desc: "Bulk & exports",    iconColor: "#9B4DCA",        iconBg: "rgba(155,77,202,0.20)"  },

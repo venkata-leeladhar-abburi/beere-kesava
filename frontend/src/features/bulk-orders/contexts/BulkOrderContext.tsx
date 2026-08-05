@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  BackendBulkOrder,
+  BackendBulkOrderStatus,
+  BackendDispatchStatus,
+  BackendOrderPaymentStatus,
+  bulkOrdersApi,
+} from "../../../shared/api/bulk-orders";
+import { customersApi } from "../../../shared/api/customers";
+import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
 
 // ─── BulkOrder Interface ──────────────────────────────────────────────────────
 export interface BulkOrder {
@@ -38,15 +47,63 @@ export interface BulkOrder {
   talliedDate?: string;
 }
 
-// ─── Initial Data (from ProductionPage BULK_ORDERS) ───────────────────────────
-const INITIAL_BULK_ORDERS: BulkOrder[] = [
-  { customer: "Lakshmi Silks",          ref: "ORD-2026-041", due: "28 May 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",  design: "BKB-045", done: 76, total: 80,              customerId: "WHL-001", dispatchStatus: "pending", paymentStatus: "pending", address: "12-4-88, Silk Merchants Lane, Hyderabad, TG", phone: "+91 98765 43210", gstCode: "36ABCDE1234F1Z5" },
-  { customer: "Padmavathi Textiles",    ref: "ORD-2026-038", due: "25 May 2026", status: "at-risk",  daysLeft: 2,  sareeType: "Heavy Zari · HZ-003",    design: "BKB-031", done: 42, total: 60, shortage: 18, customerId: "WHL-003", dispatchStatus: "pending", paymentStatus: "pending", phone: "+91 91234 56780" },
-  { customer: "Vijaya Silk House",      ref: "ORD-2026-035", due: "30 May 2026", status: "on-track",              sareeType: "Plain Silk · PS-002",     design: "BKB-022", done: 28, total: 30,              customerId: "WHL-004", dispatchStatus: "pending", paymentStatus: "pending" },
-  { customer: "Narayana Silk Emporium", ref: "ORD-2026-032", due: "20 May 2026", status: "overdue",  overdueBy: 3, sareeType: "Bridal Special · BS-004", design: "BKB-019", done: 18, total: 25, shortage: 7,  customerId: "WHL-002", dispatchStatus: "pending", paymentStatus: "pending" },
-  { customer: "Meenakshi Silks",        ref: "ORD-2026-029", due: "05 Jun 2026", status: "on-track",              sareeType: "Self Brocade · SB-001",  design: "BKB-038", done: 15, total: 40,              customerId: "WHL-005", dispatchStatus: "pending", paymentStatus: "pending" },
-  { customer: "Kalavathi Exports",      ref: "ORD-2026-027", due: "02 Jun 2026", status: "on-track",              sareeType: "Heavy Zari · HZ-003",    design: "BKB-045", done: 8,  total: 35,              customerId: "WHL-006", dispatchStatus: "pending", paymentStatus: "pending" },
-];
+// ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
+const STATUS_TO_BACKEND: Record<BulkOrder["status"], BackendBulkOrderStatus> = {
+  "on-track": "ON_TRACK", "at-risk": "AT_RISK", overdue: "OVERDUE",
+};
+const STATUS_FROM_BACKEND: Record<BackendBulkOrderStatus, BulkOrder["status"]> = {
+  ON_TRACK: "on-track", AT_RISK: "at-risk", OVERDUE: "overdue",
+};
+const DISPATCH_STATUS_FROM_BACKEND: Record<BackendDispatchStatus, NonNullable<BulkOrder["dispatchStatus"]>> = {
+  PENDING: "pending", DISPATCHED: "dispatched", INVOICED: "invoiced",
+};
+const PAYMENT_STATUS_TO_BACKEND: Record<NonNullable<BulkOrder["paymentStatus"]>, BackendOrderPaymentStatus> = {
+  pending: "PENDING", partial: "PARTIAL", paid: "PAID",
+};
+const PAYMENT_STATUS_FROM_BACKEND: Record<BackendOrderPaymentStatus, NonNullable<BulkOrder["paymentStatus"]>> = {
+  PENDING: "pending", PARTIAL: "partial", PAID: "paid",
+};
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function backendOrderToFrontend(o: BackendBulkOrder, customerLookup: Map<string, string>): BulkOrder {
+  const due = new Date(o.dueDate);
+  const now = new Date();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const diffDays = Math.round((due.getTime() - now.getTime()) / dayMs);
+
+  return {
+    customer: customerLookup.get(o.customerId) ?? "Unknown Customer",
+    ref: o.ref,
+    due: formatDate(o.dueDate),
+    status: STATUS_FROM_BACKEND[o.status],
+    daysLeft: o.status === "AT_RISK" && diffDays >= 0 ? diffDays : undefined,
+    overdueBy: o.status === "OVERDUE" && diffDays < 0 ? Math.abs(diffDays) : undefined,
+    sareeType: o.sareeTypeCode
+      ? `${getSareeTypeByCode(o.sareeTypeCode)?.type ?? o.sareeTypeCode} · ${o.sareeTypeCode}`
+      : "—",
+    design: o.designCode ?? "",
+    done: o.done,
+    total: o.total,
+    shortage: o.shortage || undefined,
+    createdDate: o.createdDate,
+    customerId: o.customerId,
+    dispatchStatus: DISPATCH_STATUS_FROM_BACKEND[o.dispatchStatus],
+    paymentStatus: PAYMENT_STATUS_FROM_BACKEND[o.paymentStatus],
+    amountDue: Number(o.amountDue),
+    amountPaid: Number(o.amountPaid),
+    address: o.address ?? undefined,
+    phone: o.phone ?? undefined,
+    gstCode: o.gstCode ?? undefined,
+    visitingCardUrl: o.visitingCardUrl ?? undefined,
+    photoUrls: o.photoUrls,
+    tallied: o.tallied,
+    talliedBy: o.talliedBy ?? undefined,
+    talliedDate: o.talliedDate ?? undefined,
+  };
+}
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface BulkOrderContextValue {
@@ -66,10 +123,13 @@ const QUERY_KEY = ["bulkOrders"] as const;
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: bulkOrders = INITIAL_BULK_ORDERS } = useQuery({
+  const { data: bulkOrders = [] } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => Promise.resolve(INITIAL_BULK_ORDERS),
-    initialData: INITIAL_BULK_ORDERS,
+    queryFn: async () => {
+      const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
+      const customerLookup = new Map(customersRes.items.map(c => [c.id, c.name]));
+      return ordersRes.items.map(o => backendOrderToFrontend(o, customerLookup));
+    },
   });
 
   const setBulkOrders = (updater: (prev: BulkOrder[]) => BulkOrder[]) => {
@@ -77,16 +137,55 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addBulkOrderMutation = useMutation({
-    mutationFn: (order: BulkOrder) => Promise.resolve(order),
-    onSuccess: (order) => setBulkOrders(prev => [order, ...prev]),
+    mutationFn: (order: BulkOrder) => {
+      if (!order.customerId) {
+        throw new Error("A real customer must be selected to create a bulk order");
+      }
+      const dueIso = new Date(order.due).toISOString();
+      return bulkOrdersApi.create({
+        customerId: order.customerId,
+        dueDate: dueIso,
+        sareeTypeCode: order.sareeType?.split(" · ").pop() || undefined,
+        designCode: order.design || undefined,
+        total: order.total,
+        amountDue: order.amountDue ?? 0,
+        gstCode: order.gstCode,
+        address: order.address,
+        phone: order.phone,
+        visitingCardUrl: order.visitingCardUrl,
+        photoUrls: order.photoUrls,
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to create bulk order:", err);
+    },
   });
 
   const updateBulkOrderMutation = useMutation({
-    mutationFn: (args: { ref: string; updates: Partial<BulkOrder> }) => Promise.resolve(args),
-    onSuccess: ({ ref, updates }) =>
-      setBulkOrders(prev => prev.map(o => o.ref === ref ? { ...o, ...updates } : o)),
+    mutationFn: (args: { ref: string; updates: Partial<BulkOrder> }) =>
+      bulkOrdersApi.update(args.ref, {
+        status: args.updates.status ? STATUS_TO_BACKEND[args.updates.status] : undefined,
+        done: args.updates.done,
+        shortage: args.updates.shortage,
+        paymentStatus: args.updates.paymentStatus ? PAYMENT_STATUS_TO_BACKEND[args.updates.paymentStatus] : undefined,
+        amountPaid: args.updates.amountPaid,
+        tallied: args.updates.tallied,
+        talliedBy: args.updates.talliedBy,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to update bulk order:", err);
+    },
   });
 
+  // NOTE(backend gap): UpdateBulkOrderDto doesn't expose dispatchStatus/invoiceId
+  // yet (dispatchStatus only ever gets its DB default), so "marking dispatched"
+  // stays an optimistic client-only patch until that DTO field is added.
   const markDispatchedMutation = useMutation({
     mutationFn: (args: { ref: string; invoiceId?: string }) => Promise.resolve(args),
     onSuccess: ({ ref, invoiceId }) =>
@@ -105,30 +204,32 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   });
 
   const recordPaymentMutation = useMutation({
-    mutationFn: (args: { ref: string; amount: number }) => Promise.resolve(args),
-    onSuccess: ({ ref, amount }) =>
-      setBulkOrders(prev =>
-        prev.map(o => {
-          if (o.ref !== ref) return o;
-          const newPaid = (o.amountPaid || 0) + amount;
-          const due = o.amountDue || 0;
-          const paymentStatus: BulkOrder["paymentStatus"] =
-            due > 0 && newPaid >= due ? "paid" : newPaid > 0 ? "partial" : "pending";
-          return { ...o, amountPaid: newPaid, paymentStatus };
-        })
-      ),
+    mutationFn: (args: { ref: string; amount: number }) => {
+      const current = queryClient.getQueryData<BulkOrder[]>(QUERY_KEY)?.find(o => o.ref === args.ref);
+      const newPaid = (current?.amountPaid || 0) + args.amount;
+      const due = current?.amountDue || 0;
+      const paymentStatus: NonNullable<BulkOrder["paymentStatus"]> =
+        due > 0 && newPaid >= due ? "paid" : newPaid > 0 ? "partial" : "pending";
+      return bulkOrdersApi
+        .update(args.ref, { amountPaid: newPaid, paymentStatus: PAYMENT_STATUS_TO_BACKEND[paymentStatus] })
+        .then(() => args);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to record payment:", err);
+    },
   });
 
   const tallyOrderMutation = useMutation({
-    mutationFn: (args: { ref: string; by: string }) => Promise.resolve(args),
-    onSuccess: ({ ref, by }) =>
-      setBulkOrders(prev =>
-        prev.map(o =>
-          o.ref === ref
-            ? { ...o, tallied: true, talliedBy: by, talliedDate: new Date().toISOString().split("T")[0] }
-            : o
-        )
-      ),
+    mutationFn: (args: { ref: string; by: string }) => bulkOrdersApi.update(args.ref, { tallied: true, talliedBy: args.by }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to tally order:", err);
+    },
   });
 
   const addBulkOrder = (order: BulkOrder) => addBulkOrderMutation.mutate(order);
