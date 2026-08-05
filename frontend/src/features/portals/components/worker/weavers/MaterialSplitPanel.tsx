@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { C, F, inputStyle } from "../tokens";
+import { C, F } from "../tokens";
 import {
   getSareeTypeByCode, jariFromReels, jariGrams, jariToReels, trimNum,
   type JariUnit, type SareeTypeRecord,
 } from "../../../../pricing/components/RatesPricingPage";
+import { Button, Input } from "../../../../../shared/ui/primitives";
 
 // ─── Material weight split (warp / resham / jari) ────────────────────────────
 // Proportions come from the Rates & Pricing page: each saree type carries a
@@ -71,10 +72,9 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
           </span>
         </div>
         {dirty && (
-          <button onClick={() => onEdit({})}
-            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.burg, textDecoration: "underline" }}>
+          <Button variant="link" onClick={() => onEdit({})} className="p-0 text-xs text-[#6B1A2A] underline">
             Reset to auto
-          </button>
+          </Button>
         )}
       </div>
 
@@ -84,9 +84,9 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
               {f.label} (g)
             </div>
-            <input type="number" value={val(f.key)}
+            <Input type="number" value={val(f.key)}
               onChange={e => onEdit({ ...edits, [f.key]: e.target.value })}
-              style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
+              className="font-mono px-2" />
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>auto {auto[f.key]}g</div>
           </div>
         ))}
@@ -98,21 +98,16 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
             </span>
             <div style={{ display: "flex", background: "rgba(107,26,42,0.06)", borderRadius: 999, padding: 2 }}>
               {(["reels", "buns"] as JariUnit[]).map(u => (
-                <button key={u} type="button" onClick={() => setJariUnit(u)}
-                  style={{
-                    border: "none", borderRadius: 999, padding: "2px 8px", cursor: "pointer",
-                    fontFamily: F.u, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
-                    background: jariUnit === u ? C.burg : "transparent",
-                    color: jariUnit === u ? "#FFF" : C.muted,
-                  }}>
+                <Button key={u} type="button" variant={jariUnit === u ? "primary" : "tertiary"} size="sm" onClick={() => setJariUnit(u)}
+                  className={jariUnit === u ? "rounded-full capitalize bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-full capitalize"}>
                   {u}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
-          <input type="number" value={trimNum(jariFromReels(jariReels, jariUnit))}
+          <Input type="number" value={trimNum(jariFromReels(jariReels, jariUnit))}
             onChange={e => onEdit({ ...edits, jari: trimNum(jariToReels(parseFloat(e.target.value) || 0, jariUnit)) })}
-            style={{ ...inputStyle, height: 40, fontFamily: F.m, fontSize: 14, padding: "0 8px" }} />
+            className="font-mono px-2" />
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
             {trimNum(jariReels)} reels · {trimNum(jariFromReels(jariReels, "buns"))} buns · {trimNum(jariG, 0)}g
             <span style={{ marginLeft: 4 }}>· auto {auto.jari} reels</span>

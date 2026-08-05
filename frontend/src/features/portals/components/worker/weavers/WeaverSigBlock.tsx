@@ -1,6 +1,7 @@
 import React from "react";
 import { CheckCircle2, Clock, PenLine, Send } from "lucide-react";
-import { C, F, btnPrimary } from "../tokens";
+import { C, F } from "../tokens";
+import { Button } from "../../../../../shared/ui/primitives";
 
 // ─── Weaver Signature Block ───────────────────────────────────────────────────
 interface SigBlockProps {
@@ -40,25 +41,25 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px" }}>
-        <button onClick={() => reset("here")}
-          style={{ padding: "14px 12px", background: sigMethod === "here" ? "rgba(107,26,42,0.05)" : "#FFF", border: `${sigMethod === "here" ? 2 : 1}px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, cursor: "pointer", textAlign: "center", position: "relative" }}>
+        <Button variant="tertiary" onClick={() => reset("here")}
+          className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "here" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
           {sigMethod === "here" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "here" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
             <PenLine size={20} color={sigMethod === "here" ? C.burg : C.muted} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Sign Here</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>On this device</div>
-        </button>
+        </Button>
 
-        <button onClick={() => reset("remote")}
-          style={{ padding: "14px 12px", background: sigMethod === "remote" ? "rgba(107,26,42,0.05)" : "#FFF", border: `${sigMethod === "remote" ? 2 : 1}px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, cursor: "pointer", textAlign: "center", position: "relative" }}>
+        <Button variant="tertiary" onClick={() => reset("remote")}
+          className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "remote" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
           {sigMethod === "remote" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "remote" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
             <Send size={20} color={sigMethod === "remote" ? C.burg : C.muted} />
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Send Request</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Weaver's mobile</div>
-        </button>
+        </Button>
       </div>
 
       {sigMethod === "here" && (
@@ -81,9 +82,9 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
               </div>
             )}
             {signed && (
-              <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>
+              <Button variant="link" onClick={e => { e.stopPropagation(); setSigned(false); }} className="absolute bottom-[7px] right-2.5 p-0 text-xs text-[#C4923A]">
                 Clear
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -103,8 +104,8 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 2 }}>Waiting for Signature…</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>Request sent to {weaverName}'s mobile</div>
               <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Resend</button>
-                <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+                <Button variant="link" className="p-0 text-xs text-[#C4923A]">Resend</Button>
+                <Button variant="link" onClick={() => setRemoteConfirmed(true)} className="p-0 text-xs text-[#69635E] underline">Demo: Signed →</Button>
               </div>
             </div>
           ) : (
@@ -113,9 +114,9 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to: {weaverName}</div>
                 <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>+91 98765 43210</div>
               </div>
-              <button onClick={() => setRemoteSent(true)} style={{ ...btnPrimary, height: 44, gap: 7, fontSize: 13 }}>
-                <Send size={14} /> Send Signature Request
-              </button>
+              <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] text-[13px]">
+                Send Signature Request
+              </Button>
             </>
           )}
         </div>

@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
 import { CheckSquare, Square, Users, X, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
-import { C, F, card, btnPrimary, btnGhost } from "../tokens";
+import { C, F, card } from "../tokens";
 import { useFinishing, Quotation } from "../../../../finishing/contexts/FinishingContext";
 import { WORKER_NAME, SectionHeader, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 // ── Quotations — assign for finishing & receive back against a quotation ───────
 
@@ -126,14 +127,14 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                 {(pendingSarees.length > 0 || inFinishingSarees.length > 0) && (
                   <div style={{ display: "flex", gap: 14, padding: "8px 14px 0", flexWrap: "wrap" as const }}>
                     {pendingSarees.length > 0 && (
-                      <button onClick={() => selectAllOfStatus(q, "pending")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                      <Button variant="link" onClick={() => selectAllOfStatus(q, "pending")} className="gap-1 p-0 text-xs text-[#69635E]">
                         <CheckSquare size={13} color={C.muted} /> Select all pending ({pendingSarees.length})
-                      </button>
+                      </Button>
                     )}
                     {inFinishingSarees.length > 0 && (
-                      <button onClick={() => selectAllOfStatus(q, "in-finishing")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                      <Button variant="link" onClick={() => selectAllOfStatus(q, "in-finishing")} className="gap-1 p-0 text-xs text-[#69635E]">
                         <CheckSquare size={13} color={C.muted} /> Select all in finishing ({inFinishingSarees.length})
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -174,18 +175,18 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                 {selected.size > 0 && (canAssign || canReceive) && (
                   <div style={{ padding: "12px 14px", borderTop: `1px solid rgba(107,26,42,0.08)`, display: "flex", gap: 8 }}>
                     {canAssign && (
-                      <button onClick={() => setPickerFor(q.id)} style={{ ...btnPrimary, flex: 1, height: 42 }}>
-                        <Users size={15} /> Assign {selected.size} Saree{selected.size > 1 ? "s" : ""} for Finishing
-                      </button>
+                      <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setPickerFor(q.id)} className="h-[42px] rounded-xl bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                        Assign {selected.size} Saree{selected.size > 1 ? "s" : ""} for Finishing
+                      </Button>
                     )}
                     {canReceive && (
-                      <button onClick={() => handleReceive(q)} style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "linear-gradient(135deg, #1E5A3A 0%, #1E6640 100%)", border: "none", borderRadius: 12, fontFamily: F.u, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
-                        <ArrowDownToLine size={15} /> Receive {selected.size} Saree{selected.size > 1 ? "s" : ""} from Finishing
-                      </button>
+                      <Button variant="primary" fullWidth iconLeft={ArrowDownToLine} onClick={() => handleReceive(q)}
+                        className="h-[42px] rounded-xl bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-sm font-bold hover:from-[#1E5A3A] hover:to-[#1E6640]">
+                        Receive {selected.size} Saree{selected.size > 1 ? "s" : ""} from Finishing
+                      </Button>
                     )}
-                    <button onClick={() => clearSelection(q.id)} style={{ ...btnGhost, width: 42, height: 42, padding: 0, flexShrink: 0, borderRadius: 12, flex: "none" }}>
-                      <X size={15} color={C.burg} />
-                    </button>
+                    <IconButton icon={X} label="Clear selection" variant="secondary" onClick={() => clearSelection(q.id)}
+                      className="w-[42px] h-[42px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
                   </div>
                 )}
               </div>

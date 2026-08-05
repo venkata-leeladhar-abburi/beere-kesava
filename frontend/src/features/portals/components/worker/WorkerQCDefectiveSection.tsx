@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye } from "lucide-react";
 import { T, F, baseCard, DefectiveLogItem } from "./WorkerQCTypes";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCDefectiveSectionProps {
   defLog: DefectiveLogItem[];
@@ -31,9 +32,10 @@ export function WorkerQCDefectiveSection({
 
       <div style={{ display: "flex", gap: 6, padding: isDesktop ? "0 0 10px" : "0 16px 8px" }}>
         {["Today", "This Week", "This Month", "All Time"].map(f => (
-          <button key={f} onClick={() => setDefFilter(f)} style={{ flexShrink: 0, padding: isDesktop ? "5px 14px" : "4px 10px", borderRadius: 999, border: `1px solid ${defFilter === f ? T.burg : T.bdr}`, background: defFilter === f ? T.burg : "#FFF", color: defFilter === f ? "#FFF" : T.muted, fontFamily: F.u, fontSize: isDesktop ? 13 : 11, fontWeight: defFilter === f ? 600 : 400, cursor: "pointer" }}>
+          <Button key={f} variant={defFilter === f ? "primary" : "secondary"} size={isDesktop ? "md" : "sm"} onClick={() => setDefFilter(f)}
+            className={defFilter === f ? "flex-shrink-0 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "flex-shrink-0 rounded-full border-[rgba(110,15,45,0.10)]"}>
             {f}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -50,9 +52,9 @@ export function WorkerQCDefectiveSection({
                 <span key={df} style={{ fontFamily: F.u, fontSize: isDesktop ? 11 : 9, fontWeight: 600, color: T.crim, background: T.bgCrim, border: `1px solid rgba(192,57,43,0.15)`, padding: "2px 7px", borderRadius: 999 }}>{df}</span>
               ))}
             </div>
-            <button style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: `1px solid ${T.bdr}`, borderRadius: 7, padding: isDesktop ? "5px 10px" : "4px 8px", fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: T.muted, cursor: "pointer", width: "100%", justifyContent: "center" }}>
-              <Eye size={isDesktop ? 12 : 10} /> View Details
-            </button>
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Eye} className="rounded-[7px] border-[rgba(110,15,45,0.10)] text-[#69635E]">
+              View Details
+            </Button>
           </div>
         ))}
       </div>

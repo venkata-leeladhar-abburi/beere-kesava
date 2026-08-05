@@ -6,6 +6,7 @@ import {
 import {
   T, F, baseCard, SareeItem, InspectionResult, DEFECT_TYPES, variance,
 } from "./WorkerQCTypes";
+import { Button, IconButton, Input, Textarea } from "../../../../shared/ui/primitives";
 
 interface WorkerQCInspectionScreenProps {
   inspecting: SareeItem;
@@ -50,9 +51,7 @@ export function WorkerQCInspectionScreen({
     <AnimatePresence mode="wait">
       <motion.div key="inspect" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
         <div style={{ background: T.gradHero, height: 50, display: "flex", alignItems: "center", padding: "0 16px", gap: 10, borderRadius: isDesktop ? "10px 10px 0 0" : 0 }}>
-          <button onClick={closeInspect} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
-            <ChevronLeft size={18} color="rgba(255,255,255,0.85)" />
-          </button>
+          <IconButton icon={ChevronLeft} label="Close" variant="ghost" onClick={closeInspect} className="text-white/85" />
           <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", flex: 1 }}>
             {result === "semi_approved" ? `Semi-Approved: ${inspecting.id}` : `Mark Defective: ${inspecting.id}`}
           </span>
@@ -89,9 +88,9 @@ export function WorkerQCInspectionScreen({
                   </div>
                 );
               })()}
-              <button onClick={closeInspect} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 48, background: T.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFF", cursor: "pointer", marginBottom: 10 }}>
-                <CheckCircle2 size={15} /> Back to Queue
-              </button>
+              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={closeInspect} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">
+                Back to Queue
+              </Button>
             </div>
           </div>
         )}
@@ -136,12 +135,14 @@ export function WorkerQCInspectionScreen({
                 {DEFECT_TYPES.map(dt => {
                   const sel = defectTypes.includes(dt.label);
                   return (
-                    <button key={dt.label} onClick={() => setDefectTypes(p => p.includes(dt.label) ? p.filter(x => x !== dt.label) : [...p, dt.label])}
-                      style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, height: 72, background: sel ? "rgba(110,15,45,0.05)" : T.card, border: sel ? `2px solid ${T.burg}` : `1px solid ${T.bdr}`, borderRadius: 10, cursor: "pointer", position: "relative" }}>
+                    <Button key={dt.label} variant="tertiary" onClick={() => setDefectTypes(p => p.includes(dt.label) ? p.filter(x => x !== dt.label) : [...p, dt.label])}
+                      className={sel
+                        ? "h-[72px] flex-col gap-1.5 rounded-[10px] border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)] relative"
+                        : "h-[72px] flex-col gap-1.5 rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-white relative"}>
                       {sel && <div style={{ position: "absolute", top: 4, right: 4, width: 14, height: 14, background: T.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
                       <dt.Icon size={18} color={sel ? T.burg : T.muted} />
                       <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: sel ? 600 : 400, color: sel ? T.brown : T.muted, textAlign: "center", lineHeight: 1.2 }}>{dt.label}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -150,12 +151,12 @@ export function WorkerQCInspectionScreen({
               {!hasPhoto ? (
                 <div style={{ border: "1px dashed rgba(110,15,45,0.25)", borderRadius: 10, padding: "14px 12px", marginBottom: 14 }}>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => setHasPhoto(true)} style={{ flex: 1, height: 44, background: T.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                      <Camera size={13} /> Take Photo
-                    </button>
-                    <button onClick={() => setHasPhoto(true)} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${T.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: T.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                      <UploadCloud size={13} /> Gallery
-                    </button>
+                    <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+                      Take Photo
+                    </Button>
+                    <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
+                      Gallery
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -168,20 +169,20 @@ export function WorkerQCInspectionScreen({
                   </div>
                   <div>
                     <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: T.green }}>Defect photo captured</div>
-                    <button onClick={() => setHasPhoto(false)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: T.burg, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Retake</button>
+                    <Button variant="link" onClick={() => setHasPhoto(false)} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
                   </div>
                 </div>
               )}
 
-              <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Additional notes (optional)..."
-                style={{ width: "100%", minHeight: 70, background: T.inp, border: `1px solid ${T.bdrMed}`, borderRadius: 10, padding: "10px 12px", fontFamily: F.u, fontSize: 13, color: T.brown, outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 14 } as React.CSSProperties} />
+              <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Additional notes (optional)..."
+                className="w-full min-h-[70px] resize-none mb-3.5" />
 
               {result === "semi_approved" && (
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Deduction Amount (₹)</div>
-                  <input type="number" value={deductionAmount} onChange={e => setDeductionAmount(e.target.value ? Number(e.target.value) : "")}
+                  <Input type="number" value={deductionAmount} onChange={e => setDeductionAmount(e.target.value ? Number(e.target.value) : "")}
                     placeholder="Enter deduction amount"
-                    style={{ width: "100%", height: 44, background: T.inp, border: `1px solid ${T.bdrMed}`, borderRadius: 10, padding: "0 12px", fontFamily: F.m, fontSize: 14, color: T.brown, outline: "none", boxSizing: "border-box" }} />
+                    className="w-full font-mono" />
                 </div>
               )}
 
@@ -195,10 +196,15 @@ export function WorkerQCInspectionScreen({
                 </div>
               </div>
 
-              <button onClick={result === "semi_approved" ? confirmSemiApproved : confirmDefective} disabled={defectTypes.length === 0 || !hasPhoto || (result === "semi_approved" && deductionAmount === "")}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", height: 52, background: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? (result === "semi_approved" ? T.gold : T.crim) : "#DDD", border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 14, fontWeight: 700, color: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? "#FFF" : "#999", cursor: defectTypes.length > 0 && hasPhoto && (result !== "semi_approved" || deductionAmount !== "") ? "pointer" : "not-allowed" }}>
-                {result === "semi_approved" ? <CheckCircle2 size={15} /> : <XCircle size={15} />} Confirm — {result === "semi_approved" ? "Semi-Approve" : "Mark as Defective"}
-              </button>
+              <Button
+                variant="primary"
+                fullWidth
+                iconLeft={result === "semi_approved" ? CheckCircle2 : XCircle}
+                onClick={result === "semi_approved" ? confirmSemiApproved : confirmDefective}
+                disabled={defectTypes.length === 0 || !hasPhoto || (result === "semi_approved" && deductionAmount === "")}
+                className={`h-[52px] rounded-full ${result === "semi_approved" ? "bg-[#C89B47] hover:bg-[#C89B47]" : "bg-[#C0392B] hover:bg-[#C0392B]"}`}>
+                Confirm — {result === "semi_approved" ? "Semi-Approve" : "Mark as Defective"}
+              </Button>
             </div>
           </div>
         )}

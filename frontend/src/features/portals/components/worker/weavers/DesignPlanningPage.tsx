@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import {
-  ChevronRight, Camera, UploadCloud, CheckCircle2, Search,
+  Camera, UploadCloud, CheckCircle2, Search,
 } from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary, btnGhost } from "../tokens";
+import { C, F, card } from "../tokens";
 import { SectionLabel, PageHeader } from "./shared";
+import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 // ─── Design Planning Page ────────────────────────────────────────────────────
 export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
@@ -22,7 +23,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Design Saved</div>
           <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{designCode}</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Color slip has been linked to the design.</div>
-          <button onClick={() => setSaved(false)} style={{ ...btnGhost, width: "auto", padding: "0 28px" }}>Back to Design Planning</button>
+          <Button variant="secondary" onClick={() => setSaved(false)} className="w-auto rounded-full px-7 border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Back to Design Planning</Button>
         </div>
       </>
     );
@@ -43,16 +44,15 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
         <SectionLabel step={1} title="Select or Create Design Code" />
         <div style={{ margin: "0 16px" }}>
           <div style={{ position: "relative" }}>
-            <input value={designCode} onChange={e => setDesignCode(e.target.value)} placeholder="Type design code..."
-              style={{ ...inputStyle, paddingLeft: 38, height: 46 }} />
-            <Search size={14} color={C.muted} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+            <Input value={designCode} onChange={e => setDesignCode(e.target.value)} placeholder="Type design code..."
+              iconLeft={Search} size="lg" />
           </div>
           {designCode && (
             <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ display: "inline-flex", background: "rgba(196,146,58,0.12)", padding: "5px 10px", borderRadius: 7 }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{designCode} · Cream Zari Border Saree</span>
               </div>
-              <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer", padding: 0 }}>+ New Code</button>
+              <Button variant="link" className="p-0 text-xs text-[#C4923A]">+ New Code</Button>
             </div>
           )}
         </div>
@@ -68,12 +68,12 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Must show: border color, body design, pallu details</div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setHasPhoto(true)} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <Camera size={14} /> Camera
-                </button>
-                <button onClick={() => setHasPhoto(true)} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <UploadCloud size={14} /> Gallery
-                </button>
+                <Button variant="primary" fullWidth iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                  Camera
+                </Button>
+                <Button variant="secondary" fullWidth iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-11 rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+                  Gallery
+                </Button>
               </div>
             </div>
           ) : (
@@ -86,7 +86,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
                   <CheckCircle2 size={13} color={C.green} />
                   <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>Photo looks good</span>
                 </div>
-                <button onClick={() => setHasPhoto(false)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.burg, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Retake Photo</button>
+                <Button variant="link" onClick={() => setHasPhoto(false)} className="p-0 text-xs text-[#6B1A2A] underline">Retake Photo</Button>
               </div>
             </div>
           )}
@@ -96,20 +96,18 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
         <SectionLabel step={3} title="Link to Batch (Optional)" />
         <div style={{ margin: "0 16px" }}>
           <div style={{ position: "relative" }}>
-            <select style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }}>
-              <option value="">Select batch to link...</option>
-              <option>BATCH-086 · Padma Veni · Active</option>
-              <option>BATCH-089 · Ravi Kumar · Active</option>
-              <option>BATCH-081 · Suresh Murti · Active</option>
-            </select>
-            <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
+            <Select size="lg" placeholder="Select batch to link...">
+              <SelectItem value="BATCH-086">BATCH-086 · Padma Veni · Active</SelectItem>
+              <SelectItem value="BATCH-089">BATCH-089 · Ravi Kumar · Active</SelectItem>
+              <SelectItem value="BATCH-081">BATCH-081 · Suresh Murti · Active</SelectItem>
+            </Select>
           </div>
         </div>
 
         <div style={{ padding: "18px 16px 0" }}>
-          <button onClick={() => setSaved(true)} style={{ ...btnPrimary, height: 50, gap: 8 }}>
+          <Button variant="primary" fullWidth onClick={() => setSaved(true)} className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
             💾 Save Design and Color Slip
-          </button>
+          </Button>
         </div>
       </div>
     </>

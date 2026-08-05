@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Camera, UploadCloud, CheckCircle2, AlertTriangle, Plus, Printer } from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary } from "../tokens";
+import { C, F, card } from "../tokens";
 import { INITIAL_RATES } from "../../../../pricing/components/RatesPricingPage";
 import { FieldLabel } from "./shared";
 import { MaterialSplitPanel, type MatSplit } from "./MaterialSplitPanel";
 import { WeaverSigBlock } from "./WeaverSigBlock";
+import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 // ─── Receive Sarees — Own Factory tab ────────────────────────────────────────
 // Extracted verbatim from ReceiveSareesPage's `activeSection === "own"` branch;
@@ -31,8 +32,7 @@ export function OwnFactoryReceiveTab() {
     <>
       <div style={{ margin: "10px 16px 0" }}>
         <FieldLabel>Which loom?</FieldLabel>
-        <input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="Loom Number"
-          style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, height: 46 }} />
+        <Input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="Loom Number" size="lg" className="font-mono" />
       </div>
 
       <div style={{ ...card, margin: "10px 16px 10px", padding: 14 }}>
@@ -44,8 +44,7 @@ export function OwnFactoryReceiveTab() {
           <div>
             <FieldLabel>Weight (grams)</FieldLabel>
             <div style={{ position: "relative" }}>
-              <input type="number" value={ownWeight} onChange={e => setOwnWeight(e.target.value)} placeholder="0"
-                style={{ ...inputStyle, height: 52, fontFamily: F.m, fontSize: 18 }} />
+              <Input type="number" value={ownWeight} onChange={e => setOwnWeight(e.target.value)} placeholder="0" size="lg" className="font-mono text-lg" />
             </div>
             {ownWeight && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
@@ -59,22 +58,23 @@ export function OwnFactoryReceiveTab() {
           <div>
             <FieldLabel>Photo</FieldLabel>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: ownPhoto ? "#F5F5F5" : C.burg, border: ownPhoto ? `1px solid ${C.bdr}` : "none", borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: ownPhoto ? C.green : "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                <Camera size={12} color={ownPhoto ? C.green : "#FFF"} /> {ownPhoto ? "Taken ✓" : "Camera"}
-              </button>
-              <button onClick={() => setOwnPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                <UploadCloud size={12} /> Gallery
-              </button>
+              <Button variant={ownPhoto ? "secondary" : "primary"} size="sm" iconLeft={Camera} onClick={() => setOwnPhoto(true)}
+                className={ownPhoto ? "h-[38px] rounded-lg border-[rgba(139,26,46,0.12)] text-[#1E6640]" : "h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]"}>
+                {ownPhoto ? "Taken ✓" : "Camera"}
+              </Button>
+              <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => setOwnPhoto(true)}
+                className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
+                Gallery
+              </Button>
             </div>
           </div>
         </div>
 
         <div style={{ marginBottom: 10 }}>
           <FieldLabel>Saree Type</FieldLabel>
-          <select value={ownTypeCode} onChange={e => { setOwnTypeCode(e.target.value); setOwnMatEdits({}); }}
-            style={{ ...inputStyle, height: 44, appearance: "none", cursor: "pointer" }}>
-            {INITIAL_RATES.map(r => <option key={r.code} value={r.code}>{r.code} · {r.type}</option>)}
-          </select>
+          <Select value={ownTypeCode} onValueChange={v => { setOwnTypeCode(v); setOwnMatEdits({}); }}>
+            {INITIAL_RATES.map(r => <SelectItem key={r.code} value={r.code}>{r.code} · {r.type}</SelectItem>)}
+          </Select>
         </div>
 
         <MaterialSplitPanel
@@ -92,12 +92,12 @@ export function OwnFactoryReceiveTab() {
         )}
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <Printer size={12} /> Print Tag
-          </button>
-          <button style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <Plus size={12} /> Next Saree
-          </button>
+          <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} className="h-[42px] rounded-full border-[#C4923A] text-[#C4923A]">
+            Print Tag
+          </Button>
+          <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} className="h-[42px] rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+            Next Saree
+          </Button>
         </div>
       </div>
 
@@ -116,10 +116,14 @@ export function OwnFactoryReceiveTab() {
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim }}>Operator signature required to complete batch</span>
           </div>
         )}
-        <button
-          style={{ ...btnPrimary, height: 50, gap: 7, background: sigOk ? C.green : "#E0D5CC", color: sigOk ? "#FFF" : C.muted, cursor: sigOk ? "pointer" : "not-allowed" }}>
-          <CheckCircle2 size={16} /> Mark Batch Complete
-        </button>
+        <Button
+          variant="primary"
+          fullWidth
+          iconLeft={CheckCircle2}
+          disabled={!sigOk}
+          className={`h-[50px] rounded-full ${sigOk ? "bg-[#1E6640] hover:bg-[#1E6640]" : ""}`}>
+          Mark Batch Complete
+        </Button>
       </div>
     </>
   );

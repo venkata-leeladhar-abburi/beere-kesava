@@ -2,6 +2,7 @@ import React from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { T, F, baseCard, SareeItem, variance, splitDesignField } from "./WorkerQCTypes";
 import { getSareeTypeByName } from "../../../pricing/components/RatesPricingPage";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCSareeCardProps {
   saree: SareeItem;
@@ -73,29 +74,20 @@ export function WorkerQCSareeCard({
       </div>
       {/* Passed / Semi / Defective buttons */}
       <div style={{ display: "flex", borderTop: `1px solid ${T.bdr}` }}>
-        <button onClick={() => onMarkPassed(s)} style={{
-          flex: 1, height: btnH, background: T.green, border: "none",
-          fontFamily: F.u, fontSize: isDesktop ? 12 : 10, fontWeight: 700, color: "#FFF", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-        }}>
-          <CheckCircle2 size={isDesktop ? 13 : 11} /> Passed
-        </button>
+        <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => onMarkPassed(s)}
+          className="h-[52px] rounded-none bg-[#1E6640] hover:bg-[#1E6640] text-[11px]">
+          Passed
+        </Button>
         <div style={{ width: 1, background: "rgba(255,255,255,0.3)" }} />
-        <button onClick={() => onStartSemiApproved(s)} style={{
-          flex: 1, height: btnH, background: T.gold, border: "none",
-          fontFamily: F.u, fontSize: isDesktop ? 12 : 10, fontWeight: 700, color: "#FFF", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-        }}>
-          <AlertTriangle size={isDesktop ? 13 : 11} /> Semi
-        </button>
+        <Button variant="primary" fullWidth iconLeft={AlertTriangle} onClick={() => onStartSemiApproved(s)}
+          className="h-[52px] rounded-none bg-[#C89B47] hover:bg-[#C89B47] text-[11px]">
+          Semi
+        </Button>
         <div style={{ width: 1, background: "rgba(255,255,255,0.3)" }} />
-        <button onClick={() => onStartDefect(s)} style={{
-          flex: 1, height: btnH, background: T.crim, border: "none",
-          fontFamily: F.u, fontSize: isDesktop ? 12 : 10, fontWeight: 700, color: "#FFF", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-        }}>
-          <XCircle size={isDesktop ? 13 : 11} /> Defective
-        </button>
+        <Button variant="primary" fullWidth iconLeft={XCircle} onClick={() => onStartDefect(s)}
+          className="h-[52px] rounded-none bg-[#C0392B] hover:bg-[#C0392B] text-[11px]">
+          Defective
+        </Button>
       </div>
     </div>
   );

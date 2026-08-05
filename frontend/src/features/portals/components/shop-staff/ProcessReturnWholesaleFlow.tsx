@@ -1,6 +1,7 @@
 import React from "react";
 import { Camera, Package, QrCode, Check } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
+import { Button, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 interface ProcessReturnWholesaleFlowProps {
   step: 1 | 2;
@@ -86,30 +87,23 @@ export function ProcessReturnWholesaleFlow({
                 ].map((f, i) => (
                   <div key={i} style={{ gridColumn: i === 0 ? "1 / -1" : undefined }}>
                     <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>{f.label}</label>
-                    <input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
-                      style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                    />
+                    <Input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type} className="w-full" />
                   </div>
                 ))}
                 <div>
                   <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Saree Type</label>
-                  <select value={wsType} onChange={e => setWsType(e.target.value)}
-                    style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none" }}>
-                    {["Self Brocade", "Heavy Zari", "Plain Silk", "Kanjivaram", "Cotton"].map(t => <option key={t}>{t}</option>)}
-                  </select>
+                  <Select value={wsType} onValueChange={setWsType}>
+                    {["Self Brocade", "Heavy Zari", "Plain Silk", "Kanjivaram", "Cotton"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </Select>
                 </div>
                 <div>
                   <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Weight (grams)</label>
-                  <input value={wsWeight} onChange={e => setWsWeight(e.target.value)} placeholder="e.g. 840" type="number"
-                    style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                  />
+                  <Input value={wsWeight} onChange={e => setWsWeight(e.target.value)} placeholder="e.g. 840" type="number" className="w-full font-mono" />
                 </div>
                 {canSeePrices && (
                   <div style={{ gridColumn: "1 / -1" }}>
                     <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Original Purchase Price ₹</label>
-                    <input value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number"
-                      style={{ width: "100%", height: 46, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 10, padding: "0 14px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                    />
+                    <Input value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number" className="w-full font-mono" />
                   </div>
                 )}
               </div>
@@ -119,23 +113,24 @@ export function ProcessReturnWholesaleFlow({
             <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, marginBottom: 10 }}>Return Reason</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
               {wsReasonOptions.map(r => (
-                <button key={r} onClick={() => setWsReason(r)} style={{
-                  padding: "6px 14px", borderRadius: 999,
-                  border: `${wsReason === r ? 2 : 1}px solid ${wsReason === r ? C.gold : C.bdr}`,
-                  background: wsReason === r ? "rgba(196,146,58,0.12)" : "transparent",
-                  fontFamily: F.u, fontSize: 12, fontWeight: wsReason === r ? 600 : 400,
-                  color: wsReason === r ? "#8B6520" : C.muted, cursor: "pointer",
-                }}>{r}</button>
+                <Button key={r} variant="tertiary" size="sm" onClick={() => setWsReason(r)}
+                  className={wsReason === r
+                    ? "rounded-full border-2 border-[#C4923A] bg-[rgba(196,146,58,0.12)] text-[#8B6520] font-semibold"
+                    : "rounded-full border border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E]"}>
+                  {r}
+                </Button>
               ))}
             </div>
           </div>
           <div style={{ margin: "0 20px 16px", display: "flex", gap: 10 }}>
-            <button onClick={() => { }} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
-              <Camera size={16} color={C.muted} /> Add Photo
-            </button>
-            <button onClick={() => { }} style={{ flex: 1, height: 46, border: `1.5px dashed ${C.bdr}`, borderRadius: 12, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: F.u, fontSize: 13, color: C.muted }}>
-              <Package size={16} color={C.muted} /> From Gallery
-            </button>
+            <Button variant="secondary" fullWidth iconLeft={Camera} onClick={() => { }}
+              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(139,26,46,0.12)] bg-transparent text-[13px] text-[#69635E]">
+              Add Photo
+            </Button>
+            <Button variant="secondary" fullWidth iconLeft={Package} onClick={() => { }}
+              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(139,26,46,0.12)] bg-transparent text-[13px] text-[#69635E]">
+              From Gallery
+            </Button>
           </div>
           <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
             <Btn label="← Back" variant="ghost" onClick={() => { setStep("type"); setReturnType(null); }} style={{ flex: 1 }} />
@@ -168,15 +163,18 @@ export function ProcessReturnWholesaleFlow({
 
           {!wsBarcodeGenerated ? (
             <div style={{ margin: "0 20px 16px", textAlign: "center" as const }}>
-              <button
+              <Button
+                variant="secondary"
+                fullWidth
+                iconLeft={QrCode}
                 onClick={() => {
                   setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
                   setWsBarcodeGenerated(true);
                 }}
-                style={{ width: "100%", height: 58, borderRadius: 14, border: `2px solid ${C.gold}`, background: "rgba(196,146,58,0.10)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#8B6520" }}
+                className="h-[58px] rounded-2xl border-2 border-[#C4923A] bg-[rgba(196,146,58,0.10)] text-sm font-bold text-[#8B6520] hover:bg-[rgba(196,146,58,0.10)]"
               >
-                <QrCode size={22} color={C.gold} /> Generate New Barcode
-              </button>
+                Generate New Barcode
+              </Button>
             </div>
           ) : (
             <div style={{ margin: "0 20px 16px" }}>

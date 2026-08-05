@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckSquare, Square, ChevronDown, X, CheckCircle2, Clock } from "lucide-react";
-import { C, F, btnPrimary, btnGhost } from "../tokens";
+import { CheckSquare, Square, X, CheckCircle2, Clock } from "lucide-react";
+import { C, F } from "../tokens";
 import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
 import { EASE, WORKER_NAME, ScanBarBtn, useScanSim, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
+import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 // ── Section B with filters — Receive returns ──────────────────────────────────
 
@@ -78,32 +79,28 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
     setShowVerif(false);
   };
 
-  const selStyle: React.CSSProperties = { height: 36, background: "#FFF", border: `1px solid rgba(107,26,42,0.15)`, borderRadius: 8, fontFamily: F.u, fontSize: 12, color: C.text, paddingLeft: 10, paddingRight: 28, cursor: "pointer", appearance: "none" as const };
-
   return (
     <div>
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
         <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
-        <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
-          <select value={filterStaff} onChange={e => setFilterStaff(e.target.value)} style={{ ...selStyle, width: "100%" }}>
-            <option value="all">All Staff</option>
-            {uniqueStaff.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <ChevronDown size={12} color={C.muted} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <div style={{ flex: 1, minWidth: 120 }}>
+          <Select value={filterStaff} onValueChange={setFilterStaff} size="sm">
+            <SelectItem value="all">All Staff</SelectItem>
+            {uniqueStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </Select>
         </div>
-        <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
-          <select value={filterBatch} onChange={e => setFilterBatch(e.target.value)} style={{ ...selStyle, width: "100%" }}>
-            <option value="all">All Batches</option>
-            {uniqueBatches.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-          <ChevronDown size={12} color={C.muted} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <div style={{ flex: 1, minWidth: 120 }}>
+          <Select value={filterBatch} onValueChange={setFilterBatch} size="sm">
+            <SelectItem value="all">All Batches</SelectItem>
+            {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+          </Select>
         </div>
         {filteredAwaiting.length > 0 && (
-          <button onClick={toggleAll} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: "4px 6px", whiteSpace: "nowrap" as const }}>
+          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
             {allChecked ? "Deselect All" : "Select All"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -156,21 +153,20 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
               {selected.size} saree{selected.size > 1 ? "s" : ""} selected
             </div>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-              <button onClick={() => setShowVerif(true)} style={{ ...btnPrimary, height: 50, fontSize: 14, background: "#1E6640", gap: 7 }}>
-                <CheckCircle2 size={16} /> Mark as Received
-              </button>
-              <button onClick={() => setSelected(new Set())} style={{ ...btnGhost, height: 46, fontSize: 13 }}>Cancel</button>
+              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)} className="h-[50px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
+                Mark as Received
+              </Button>
+              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())} className="h-[46px] rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A] text-[13px]">Cancel</Button>
             </div>
           </motion.div>
         ) : (
           <motion.div key="bar" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2, ease: EASE }}
             style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
-            <button onClick={() => setShowVerif(true)} style={{ ...btnPrimary, flex: 1, height: 46, fontSize: 14, background: "#1E6640", gap: 7 }}>
-              <CheckCircle2 size={16} /> Mark {selected.size} as Received
-            </button>
-            <button onClick={() => setSelected(new Set())} style={{ ...btnGhost, width: 46, height: 46, padding: 0, flexShrink: 0, borderRadius: 12, flex: "none" }}>
-              <X size={16} color={C.burg} />
-            </button>
+            <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)} className="h-[46px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
+              Mark {selected.size} as Received
+            </Button>
+            <IconButton icon={X} label="Cancel selection" variant="secondary" onClick={() => setSelected(new Set())}
+              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
           </motion.div>
         ))}
       </AnimatePresence>

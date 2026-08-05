@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Camera, Check, AlertTriangle, RotateCcw } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
+import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 
 interface ProcessReturnRetailFlowProps {
   step: 1 | 2 | 3;
@@ -85,11 +86,11 @@ export function ProcessReturnRetailFlow({
               <div style={{ margin: "0 20px" }}>
                 <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Saree ID</label>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <input value={retailManualId} onChange={e => setRetailManualId(e.target.value)} placeholder="e.g. PADMA-L1-004"
-                    style={{ flex: 1, height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none" }}
+                  <Input value={retailManualId} onChange={e => setRetailManualId(e.target.value)} placeholder="e.g. PADMA-L1-004"
+                    size="lg" className="flex-1 font-mono"
                   />
                   {retailManualId.length > 3 && (
-                    <button onClick={() => setSaleFound(true)} style={{ height: 52, borderRadius: 12, background: C.crim, border: "none", padding: "0 20px", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Find</button>
+                    <Button variant="primary" size="lg" onClick={() => setSaleFound(true)} className="rounded-xl bg-[#C0392B] hover:bg-[#C0392B] px-5">Find</Button>
                   )}
                 </div>
               </div>
@@ -125,7 +126,7 @@ export function ProcessReturnRetailFlow({
                 </div>
               </Card>
               <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-                <button onClick={() => setSaleFound(false)} style={{ height: 52, borderRadius: 12, border: `1px solid ${C.bdr}`, background: "transparent", padding: "0 18px", fontFamily: F.u, fontSize: 13, color: C.muted, cursor: "pointer" }}>Rescan</button>
+                <Button variant="secondary" size="lg" onClick={() => setSaleFound(false)} className="rounded-xl border-[rgba(139,26,46,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
                 <Btn label="Next — Return Reason →" onClick={() => setStep(2)} style={{ flex: 1, background: C.crim }} />
               </div>
             </motion.div>
@@ -142,57 +143,56 @@ export function ProcessReturnRetailFlow({
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 20px 10px" }}>
             {returnReasons.slice(0, 4).map(r => (
-              <button key={r.id} onClick={() => setReason(r.id)} style={{
-                padding: "16px 14px", borderRadius: 14,
-                border: `${reason === r.id ? 2 : 1}px solid ${reason === r.id ? r.color : C.bdr}`,
-                background: reason === r.id ? r.bg : C.white,
-                cursor: "pointer", display: "flex", flexDirection: "column" as const, alignItems: "flex-start", gap: 8,
-                position: "relative" as const,
-              }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center", border: reason === r.id ? `1px solid ${r.color}40` : "none" }}>
-                  <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
-                </div>
-                <div style={{ textAlign: "left" as const }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{r.sub}</div>
-                </div>
-                {reason === r.id && (
-                  <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Check size={10} color="#FFF" />
+              <div key={r.id} style={{ ["--reason-col" as string]: r.color, ["--reason-bg" as string]: r.bg } as React.CSSProperties}>
+                <Button variant="tertiary" fullWidth onClick={() => setReason(r.id)}
+                  className={reason === r.id
+                    ? "h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative border-2 border-[var(--reason-col)] bg-[var(--reason-bg)]"
+                    : "h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative border border-[rgba(139,26,46,0.12)] bg-white"}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center", border: reason === r.id ? `1px solid ${r.color}40` : "none" }}>
+                    <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
                   </div>
-                )}
-              </button>
+                  <div style={{ textAlign: "left" as const }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{r.sub}</div>
+                  </div>
+                  {reason === r.id && (
+                    <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Check size={10} color="#FFF" />
+                    </div>
+                  )}
+                </Button>
+              </div>
             ))}
           </div>
           {(() => {
             const r = returnReasons[4];
             return (
-              <button onClick={() => setReason(r.id)} style={{
-                margin: "0 20px 16px", width: "calc(100% - 40px)", padding: "14px 18px", borderRadius: 14,
-                border: `${reason === r.id ? 2 : 1}px solid ${reason === r.id ? r.color : C.bdr}`,
-                background: reason === r.id ? r.bg : C.white,
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 12, position: "relative" as const,
-              }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
-                </div>
-                <div style={{ textAlign: "left" as const }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.sub}</div>
-                </div>
-                {reason === r.id && (
-                  <div style={{ marginLeft: "auto", width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Check size={10} color="#FFF" />
+              <div style={{ margin: "0 20px 16px", ["--reason-col" as string]: r.color, ["--reason-bg" as string]: r.bg } as React.CSSProperties}>
+                <Button variant="tertiary" fullWidth onClick={() => setReason(r.id)}
+                  className={reason === r.id
+                    ? "rounded-[14px] px-[18px] py-3.5 relative justify-start gap-3 border-2 border-[var(--reason-col)] bg-[var(--reason-bg)]"
+                    : "rounded-[14px] px-[18px] py-3.5 relative justify-start gap-3 border border-[rgba(139,26,46,0.12)] bg-white"}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
                   </div>
-                )}
-              </button>
+                  <div style={{ textAlign: "left" as const }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: reason === r.id ? r.color : C.text }}>{r.label}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.sub}</div>
+                  </div>
+                  {reason === r.id && (
+                    <div style={{ marginLeft: "auto", width: 18, height: 18, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Check size={10} color="#FFF" />
+                    </div>
+                  )}
+                </Button>
+              </div>
             );
           })()}
           {reason === "other" && (
             <div style={{ margin: "0 20px 16px" }}>
               <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>Additional Notes</label>
-              <textarea value={otherReason} onChange={e => setOtherReason(e.target.value)} placeholder="Describe the return reason in detail..." rows={3}
-                style={{ width: "100%", background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "12px 16px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none" as const, boxSizing: "border-box" as const }}
+              <Textarea value={otherReason} onChange={e => setOtherReason(e.target.value)} placeholder="Describe the return reason in detail..." rows={3}
+                className="w-full resize-none"
               />
             </div>
           )}

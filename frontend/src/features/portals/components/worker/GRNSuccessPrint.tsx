@@ -1,7 +1,8 @@
 import React from "react";
 import { CheckCircle2, Printer } from "lucide-react";
-import { C, F, card, btnPrimary, btnGhost } from "./tokens";
+import { C, F, card } from "./tokens";
 import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface GRNSuccessProps {
   grnBatchId: string;
@@ -20,12 +21,12 @@ export function GRNSuccessView({ grnBatchId, onPrint, onReset }: GRNSuccessProps
       <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center", lineHeight: 1.6 }}>
         Barcodes are being generated — tap below to print labels
       </div>
-      <button onClick={onPrint} style={{ ...btnPrimary, gap: 8 }}>
-        <Printer size={16} /> Print Barcode Labels
-      </button>
-      <button onClick={onReset} style={{ ...btnGhost, marginTop: 2 }}>
+      <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+        Print Barcode Labels
+      </Button>
+      <Button variant="secondary" fullWidth onClick={onReset} className="mt-0.5 rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">
         Back to GRN
-      </button>
+      </Button>
     </div>
   );
 }
@@ -60,15 +61,15 @@ export function GRNPrintView({ selectedPO, receivedQty, receivedUnit, grnBatchId
             <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
               <span style={{ fontFamily: F.m, fontSize: 6, color: "#FFF", letterSpacing: 2 }}>||| | || ||| ||</span>
             </div>
-            <button style={{ width: "100%", background: C.inp, border: `1px solid ${C.bdr}`, borderRadius: 7, padding: "5px 0", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-              <Printer size={11} /> Print
-            </button>
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} className="rounded-[7px] border-[rgba(139,26,46,0.12)] bg-[#FFF8E7] text-[#6B1A2A] hover:bg-[#FFF8E7]">
+              Print
+            </Button>
           </div>
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <button style={{ ...btnPrimary, gap: 8, marginBottom: 10 }}><Printer size={16} /> Print All Labels</button>
-        <button onClick={onReset} style={{ ...btnGhost }}>Done — Skip Printing</button>
+        <Button variant="primary" fullWidth iconLeft={Printer} className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] mb-2.5">Print All Labels</Button>
+        <Button variant="secondary" fullWidth onClick={onReset} className="rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Done — Skip Printing</Button>
       </div>
     </div>
   );

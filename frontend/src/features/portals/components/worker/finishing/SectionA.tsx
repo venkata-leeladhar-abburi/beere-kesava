@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, Users, X, Package } from "lucide-react";
-import { C, F, card, btnPrimary, btnGhost } from "../tokens";
+import { C, F, card } from "../tokens";
 import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
 import { EASE, WORKER_NAME, SectionHeader, ScanBarBtn, useScanSim, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 // ── Section A — Assign sarees ─────────────────────────────────────────────────
 
@@ -58,10 +59,10 @@ export function SectionA({ isMobile }: { isMobile?: boolean }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
         <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
         {readySarees.length > 0 && (
-          <button onClick={toggleAll} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: "4px 6px" }}>
+          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
             {allChecked ? "Deselect All" : "Select All"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -112,27 +113,25 @@ export function SectionA({ isMobile }: { isMobile?: boolean }) {
               {selected.size} saree{selected.size > 1 ? "s" : ""} selected
             </div>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-              <button onClick={() => setShowPicker(true)}
-                style={{ ...btnPrimary, height: 50, fontSize: 14, gap: 7 }}>
-                <Users size={16} /> Assign Staff
-              </button>
-              <button onClick={() => setSelected(new Set())}
-                style={{ ...btnGhost, height: 46, fontSize: 13 }}>
+              <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setShowPicker(true)}
+                className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] text-sm">
+                Assign Staff
+              </Button>
+              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())}
+                className="h-[46px] rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A] text-[13px]">
                 Cancel
-              </button>
+              </Button>
             </div>
           </motion.div>
         ) : (
           <motion.div key="bar" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2, ease: EASE }}
             style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
-            <button onClick={() => setShowPicker(true)}
-              style={{ ...btnPrimary, flex: 1, height: 46, fontSize: 14, gap: 7 }}>
-              <Users size={16} /> Assign {selected.size} Saree{selected.size > 1 ? "s" : ""} to Finishing Staff
-            </button>
-            <button onClick={() => setSelected(new Set())}
-              style={{ ...btnGhost, width: 46, height: 46, padding: 0, flexShrink: 0, borderRadius: 12, flex: "none" }}>
-              <X size={16} color={C.burg} />
-            </button>
+            <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setShowPicker(true)}
+              className="h-[46px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] text-sm">
+              Assign {selected.size} Saree{selected.size > 1 ? "s" : ""} to Finishing Staff
+            </Button>
+            <IconButton icon={X} label="Cancel selection" variant="secondary" onClick={() => setSelected(new Set())}
+              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
           </motion.div>
         ))}
       </AnimatePresence>

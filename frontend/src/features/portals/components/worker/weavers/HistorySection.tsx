@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
-import { C, F, inputStyle } from "../tokens";
+import { C, F } from "../tokens";
 import { type ReceivedSareeLog } from "./shared";
+import { Button, Input } from "../../../../../shared/ui/primitives";
 
 // ─── History Section ─────────────────────────────────────────────────────────
 const HISTORY_DATA: (ReceivedSareeLog & { sareeType: string })[] = [
@@ -68,19 +69,18 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
         <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>Received History</span>
         <div style={{ display: "flex", background: "#F0ECE8", borderRadius: 8, padding: 2 }}>
           {([["day", "Day Wise"], ["weaver", "Weaver Wise"]] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setView(key)}
-              style={{ padding: "5px 10px", border: "none", borderRadius: 6, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer", background: view === key ? C.burg : "transparent", color: view === key ? "#FFF" : C.muted }}>
+            <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" onClick={() => setView(key)}
+              className={view === key ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
               {label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       {/* Search */}
       <div style={{ margin: "0 16px 10px", position: "relative" }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
-          style={{ ...inputStyle, height: 40, paddingLeft: 34, fontSize: 12 }} />
-        <Search size={13} color={C.muted} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
+          iconLeft={Search} size="sm" className="text-xs" />
       </div>
 
       {/* Grouped list */}

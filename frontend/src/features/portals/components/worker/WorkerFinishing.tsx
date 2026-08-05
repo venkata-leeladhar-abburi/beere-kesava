@@ -8,6 +8,7 @@ import { SectionA } from "./finishing/SectionA";
 import { SectionBFiltered } from "./finishing/SectionBFiltered";
 import { SectionC } from "./finishing/SectionC";
 import { QuotationsSection } from "./finishing/QuotationsSection";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
@@ -55,19 +56,12 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
 
       {/* Two primary action buttons */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-        <button
+        <Button
+          variant="tertiary"
           onClick={() => setActiveAction(activeAction === "assign" ? null : "assign")}
-          style={{
-            padding: "16px 12px", borderRadius: 16, cursor: "pointer",
-            background: activeAction === "assign"
-              ? `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`
-              : "#FFF",
-            boxShadow: activeAction === "assign"
-              ? "0 4px 20px rgba(107,26,42,0.30)"
-              : "0 2px 12px rgba(107,26,42,0.08)",
-            border: activeAction === "assign" ? "none" : `1.5px solid rgba(107,26,42,0.14)`,
-            transition: "all 0.2s",
-          } as React.CSSProperties}
+          className={`h-auto flex-col whitespace-normal rounded-2xl px-3 py-4 transition-all ${activeAction === "assign"
+            ? "border-none bg-gradient-to-br from-[#3D0E1A] to-[#6B1A2A] shadow-[0_4px_20px_rgba(107,26,42,0.30)]"
+            : "border-[1.5px] border-[rgba(107,26,42,0.14)] bg-white shadow-[0_2px_12px_rgba(107,26,42,0.08)]"}`}
         >
           <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "assign" ? "rgba(255,255,255,0.15)" : "rgba(107,26,42,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <Package size={20} color={activeAction === "assign" ? "#FFF" : C.burg} />
@@ -76,21 +70,14 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
           <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {readySarees.length} ready · assign to finishing staff
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="tertiary"
           onClick={() => setActiveAction(activeAction === "receive" ? null : "receive")}
-          style={{
-            padding: "16px 12px", borderRadius: 16, cursor: "pointer",
-            background: activeAction === "receive"
-              ? "linear-gradient(135deg, #1E5A3A 0%, #1E6640 100%)"
-              : "#FFF",
-            boxShadow: activeAction === "receive"
-              ? "0 4px 20px rgba(30,102,64,0.28)"
-              : "0 2px 12px rgba(107,26,42,0.08)",
-            border: activeAction === "receive" ? "none" : `1.5px solid rgba(107,26,42,0.14)`,
-            transition: "all 0.2s",
-          } as React.CSSProperties}
+          className={`h-auto flex-col whitespace-normal rounded-2xl px-3 py-4 transition-all ${activeAction === "receive"
+            ? "border-none bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] shadow-[0_4px_20px_rgba(30,102,64,0.28)]"
+            : "border-[1.5px] border-[rgba(107,26,42,0.14)] bg-white shadow-[0_2px_12px_rgba(107,26,42,0.08)]"}`}
         >
           <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "receive" ? "rgba(255,255,255,0.15)" : "rgba(30,102,64,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <ArrowDownToLine size={20} color={activeAction === "receive" ? "#FFF" : C.green} />
@@ -99,7 +86,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
           <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {awaiting.length} awaiting · mark as received
           </div>
-        </button>
+        </Button>
       </div>
 
       {/* Expanded action panels */}
