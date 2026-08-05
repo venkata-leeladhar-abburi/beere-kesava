@@ -56,14 +56,15 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />
-          <IconButton
-            icon={X}
-            label="Close"
-            variant="ghost"
-            size="md"
-            onClick={onClose}
-            style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)" }}
-          />
+          <span style={{ position: "absolute", top: 16, right: 16, display: "inline-block", background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", borderRadius: 8 }}>
+            <IconButton
+              icon={X}
+              label="Close"
+              variant="ghost"
+              size="md"
+              onClick={onClose}
+            />
+          </span>
         </div>
 
         {/* Body */}

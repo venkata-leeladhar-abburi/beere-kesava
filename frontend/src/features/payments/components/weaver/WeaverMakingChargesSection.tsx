@@ -251,7 +251,7 @@ export function WeaverMakingChargesSection() {
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key as any)}
-                style={{ borderRadius: 0 }}>
+                className="!rounded-none">
                 {label}
               </Button>
             ))}

@@ -45,8 +45,8 @@ export function BatchSetupStep({
           </div>
           <div>
             <label style={lbl}>Total Saree Count <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <NumberInput min={1} max={500} value={totalCount}
-              onChange={e => { setTotalCount(e.target.value); setGenerated(false); }}
+            <NumberInput min={1} max={500} value={totalCount === "" ? "" : Number(totalCount)}
+              onValueChange={v => { setTotalCount(v === "" ? "" : String(v)); setGenerated(false); }}
               placeholder="e.g. 30" />
           </div>
           <div>

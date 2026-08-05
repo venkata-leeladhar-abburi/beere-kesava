@@ -214,10 +214,11 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
           {tabs.map(t => (
-            <Button key={t.key} onClick={() => setTab(t.key)} variant="link" size="md"
-              style={{ padding: "14px 22px", fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, borderRadius: 0, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2 }}>
-              {t.label}
-            </Button>
+            <div key={t.key} style={{ padding: "14px 22px", fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, borderRadius: 0, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2 }}>
+              <Button onClick={() => setTab(t.key)} variant="link" size="md">
+                {t.label}
+              </Button>
+            </div>
           ))}
         </div>
 
@@ -311,10 +312,11 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                                   Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
                                 </span>
                               </div>
-                              <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm"
-                                style={{ background: T.greenBg, color: T.greenMid }}>
-                                View Full Dispatch Details
-                              </Button>
+                              <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
+                                <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm">
+                                  View Full Dispatch Details
+                                </Button>
+                              </span>
                             </div>
                           ) : (
                             <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>

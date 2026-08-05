@@ -109,18 +109,19 @@ export function WholesaleCustomerSelectSection({
         </div>
       )}
 
-      <Button
-        variant="link"
-        size="sm"
-        style={{ marginTop: 12, color: T.antiqueGold, padding: 0 }}
-        onClick={() => {
-          onClose();
-          localStorage.setItem("bk_open_add_wholesale", "true");
-          onAddCustomerClick?.();
-        }}
-      >
-        ➕ Add New Customer
-      </Button>
+      <span style={{ display: "inline-block", marginTop: 12, color: T.antiqueGold }}>
+        <Button
+          variant="link"
+          size="sm"
+          onClick={() => {
+            onClose();
+            localStorage.setItem("bk_open_add_wholesale", "true");
+            onAddCustomerClick?.();
+          }}
+        >
+          ➕ Add New Customer
+        </Button>
+      </span>
     </div>
   );
 }

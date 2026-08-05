@@ -125,10 +125,11 @@ export function BulkOrderSareesTab({
                 <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</td>
                 <td style={{ padding: "13px 16px" }}>
                   {s.dispatch ? (
-                    <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}
-                      style={{ background: T.greenBg, color: T.greenMid }}>
-                      {s.dispatch.lrNumber || "View"}
-                    </Button>
+                    <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
+                      <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
+                        {s.dispatch.lrNumber || "View"}
+                      </Button>
+                    </span>
                   ) : (
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
                   )}

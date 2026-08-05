@@ -95,14 +95,14 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
             const active = tab === t.key;
             const count = tabCounts[t.key];
             return (
-              <Button key={t.key} variant="tertiary" size="lg" fullWidth onClick={() => setTab(t.key)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 14, textAlign: "left", justifyContent: "flex-start",
-                  padding: "18px 20px", borderRadius: 16, minWidth: 0, height: "auto",
+              <div key={t.key} style={{
+                  borderRadius: 16, minWidth: 0,
                   background: active ? "linear-gradient(135deg, rgba(200,155,71,0.26), rgba(200,155,71,0.12))" : "rgba(255,253,249,0.06)",
                   border: `2px solid ${active ? T.antiqueGold : "rgba(255,253,249,0.12)"}`,
                   boxShadow: active ? "0 8px 26px rgba(200,155,71,0.22)" : "none",
                 }}>
+              <Button variant="tertiary" size="lg" fullWidth onClick={() => setTab(t.key)}
+                className="!justify-start !text-left !h-auto !px-5 !py-[18px] !gap-[14px] !bg-transparent !border-none">
                 <div style={{ width: 48, height: 48, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: active ? T.antiqueGold : "rgba(255,253,249,0.10)" }}>
                   <t.Icon size={24} color={active ? "#2C0913" : "rgba(255,253,249,0.70)"} />
                 </div>
@@ -117,6 +117,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
                   </div>
                 )}
               </Button>
+              </div>
             );
           })}
         </div>

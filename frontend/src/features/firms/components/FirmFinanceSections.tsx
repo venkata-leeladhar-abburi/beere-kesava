@@ -89,10 +89,7 @@ export function AddEntryForm({ type, onSave, onCancel }: {
         <div><FLabel req>Description</FLabel><Inp value={desc} onChange={setDesc} placeholder="Enter description…" /></div>
         <div><FLabel req>Amount (₹)</FLabel><Inp value={amount} onChange={setAmount} placeholder="0" type="number" mono /></div>
         <div><FLabel req>Date</FLabel>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            style={{ ...inp, fontFamily: F.mono }}
-            onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-            onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = T.borderDef; }} />
+          <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="font-mono" />
         </div>
         <div><FLabel req>{type === "misc" ? "Type" : "Category"}</FLabel>
           <Sel value={cat} onChange={v => { setCat(v); setOtherLabel(""); }}>

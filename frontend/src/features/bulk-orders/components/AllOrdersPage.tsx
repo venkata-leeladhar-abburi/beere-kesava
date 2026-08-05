@@ -80,15 +80,11 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       {/* Page Header */}
       <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "34px 48px", color: "#FFFDF9" }}>
-        <Button
-          onClick={onBack}
-          variant="tertiary"
-          size="md"
-          iconLeft={ArrowLeft}
-          style={{ marginBottom: 22 }}
-        >
-          Back to Production
-        </Button>
+        <div style={{ marginBottom: 22 }}>
+          <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
+            Back to Production
+          </Button>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ShoppingBag size={28} />

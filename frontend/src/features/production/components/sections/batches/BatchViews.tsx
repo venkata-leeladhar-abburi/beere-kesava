@@ -74,8 +74,8 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
                 <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
                 <NumberInput
                   min={0} step={0.001}
-                  value={weights[s.id] ?? ""}
-                  onChange={e => setWeights(prev => ({ ...prev, [s.id]: e.target.value }))}
+                  value={weights[s.id] === undefined || weights[s.id] === "" ? "" : Number(weights[s.id])}
+                  onValueChange={v => setWeights(prev => ({ ...prev, [s.id]: v === "" ? "" : String(v) }))}
                   className="w-[84px]"
                 />
               </div>
@@ -213,8 +213,8 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
-          <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" fullWidth iconLeft={<PhEye size={16} />}>
-            Open Batch
+          <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" fullWidth>
+            <PhEye size={16} /> Open Batch
           </Button>
           <SwipeToTally tallied={isTallied} onOpen={() => setTallyOpen(true)} />
         </div>
@@ -268,12 +268,12 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
             <div>
               <div style={{ display: "flex", gap: 6 }}>
-                <Button onClick={() => onView?.(b)} variant="secondary" size="sm" iconLeft={<PhEye size={14} weight="bold" />}>
-                  View
+                <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
+                  <PhEye size={14} weight="bold" /> View
                 </Button>
                 {b.isLive && onEdit && (
-                  <Button onClick={() => onEdit(b)} variant="tertiary" size="sm" iconLeft={<PencilSimple size={14} />}>
-                    Edit
+                  <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
+                    <PencilSimple size={14} /> Edit
                   </Button>
                 )}
               </div>
@@ -320,12 +320,12 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</td>
                   <td style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <Button onClick={() => onView?.(b)} variant="secondary" size="sm" iconLeft={<PhEye size={14} weight="bold" />}>
-                        View
+                      <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
+                        <PhEye size={14} weight="bold" /> View
                       </Button>
                       {b.isLive && onEdit && (
-                        <Button onClick={() => onEdit(b)} variant="tertiary" size="sm" iconLeft={<PencilSimple size={14} />}>
-                          Edit
+                        <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
+                          <PencilSimple size={14} /> Edit
                         </Button>
                       )}
                     </div>

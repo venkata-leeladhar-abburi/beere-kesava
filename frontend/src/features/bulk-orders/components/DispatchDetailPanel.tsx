@@ -52,7 +52,9 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
             <Truck size={18} color={T.antiqueGold} />
             <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
           </div>
-          <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" aria-label="Close" style={{ background: "rgba(255,255,255,0.14)", color: "#FFF" }} />
+          <span style={{ display: "inline-block", background: "rgba(255,255,255,0.14)", color: "#FFF", borderRadius: 8 }}>
+            <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" label="Close" />
+          </span>
         </div>
         {(dispatch.pendingTransport || dispatch.pendingReceipt) && (
           <div style={{ margin: "16px 20px 0", background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", gap: 8 }}>

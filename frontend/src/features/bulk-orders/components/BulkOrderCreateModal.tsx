@@ -177,14 +177,15 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   New wholesale customer order · {nextRef}
                 </div>
               </div>
-              <IconButton
-                onClick={onClose}
-                icon={LucideX}
-                variant="ghost"
-                size="md"
-                aria-label="Close"
-                style={{ border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff" }}
-              />
+              <span style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 8 }}>
+                <IconButton
+                  onClick={onClose}
+                  icon={LucideX}
+                  variant="ghost"
+                  size="md"
+                  label="Close"
+                />
+              </span>
             </div>
 
             {/* Scrollable body */}
@@ -222,15 +223,16 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                         {photos.map((file, idx) => (
                           <div key={idx} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
                             <img src={URL.createObjectURL(file)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            <IconButton
-                              type="button"
-                              onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
-                              icon={LucideX}
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Remove photo"
-                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", color: "#FFF" }}
-                            />
+                            <span style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", color: "#FFF", display: "inline-flex" }}>
+                              <IconButton
+                                type="button"
+                                onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
+                                icon={LucideX}
+                                variant="ghost"
+                                size="sm"
+                                label="Remove photo"
+                              />
+                            </span>
                           </div>
                         ))}
                         <label htmlFor="bulk-order-photos-upload" style={{ width: 72, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: "rgba(110,15,45,0.02)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -244,8 +246,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   <Field label="Quantity (sarees)" error={errors.quantity} id="quantity-sarees">
                     <NumberInput id="quantity-sarees"
                       min={1}
-                      value={quantity}
-                      onChange={e => setQuantity(e.target.value)}
+                      value={quantity === "" ? "" : Number(quantity)}
+                      onValueChange={v => setQuantity(v === "" ? "" : String(v))}
                       placeholder="e.g. 40"
                       invalid={!!errors.quantity}
                     />
@@ -264,8 +266,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   <div style={{ gridColumn: "1 / -1" }}>
                     <Field label="Estimated Value (₹)" id="estimated-value">
                       <NumberInput id="estimated-value"
-                        value={estimatedValue}
-                        onChange={e => setEstimatedValue(e.target.value)}
+                        value={estimatedValue === "" ? "" : Number(estimatedValue)}
+                        onValueChange={v => setEstimatedValue(v === "" ? "" : String(v))}
                         placeholder="Enter estimated value"
                       />
                     </Field>
@@ -282,7 +284,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                       value={instructions}
                       onChange={e => setInstructions(e.target.value)}
                       placeholder="Any special production or packaging instructions..."
-                      style={{ height: 80 }}
+                      rows={3}
                     />
                   </Field>
                   <div>
