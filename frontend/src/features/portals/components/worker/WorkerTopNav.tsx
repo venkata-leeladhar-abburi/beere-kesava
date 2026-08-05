@@ -9,6 +9,7 @@ import {
 import { C, F } from "./tokens";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../../lib/icon";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
@@ -74,18 +75,11 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
         {TOPNAV_ITEMS.map(item => {
           const isActive = active === item.id;
           return (
-            <button
+            <Button
               key={item.id}
+              variant="tertiary"
               onClick={() => onSelect(item.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
-                padding: isTablet ? "8px 12px" : "9px 16px", borderRadius: 10,
-                border: "none", borderBottom: isActive ? `2.5px solid ${C.burg}` : "2.5px solid transparent",
-                background: isActive ? "rgba(107,26,42,0.06)" : "transparent",
-                cursor: "pointer", position: "relative" as const,
-              }}
-              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(107,26,42,0.03)"; }}
-              onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+              className={`flex-shrink-0 gap-2 rounded-[10px] border-0 border-b-[2.5px] relative ${isTablet ? "px-3 py-2" : "px-4 py-2.5"} ${isActive ? "border-b-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-b-transparent bg-transparent"}`}
             >
               <item.Icon size={isTablet ? 15 : 16} color={isActive ? C.burg : C.muted} />
               <span style={{ fontFamily: F.u, fontSize: isTablet ? 13 : 14, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.text, whiteSpace: "nowrap" as const }}>
@@ -96,7 +90,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                   {item.badge}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -105,13 +99,14 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         {/* Bell */}
         <div style={{ position: "relative" }}>
-          <motion.button onClick={() => { setShowNotif(p => !p); setShowUser(false); }}
+          <motion.div
             whileHover={{ scale: 1.05, backgroundColor: "rgba(110,15,45,0.05)" }}
             whileTap={{ scale: 0.95 }}
-            style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ borderRadius: 10, display: "inline-block" }}
           >
-            <Bell size={15} color={C.muted} />
-          </motion.button>
+            <IconButton icon={Bell} label="Notifications" variant="secondary" onClick={() => { setShowNotif(p => !p); setShowUser(false); }}
+              className="w-9 h-9 rounded-[10px] border-[rgba(110,15,45,0.10)] bg-transparent" />
+          </motion.div>
           <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: C.crim, border: "1.5px solid #FFFDF9" }} />
           {showNotif && (
             <div style={{ position: "absolute", top: 44, right: 0, width: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 12px 40px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
@@ -159,13 +154,12 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                 <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>Ravi Kumar</div>
                 <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
               </div>
-              <button onClick={() => { onSelect("profile"); closeAll(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.dark, textAlign: "left" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
-                onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                <User size={14} color={C.muted} /> My Profile
-              </button>
+              <Button variant="tertiary" fullWidth iconLeft={User} onClick={() => { onSelect("profile"); closeAll(); }}
+                className="justify-start gap-2 rounded-none border-0 px-4 py-2.5 text-[13px] text-[#1A0A0F]">
+                My Profile
+              </Button>
               {localStorage.getItem("bk_original_admin_role") ? (
-                <button onClick={() => {
+                <Button variant="tertiary" fullWidth iconLeft={LogOut} onClick={() => {
                   closeAll();
                   const origAdminRole = localStorage.getItem("bk_original_admin_role");
                   if (origAdminRole) {
@@ -173,17 +167,14 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                     selectRole(origAdminRole as any);
                     navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                   }
-                }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: `1px solid rgba(110,15,45,0.08)`, cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "left" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <LogOut size={14} color={C.muted} /> My Portal
-                </button>
+                }} className="justify-start gap-2 rounded-none border-0 border-t border-[rgba(110,15,45,0.08)] px-4 py-2.5 text-[13px] text-[#69635E]">
+                  My Portal
+                </Button>
               ) : (
-                <button onClick={() => { closeAll(); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: `1px solid rgba(110,15,45,0.08)`, cursor: "pointer", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "left" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.04)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <LogOut size={14} color={C.muted} /> Switch Portal
-                </button>
+                <Button variant="tertiary" fullWidth iconLeft={LogOut} onClick={() => { closeAll(); onBack?.(); }}
+                  className="justify-start gap-2 rounded-none border-0 border-t border-[rgba(110,15,45,0.08)] px-4 py-2.5 text-[13px] text-[#69635E]">
+                  Switch Portal
+                </Button>
               )}
             </div>
           )}

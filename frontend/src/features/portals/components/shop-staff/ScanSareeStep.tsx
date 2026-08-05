@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Camera, Check } from "lucide-react";
 import { C, F, Card, Btn, Chip } from "./theme";
+import { Button, Input, CurrencyInput } from "../../../../shared/ui/primitives";
 
 interface Saree {
   id: string;
@@ -101,11 +102,11 @@ export function ScanSareeStep({
           <div style={{ margin: "0 20px 20px" }}>
             <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Saree ID</label>
             <div style={{ display: "flex", gap: 10 }}>
-              <input value={manualId} onChange={e => setManualId(e.target.value)} placeholder="e.g. PADMA-L1-004"
-                style={{ flex: 1, height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none" }}
+              <Input value={manualId} onChange={e => setManualId(e.target.value)} placeholder="e.g. PADMA-L1-004"
+                size="lg" className="flex-1 font-mono"
               />
               {manualId.length > 3 && (
-                <button onClick={handleScan} style={{ height: 52, borderRadius: 12, background: C.burg, border: "none", padding: "0 20px", fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer" }}>Find</button>
+                <Button variant="primary" size="lg" onClick={handleScan} className="rounded-xl bg-[#6B1A2A] hover:bg-[#6B1A2A] px-5">Find</Button>
               )}
             </div>
             {scanError && (
@@ -158,15 +159,12 @@ export function ScanSareeStep({
               {canSeePrices && (
                 <div style={{ borderTop: isMobile ? `1px solid ${C.bdr}` : "none", borderLeft: isMobile ? "none" : `1px solid ${C.bdr}`, paddingTop: isMobile ? 14 : 0, marginTop: isMobile ? 16 : 0, paddingLeft: isMobile ? 0 : 24, width: isMobile ? undefined : 220, flexShrink: 0 }}>
                   <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price (₹)</label>
-                  <div style={{ position: "relative" as const }}>
-                    <span style={{ position: "absolute" as const, left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, pointerEvents: "none" as const }}>₹</span>
-                    <input
-                      type="number"
-                      value={soldPrice}
-                      onChange={e => setSoldPrice(e.target.value === "" ? 0 : Number(e.target.value))}
-                      style={{ width: "100%", height: 56, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 36px 0 36px", fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, outline: "none", boxSizing: "border-box" as const }}
-                    />
-                  </div>
+                  <CurrencyInput
+                    value={soldPrice}
+                    onValueChange={v => setSoldPrice(v === "" ? 0 : v)}
+                    size="lg"
+                    className="w-full font-['Plus_Jakarta_Sans'] text-2xl font-bold"
+                  />
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 6 }}>Default: {fmtPrice(originalPrice)}</div>
                 </div>
               )}
@@ -174,7 +172,7 @@ export function ScanSareeStep({
           </Card>
 
           <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-            <button onClick={() => setSareeFound(false)} style={{ height: 52, borderRadius: 12, border: `1px solid ${C.bdr}`, background: "transparent", padding: "0 18px", fontFamily: F.u, fontSize: 13, color: C.muted, cursor: "pointer" }}>Rescan</button>
+            <Button variant="secondary" size="lg" onClick={() => setSareeFound(false)} className="rounded-xl border-[rgba(139,26,46,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
             <Btn label="Next — Payment →" onClick={onNext} style={{ flex: 1, background: C.burg }} />
           </div>
         </motion.div>

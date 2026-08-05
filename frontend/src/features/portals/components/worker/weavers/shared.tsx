@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronLeft } from "lucide-react";
 import { C, F } from "../tokens";
+import { IconButton } from "../../../../../shared/ui/primitives";
 
 export type WeaversPage = "menu" | "design" | "issue" | "receive";
 export type IssueSource = "own" | "outsourced" | null;
@@ -28,9 +29,7 @@ export function SectionLabel({ step, title }: { step: number; title: string }) {
 export function PageHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <div style={{ height: 48, background: C.burg, display: "flex", alignItems: "center", padding: "0 14px", gap: 10 }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
-        <ChevronLeft size={18} color="rgba(255,255,255,0.85)" />
-      </button>
+      <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onBack} className="text-white/85" />
       <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: "#FFF", flex: 1 }}>{title}</span>
     </div>
   );

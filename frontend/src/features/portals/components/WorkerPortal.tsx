@@ -15,6 +15,7 @@ import {
 } from "../../../shared/ui/SectionNavigator";
 import { useResponsive } from "../../../hooks/useResponsive";
 import type { IconComponent } from "../../../lib/icon";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 
@@ -128,23 +129,19 @@ function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; on
           <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.gold }}>Worker Portal</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
         </div>
-        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-          <X size={20} color="rgba(255,255,255,0.60)" />
-        </button>
+        <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} className="text-white/60" />
       </div>
       <div style={{ padding: "16px 12px 12px" }}>
-        <button onClick={() => { onProfile(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, textAlign: "left" }}
-          onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
-          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <UserRound size={18} color="rgba(255,255,255,0.65)" />
+        <Button variant="tertiary" fullWidth iconLeft={UserRound} onClick={() => { onProfile(); onClose(); }}
+          className="justify-start gap-3 rounded-[10px] border-none bg-transparent px-3.5 py-3 text-left hover:bg-white/[0.07]">
           <span style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.80)" }}>My Profile</span>
-        </button>
+        </Button>
       </div>
       <div style={{ flex: 1 }} />
       {onBack && (
         <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           {localStorage.getItem("bk_original_admin_role") ? (
-            <button onClick={() => {
+            <Button variant="tertiary" fullWidth onClick={() => {
               onClose();
               const origAdminRole = localStorage.getItem("bk_original_admin_role");
               if (origAdminRole) {
@@ -152,13 +149,14 @@ function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; on
                 selectRole(origAdminRole as any);
                 navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
               }
-            }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)" }}>
+            }} className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
               My Portal
-            </button>
+            </Button>
           ) : (
-            <button onClick={() => { onBack(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)" }}>
+            <Button variant="tertiary" fullWidth onClick={() => { onBack(); onClose(); }}
+              className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
               Switch Portal
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -197,9 +195,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
           <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.22 }}
             style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: 180, overflowY: "auto" }}>
             <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <button onClick={() => setShowProfile(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                <ChevronLeft size={22} color="#FFF" />
-              </button>
+              <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setShowProfile(false)} className="text-white" />
               <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>
               <div style={{ width: 36 }} />
             </div>
@@ -210,20 +206,19 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
 
       {/* Global Header */}
       <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(107,26,42,0.25)" }}>
-        <button onClick={() => setShowMenu(true)} style={{ background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", alignItems: "center", minWidth: 36 }}>
-          <Menu size={22} color="rgba(255,255,255,0.85)" />
-        </button>
+        <IconButton icon={Menu} label="Menu" variant="ghost" onClick={() => setShowMenu(true)} className="min-w-9 text-white/85" />
         <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>
           {PAGE_TITLES[activeTab]}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button style={{ background: "none", border: "none", padding: 4, cursor: "pointer", position: "relative", minWidth: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Bell size={21} color="rgba(255,255,255,0.85)" />
-            <span style={{ position: "absolute", top: 0, right: 2, width: 16, height: 16, background: C.crim, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u }}>3</span>
-          </button>
-          <button onClick={() => setShowProfile(true)} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(255,255,255,0.30)", background: "rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ position: "relative" }}>
+            <IconButton icon={Bell} label="Notifications" variant="ghost" className="min-w-8 text-white/85" />
+            <span style={{ position: "absolute", top: 0, right: 2, width: 16, height: 16, background: C.crim, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u, pointerEvents: "none" }}>3</span>
+          </div>
+          <Button variant="tertiary" onClick={() => setShowProfile(true)}
+            className="w-[30px] h-[30px] p-0 rounded-[9px] border border-white/30 bg-white/12 hover:bg-white/12">
             <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -257,25 +252,23 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       <div style={{ position: "fixed", bottom: 76, left: 0, width: "100%", zIndex: 110, pointerEvents: "none" }}>
         <AnimatePresence>
           {(activeTab === "qc" || activeTab === "finishing") && (
-            <motion.button
+            <motion.div
               key={activeTab}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 26 }}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setActiveTab(activeTab)}
-              style={{
-                position: "absolute", right: 16, bottom: 0, pointerEvents: "auto",
-                width: 56, height: 56, borderRadius: "50%",
-                background: C.burg, border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 16px rgba(107,26,42,0.30)",
-              }}
-              aria-label={activeTab === "qc" ? "Start QC" : "Assign"}
+              style={{ position: "absolute", right: 16, bottom: 0, pointerEvents: "auto" }}
             >
-              {activeTab === "qc" ? <Search size={22} color="#FFF" /> : <UserCheck size={22} color="#FFF" />}
-            </motion.button>
+              <IconButton
+                icon={activeTab === "qc" ? Search : UserCheck}
+                label={activeTab === "qc" ? "Start QC" : "Assign"}
+                variant="primary"
+                size="lg"
+                onClick={() => setActiveTab(activeTab)}
+                className="w-14 h-14 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] shadow-[0_4px_16px_rgba(107,26,42,0.30)]"
+              />
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -285,7 +278,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
         {TABS.map(tab => {
           const active = activeTab === tab.id;
           return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", padding: 0, position: "relative" }}>
+            <Button key={tab.id} variant="ghost" onClick={() => setActiveTab(tab.id)} className="relative flex-1 h-full justify-center rounded-none p-0">
               <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
                 {active && (
                   <motion.div layoutId="worker-tab-indicator" transition={{ type: "spring", stiffness: 420, damping: 34 }}
@@ -299,7 +292,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
                 <tab.Icon size={20} color={active ? C.burg : C.muted} />
                 <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: active ? 600 : 500, color: active ? C.burg : C.muted, transition: "color 0.2s" }}>{tab.label}</span>
               </div>
-            </button>
+            </Button>
           );
         })}
       </div>

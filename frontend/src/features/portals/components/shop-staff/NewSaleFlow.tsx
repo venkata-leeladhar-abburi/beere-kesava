@@ -11,6 +11,7 @@ import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
+import { Button, Input } from '../../../../shared/ui/primitives';
 
 export function NewSaleFlow() {
   const canSeePrices = useCanSeePrices();
@@ -218,13 +219,8 @@ export function NewSaleFlow() {
               { id: "card" as const, label: "Card", sub: "Debit or Credit", icon: <CreditCard size={22} /> },
               { id: "other" as const, label: "Other", sub: "Cheque / Transfer", icon: <Plus size={22} /> },
             ].map(p => (
-              <button key={p.id} onClick={() => setPayment(p.id)} style={{
-                padding: "16px 14px", borderRadius: 14,
-                border: `${payment === p.id ? 2 : 1}px solid ${payment === p.id ? C.burg : C.bdr}`,
-                background: payment === p.id ? "rgba(107,26,42,0.06)" : C.white,
-                cursor: "pointer", display: "flex", flexDirection: "column" as const, alignItems: "flex-start", gap: 8,
-                position: "relative" as const,
-              }}>
+              <Button key={p.id} variant="tertiary" onClick={() => setPayment(p.id)}
+                className={`h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative ${payment === p.id ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: payment === p.id ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {React.cloneElement(p.icon, { color: payment === p.id ? C.burg : C.muted })}
                 </div>
@@ -233,21 +229,19 @@ export function NewSaleFlow() {
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.sub}</div>
                 </div>
                 {payment === p.id && <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center" }}><Check size={10} color={C.text} /></div>}
-              </button>
+              </Button>
             ))}
           </div>
           {payment === "upi" && (
             <div style={{ margin: "0 20px 16px" }}>
               <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>UPI Reference (Optional)</label>
-              <input value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="Transaction ID"
-                style={{ width: "100%", height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+              <Input value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="Transaction ID" size="lg" className="w-full font-mono" />
             </div>
           )}
           {payment === "card" && (
             <div style={{ margin: "0 20px 16px" }}>
               <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Last 4 Digits (Optional)</label>
-              <input value={payRef} onChange={e => setPayRef(e.target.value)} maxLength={4} placeholder="e.g. 4872"
-                style={{ width: "100%", height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: F.m, fontSize: 18, color: C.text, outline: "none", boxSizing: "border-box" as const }} />
+              <Input value={payRef} onChange={e => setPayRef(e.target.value)} maxLength={4} placeholder="e.g. 4872" size="lg" className="w-full font-mono text-lg" />
             </div>
           )}
           <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>

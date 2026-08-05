@@ -17,6 +17,7 @@ import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
+import { IconButton, Input } from "../../../../shared/ui/primitives";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
@@ -242,9 +243,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     return (
       <div style={{ paddingBottom: 28 }}>
         <div style={{ background: T.gradHero, padding: isDesktop ? "10px 4px" : "10px 16px", marginBottom: 12, borderRadius: isDesktop ? 10 : 0, display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={() => setSelectedWeaverQC(null)} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-            <ChevronLeft size={16} color="#FFF" />
-          </button>
+          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setSelectedWeaverQC(null)} className="w-8 h-8 flex-shrink-0 rounded-lg bg-white/12 text-white" />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: "#FFF" }}>{selectedWeaverQC}</div>
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{wSarees.length} saree{wSarees.length !== 1 ? "s" : ""} pending QC</div>
@@ -279,9 +278,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     return (
       <div style={{ paddingBottom: 28 }}>
         <div style={{ background: T.gradHero, padding: isDesktop ? "10px 4px" : "10px 16px", marginBottom: 16, borderRadius: isDesktop ? 10 : 0, display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={() => setSelectedBatchQC(null)} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-            <ChevronLeft size={16} color="#FFF" />
-          </button>
+          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setSelectedBatchQC(null)} className="w-8 h-8 flex-shrink-0 rounded-lg bg-white/12 text-white" />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.m, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: T.goldL }}>{selectedBatchQC}</div>
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{bSarees.length} saree{bSarees.length !== 1 ? "s" : ""} · {bWeaverGroups.length} weaver{bWeaverGroups.length !== 1 ? "s" : ""}</div>
@@ -323,12 +320,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         </div>
       ) : qcTab === "weavers" ? (
         <>
-          <div style={{ padding: isDesktop ? "0 0 12px" : "0 16px 12px", position: "relative" }}>
-            <Search size={14} color={T.muted} style={{ position: "absolute", left: isDesktop ? 12 : 28, top: "50%", transform: "translateY(-50%)" }} />
-            <input
+          <div style={{ padding: isDesktop ? "0 0 12px" : "0 16px 12px" }}>
+            <Input
               value={weaverSearch} onChange={e => setWeaverSearch(e.target.value)}
               placeholder="Search weavers..."
-              style={{ width: "100%", height: 42, background: T.inp, border: `1px solid ${T.bdr}`, borderRadius: 10, padding: "0 14px 0 36px", fontFamily: F.u, fontSize: 13, color: T.brown, outline: "none", boxSizing: "border-box" as const }}
+              iconLeft={Search}
+              className="w-full"
             />
           </div>
           <WorkerQCWeaverGrid

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Scan, CheckCircle2 } from "lucide-react";
 import { C, F } from "../tokens";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 export const WORKER_NAME = "Ravi Kumar (WK-042)";
@@ -30,14 +31,15 @@ export function SectionHeader({ icon, title, count, accent }: {
 
 export function ScanBarBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
+    <Button
+      variant="primary"
+      size="sm"
+      iconLeft={Scan}
       onClick={onClick}
-      style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 38, background: C.dark, border: "none", borderRadius: 10, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", flexShrink: 0 }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = C.burg; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.dark; }}
+      className="h-[38px] flex-shrink-0 rounded-[10px] bg-[#3D0E1A] hover:bg-[#6B1A2A]"
     >
-      <Scan size={15} color="#FFF" /> {label}
-    </button>
+      {label}
+    </Button>
   );
 }
 

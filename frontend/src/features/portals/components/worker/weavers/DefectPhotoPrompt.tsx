@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle, Camera, UploadCloud } from "lucide-react";
 import { C, F } from "../tokens";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function DefectPhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onCancel: () => void }) {
   return (
@@ -14,14 +15,14 @@ export function DefectPhotoPrompt({ onCapture, onCancel }: { onCapture: () => vo
           Take a photo of the defect as proof. This is required to complete the rejection.
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <Camera size={13} /> Take Photo
-          </button>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <UploadCloud size={13} /> Upload from Gallery
-          </button>
+          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+            Take Photo
+          </Button>
+          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+            Upload from Gallery
+          </Button>
         </div>
-        <button onClick={onCancel} style={{ width: "100%", background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", padding: 8 }}>Cancel</button>
+        <Button variant="link" fullWidth onClick={onCancel} className="text-xs text-[#69635E] p-2">Cancel</Button>
       </div>
     </div>
   );

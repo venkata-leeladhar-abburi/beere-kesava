@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import { C, F, inputStyle } from "../tokens";
+import { C, F } from "../tokens";
 import { FieldLabel } from "./shared";
+import { Button, Input } from "../../../../../shared/ui/primitives";
 
 export function IssueColors({ label, compact }: { label: string; compact?: boolean }) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -18,8 +19,10 @@ export function IssueColors({ label, compact }: { label: string; compact?: boole
       {!compact && <FieldLabel>{label} Colors</FieldLabel>}
       <div style={{ display: "flex", gap: compact ? 5 : 7, marginBottom: selected.length > 0 ? 8 : 4, flexWrap: "wrap" }}>
         {colors.map(c => (
-          <button key={c.name} title={c.name} onClick={() => toggle(c.name)}
-            style={{ width: swatchSize, height: swatchSize, borderRadius: "50%", background: c.hex, border: selected.includes(c.name) ? "3px solid #1A0A0F" : "3px solid transparent", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.15)", flexShrink: 0 }} />
+          <div key={c.name} style={{ width: swatchSize, height: swatchSize, flexShrink: 0, ["--swatch-hex" as string]: c.hex } as React.CSSProperties}>
+            <Button aria-label={c.name} title={c.name} variant="tertiary" onClick={() => toggle(c.name)}
+              className={`w-full h-full rounded-full p-0 shadow-[0_1px_4px_rgba(0,0,0,0.15)] bg-[var(--swatch-hex)] hover:bg-[var(--swatch-hex)] ${selected.includes(c.name) ? "border-[3px] border-[#1A0A0F]" : "border-[3px] border-transparent"}`} />
+          </div>
         ))}
       </div>
       {selected.map(cl => (
@@ -27,15 +30,16 @@ export function IssueColors({ label, compact }: { label: string; compact?: boole
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: colors.find(c => c.name === cl)?.hex, flexShrink: 0 }} />
           <span style={{ fontFamily: F.u, fontSize: compact ? 10 : 12, color: C.muted, flexShrink: 0, width: compact ? 36 : 48 }}>{cl}:</span>
           <div style={{ position: "relative", flex: 1 }}>
-            <input type="number" value={qty[cl] || ""} onChange={e => setQty(p => ({ ...p, [cl]: e.target.value }))} placeholder="0"
-              style={{ ...inputStyle, height: compact ? 34 : 38, fontFamily: F.m, fontSize: compact ? 12 : 14, paddingRight: 30 }} />
+            <Input type="number" value={qty[cl] || ""} onChange={e => setQty(p => ({ ...p, [cl]: e.target.value }))} placeholder="0"
+              size={compact ? "sm" : "md"} className="font-mono pr-8" />
             <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, color: C.muted }}>kg</span>
           </div>
         </div>
       ))}
-      <button style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: `1px dashed rgba(196,146,58,0.40)`, borderRadius: 7, padding: compact ? "4px 8px" : "6px 12px", fontFamily: F.u, fontSize: compact ? 10 : 12, color: C.gold, cursor: "pointer" }}>
-        <Plus size={compact ? 10 : 12} /> Add Color
-      </button>
+      <Button variant="secondary" size="sm" iconLeft={Plus}
+        className={`rounded-lg border-dashed border-[rgba(196,146,58,0.40)] text-[#C4923A] ${compact ? "text-[10px] px-2 py-1" : "text-xs px-3 py-1.5"}`}>
+        Add Color
+      </Button>
     </div>
   );
 }

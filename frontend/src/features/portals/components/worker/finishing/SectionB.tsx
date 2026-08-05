@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, CheckCircle2, ArrowDownToLine, Clock, X } from "lucide-react";
-import { C, F, card, btnPrimary, btnGhost } from "../tokens";
+import { C, F, card } from "../tokens";
 import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
 import { EASE, WORKER_NAME, SectionHeader, ScanBarBtn, useScanSim, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 // ── Section B — Receive returns ───────────────────────────────────────────────
 // NOTE: not currently wired up in the composition root (superseded by
@@ -81,10 +82,10 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
         <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
         {awaiting.length > 0 && (
-          <button onClick={toggleAll} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, color: C.muted, padding: "4px 6px" }}>
+          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
             {allChecked ? "Deselect All" : "Select All"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -138,27 +139,25 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
               {selected.size} saree{selected.size > 1 ? "s" : ""} selected
             </div>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-              <button onClick={() => setShowVerif(true)}
-                style={{ ...btnPrimary, height: 50, fontSize: 14, background: "#1E6640", gap: 7 }}>
-                <CheckCircle2 size={16} /> Mark as Received
-              </button>
-              <button onClick={() => setSelected(new Set())}
-                style={{ ...btnGhost, height: 46, fontSize: 13 }}>
+              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)}
+                className="h-[50px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
+                Mark as Received
+              </Button>
+              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())}
+                className="h-[46px] rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A] text-[13px]">
                 Cancel
-              </button>
+              </Button>
             </div>
           </motion.div>
         ) : (
           <motion.div key="bar" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2, ease: EASE }}
             style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
-            <button onClick={() => setShowVerif(true)}
-              style={{ ...btnPrimary, flex: 1, height: 46, fontSize: 14, background: "#1E6640", gap: 7 }}>
-              <CheckCircle2 size={16} /> Mark {selected.size} as Received
-            </button>
-            <button onClick={() => setSelected(new Set())}
-              style={{ ...btnGhost, width: 46, height: 46, padding: 0, flexShrink: 0, borderRadius: 12, flex: "none" }}>
-              <X size={16} color={C.burg} />
-            </button>
+            <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)}
+              className="h-[46px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
+              Mark {selected.size} as Received
+            </Button>
+            <IconButton icon={X} label="Cancel selection" variant="secondary" onClick={() => setSelected(new Set())}
+              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
           </motion.div>
         ))}
       </AnimatePresence>

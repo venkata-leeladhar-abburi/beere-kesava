@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
-import { C, F, inputStyle, btnPrimary, btnGhost } from "../tokens";
+import { C, F } from "../tokens";
+import { Button, IconButton, Input } from "../../../../../shared/ui/primitives";
 
 // ─── Manual Entry Modal ───────────────────────────────────────────────────────
 export function ManualEntryModal({ onClose }: { onClose: () => void }) {
@@ -21,7 +22,7 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>Saree Recorded</div>
           <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg, marginBottom: 4 }}>{sareeId || "AUTO-ID-001"}</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 20 }}>Entry saved to received history.</div>
-          <button onClick={onClose} style={{ ...btnPrimary, width: "auto", padding: "0 32px" }}>Done</button>
+          <Button variant="primary" onClick={onClose} className="w-auto rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] px-8">Done</Button>
         </div>
       </div>
     );
@@ -33,7 +34,7 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
       <div style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 36px", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)", maxHeight: "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.text }}>Add Manually</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X size={20} color={C.muted} /></button>
+          <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} />
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -46,17 +47,16 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
           ].map(({ label, val, set, placeholder }) => (
             <div key={label}>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</div>
-              <input value={val} onChange={e => set(e.target.value)} placeholder={placeholder}
-                style={{ ...inputStyle, height: 46, fontSize: 13 }} />
+              <Input value={val} onChange={e => set(e.target.value)} placeholder={placeholder} size="lg" className="text-[13px]" />
             </div>
           ))}
         </div>
 
         <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8 }}>
-          <button onClick={() => setSaved(true)} style={{ ...btnPrimary, height: 50, gap: 7 }}>
-            <CheckCircle2 size={16} /> Save Record
-          </button>
-          <button onClick={onClose} style={{ ...btnGhost, height: 44 }}>Cancel</button>
+          <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setSaved(true)} className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+            Save Record
+          </Button>
+          <Button variant="secondary" fullWidth onClick={onClose} className="h-11 rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Cancel</Button>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { Users, ChevronDown, Camera } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { useFinishing, FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
 import { SectionHeader } from "./shared";
+import { Button } from "../../../../../shared/ui/primitives";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -150,10 +151,10 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                         <td style={{ ...TD, color: r.damaged > 0 ? C.crim : C.text, fontWeight: r.damaged > 0 ? 700 : 400 }}>{r.damaged}</td>
                         <td style={{ ...TD, fontFamily: F.m, fontSize: 12 }}>{r.lastAssignmentDate}</td>
                         <td style={TD}>
-                          <button onClick={() => setExpanded(expanded === r.name ? null : r.name)}
-                            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" as const }}>
+                          <Button variant="link" onClick={() => setExpanded(expanded === r.name ? null : r.name)}
+                            className="p-0 text-xs font-semibold text-[#6B1A2A] whitespace-nowrap">
                             View Details <ChevronDown size={12} style={{ transform: expanded === r.name ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                       {expanded === r.name && (

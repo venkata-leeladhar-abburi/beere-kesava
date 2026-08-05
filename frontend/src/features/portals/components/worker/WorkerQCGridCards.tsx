@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronRight, Package } from "lucide-react";
-import { T, F, baseCard, initials } from "./WorkerQCTypes";
+import { T, F, initials } from "./WorkerQCTypes";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WeaverGroup {
   name: string;
@@ -32,8 +33,8 @@ export function WorkerQCWeaverGrid({
   return (
     <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr 1fr", gap: isDesktop ? 14 : 10, padding: pad }}>
       {filteredWeavers.map(wg => (
-        <button key={wg.name} onClick={() => setSelectedWeaverQC(wg.name)}
-          style={{ ...baseCard, padding: isDesktop ? "16px" : "14px 12px", cursor: "pointer", border: `1px solid ${T.bdr}`, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, textAlign: "left" }}>
+        <Button key={wg.name} variant="tertiary" onClick={() => setSelectedWeaverQC(wg.name)}
+          className="h-auto flex-col items-start gap-2 whitespace-normal rounded-xl border border-[rgba(110,15,45,0.10)] bg-white px-3.5 py-4 text-left shadow-[0_2px_12px_rgba(74,6,27,0.07)]">
           <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
             <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.gradHero, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: "#FFF" }}>{initials(wg.name)}</span>
@@ -52,7 +53,7 @@ export function WorkerQCWeaverGrid({
               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: wg.source === "outsourced" ? T.green : T.gold }}>{wg.source === "outsourced" ? "Outsourced" : "Own Factory"}</span>
             </div>
           </div>
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -78,8 +79,8 @@ export function WorkerQCBatchGrid({
       {batchGroups.map(bg => {
         const bweavers = Array.from(new Set(bg.sarees.map(s => s.weaver)));
         return (
-          <button key={bg.id} onClick={() => setSelectedBatchQC(bg.id)}
-            style={{ ...baseCard, padding: isDesktop ? 16 : "14px 12px", cursor: "pointer", border: `1px solid ${T.bdr}`, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, textAlign: "left" }}>
+          <Button key={bg.id} variant="tertiary" onClick={() => setSelectedBatchQC(bg.id)}
+            className="h-auto flex-col items-start gap-2 whitespace-normal rounded-xl border border-[rgba(110,15,45,0.10)] bg-white px-3.5 py-4 text-left shadow-[0_2px_12px_rgba(74,6,27,0.07)]">
             <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: T.bgGold, border: `1px solid rgba(200,155,71,0.30)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Package size={18} color={T.gold} />
@@ -96,7 +97,7 @@ export function WorkerQCBatchGrid({
               ))}
               {bweavers.length > 3 && <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted }}>+{bweavers.length - 3} more</span>}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>

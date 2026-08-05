@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { X, CheckCircle2 } from "lucide-react";
-import { C, F, btnPrimary } from "../tokens";
+import { C, F } from "../tokens";
 import { useFinishingStaff } from "../../../../finishing/contexts/FinishingStaffContext";
 import { EASE } from "./shared";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 // ── Staff picker modal ────────────────────────────────────────────────────────
 
@@ -26,9 +27,7 @@ export function StaffPickerModal({ onSelect, onClose }: {
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Select Finishing Staff</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-            <X size={20} color={C.muted} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} />
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
@@ -40,8 +39,10 @@ export function StaffPickerModal({ onSelect, onClose }: {
           {activeMembers.map(m => {
             const sel = selected === m.id;
             return (
-              <button key={m.id} onClick={() => setSelected(m.id)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `1.5px solid ${sel ? C.burg : "rgba(107,26,42,0.12)"}`, borderRadius: 12, background: sel ? "rgba(107,26,42,0.04)" : "#FFF", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
+              <Button key={m.id} variant="tertiary" fullWidth onClick={() => setSelected(m.id)}
+                className={sel
+                  ? "h-auto justify-start gap-3 rounded-xl border-[1.5px] border-[#6B1A2A] bg-[rgba(107,26,42,0.04)] px-3.5 py-3 text-left transition-all"
+                  : "h-auto justify-start gap-3 rounded-xl border-[1.5px] border-[rgba(107,26,42,0.12)] bg-white px-3.5 py-3 text-left transition-all"}
               >
                 <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(107,26,42,0.12)", border: `1.5px solid ${sel ? C.burg : "transparent"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.burg }}>{m.firstName[0]}{m.lastName[0]}</span>
@@ -51,19 +52,21 @@ export function StaffPickerModal({ onSelect, onClose }: {
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{m.empId}{m.specialisation ? ` · ${m.specialisation}` : ""}</div>
                 </div>
                 {sel && <CheckCircle2 size={18} color={C.burg} />}
-              </button>
+              </Button>
             );
           })}
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             disabled={!pick}
             onClick={() => { if (pick) onSelect({ id: pick.id, name: `${pick.firstName} ${pick.lastName}` }); }}
-            style={{ ...btnPrimary, opacity: pick ? 1 : 0.45, cursor: pick ? "pointer" : "not-allowed" }}
+            className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
           >
             Assign to {pick ? `${pick.firstName} ${pick.lastName}` : "Selected Staff"}
-          </button>
+          </Button>
         </div>
       </motion.div>
     </div>

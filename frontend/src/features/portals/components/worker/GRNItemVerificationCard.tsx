@@ -1,7 +1,8 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
-import { C, F, card, inputStyle } from "./tokens";
+import { C, F, card } from "./tokens";
 import { POItem } from "../../../purchasing/contexts/POContext";
+import { Button, Input, Checkbox, Textarea } from "../../../../shared/ui/primitives";
 
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
   Warp:   { col: "#7A5010", bg: "rgba(196,146,58,0.14)" },
@@ -76,49 +77,43 @@ export function GRNItemVerificationCard({
             <div style={{ display: "flex", gap: 4 }}>
               {m.materialType === "Jari" ? (
                 (["Reels", "Buns"] as const).map(u => (
-                  <button
+                  <Button
                     key={u}
                     type="button"
+                    variant={receivedUnit === u ? "primary" : "secondary"}
+                    size="sm"
+                    fullWidth
                     onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                    style={{
-                      flex: 1, padding: "5px 0", borderRadius: 6,
-                      border: `1px solid ${receivedUnit === u ? C.burg : C.bdr}`,
-                      background: receivedUnit === u ? C.burg : "#FFF",
-                      color: receivedUnit === u ? "#FFF" : C.text,
-                      fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer"
-                    }}
+                    className={receivedUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}
                   >
                     {u}
-                  </button>
+                  </Button>
                 ))
               ) : (
                 (["kg", "g"] as const).map(u => (
-                  <button
+                  <Button
                     key={u}
                     type="button"
+                    variant={receivedUnit === u ? "primary" : "secondary"}
+                    size="sm"
+                    fullWidth
                     onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                    style={{
-                      flex: 1, padding: "5px 0", borderRadius: 6,
-                      border: `1px solid ${receivedUnit === u ? C.burg : C.bdr}`,
-                      background: receivedUnit === u ? C.burg : "#FFF",
-                      color: receivedUnit === u ? "#FFF" : C.text,
-                      fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer"
-                    }}
+                    className={receivedUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}
                   >
                     {u}
-                  </button>
+                  </Button>
                 ))
               )}
             </div>
 
             {/* Input Field */}
             <div style={{ position: "relative" }}>
-              <input
+              <Input
                 type="number"
                 value={receivedQty ?? ""}
                 onChange={e => setReceivedQty(prev => ({ ...prev, [i]: e.target.value }))}
                 placeholder="0"
-                style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 46, height: 40 }}
+                className="font-mono pr-12"
               />
               <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: matColor }}>
                 {receivedUnit || (m.materialType === "Jari" ? "Buns" : "kg")}
@@ -154,7 +149,7 @@ export function GRNItemVerificationCard({
               <AlertTriangle size={13} color={C.gold} />
               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
-                <input type="checkbox" checked={notifySuperadmin || false} onChange={e => setNotifySuperadmin(prev => ({ ...prev, [i]: e.target.checked }))} style={{ accentColor: C.burg, cursor: "pointer" }} />
+                <Checkbox checked={notifySuperadmin || false} onCheckedChange={checked => setNotifySuperadmin(prev => ({ ...prev, [i]: checked === true }))} />
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>Notify Superadmin</span>
               </label>
             </>
@@ -171,41 +166,40 @@ export function GRNItemVerificationCard({
       <div style={{ marginTop: 12, borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>
         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 8 }}>Confirm This Item</div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button
+          <Button
             type="button"
+            variant="tertiary"
+            fullWidth
+            iconLeft={CheckCircle2}
             onClick={() => { setItemApproval(prev => ({ ...prev, [i]: "approved" })); setItemRejectReason(prev => ({ ...prev, [i]: "" })); }}
-            style={{
-              flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
-              border: `1.5px solid ${itemApproval === "approved" ? C.green : C.bdr}`,
-              background: itemApproval === "approved" ? "rgba(30,102,64,0.09)" : "#FFF",
-              color: itemApproval === "approved" ? C.green : C.text,
-              fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
-            }}
+            className={itemApproval === "approved"
+              ? "rounded-lg border-[1.5px] border-[#1E6640] bg-[rgba(30,102,64,0.09)] text-[#1E6640]"
+              : "rounded-lg border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white"}
           >
-            <CheckCircle2 size={14} /> Approved
-          </button>
-          <button
+            Approved
+          </Button>
+          <Button
             type="button"
+            variant="tertiary"
+            fullWidth
+            iconLeft={AlertTriangle}
             onClick={() => setItemApproval(prev => ({ ...prev, [i]: "rejected" }))}
-            style={{
-              flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 8,
-              border: `1.5px solid ${itemApproval === "rejected" ? "#C0392B" : C.bdr}`,
-              background: itemApproval === "rejected" ? "rgba(192,57,43,0.08)" : "#FFF",
-              color: itemApproval === "rejected" ? "#C0392B" : C.text,
-              fontFamily: F.u, fontSize: 12, fontWeight: 700, cursor: "pointer"
-            }}
+            className={itemApproval === "rejected"
+              ? "rounded-lg border-[1.5px] border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]"
+              : "rounded-lg border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white"}
           >
-            <AlertTriangle size={14} /> Not Approved
-          </button>
+            Not Approved
+          </Button>
         </div>
         {itemApproval === "rejected" && (
           <div style={{ marginTop: 8 }}>
-            <textarea
+            <Textarea
               value={itemRejectReason ?? ""}
               onChange={e => setItemRejectReason(prev => ({ ...prev, [i]: e.target.value }))}
               placeholder="Reason this item was not approved (e.g. damaged, wrong shade, torn packaging)…"
               rows={2}
-              style={{ ...inputStyle, height: "auto", padding: "8px 10px", fontFamily: F.u, fontSize: 12, resize: "vertical" as const, borderColor: itemRejectReason?.trim() ? C.bdr : "#C0392B" }}
+              invalid={!itemRejectReason?.trim()}
+              className="resize-y text-xs"
             />
             {!itemRejectReason?.trim() && (
               <div style={{ fontFamily: F.u, fontSize: 12, color: "#C0392B", marginTop: 4 }}>Reason is required for items marked Not Approved.</div>

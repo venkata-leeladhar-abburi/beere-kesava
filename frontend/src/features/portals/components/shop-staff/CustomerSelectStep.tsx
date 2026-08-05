@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
+import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 
 export interface Customer {
   name: string;
@@ -72,21 +73,16 @@ export function CustomerSelectStep({
       {!isNewCustomer && (
         <div style={{ margin: "0 20px 12px", position: "relative" as const }}>
           <div style={{ position: "relative" as const }}>
-            <Search size={16} color={C.muted} style={{ position: "absolute" as const, left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const }} />
-            <input
+            <Input
               value={custSearch}
               onChange={e => { setCustSearch(e.target.value); setShowCustomerList(true); if (selectedCustomer) setSelectedCustomer(null); }}
               onFocus={() => setShowCustomerList(true)}
               placeholder="Search by name or phone number..."
-              style={{
-                width: "100%", height: 52, background: C.inp,
-                border: `1.5px solid ${showCustomerList && !selectedCustomer ? C.burg : C.bdr}`,
-                borderRadius: showCustomerList && !selectedCustomer ? "12px 12px 0 0" : 12,
-                padding: "0 46px 0 42px",
-                fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const,
-              }}
+              size="lg"
+              iconLeft={Search}
+              iconRight={PhoneCall}
+              className={showCustomerList && !selectedCustomer ? "rounded-b-none border-[#6B1A2A]" : ""}
             />
-            <PhoneCall size={14} color={C.gold} style={{ position: "absolute" as const, right: 14, top: "50%", transform: "translateY(-50%)" }} />
           </div>
 
           {/* Customer dropdown */}
@@ -102,11 +98,8 @@ export function CustomerSelectStep({
                 </span>
               </div>
               {filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
-                <button key={i} onClick={() => handleSelectCustomer(c)} style={{
-                  width: "100%", background: "none", border: "none",
-                  borderBottom: i < Math.min(filteredCustomers.length, 4) - 1 ? `1px solid ${C.bdr}` : "none",
-                  padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12,
-                }}>
+                <Button key={i} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
+                  className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(139,26,46,0.12)]" : ""}`}>
                   <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{c.initials}</span>
                   </div>
@@ -118,23 +111,20 @@ export function CustomerSelectStep({
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{c.purchases} purchases</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>{c.lastPurchase}</div>
                   </div>
-                </button>
+                </Button>
               )) : (
                 <div style={{ padding: "14px", textAlign: "center" as const }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No customer found for "{custSearch}"</div>
                 </div>
               )}
               {/* Add new customer option */}
-              <button onClick={handleAddNew} style={{
-                width: "100%", background: "rgba(107,26,42,0.04)", border: "none",
-                borderTop: `1px solid ${C.bdr}`, padding: "12px 14px", cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 10,
-              }}>
+              <Button variant="tertiary" fullWidth onClick={handleAddNew}
+                className="justify-start gap-2.5 rounded-none border-0 border-t border-[rgba(139,26,46,0.12)] bg-[rgba(107,26,42,0.04)] px-3.5 py-3 hover:bg-[rgba(107,26,42,0.04)]">
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(107,26,42,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <UserPlus size={14} color={C.burg} />
                 </div>
                 <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.burg }}>Add New Customer</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -156,10 +146,10 @@ export function CustomerSelectStep({
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>+91 {selectedCustomer.phone}</div>
                   </div>
                 </div>
-                <button onClick={() => setIsEditingCustomer(true)} style={{ background: "rgba(107,26,42,0.07)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
-                  <Pencil size={12} color={C.burg} />
+                <Button variant="tertiary" size="sm" iconLeft={Pencil} onClick={() => setIsEditingCustomer(true)}
+                  className="rounded-lg border border-[rgba(139,26,46,0.12)] bg-[rgba(107,26,42,0.07)] px-2.5 py-1.5 hover:bg-[rgba(107,26,42,0.07)]">
                   <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Edit</span>
-                </button>
+                </Button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
                 {[
@@ -205,8 +195,8 @@ export function CustomerSelectStep({
               ].map((f, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
                   <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>{f.label}</label>
-                  <input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
-                    style={{ width: "100%", height: 52, background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "0 16px", fontFamily: f.mono ? F.m : F.u, fontSize: 14, color: C.text, outline: "none", boxSizing: "border-box" as const }}
+                  <Input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
+                    size="lg" className={f.mono ? "w-full font-mono" : "w-full"}
                   />
                 </div>
               ))}
@@ -215,19 +205,19 @@ export function CustomerSelectStep({
               <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                 <MapPin size={14} color={C.muted} /> Address <span style={{ color: C.muted, fontWeight: 400 }}>(Optional)</span>
               </label>
-              <textarea value={custAddress} onChange={e => setCustAddress(e.target.value)} placeholder="Door number, street, city..." rows={2}
-                style={{ width: "100%", background: C.inp, border: `1.5px solid ${C.bdr}`, borderRadius: 12, padding: "12px 16px", fontFamily: F.u, fontSize: 14, color: C.text, outline: "none", resize: "none" as const, boxSizing: "border-box" as const }}
+              <Textarea value={custAddress} onChange={e => setCustAddress(e.target.value)} placeholder="Door number, street, city..." rows={2}
+                className="w-full resize-none"
               />
             </div>
             {isEditingCustomer && (
-              <button onClick={() => setIsEditingCustomer(false)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", marginBottom: 14, padding: 0, textDecoration: "underline" }}>
+              <Button variant="link" onClick={() => setIsEditingCustomer(false)} className="mb-3.5 p-0 text-xs text-[#69635E] underline">
                 ← Cancel — keep original details
-              </button>
+              </Button>
             )}
             {isNewCustomer && (
-              <button onClick={() => { setIsNewCustomer(false); setCustSearch(""); }} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", marginBottom: 14, padding: 0, textDecoration: "underline" }}>
+              <Button variant="link" onClick={() => { setIsNewCustomer(false); setCustSearch(""); }} className="mb-3.5 p-0 text-xs text-[#69635E] underline">
                 ← Search existing customers instead
-              </button>
+              </Button>
             )}
           </div>
         </motion.div>
@@ -241,10 +231,10 @@ export function CustomerSelectStep({
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>or</span>
             <div style={{ flex: 1, height: 1, background: C.bdr }} />
           </div>
-          <button onClick={handleAddNew} style={{ width: "100%", height: 50, borderRadius: 12, border: `1.5px dashed rgba(107,26,42,0.30)`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            <UserPlus size={16} color={C.burg} />
-            <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.burg }}>Add New Customer</span>
-          </button>
+          <Button variant="secondary" fullWidth iconLeft={UserPlus} onClick={handleAddNew}
+            className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(107,26,42,0.30)] bg-transparent text-[#6B1A2A]">
+            Add New Customer
+          </Button>
         </div>
       )}
 

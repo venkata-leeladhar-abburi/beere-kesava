@@ -4,6 +4,7 @@ import {
   ChevronRight, Package, Shield,
 } from "lucide-react";
 import { C, F } from "./tokens";
+import { Button } from "../../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -104,12 +105,14 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
             transition={{ duration: 0.6, delay: 0.6, ease: EASE }}
             style={{ display: "flex", gap: 12, alignItems: "center" }}
           >
-            <button
+            <Button
+              variant="primary"
+              iconRight={ChevronRight}
               onClick={() => onNavigate("qc")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 24px", borderRadius: 14, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${C.burg} 0%, ${C.dark} 100%)`, fontFamily: F.u, fontWeight: 600, fontSize: 14, color: "#FFFDF9", boxShadow: `0 8px 28px rgba(107,26,42,0.40)` }}
+              className="rounded-[14px] bg-gradient-to-br from-[#6B1A2A] to-[#3D0E1A] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(107,26,42,0.40)] hover:from-[#6B1A2A] hover:to-[#3D0E1A]"
             >
-              Start Today's Work <ChevronRight size={16} />
-            </button>
+              Start Today's Work
+            </Button>
           </motion.div>
 
           {/* Date chip */}
@@ -145,34 +148,33 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                 const Icon = task.icon;
                 return (
                   <FadeUp key={i} delay={i * 0.07}>
-                    <motion.button
-                      onClick={() => onNavigate(task.tab, task.sub2)}
+                    <motion.div
                       whileHover={{ y: -3, boxShadow: "0 16px 48px rgba(107,26,42,0.14)" }}
                       whileTap={{ scale: 0.99 }}
                       transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 20, padding: "22px 24px",
-                        background: "#FFFFFF", border: `1px solid rgba(110,15,45,0.10)`,
-                        borderLeft: `4px solid ${task.accentColor}`,
-                        borderRadius: 18, boxShadow: "0 4px 16px rgba(107,26,42,0.06)",
-                        cursor: "pointer", width: "100%", textAlign: "left",
-                        transition: "box-shadow 0.2s",
-                      }}
+                      style={{ borderRadius: 18, ["--accent-color" as string]: task.accentColor } as React.CSSProperties}
                     >
-                      <div style={{ width: 56, height: 56, borderRadius: 16, background: task.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 6px 18px ${task.iconBg}55` }}>
-                        <Icon size={26} color="#FFF" />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 600, color: C.dark }}>{task.title}</span>
-                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
+                      <Button
+                        variant="tertiary"
+                        fullWidth
+                        onClick={() => onNavigate(task.tab, task.sub2)}
+                        className="h-auto justify-start gap-5 rounded-[18px] border border-[rgba(110,15,45,0.10)] border-l-4 border-l-[var(--accent-color)] bg-white px-6 py-[22px] text-left shadow-[0_4px_16px_rgba(107,26,42,0.06)]"
+                      >
+                        <div style={{ width: 56, height: 56, borderRadius: 16, background: task.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 6px 18px ${task.iconBg}55` }}>
+                          <Icon size={26} color="#FFF" />
                         </div>
-                        <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.5 }}>{task.sub}</div>
-                      </div>
-                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(107,26,42,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <ChevronRight size={18} color={C.muted} />
-                      </div>
-                    </motion.button>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                            <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 600, color: C.dark }}>{task.title}</span>
+                            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
+                          </div>
+                          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.5 }}>{task.sub}</div>
+                        </div>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(107,26,42,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <ChevronRight size={18} color={C.muted} />
+                        </div>
+                      </Button>
+                    </motion.div>
                   </FadeUp>
                 );
               })}

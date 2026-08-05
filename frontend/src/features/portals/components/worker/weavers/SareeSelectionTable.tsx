@@ -1,7 +1,8 @@
 import React from "react";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Square } from "lucide-react";
 import { C, F } from "../tokens";
 import { type WeaverBatchData, type WEAVERS } from "./weaversData";
+import { IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 interface SareeSelectionTableProps {
   currentBatch: WeaverBatchData;
@@ -37,11 +38,10 @@ export function SareeSelectionTable({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sort by</span>
-            <select value={sareeSort} onChange={e => setSareeSort(e.target.value as "serial" | "status")}
-              style={{ height: 28, borderRadius: 7, border: `1px solid ${C.bdr}`, padding: "0 6px", fontFamily: F.u, fontSize: 12, color: C.text, background: "#FFF", cursor: "pointer" }}>
-              <option value="serial">Default (#)</option>
-              <option value="status">Status</option>
-            </select>
+            <Select value={sareeSort} onValueChange={v => setSareeSort(v as "serial" | "status")} size="sm">
+              <SelectItem value="serial">Default (#)</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+            </Select>
           </div>
         </div>
 
@@ -67,13 +67,25 @@ export function SareeSelectionTable({
                     <tr key={s.no} onClick={() => selectSareeSlot(s.no)}
                       style={{ background: isSel ? "rgba(107,26,42,0.05)" : idx % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.5)", borderBottom: `1px solid rgba(107,26,42,0.06)`, cursor: s.status === "pending" ? "pointer" : "default" }}>
                       <td style={{ padding: "9px 10px" }}>
-                        <button onClick={e => { e.stopPropagation(); selectSareeSlot(s.no); }} disabled={s.status !== "pending"}
-                          style={{ background: "none", border: "none", padding: 0, display: "flex", alignItems: "center", cursor: s.status === "pending" ? "pointer" : "default" }}>
-                          {s.status === "received" ? <CheckCircle2 size={16} color={C.green} />
-                            : s.status === "defective" ? <AlertTriangle size={16} color={C.crim} />
-                            : isSel ? <CheckCircle2 size={16} color={C.burg} />
-                            : <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${C.bdr}` }} />}
-                        </button>
+                        {s.status === "pending" ? (
+                          <IconButton
+                            icon={isSel ? CheckCircle2 : Square}
+                            label={isSel ? "Deselect saree" : "Select saree"}
+                            variant="ghost"
+                            size="sm"
+                            onClick={e => { e.stopPropagation(); selectSareeSlot(s.no); }}
+                            className={isSel ? "text-[#6B1A2A]" : "text-[rgba(139,26,46,0.20)]"}
+                          />
+                        ) : (
+                          <IconButton
+                            icon={s.status === "received" ? CheckCircle2 : AlertTriangle}
+                            label={s.status === "received" ? "Received" : "Defective"}
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            className={s.status === "received" ? "text-[#1E6640]" : "text-[#C0392B]"}
+                          />
+                        )}
                       </td>
                       <td style={{ padding: "9px 10px", fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.no}</td>
                       <td style={{ padding: "9px 10px" }}>

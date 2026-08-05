@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, X, CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
-import { C, F, btnPrimary, inputStyle } from "../tokens";
+import { X, CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
+import { C, F } from "../tokens";
 import { FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
 import { EASE } from "./shared";
 import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
@@ -203,27 +203,24 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                     </div>
                     {d.condition === "damaged" && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-                        <input value={d.damageType} onChange={e => update({ damageType: e.target.value })} placeholder="Damage type *" style={{ ...inputStyle, height: 40, fontSize: 13 }} />
-                        <div style={{ position: "relative" }}>
-                          <select value={d.damageSeverity} onChange={e => update({ damageSeverity: e.target.value as VerifData["damageSeverity"] })} style={{ ...inputStyle, height: 40, fontSize: 13, appearance: "none", paddingRight: 28, cursor: "pointer" }}>
-                            <option value="">Severity…</option>
-                            {["Minor", "Moderate", "Severe"].map(s => <option key={s}>{s}</option>)}
-                          </select>
-                          <ChevronDown size={13} color={C.muted} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                        </div>
-                        <textarea value={d.damageNotes} onChange={e => update({ damageNotes: e.target.value })} placeholder="Notes…" rows={2} style={{ ...inputStyle, height: "auto", padding: "10px 14px", resize: "none", fontSize: 13, lineHeight: 1.5 }} />
+                        <Input value={d.damageType} onChange={e => update({ damageType: e.target.value })} placeholder="Damage type *" className="h-10 text-[13px]" />
+                        <Select value={d.damageSeverity} onValueChange={v => update({ damageSeverity: v as VerifData["damageSeverity"] })} placeholder="Severity…">
+                          {["Minor", "Moderate", "Severe"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </Select>
+                        <Textarea value={d.damageNotes} onChange={e => update({ damageNotes: e.target.value })} placeholder="Notes…" rows={2} className="resize-none text-[13px] leading-relaxed" />
                         {d.damagePhotoUrl ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
                             <div style={{ width: 32, height: 32, borderRadius: 7, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Camera size={12} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <button onClick={() => setPhotoPromptFor(a.id)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
+                            <Button variant="link" onClick={() => setPhotoPromptFor(a.id)} className="p-0 text-xs text-[#6B1A2A] underline">Retake</Button>
                           </div>
                         ) : (
-                          <button onClick={() => setPhotoPromptFor(a.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 38, border: `1.5px dashed ${C.crim}`, borderRadius: 9, background: "rgba(192,57,43,0.04)", fontFamily: F.u, fontSize: 12, color: C.crim, cursor: "pointer" }}>
-                            <Camera size={14} color={C.crim} /> Take Photo of Defect <span style={{ color: C.crim }}>*</span>
-                          </button>
+                          <Button variant="secondary" size="sm" iconLeft={Camera} onClick={() => setPhotoPromptFor(a.id)}
+                            className="h-[38px] justify-start rounded-[9px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-xs text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]">
+                            Take Photo of Defect <span className="text-[#C0392B]">*</span>
+                          </Button>
                         )}
                       </div>
                     )}
@@ -235,13 +232,16 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
         </div>
 
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-          <button
+          <Button
+            variant="primary"
+            fullWidth
+            iconLeft={CheckCircle2}
             disabled={useBulk ? !isBulkReady : Object.values(perSaree).some(d => !d.condition || (d.condition === "damaged" && (!d.damageType.trim() || !d.damagePhotoUrl)))}
             onClick={handleSave}
-            style={{ ...btnPrimary, opacity: (useBulk ? isBulkReady : Object.values(perSaree).every(d => d.condition && (d.condition !== "damaged" || (d.damageType.trim() && d.damagePhotoUrl)))) ? 1 : 0.45, cursor: "pointer" }}
+            className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
           >
-            <CheckCircle2 size={16} /> Save &amp; Mark Received
-          </button>
+            Save &amp; Mark Received
+          </Button>
         </div>
       </motion.div>
 

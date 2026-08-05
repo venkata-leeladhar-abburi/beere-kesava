@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import {
-  ChevronRight, Camera, UploadCloud, CheckCircle2, AlertTriangle,
+  Camera, UploadCloud, CheckCircle2, AlertTriangle,
   Plus, Printer,
 } from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary } from "../tokens";
+import { C, F, card } from "../tokens";
 import { FieldLabel, PageHeader, type ReceivedSareeLog } from "./shared";
 import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
 import { WEAVERS, WEAVER_BATCHES, type WeaverBatchData } from "./weaversData";
@@ -11,6 +11,7 @@ import { WeaverSigBlock } from "./WeaverSigBlock";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
+import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 interface RejectedSaree {
   id: string;
@@ -115,10 +116,10 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 8 }}>Printer: TSC TE244 &nbsp;🔒</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
               <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Copies:</span>
-              <input type="number" defaultValue={1} style={{ ...inputStyle, width: 65, height: 38, textAlign: "center", fontFamily: F.m }} />
+              <Input type="number" defaultValue={1} className="w-[65px] h-[38px] text-center font-mono" />
             </div>
-            <button style={{ ...btnPrimary, height: 50, gap: 7, marginBottom: 10 }}><Printer size={16} /> Print Now</button>
-            <button onClick={() => setShowTagPrint(false)} style={{ display: "block", width: "100%", background: "none", border: "none", fontFamily: F.u, fontSize: 13, color: C.muted, cursor: "pointer", padding: 10 }}>Skip Printing</button>
+            <Button variant="primary" fullWidth iconLeft={Printer} className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] mb-2.5">Print Now</Button>
+            <Button variant="link" fullWidth onClick={() => setShowTagPrint(false)} className="text-[13px] text-[#69635E] p-2.5">Skip Printing</Button>
           </div>
         </div>
       </>
@@ -130,10 +131,11 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
       <div style={{ paddingBottom: 28 }}>
         <div style={{ display: "flex", margin: "12px 16px 4px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
           {[["outsourced", "Outsourced"], ["own", "Own Factory"]].map(([key, label]) => (
-            <button key={key} onClick={() => setActiveSection(key as "outsourced" | "own")}
-              style={{ flex: 1, padding: "9px 8px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: F.u, fontSize: 12, fontWeight: 600, background: activeSection === key ? C.burg : "transparent", color: activeSection === key ? "#FFF" : C.muted }}>
+            <Button key={key} variant={activeSection === key ? "primary" : "tertiary"} fullWidth
+              onClick={() => setActiveSection(key as "outsourced" | "own")}
+              className={activeSection === key ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
               {label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -141,27 +143,20 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
           <>
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
-              <div style={{ position: "relative" }}>
-                <select value={selectedWeaver?.name ?? ""} style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }} onChange={e => pickWeaver(e.target.value)}>
-                  {WEAVERS.map(w => <option key={w.code}>{w.name}</option>)}
-                </select>
-                <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
-              </div>
+              <Select value={selectedWeaver?.name ?? ""} onValueChange={pickWeaver} size="lg">
+                {WEAVERS.map(w => <SelectItem key={w.code} value={w.name}>{w.name}</SelectItem>)}
+              </Select>
             </div>
 
             {selectedWeaver && weaverBatches.length > 0 && (
               <div style={{ margin: "10px 16px 0" }}>
                 <FieldLabel>Select Batch</FieldLabel>
-                <div style={{ position: "relative" }}>
-                  <select value={selectedBatchId ?? ""} onChange={e => pickBatch(e.target.value)}
-                    style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }}>
-                    {weaverBatches.map(b => {
-                      const bDone = b.sarees.filter(s => s.status !== "pending").length;
-                      return <option key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</option>;
-                    })}
-                  </select>
-                  <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
-                </div>
+                <Select value={selectedBatchId ?? ""} onValueChange={pickBatch} size="lg">
+                  {weaverBatches.map(b => {
+                    const bDone = b.sarees.filter(s => s.status !== "pending").length;
+                    return <SelectItem key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</SelectItem>;
+                  })}
+                </Select>
 
                 {currentBatch && (
                   <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
@@ -202,16 +197,16 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
                 <div style={{ marginBottom: 10 }}>
                   <FieldLabel>Saree Color</FieldLabel>
-                  <input value={sareeColor} onChange={e => setSareeColor(e.target.value)} placeholder="e.g. Maroon, Cream Gold"
-                    style={{ ...inputStyle, height: 44, fontSize: 14 }} />
+                  <Input value={sareeColor} onChange={e => setSareeColor(e.target.value)} placeholder="e.g. Maroon, Cream Gold"
+                    className="h-11 text-sm" />
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                   <div>
                     <FieldLabel>Weight (grams)</FieldLabel>
                     <div style={{ position: "relative" }}>
-                      <input type="number" value={sareeWeight} onChange={e => setSareeWeight(e.target.value)} placeholder="0"
-                        style={{ ...inputStyle, height: 52, fontFamily: F.m, fontSize: 18, paddingRight: 10 }} />
+                      <Input type="number" value={sareeWeight} onChange={e => setSareeWeight(e.target.value)} placeholder="0"
+                        size="lg" className="font-mono text-lg" />
                     </div>
                     {weightNum !== null && (
                       <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
@@ -226,12 +221,12 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     <FieldLabel>Photo</FieldLabel>
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: C.burg, border: "none", borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                          <Camera size={12} /> Camera
-                        </button>
-                        <button onClick={() => setHasPhoto(true)} style={{ height: 38, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 8, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                          <UploadCloud size={12} /> Gallery
-                        </button>
+                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                          Camera
+                        </Button>
+                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
+                          Gallery
+                        </Button>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, background: "linear-gradient(135deg,#F0E8D0,#C4923A)", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
@@ -239,7 +234,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                         <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckCircle2 size={10} color="#FFF" />
                         </div>
-                        <button onClick={() => setHasPhoto(false)} style={{ position: "absolute", bottom: 3, right: 5, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: "rgba(0,0,0,0.5)", cursor: "pointer" }}>Retake</button>
+                        <Button variant="link" onClick={() => setHasPhoto(false)} className="absolute bottom-[3px] right-[5px] p-0 text-xs text-black/50">Retake</Button>
                       </div>
                     )}
                   </div>
@@ -260,18 +255,18 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                 )}
 
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <button onClick={() => setShowTagPrint(true)} style={{ flex: 1, height: 42, background: "#FFF", border: `1px solid ${C.gold}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                    <Printer size={12} /> Print Tag
-                  </button>
-                  <button onClick={saveSaree} disabled={!canSaveSaree}
-                    style={{ flex: 1, height: 42, background: canSaveSaree ? "#FFF" : "#F5F0EC", border: `1px solid ${canSaveSaree ? C.burg : C.bdr}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: canSaveSaree ? C.burg : C.muted, cursor: canSaveSaree ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                    <Plus size={12} /> Next Saree
-                  </button>
+                  <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)} className="h-[42px] rounded-full border-[#C4923A] text-[#C4923A]">
+                    Print Tag
+                  </Button>
+                  <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} onClick={saveSaree} disabled={!canSaveSaree}
+                    className="h-[42px] rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+                    Next Saree
+                  </Button>
                 </div>
-                <button onClick={() => setShowDefectPrompt(true)}
-                  style={{ width: "100%", height: 38, background: "rgba(220,53,69,0.06)", border: `1px solid rgba(220,53,69,0.25)`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <AlertTriangle size={12} /> Mark as Defective
-                </button>
+                <Button variant="secondary" fullWidth size="sm" iconLeft={AlertTriangle} onClick={() => setShowDefectPrompt(true)}
+                  className="h-[38px] rounded-full border-[rgba(220,53,69,0.25)] bg-[rgba(220,53,69,0.06)] text-[#C0392B] hover:bg-[rgba(220,53,69,0.06)]">
+                  Mark as Defective
+                </Button>
               </div>
             )}
 
@@ -364,11 +359,14 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                           <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim }}>Weaver signature required to complete batch</span>
                         </div>
                       )}
-                      <button
+                      <Button
+                        variant="primary"
+                        fullWidth
+                        iconLeft={CheckCircle2}
                         disabled={!sigOk}
-                        style={{ ...btnPrimary, height: 50, gap: 7, background: sigOk ? C.green : "#E0D5CC", color: sigOk ? "#FFF" : C.muted, cursor: sigOk ? "pointer" : "not-allowed" }}>
-                        <CheckCircle2 size={16} /> Mark Batch Complete
-                      </button>
+                        className={`h-[50px] rounded-full ${sigOk ? "bg-[#1E6640] hover:bg-[#1E6640]" : ""}`}>
+                        Mark Batch Complete
+                      </Button>
                     </div>
                   );
                 })()}

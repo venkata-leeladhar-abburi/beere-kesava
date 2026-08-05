@@ -1,7 +1,8 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import { C, F, card, inputStyle } from "./tokens";
+import { C, F, card } from "./tokens";
 import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface GRNPODropdownProps {
   selectedPO: PurchaseOrder | null;
@@ -21,7 +22,7 @@ export function GRNPODropdown({
   return (
     <div style={{ margin: "0 20px" }}>
       <div style={{ position: "relative" }}>
-        <button onClick={() => setShowPODrop(p => !p)} style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", height: "auto", minHeight: 48, padding: "10px 14px" }}>
+        <Button variant="secondary" fullWidth onClick={() => setShowPODrop(p => !p)} className="h-auto min-h-[48px] justify-between px-3.5 py-2.5">
           <div style={{ color: selectedPO ? C.text : C.muted, fontFamily: F.u, fontSize: 13, textAlign: "left", flex: 1 }}>
             {selectedPO ? (
               <div>
@@ -50,27 +51,15 @@ export function GRNPODropdown({
             )}
           </div>
           <ChevronDown size={16} color={C.muted} style={{ flexShrink: 0, marginLeft: 8, transform: showPODrop ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
-        </button>
+        </Button>
         {showPODrop && (
           <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(107,26,42,0.12)", zIndex: 50, marginTop: 4, maxHeight: 280, overflowY: "auto" }}>
             {approvedPOs.length === 0 && (
               <div style={{ padding: "14px", fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center" }}>No approved purchase orders available.</div>
             )}
             {approvedPOs.map(po => (
-              <button key={po.id} onClick={() => handleSelectPO(po)} 
-                style={{ 
-                  display: "block", 
-                  width: "100%", 
-                  padding: "14px 16px", 
-                  textAlign: "left", 
-                  background: "none", 
-                  border: "none", 
-                  borderBottom: `1px solid ${C.bdr}`, 
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(107,26,42,0.03)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              <Button key={po.id} variant="tertiary" fullWidth onClick={() => handleSelectPO(po)}
+                className="h-auto justify-start rounded-none border-0 border-b border-[rgba(139,26,46,0.12)] px-4 py-3.5 text-left"
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                   <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{po.id}</span>
@@ -88,7 +77,7 @@ export function GRNPODropdown({
                     Firm: <span style={{ fontWeight: 500, color: C.text }}>{po.firmName}</span>
                   </div>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         )}
