@@ -1,15 +1,62 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Monitor, Smartphone, AlignLeft, Table2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { F, T } from "./tokens";
-import { LOGIN_ENTRIES } from "./data";
+import { LoginEvent } from "./data";
 import { PaginationBtn } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
+import { auditLogApi, BackendAuditLog } from "../../../../shared/api/audit-log";
+
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+  const timePart = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  if (isToday) return `Today · ${timePart}`;
+  if (isYesterday) return `Yesterday · ${timePart}`;
+  return `${d.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · ${timePart}`;
+}
+
+function formatDuration(minutes: number | null): string | null {
+  if (minutes === null) return null;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} minute${mins !== 1 ? "s" : ""}`;
+  return `${hours} hour${hours !== 1 ? "s" : ""}${mins ? ` ${mins} minute${mins !== 1 ? "s" : ""}` : ""}`;
+}
+
+function toLoginEvent(log: BackendAuditLog): LoginEvent {
+  return {
+    id: log.id,
+    status: log.status === "LOGIN" ? "login" : log.status === "LOGOUT" ? "logout" : "failed",
+    user: log.user ? `${log.user.firstName} ${log.user.lastName}` : "Unknown",
+    role: log.user?.role ?? "—",
+    time: formatTime(log.createdAt),
+    device: log.device ?? "—",
+    duration: formatDuration(log.duration),
+    failReason: log.failReason ?? undefined,
+  };
+}
 
 export function LoginHistorySection() {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
+  const [entries, setEntries] = useState<LoginEvent[]>([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    auditLogApi.list().then(res => {
+      setEntries(res.items.map(toLoginEvent));
+      setTotal(res.total);
+    }).catch(() => {
+      setEntries([]);
+      setTotal(0);
+    });
+  }, []);
 
   return (
     <div style={{ padding: "48px 56px 0" }}>
@@ -70,7 +117,7 @@ export function LoginHistorySection() {
               borderRadius: 1,
             }} />
 
-            {LOGIN_ENTRIES.map(entry => {
+            {entries.map(entry => {
               const circleColor = entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson;
               const circleInitial = entry.status === "login" ? "IN" : entry.status === "logout" ? "OUT" : "!";
               return (
@@ -193,7 +240,7 @@ export function LoginHistorySection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {LOGIN_ENTRIES.map((entry, i) => {
+                  {entries.map((entry, i) => {
                     const sessionDisplay = entry.duration
                       ? entry.duration
                       : entry.status === "login"
@@ -280,16 +327,12 @@ export function LoginHistorySection() {
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                  Showing 1–10 of 142 sessions · Rows per page: 20
+                  Showing {entries.length} of {total} session{total !== 1 ? "s" : ""}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <PaginationBtn disabled><ChevronLeft size={13} /></PaginationBtn>
-                  {[1, 2, 3].map(n => (
-                    <PaginationBtn key={n} active={n === 1}>{n}</PaginationBtn>
-                  ))}
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
-                  <PaginationBtn>8</PaginationBtn>
-                  <PaginationBtn><ChevronRight size={13} /></PaginationBtn>
+                  <PaginationBtn active>1</PaginationBtn>
+                  <PaginationBtn disabled><ChevronRight size={13} /></PaginationBtn>
                 </div>
               </div>
             </div>

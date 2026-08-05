@@ -13,7 +13,7 @@ export const ACTION_ENTRIES = [
   { id: 12, role: "FINISHING STAFF", user: "Finishing (FS)",  time: "Today · 9:05 AM",  action: "Dispatched 6 sarees to Lakshmi Silks — INV-2026-041 · LR uploaded",                     module: "PRODUCTION", record: "INV-2026-041", oldVal: null,          newVal: null },
 ];
 
-export type LoginEvent = { id: number; status: "login"|"logout"|"failed"; user: string; role: string; time: string; device: string; duration: string | null; failReason?: string };
+export type LoginEvent = { id: number | string; status: "login"|"logout"|"failed"; user: string; role: string; time: string; device: string; duration: string | null; failReason?: string };
 export const LOGIN_ENTRIES: LoginEvent[] = [
   { id: 1,  status: "login",  user: "Superadmin",        role: "Superadmin",      time: "Today · 9:00 AM",      device: "Web Browser",     duration: null,                  failReason: undefined },
   { id: 2,  status: "login",  user: "Admin (BK)",        role: "Admin",           time: "Today · 9:05 AM",      device: "Web Browser",     duration: null,                  failReason: undefined },
