@@ -6,6 +6,7 @@ import {
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F, G } from "./theme";
 import { WeaverCombobox, UploadZone, fieldStyle, labelStyle } from "./DesignLibraryComponents";
+import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 
 const SAREE_TYPES = [
   { code: "HZ-003", name: "Heavy Zari" },
@@ -53,26 +54,26 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
       >
         <div style={{ padding: "22px 24px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Add New Design Code</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, display: "flex" }}><PhX size={18} /></button>
+          <IconButton onClick={onClose} label="Close" icon={PhX} variant="ghost" size="sm" />
         </div>
 
         <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
               <label style={labelStyle}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-              <input value={form.code ?? ""} onChange={e => set("code", e.target.value)} style={fieldStyle} placeholder="e.g. BKB-047" />
+              <Input value={form.code ?? ""} onChange={e => set("code", e.target.value)} placeholder="e.g. BKB-047" />
             </div>
             <div>
               <label style={labelStyle} htmlFor="saree-type">Saree Type</label>
-              <select id="saree-type" value={form.typeCode} onChange={e => { const t = SAREE_TYPES.find(x => x.code === e.target.value); set("typeCode", e.target.value); set("typeName", t?.name ?? ""); }} style={{ ...fieldStyle, cursor: "pointer" }}>
-                {SAREE_TYPES.map(t => <option key={t.code} value={t.code}>{t.code} · {t.name}</option>)}
-              </select>
+              <Select value={form.typeCode} onValueChange={v => { const t = SAREE_TYPES.find(x => x.code === v); set("typeCode", v); set("typeName", t?.name ?? ""); }}>
+                {SAREE_TYPES.map(t => <SelectItem key={t.code} value={t.code}>{t.code} · {t.name}</SelectItem>)}
+              </Select>
             </div>
           </div>
 
           <div>
             <label style={labelStyle}>Colour <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <input value={form.color ?? ""} onChange={e => set("color", e.target.value)} style={fieldStyle} placeholder="e.g. Maroon, Cream, Indigo" />
+            <Input value={form.color ?? ""} onChange={e => set("color", e.target.value)} placeholder="e.g. Maroon, Cream, Indigo" />
           </div>
 
           <div>
@@ -82,8 +83,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
 
           <div>
             <label style={labelStyle}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <textarea value={form.notesForWeaver ?? ""} onChange={e => set("notesForWeaver", e.target.value)} rows={2} placeholder="Special instructions for the weaver…"
-              style={{ width: "100%", padding: "12px 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", resize: "none", lineHeight: 1.6, boxSizing: "border-box" }} />
+            <Textarea value={form.notesForWeaver ?? ""} onChange={e => set("notesForWeaver", e.target.value)} rows={2} placeholder="Special instructions for the weaver…" />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -101,15 +101,12 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
-            <motion.button onClick={handleSave} disabled={!form.code?.trim()}
-              whileHover={form.code?.trim() ? { scale: 1.02, backgroundColor: T.deepWine } : undefined} whileTap={form.code?.trim() ? { scale: 0.97 } : undefined}
-              style={{ flex: 2, height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: form.code?.trim() ? T.royalBurgundy : T.taupe, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: form.code?.trim() ? "pointer" : "not-allowed", opacity: form.code?.trim() ? 1 : 0.55 }}>
-              <FloppyDisk size={17} color="#FFFDF9" weight="bold" /> Save Design Code
-            </motion.button>
-            <motion.button onClick={onClose} whileHover={{ scale: 1.02 }}
-              style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+            <Button onClick={handleSave} disabled={!form.code?.trim()} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
+              Save Design Code
+            </Button>
+            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
               Cancel
-            </motion.button>
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -132,20 +129,18 @@ export function SlipModal({ design, onClose, onSave }: { design: DesignEntry; on
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginBottom: 2 }}>{design.code}</div>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{design.hasColorSlip ? "Update Color Slip" : "Upload Color Slip"}</div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe }}><PhX size={18} /></button>
+          <IconButton onClick={onClose} label="Close" icon={PhX} variant="ghost" size="sm" />
         </div>
         <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           <UploadZone label="Color Slip Photo" hint="Clear photo of the color slip" icon={ImageSquare} preview={slip} onFile={setSlip} />
           <UploadZone label="Design Graph (optional)" hint="Upload design graph image" icon={Graph} preview={graph} onFile={setGraph} />
           <div style={{ display: "flex", gap: 10 }}>
-            <motion.button onClick={() => onSave(slip, graph)} whileHover={{ scale: 1.02, backgroundColor: T.deepWine }} whileTap={{ scale: 0.97 }}
-              style={{ flex: 2, height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-              <FloppyDisk size={17} color="#FFFDF9" weight="bold" /> {design.hasColorSlip ? "Update Slip" : "Upload Slip"}
-            </motion.button>
-            <motion.button onClick={onClose} whileHover={{ scale: 1.02 }}
-              style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+            <Button onClick={() => onSave(slip, graph)} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
+              {design.hasColorSlip ? "Update Slip" : "Upload Slip"}
+            </Button>
+            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
               Cancel
-            </motion.button>
+            </Button>
           </div>
         </div>
       </motion.div>

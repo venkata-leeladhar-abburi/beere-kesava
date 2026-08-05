@@ -5,6 +5,7 @@ import { T, F, EASE, MobileCtx } from "../theme";
 import { ALERTS } from "../data";
 import { FadeUp, AnimatedBar } from "../common/primitives";
 import { ThresholdsModal } from "../modals/ReportModals";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
   const { px } = useContext(MobileCtx);
@@ -21,17 +22,12 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
             <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown }}>Stock Alerts — Items That Need Attention</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <motion.button
-              onClick={onCreatePO}
-              whileHover={{ scale: 1.03, boxShadow: "0 6px 20px rgba(110,15,45,0.22)" }}
-              whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontWeight: 700, fontSize: 13, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}
-            >
-              <Plus size={14} /> Create Purchase Order
-            </motion.button>
-            <motion.span onClick={() => setThresholdsOpen(true)} whileHover={{ x: 3 }} transition={{ duration: 0.2 }} style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.antiqueGold, cursor: "pointer" }}>
+            <Button onClick={onCreatePO} variant="primary" size="sm" iconLeft={Plus}>
+              Create Purchase Order
+            </Button>
+            <Button onClick={() => setThresholdsOpen(true)} variant="link" size="sm">
               Set Alert Thresholds →
-            </motion.span>
+            </Button>
           </div>
         </div>
         <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
@@ -51,15 +47,9 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
                 Minimum set: {a.type === "WARP" ? `${thresholds.warp} kg` : a.type === "RESHAM" ? `${thresholds.resham} kg` : `${thresholds.jari.qty} ${thresholds.jari.unit}`}
               </div>
               <div style={{ marginBottom: 16 }}><AnimatedBar pct={a.pct} color={T.crimson} height={6} trackBg="rgba(192,57,43,0.10)" /></div>
-              <motion.button
-                onClick={onCreatePO}
-                whileHover={{ scale: 1.02, backgroundColor: T.deepWine }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 8, padding: "10px 14px", fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer" }}
-              >
-                <Package size={15} /> Create Purchase Order
-              </motion.button>
+              <Button onClick={onCreatePO} variant="primary" size="sm" iconLeft={Package} fullWidth>
+                Create Purchase Order
+              </Button>
             </motion.div>
           ))}
         </div>

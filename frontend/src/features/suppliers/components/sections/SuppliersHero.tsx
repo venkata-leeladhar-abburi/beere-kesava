@@ -1,13 +1,13 @@
 // Page hero banner + the stats strip that overlaps its bottom edge.
 
 import React from "react";
-import { motion } from "motion/react";
 import {
   Send, Plus, Building2, Package, IndianRupee, CheckCircle2,
   AlertTriangle, TrendingUp,
 } from "lucide-react";
 import { T, F } from "../theme";
 import { Purchase } from "../../contexts/SupplierContext";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function SuppliersHero({
   suppliersCount, purchases, totals, onAddExternalPurchase, onAddSupplier,
@@ -38,14 +38,24 @@ export function SuppliersHero({
             </p>
           </div>
           <div style={{ display: "flex", gap: 12, alignSelf: "flex-start", flexShrink: 0 }}>
-            <motion.button onClick={onAddExternalPurchase} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ padding: "13px 22px", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(200,155,71,0.4)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.goldLight, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Send size={15} /> Add External Purchase
-            </motion.button>
-            <motion.button onClick={onAddSupplier} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ padding: "13px 24px", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.darkBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(200,155,71,0.35)" }}>
-              <Plus size={15} /> Add New Supplier
-            </motion.button>
+            <Button
+              variant="secondary"
+              size="lg"
+              iconLeft={Send}
+              onClick={onAddExternalPurchase}
+              className="bg-white/10 border-[rgba(200,155,71,0.4)] text-[#E7C983] hover:bg-white/15"
+            >
+              Add External Purchase
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              iconLeft={Plus}
+              onClick={onAddSupplier}
+              className="border-none shadow-[0_4px_20px_rgba(200,155,71,0.35)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+            >
+              Add New Supplier
+            </Button>
           </div>
         </div>
       </div>

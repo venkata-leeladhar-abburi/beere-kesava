@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronDown, Facebook, Instagram, Youtube, Linkedin, Phone } from "lucide-react";
 import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
+import { IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   darkBurgundy:  "#3D0E1A",
@@ -63,10 +64,8 @@ export function ProductionHistoryFooter() {
               Generating self-employment, we are traditional banarasi silk weaving manufacturers.
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-                <button key={i} style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.antiqueGold }}>
-                  <Icon size={14} />
-                </button>
+              {[["Facebook", Facebook], ["Instagram", Instagram], ["Youtube", Youtube], ["Linkedin", Linkedin]].map(([name, Icon]: any, i) => (
+                <IconButton key={i} variant="secondary" size="sm" label={name} icon={Icon} />
               ))}
             </div>
           </div>

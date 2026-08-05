@@ -2,6 +2,7 @@ import React from "react";
 import { Check, TrendingUp } from "lucide-react";
 import { C, F, FABRIC_BG } from "../theme";
 import { DesktopHero } from "./DesktopHero";
+import { Button } from "../../../../../shared/ui/primitives";
 
 function DSectionHeader({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
   return (
@@ -11,7 +12,7 @@ function DSectionHeader({ label, link, onLink }: { label: string; link?: string;
         <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
       </div>
       {link && (
-        <button onClick={onLink} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 14, color: C.gold, cursor: "pointer", padding: 0, fontWeight: 500 }}>{link}</button>
+        <Button variant="link" onClick={onLink} className="p-0 text-sm text-[#C4923A]">{link}</Button>
       )}
     </div>
   );

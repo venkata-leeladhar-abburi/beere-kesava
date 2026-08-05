@@ -6,6 +6,7 @@ import {
   formatINR, lineProfit, purchaseTotals, expandSareePieces,
 } from "../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../theme";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 /** Full saree/barcode breakdown for one purchase — one row per physical piece. */
 export function SareeListModal({
@@ -75,23 +76,13 @@ export function SareeListModal({
                 {purchase.supplier}
               </div>
             </div>
-            <button
+            <IconButton
+              icon={X}
+              label="Close"
               onClick={onClose}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)",
-                border: "none",
-                color: "#FFF",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <X size={14} />
-            </button>
+              size="sm"
+              className="rounded-full bg-white/12 text-white hover:bg-white/20"
+            />
           </div>
 
           <div style={{ overflow: "auto", flex: 1 }}>
@@ -159,27 +150,15 @@ export function SareeListModal({
                       {s.notes || "—"}
                     </td>
                     <td style={{ padding: "10px 14px" }}>
-                      <button
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        iconLeft={Printer}
                         onClick={() => onPrint(s)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                          background: T.royalBurgundy,
-                          color: "#FFF",
-                          border: "none",
-                          borderRadius: 7,
-                          padding: "5px 11px",
-                          fontFamily: F.ui,
-                          fontWeight: 600,
-                          fontSize: 12,
-                          cursor: "pointer",
-                          whiteSpace: "nowrap" as const,
-                        }}
+                        className="whitespace-nowrap"
                       >
-                        <Printer size={11} />
                         Print
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -213,45 +192,22 @@ export function SareeListModal({
               flexShrink: 0,
             }}
           >
-            <button
+            <Button
+              variant="primary"
+              iconLeft={Printer}
               onClick={onPrintAll}
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 7,
-                background: T.royalBurgundy,
-                color: "#FFF",
-                border: "none",
-                borderRadius: 999,
-                padding: "10px 0",
-                fontFamily: F.ui,
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              fullWidth
+              className="rounded-full"
             >
-              <Printer size={14} />
               Print All Barcodes
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={onClose}
-              style={{
-                flex: "0 0 auto",
-                background: "transparent",
-                color: T.taupe,
-                border: `1px solid ${T.borderDef}`,
-                borderRadius: 999,
-                padding: "10px 22px",
-                fontFamily: F.ui,
-                fontWeight: 500,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              className="flex-none rounded-full"
             >
               Close
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

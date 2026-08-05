@@ -32,7 +32,13 @@ export default tseslint.config(
     ignores: [
       "dist/**",
       "node_modules/**",
-      "src/shared/ui/**", // shadcn/radix primitives — generated, not hand-authored
+      // BK Loom design-system Phase 3 (design-system/03-PRIMITIVES.md, Step 1 /
+      // design-system/08-GOVERNANCE.md, Part D.1): only the retired, unreachable
+      // shadcn/radix files are excluded now. Everything else under shared/ui/
+      // (PageShell, the hand-authored primitives being built here, the existing
+      // custom components) is real, imported code and must be linted like any
+      // other source file.
+      "src/shared/ui/_legacy/**",
     ],
   },
 

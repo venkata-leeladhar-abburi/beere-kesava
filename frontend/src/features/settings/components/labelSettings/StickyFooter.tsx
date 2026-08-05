@@ -1,6 +1,7 @@
 import React from "react";
 import { RotateCcw, Save } from "lucide-react";
 import { F, T } from "./primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function StickyFooter() {
   return (
@@ -24,42 +25,12 @@ export function StickyFooter() {
         Last saved: Today at 2:34 PM
       </span>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <button
-          style={{
-            background: "transparent",
-            border: "none",
-            color: T.taupe,
-            fontFamily: F.ui,
-            fontWeight: 500,
-            fontSize: 13,
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            cursor: "pointer",
-          }}
-        >
-          <RotateCcw size={13} />
+        <Button variant="tertiary" size="sm" iconLeft={RotateCcw}>
           Reset to Default
-        </button>
-        <button
-          style={{
-            background: "#6E0F2D",
-            color: "white",
-            border: "none",
-            borderRadius: 999,
-            padding: "9px 24px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 14,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-          }}
-        >
-          <Save size={14} />
+        </Button>
+        <Button variant="primary" size="md" iconLeft={Save}>
           Save Settings
-        </button>
+        </Button>
       </div>
     </div>
   );

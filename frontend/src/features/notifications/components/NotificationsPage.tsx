@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import { ArrowRight, Check, Inbox } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 import { UnifiedNotif, Priority, T, F, PRIORITY, CATEGORIES } from "./notifTypes";
 import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
@@ -156,12 +157,9 @@ export function NotificationsPage() {
             Live operational alerts, stock updates, payment reminders, and production activity.
           </p>
           {unread > 0 && (
-            <button
-              onClick={markAllRead}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(200,155,71,0.09)", color: T.antiqueGold, fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer", letterSpacing: "0.1px" }}
-            >
-              <Check size={15} /> Mark all read
-            </button>
+            <Button variant="secondary" size="md" iconLeft={Check} onClick={markAllRead}>
+              Mark all read
+            </Button>
           )}
         </div>
         <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
@@ -182,27 +180,11 @@ export function NotificationsPage() {
             const unreadCount = c.key === "all" ? notifications.filter(n => !n.read).length : notifications.filter(n => n.category === c.key && !n.read).length;
 
             return (
-              <motion.button
+              <Button
                 key={c.key}
+                variant={active ? "primary" : "secondary"}
+                size="md"
                 onClick={() => { setActiveCategory(c.key); setSelected(null); }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "10px 18px",
-                  borderRadius: 14,
-                  border: active ? `1.5px solid ${T.royalBurgundy}` : `1.5px solid ${T.borderDef}`,
-                  background: active ? T.royalBurgundy : T.warmIvory,
-                  color: active ? "#FFF" : T.luxuryBrown,
-                  fontFamily: F.ui,
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: "pointer",
-                  boxShadow: active ? "0 6px 20px rgba(110,15,45,0.14)" : "0 2px 8px rgba(0,0,0,0.02)",
-                  transition: "background 0.2s, border-color 0.2s, color 0.2s"
-                }}
               >
                 <c.Icon size={15} color={active ? "#FFF" : c.color} />
                 <span>{c.label}</span>
@@ -220,7 +202,7 @@ export function NotificationsPage() {
                 {unreadCount > 0 && (
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: active ? T.goldLight : T.royalBurgundy }} />
                 )}
-              </motion.button>
+              </Button>
             );
           })}
         </div>
@@ -234,20 +216,17 @@ export function NotificationsPage() {
             const count = f.key === "all" ? categoryFiltered.length : categoryFiltered.filter(n => n.priority === f.key).length;
             const cfg = f.key !== "all" ? PRIORITY[f.key] : null;
             return (
-              <button key={f.key} onClick={() => setFilter(f.key)}
-                style={{
-                  height: "100%", padding: "0 22px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 8, position: "relative",
-                  borderBottom: active ? `2px solid ${T.royalBurgundy}` : "2px solid transparent",
-                }}>
-                {cfg && <cfg.Icon size={14} color={active ? T.royalBurgundy : cfg.color} />}
-                <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 13, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
-                  {f.label}
-                </span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
-                  {count}
-                </span>
-              </button>
+              <div key={f.key} style={{ height: "100%", borderBottom: active ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
+                <Button variant="tertiary" size="md" className="h-full rounded-none" onClick={() => setFilter(f.key)}>
+                  {cfg && <cfg.Icon size={14} color={active ? T.royalBurgundy : cfg.color} />}
+                  <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 13, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
+                    {f.label}
+                  </span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
+                    {count}
+                  </span>
+                </Button>
+              </div>
             );
           })}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
@@ -336,25 +315,26 @@ export function NotificationsPage() {
                                   <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{n.time}</span>
 
                                   {n.action && (
-                                    <motion.button
-                                      onClick={e => { e.stopPropagation(); markRead(n.id); }}
-                                      whileHover={{ scale: 1.05, backgroundColor: T.royalBurgundy, color: "#FFFDF9" }}
-                                      whileTap={{ scale: 0.97 }}
-                                      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 16px", borderRadius: 10, border: `1.5px solid ${T.royalBurgundy}`, background: "rgba(0,0,0,0)", color: T.royalBurgundy, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-                                      {n.action} <ArrowRight size={12} />
-                                    </motion.button>
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      iconRight={ArrowRight}
+                                      className="ml-auto"
+                                      onClick={e => { e.stopPropagation(); markRead(n.id); }}>
+                                      {n.action}
+                                    </Button>
                                   )}
                                 </div>
                               </div>
 
-                              <motion.button
+                              <IconButton
+                                icon={Check}
+                                label={isRead ? "Mark unread" : "Mark read"}
+                                variant="secondary"
+                                size="sm"
+                                className="rounded-full mt-0.5"
                                 onClick={e => { e.stopPropagation(); toggleRead(n.id); }}
-                                whileHover={{ scale: 1.15 }}
-                                whileTap={{ scale: 0.93 }}
-                                title={isRead ? "Mark unread" : "Mark read"}
-                                style={{ width: 30, height: 30, borderRadius: "50%", border: `1.5px solid ${isRead ? T.borderDef : cfg.color}`, background: isRead ? "rgba(0,0,0,0)" : cfg.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginTop: 2 }}>
-                                <Check size={13} color={isRead ? T.taupe : cfg.color} />
-                              </motion.button>
+                              />
                             </div>
                           </div>
                         </motion.div>

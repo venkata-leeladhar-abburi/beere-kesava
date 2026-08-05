@@ -14,6 +14,7 @@ import { resolveBulkOrderRef, resolveOrderMoney } from "../utils/BulkOrderLinkin
 import { DispatchDetailPanel } from "./DispatchDetailPanel";
 import { BulkOrderSareesTab, LinkedSaree } from "./BulkOrderSareesTab";
 import { BulkOrderOverviewTab, BulkOrderPaymentsTab } from "./BulkOrderOverviewPaymentsTabs";
+import { Button } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -151,10 +152,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
       <div style={{ padding: "40px 56px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-          <motion.button onClick={onBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <ArrowLeft size={14} /> Back to Bulk Orders
-          </motion.button>
+          <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
+            Back to Bulk Orders
+          </Button>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
             <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
@@ -205,20 +205,19 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             </div>
           </div>
           {!live.tallied && (
-            <button onClick={() => setTallyPrompt(true)}
-              style={{ padding: "10px 20px", background: T.royalBurgundy, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <CheckCircle2 size={14} /> Mark as Tallied
-            </button>
+            <Button onClick={() => setTallyPrompt(true)} variant="primary" size="md" iconLeft={CheckCircle2}>
+              Mark as Tallied
+            </Button>
           )}
         </div>
 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              style={{ padding: "14px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2, cursor: "pointer", transition: "all 0.2s" }}>
+            <Button key={t.key} onClick={() => setTab(t.key)} variant="link" size="md"
+              style={{ padding: "14px 22px", fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, borderRadius: 0, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2 }}>
               {t.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -312,10 +311,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                                   Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
                                 </span>
                               </div>
-                              <button onClick={() => setDispatchPanel(qDispatch)}
-                                style={{ background: T.greenBg, border: "none", borderRadius: 8, padding: "7px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.greenMid, cursor: "pointer" }}>
+                              <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm"
+                                style={{ background: T.greenBg, color: T.greenMid }}>
                                 View Full Dispatch Details
-                              </button>
+                              </Button>
                             </div>
                           ) : (
                             <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>

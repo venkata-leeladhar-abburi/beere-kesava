@@ -1,6 +1,7 @@
 import React from "react";
 import { Printer } from "lucide-react";
 import { BarcodePreview, F, T } from "./primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function LabelPreviewCard({ fields }: {
   fields: { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
@@ -213,28 +214,11 @@ export function LabelPreviewCard({ fields }: {
         </div>
 
         {/* Print test label button */}
-        <button
-          style={{
-            border: "1px solid #6E0F2D",
-            background: "transparent",
-            color: T.royalBurgundy,
-            borderRadius: 999,
-            padding: "8px 18px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 13,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-            marginTop: 16,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          <Printer size={14} />
-          Print Test Label
-        </button>
+        <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
+          <Button variant="secondary" size="sm" iconLeft={Printer}>
+            Print Test Label
+          </Button>
+        </div>
       </div>
     </div>
   );

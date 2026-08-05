@@ -6,6 +6,7 @@ import {
 import { F, T, ROLE_COLORS } from "./tokens";
 import { ACTION_ENTRIES } from "./data";
 import { PaginationBtn } from "./shared";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function ActionLogSection() {
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
@@ -18,17 +19,9 @@ export function ActionLogSection() {
         <span style={{ fontFamily: F.display, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, flex: 1 }}>
           Action Log — All System Activity
         </span>
-        <button style={{
-          background: "none",
-          border: "none",
-          fontFamily: F.ui,
-          fontWeight: 500,
-          fontSize: 12,
-          color: T.antiqueGold,
-          cursor: "pointer",
-        }}>
+        <Button variant="link" size="sm" className="text-[12px] text-[#C89B47] hover:text-[#C89B47]">
           Download Action Log →
-        </button>
+        </Button>
       </div>
       <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 24, marginTop: 0 }}>
         Every create, update, approve, issue, and dispatch action — recorded with user, timestamp, and changed values.
@@ -36,48 +29,24 @@ export function ActionLogSection() {
 
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button
+        <Button
+          variant={actionView === "timeline" ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={AlignLeft}
+          className="rounded-full"
           onClick={() => setActionView("timeline")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            borderRadius: 999,
-            padding: "7px 16px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            cursor: "pointer",
-            border: actionView === "timeline" ? "none" : `1px solid ${T.royalBurgundy}`,
-            background: actionView === "timeline" ? T.royalBurgundy : "transparent",
-            color: actionView === "timeline" ? "#fff" : T.royalBurgundy,
-            transition: "all 0.15s",
-          }}
         >
-          <AlignLeft size={14} />
           Timeline View
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={actionView === "table" ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={Table2}
+          className="rounded-full"
           onClick={() => setActionView("table")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            borderRadius: 999,
-            padding: "7px 16px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            cursor: "pointer",
-            border: actionView === "table" ? "none" : `1px solid ${T.royalBurgundy}`,
-            background: actionView === "table" ? T.royalBurgundy : "transparent",
-            color: actionView === "table" ? "#fff" : T.royalBurgundy,
-            transition: "all 0.15s",
-          }}
         >
-          <Table2 size={14} />
           Table View
-        </button>
+        </Button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -192,23 +161,9 @@ export function ActionLogSection() {
 
             {/* Load More */}
             <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
-              <button style={{
-                border: `1px solid ${T.royalBurgundy}`,
-                borderRadius: 999,
-                padding: "9px 22px",
-                background: "transparent",
-                color: T.royalBurgundy,
-                fontFamily: F.ui,
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}>
-                <ChevronDown size={14} />
+              <Button variant="secondary" size="md" iconLeft={ChevronDown} className="rounded-full">
                 Load More Entries
-              </button>
+              </Button>
             </div>
           </motion.div>
         ) : (

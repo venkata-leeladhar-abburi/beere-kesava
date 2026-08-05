@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { useResponsive } from "../../../../hooks/useResponsive";
+import { Button } from "../../../../shared/ui/primitives";
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
@@ -99,7 +100,7 @@ function SectionTitle({ title, link, onLink, id }: { title: string; link?: strin
     <div id={id} style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
       <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>{title}</span>
-      {link && <button onClick={onLink} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 13, color: C.gold, cursor: "pointer", padding: 0 }}>{link}</button>}
+      {link && <Button variant="link" onClick={onLink} className="p-0 text-[13px] text-[#C4923A]">{link}</Button>}
     </div>
   );
 }
@@ -146,18 +147,24 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 }
 
 function Btn({ label, icon, onClick, variant = "burg", style }: { label: string; icon?: React.ReactNode; onClick?: () => void; variant?: "burg" | "green" | "gold" | "ghost" | "crim"; style?: React.CSSProperties }) {
-  const bg = { burg: C.burg, green: C.green, gold: C.gold, ghost: "transparent", crim: C.crim };
-  const col = { burg: "#FFF", green: "#FFF", gold: C.text, ghost: C.burg, crim: "#FFF" };
-  const brd = { burg: "none", green: "none", gold: "none", ghost: `1px solid ${C.burg}`, crim: "none" };
+  const classByVariant: Record<string, string> = {
+    burg: "bg-[#6B1A2A] text-white border-none hover:bg-[#6B1A2A]",
+    green: "bg-[#1E6640] text-white border-none hover:bg-[#1E6640]",
+    gold: "bg-[#C4923A] text-[#1A0A0F] border-none hover:bg-[#C4923A]",
+    ghost: "bg-transparent text-[#6B1A2A] border border-[#6B1A2A] hover:bg-transparent",
+    crim: "bg-[#C0392B] text-white border-none hover:bg-[#C0392B]",
+  };
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-      height: 52, borderRadius: 999, border: brd[variant], background: bg[variant],
-      fontFamily: F.u, fontWeight: 600, fontSize: 14, color: col[variant], cursor: "pointer",
-      ...style,
-    }}>
-      {icon}{label}
-    </button>
+    <div style={style}>
+      <Button
+        onClick={onClick}
+        variant="primary"
+        fullWidth
+        className={`inline-flex items-center justify-center gap-2 h-[52px] rounded-full font-semibold text-sm ${classByVariant[variant]}`}
+      >
+        {icon}{label}
+      </Button>
+    </div>
   );
 }
 

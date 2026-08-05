@@ -3,6 +3,7 @@ import { Eye, Edit2, Trash2, Tag } from "lucide-react";
 import { Purchase, formatINR, purchaseTotals } from "../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 const COLUMNS = [
   "Serial Number",
@@ -110,27 +111,16 @@ export function PurchasesTable({
                   </span>
                 </td>
                 <td style={{ padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
-                  <button
+                  <Button
                     onClick={() => onViewSarees(row)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      background: T.cream,
-                      border: `1px solid ${T.borderGold}`,
-                      borderRadius: 999,
-                      padding: "4px 10px",
-                      fontFamily: F.ui,
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: T.luxuryBrown,
-                      cursor: "pointer",
-                    }}
+                    variant="secondary"
+                    size="sm"
+                    iconLeft={Tag}
                     title="View / Print saree barcodes"
+                    className="rounded-full"
                   >
-                    <Tag size={12} color={T.antiqueGold} />
                     {row.sareeCount}
-                  </button>
+                  </Button>
                 </td>
                 <td style={{ padding: "14px 16px" }}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
@@ -181,60 +171,29 @@ export function PurchasesTable({
                 </td>
                 <td style={{ padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
                   <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                    <button
+                    <IconButton
+                      icon={Eye}
+                      label="View"
                       onClick={() => onView(row)}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "none",
-                        background: "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: T.royalBurgundy,
-                      }}
-                      title="View"
-                    >
-                      <Eye size={14} />
-                    </button>
-                    <button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--text-brand)]"
+                    />
+                    <IconButton
+                      icon={Edit2}
+                      label="Edit"
                       onClick={() => onEdit(row.id)}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "none",
-                        background: "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: T.taupe,
-                      }}
-                      title="Edit"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
+                      variant="ghost"
+                      size="sm"
+                    />
+                    <IconButton
+                      icon={Trash2}
+                      label="Delete"
                       onClick={() => onDelete(row.id)}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "none",
-                        background: "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: T.crimson,
-                      }}
-                      title="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--bk-red-700)] hover:text-[var(--bk-red-800)]"
+                    />
                   </div>
                 </td>
               </tr>
@@ -272,22 +231,14 @@ export function PurchasesTable({
           </span>
           <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
             {["← Previous", "1", "Next →"].map((p, i) => (
-              <button
+              <Button
                 key={i}
-                style={{
-                  fontFamily: F.ui,
-                  fontSize: 12,
-                  color: p === "1" ? T.royalBurgundy : T.taupe,
-                  background: p === "1" ? T.cream : "transparent",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "4px 8px",
-                  cursor: "pointer",
-                  fontWeight: p === "1" ? 700 : 400,
-                }}
+                variant={p === "1" ? "secondary" : "ghost"}
+                size="sm"
+                className="shadow-none"
               >
                 {p}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

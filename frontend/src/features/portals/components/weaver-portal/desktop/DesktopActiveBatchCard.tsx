@@ -3,6 +3,7 @@ import { AnimatePresence } from "motion/react";
 import { Layers, Package } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";
 import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpers";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
@@ -57,11 +58,11 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
               {sareeTypePairs.map(([code, name]) => (
-                <button key={code} onClick={() => setExpandedType(expandedType === code ? null : code)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 5, background: expandedType === code ? C.dark : "rgba(61,14,26,0.04)", border: `1.5px solid ${expandedType === code ? C.dark : C.bdr}`, borderRadius: 8, padding: "5px 14px", cursor: "pointer" }}>
-                  <Layers size={12} color={expandedType === code ? "#FFF" : C.text} />
+                <Button key={code} variant={expandedType === code ? "primary" : "secondary"} size="sm" iconLeft={Layers}
+                  onClick={() => setExpandedType(expandedType === code ? null : code)}
+                  className={expandedType === code ? "rounded-lg border-[1.5px] border-[#3D0E1A] bg-[#3D0E1A]" : "rounded-lg border-[1.5px] border-[rgba(110,15,45,0.10)] bg-[rgba(61,14,26,0.04)]"}>
                   <span style={{ fontFamily: F.u, fontSize: 13, color: expandedType === code ? "#FFF" : C.text }}>{name}</span>
-                </button>
+                </Button>
               ))}
             </div>
             <AnimatePresence>

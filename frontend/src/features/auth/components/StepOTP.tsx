@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, Clock, Check, X, MessageSquare } from "lucide-react";
+import { Button, CodeInput } from "../../../shared/ui/primitives";
 
 const C = {
   burgundy:      "#6B1A2A",
@@ -38,7 +39,6 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const [focused, setFocused] = useState<number | null>(0);
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timer = useTimer(108, true);
 
@@ -107,9 +107,9 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.textPrimary, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
         <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
-        <button onClick={onBack} style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: C.gold, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+        <Button variant="link" size="sm" onClick={onBack} className="underline">
           Change Number
-        </button>
+        </Button>
       </div>
 
       <div style={{ height: 1, background: "rgba(139,26,46,0.10)", margin: "0 0 28px" }} />
@@ -120,10 +120,9 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 16 }}
       >
         {digits.map((d, i) => (
-          <input
+          <CodeInput
             key={i}
             ref={el => { inputRefs.current[i] = el; }}
-            type="text"
             inputMode="numeric"
             maxLength={1}
             value={d}
@@ -132,16 +131,9 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
             onChange={e => handleInput(i, e.target.value)}
             onKeyDown={e => handleKey(i, e)}
             onPaste={handlePaste}
-            style={{
-              width: 54, height: 64, textAlign: "center" as const,
-              fontFamily: F.mono, fontWeight: 700, fontSize: 24,
-              color: error ? C.crimson : C.textPrimary,
-              background: C.inputBg,
-              border: `${d || focused === i ? 2 : 1.5}px solid ${error ? C.crimson : d || focused === i ? C.burgundy : C.borderStrong}`,
-              borderRadius: 12, outline: "none", cursor: "text",
-              boxShadow: focused === i ? `0 0 0 4px rgba(107,26,42,0.08)` : "none",
-              transition: "border 0.15s, box-shadow 0.15s",
-            }}
+            invalid={error}
+            size="lg"
+            className="w-[54px] h-16 text-center text-2xl"
             placeholder={focused === i ? "" : "·"}
           />
         ))}
@@ -170,40 +162,35 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         </div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted }}>
           Did not receive the code?{" "}
-          <button
+          <Button
+            variant="link"
+            size="sm"
             disabled={!timer.expired}
-            style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: timer.expired ? C.gold : C.textMuted, background: "none", border: "none", cursor: timer.expired ? "pointer" : "default", padding: 0, textDecoration: timer.expired ? "underline" : "none" }}
+            className={timer.expired ? "underline" : "no-underline"}
           >
             Resend
-          </button>
+          </Button>
         </div>
       </div>
 
-      <motion.button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        disabled={otp.length !== 6}
         onClick={() => otp.length === 6 && handleVerify(otp)}
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        whileTap={{ scale: 0.98 }}
-        style={{
-          width: "100%", height: 56,
-          background: otp.length === 6 ? (hovered ? C.burgundyHover : C.burgundy) : "rgba(107,26,42,0.22)",
-          border: "none", borderRadius: 999, cursor: otp.length === 6 ? "pointer" : "default",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: "#FFFFFF",
-          transition: "background 0.18s",
-          boxShadow: otp.length === 6 ? "0 4px 24px rgba(107,26,42,0.30)" : "none",
-        }}
+        iconLeft={Check}
+        className="rounded-full"
       >
-        <Check size={20} color="#FFF" />
         Verify and Login
-      </motion.button>
+      </Button>
 
       <div style={{ textAlign: "center" as const, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
         <MessageSquare size={15} color={C.green} />
         <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted }}>Not receiving SMS?{" "}</span>
-        <button style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: C.green, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+        <Button variant="link" size="sm">
           Send via WhatsApp
-        </button>
+        </Button>
       </div>
     </motion.div>
   );

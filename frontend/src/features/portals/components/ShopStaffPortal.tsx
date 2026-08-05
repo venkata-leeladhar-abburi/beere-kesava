@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Home, ShoppingBag, Package, Users, BarChart2 } from "lucide-react";
 import { SECTION_NAV_GLOBAL_STYLE } from "../../../shared/ui/SectionNavigator";
 import { useResponsive } from "../../../hooks/useResponsive";
+import { Button } from "../../../shared/ui/primitives";
 import { InventoryPage as AdminInventoryPage } from "../../inventory/components/InventoryPage";
 
 // ─── Price Visibility Context ────────────────────────────────────────────────
@@ -238,25 +239,26 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       <div style={{ position: "fixed" as const, bottom: 76, left: 0, width: "100%", zIndex: 110, pointerEvents: "none" as const }}>
         <AnimatePresence>
           {!showReturn && (active === "home" || active === "inventory") && (
-            <motion.button
+            <motion.div
               key={active}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 26 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setActive("sale")}
               style={{
                 position: "absolute" as const, right: 16, bottom: 0, pointerEvents: "auto" as const,
-                display: "flex", alignItems: "center", gap: 10,
-                height: 56, padding: "0 22px 0 18px", borderRadius: 999,
-                background: TEAL, border: "none", cursor: "pointer",
-                boxShadow: "0 4px 16px rgba(15,118,110,0.30)",
               }}
             >
-              <ShoppingBag size={22} color="#FFF" />
-              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF", whiteSpace: "nowrap" as const }}>New Sale</span>
-            </motion.button>
+              <Button
+                variant="primary"
+                size="lg"
+                iconLeft={ShoppingBag}
+                onClick={() => setActive("sale")}
+                className="h-14 rounded-full px-[18px] shadow-[0_4px_16px_rgba(15,118,110,0.30)] bg-[#0F766E] hover:bg-[#0F766E]"
+              >
+                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, whiteSpace: "nowrap" as const }}>New Sale</span>
+              </Button>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

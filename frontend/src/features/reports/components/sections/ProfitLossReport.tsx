@@ -5,6 +5,7 @@ import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TH, TD } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 const pnlMonthlyData = [
   { month: "Dec", income: 1820000, expenses: 980000 },
@@ -183,7 +184,7 @@ export function ProfitLossReport() {
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
               <FileText size={13} color={T.antiqueGold} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Download this report as PDF for your monthly records and year-end accounting.</span>
-              <button style={{ marginLeft: "auto", padding: "6px 14px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>Download PDF</button>
+              <Button variant="primary" size="sm" className="ml-auto">Download PDF</Button>
             </div>
           </DownloadGate>
         </div>

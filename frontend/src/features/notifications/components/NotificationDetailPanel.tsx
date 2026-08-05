@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { X, ArrowRight, Check } from "lucide-react";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 import { UnifiedNotif, PRIORITY, CATEGORIES } from "./notifTypes";
 
 const T = {
@@ -15,10 +16,6 @@ const F = {
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
 };
-const G = {
-  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
-};
-
 interface NotificationDetailPanelProps {
   selected: UnifiedNotif;
   setSelected: (n: UnifiedNotif | null) => void;
@@ -46,10 +43,7 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
             <PriorityIcon size={12} /> {cfg.label}
           </span>
-          <motion.button onClick={() => setSelected(null)} whileHover={{ scale: 1.1, backgroundColor: "rgba(110,15,45,0.06)" }} whileTap={{ scale: 0.93 }}
-            style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${T.borderDef}`, background: "rgba(0,0,0,0)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <X size={14} color={T.taupe} />
-          </motion.button>
+          <IconButton icon={X} label="Close" variant="secondary" size="sm" className="rounded-full" onClick={() => setSelected(null)} />
         </div>
 
         <div style={{ padding: "24px 24px 28px" }}>
@@ -87,19 +81,13 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
           </div>
 
           {selected.action && (
-            <motion.button
-              whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.28)" }}
-              whileTap={{ scale: 0.98 }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "14px", borderRadius: 14, border: "none", background: G.button, color: "#FFFDF9", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(110,15,45,0.22)", marginBottom: 10 }}>
-              {selected.action} <ArrowRight size={15} />
-            </motion.button>
+            <Button variant="primary" size="lg" fullWidth iconRight={ArrowRight} className="mb-2.5">
+              {selected.action}
+            </Button>
           )}
-          <motion.button onClick={() => { markRead(selected.id); setSelected(null); }}
-            whileHover={{ scale: 1.02, backgroundColor: "rgba(110,15,45,0.06)" }}
-            whileTap={{ scale: 0.98 }}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "rgba(0,0,0,0)", color: T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-            <Check size={14} /> Mark as read
-          </motion.button>
+          <Button variant="secondary" size="md" fullWidth iconLeft={Check} onClick={() => { markRead(selected.id); setSelected(null); }}>
+            Mark as read
+          </Button>
         </div>
       </div>
     </motion.div>

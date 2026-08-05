@@ -3,6 +3,7 @@ import { X, Download, Check } from "lucide-react";
 import { T, F } from "../theme";
 import { WholesaleCustomer, RetailCustomer } from "../types";
 import { downloadCustomerCSV } from "../utils";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export interface CustomerModalsProps {
   modalWholesale: WholesaleCustomer | null;
@@ -42,7 +43,7 @@ export function CustomerModals({
                     <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
                   </div>
                 </div>
-                <button onClick={() => setModalWholesale(null)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.10)", border: "none", color: "#FFF", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}><X size={18} /></button>
+                <IconButton icon={X} label="Close" onClick={() => setModalWholesale(null)} variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white" />
               </div>
               <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
                 {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
@@ -114,10 +115,10 @@ export function CustomerModals({
                 This will download a CSV file with {downloadConfirmRetail.name}'s profile and purchase summary.
               </p>
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setDownloadConfirmRetail(null)} style={{ flex: 1, height: 42, background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.taupe, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                <Button onClick={() => setDownloadConfirmRetail(null)} variant="secondary" fullWidth>
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => {
                     downloadCustomerCSV(downloadConfirmRetail.name, [
                       ["Customer Name", downloadConfirmRetail.name],
@@ -131,10 +132,12 @@ export function CustomerModals({
                     ]);
                     setDownloadConfirmRetail(null);
                   }}
-                  style={{ flex: 1, height: 42, background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  variant="primary"
+                  iconLeft={Download}
+                  fullWidth
                 >
-                  <Download size={15} /> Download
-                </button>
+                  Download
+                </Button>
               </div>
             </motion.div>
           </div>
@@ -149,9 +152,7 @@ export function CustomerModals({
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} onClick={e => e.stopPropagation()} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 480, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 20 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Visiting Card</span>
-                <button onClick={() => setViewingCard(null)} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center" }}>
-                  <X size={18} />
-                </button>
+                <IconButton icon={X} label="Close" onClick={() => setViewingCard(null)} variant="ghost" />
               </div>
               <img src={viewingCard} alt="Visiting card" style={{ width: "100%", borderRadius: 12, border: `1px solid ${T.borderDef}`, display: "block" }} />
             </motion.div>

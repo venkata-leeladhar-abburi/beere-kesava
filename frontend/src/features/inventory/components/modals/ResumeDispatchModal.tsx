@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Truck, X, Upload, CheckCircle2 } from "lucide-react";
 import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F, EASE } from "../theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { TransportData } from "../types";
 import { TransportForm } from "./shared/TransportForm";
 
@@ -33,7 +34,13 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
             <Truck size={20} color={T.antiqueGold} />
             <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Complete Dispatch Details</span>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            size="sm"
+            className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+          />
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>
@@ -52,14 +59,20 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
           )}
         </div>
         <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
-          <button onClick={onClose}
-            style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+          <Button onClick={onClose} variant="secondary" size="lg" className="rounded-full">
             Cancel
-          </button>
-          <button onClick={() => onSave({ ...transport, pendingTransport: false, pendingReceipt: false })} disabled={!canSave}
-            style={{ flex: 1, height: 46, background: !canSave ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canSave ? T.taupe : "#FFF", cursor: !canSave ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <CheckCircle2 size={16} /> Save Details
-          </button>
+          </Button>
+          <Button
+            onClick={() => onSave({ ...transport, pendingTransport: false, pendingReceipt: false })}
+            disabled={!canSave}
+            variant="primary"
+            size="lg"
+            iconLeft={CheckCircle2}
+            fullWidth
+            className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+          >
+            Save Details
+          </Button>
         </div>
       </motion.div>
     </div>

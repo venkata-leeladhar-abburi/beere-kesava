@@ -4,6 +4,7 @@ import { ChevronDown, X, CheckCircle2, AlertTriangle, Camera, UploadCloud } from
 import { C, F, btnPrimary, inputStyle } from "../tokens";
 import { FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
 import { EASE } from "./shared";
+import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 export interface VerifData {
   condition: "perfect" | "damaged" | null;
@@ -25,14 +26,14 @@ function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onC
           Take a photo of the defect as proof. This is required to complete the rejection.
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: C.burg, border: "none", borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <Camera size={13} /> Take Photo
-          </button>
-          <button onClick={onCapture} style={{ flex: 1, height: 44, background: "#FFF", border: `1px solid ${C.burg}`, borderRadius: 999, fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.burg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-            <UploadCloud size={13} /> Upload from Gallery
-          </button>
+          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+            Take Photo
+          </Button>
+          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+            Upload from Gallery
+          </Button>
         </div>
-        <button onClick={onCancel} style={{ width: "100%", background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", padding: 8 }}>Cancel</button>
+        <Button variant="link" fullWidth onClick={onCancel} className="text-xs text-[#69635E] p-2">Cancel</Button>
       </div>
     </div>
   );
@@ -88,9 +89,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
           <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Verify Condition</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-            <X size={20} color={C.muted} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} />
         </div>
         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 14 }}>
           {assignments.length} saree{assignments.length > 1 ? "s" : ""} · Received by <strong style={{ color: C.text }}>Ravi Kumar</strong> · {today}
@@ -101,10 +100,10 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
           {assignments.length > 1 && (
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               {[{ v: true, l: "Same condition for all" }, { v: false, l: "Per saree" }].map(opt => (
-                <button key={String(opt.v)} onClick={() => setUseBulk(opt.v)}
-                  style={{ flex: 1, height: 36, border: `1.5px solid ${useBulk === opt.v ? C.burg : "rgba(107,26,42,0.15)"}`, borderRadius: 8, background: useBulk === opt.v ? "rgba(107,26,42,0.05)" : "transparent", fontFamily: F.u, fontSize: 12, fontWeight: 600, color: useBulk === opt.v ? C.burg : C.muted, cursor: "pointer" }}>
+                <Button key={String(opt.v)} variant="tertiary" fullWidth size="sm" onClick={() => setUseBulk(opt.v)}
+                  className={useBulk === opt.v ? "h-9 rounded-lg border-[1.5px] border-[#6B1A2A] bg-[rgba(107,26,42,0.05)] text-[#6B1A2A]" : "h-9 rounded-lg border-[1.5px] border-[rgba(107,26,42,0.15)] bg-transparent"}>
                   {opt.l}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -124,10 +123,15 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Condition</div>
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                 {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
-                  <button key={val} onClick={() => { setBulkCondition(val); if (val === "damaged" && !bulkDamagePhotoUrl) setPhotoPromptFor("bulk"); }}
-                    style={{ flex: 1, height: 48, border: `2px solid ${bulkCondition === val ? col : "rgba(107,26,42,0.12)"}`, borderRadius: 12, background: bulkCondition === val ? bg : "transparent", fontFamily: F.u, fontWeight: 700, fontSize: 14, color: bulkCondition === val ? col : C.muted, cursor: "pointer", transition: "all 0.15s" }}>
-                    {lbl}
-                  </button>
+                  <div key={val} style={{ flex: 1, ["--cond-col" as string]: col, ["--cond-bg" as string]: bg } as React.CSSProperties}>
+                    <Button variant="tertiary" fullWidth
+                      onClick={() => { setBulkCondition(val); if (val === "damaged" && !bulkDamagePhotoUrl) setPhotoPromptFor("bulk"); }}
+                      className={bulkCondition === val
+                        ? "h-12 w-full rounded-xl border-2 font-bold text-sm transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
+                        : "h-12 w-full rounded-xl border-2 border-[rgba(107,26,42,0.12)] bg-transparent font-bold text-sm text-[#69635E] transition-all"}>
+                      {lbl}
+                    </Button>
+                  </div>
                 ))}
               </div>
 
@@ -139,22 +143,18 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                       <div style={{ display: isMobile ? "flex" : "grid", flexDirection: "column", gridTemplateColumns: isMobile ? undefined : "1fr 1fr", gap: 10 }}>
                         <div>
                           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Damage Type <span style={{ color: C.crim }}>*</span></div>
-                          <input value={bulkDamageType} onChange={e => setBulkDamageType(e.target.value)} placeholder="e.g. Stain, Thread break" style={{ ...inputStyle, height: 44, fontSize: 13 }} />
+                          <Input value={bulkDamageType} onChange={e => setBulkDamageType(e.target.value)} placeholder="e.g. Stain, Thread break" size="lg" className="text-[13px]" />
                         </div>
                         <div>
                           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Severity</div>
-                          <div style={{ position: "relative" }}>
-                            <select value={bulkDamageSev} onChange={e => setBulkDamageSev(e.target.value as VerifData["damageSeverity"])} style={{ ...inputStyle, height: 44, fontSize: 13, appearance: "none", paddingRight: 32, cursor: "pointer" }}>
-                              <option value="">Select severity…</option>
-                              {["Minor", "Moderate", "Severe"].map(s => <option key={s}>{s}</option>)}
-                            </select>
-                            <ChevronDown size={14} color={C.muted} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                          </div>
+                          <Select value={bulkDamageSev} onValueChange={v => setBulkDamageSev(v as VerifData["damageSeverity"])} size="lg" placeholder="Select severity…">
+                            {["Minor", "Moderate", "Severe"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </Select>
                         </div>
                       </div>
                       <div>
                         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Notes</div>
-                        <textarea value={bulkDamageNotes} onChange={e => setBulkDamageNotes(e.target.value)} placeholder="Additional details…" rows={2} style={{ ...inputStyle, height: "auto", padding: "10px 14px", resize: "none", fontSize: 13, lineHeight: 1.5 }} />
+                        <Textarea value={bulkDamageNotes} onChange={e => setBulkDamageNotes(e.target.value)} placeholder="Additional details…" rows={2} className="resize-none text-[13px] leading-relaxed" />
                       </div>
                       <div>
                         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Photo <span style={{ color: C.crim, fontWeight: 400 }}>— Required</span></div>
@@ -164,12 +164,13 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                               <Camera size={14} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <button onClick={() => setPhotoPromptFor("bulk")} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.burg, cursor: "pointer", textDecoration: "underline" }}>Retake</button>
+                            <Button variant="link" onClick={() => setPhotoPromptFor("bulk")} className="p-0 text-xs text-[#6B1A2A] underline">Retake</Button>
                           </div>
                         ) : (
-                          <button onClick={() => setPhotoPromptFor("bulk")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 14px", height: 40, border: `1.5px dashed ${C.crim}`, borderRadius: 10, background: "rgba(192,57,43,0.04)", fontFamily: F.u, fontSize: 13, color: C.crim, cursor: "pointer" }}>
-                            <Camera size={15} color={C.crim} /> Take Photo of Defect
-                          </button>
+                          <Button variant="secondary" iconLeft={Camera} onClick={() => setPhotoPromptFor("bulk")}
+                            className="h-10 rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[13px] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]">
+                            Take Photo of Defect
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -189,10 +190,15 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>{a.designCode} · {a.sareeType}</div>
                     <div style={{ display: "flex", gap: 6, marginBottom: d.condition === "damaged" ? 10 : 0 }}>
                       {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
-                        <button key={val} onClick={() => { update({ condition: val }); if (val === "damaged" && !d.damagePhotoUrl) setPhotoPromptFor(a.id); }}
-                          style={{ flex: 1, height: 38, border: `1.5px solid ${d.condition === val ? col : "rgba(107,26,42,0.12)"}`, borderRadius: 9, background: d.condition === val ? bg : "transparent", fontFamily: F.u, fontWeight: 600, fontSize: 12, color: d.condition === val ? col : C.muted, cursor: "pointer", transition: "all 0.15s" }}>
-                          {lbl}
-                        </button>
+                        <div key={val} style={{ flex: 1, ["--cond-col" as string]: col, ["--cond-bg" as string]: bg } as React.CSSProperties}>
+                          <Button variant="tertiary" fullWidth
+                            onClick={() => { update({ condition: val }); if (val === "damaged" && !d.damagePhotoUrl) setPhotoPromptFor(a.id); }}
+                            className={d.condition === val
+                              ? "h-[38px] w-full rounded-[9px] border-[1.5px] font-semibold text-xs transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
+                              : "h-[38px] w-full rounded-[9px] border-[1.5px] border-[rgba(107,26,42,0.12)] bg-transparent font-semibold text-xs text-[#69635E] transition-all"}>
+                            {lbl}
+                          </Button>
+                        </div>
                       ))}
                     </div>
                     {d.condition === "damaged" && (

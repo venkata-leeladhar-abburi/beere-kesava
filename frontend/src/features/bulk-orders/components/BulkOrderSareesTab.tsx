@@ -1,6 +1,7 @@
 import React from "react";
-import { Search, Truck } from "lucide-react";
+import { Truck } from "lucide-react";
 import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
+import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -84,26 +85,24 @@ export function BulkOrderSareesTab({
   return (
     <div>
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
-        <div style={{ position: "relative" as const, flex: "1 1 240px" }}>
-          <Search size={15} style={{ position: "absolute" as const, left: 12, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…"
-            style={{ width: "100%", padding: "9px 12px 9px 36px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" as const }} />
+        <div style={{ flex: "1 1 240px" }}>
+          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-          {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <option key={s} value={s}>{s === "All" ? "All Statuses" : s}</option>)}
-        </select>
-        <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-          {batchOptions.map(b => <option key={b} value={b}>{b === "All" ? "All Batches" : b}</option>)}
-        </select>
-        <select value={dispatchFilter} onChange={e => setDispatchFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-          {["All", "Dispatched", "Not Dispatched"].map(s => <option key={s} value={s}>{s === "All" ? "All Dispatch" : s}</option>)}
-        </select>
-        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-          {weaverOptions.map(w => <option key={w} value={w}>{w === "All" ? "All Weavers" : w}</option>)}
-        </select>
-        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "pointer" }}>
-          {sareeTypeOptions.map(t => <option key={t} value={t}>{t === "All" ? "All Saree Types" : t}</option>)}
-        </select>
+        <Select size="sm" value={statusFilter} onValueChange={setStatusFilter}>
+          {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Statuses" : s}</SelectItem>)}
+        </Select>
+        <Select size="sm" value={batchFilter} onValueChange={setBatchFilter}>
+          {batchOptions.map(b => <SelectItem key={b} value={b}>{b === "All" ? "All Batches" : b}</SelectItem>)}
+        </Select>
+        <Select size="sm" value={dispatchFilter} onValueChange={setDispatchFilter}>
+          {["All", "Dispatched", "Not Dispatched"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Dispatch" : s}</SelectItem>)}
+        </Select>
+        <Select size="sm" value={weaverFilter} onValueChange={setWeaverFilter}>
+          {weaverOptions.map(w => <SelectItem key={w} value={w}>{w === "All" ? "All Weavers" : w}</SelectItem>)}
+        </Select>
+        <Select size="sm" value={sareeTypeFilter} onValueChange={setSareeTypeFilter}>
+          {sareeTypeOptions.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Saree Types" : t}</SelectItem>)}
+        </Select>
       </div>
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
@@ -126,10 +125,10 @@ export function BulkOrderSareesTab({
                 <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</td>
                 <td style={{ padding: "13px 16px" }}>
                   {s.dispatch ? (
-                    <button onClick={() => setDispatchPanel(s.dispatch!)}
-                      style={{ display: "flex", alignItems: "center", gap: 6, background: T.greenBg, border: "none", borderRadius: 8, padding: "6px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.greenMid, cursor: "pointer" }}>
-                      <Truck size={12} /> {s.dispatch.lrNumber || "View"}
-                    </button>
+                    <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}
+                      style={{ background: T.greenBg, color: T.greenMid }}>
+                      {s.dispatch.lrNumber || "View"}
+                    </Button>
                   ) : (
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
                   )}

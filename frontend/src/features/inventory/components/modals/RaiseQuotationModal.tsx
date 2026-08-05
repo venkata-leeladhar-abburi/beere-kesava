@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Search, CheckCircle2, ChevronDown, X, Building2, FileText, ArrowRight, Send,
+  CheckCircle2, X, Building2, FileText, ArrowRight, Send,
 } from "lucide-react";
 import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
-import { T, F, EASE, inp } from "../theme";
+import { T, F, EASE } from "../theme";
+import { Button, IconButton, SearchInput } from "../../../../shared/ui/primitives";
 import { WHOLESALE_CUSTOMERS } from "../data";
 import { InvoiceData } from "../types";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
 import { InvoiceGenerator } from "./shared/InvoiceGenerator";
 import { SareeReviewList } from "./shared/SareeReviewList";
+import { SelectInput } from "../common/primitives";
 
 // ── Raise Quotation modal (Customer → Quotation → Sarees) ─────────────────────
 // Sarees are added inside the Quotation step — by scan or from inventory — so
@@ -62,7 +64,13 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Raise Quotation</span>
               {selectedCustomer && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>→ {selectedCustomer.name}</span>}
             </div>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+            />
           </div>
           <div style={{ display: "flex", gap: 0 }}>
             {STEPS.map((s, i) => (
@@ -84,14 +92,20 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
           {step === 1 && (
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>Select the customer for this quotation.</div>
-              <div style={{ position: "relative", marginBottom: 14 }}>
-                <Search size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                <input value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" style={{ ...inp, paddingLeft: 36 }} />
+              <div style={{ marginBottom: 14 }}>
+                <SearchInput value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filteredCustomers.map(c => (
-                  <button key={c.id} onClick={() => setCustomerId(c.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: customerId === c.id ? "rgba(110,15,45,0.04)" : "#FFF", cursor: "pointer", textAlign: "left" as const, transition: "all 0.15s" }}>
+                  <Button
+                    key={c.id}
+                    onClick={() => setCustomerId(c.id)}
+                    variant="secondary"
+                    className={
+                      "h-auto justify-start gap-3.5 rounded-xl border-[1.5px] px-4 py-3 text-left " +
+                      (customerId === c.id ? "border-[var(--bk-burgundy-900)] bg-[rgba(110,15,45,0.04)]" : "border-[var(--border-default)] bg-white")
+                    }
+                  >
                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: customerId === c.id ? "rgba(110,15,45,0.12)" : T.silkCream, border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Building2 size={16} color={customerId === c.id ? T.royalBurgundy : T.taupe} />
                     </div>
@@ -100,18 +114,15 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{c.city} · {c.phone}</div>
                     </div>
                     {customerId === c.id && <CheckCircle2 size={18} color={T.royalBurgundy} />}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div style={{ marginTop: 18 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
-                <div style={{ position: "relative" }}>
-                  <select value={bulkOrderRef} onChange={e => setBulkOrderRef(e.target.value)} style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}>
-                    <option value="">— Not linked to a bulk order —</option>
-                    {bulkOrders.map(o => (<option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>))}
-                  </select>
-                  <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                </div>
+                <SelectInput value={bulkOrderRef} onChange={setBulkOrderRef}>
+                  <option value="">— Not linked to a bulk order —</option>
+                  {bulkOrders.map(o => (<option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>))}
+                </SelectInput>
               </div>
             </div>
           )}
@@ -160,21 +171,34 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
 
         <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
           {step > 1 && (
-            <button onClick={() => setStep(s => s - 1)}
-              style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+            <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
               Back
-            </button>
+            </Button>
           )}
           {step < STEPS.length ? (
-            <button onClick={() => setStep(s => s + 1)} disabled={nextDisabled}
-              style={{ flex: 1, height: 46, background: nextDisabled ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: nextDisabled ? T.taupe : "#FFF", cursor: nextDisabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-              Continue <ArrowRight size={15} />
-            </button>
+            <Button
+              onClick={() => setStep(s => s + 1)}
+              disabled={nextDisabled}
+              variant="primary"
+              size="lg"
+              iconRight={ArrowRight}
+              fullWidth
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+            >
+              Continue
+            </Button>
           ) : (
-            <button onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined, picked)} disabled={!canQuote}
-              style={{ flex: 1, height: 46, background: !canQuote ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canQuote ? T.taupe : "#FFF", cursor: !canQuote ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(110,15,45,0.25)" }}>
-              <Send size={16} /> Raise Quotation
-            </button>
+            <Button
+              onClick={() => onConfirm(inv, customerId, bulkOrderRef || undefined, picked)}
+              disabled={!canQuote}
+              variant="primary"
+              size="lg"
+              iconLeft={Send}
+              fullWidth
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
+            >
+              Raise Quotation
+            </Button>
           )}
         </div>
       </motion.div>

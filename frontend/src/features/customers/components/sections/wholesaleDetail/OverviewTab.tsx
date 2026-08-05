@@ -3,6 +3,7 @@ import { BulkOrder } from "../../../../bulk-orders/contexts/BulkOrderContext";
 import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
+import { Button } from "../../../../../shared/ui/primitives";
 
 const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
@@ -80,10 +81,9 @@ export function OverviewTab({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
           <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Bulk Orders &amp; Invoices</h3>
           {custOrders.length > 0 && (
-            <button onClick={() => setWholesaleTab("Order History")}
-              style={{ background: "transparent", border: "none", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            <Button onClick={() => setWholesaleTab("Order History")} variant="link" size="sm">
               View Full Order History →
-            </button>
+            </Button>
           )}
         </div>
         {custOrders.length === 0 ? (

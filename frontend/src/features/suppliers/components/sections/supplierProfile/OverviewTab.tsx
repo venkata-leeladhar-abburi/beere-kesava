@@ -7,12 +7,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
-import { Search, Package, FileText, Wallet, IndianRupee } from "lucide-react";
+import { Package, FileText, Wallet, IndianRupee } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import { Purchase, SareeTag, PurchaseRequest, formatINR, purchaseTotals } from "../../../contexts/SupplierContext";
-import { inp } from "../../common/primitives";
 import { SareeInventoryTable } from "../SareeInventoryTable";
+import { SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string };
 
@@ -154,23 +154,27 @@ export function OverviewTab({
             );
           })()}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ position: "relative", flex: "1 1 240px" }}>
-              <Search size={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
-              <input value={sareeSearch} onChange={e => setSareeSearch(e.target.value)} placeholder="Search saree ID, type, colour…"
-                style={{ ...inp, paddingLeft: 34, background: T.silkCream, fontSize: 13 }} />
+            <div style={{ flex: "1 1 240px" }}>
+              <SearchInput value={sareeSearch} onChange={e => setSareeSearch(e.target.value)} placeholder="Search saree ID, type, colour…" />
             </div>
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ ...inp, width: "auto", minWidth: 150, cursor: "pointer", background: T.silkCream, fontSize: 13 }}>
-              {sareeTypes.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select value={colorFilter} onChange={e => setColorFilter(e.target.value)} style={{ ...inp, width: "auto", minWidth: 150, cursor: "pointer", background: T.silkCream, fontSize: 13 }}>
-              {sareeColors.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select value={purchaseFilter} onChange={e => setPurchaseFilter(e.target.value)} style={{ ...inp, width: "auto", minWidth: 190, cursor: "pointer", background: T.silkCream, fontSize: 13 }}>
-              <option value="All Purchases">All Purchase Orders</option>
-              {purchaseOptions.map(p => (
-                <option key={p.id} value={p.id}>{p.id} · {p.invoiceNumber || "no invoice"}</option>
-              ))}
-            </select>
+            <div style={{ width: "auto", minWidth: 150 }}>
+              <Select value={typeFilter} onValueChange={setTypeFilter} size="sm">
+                {sareeTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </Select>
+            </div>
+            <div style={{ width: "auto", minWidth: 150 }}>
+              <Select value={colorFilter} onValueChange={setColorFilter} size="sm">
+                {sareeColors.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </Select>
+            </div>
+            <div style={{ width: "auto", minWidth: 190 }}>
+              <Select value={purchaseFilter} onValueChange={setPurchaseFilter} size="sm">
+                <SelectItem value="All Purchases">All Purchase Orders</SelectItem>
+                {purchaseOptions.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.id} · {p.invoiceNumber || "no invoice"}</SelectItem>
+                ))}
+              </Select>
+            </div>
           </div>
         </div>
         <SareeInventoryTable rows={filteredSarees} />

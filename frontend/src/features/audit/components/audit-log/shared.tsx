@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function StatCol({
   icon,
@@ -102,26 +103,13 @@ export function PaginationBtn({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <Button
+      variant={active ? "primary" : "secondary"}
+      size="sm"
       disabled={disabled}
-      style={{
-        minWidth: 30,
-        height: 30,
-        borderRadius: 6,
-        border: active ? "none" : `1px solid rgba(110,15,45,0.15)`,
-        background: active ? "#6E0F2D" : "transparent",
-        color: active ? "#fff" : disabled ? "rgba(139,112,96,0.4)" : "#6E0F2D",
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "default" : "pointer",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "0 6px",
-      }}
+      className="min-w-[30px] h-[30px] px-1.5 font-mono"
     >
       {children}
-    </button>
+    </Button>
   );
 }

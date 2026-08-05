@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X } from "lucide-react";
 import { SariTagPhysicalLabel, SareeProps } from "./SariTagPhysicalLabel";
 import { SariTagPrintSettings } from "./SariTagPrintSettings";
+import { IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   darkBurgundy: "#3D0E1A",
@@ -85,17 +85,7 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
                 {saree.id}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)", border: "none",
-                color: "#FFF", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              <X size={16} />
-            </button>
+            <IconButton icon="close" label="Close" variant="ghost" size="sm" shape="circle" onClick={onClose} className="bg-white/12 text-white hover:bg-white/20" />
           </div>
 
           {/* Body */}

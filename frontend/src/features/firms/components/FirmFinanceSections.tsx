@@ -8,36 +8,24 @@ import {
 } from "../contexts/FirmsContext";
 import { T, F, EASE, INCOME_CATS, EXPENSE_CATS } from "./theme";
 import { fmtFull, today } from "./utils";
-
-const inp: React.CSSProperties = {
-  width: "100%", boxSizing: "border-box", fontFamily: F.ui, fontSize: 13,
-  color: T.luxuryBrown, background: T.warmIvory,
-  border: `1.5px solid ${T.borderDef}`, borderRadius: 9,
-  padding: "9px 12px", outline: "none",
-};
+import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
 
 function Inp({ value, onChange, placeholder, type = "text", mono }: {
   value: string; onChange: (v: string) => void;
   placeholder?: string; type?: string; mono?: boolean;
 }) {
-  const [f, sf] = React.useState(false);
   return (
-    <input type={type} value={value} onChange={e => onChange(e.target.value)}
+    <Input type={type} value={value} onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      style={{ ...inp, fontFamily: mono ? F.mono : F.ui, borderColor: f ? T.royalBurgundy : T.borderDef, background: f ? "#FFF" : T.warmIvory }}
-      onFocus={() => sf(true)} onBlur={() => sf(false)} />
+      className={mono ? "font-mono" : undefined} />
   );
 }
 
 function Sel({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
-  const [f, sf] = React.useState(false);
   return (
-    <div style={{ position: "relative" }}>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 28, borderColor: f ? T.royalBurgundy : T.borderDef }}
-        onFocus={() => sf(true)} onBlur={() => sf(false)}>{children}</select>
-      <ChevronDown size={13} color={T.taupe} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-    </div>
+    <Select value={value} onValueChange={onChange}>
+      {children}
+    </Select>
   );
 }
 
@@ -108,7 +96,7 @@ export function AddEntryForm({ type, onSave, onCancel }: {
         </div>
         <div><FLabel req>{type === "misc" ? "Type" : "Category"}</FLabel>
           <Sel value={cat} onChange={v => { setCat(v); setOtherLabel(""); }}>
-            {cats.map(c => <option key={c} value={c}>{c === "income" ? "Income" : c === "expense" ? "Expense" : c}</option>)}
+            {cats.map(c => <SelectItem key={c} value={c}>{c === "income" ? "Income" : c === "expense" ? "Expense" : c}</SelectItem>)}
           </Sel>
         </div>
         {isOther && (

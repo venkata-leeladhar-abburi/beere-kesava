@@ -7,6 +7,7 @@ import {
 import { T, F } from "../../theme";
 import { SareeRow } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
+import { Field, Input, NumberInput, Textarea, IconButton } from "../../../../../../shared/ui/primitives";
 
 /** One editable saree line within the Add/Edit Purchase form's "Saree Details" list. */
 export function SareeRowCard({
@@ -56,67 +57,59 @@ export function SareeRowCard({
             {code}
           </span>
         </div>
-        <button
+        <IconButton
+          icon={X}
+          label="Remove saree"
+          size="sm"
+          variant="ghost"
           onClick={() => removeSareeRow(s._uid)}
-          style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center" }}
-          title="Remove saree"
-        >
-          <X size={14} />
-        </button>
+        />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-        <div>
-          <label style={labelStyle} htmlFor="saree-type">Saree Type</label>
-          <input id="saree-type"
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+        <Field label="Saree Type">
+          <Input
+            size="sm"
             value={s.sareeType}
             onChange={(e) => updateSareeRow(s._uid, { sareeType: e.target.value })}
             placeholder="e.g. Kanjivaram"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="colour">Colour</label>
-          <input id="colour"
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+        </Field>
+        <Field label="Colour">
+          <Input
+            size="sm"
             value={s.color}
             onChange={(e) => updateSareeRow(s._uid, { color: e.target.value })}
             placeholder="e.g. Maroon"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="weight-grams">Weight (grams)</label>
-          <input id="weight-grams"
-            type="number"
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
-            value={s.weight.replace(/g$/, "")}
-            onChange={(e) => updateSareeRow(s._uid, { weight: `${e.target.value}g` })}
+        </Field>
+        <Field label="Weight (grams)">
+          <NumberInput
+            size="sm"
+            value={s.weight.replace(/g$/, "") === "" ? "" : Number(s.weight.replace(/g$/, ""))}
+            onValueChange={(v) => updateSareeRow(s._uid, { weight: `${v}g` })}
             placeholder="e.g. 820"
           />
-        </div>
+        </Field>
       </div>
       {/* Price per quantity × quantity = buying price */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
-        <div>
-          <label style={labelStyle} htmlFor="price-quantity">Price / Quantity (₹)</label>
-          <input id="price-quantity"
-            type="number"
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+        <Field label="Price / Quantity (₹)">
+          <NumberInput
+            size="sm"
             value={s.price || ""}
-            onChange={(e) => updateSareeRow(s._uid, { price: Number(e.target.value) })}
+            onValueChange={(v) => updateSareeRow(s._uid, { price: Number(v) || 0 })}
             placeholder="e.g. 600"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="quantity">Quantity</label>
-          <input id="quantity"
-            type="number"
+        </Field>
+        <Field label="Quantity">
+          <NumberInput
+            size="sm"
             min={1}
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
             value={s.quantity ?? 1}
-            onChange={(e) => updateSareeRow(s._uid, { quantity: Math.max(1, Number(e.target.value) || 1) })}
+            onValueChange={(v) => updateSareeRow(s._uid, { quantity: Math.max(1, Number(v) || 1) })}
             placeholder="1"
           />
-        </div>
+        </Field>
         <div>
           <label style={labelStyle}>Buying Price</label>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
@@ -130,16 +123,14 @@ export function SareeRowCard({
 
       {/* Markup drives selling price and profit */}
       <div style={{ display: "grid", gridTemplateColumns: "0.75fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-        <div>
-          <label style={labelStyle} htmlFor="sell-markup">Sell % (markup)</label>
-          <input id="sell-markup"
-            type="number"
-            style={{ ...inputStyle, height: 36, fontSize: 12 }}
+        <Field label="Sell % (markup)">
+          <NumberInput
+            size="sm"
             value={s.sellPercent || ""}
-            onChange={(e) => updateSareeRow(s._uid, { sellPercent: Number(e.target.value) })}
+            onValueChange={(v) => updateSareeRow(s._uid, { sellPercent: Number(v) || 0 })}
             placeholder="e.g. 25"
           />
-        </div>
+        </Field>
         <div>
           <label style={labelStyle}>Selling Price</label>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
@@ -179,27 +170,26 @@ export function SareeRowCard({
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 10 }}>
-        <div>
-          <label style={labelStyle} htmlFor="notes-optional">Notes (optional)</label>
-          <textarea id="notes-optional"
+        <Field label="Notes (optional)">
+          <Textarea
             value={s.notes}
             onChange={(e) => updateSareeRow(s._uid, { notes: e.target.value })}
             rows={2}
-            style={{ ...inputStyle, height: "auto", padding: "8px 12px", fontSize: 12, resize: "vertical" as const }}
+            className="resize-y text-[12px]"
           />
-        </div>
+        </Field>
         <div>
           <label style={labelStyle}>Saree Photo (optional)</label>
           {s.imageUrl ? (
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
               <img src={s.imageUrl} alt="Saree" style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }} />
-              <button
+              <IconButton
+                icon={X}
+                label="Remove photo"
+                size="sm"
                 onClick={() => updateSareeRow(s._uid, { imageUrl: undefined })}
-                title="Remove photo"
-                style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <X size={11} />
-              </button>
+                className="absolute top-[5px] right-[5px] size-[22px] rounded-full bg-black/55 text-white hover:bg-black/70 [&_svg]:size-[11px]"
+              />
             </div>
           ) : (
             <label

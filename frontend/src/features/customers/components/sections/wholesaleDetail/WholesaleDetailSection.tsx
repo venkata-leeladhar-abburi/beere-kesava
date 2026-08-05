@@ -11,6 +11,7 @@ import { OverviewTab } from "./OverviewTab";
 import { PaymentHistoryTab } from "./PaymentHistoryTab";
 import { ContactDetailsTab } from "./ContactDetailsTab";
 import { EditProfileTab } from "./EditProfileTab";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export interface WholesaleDetailSectionProps {
   customer: WholesaleCustomer;
@@ -56,12 +57,9 @@ export function WholesaleDetailSection({
     <div style={{ padding: "48px 56px" }}>
       {/* Header row with Back button */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-        <button
-          onClick={onBack}
-          style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
-        >
+        <Button onClick={onBack} variant="secondary" size="sm">
           ← Back to Customers
-        </button>
+        </Button>
         <div style={{ display: "flex", gap: 12 }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, background: customer.status === "clear" ? T.greenBg : T.crimsonBg, color: customer.status === "clear" ? T.greenMid : T.crimson, padding: "5px 12px", borderRadius: 6, fontWeight: 700 }}>
             {customer.status.toUpperCase()}
@@ -105,24 +103,17 @@ export function WholesaleDetailSection({
         {(["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"] as WholesaleTab[]).map(tabName => {
           const isActive = wholesaleTab === tabName;
           return (
-            <button
+            <Button
               key={tabName}
               onClick={() => setWholesaleTab(tabName)}
-              style={{
-                padding: "12px 24px",
-                fontFamily: F.ui,
-                fontSize: 14,
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? T.royalBurgundy : T.taupe,
-                border: "none",
-                background: "none",
-                borderBottom: isActive ? `3px solid ${T.royalBurgundy}` : "3px solid transparent",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
+              variant="ghost"
+              size="sm"
+              className={`rounded-none ${isActive ? "font-semibold" : "font-medium"}`}
             >
-              {tabName}
-            </button>
+              <span style={{ borderBottom: isActive ? `3px solid ${T.royalBurgundy}` : "3px solid transparent", color: isActive ? T.royalBurgundy : T.taupe, paddingBottom: 12, marginBottom: -12 }}>
+                {tabName}
+              </span>
+            </Button>
           );
         })}
       </div>

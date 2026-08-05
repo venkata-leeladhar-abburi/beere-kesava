@@ -3,6 +3,7 @@ import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { X } from "lucide-react";
 import { T, F, EASE } from "../theme";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 export function qcColor(r: number) { return r > 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson; }
 
@@ -40,7 +41,7 @@ export function ActionDialog({ open, title, children, tone = "gold", onClose }: 
       <motion.div initial={{ scale: 0.96, y: 18 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, y: 18 }} onClick={e => e.stopPropagation()} style={{ width: 520, maxWidth: "100%", background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.25)", overflow: "hidden" }}>
         <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${color}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{title}</div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.22)", color: "#FFFDF9", borderRadius: 10, width: 36, height: 36, cursor: "pointer" }}><X size={18} /></button>
+          <IconButton icon={X} label="Close" onClick={onClose} variant="ghost" className="rounded-[10px] bg-white/15 border border-white/20 text-[#FFFDF9]" />
         </div>
         <div style={{ padding: 26 }}>{children}</div>
       </motion.div>

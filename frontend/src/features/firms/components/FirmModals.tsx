@@ -13,6 +13,7 @@ import { fmtAmt, initials, cardColor } from "./utils";
 import {
   FinSummaryStrip, FinSection, MiscSection
 } from "./FirmFinanceSections";
+import { Button, IconButton, Field as PField, Input, Textarea } from "../../../shared/ui/primitives";
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -26,34 +27,16 @@ function SLabel({ children }: { children: React.ReactNode }) {
 
 function Field({ label, value, onChange, placeholder, type = "text", required, textarea, icon }: {
   label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; required?: boolean; textarea?: boolean; icon?: React.ReactNode;
+  placeholder?: string; type?: string; required?: boolean; textarea?: boolean; icon?: React.ComponentProps<typeof Input>["iconLeft"];
 }) {
-  const [focused, setFocused] = React.useState(false);
-  const base: React.CSSProperties = {
-    width: "100%", boxSizing: "border-box", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown,
-    background: focused ? "#FFF" : T.warmIvory,
-    border: `1.5px solid ${focused ? T.royalBurgundy : T.borderDef}`,
-    borderRadius: 10, padding: icon ? "10px 12px 10px 36px" : "10px 12px",
-    outline: "none", transition: "border-color 0.18s, background 0.18s", resize: "none",
-  };
   return (
-    <div style={{ position: "relative" }}>
-      <label style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.taupe, display: "block", marginBottom: 5 }}>
-        {label}{required && <span style={{ color: T.royalBurgundy }}> *</span>}
-      </label>
-      {icon && (
-        <div style={{ position: "absolute", left: 11, bottom: textarea ? "auto" : 0, top: textarea ? 30 : 0, height: textarea ? "auto" : "100%", display: "flex", alignItems: textarea ? "flex-start" : "center", paddingTop: textarea ? 11 : 0 }}>
-          <span style={{ color: T.taupe, display: "flex" }}>{icon}</span>
-        </div>
-      )}
+    <PField label={label} required={required}>
       {textarea ? (
-        <textarea rows={3} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={base as React.CSSProperties}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+        <Textarea rows={3} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
       ) : (
-        <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={base}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+        <Input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} iconLeft={icon} />
       )}
-    </div>
+    </PField>
   );
 }
 
@@ -80,42 +63,40 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
           </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={15} color="rgba(255,255,255,0.75)" />
-          </button>
+          <IconButton icon={X} label="Close" variant="secondary" size="sm" onClick={onClose} />
         </div>
         <div style={{ padding: "28px 28px 32px" }}>
           <SLabel>Basic Information</SLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Firm Name" value={form.firmName} onChange={v => set("firmName", v)} placeholder="e.g. Surat Zari Works" required icon={<Building2 size={14} />} />
+              <Field label="Firm Name" value={form.firmName} onChange={v => set("firmName", v)} placeholder="e.g. Surat Zari Works" required icon={Building2} />
             </div>
-            <Field label="GST Number" value={form.gstNumber ?? ""} onChange={v => set("gstNumber", v)} placeholder="29ABCDE1234F1Z5" icon={<Hash size={14} />} />
+            <Field label="GST Number" value={form.gstNumber ?? ""} onChange={v => set("gstNumber", v)} placeholder="29ABCDE1234F1Z5" icon={Hash} />
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-              <Field label="Total Purchase Amount (₹)" value={form.purchaseAmount?.toString() ?? ""} onChange={v => set("purchaseAmount", v)} type="number" placeholder="e.g. 1500000" icon={<IndianRupee size={14} />} />
+              <Field label="Total Purchase Amount (₹)" value={form.purchaseAmount?.toString() ?? ""} onChange={v => set("purchaseAmount", v)} type="number" placeholder="e.g. 1500000" icon={IndianRupee} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Address" value={form.address ?? ""} onChange={v => set("address", v)} placeholder="Street, City, State, PIN" textarea icon={<MapPin size={14} />} />
+              <Field label="Address" value={form.address ?? ""} onChange={v => set("address", v)} placeholder="Street, City, State, PIN" textarea icon={MapPin} />
             </div>
           </div>
           <SLabel>Bank Details</SLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Bank Name" value={form.bankName ?? ""} onChange={v => set("bankName", v)} placeholder="e.g. State Bank of India" icon={<CreditCard size={14} />} />
+              <Field label="Bank Name" value={form.bankName ?? ""} onChange={v => set("bankName", v)} placeholder="e.g. State Bank of India" icon={CreditCard} />
             </div>
             <Field label="Account Number" value={form.accountNumber ?? ""} onChange={v => set("accountNumber", v)} placeholder="e.g. 001234567890" />
             <Field label="IFSC Code" value={form.ifscCode ?? ""} onChange={v => set("ifscCode", v)} placeholder="e.g. SBIN0001234" />
           </div>
           <SLabel>Contact Person</SLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
-            <Field label="Contact Person Name" value={form.contactPersonName ?? ""} onChange={v => set("contactPersonName", v)} placeholder="Full name" icon={<User size={14} />} />
-            <Field label="Phone Number" value={form.contactPersonPhone ?? ""} onChange={v => set("contactPersonPhone", v)} placeholder="9876543210" type="tel" icon={<Phone size={14} />} />
+            <Field label="Contact Person Name" value={form.contactPersonName ?? ""} onChange={v => set("contactPersonName", v)} placeholder="Full name" icon={User} />
+            <Field label="Phone Number" value={form.contactPersonPhone ?? ""} onChange={v => set("contactPersonPhone", v)} placeholder="9876543210" type="tel" icon={Phone} />
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, height: 44, borderRadius: 10, border: `1px solid ${T.borderDef}`, background: T.warmIvory, fontFamily: F.ui, fontSize: 14, fontWeight: 500, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-            <button onClick={handleSave} disabled={!form.firmName.trim()} style={{ flex: 2, height: 44, borderRadius: 10, border: "none", background: form.firmName.trim() ? (saved ? T.green : T.royalBurgundy) : "rgba(110,15,45,0.25)", fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFF", cursor: form.firmName.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background 0.2s" }}>
-              {saved ? <><Check size={16} /> Saved!</> : title}
-            </button>
+            <Button variant="secondary" size="lg" className="flex-1" onClick={onClose}>Cancel</Button>
+            <Button variant="primary" size="lg" className="flex-[2]" disabled={!form.firmName.trim()} iconLeft={saved ? Check : undefined} onClick={handleSave}>
+              {saved ? "Saved!" : title}
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -151,20 +132,20 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
           </div>
-          <button onClick={() => { onClose(); onEdit(); }}
-            style={{ height: 36, padding: "0 16px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.12)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
-            <Edit size={14} /> Edit
-          </button>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.10)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={15} color="rgba(255,255,255,0.80)" />
-          </button>
+          <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
+            Edit
+          </Button>
+          <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20" onClick={onClose} />
         </div>
         <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0, background: "#FFF" }}>
           {[{ key: "finance", label: "Financial Tracking" }, { key: "info", label: "Firm Info" }].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as "info" | "finance")}
-              style={{ flex: 1, height: 46, border: "none", background: "transparent", fontFamily: F.ui, fontSize: 13, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, cursor: "pointer", borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", transition: "all 0.18s" }}>
-              {t.label}
-            </button>
+            <div key={t.key} style={{ flex: 1, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
+              <Button variant="ghost" size="md" className="w-full h-[46px] rounded-none" onClick={() => setTab(t.key as "info" | "finance")}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe }}>
+                  {t.label}
+                </span>
+              </Button>
+            </div>
           ))}
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px 28px" }}>

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Facebook, Instagram, Youtube, Linkedin, Phone, Mail } from "lucide-react";
 import { T, F } from "../theme";
 import { imgBKLogo as imgBKBLogo } from "../../../../shared/constants/weaverImages";
+import { Button, Input } from "../../../../shared/ui/primitives";
 
 export function Footer() {
   return (
@@ -48,12 +49,10 @@ export function Footer() {
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.35)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Newsletter</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input aria-label="Email address" placeholder="Email address"
-              style={{ fontFamily: F.ui, fontSize: 14, color: "#FFFDF9", background: "rgba(255,253,249,0.07)", border: "1px solid rgba(255,253,249,0.14)", borderRadius: 12, padding: "12px 16px", outline: "none", width: "100%", boxSizing: "border-box" }} />
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              style={{ background: T.antiqueGold, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 24px", fontFamily: F.ui, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+            <Input aria-label="Email address" placeholder="Email address" className="bg-white/[0.07] border-white/[0.14] text-[#FFFDF9]" />
+            <Button variant="primary" className="shrink-0">
               Subscribe
-            </motion.button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Search, Layers, Tag, Sparkles, ChevronLeft, IndianRupee, ShoppingBag, Building2,
+  Layers, Tag, Sparkles, ChevronLeft, IndianRupee, ShoppingBag, Building2,
 } from "lucide-react";
 import { ViewPurchaseModal, PrintPurchaseModal, Purchase, MatType } from "./PurchaseModals";
 import { PurchaseCard } from "./PurchaseCard";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -85,13 +86,15 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />
 
         <div style={{ position: "relative", zIndex: 2 }}>
-          <motion.button
+          <Button
             onClick={onBack}
-            whileHover={{ x: -3 }} whileTap={{ scale: 0.97 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "8px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "rgba(255,253,249,0.80)", cursor: "pointer", marginBottom: 24 }}
+            variant="ghost"
+            size="sm"
+            iconLeft={ChevronLeft}
+            className="mb-6 inline-flex bg-white/8 border border-white/15 text-[rgba(255,253,249,0.80)] hover:bg-white/12 shadow-none"
           >
-            <ChevronLeft size={15} /> Back to Materials
-          </motion.button>
+            Back to Materials
+          </Button>
 
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -159,22 +162,25 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
             { key: "Resham", label: "Resham",         count: reshamCount },
             { key: "Jari",   label: "Jari",           count: jariCount },
           ] as const).map(f => (
-            <button key={f.key} onClick={() => setTypeFilter(f.key as "all" | MatType)}
-              style={{ height: "100%", padding: "0 18px", border: "none", background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, borderBottom: typeFilter === f.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
+            <Button
+              key={f.key}
+              onClick={() => setTypeFilter(f.key as "all" | MatType)}
+              variant="ghost"
+              size="md"
+              className={`h-full rounded-none px-[18px] gap-[7px] border-b-2 ${typeFilter === f.key ? "border-[#6E0F2D]" : "border-transparent"}`}
+            >
               <span style={{ fontFamily: F.ui, fontWeight: typeFilter === f.key ? 600 : 400, fontSize: 13, color: typeFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: typeFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: typeFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
-            </button>
+            </Button>
           ))}
 
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", height: 38 }}>
-            <Search size={14} color={T.taupe} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search vendor, PO number, material…"
-              style={{ border: "none", background: "none", outline: "none", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, width: 240 }}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search vendor, PO number, material…"
+            containerClassName="ml-auto w-[280px] h-[38px] bg-[var(--silkCream,#F7F2EA)]"
+            className="text-[13px]"
+          />
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} purchase{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       </div>

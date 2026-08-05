@@ -3,6 +3,7 @@ import { Check, X, Download } from "lucide-react";
 import { T, F } from "./tokens";
 import { HISTORY_ROWS } from "./data";
 import { TypePill } from "./SharedUI";
+import { Button } from "../../../../shared/ui/primitives";
 
 const HIST_FILTERS = ["All History", "Purchase Orders", "Warp Requests", "Rate Changes", "Approved Only", "Rejected Only"];
 const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];
@@ -29,14 +30,9 @@ export function HistorySection({
             Approval History — All Past Decisions
           </span>
         </div>
-        <button style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.antiqueGold,
-          display: "flex", alignItems: "center", gap: 4,
-        }}>
-          <Download size={13} />
+        <Button variant="link" size="sm" iconLeft={Download}>
           Download History →
-        </button>
+        </Button>
       </div>
       <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20, marginLeft: 16 }}>
         A permanent record of all approvals and rejections made in this portal.
@@ -45,40 +41,26 @@ export function HistorySection({
       {/* Filter pills */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         {HIST_FILTERS.map(f => (
-          <button
+          <Button
             key={f}
             onClick={() => setHistFilter(f)}
-            style={{
-              background: histFilter === f ? T.royalBurgundy : "transparent",
-              color: histFilter === f ? "#FFF" : T.taupe,
-              border: "1px solid " + (histFilter === f ? T.royalBurgundy : T.borderDef),
-              borderRadius: 999, padding: "6px 14px",
-              fontFamily: F.ui, fontSize: 12, fontWeight: 500, cursor: "pointer",
-              transition: "all 0.16s",
-            }}
+            variant={histFilter === f ? "primary" : "secondary"} size="sm" className="rounded-full"
           >
             {f}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Period pills */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {HIST_PERIODS.map(p => (
-          <button
+          <Button
             key={p}
             onClick={() => setHistPeriod(p)}
-            style={{
-              background: histPeriod === p ? T.royalBurgundy : "transparent",
-              color: histPeriod === p ? "#FFF" : T.taupe,
-              border: "1px solid " + (histPeriod === p ? T.royalBurgundy : T.borderDef),
-              borderRadius: 999, padding: "6px 14px",
-              fontFamily: F.ui, fontSize: 12, fontWeight: 500, cursor: "pointer",
-              transition: "all 0.16s",
-            }}
+            variant={histPeriod === p ? "primary" : "secondary"} size="sm" className="rounded-full"
           >
             {p}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -151,19 +133,12 @@ export function HistorySection({
       {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 20, alignItems: "center" }}>
         {["Previous", "1", "2", "3", "Next"].map((p, i) => (
-          <button
+          <Button
             key={i}
-            style={{
-              background: p === "1" ? T.royalBurgundy : "transparent",
-              color: p === "1" ? "#FFF" : T.taupe,
-              border: "1px solid " + (p === "1" ? T.royalBurgundy : T.borderDef),
-              borderRadius: 8, padding: "6px 14px",
-              fontFamily: F.ui, fontSize: 13, fontWeight: p === "1" ? 600 : 400,
-              cursor: "pointer",
-            }}
+            variant={p === "1" ? "primary" : "secondary"} size="sm"
           >
             {p}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

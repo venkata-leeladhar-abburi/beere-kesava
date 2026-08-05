@@ -1,5 +1,5 @@
 import {
-  Search, Download, Eye, UserPlus,
+  Download, Eye, UserPlus,
   LayoutGrid, AlignJustify, MapPin,
   Phone, Calendar, Star, IndianRupee, AlertTriangle, Users,
 } from "lucide-react";
@@ -7,6 +7,7 @@ import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilter
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionTitle, Pill } from "../common/primitives";
+import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
 import { retailData } from "../data";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
@@ -76,12 +77,11 @@ export function RetailCustomersSection({
       {/* Toolbar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", alignItems: "center", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "9px 16px", width: 300 }}>
-            <Search size={16} color={T.taupe} />
-            <input
-              type="text" value={retailSearch} onChange={e => setRetailSearch(e.target.value)}
+          <div style={{ width: 300 }}>
+            <SearchInput
+              value={retailSearch}
+              onChange={e => setRetailSearch(e.target.value)}
               placeholder="Search by customer name or phone..."
-              style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }}
             />
           </div>
           <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({retailData.length})</Pill>
@@ -89,24 +89,36 @@ export function RetailCustomersSection({
           <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({retailData.filter(r => r.inactive).length})</Pill>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
-          <select
-            value={retailCityFilter} onChange={e => setRetailCityFilter(e.target.value)}
-            style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
-          >
-            <option value="all">All Cities</option>
-            {retailCities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select
-            value={retailSort} onChange={e => setRetailSort(e.target.value as any)}
-            style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
-          >
-            <option value="spend">Sort: Total Spend</option>
-            <option value="purchases">Sort: Total Purchases</option>
-            <option value="recent">Sort: Most Recent Visit</option>
-          </select>
+          <div style={{ width: 160 }}>
+            <Select value={retailCityFilter} onValueChange={setRetailCityFilter} size="sm" placeholder="All Cities">
+              <SelectItem value="all">All Cities</SelectItem>
+              {retailCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </Select>
+          </div>
+          <div style={{ width: 200 }}>
+            <Select value={retailSort} onValueChange={v => setRetailSort(v as any)} size="sm">
+              <SelectItem value="spend">Sort: Total Spend</SelectItem>
+              <SelectItem value="purchases">Sort: Total Purchases</SelectItem>
+              <SelectItem value="recent">Sort: Most Recent Visit</SelectItem>
+            </Select>
+          </div>
           <div style={{ display: "flex", background: "#FFF", borderRadius: 8, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <button onClick={() => setRetailView("card")} style={{ padding: "9px 13px", background: retailView === "card" ? T.silkCream : "transparent", border: "none", cursor: "pointer" }}><LayoutGrid size={18} color={retailView === "card" ? T.royalBurgundy : T.taupe} /></button>
-            <button onClick={() => setRetailView("list")} style={{ padding: "9px 13px", background: retailView === "list" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><AlignJustify size={18} color={retailView === "list" ? T.royalBurgundy : T.taupe} /></button>
+            <IconButton
+              icon={LayoutGrid}
+              label="Card view"
+              variant={retailView === "card" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setRetailView("card")}
+              className="rounded-none"
+            />
+            <IconButton
+              icon={AlignJustify}
+              label="List view"
+              variant={retailView === "list" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setRetailView("list")}
+              className="rounded-none border-l"
+            />
           </div>
         </div>
       </div>
@@ -164,17 +176,19 @@ export function RetailCustomersSection({
                 </div>
               </div>
               <div style={{ padding: "0 22px 22px", display: "flex", gap: 8 }}>
-                <button onClick={() => onViewHistory(r)} style={{ flex: 1, height: 42, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 7 }}>
-                  <Eye size={16} /> View Purchase History
-                </button>
+                <Button onClick={() => onViewHistory(r)} iconLeft={Eye} fullWidth className="whitespace-nowrap">
+                  View Purchase History
+                </Button>
                 <DownloadGate>
-                  <button
+                  <Button
                     onClick={() => onDownloadConfirm(r)}
-                    style={{ height: 42, padding: "0 14px", background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 9, color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, whiteSpace: "nowrap" as const }}
+                    iconLeft={Download}
+                    variant="tertiary"
                     title="Download Data"
+                    className="whitespace-nowrap"
                   >
-                    <Download size={15} /> Download
-                  </button>
+                    Download
+                  </Button>
                 </DownloadGate>
               </div>
             </div>
@@ -206,7 +220,7 @@ export function RetailCustomersSection({
                   <td style={{ padding: "14px 18px", color: T.luxuryBrown, fontWeight: 600 }}>₹{r.spend}</td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.lastVisit}</td>
                   <td style={{ padding: "14px 18px" }}>{r.regular ? <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>⭐ Regular</span> : "—"}</td>
-                  <td style={{ padding: "14px 18px" }}><button onClick={() => onViewHistory(r)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View</button></td>
+                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onViewHistory(r)} variant="link">View</Button></td>
                 </tr>
               ))}
             </tbody>

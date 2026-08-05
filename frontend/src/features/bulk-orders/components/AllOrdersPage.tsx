@@ -7,6 +7,7 @@ import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { AllOrdersFilterBar } from "./AllOrdersFilterBar";
 import { AllOrdersAnalyticsSection } from "./AllOrdersAnalyticsSection";
+import { Button } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -79,12 +80,15 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       {/* Page Header */}
       <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "34px 48px", color: "#FFFDF9" }}>
-        <button 
-          onClick={onBack} 
-          style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 12, padding: "10px 14px", cursor: "pointer", marginBottom: 22, fontFamily: F.ui, fontSize: 13, fontWeight: 600 }}
+        <Button
+          onClick={onBack}
+          variant="tertiary"
+          size="md"
+          iconLeft={ArrowLeft}
+          style={{ marginBottom: 22 }}
         >
-          <ArrowLeft size={16} /> Back to Production
-        </button>
+          Back to Production
+        </Button>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ShoppingBag size={28} />

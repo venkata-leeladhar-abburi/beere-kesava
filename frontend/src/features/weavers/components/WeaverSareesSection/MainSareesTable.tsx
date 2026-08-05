@@ -4,6 +4,7 @@ import { ageBucket } from "../../../customers/contexts/SalesContext";
 import { T, F, th, td, tdMono } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
 import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
+import { Checkbox } from "../../../../shared/ui/primitives";
 
 function Chip({ label, color }: { label: string; color: string }) {
   return (
@@ -45,10 +46,10 @@ export function MainSareesTable({
             <tr style={{ background: T.warmCream }}>
               {selectable && (
                 <th style={{ ...th, width: 34 }}>
-                  <input type="checkbox"
+                  <Checkbox
                     checked={visible.length > 0 && visible.every(r => selectedIds?.has(r.sareeId))}
-                    onChange={() => onToggleAll?.(visible.map(r => r.sareeId))}
-                    style={{ cursor: "pointer" }} />
+                    onCheckedChange={() => onToggleAll?.(visible.map(r => r.sareeId))}
+                  />
                 </th>
               )}
               <th style={th}>Saree ID</th>
@@ -84,8 +85,8 @@ export function MainSareesTable({
                 <tr key={r.sareeId} style={{ background: selectedIds?.has(r.sareeId) ? "rgba(110,15,45,0.05)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
                   {selectable && (
                     <td style={td}>
-                      <input type="checkbox" checked={!!selectedIds?.has(r.sareeId)}
-                        onChange={() => onToggleRow?.(r.sareeId)} style={{ cursor: "pointer" }} />
+                      <Checkbox checked={!!selectedIds?.has(r.sareeId)}
+                        onCheckedChange={() => onToggleRow?.(r.sareeId)} />
                     </td>
                   )}
                   <td style={tdMono}>{r.sareeId}</td>

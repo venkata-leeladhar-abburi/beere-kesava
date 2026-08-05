@@ -5,6 +5,7 @@ import { useMaterialIssue } from "../../contexts/MaterialIssueContext";
 import { T, F, EASE, G_GOLD, MobileCtx } from "../theme";
 import { MAT_CARDS } from "../data";
 import { SectionHeader, FadeUp } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
@@ -127,20 +128,15 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
         </div>
 
         <div style={{ flex: "1 1 15%", display: "flex", justifyContent: isMobile ? "stretch" : "flex-end" }}>
-          <motion.button
+          <Button
             onClick={() => onNavigate?.("IssueMaterial")}
-            whileHover={{ scale: 1.03, boxShadow: "0 6px 20px rgba(110,15,45,0.15)" }}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              width: isMobile ? "100%" : "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              padding: "12px 20px", borderRadius: 12, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy,
-              border: `1.5px solid rgba(110,15,45,0.16)`, fontFamily: F.ui, fontWeight: 700, fontSize: 13,
-              cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s",
-            }}
+            variant="secondary"
+            size="md"
+            iconRight={ArrowRight}
+            fullWidth={isMobile}
           >
-            <span>View Full History</span>
-            <ArrowRight size={14} />
-          </motion.button>
+            View Full History
+          </Button>
         </div>
       </div>
     </section>

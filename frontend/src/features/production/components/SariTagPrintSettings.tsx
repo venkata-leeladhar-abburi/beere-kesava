@@ -1,5 +1,6 @@
 import React from "react";
 import { Printer, Check } from "lucide-react";
+import { Button, Select, SelectItem, NumberInput } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -84,19 +85,9 @@ export function SariTagPrintSettings({
           >
             {field.label}
           </label>
-          <select
-            value={field.value}
-            onChange={e => field.setValue(e.target.value)}
-            style={{
-              width: "100%", height: 40, borderRadius: 8,
-              border: "1px solid rgba(110,15,45,0.18)",
-              fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
-              padding: "0 12px", background: "#FFF8F0",
-              outline: "none", cursor: "pointer",
-            }}
-          >
-            {field.options.map(o => <option key={o}>{o}</option>)}
-          </select>
+          <Select value={field.value} onValueChange={field.setValue}>
+            {field.options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </Select>
         </div>
       ))}
 
@@ -109,16 +100,9 @@ export function SariTagPrintSettings({
         >
           Number of Copies
         </label>
-        <input
-          type="number" min={1} max={100} value={copies}
-          onChange={e => setCopies(Number(e.target.value))}
-          style={{
-            width: "100%", height: 40, borderRadius: 8,
-            border: "1px solid rgba(110,15,45,0.18)",
-            fontFamily: F.mono, fontSize: 16, color: T.luxuryBrown,
-            padding: "0 12px", background: "#FFF8F0", outline: "none",
-            boxSizing: "border-box",
-          }}
+        <NumberInput
+          min={1} max={100} value={copies}
+          onValueChange={v => setCopies(v === "" ? 1 : v)}
         />
       </div>
 
@@ -168,35 +152,23 @@ export function SariTagPrintSettings({
             </div>
           </div>
         ) : (
-          <button
+          <Button
             onClick={handlePrint}
             disabled={printing}
-            style={{
-              width: "100%", height: 46,
-              background: printing ? "rgba(110,15,45,0.40)" : T.royalBurgundy,
-              border: "none", borderRadius: 999,
-              color: "#FFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600,
-              cursor: printing ? "default" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              transition: "all 0.2s",
-            }}
+            loading={printing}
+            fullWidth
+            size="lg"
+            variant="primary"
           >
             <Printer size={16} />
             {printing
               ? "Sending to Printer…"
               : `Print Now — ${copies} ${copies === 1 ? "copy" : "copies"}`}
-          </button>
+          </Button>
         )}
-        <button
-          onClick={onClose}
-          style={{
-            width: "100%", height: 36, background: "transparent",
-            border: "none", color: T.taupe,
-            fontFamily: F.ui, fontSize: 13, cursor: "pointer",
-          }}
-        >
+        <Button onClick={onClose} fullWidth variant="tertiary">
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

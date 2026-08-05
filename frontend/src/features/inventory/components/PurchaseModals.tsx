@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Package, Layers, Tag, Sparkles, Printer, Calendar, IndianRupee, X, Check, FileText,
 } from "lucide-react";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -89,10 +90,13 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: s
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
         {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
-      <motion.button onClick={onClose} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-        style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-        <X size={18} color="#FFFDF9" />
-      </motion.button>
+      <IconButton
+        icon={X}
+        label="Close"
+        onClick={onClose}
+        shape="circle"
+        className="bg-white/12 border border-white/22 text-[#FFFDF9] hover:bg-white/20 active:bg-white/25 shrink-0"
+      />
     </div>
   );
 }
@@ -162,10 +166,9 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
           </div>
         )}
 
-        <motion.button onClick={onClose} whileHover={{ scale: 1.02, boxShadow: "0 6px 20px rgba(110,15,45,0.22)" }} whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
+        <Button variant="primary" size="lg" fullWidth onClick={onClose} className="rounded-[11px]">
           Close
-        </motion.button>
+        </Button>
       </div>
     </ModalOverlay>
   );
@@ -242,14 +245,17 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
         </div>
 
         <div style={{ display: "flex", gap: 12 }}>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 1, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 600, background: T.silkCream, color: T.taupe, border: `1.5px solid rgba(110,15,45,0.18)` }}>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={onClose}
+            className="flex-1 rounded-[11px] bg-[#F7F2EA] text-[#69635E] border-[rgba(110,15,45,0.18)] font-semibold"
+          >
             Close
-          </motion.button>
-          <motion.button onClick={() => window.print()} whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.30)" }} whileTap={{ scale: 0.97 }}
-            style={{ flex: 2, padding: "13px 0", borderRadius: 11, cursor: "pointer", fontFamily: F.ui, fontSize: 14, fontWeight: 700, background: T.royalBurgundy, color: "#FFFDF9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <Printer size={16} /> Print GRN Receipt
-          </motion.button>
+          </Button>
+          <Button variant="primary" size="lg" iconLeft={Printer} onClick={() => window.print()} className="flex-[2] rounded-[11px]">
+            Print GRN Receipt
+          </Button>
         </div>
       </div>
     </ModalOverlay>

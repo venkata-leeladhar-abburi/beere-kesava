@@ -4,6 +4,7 @@ import {
   CheckCircle2, Loader2, TriangleAlert,
 } from "lucide-react";
 import { ProductionHistoryFooter } from "./ProductionHistoryFooter";
+import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -112,16 +113,11 @@ function StatusBadge({ status }: { status: BatchStatus }) {
 // ── Dropdown select button ─────────────────────────────────────────────────────
 function DropBtn({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
-    <button style={{
-      display: "flex", alignItems: "center", gap: 6, padding: "7px 13px",
-      border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff",
-      fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown,
-      cursor: "pointer", whiteSpace: "nowrap",
-    }}>
+    <Button variant="secondary" size="sm">
       {icon}
       {label}
       <ChevronDown size={14} style={{ color: T.taupe }} />
-    </button>
+    </Button>
   );
 }
 
@@ -149,16 +145,9 @@ function PageHeader() {
         </div>
       </div>
 
-      <button style={{
-        display: "flex", alignItems: "center", gap: 8, padding: "10px 20px",
-        background: "linear-gradient(135deg, #C89B47 0%, #E7C983 100%)",
-        border: "none", borderRadius: 8, cursor: "pointer",
-        fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.deepWine,
-        boxShadow: "0 2px 12px rgba(200,155,71,0.30)",
-      }}>
-        <Download size={15} />
-        Generate Production Report
-      </button>
+      <Button variant="primary">
+        <Download size={15} /> Generate Production Report
+      </Button>
     </header>
   );
 }
@@ -176,17 +165,8 @@ function FilterBar() {
       <DropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
       <DropBtn label="All Orders" />
 
-      <div style={{ flex: 1, minWidth: 180, position: "relative" }}>
-        <Search size={14} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-        <input aria-label="Search batches..."
-          placeholder="Search batches..."
-          style={{
-            width: "100%", padding: "7px 12px 7px 32px",
-            border: `1px solid ${T.borderDef}`, borderRadius: 7,
-            fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown,
-            background: "#FAFAFA", outline: "none",
-          }}
-        />
+      <div style={{ flex: 1, minWidth: 180 }}>
+        <SearchInput aria-label="Search batches..." placeholder="Search batches..." />
       </div>
     </div>
   );
@@ -332,14 +312,7 @@ function TableSection() {
                   )}
                 </td>
                 <td style={{ ...TD, textAlign: "center" }}>
-                  <button style={{
-                    width: 30, height: 30, borderRadius: 6,
-                    border: `1px solid ${T.borderDef}`, background: "#fff",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", color: T.royalBurgundy,
-                  }}>
-                    <Eye size={14} />
-                  </button>
+                  <IconButton variant="secondary" size="sm" label="View batch" icon={Eye} />
                 </td>
               </tr>
             ))}
@@ -353,15 +326,9 @@ function TableSection() {
         </span>
         <div style={{ display: "flex", gap: 4 }}>
           {["Prev", "1", "2", "3", "Next"].map((p) => (
-            <button key={p} style={{
-              padding: "6px 13px", borderRadius: 6,
-              border: `1px solid ${p === "1" ? T.royalBurgundy : T.borderDef}`,
-              background: p === "1" ? T.royalBurgundy : "#fff",
-              color: p === "1" ? "#FFFDF9" : T.luxuryBrown,
-              fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
-            }}>
+            <Button key={p} variant={p === "1" ? "primary" : "secondary"} size="sm">
               {p}
-            </button>
+            </Button>
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

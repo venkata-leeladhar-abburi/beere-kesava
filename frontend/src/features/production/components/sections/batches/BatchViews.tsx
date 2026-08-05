@@ -9,6 +9,7 @@ import { T, F, EASE } from "../../theme";
 import { STAGE_CFG, BATCHES } from "../../data";
 import type { Batch } from "../../types";
 import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
+import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 
 export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
   if (tallied) {
@@ -20,9 +21,9 @@ export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: 
   }
 
   return (
-    <motion.button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(200,155,71,0.08)", color: T.antiqueGold, border: `1.5px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+    <Button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} variant="secondary" fullWidth>
       <CheckCircle size={16} weight="bold" /> Tally
-    </motion.button>
+    </Button>
   );
 }
 
@@ -71,11 +72,11 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
-                <input
-                  type="number" min={0} step={0.001}
+                <NumberInput
+                  min={0} step={0.001}
                   value={weights[s.id] ?? ""}
                   onChange={e => setWeights(prev => ({ ...prev, [s.id]: e.target.value }))}
-                  style={{ width: 84, padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${T.borderDef}`, fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}
+                  className="w-[84px]"
                 />
               </div>
             </div>
@@ -104,9 +105,9 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
             </motion.div>
           </div>
         ) : (
-          <motion.button onClick={() => setConfirming(true)} whileHover={{ scale: 1.02 }} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: T.antiqueGold, color: "#fff", border: "none", borderRadius: 10, padding: "12px 0", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={() => setConfirming(true)} variant="primary" fullWidth>
             <CheckCircle size={16} weight="bold" /> Confirm Final Weights
-          </motion.button>
+          </Button>
         )
       )}
     </ProductionDialog>
@@ -212,9 +213,9 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
-          <motion.button onClick={(e) => { e.stopPropagation(); onView?.(b); }} whileHover={{ scale: 1.02 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            <PhEye size={16} /> Open Batch
-          </motion.button>
+          <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" fullWidth iconLeft={<PhEye size={16} />}>
+            Open Batch
+          </Button>
           <SwipeToTally tallied={isTallied} onOpen={() => setTallyOpen(true)} />
         </div>
       </div>
@@ -267,13 +268,13 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
             <div>
               <div style={{ display: "flex", gap: 6 }}>
-                <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                  <PhEye size={14} weight="bold" /> View
-                </motion.button>
+                <Button onClick={() => onView?.(b)} variant="secondary" size="sm" iconLeft={<PhEye size={14} weight="bold" />}>
+                  View
+                </Button>
                 {b.isLive && onEdit && (
-                  <motion.button onClick={() => onEdit(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                    <PencilSimple size={14} /> Edit
-                  </motion.button>
+                  <Button onClick={() => onEdit(b)} variant="tertiary" size="sm" iconLeft={<PencilSimple size={14} />}>
+                    Edit
+                  </Button>
                 )}
               </div>
             </div>
@@ -319,13 +320,13 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
                   <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</td>
                   <td style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <motion.button onClick={() => onView?.(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        <PhEye size={14} weight="bold" /> View
-                      </motion.button>
+                      <Button onClick={() => onView?.(b)} variant="secondary" size="sm" iconLeft={<PhEye size={14} weight="bold" />}>
+                        View
+                      </Button>
                       {b.isLive && onEdit && (
-                        <motion.button onClick={() => onEdit(b)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.12)", color: T.royalBurgundy, border: `1.5px solid ${T.royalBurgundy}33`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                          <PencilSimple size={14} /> Edit
-                        </motion.button>
+                        <Button onClick={() => onEdit(b)} variant="tertiary" size="sm" iconLeft={<PencilSimple size={14} />}>
+                          Edit
+                        </Button>
                       )}
                     </div>
                   </td>

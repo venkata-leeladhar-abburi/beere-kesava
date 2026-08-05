@@ -1,6 +1,7 @@
 import React from "react";
 import { ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, card } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface QuickActionsSidebarProps {
   showQuickDispatch: boolean;
@@ -60,19 +61,10 @@ export function QuickActionsSidebar({
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {canDispatchShop && (
-              <button
+              <Button
                 onClick={() => onOpenModal("shop")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "12px 16px",
-                  background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`,
-                  border: "none",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  textAlign: "left" as const,
-                }}
+                variant="primary"
+                className="h-auto justify-start gap-2.5 rounded-xl bg-[linear-gradient(135deg,var(--bk-burgundy-700)_0%,var(--bk-burgundy-900)_100%)] px-4 py-3 text-left shadow-none hover:opacity-95"
               >
                 <div
                   style={{
@@ -96,23 +88,13 @@ export function QuickActionsSidebar({
                     {selectedCount > 0 ? `${selectedCount} saree${selectedCount > 1 ? "s" : ""} ready` : "Select sarees first"}
                   </div>
                 </div>
-              </button>
+              </Button>
             )}
             {canDispatchWholesale && (
-              <button
+              <Button
                 onClick={() => onOpenModal("wholesale")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "12px 16px",
-                  background: "#FFF",
-                  border: `1px solid ${T.borderDef}`,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  textAlign: "left" as const,
-                  boxShadow: "0 1px 6px rgba(44,24,16,0.06)",
-                }}
+                variant="secondary"
+                className="h-auto justify-start gap-2.5 rounded-xl bg-white px-4 py-3 text-left shadow-[0_1px_6px_rgba(44,24,16,0.06)]"
               >
                 <div
                   style={{
@@ -136,23 +118,13 @@ export function QuickActionsSidebar({
                     With tax invoice generation
                   </div>
                 </div>
-              </button>
+              </Button>
             )}
             {canRaiseQuotation && (
-              <button
+              <Button
                 onClick={() => onOpenModal("quotation")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "12px 16px",
-                  background: "#FFF",
-                  border: `1px solid ${T.borderDef}`,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  textAlign: "left" as const,
-                  boxShadow: "0 1px 6px rgba(44,24,16,0.06)",
-                }}
+                variant="secondary"
+                className="h-auto justify-start gap-2.5 rounded-xl bg-white px-4 py-3 text-left shadow-[0_1px_6px_rgba(44,24,16,0.06)]"
               >
                 <div
                   style={{
@@ -176,7 +148,7 @@ export function QuickActionsSidebar({
                     Send to finishing before dispatch
                   </div>
                 </div>
-              </button>
+              </Button>
             )}
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Phone, Shield, Check, Bell } from "lucide-react";
 import logo from "../../../assets/logo.webp";
 import { LoginBrandPanel } from "./LoginBrandPanel";
 import { StepOTP } from "./StepOTP";
+import { Button, Input } from "../../../shared/ui/primitives";
 
 const C = {
   pageBg:        "#FFFFFF",
@@ -27,8 +28,6 @@ const F = {
 
 function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
   const [phone, setPhone] = useState("");
-  const [focused, setFocused] = useState(false);
-  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = () => {
     const clean = phone.replace(/\D/g, "");
@@ -60,57 +59,36 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         We will send a 6-digit code to this number. Use the number registered with the system.
       </div>
 
-      <div style={{
-        display: "flex", alignItems: "center",
-        height: 58, background: C.inputBg,
-        border: `${focused ? 2 : 1.5}px solid ${focused ? C.burgundy : C.borderStrong}`,
-        borderRadius: 14, overflow: "hidden",
-        transition: "border 0.15s, box-shadow 0.15s",
-        boxShadow: focused ? `0 0 0 4px rgba(107,26,42,0.08)` : "none",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 16px", flexShrink: 0 }}>
-          <span style={{ fontSize: 20, lineHeight: 1 }}>🇮🇳</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: C.textMuted }}>+91</span>
-        </div>
-        <div style={{ width: 1, height: 28, background: C.border, flexShrink: 0 }} />
-        <input
-          type="tel"
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          maxLength={12}
-          placeholder="98765 43210"
-          style={{
-            flex: 1, height: "100%", border: "none", outline: "none",
-            background: "transparent", padding: "0 18px",
-            fontFamily: F.mono, fontWeight: 500, fontSize: 18, color: C.textPrimary,
-          }}
-        />
-      </div>
+      <Input
+        type="tel"
+        size="lg"
+        value={phone}
+        onChange={e => setPhone(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && handleSubmit()}
+        maxLength={12}
+        placeholder="98765 43210"
+        className="font-mono text-[18px]"
+        addonLeft={
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 20, lineHeight: 1 }}>🇮🇳</span>
+            <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: C.textMuted }}>+91</span>
+          </span>
+        }
+      />
       <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted, fontStyle: "italic", marginTop: 8 }}>
         Example: The number your admin registered for you
       </div>
 
-      <motion.button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
         onClick={handleSubmit}
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        whileTap={{ scale: 0.98 }}
-        style={{
-          width: "100%", height: 56, marginTop: 24,
-          background: hovered ? C.burgundyHover : C.burgundy,
-          border: "none", borderRadius: 999, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: "#FFFFFF",
-          transition: "background 0.18s",
-          boxShadow: "0 4px 24px rgba(107,26,42,0.30)",
-        }}
+        iconLeft={Phone}
+        className="mt-6 rounded-full"
       >
-        <Phone size={20} color="#FFF" />
         Send OTP to My Number
-      </motion.button>
+      </Button>
 
       <div style={{ marginTop: 18, background: "rgba(196,146,58,0.08)", border: "1px solid rgba(196,146,58,0.22)", borderRadius: 12, padding: "12px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}>
         <Bell size={16} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />

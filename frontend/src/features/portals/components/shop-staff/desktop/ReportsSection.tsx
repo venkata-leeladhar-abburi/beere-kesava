@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from 
 import { BarChart2, RotateCcw } from "lucide-react";
 import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
 import { DSH } from "./DSH";
+import { Button } from "../../../../../shared/ui/primitives";
 
 const designData = [
   { design: "BKB-045", count: 84 }, { design: "BKB-031", count: 62 },
@@ -36,7 +37,7 @@ export function ReportsSection({
         {/* Period selector */}
         <div style={{ display: "flex", gap: 10, marginBottom: 32 }}>
           {["Today", "This Week", "This Month", "Last 3 Months"].map((p, i) => (
-            <button key={p} style={{ padding: "11px 24px", borderRadius: 999, border: `1px solid ${C.bdr}`, background: i === 0 ? C.burg : "#FFF", fontFamily: F.u, fontSize: 14, color: i === 0 ? "#FFF" : C.muted, cursor: "pointer", fontWeight: i === 0 ? 600 : 400 }}>{p}</button>
+            <Button key={p} variant={i === 0 ? "primary" : "secondary"} size="md" className={i === 0 ? "rounded-full border border-[rgba(139,26,46,0.12)] bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-full border border-[rgba(139,26,46,0.12)] bg-white"}>{p}</Button>
           ))}
         </div>
 

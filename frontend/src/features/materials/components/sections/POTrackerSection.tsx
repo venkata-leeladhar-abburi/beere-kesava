@@ -6,6 +6,7 @@ import { T, F, MobileCtx } from "../theme";
 import { PO_STATUS_CFG, MAT_TAG } from "../data";
 import type { POFilter } from "../types";
 import { FadeUp } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 
 export function POTrackerSection({
@@ -51,14 +52,9 @@ export function POTrackerSection({
             Purchase Orders
           </span>
         </div>
-        <motion.button
-          onClick={onCreatePO}
-          whileHover={{ x: 3 }}
-          transition={{ duration: 0.2 }}
-          style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.antiqueGold, cursor: "pointer", background: "none", border: "none" }}
-        >
+        <Button onClick={onCreatePO} variant="link" size="sm">
           ➕ Create New PO →
-        </motion.button>
+        </Button>
       </div>
 
       <div style={{ marginBottom: 16 }}>
@@ -66,21 +62,15 @@ export function POTrackerSection({
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         {PILL_LABELS.map(p => (
-          <motion.button
+          <Button
             key={p.key}
             onClick={() => setFilter(p.key)}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              fontFamily: F.ui, fontWeight: 600, fontSize: 12, padding: "7px 14px", borderRadius: 99, cursor: "pointer",
-              background: filter === p.key ? T.royalBurgundy : "transparent",
-              color: filter === p.key ? "#FFFDF9" : T.taupe,
-              border: filter === p.key ? "none" : `1px solid rgba(110,15,45,0.16)`,
-              transition: "all 0.2s",
-            }}
+            variant={filter === p.key ? "primary" : "secondary"}
+            size="sm"
+            className="rounded-full"
           >
             {p.label}
-          </motion.button>
+          </Button>
         ))}
       </div>
 
@@ -226,22 +216,17 @@ export function POTrackerSection({
 
                   <div style={{ display: "flex", gap: 10 }}>
                     {po.status === "approved" && (
-                      <motion.button
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           onNavigate?.("ReceiveStock", { poId: po.poNumber });
                         }}
-                        whileHover={{ scale: 1.02, backgroundColor: "#154d30" }}
-                        whileTap={{ scale: 0.98 }}
-                        style={{
-                          flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
-                          fontFamily: F.ui, fontWeight: 700, fontSize: 12,
-                          background: T.green, color: "#FFFFFF", border: "none",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                        }}
+                        variant="primary"
+                        size="sm"
+                        className="flex-[1.8] bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
                       >
                         📦 Receive Materials
-                      </motion.button>
+                      </Button>
                     )}
                     {po.status === "received" && po.grnId && (
                       <div style={{ flex: 1.8, height: 38, borderRadius: 10, background: "rgba(30,102,64,0.06)", border: `1.5px solid rgba(30,102,64,0.18)`, fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -249,36 +234,23 @@ export function POTrackerSection({
                       </div>
                     )}
                     {po.status === "rejected" && (
-                      <motion.button
+                      <Button
                         onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
-                        whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                        whileTap={{ scale: 0.98 }}
-                        style={{
-                          flex: 1.8, height: 38, borderRadius: 10, cursor: "pointer",
-                          fontFamily: F.ui, fontWeight: 700, fontSize: 12,
-                          background: "transparent", color: T.royalBurgundy,
-                          border: `1.5px solid rgba(110,15,45,0.22)`,
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                        }}
+                        variant="secondary"
+                        size="sm"
+                        className="flex-[1.8]"
                       >
                         📋 Recreate PO
-                      </motion.button>
+                      </Button>
                     )}
-                    <motion.button
+                    <Button
                       onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
-                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.10)" }}
-                      whileTap={{ scale: 0.98 }}
-                      style={{
-                        flex: po.status === "pending" ? 1 : 0.8,
-                        height: 38, borderRadius: 10, cursor: "pointer",
-                        fontFamily: F.ui, fontWeight: 700, fontSize: 12,
-                        background: "rgba(110,15,45,0.04)", color: T.royalBurgundy,
-                        border: `1.5px solid rgba(110,15,45,0.16)`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}
+                      variant="secondary"
+                      size="sm"
+                      className={po.status === "pending" ? "flex-1" : "flex-[0.8]"}
                     >
                       📄 View PO
-                    </motion.button>
+                    </Button>
                   </div>
                 </div>
               </motion.div>

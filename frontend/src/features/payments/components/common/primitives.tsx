@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CheckCircle2, Clock } from "lucide-react";
 
 import { F, T } from "../../theme";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 // helper: initials avatar
 export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string; size?: number }) {
@@ -46,9 +47,9 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 24 }}>
             Action completed successfully.
           </div>
-          <button onClick={() => { setDone(false); onClose(); }} style={{ height: 44, padding: "0 32px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>
+          <Button variant="primary" size="md" onClick={() => { setDone(false); onClose(); }}>
             Close
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -67,11 +68,11 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
           {desc}
         </div>
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ height: 40, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+          <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
           {!hideAction && (
-            <button onClick={handleAction} style={{ height: 40, padding: "0 20px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              {loading ? "Processing..." : actionLabel}
-            </button>
+            <Button variant="primary" size="sm" loading={loading} onClick={handleAction}>
+              {actionLabel}
+            </Button>
           )}
         </div>
       </div>
@@ -82,8 +83,8 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
 // helper: dropdown button
 export function DropBtn({ value, options, onChange }: { value?: string, options: string[], onChange?: (v: string) => void }) {
   return (
-    <select value={value} onChange={e => onChange?.(e.target.value)} style={{ padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer", outline: "none" }}>
-      {options.map(o => <option key={o}>{o}</option>)}
-    </select>
+    <Select value={value} onValueChange={onChange}>
+      {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+    </Select>
   );
 }

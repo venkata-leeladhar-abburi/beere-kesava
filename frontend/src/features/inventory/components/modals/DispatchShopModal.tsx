@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
 import { T, F, EASE } from "../theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { TransportData } from "../types";
 import { StatusBadge } from "../common/primitives";
 import { TransportForm } from "./shared/TransportForm";
@@ -43,7 +44,13 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               <ShoppingBag size={20} color={T.antiqueGold} />
               <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
             </div>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+            />
           </div>
           {/* Step progress */}
           <div style={{ display: "flex", gap: 0 }}>
@@ -132,32 +139,51 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
 
         <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
           {step > 1 && (
-            <button onClick={() => setStep(s => s - 1)}
-              style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+            <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
               Back
-            </button>
+            </Button>
           )}
           {step < 4 && (
-            <button onClick={() => onConfirm(transport, { skipped: true, picked })} disabled={noSarees}
+            <Button
+              onClick={() => onConfirm(transport, { skipped: true, picked })}
+              disabled={noSarees}
               title={noSarees ? "Select at least one saree first" : "Dispatch now — fill remaining details later from Dispatch History"}
-              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${noSarees ? T.borderMed : T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: noSarees ? T.taupe : "#8B6018", cursor: noSarees ? "not-allowed" : "pointer", opacity: noSarees ? 0.55 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
-              <Zap size={14} /> Dispatch Now
-            </button>
+              variant="secondary"
+              size="lg"
+              iconLeft={Zap}
+              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-55"
+            >
+              Dispatch Now
+            </Button>
           )}
           {step < 4 ? (() => {
             const blocked = noSarees || (step === 2 && !canNext2);
             return (
-              <button onClick={() => setStep(s => s + 1)} disabled={blocked}
+              <Button
+                onClick={() => setStep(s => s + 1)}
+                disabled={blocked}
                 title={noSarees ? "Select at least one saree first" : undefined}
-                style={{ flex: 1, height: 46, background: blocked ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: blocked ? T.taupe : "#FFF", cursor: blocked ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                Continue <ArrowRight size={15} />
-              </button>
+                variant="primary"
+                size="lg"
+                iconRight={ArrowRight}
+                fullWidth
+                className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+              >
+                Continue
+              </Button>
             );
           })() : (
-            <button onClick={() => onConfirm(transport, { picked })} disabled={noSarees}
-              style={{ flex: 1, height: 46, background: noSarees ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.green} 0%, #145230 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: noSarees ? T.taupe : "#FFF", cursor: noSarees ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: noSarees ? "none" : "0 4px 20px rgba(30,102,64,0.25)" }}>
-              <CheckCircle2 size={16} /> Confirm Shop Dispatch
-            </button>
+            <Button
+              onClick={() => onConfirm(transport, { picked })}
+              disabled={noSarees}
+              variant="primary"
+              size="lg"
+              iconLeft={CheckCircle2}
+              fullWidth
+              className="rounded-full bg-[linear-gradient(135deg,#1E6640_0%,#145230_100%)] shadow-[0_4px_20px_rgba(30,102,64,0.25)]"
+            >
+              Confirm Shop Dispatch
+            </Button>
           )}
         </div>
       </motion.div>

@@ -1,5 +1,5 @@
 import {
-  Search, ChevronDown, Download, Eye, Edit, Plus,
+  ChevronDown, Download, Eye, Edit, Plus,
   LayoutGrid, AlignJustify, Table as TableIcon, MapPin,
   Building2, Users, AlertTriangle,
 } from "lucide-react";
@@ -7,6 +7,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionTitle, Pill, FadeUp } from "../common/primitives";
 import { WholesaleCustomer, ViewMode } from "../types";
+import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 
 export interface WholesaleCustomersSectionProps {
   wholesaleList: WholesaleCustomer[];
@@ -30,11 +31,9 @@ export function WholesaleCustomersSection({
         action=""
       />
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -60, marginBottom: 24 }}>
-        <button
-          onClick={() => setShowAddWholesale(!showAddWholesale)}
-          style={{ padding: "13px 26px", background: T.royalBurgundy, color: "#FFF", borderRadius: 9, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
-          <Plus size={18} /> Add New Wholesale Customer →
-        </button>
+        <Button onClick={() => setShowAddWholesale(!showAddWholesale)} variant="primary" iconLeft={Plus}>
+          Add New Wholesale Customer →
+        </Button>
       </div>
 
       {showAddWholesale && (
@@ -49,34 +48,49 @@ export function WholesaleCustomersSection({
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Business Name *</label><input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Owner / Contact Name *</label><input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
+                <Field label="Business Name *"><Input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" /></Field>
+                <Field label="Owner / Contact Name *"><Input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" /></Field>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Phone Number *</label><input aria-label="Main contact number" type="text" placeholder="Main contact number" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>WhatsApp Number</label><input aria-label="If different" type="text" placeholder="If different" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
+                  <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" /></Field>
+                  <Field label="WhatsApp Number"><Input aria-label="If different" type="text" placeholder="If different" /></Field>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>City *</label><input aria-label="City" type="text" placeholder="City" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>State *</label><select style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14, backgroundColor: "#FFF" }}><option>Andhra Pradesh</option><option>Telangana</option><option>Tamil Nadu</option><option>Karnataka</option></select></div>
+                  <Field label="City *"><Input aria-label="City" type="text" placeholder="City" /></Field>
+                  <Field label="State *">
+                    <Select defaultValue="Andhra Pradesh">
+                      <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                      <SelectItem value="Telangana">Telangana</SelectItem>
+                      <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                      <SelectItem value="Karnataka">Karnataka</SelectItem>
+                    </Select>
+                  </Field>
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Business Address</label><textarea placeholder="Full address for delivery and billing" rows={2} style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Payment Terms *</label><select style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14, backgroundColor: "#FFF" }}><option>30 days</option><option>45 days</option><option>60 days</option><option>90 days</option><option>Custom</option></select></div>
+                <Field label="Business Address"><Textarea placeholder="Full address for delivery and billing" rows={2} /></Field>
+                <Field label="Payment Terms *">
+                  <Select defaultValue="30 days">
+                    <SelectItem value="30 days">30 days</SelectItem>
+                    <SelectItem value="45 days">45 days</SelectItem>
+                    <SelectItem value="60 days">60 days</SelectItem>
+                    <SelectItem value="90 days">90 days</SelectItem>
+                    <SelectItem value="Custom">Custom</SelectItem>
+                  </Select>
+                </Field>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Bank Name</label><input aria-label="For any refunds" type="text" placeholder="For any refunds" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Account Number</label><input aria-label="Account No." type="password" placeholder="Account No." style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
+                  <Field label="Bank Name"><Input aria-label="For any refunds" type="text" placeholder="For any refunds" /></Field>
+                  <Field label="Account Number"><Input aria-label="Account No." type="password" placeholder="Account No." /></Field>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>GST Number</label><input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
-                  <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Visiting Card Photo</label><input type="file" accept="image/*" style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, backgroundColor: "#FFF" }} /></div>
+                  <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" /></Field>
+                  <Field label="Visiting Card Photo"><input type="file" accept="image/*" style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, backgroundColor: "#FFF" }} /></Field>
                 </div>
-                <div><label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Notes</label><input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }} /></div>
+                <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." /></Field>
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid ${T.borderDef}` }}>
-              <button onClick={() => setShowAddWholesale(false)} style={{ padding: "10px 24px", background: "transparent", color: T.taupe, borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => setShowAddWholesale(false)} style={{ padding: "10px 32px", background: T.royalBurgundy, color: "#FFF", borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>✓ Save Customer</button>
+              <Button onClick={() => setShowAddWholesale(false)} variant="tertiary">Cancel</Button>
+              <Button onClick={() => setShowAddWholesale(false)} variant="primary">✓ Save Customer</Button>
             </div>
           </div>
         </FadeUp>
@@ -106,9 +120,8 @@ export function WholesaleCustomersSection({
       {/* Toolbar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "9px 16px", width: 300 }}>
-            <Search size={16} color={T.taupe} />
-            <input aria-label="Search by business name, city..." type="text" placeholder="Search by business name, city..." style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }} />
+          <div style={{ width: 300 }}>
+            <SearchInput aria-label="Search by business name, city..." placeholder="Search by business name, city..." />
           </div>
           <Pill active={true}>All Wholesale (48)</Pill>
           <Pill active={false}>Active (28)</Pill>
@@ -118,12 +131,12 @@ export function WholesaleCustomersSection({
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>
           <div style={{ display: "flex", background: "#FFF", borderRadius: 8, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <button onClick={() => setWholesaleView("card")} style={{ padding: "9px 13px", background: wholesaleView === "card" ? T.silkCream : "transparent", border: "none", cursor: "pointer" }}><LayoutGrid size={18} color={wholesaleView === "card" ? T.royalBurgundy : T.taupe} /></button>
-            <button onClick={() => setWholesaleView("list")} style={{ padding: "9px 13px", background: wholesaleView === "list" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><AlignJustify size={18} color={wholesaleView === "list" ? T.royalBurgundy : T.taupe} /></button>
-            <button onClick={() => setWholesaleView("table")} style={{ padding: "9px 13px", background: wholesaleView === "table" ? T.silkCream : "transparent", border: "none", borderLeft: `1px solid ${T.borderDef}`, cursor: "pointer" }}><TableIcon size={18} color={wholesaleView === "table" ? T.royalBurgundy : T.taupe} /></button>
+            <IconButton icon={LayoutGrid} label="Card view" variant={wholesaleView === "card" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("card")} className="rounded-none" />
+            <IconButton icon={AlignJustify} label="List view" variant={wholesaleView === "list" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("list")} className="rounded-none border-l" />
+            <IconButton icon={TableIcon} label="Table view" variant={wholesaleView === "table" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("table")} className="rounded-none border-l" />
           </div>
           <DownloadGate>
-            <button style={{ padding: "9px 18px", borderRadius: 8, border: `1px solid ${T.antiqueGold}`, background: "transparent", color: T.antiqueGold, fontFamily: F.ui, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}><Download size={14} /> Download</button>
+            <Button variant="tertiary" size="sm" iconLeft={Download}>Download</Button>
           </DownloadGate>
         </div>
       </div>
@@ -206,12 +219,12 @@ export function WholesaleCustomersSection({
                   borderTop: `1px solid ${T.borderDef}`,
                   paddingTop: 12,
                 }}>
-                  <button onClick={() => onView(w)} style={{ flex: 1, background: "rgba(110,15,45,0.06)", border: "1px solid rgba(110,15,45,0.1)", borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", transition: "all 0.2s" }}>
-                    <Eye size={12} color={T.royalBurgundy} /> View Profile
-                  </button>
-                  <button onClick={() => onEdit(w)} style={{ background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer", transition: "all 0.2s" }}>
-                    <Edit size={12} /> Edit
-                  </button>
+                  <Button onClick={() => onView(w)} variant="secondary" size="sm" iconLeft={Eye} fullWidth>
+                    View Profile
+                  </Button>
+                  <Button onClick={() => onEdit(w)} variant="tertiary" size="sm" iconLeft={Edit}>
+                    Edit
+                  </Button>
                 </div>
               </div>
             );
@@ -239,7 +252,7 @@ export function WholesaleCustomersSection({
                   <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.orders}</td>
                   <td style={{ padding: "14px 18px", color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</td>
                   <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                  <td style={{ padding: "14px 18px" }}><button onClick={() => onView(w)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View</button></td>
+                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onView(w)} variant="link" size="sm">View</Button></td>
                 </tr>
               ))}
             </tbody>
@@ -270,7 +283,7 @@ export function WholesaleCustomersSection({
                   <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.terms}</td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{w.lastOrder}</td>
                   <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                  <td style={{ padding: "14px 18px" }}><button onClick={() => onView(w)} style={{ background: "transparent", border: "none", color: T.royalBurgundy, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>View Profile</button></td>
+                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onView(w)} variant="link" size="sm">View Profile</Button></td>
                 </tr>
               ))}
             </tbody>

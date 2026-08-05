@@ -6,6 +6,7 @@ import {
 import { F, T } from "./tokens";
 import { LOGIN_ENTRIES } from "./data";
 import { PaginationBtn } from "./shared";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function LoginHistorySection() {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
@@ -18,17 +19,9 @@ export function LoginHistorySection() {
         <span style={{ fontFamily: F.display, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, flex: 1 }}>
           Login History — User Sessions
         </span>
-        <button style={{
-          background: "none",
-          border: "none",
-          fontFamily: F.ui,
-          fontWeight: 500,
-          fontSize: 12,
-          color: T.antiqueGold,
-          cursor: "pointer",
-        }}>
+        <Button variant="link" size="sm" className="text-[12px] text-[#C89B47] hover:text-[#C89B47]">
           Download Login Log →
-        </button>
+        </Button>
       </div>
       <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 24, marginTop: 0 }}>
         Every login, logout, and failed login attempt — with device, session duration, and status.
@@ -36,48 +29,24 @@ export function LoginHistorySection() {
 
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button
+        <Button
+          variant={loginView === "timeline" ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={AlignLeft}
+          className="rounded-full"
           onClick={() => setLoginView("timeline")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            borderRadius: 999,
-            padding: "7px 16px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            cursor: "pointer",
-            border: loginView === "timeline" ? "none" : `1px solid ${T.royalBurgundy}`,
-            background: loginView === "timeline" ? T.royalBurgundy : "transparent",
-            color: loginView === "timeline" ? "#fff" : T.royalBurgundy,
-            transition: "all 0.15s",
-          }}
         >
-          <AlignLeft size={14} />
           Timeline View
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={loginView === "table" ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={Table2}
+          className="rounded-full"
           onClick={() => setLoginView("table")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            borderRadius: 999,
-            padding: "7px 16px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 12,
-            cursor: "pointer",
-            border: loginView === "table" ? "none" : `1px solid ${T.royalBurgundy}`,
-            background: loginView === "table" ? T.royalBurgundy : "transparent",
-            color: loginView === "table" ? "#fff" : T.royalBurgundy,
-            transition: "all 0.15s",
-          }}
         >
-          <Table2 size={14} />
           Table View
-        </button>
+        </Button>
       </div>
 
       <AnimatePresence mode="wait">

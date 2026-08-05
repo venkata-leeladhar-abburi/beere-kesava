@@ -11,6 +11,7 @@ import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { calcCharges } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
 export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | null; onClose: () => void }) {
@@ -55,9 +56,14 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton
+            icon={X}
+            label="Close"
+            variant="ghost"
+            size="md"
+            onClick={onClose}
+            style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)" }}
+          />
         </div>
 
         {/* Body */}
@@ -164,7 +170,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
         {/* Footer */}
         <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ height: 40, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>Close</button>
+          <Button variant="primary" size="md" onClick={onClose}>Close</Button>
         </div>
       </motion.div>
 

@@ -4,6 +4,7 @@ import { X, Tag } from "lucide-react";
 import { Purchase, totalPieces } from "../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
+import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
 /** Slide-in "Purchase Details" panel opened from a table row. */
 export function DetailDrawer({
@@ -59,23 +60,14 @@ export function DetailDrawer({
               <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>
                 Purchase Details
               </span>
-              <button
+              <IconButton
+                icon={X}
+                label="Close"
                 onClick={onClose}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  border: `1px solid ${T.borderDef}`,
-                  background: "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  color: T.taupe,
-                }}
-              >
-                <X size={16} />
-              </button>
+                variant="secondary"
+                shape="circle"
+                size="sm"
+              />
             </div>
 
             <div
@@ -154,28 +146,14 @@ export function DetailDrawer({
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown, marginBottom: 8 }}>
                   Saree Barcodes ({totalPieces(detailRow.sarees)})
                 </div>
-                <button
+                <Button
                   onClick={() => onViewSarees(detailRow)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    background: T.cream,
-                    border: `1px solid ${T.borderGold}`,
-                    borderRadius: 10,
-                    padding: "12px 0",
-                    fontFamily: F.ui,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    color: T.luxuryBrown,
-                    cursor: "pointer",
-                  }}
+                  variant="secondary"
+                  fullWidth
+                  iconLeft={Tag}
                 >
-                  <Tag size={14} color={T.antiqueGold} />
                   View &amp; Print Saree Tags
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -188,40 +166,22 @@ export function DetailDrawer({
                 flexShrink: 0,
               }}
             >
-              <button
+              <Button
                 onClick={() => onEdit(detailRow.id)}
-                style={{
-                  flex: 1,
-                  background: T.royalBurgundy,
-                  color: "white",
-                  border: "none",
-                  borderRadius: 999,
-                  padding: "11px 0",
-                  fontFamily: F.ui,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
+                variant="primary"
+                fullWidth
+                className="rounded-full"
               >
                 Edit Entry
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={onClose}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  color: T.taupe,
-                  border: `1px solid ${T.borderDef}`,
-                  borderRadius: 999,
-                  padding: "11px 0",
-                  fontFamily: F.ui,
-                  fontWeight: 500,
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
+                variant="secondary"
+                fullWidth
+                className="rounded-full"
               >
                 Close
-              </button>
+              </Button>
             </div>
           </motion.div>
         </>

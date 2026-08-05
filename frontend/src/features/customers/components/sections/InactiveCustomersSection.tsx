@@ -1,7 +1,7 @@
-import { Search } from "lucide-react";
 import { T, F } from "../theme";
 import { SectionTitle, Pill } from "../common/primitives";
 import { monthsSinceLabel } from "../utils";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 export interface InactiveCustomerRow {
   name: string;
@@ -44,25 +44,23 @@ export function InactiveCustomersSection({
       {/* Filters + timeline */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", alignItems: "center", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "9px 16px", width: 260 }}>
-            <Search size={16} color={T.taupe} />
-            <input
-              type="text" value={inactiveSearch} onChange={e => setInactiveSearch(e.target.value)}
+          <div style={{ width: 260 }}>
+            <SearchInput
+              value={inactiveSearch}
+              onChange={e => setInactiveSearch(e.target.value)}
               placeholder="Search by customer name..."
-              style={{ border: "none", outline: "none", width: "100%", marginLeft: 8, fontFamily: F.ui, fontSize: 14 }}
             />
           </div>
           <Pill active={inactiveTypeFilter === "all"} onClick={() => setInactiveTypeFilter("all")}>All ({inactiveDataLength})</Pill>
           <Pill active={inactiveTypeFilter === "Wholesale"} onClick={() => setInactiveTypeFilter("Wholesale")}>Wholesale ({wholesaleCount})</Pill>
           <Pill active={inactiveTypeFilter === "Retail"} onClick={() => setInactiveTypeFilter("Retail")}>Retail ({retailCount})</Pill>
         </div>
-        <select
-          value={inactiveCityFilter} onChange={e => setInactiveCityFilter(e.target.value)}
-          style={{ height: 38, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", padding: "0 10px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}
-        >
-          <option value="all">All Cities</option>
-          {inactiveCities.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <div style={{ width: 160 }}>
+          <Select value={inactiveCityFilter} onValueChange={setInactiveCityFilter} size="sm" placeholder="All Cities">
+            <SelectItem value="all">All Cities</SelectItem>
+            {inactiveCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </Select>
+        </div>
       </div>
 
       {/* Timeline filter — how long inactive */}
@@ -75,12 +73,15 @@ export function InactiveCustomersSection({
           { key: "10", label: "10+ months" },
           { key: "12", label: "12+ months" },
         ] as const).map(t => (
-          <button
-            key={t.key} onClick={() => setInactiveTimelineFilter(t.key)}
-            style={{ padding: "7px 16px", borderRadius: 20, cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 600, background: inactiveTimelineFilter === t.key ? T.crimson : "transparent", border: `1px solid ${inactiveTimelineFilter === t.key ? T.crimson : T.borderDef}`, color: inactiveTimelineFilter === t.key ? "#FFF" : T.taupe }}
+          <Button
+            key={t.key}
+            onClick={() => setInactiveTimelineFilter(t.key)}
+            variant={inactiveTimelineFilter === t.key ? "danger" : "tertiary"}
+            size="sm"
+            className="rounded-full"
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -123,7 +124,7 @@ export function InactiveCustomersSection({
                   <td style={{ padding: "16px 24px", color: T.luxuryBrown, fontFamily: F.mono }}>₹{row.spend}</td>
                   <td style={{ padding: "16px 24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <button style={{ background: "transparent", border: "none", color: T.antiqueGold, fontWeight: 600, cursor: "pointer", fontFamily: F.ui, fontSize: 13 }}>Mark as Inactive</button>
+                      <Button variant="link">Mark as Inactive</Button>
                       <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
                     </div>
                   </td>

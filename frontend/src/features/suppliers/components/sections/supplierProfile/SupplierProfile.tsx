@@ -12,6 +12,7 @@ import {
 } from "../../../contexts/SupplierContext";
 import { SupplierFormValues } from "../../types";
 import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
+import { Button } from "../../../../../shared/ui/primitives";
 import { OverviewTab } from "./OverviewTab";
 import { OrdersTab } from "./OrdersTab";
 import { PaymentsTab } from "./PaymentsTab";
@@ -138,15 +139,19 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   return (
     <div style={{ padding: "40px 56px", background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <motion.button onClick={onBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-          <ArrowLeft size={14} /> Back to Suppliers
-        </motion.button>
+        <Button variant="tertiary" size="md" iconLeft={ArrowLeft} onClick={onBack}>
+          Back to Suppliers
+        </Button>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <motion.button onClick={() => onRaiseRequest(supplier.id)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, border: "none", padding: "10px 20px", borderRadius: 8, color: T.darkBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", boxShadow: "0 4px 16px rgba(200,155,71,0.3)" }}>
-            <Send size={14} /> Raise Purchase Request
-          </motion.button>
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={Send}
+            onClick={() => onRaiseRequest(supplier.id)}
+            className="border-none shadow-[0_4px_16px_rgba(200,155,71,0.3)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+          >
+            Raise Purchase Request
+          </Button>
           <StatusPill status={supplier.status} />
           <span style={{ fontFamily: F.mono, fontSize: 13, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{supplier.id}</span>
         </div>
@@ -184,10 +189,20 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       {/* Tabs */}
       <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            style={{ padding: "14px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2, cursor: "pointer", transition: "all 0.2s" }}>
+          <Button
+            key={t.key}
+            variant="link"
+            size="md"
+            onClick={() => setTab(t.key)}
+            className={
+              "rounded-none px-[22px] py-[14px] -mb-0.5 border-0 border-b-2 no-underline hover:no-underline " +
+              (tab === t.key
+                ? "border-b-[var(--surface-brand)] font-bold text-[color:var(--text-brand)]"
+                : "border-b-transparent font-normal text-[color:var(--text-tertiary)]")
+            }
+          >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 

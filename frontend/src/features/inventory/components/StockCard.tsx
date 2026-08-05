@@ -4,6 +4,7 @@ import { Printer as LucidePrinter } from "lucide-react";
 import {
   CheckCircle, Scales, CalendarBlank, Palette, Tag, ShoppingBag, Stack,
 } from "@phosphor-icons/react";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -19,9 +20,6 @@ const F = {
   display: "'Plus Jakarta Sans', sans-serif",
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
-};
-const G = {
-  button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
 };
 
 export type StockStatus = "available" | "sold" | "wholesale";
@@ -122,19 +120,19 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
       )}
 
       <div style={{ display: "flex", gap: 8, padding: "0 20px 20px" }}>
-        <motion.button
+        <Button
+          variant="primary"
           onClick={() => onView(s)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: G.button, color: "#FFFDF9", border: "none", borderRadius: 11, padding: "11px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 10px rgba(110,15,45,0.20)" }}>
+          className="flex-1 rounded-[11px] shadow-[0_3px_10px_rgba(110,15,45,0.20)]"
+        >
           View Details
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ width: 42, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 11, cursor: "pointer" }}>
-          <LucidePrinter size={16} />
-        </motion.button>
+        </Button>
+        <IconButton
+          icon={LucidePrinter}
+          label="Print"
+          variant="secondary"
+          className="rounded-[11px] w-[42px]"
+        />
       </div>
     </motion.div>
   );

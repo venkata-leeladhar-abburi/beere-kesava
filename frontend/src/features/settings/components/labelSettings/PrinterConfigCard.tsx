@@ -1,6 +1,7 @@
 import React from "react";
 import { Printer } from "lucide-react";
 import { CardSection, F, T } from "./primitives";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 export function PrinterConfigCard({
   printer, setPrinter, connectionType, setConnectionType, printerConnected,
@@ -22,26 +23,11 @@ export function PrinterConfigCard({
         >
           Default Printer
         </div>
-        <select
-          value={printer}
-          onChange={(e) => setPrinter(e.target.value)}
-          style={{
-            width: "100%",
-            height: 42,
-            borderRadius: 10,
-            border: "1px solid rgba(110,15,45,0.18)",
-            background: "#FFF8F0",
-            fontFamily: F.ui,
-            fontSize: 13,
-            padding: "0 12px",
-            color: T.luxuryBrown,
-            cursor: "pointer",
-          }}
-        >
-          <option>TSC TE244</option>
-          <option>Zebra ZD420</option>
-          <option>DYMO LabelWriter</option>
-        </select>
+        <Select value={printer} onValueChange={setPrinter}>
+          <SelectItem value="TSC TE244">TSC TE244</SelectItem>
+          <SelectItem value="Zebra ZD420">Zebra ZD420</SelectItem>
+          <SelectItem value="DYMO LabelWriter">DYMO LabelWriter</SelectItem>
+        </Select>
       </div>
       <div style={{ marginBottom: 16 }}>
         <div
@@ -54,25 +40,10 @@ export function PrinterConfigCard({
         >
           Connection Type
         </div>
-        <select
-          value={connectionType}
-          onChange={(e) => setConnectionType(e.target.value)}
-          style={{
-            width: "100%",
-            height: 42,
-            borderRadius: 10,
-            border: "1px solid rgba(110,15,45,0.18)",
-            background: "#FFF8F0",
-            fontFamily: F.ui,
-            fontSize: 13,
-            padding: "0 12px",
-            color: T.luxuryBrown,
-            cursor: "pointer",
-          }}
-        >
-          <option value="USB">USB</option>
-          <option value="Network">Network (Ethernet)</option>
-        </select>
+        <Select value={connectionType} onValueChange={setConnectionType}>
+          <SelectItem value="USB">USB</SelectItem>
+          <SelectItem value="Network">Network (Ethernet)</SelectItem>
+        </Select>
       </div>
       {/* Test print row */}
       <div
@@ -83,25 +54,9 @@ export function PrinterConfigCard({
           marginTop: 16,
         }}
       >
-        <button
-          style={{
-            border: "1px solid #6E0F2D",
-            background: "transparent",
-            color: T.royalBurgundy,
-            borderRadius: 999,
-            padding: "8px 18px",
-            fontFamily: F.ui,
-            fontWeight: 600,
-            fontSize: 13,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-          }}
-        >
-          <Printer size={14} />
+        <Button variant="secondary" size="sm" iconLeft={Printer}>
           Send Test Print
-        </button>
+        </Button>
         <div
           style={{
             display: "flex",

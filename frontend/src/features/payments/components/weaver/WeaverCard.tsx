@@ -6,6 +6,7 @@ import { F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { calcCharges, calcNet } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
+import { Button, Checkbox } from "../../../../shared/ui/primitives";
 
 // Weaver card (card view)
 export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
@@ -43,17 +44,10 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
       <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {/* Checkbox */}
-          <input
-            type="checkbox"
+          <Checkbox
             checked={selected}
-            onChange={onToggleSelect}
-            style={{
-              width: 17,
-              height: 17,
-              cursor: "pointer",
-              accentColor: T.royalBurgundy,
-              marginRight: 4,
-            }}
+            onCheckedChange={() => onToggleSelect()}
+            className="mr-1"
           />
           <Pip initials={w.initials} bg={w.bg} size={42} />
           <div>
@@ -103,19 +97,9 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
 
       {/* Action Footer */}
       <div style={{ padding: "0 20px 20px", borderTop: `1px solid rgba(110,15,45,0.05)`, paddingTop: 14 }}>
-        <button
-          onClick={onViewDetails}
-          style={{
-            width: "100%", height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.12)`,
-            borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.08)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-        >
-          <Eye size={14} /> View Statement & History
-        </button>
+        <Button variant="secondary" size="sm" fullWidth iconLeft={Eye} onClick={onViewDetails}>
+          View Statement & History
+        </Button>
       </div>
     </motion.div>
   );

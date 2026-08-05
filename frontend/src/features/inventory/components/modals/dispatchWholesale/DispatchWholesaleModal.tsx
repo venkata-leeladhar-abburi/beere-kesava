@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "motion/react";
 import {
-  Search, CheckCircle2, ChevronDown, X, Building2, ShoppingBag, FileText,
+  CheckCircle2, X, Building2, ShoppingBag, FileText,
   Upload, ArrowRight, Users, Truck, Zap,
 } from "lucide-react";
 import { useFinishing, FinishingReturn } from "../../../../finishing/contexts/FinishingContext";
 import { useBulkOrders } from "../../../../bulk-orders/contexts/BulkOrderContext";
 import { useBatches } from "../../../../production/contexts/BatchContext";
-import { T, F, EASE, inp } from "../../theme";
+import { T, F, EASE } from "../../theme";
+import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 import { WHOLESALE_CUSTOMERS } from "../../data";
 import { TransportData, InvoiceData } from "../../types";
 import { TransportForm } from "../shared/TransportForm";
@@ -15,6 +16,7 @@ import { SareePicker } from "../shared/SareePicker";
 import { NoSareesNotice } from "../shared/NoSareesNotice";
 import { InvoiceGenerator } from "../shared/InvoiceGenerator";
 import { SareeReviewList } from "../shared/SareeReviewList";
+import { SelectInput } from "../../common/primitives";
 
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
 // Customer → Quotation (optional) → Tax Invoice → Sarees → Transport → Receipt.
@@ -116,7 +118,13 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Wholesale</span>
               {selectedCustomer && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>→ {selectedCustomer.name}</span>}
             </div>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={15} color="#FFF" /></button>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+            />
           </div>
           <div style={{ display: "flex", gap: 0 }}>
             {STEPS.map((s, i) => (
@@ -138,15 +146,20 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
           {step === 1 && (
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>Select the wholesale customer for this dispatch.</div>
-              <div style={{ position: "relative", marginBottom: 14 }}>
-                <Search size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                <input value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…"
-                  style={{ ...inp, paddingLeft: 36 }} />
+              <div style={{ marginBottom: 14 }}>
+                <SearchInput value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filteredCustomers.map(c => (
-                  <button key={c.id} onClick={() => setCustomerId(c.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: customerId === c.id ? "rgba(110,15,45,0.04)" : "#FFF", cursor: "pointer", textAlign: "left" as const, transition: "all 0.15s" }}>
+                  <Button
+                    key={c.id}
+                    onClick={() => setCustomerId(c.id)}
+                    variant="secondary"
+                    className={
+                      "h-auto justify-start gap-3.5 rounded-xl border-[1.5px] px-4 py-3 text-left " +
+                      (customerId === c.id ? "border-[var(--bk-burgundy-900)] bg-[rgba(110,15,45,0.04)]" : "border-[var(--border-default)] bg-white")
+                    }
+                  >
                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: customerId === c.id ? "rgba(110,15,45,0.12)" : T.silkCream, border: `1.5px solid ${customerId === c.id ? T.royalBurgundy : T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Building2 size={16} color={customerId === c.id ? T.royalBurgundy : T.taupe} />
                     </div>
@@ -155,26 +168,19 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{c.city} · {c.phone}</div>
                     </div>
                     {customerId === c.id && <CheckCircle2 size={18} color={T.royalBurgundy} />}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
               {/* Bulk Order linkage */}
               <div style={{ marginTop: 18 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Link to Bulk Order <span style={{ fontWeight: 400, textTransform: "none" as const }}>(optional)</span></div>
-                <div style={{ position: "relative" }}>
-                  <select
-                    value={bulkOrderRef}
-                    onChange={e => setBulkOrderRef(e.target.value)}
-                    style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}
-                  >
-                    <option value="">— Not linked to a bulk order —</option>
-                    {bulkOrders.map(o => (
-                      <option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                </div>
+                <SelectInput value={bulkOrderRef} onChange={setBulkOrderRef}>
+                  <option value="">— Not linked to a bulk order —</option>
+                  {bulkOrders.map(o => (
+                    <option key={o.ref} value={o.ref}>{o.ref} · {o.customer} · {o.total} sarees · Due {o.due}</option>
+                  ))}
+                </SelectInput>
                 {bulkOrderRef && (() => {
                   const linked = bulkOrders.find(o => o.ref === bulkOrderRef);
                   return linked ? (
@@ -212,8 +218,15 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                   {customerQuotations.map(q => {
                     const on = quotationId === q.id;
                     return (
-                      <button key={q.id} onClick={() => (on ? clearQuotation() : applyQuotation(q.id))}
-                        style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", border: `1.5px solid ${on ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: on ? "rgba(110,15,45,0.04)" : "#FFF", cursor: "pointer", textAlign: "left" as const }}>
+                      <Button
+                        key={q.id}
+                        onClick={() => (on ? clearQuotation() : applyQuotation(q.id))}
+                        variant="secondary"
+                        className={
+                          "h-auto justify-start gap-3.5 rounded-xl border-[1.5px] px-4 py-3.5 text-left " +
+                          (on ? "border-[var(--bk-burgundy-900)] bg-[rgba(110,15,45,0.04)]" : "border-[var(--border-default)] bg-white")
+                        }
+                      >
                         <div style={{ width: 40, height: 40, borderRadius: 10, background: on ? "rgba(110,15,45,0.12)" : T.silkCream, border: `1.5px solid ${on ? T.royalBurgundy : T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <FileText size={16} color={on ? T.royalBurgundy : T.taupe} />
                         </div>
@@ -232,7 +245,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                           {on && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
                         </div>
                         {on && <CheckCircle2 size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -248,10 +261,14 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               )}
 
               {!chosenQuotation && customerQuotations.length > 0 && (
-                <button onClick={() => setStep(INVOICE_STEP)}
-                  style={{ marginTop: 16, width: "100%", height: 44, background: "transparent", border: `1.5px dashed ${T.borderMed}`, borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+                <Button
+                  onClick={() => setStep(INVOICE_STEP)}
+                  variant="secondary"
+                  fullWidth
+                  className="mt-4 rounded-xl border-[1.5px] border-dashed border-[var(--border-strong)]"
+                >
                   Skip — raise a tax invoice without a quotation
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -341,28 +358,47 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
 
         <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
           {step > 1 && (
-            <button onClick={() => setStep(s => s - 1)}
-              style={{ height: 46, padding: "0 24px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+            <Button onClick={() => setStep(s => s - 1)} variant="secondary" size="lg" className="rounded-full">
               Back
-            </button>
+            </Button>
           )}
           {(step === INVOICE_STEP || step === REVIEW_STEP) && (
-            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, { ...confirmOpts, skipped: true })} disabled={!canInvoice}
+            <Button
+              onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, { ...confirmOpts, skipped: true })}
+              disabled={!canInvoice}
               title={canInvoice ? "Dispatch now — fill transport & receipt later from Dispatch History" : "Add sarees and prices first"}
-              style={{ height: 46, padding: "0 18px", background: "transparent", border: `1.5px solid ${!canInvoice ? T.borderMed : T.antiqueGold}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: !canInvoice ? T.taupe : "#8B6018", cursor: !canInvoice ? "not-allowed" : "pointer", opacity: !canInvoice ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, whiteSpace: "nowrap" as const }}>
-              <Zap size={14} /> Dispatch Now
-            </button>
+              variant="secondary"
+              size="lg"
+              iconLeft={Zap}
+              className="rounded-full border-[1.5px] border-[var(--bk-gold-500)] text-[#8B6018] whitespace-nowrap disabled:opacity-50"
+            >
+              Dispatch Now
+            </Button>
           )}
           {step < STEPS.length ? (
-            <button onClick={() => setStep(s => s + 1)} disabled={nextDisabled}
-              style={{ flex: 1, height: 46, background: nextDisabled ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: nextDisabled ? T.taupe : "#FFF", cursor: nextDisabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-              Continue <ArrowRight size={15} />
-            </button>
+            <Button
+              onClick={() => setStep(s => s + 1)}
+              disabled={nextDisabled}
+              variant="primary"
+              size="lg"
+              iconRight={ArrowRight}
+              fullWidth
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+            >
+              Continue
+            </Button>
           ) : (
-            <button onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, confirmOpts)} disabled={!canInvoice}
-              style={{ flex: 1, height: 46, background: !canInvoice ? "rgba(139,112,96,0.15)" : `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: !canInvoice ? T.taupe : "#FFF", cursor: !canInvoice ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !canInvoice ? "none" : "0 4px 20px rgba(110,15,45,0.25)" }}>
-              <Truck size={16} /> Confirm &amp; Dispatch
-            </button>
+            <Button
+              onClick={() => onConfirm(transport, inv, customerId, bulkOrderRef || undefined, confirmOpts)}
+              disabled={!canInvoice}
+              variant="primary"
+              size="lg"
+              iconLeft={Truck}
+              fullWidth
+              className="rounded-full bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
+            >
+              Confirm &amp; Dispatch
+            </Button>
           )}
         </div>
       </motion.div>

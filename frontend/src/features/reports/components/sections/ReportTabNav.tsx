@@ -2,6 +2,7 @@ import React from "react";
 import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 import type { ReportTabKey, ReportTab } from "../types";
 
 const REPORT_TABS: ReportTab[] = [
@@ -37,25 +38,11 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
         {REPORT_TABS.map(tab => {
           const active = activeTab === tab.key;
           return (
-            <button
+            <Button
               key={tab.key}
+              variant={active ? "tertiary" : "ghost"}
               onClick={() => setActiveTab(tab.key)}
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column" as const,
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 11,
-                height: 126,
-                border: "none",
-                borderBottom: `3px solid ${active ? T.antiqueGold : "transparent"}`,
-                background: active ? "rgba(200,155,71,0.10)" : "transparent",
-                cursor: "pointer",
-                padding: "0 8px",
-                position: "relative" as const,
-                transition: "background 0.2s",
-              }}
+              className={`flex-1 h-[126px] flex-col justify-center gap-[11px] rounded-none px-2 border-0 border-b-[3px] ${active ? "border-[var(--bk-gold-500)] bg-[rgba(200,155,71,0.10)]" : "border-transparent bg-transparent"} hover:bg-[rgba(200,155,71,0.10)]`}
             >
               {/* Icon box */}
               <div style={{
@@ -104,7 +91,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                   borderRadius: "3px 3px 0 0",
                 }} />
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -134,20 +121,12 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
             const active = activePeriod === p;
             const disabled = activeTab === "overdue";
             return (
-              <button key={p} onClick={() => !disabled && setActivePeriod(p)}
-                style={{
-                  padding: "10px 22px", borderRadius: 99,
-                  border: `1.5px solid ${active ? T.royalBurgundy : T.borderDef}`,
-                  background: active ? T.royalBurgundy : "#FFFFFF",
-                  color: active ? "#FFFDF9" : disabled ? "rgba(139,112,96,0.30)" : T.taupe,
-                  fontFamily: F.ui, fontSize: 14, fontWeight: active ? 700 : 500,
-                  cursor: disabled ? "default" : "pointer",
-                  transition: "all 0.18s",
-                  whiteSpace: "nowrap" as const,
-                  boxShadow: active ? "0 2px 8px rgba(110,15,45,0.22)" : "none",
-                }}>
+              <Button key={p} variant={active ? "primary" : "secondary"} size="md"
+                disabled={disabled}
+                onClick={() => !disabled && setActivePeriod(p)}
+                className="rounded-full whitespace-nowrap">
                 {p}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -186,12 +165,12 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
 
           {/* Download buttons */}
           <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-              <FileText size={16} />Download PDF
-            </button>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 20px", border: "none", borderRadius: 10, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#FFFDF9", cursor: "pointer", boxShadow: "0 2px 10px rgba(110,15,45,0.30)" }}>
-              <Download size={16} />Download Excel
-            </button>
+            <Button variant="secondary" iconLeft={FileText}>
+              Download PDF
+            </Button>
+            <Button variant="primary" iconLeft={Download}>
+              Download Excel
+            </Button>
           </div>
         </DownloadGate>
       </div>

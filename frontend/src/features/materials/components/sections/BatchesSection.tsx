@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Tag, Layers, FileText, Boxes, Calendar, Package, ArrowRight, CheckCircle2,
-  Search, Filter, ChevronDown, ChevronUp, Check, LayoutList, LayoutGrid, QrCode,
+  Filter, ChevronDown, ChevronUp, Check, LayoutList, LayoutGrid, QrCode,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, EASE, MobileCtx } from "../theme";
@@ -10,11 +10,11 @@ import { STATUS_CFG, MAT_TAG, BATCH_DATA, MAT_FILTERS, STATUS_FILTERS, STATUS_FI
 import type { BatchRow } from "../types";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
+import { Button, SearchInput } from "../../../../shared/ui/primitives";
 
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
   const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "0.6px", textTransform: "uppercase" as const, padding: "14px 16px", textAlign: "left" as const, whiteSpace: "nowrap" as const, borderBottom: `1px solid rgba(110,15,45,0.08)`, background: T.silkCream };
   const TD: React.CSSProperties = { padding: "14px 16px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const };
-  const BTN: React.CSSProperties = { display: "flex", alignItems: "center", gap: 5, height: 32, padding: "0 12px", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const };
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1020 }}>
@@ -90,12 +90,12 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
                 </td>
                 <td style={TD}>
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    <motion.button onClick={() => onViewDetails(r)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ ...BTN, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)` }}>
-                      <FileText size={13} /> View Details
-                    </motion.button>
-                    <motion.button onClick={() => onPrintBarcode(r)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ ...BTN, background: T.royalBurgundy, color: "#FFFDF9", border: "none" }}>
-                      <QrCode size={13} /> Print Barcode
-                    </motion.button>
+                    <Button onClick={() => onViewDetails(r)} variant="secondary" size="sm" iconLeft={FileText}>
+                      View Details
+                    </Button>
+                    <Button onClick={() => onPrintBarcode(r)} variant="primary" size="sm" iconLeft={QrCode}>
+                      Print Barcode
+                    </Button>
                   </div>
                 </td>
               </motion.tr>
@@ -176,12 +176,12 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <motion.button onClick={() => onViewDetails(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    <FileText size={14} /> View Details
-                  </motion.button>
-                  <motion.button onClick={() => onPrintBarcode(r)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 38, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    <QrCode size={14} /> Print Barcode
-                  </motion.button>
+                  <Button onClick={() => onViewDetails(r)} variant="secondary" size="sm" iconLeft={FileText} className="flex-1">
+                    View Details
+                  </Button>
+                  <Button onClick={() => onPrintBarcode(r)} variant="primary" size="sm" iconLeft={QrCode} className="flex-1">
+                    Print Barcode
+                  </Button>
                 </div>
               </div>
             </div>
@@ -230,49 +230,38 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
       <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "stretch" : "center", marginBottom: 16, gap: 12 }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {MAT_FILTERS.map(f => (
-            <motion.button
+            <Button
               key={f}
               onClick={() => setMatFilter(f)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                fontFamily: F.ui, fontWeight: 600, fontSize: 12, padding: "6px 13px", borderRadius: 99, cursor: "pointer",
-                background: matFilter === f ? T.royalBurgundy : "transparent",
-                color: matFilter === f ? "#FFFDF9" : T.taupe,
-                border: matFilter === f ? "none" : `1px solid rgba(110,15,45,0.16)`,
-                transition: "all 0.2s",
-              }}
+              variant={matFilter === f ? "primary" : "secondary"}
+              size="sm"
+              className="rounded-full"
             >
               {f}
-            </motion.button>
+            </Button>
           ))}
         </div>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "7px 12px", flex: isMobile ? 1 : "none" }}>
-            <Search size={13} color={T.taupe} />
-            <input
+          <div style={{ flex: isMobile ? 1 : "none", width: isMobile ? "100%" : 240 }}>
+            <SearchInput
               value={search}
               onChange={e => setSearch(e.target.value)}
+              onSearch={setSearch}
               placeholder={isMobile ? "Search batch / vendor..." : "Search by batch number or vendor name..."}
-              style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, border: "none", outline: "none", background: "transparent", width: isMobile ? "100%" : 240, minWidth: 0 }}
             />
           </div>
 
           <div style={{ position: "relative" }}>
-            <motion.button
+            <Button
               onClick={() => setStatusDropOpen(o => !o)}
-              whileHover={{ scale: 1.03 }}
-              style={{
-                display: "flex", alignItems: "center", gap: 6,
-                background: statusFilter !== "All Status" ? T.royalBurgundy : "#FFFFFF",
-                color: statusFilter !== "All Status" ? "#FFFDF9" : T.taupe,
-                border: statusFilter !== "All Status" ? "none" : `1px solid ${T.borderDef}`,
-                borderRadius: 10, padding: "7px 14px", fontFamily: F.ui, fontSize: 12, cursor: "pointer",
-              }}
+              variant={statusFilter !== "All Status" ? "primary" : "secondary"}
+              size="sm"
+              iconLeft={Filter}
+              iconRight={statusDropOpen ? ChevronUp : ChevronDown}
             >
-              <Filter size={12} /> {statusFilter} {statusDropOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </motion.button>
+              {statusFilter}
+            </Button>
             <AnimatePresence>
               {statusDropOpen && (
                 <motion.div
@@ -289,24 +278,20 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
                   {STATUS_FILTERS.map(f => {
                     const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
                     return (
-                      <motion.button
+                      <Button
                         key={f}
                         onClick={() => { setStatusFilter(f); setStatusDropOpen(false); }}
-                        whileHover={{ background: T.silkCream }}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10, width: "100%",
-                          padding: "10px 16px", background: "transparent", border: "none",
-                          fontFamily: F.ui, fontSize: 13, fontWeight: statusFilter === f ? 700 : 500,
-                          color: statusFilter === f ? colors[f] : T.luxuryBrown, cursor: "pointer",
-                          textAlign: "left",
-                        }}
+                        variant="ghost"
+                        size="sm"
+                        fullWidth
+                        className={`justify-start rounded-none ${statusFilter === f ? "font-bold" : "font-medium"}`}
                       >
                         {f !== "All Status" && (
                           <div style={{ width: 8, height: 8, borderRadius: "50%", background: colors[f], flexShrink: 0 }} />
                         )}
-                        {f}
+                        <span style={{ color: statusFilter === f ? colors[f] : T.luxuryBrown }}>{f}</span>
                         {statusFilter === f && <Check size={13} color={colors[f]} style={{ marginLeft: "auto" }} />}
-                      </motion.button>
+                      </Button>
                     );
                   })}
                 </motion.div>
@@ -316,14 +301,15 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
 
           <div style={{ display: "flex", gap: 6 }}>
             {([["table", LayoutList, "Table"], ["card", LayoutGrid, "Card"]] as const).map(([v, Icon, label]) => (
-              <motion.button
+              <Button
                 key={v}
                 onClick={() => setView(v as "table" | "card")}
-                whileHover={{ scale: 1.03 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFFFFF", color: view === v ? "#FFFDF9" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}`, transition: "all 0.2s" }}
+                variant={view === v ? "primary" : "secondary"}
+                size="sm"
+                iconLeft={Icon}
               >
-                <Icon size={13} /> {label}
-              </motion.button>
+                {label}
+              </Button>
             ))}
           </div>
         </div>

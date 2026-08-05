@@ -2,6 +2,7 @@ import React from "react";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SumCard, TabTitle, StatusPill, TH, TD } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 const overdueCustomers = [
   { customer: "Padmavathi Textiles",    inv: "INV-2026-038", total: 600000,  paid: 465000, overdue: 135000, dueDate: "25 Apr 2026", days: 5,  lastReminder: "20 May 2026" },
@@ -80,9 +81,9 @@ export function OverdueAlertsReport() {
                     </td>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastReminder}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
-                        <MessageSquare size={11} />Send WhatsApp Reminder
-                      </button>
+                      <Button variant="primary" size="sm" iconLeft={MessageSquare}>
+                        Send WhatsApp Reminder
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -117,9 +118,9 @@ export function OverdueAlertsReport() {
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage} kg</td>
                     <td style={TD}><span style={{ color: T.taupe }}>{r.lastOrder}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
-                      <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
-                        <Package size={11} />Create Purchase Order
-                      </button>
+                      <Button variant="primary" size="sm" iconLeft={Package}>
+                        Create Purchase Order
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -153,9 +154,9 @@ export function OverdueAlertsReport() {
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.done}</td>
                   <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.remaining}</td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: T.royalBurgundy, border: "none", borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>
-                      <MessageSquare size={11} />Send Message
-                    </button>
+                    <Button variant="primary" size="sm" iconLeft={MessageSquare}>
+                      Send Message
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -192,9 +193,9 @@ export function OverdueAlertsReport() {
                   </td>
                   <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.status} type="bad" /></td>
                   <td style={{ ...TD, textAlign: "center" }}>
-                    <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-                      <Eye size={11} />View Order
-                    </button>
+                    <Button variant="secondary" size="sm" iconLeft={Eye}>
+                      View Order
+                    </Button>
                   </td>
                 </tr>
               ))}

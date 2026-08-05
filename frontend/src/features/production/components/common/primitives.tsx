@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { T, F, EASE } from "../theme";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,7 +48,7 @@ export function ProductionDialog({ open, title, children, onClose }: { open: boo
       <motion.div initial={{ y: 18, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 18, scale: 0.96 }} onClick={e => e.stopPropagation()} style={{ width: 560, maxWidth: "100%", background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.25)", overflow: "hidden" }}>
         <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9", fontWeight: 700 }}>{title}</div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer" }}>×</button>
+          <IconButton icon="close" label="Close" variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/15" />
         </div>
         <div style={{ padding: 26 }}>{children}</div>
       </motion.div>

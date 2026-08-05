@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useFinishing, FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { FinishingQuotationsSection } from "./FinishingQuotationsSection";
 import { FinishingStaffSection, StaffRow } from "./FinishingStaffSection";
 
@@ -140,11 +141,9 @@ export function FinishingTrackingPage() {
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ position: "relative", flex: "1 1 260px" }}>
-              <Search size={16} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search saree code, weaver, saree type, finishing staff…"
-                style={{ width: "100%", height: 42, paddingLeft: 42, paddingRight: 14, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1.5px solid ${T.borderDef}`, borderRadius: 11, outline: "none", boxSizing: "border-box" }} />
+            <div style={{ flex: "1 1 260px" }}>
+              <SearchInput value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search saree code, weaver, saree type, finishing staff…" />
             </div>
             <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
               {[
@@ -153,10 +152,10 @@ export function FinishingTrackingPage() {
                 { key: "perfect", label: "Received · Perfect" },
                 { key: "damaged", label: "Received · Damaged" },
               ].map(f => (
-                <button key={f.key} onClick={() => setStatusFilter(f.key as typeof statusFilter)}
-                  style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "8px 14px", borderRadius: 99, cursor: "pointer", background: statusFilter === f.key ? T.royalBurgundy : "transparent", color: statusFilter === f.key ? "#FFFDF9" : T.taupe, border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)` }}>
+                <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
+                  onClick={() => setStatusFilter(f.key as typeof statusFilter)}>
                   {f.label}
-                </button>
+                </Button>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>

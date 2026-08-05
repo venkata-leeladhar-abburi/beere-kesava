@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { FileText, Truck } from "lucide-react";
 import { Quotation } from "../../../finishing/contexts/FinishingContext";
 import { T, F, card } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Quotations section (raised from this page, dispatch once finishing is done) ─
 function quotationStatusStyle(status: Quotation["status"]) {
@@ -33,10 +34,15 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           {([["active", "Active"], ["all", "All"]] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)}
-              style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${tab === key ? T.royalBurgundy : T.borderDef}`, background: tab === key ? "rgba(110,15,45,0.06)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: tab === key ? T.royalBurgundy : T.taupe, cursor: "pointer" }}>
+            <Button
+              key={key}
+              onClick={() => setTab(key)}
+              variant={tab === key ? "secondary" : "tertiary"}
+              size="sm"
+              className="rounded-full"
+            >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -61,11 +67,17 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
             <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
               {q.status.replace("-", " ")}
             </div>
-            <button onClick={() => canDispatch && onDispatch(q)} disabled={!canDispatch}
+            <Button
+              onClick={() => canDispatch && onDispatch(q)}
+              disabled={!canDispatch}
               title={canDispatch ? "Dispatch the received sarees from this quotation" : "Waiting on finishing to complete"}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: canDispatch ? `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)` : "rgba(139,112,96,0.12)", border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: canDispatch ? "#FFF" : T.taupe, cursor: canDispatch ? "pointer" : "not-allowed", whiteSpace: "nowrap" as const }}>
-              <Truck size={13} /> Dispatch
-            </button>
+              variant="primary"
+              size="sm"
+              iconLeft={Truck}
+              className={canDispatch ? "rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] whitespace-nowrap" : "rounded-[10px] whitespace-nowrap"}
+            >
+              Dispatch
+            </Button>
           </div>
         );
       })}

@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Animation Components ───────────────────────────────────────────────────────
 export function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
@@ -53,15 +54,13 @@ export function SectionTitle({ title, sub, action, onAction }: { title: string, 
         </div>
       </div>
       {(!isDownloadAction || dlAllowed) && (
-        <button
+        <Button
+          variant="link"
           onClick={onAction}
-          style={{
-            background: "transparent", border: "none", color: T.antiqueGold,
-            fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 6
-          }}>
+          className="text-[color:var(--bk-gold-500)]"
+        >
           {action}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -84,8 +83,8 @@ export function CardStat({ label, value, valueColor = T.luxuryBrown, isMono = fa
 
 export function CardActionButton({ icon: Icon, label, color, onClick }: { icon: any, label: string, color: string, onClick?: () => void }) {
   return (
-    <button onClick={onClick} style={{ background: "transparent", border: "none", color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer" }}>
-      <Icon size={14} /> {label}
-    </button>
+    <Button variant="tertiary" size="sm" onClick={onClick} className="h-auto p-0 gap-1">
+      <Icon size={14} color={color} /> <span style={{ color }}>{label}</span>
+    </Button>
   );
 }

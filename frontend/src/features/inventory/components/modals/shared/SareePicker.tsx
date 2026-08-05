@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Scan, Package, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Scan, Package, ChevronDown, ChevronUp } from "lucide-react";
 import { FinishingReturn } from "../../../../finishing/contexts/FinishingContext";
 import { WeaverSareesSection, WeaverSareeRow } from "../../../../weavers/components/WeaverSareesSection";
 import { T, F } from "../../theme";
+import { Button, Chip } from "../../../../../shared/ui/primitives";
 
 // ── Row → dispatch-saree mapper ───────────────────────────────────────────────
 // One definition shared by the page and the in-modal picker so a saree looks the
@@ -83,14 +84,25 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em", flex: 1 }}>
           {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
         </span>
-        <button onClick={scan}
-          style={{ display: "flex", alignItems: "center", gap: 7, height: 38, padding: "0 16px", background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, border: "none", borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: "#FFF", cursor: "pointer" }}>
-          <Scan size={15} /> Scan Saree
-        </button>
-        <button onClick={toggleBrowse}
-          style={{ display: "flex", alignItems: "center", gap: 7, height: 38, padding: "0 16px", background: browse ? T.royalBurgundy : "#FFF", border: `1.5px solid ${browse ? T.royalBurgundy : T.borderMed}`, borderRadius: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: browse ? "#FFF" : T.royalBurgundy, cursor: "pointer" }}>
-          <Package size={15} /> Select from Inventory {browse ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
+        <Button
+          onClick={scan}
+          variant="primary"
+          size="sm"
+          iconLeft={Scan}
+          className="rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+        >
+          Scan Saree
+        </Button>
+        <Button
+          onClick={toggleBrowse}
+          variant={browse ? "primary" : "secondary"}
+          size="sm"
+          iconLeft={Package}
+          iconRight={browse ? ChevronUp : ChevronDown}
+          className={browse ? "rounded-[10px] bg-[var(--bk-burgundy-900)]" : "rounded-[10px]"}
+        >
+          Select from Inventory
+        </Button>
       </div>
       {scanMsg && (
         <div style={{ marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>
@@ -116,13 +128,12 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
           {picked.map(s => {
             const sId = s.sareeId || s.id;
             return (
-              <span key={sId} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", border: `1px solid ${T.borderMed}`, borderRadius: 999, padding: "5px 8px 5px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
-                {sId}
-                <button onClick={() => onChange(picked.filter(s => (s.sareeId || s.id) !== sId))} title="Remove"
-                  style={{ background: "rgba(192,57,43,0.10)", border: "none", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                  <X size={11} color={T.crimson} />
-                </button>
-              </span>
+              <Chip
+                key={sId}
+                label={sId}
+                onRemove={() => onChange(picked.filter(s => (s.sareeId || s.id) !== sId))}
+                className="font-code"
+              />
             );
           })}
         </div>

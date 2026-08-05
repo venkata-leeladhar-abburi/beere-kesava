@@ -1,71 +1,78 @@
 // ── Shared primitives ──────────────────────────────────────────────────────
+// Thin wrappers over shared/ui/primitives (BK Loom design system) — kept as
+// the same exported API this feature already calls, so every existing call
+// site picks up the design-system components (tokens, a11y, focus states)
+// without a call-site-by-call-site rewrite. See design-system/03-PRIMITIVES.md
+// Part S, Step 3 — this is the "migrate one feature end-to-end" proof.
 import React from "react";
 import { motion } from "motion/react";
-import { CheckCircle2, Truck, AlertTriangle, Clock, ChevronDown } from "lucide-react";
-import { T, F, EASE, inp } from "../theme";
+import { T, F, EASE } from "../theme";
+import {
+  Field as DsField,
+  Input,
+  Select,
+  SelectItem,
+  StatusPill,
+  type StatusTone,
+} from "../../../../shared/ui/primitives";
+import { CheckCircle2 } from "lucide-react";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
+const STATUS_TONE: Record<string, StatusTone> = {
+  "Ready for Dispatch": "success",
+  "Dispatched": "neutral",
+  "Damaged — Review Needed": "danger",
+  "QC Passed": "warning",
+};
+
 export function StatusBadge({ status }: { status: string }) {
-  const cfg: Record<string, { bg: string; color: string; border: string }> = {
-    "Ready for Dispatch":   { bg: T.greenBg,   color: T.green,   border: "rgba(30,102,64,0.20)"  },
-    "Dispatched":           { bg: "rgba(59,35,20,0.08)", color: T.luxuryBrown, border: "rgba(59,35,20,0.18)" },
-    "Damaged — Review Needed": { bg: T.crimsonBg, color: T.crimson, border: "rgba(192,57,43,0.20)" },
-    "QC Passed":            { bg: "rgba(200,155,71,0.14)", color: "#8B6018", border: "rgba(200,155,71,0.32)" },
-  };
-  const s = cfg[status] ?? cfg["Ready for Dispatch"];
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>
-      {status === "Ready for Dispatch"      && <CheckCircle2 size={10} />}
-      {status === "Dispatched"              && <Truck size={10} />}
-      {status === "Damaged — Review Needed" && <AlertTriangle size={10} />}
-      {status === "QC Passed"               && <Clock size={10} />}
-      {status}
-    </span>
-  );
+  return <StatusPill tone={STATUS_TONE[status] ?? "neutral"} label={status} />;
 }
 
 // ── Input helpers ─────────────────────────────────────────────────────────────
 export function Field({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) {
   return (
-    <div>
-      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 6 }}>
-        {label} {req && <span style={{ color: T.crimson }}>*</span>}
-      </div>
+    <DsField label={label} required={req}>
       {children}
-    </div>
+    </DsField>
   );
 }
 
 export function TextInput({ value, onChange, placeholder, mono }: { value: string; onChange: (v: string) => void; placeholder?: string; mono?: boolean }) {
   return (
-    <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-      style={{ ...inp, fontFamily: mono ? F.mono : F.ui }}
-      onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-      onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }}
+    <Input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={mono ? "font-code" : undefined}
     />
   );
 }
 
 export function NumInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <input type="number" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-      style={{ ...inp }}
-      onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.royalBurgundy; }}
-      onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = "rgba(110,15,45,0.18)"; }}
-    />
-  );
+  return <Input type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />;
 }
 
 export function SelectInput({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
+  // Radix SelectItem forbids value="" (reserved for "no selection"), but this
+  // codebase's native <select> markup commonly uses <option value=""> as a
+  // placeholder row — route that one to the Select's placeholder instead.
+  let placeholder: React.ReactNode;
+  const items = React.Children.toArray(children).filter((child) => {
+    if (!React.isValidElement<{ value: string; children?: React.ReactNode }>(child)) return false;
+    if (child.props.value === "") {
+      placeholder = child.props.children;
+      return false;
+    }
+    return true;
+  }) as React.ReactElement<{ value: string; children?: React.ReactNode }>[];
+
   return (
-    <div style={{ position: "relative" }}>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ ...inp, appearance: "none", cursor: "pointer", paddingRight: 32 }}
-        onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = T.royalBurgundy; }}
-        onBlur={e =>  { (e.target as HTMLSelectElement).style.borderColor = "rgba(110,15,45,0.18)"; }}
-      >{children}</select>
-      <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-    </div>
+    <Select value={value} onValueChange={onChange} placeholder={typeof placeholder === "string" ? placeholder : undefined}>
+      {items.map((child) => (
+        <SelectItem key={child.props.value} value={child.props.value}>{child.props.children}</SelectItem>
+      ))}
+    </Select>
   );
 }
 

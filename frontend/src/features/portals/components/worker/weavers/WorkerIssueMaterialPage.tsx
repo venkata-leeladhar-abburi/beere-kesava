@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import {
-  ChevronRight, CheckCircle2, Search, Layers, Scissors,
+  CheckCircle2, Search, Layers, Scissors,
   Building2, Users, PenLine, Send, Sparkles, Clock,
 } from "lucide-react";
-import { C, F, card, inputStyle, btnPrimary, btnGhost } from "../tokens";
+import { C, F, card } from "../tokens";
 import { FieldLabel, SectionLabel, PageHeader, type IssueSource } from "./shared";
 import { WEAVERS } from "./weaversData";
+import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 // ─── Issue Material Page ─────────────────────────────────────────────────────
 // Note: this component is not currently wired into WorkerWeavers' composition
@@ -31,6 +32,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
   const [remoteSent, setRemoteSent] = useState(false);
   const [remoteConfirmed, setRemoteConfirmed] = useState(false);
   const [done, setDone] = useState(false);
+  const [designCode, setDesignCode] = useState("");
 
   const batchId = source === "own" && loomNum ? `BKB-L${loomNum}-001` :
     source === "outsourced" && selectedWeaver ? `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-001` : "—";
@@ -46,7 +48,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Batch Opened</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Weaver notified on WhatsApp</div>
           <div style={{ fontFamily: F.m, fontSize: 20, fontWeight: 600, color: C.burg }}>{batchId}</div>
-          <button onClick={onBack} style={{ ...btnGhost, width: "auto", padding: "0 28px" }}>Back to Weavers</button>
+          <Button variant="secondary" onClick={onBack} className="w-auto rounded-full px-7 border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Back to Weavers</Button>
         </div>
       </>
     );
@@ -63,15 +65,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             { key: "own" as IssueSource, Icon: Building2, title: "Own Factory", sub: "Our looms", color: C.burg },
             { key: "outsourced" as IssueSource, Icon: Users, title: "Outsourced", sub: "External weaver", color: C.green },
           ].map(opt => (
-            <button key={String(opt.key)} onClick={() => setSource(opt.key)}
-              style={{ padding: "14px 12px", background: source === opt.key ? "rgba(107,26,42,0.05)" : "#FFF", border: `${source === opt.key ? 2 : 1}px solid ${source === opt.key ? C.burg : C.bdr}`, borderRadius: 12, cursor: "pointer", textAlign: "center", position: "relative" }}>
+            <Button key={String(opt.key)} variant="tertiary" onClick={() => setSource(opt.key)}
+              className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${source === opt.key ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
               {source === opt.key && <div style={{ position: "absolute", top: 7, right: 7, width: 16, height: 16, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={10} color="#FFF" /></div>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, background: source === opt.key ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
                 <opt.Icon size={22} color={source === opt.key ? C.burg : C.muted} />
               </div>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 2 }}>{opt.title}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{opt.sub}</div>
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -79,8 +81,8 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         {source === "own" && (
           <div style={{ margin: "10px 16px 0" }}>
             <FieldLabel>Loom Number</FieldLabel>
-            <input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="e.g. 3"
-              style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, height: 46 }} />
+            <Input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="e.g. 3"
+              size="lg" className="font-mono" />
             {loomNum && (
               <div style={{ marginTop: 8, display: "inline-flex", background: "rgba(107,26,42,0.10)", padding: "5px 10px", borderRadius: 7 }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg }}>BKB-L{loomNum}-001</span>
@@ -93,15 +95,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           <div style={{ margin: "10px 16px 0" }}>
             <FieldLabel>Select Weaver</FieldLabel>
             <div style={{ position: "relative" }}>
-              <input value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }}
+              <Input value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }}
                 onFocus={() => setShowWeaverList(true)} placeholder="Search weaver..."
-                style={{ ...inputStyle, paddingLeft: 36, height: 46 }} />
-              <Search size={14} color={C.muted} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+                iconLeft={Search} size="lg" />
               {showWeaverList && (
                 <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(107,26,42,0.12)", zIndex: 50, marginTop: 4 }}>
                   {WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase())).map(w => (
-                    <button key={w.code} onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
-                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", background: "none", border: "none", borderBottom: `1px solid ${C.bdr}`, cursor: "pointer" }}>
+                    <Button key={w.code} variant="tertiary" fullWidth
+                      onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
+                      className="justify-start gap-2.5 rounded-none border-0 border-b px-3.5 py-2.5 border-[rgba(139,26,46,0.12)]">
                       <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
                       </div>
@@ -109,7 +111,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                         <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{w.name}</div>
                         <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{w.code} · {w.looms} Looms</div>
                       </div>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -134,15 +136,11 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         {/* Step 2 — Design */}
         <SectionLabel step={2} title="Link Design Code" />
         <div style={{ margin: "0 16px" }}>
-          <div style={{ position: "relative" }}>
-            <select style={{ ...inputStyle, appearance: "none", cursor: "pointer", height: 46 }}>
-              <option value="">Search design codes...</option>
-              <option>BKB-045 · Cream Zari Border Saree</option>
-              <option>BKB-046 · Royal Blue Kanjeevaram</option>
-              <option>BKB-047 · Red Temple Border</option>
-            </select>
-            <ChevronRight size={14} color={C.muted} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", pointerEvents: "none" }} />
-          </div>
+          <Select value={designCode} onValueChange={setDesignCode} size="lg" placeholder="Search design codes...">
+            <SelectItem value="BKB-045">BKB-045 · Cream Zari Border Saree</SelectItem>
+            <SelectItem value="BKB-046">BKB-046 · Royal Blue Kanjeevaram</SelectItem>
+            <SelectItem value="BKB-047">BKB-047 · Red Temple Border</SelectItem>
+          </Select>
         </div>
 
         {/* Step 3 — Materials */}
@@ -159,15 +157,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
-                  <button key={u} onClick={() => setWarpUnit(u)}
-                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${warpUnit === u ? C.burg : C.bdr}`, background: warpUnit === u ? C.burg : "#FFF", color: warpUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  <Button key={u} variant={warpUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setWarpUnit(u)}
+                    className={warpUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
                     {u}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <Input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
+                  className="font-mono pr-9" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>{warpUnit}</span>
               </div>
               {warpQty && (
@@ -187,15 +185,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
-                  <button key={u} onClick={() => setReshamUnit(u)}
-                    style={{ flex: 1, padding: "5px 2px", borderRadius: 6, border: `1px solid ${reshamUnit === u ? C.burg : C.bdr}`, background: reshamUnit === u ? C.burg : "#FFF", color: reshamUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  <Button key={u} variant={reshamUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setReshamUnit(u)}
+                    className={reshamUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
                     {u}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <input type="number" value={reshamQty} onChange={e => setReshamQty(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 34, height: 40 }} />
+                <Input type="number" value={reshamQty} onChange={e => setReshamQty(e.target.value)} placeholder="0"
+                  className="font-mono pr-9" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#7A5E1C" }}>{reshamUnit}</span>
               </div>
               {reshamQty && (
@@ -219,10 +217,11 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Type</div>
               <div style={{ display: "flex", gap: 6 }}>
                 {["Poly", "Silk"].map((t, i) => (
-                  <button key={t} onClick={() => setJariType(i === 0 ? "Polyester" : "Silk Fast")}
-                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : C.bdr}`, background: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? C.burg : "#FFF", color: jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
+                  <Button key={t} variant={jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "primary" : "secondary"} size="sm" fullWidth
+                    onClick={() => setJariType(i === 0 ? "Polyester" : "Silk Fast")}
+                    className={jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
                     {t}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -230,10 +229,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Grade</div>
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {["1G", "2G", "3G", "4G"].map(g => (
-                  <button key={g} onClick={() => setJariGrade(g)}
-                    style={{ padding: "4px 8px", borderRadius: 6, border: `1px solid ${jariGrade === g ? C.burg : C.bdr}`, background: jariGrade === g ? C.burg : "#FFF", color: jariGrade === g ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, cursor: "pointer" }}>
+                  <Button key={g} variant={jariGrade === g ? "primary" : "secondary"} size="sm" onClick={() => setJariGrade(g)}
+                    className={jariGrade === g ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
                     {g}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -245,18 +244,18 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Unit</div>
               <div style={{ display: "flex", gap: 6 }}>
                 {(["Reels", "Buns"] as const).map(u => (
-                  <button key={u} onClick={() => setJariUnit(u)}
-                    style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: `1px solid ${jariUnit === u ? C.burg : C.bdr}`, background: jariUnit === u ? C.burg : "#FFF", color: jariUnit === u ? "#FFF" : C.text, fontFamily: F.u, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  <Button key={u} variant={jariUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setJariUnit(u)}
+                    className={jariUnit === u ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
                     {u}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Qty ({jariUnit})</div>
               <div style={{ position: "relative" }}>
-                <input type="number" value={jariQty} onChange={e => setJariQty(e.target.value)} placeholder="0"
-                  style={{ ...inputStyle, fontFamily: F.m, fontSize: 14, paddingRight: 42, height: 44 }} />
+                <Input type="number" value={jariQty} onChange={e => setJariQty(e.target.value)} placeholder="0"
+                  size="lg" className="font-mono pr-11" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.gold }}>{jariUnit}</span>
               </div>
               {jariQty && (
@@ -278,25 +277,25 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px" }}>
-          <button onClick={() => { setSigMethod(sigMethod === "here" ? "none" : "here"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
-            style={{ padding: "14px 12px", background: sigMethod === "here" ? "rgba(107,26,42,0.05)" : "#FFF", border: `${sigMethod === "here" ? 2 : 1}px solid ${sigMethod === "here" ? C.burg : C.bdr}`, borderRadius: 12, cursor: "pointer", textAlign: "center", position: "relative" }}>
+          <Button variant="tertiary" onClick={() => { setSigMethod(sigMethod === "here" ? "none" : "here"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
+            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "here" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
             {sigMethod === "here" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "here" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
               <PenLine size={20} color={sigMethod === "here" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Sign Here</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>On this phone</div>
-          </button>
+          </Button>
 
-          <button onClick={() => { setSigMethod(sigMethod === "remote" ? "none" : "remote"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
-            style={{ padding: "14px 12px", background: sigMethod === "remote" ? "rgba(107,26,42,0.05)" : "#FFF", border: `${sigMethod === "remote" ? 2 : 1}px solid ${sigMethod === "remote" ? C.burg : C.bdr}`, borderRadius: 12, cursor: "pointer", textAlign: "center", position: "relative" }}>
+          <Button variant="tertiary" onClick={() => { setSigMethod(sigMethod === "remote" ? "none" : "remote"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
+            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "remote" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
             {sigMethod === "remote" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "remote" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
               <Send size={20} color={sigMethod === "remote" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Send Request</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Weaver's phone</div>
-          </button>
+          </Button>
         </div>
 
         {/* Sign on this phone */}
@@ -321,9 +320,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 </div>
               )}
               {signed && (
-                <button onClick={e => { e.stopPropagation(); setSigned(false); }} style={{ position: "absolute", bottom: 7, right: 10, background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>
+                <Button variant="link" onClick={e => { e.stopPropagation(); setSigned(false); }} className="absolute bottom-[7px] right-2.5 p-0 text-xs text-[#C4923A]">
                   Clear
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -343,8 +342,8 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 <Clock size={22} color={C.gold} style={{ margin: "0 auto 6px" }} />
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text, marginBottom: 4 }}>Waiting for Signature…</div>
                 <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                  <button style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Resend</button>
-                  <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.u, fontSize: 12, color: C.muted, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+                  <Button variant="link" className="p-0 text-xs text-[#C4923A]">Resend</Button>
+                  <Button variant="link" onClick={() => setRemoteConfirmed(true)} className="p-0 text-xs text-[#69635E] underline">Demo: Signed →</Button>
                 </div>
               </div>
             ) : (
@@ -353,9 +352,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to: {selectedWeaver ? selectedWeaver.name : "Weaver"}</div>
                   <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>+91 98765 43210</div>
                 </div>
-                <button onClick={() => setRemoteSent(true)} style={{ ...btnPrimary, height: 44, gap: 7, fontSize: 13 }}>
-                  <Send size={14} /> Send Signature Request
-                </button>
+                <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] text-[13px]">
+                  Send Signature Request
+                </Button>
               </>
             )}
           </div>
@@ -366,11 +365,15 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           {(() => {
             const canConfirm = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
             return (
-              <button
+              <Button
+                variant="primary"
+                fullWidth
+                iconLeft={CheckCircle2}
+                disabled={!canConfirm}
                 onClick={() => canConfirm && setDone(true)}
-                style={{ ...btnPrimary, height: 52, gap: 8, background: canConfirm ? C.green : "#E0D5CC", color: canConfirm ? "#FFF" : C.muted, cursor: canConfirm ? "pointer" : "not-allowed" }}>
-                <CheckCircle2 size={17} /> Confirm — Open Batch
-              </button>
+                className={`h-[52px] rounded-full ${canConfirm ? "bg-[#1E6640] hover:bg-[#1E6640]" : ""}`}>
+                Confirm — Open Batch
+              </Button>
             );
           })()}
         </div>

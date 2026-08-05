@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { T, F } from "./tokens";
 import { PO_DATA } from "./data";
 import { GreenBtn, CrimsonBtn, InfoStrip } from "./SharedUI";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ─── PO Card ──────────────────────────────────────────────────────────────────
 export function POCard({
@@ -133,28 +134,19 @@ export function POCard({
 
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-        <GreenBtn style={{ flex: 1, justifyContent: "center" }} onClick={handleApprove}>
+        <GreenBtn className="flex-1" onClick={handleApprove}>
           <Check size={14} /> Approve — Send PO to Vendor
         </GreenBtn>
-        <CrimsonBtn style={{ flex: 1, justifyContent: "center" }} onClick={handleReject}>
+        <CrimsonBtn className="flex-1" onClick={handleReject}>
           <X size={14} /> Reject
         </CrimsonBtn>
       </div>
 
       {/* View PO Document button */}
       {onViewDoc && (
-        <button
-          onClick={() => onViewDoc(item.id)}
-          style={{
-            width: "100%", height: 44, borderRadius: 9, cursor: "pointer",
-            fontFamily: F.ui, fontWeight: 600, fontSize: 13,
-            background: "transparent", color: T.royalBurgundy,
-            border: `1.5px solid rgba(110,15,45,0.22)`,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}
-        >
+        <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="lg" fullWidth>
           📄 View PO Document
-        </button>
+        </Button>
       )}
     </motion.div>
   );

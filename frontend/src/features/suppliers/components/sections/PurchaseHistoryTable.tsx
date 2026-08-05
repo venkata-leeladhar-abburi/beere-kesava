@@ -7,6 +7,7 @@ import { PayStatusPill } from "../common/primitives";
 import { SareeInventoryTable } from "./SareeInventoryTable";
 import { Purchase, formatINR, purchaseTotals } from "../../contexts/SupplierContext";
 import { FileText } from "lucide-react";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -55,10 +56,9 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
               <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</td>
               <td style={{ padding: "14px 16px" }}><PayStatusPill status={p.status} /></td>
               <td style={{ padding: "14px 16px", textAlign: "right" }}>
-                <button onClick={() => setExpanded(expanded === p.id ? null : p.id)}
-                  style={{ background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", whiteSpace: "nowrap" }}>
+                <Button variant="tertiary" size="sm" onClick={() => setExpanded(expanded === p.id ? null : p.id)}>
                   {expanded === p.id ? "Hide sarees" : `View ${p.sareeCount} sarees`}
-                </button>
+                </Button>
               </td>
             </tr>
             {expanded === p.id && (

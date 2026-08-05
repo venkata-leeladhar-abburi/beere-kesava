@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "motion/react";
 import { Eye } from "lucide-react";
 import {
   Shield, DownloadSimple, SealWarning, WarningCircle,
-  Users as PhUsers, CaretDown as PhCaretDown,
 } from "@phosphor-icons/react";
 import { T, F } from "../theme";
 import { DEFECTIVE_DATA } from "../data";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 export function DefectiveSareesSection({ superadmin = false }: { superadmin?: boolean; onNavigate?: (tab: string) => void } & CodeCallbacks) {
   const [timeFiler, setTimeFilter] = useState("All Time");
@@ -19,8 +19,6 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlWeaver, setDlWeaver] = useState("All Weavers");
   const [dlDefectType, setDlDefectType] = useState("All Defect Types");
   const [dlPeriod, setDlPeriod] = useState("This Month");
-  const [dlWeaverOpen, setDlWeaverOpen] = useState(false);
-  const [dlDefectOpen, setDlDefectOpen] = useState(false);
 
   const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}` };
@@ -38,13 +36,12 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>These sarees failed quality check by worker staff. They are stored separately. View only — no action can be taken from this page.</p>
             </div>
           </div>
-          <motion.button
+          <Button
             onClick={() => setShowDownloadDialog(true)}
-            whileHover={{ scale: 1.03, backgroundColor: "#7A5E1C" }}
-            whileTap={{ scale: 0.97 }}
-            style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.15)", color: "#8B6018", border: `1.5px solid rgba(200,155,71,0.35)`, borderRadius: 11, padding: "10px 18px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+            variant="secondary"
+          >
             <DownloadSimple size={16} color={T.antiqueGold} weight="bold" /> Download Defective Report
-          </motion.button>
+          </Button>
         </div>
 
         <div style={{ background: "rgba(192,57,43,0.05)", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 10, padding: "10px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
@@ -81,24 +78,24 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" as const, alignItems: "center" }}>
           <div style={{ display: "flex", gap: 6 }}>
             {["All Time", "This Month", "This Week", "Today"].map(f => (
-              <button key={f} onClick={() => setTimeFilter(f)} style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${timeFiler === f ? T.royalBurgundy : T.borderDef}`, background: timeFiler === f ? T.royalBurgundy : "#FFF", color: timeFiler === f ? "#FFF" : T.taupe, fontFamily: F.ui, fontSize: 12, fontWeight: timeFiler === f ? 600 : 400, cursor: "pointer" }}>{f}</button>
+              <Button key={f} onClick={() => setTimeFilter(f)} variant={timeFiler === f ? "primary" : "secondary"} size="sm">{f}</Button>
             ))}
           </div>
-          <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ height: 34, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "0 12px", fontFamily: F.ui, fontSize: 13, background: "#FFFDF9", color: T.luxuryBrown, cursor: "pointer", outline: "none" }}>
-            <option>All Weavers</option>
-            <option>Padma Veni</option>
-            <option>Ravi Kumar</option>
-            <option>Suresh Murti</option>
-            <option>Own Factory</option>
-          </select>
-          <select value={defectFilter} onChange={e => setDefectFilter(e.target.value)} style={{ height: 34, border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "0 12px", fontFamily: F.ui, fontSize: 13, background: "#FFFDF9", color: T.luxuryBrown, cursor: "pointer", outline: "none" }}>
-            <option>All Defect Types</option>
-            <option>Thread Break</option>
-            <option>Design Error</option>
-            <option>Jari Issue</option>
-            <option>Weight Problem</option>
-            <option>Measurement Error</option>
-          </select>
+          <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm">
+            <SelectItem value="All Weavers">All Weavers</SelectItem>
+            <SelectItem value="Padma Veni">Padma Veni</SelectItem>
+            <SelectItem value="Ravi Kumar">Ravi Kumar</SelectItem>
+            <SelectItem value="Suresh Murti">Suresh Murti</SelectItem>
+            <SelectItem value="Own Factory">Own Factory</SelectItem>
+          </Select>
+          <Select value={defectFilter} onValueChange={setDefectFilter} size="sm">
+            <SelectItem value="All Defect Types">All Defect Types</SelectItem>
+            <SelectItem value="Thread Break">Thread Break</SelectItem>
+            <SelectItem value="Design Error">Design Error</SelectItem>
+            <SelectItem value="Jari Issue">Jari Issue</SelectItem>
+            <SelectItem value="Weight Problem">Weight Problem</SelectItem>
+            <SelectItem value="Measurement Error">Measurement Error</SelectItem>
+          </Select>
         </div>
 
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden" }}>
@@ -133,9 +130,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     )}
                   </td>
                   <td style={TD}>
-                    <motion.button onClick={() => setViewDefect(row)} whileHover={{ scale: 1.05, backgroundColor: "rgba(110,15,45,0.08)" }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 8, background: "#FFF", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
+                    <Button onClick={() => setViewDefect(row)} variant="secondary" size="sm">
                       <Eye size={13} /> View
-                    </motion.button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -157,56 +154,32 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Time Period</div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {["Today", "This Week", "This Month", "All Time"].map(p => (
-                      <motion.button key={p} onClick={() => setDlPeriod(p)} whileHover={{ scale: 1.03 }}
-                        style={{ padding: "8px 16px", borderRadius: 99, border: dlPeriod === p ? "none" : `1.5px solid rgba(110,15,45,0.18)`, background: dlPeriod === p ? T.royalBurgundy : "transparent", color: dlPeriod === p ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
+                      <Button key={p} onClick={() => setDlPeriod(p)} variant={dlPeriod === p ? "primary" : "tertiary"} size="sm">
                         {p}
-                      </motion.button>
+                      </Button>
                     ))}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 8 }}>Filter by Weaver</div>
-                  <div style={{ position: "relative" }}>
-                    <motion.button onClick={() => { setDlWeaverOpen(p => !p); setDlDefectOpen(false); }} whileHover={{ backgroundColor: "rgba(110,15,45,0.05)" }}
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 16px", border: `1.5px solid ${T.borderDef}`, borderRadius: 11, background: "#FFFDF9", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, cursor: "pointer" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <PhUsers size={16} color={T.taupe} /> {dlWeaver}
-                      </span>
-                      <PhCaretDown size={14} color={T.taupe} weight="bold" />
-                    </motion.button>
-                    {dlWeaverOpen && (
-                      <div style={{ position: "absolute", top: 46, left: 0, right: 0, zIndex: 50, background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.13)", overflow: "hidden" }}>
-                        {["All Weavers", "Padma Veni", "Ravi Kumar", "Suresh Murti", "Own Factory"].map(w => (
-                          <button key={w} onClick={() => { setDlWeaver(w); setDlWeaverOpen(false); }}
-                            style={{ display: "block", width: "100%", padding: "11px 16px", background: dlWeaver === w ? T.warmCream : "#FFFDF9", border: "none", textAlign: "left", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, cursor: "pointer", fontWeight: dlWeaver === w ? 700 : 400 }}>
-                            {w}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Select value={dlWeaver} onValueChange={setDlWeaver}>
+                    <SelectItem value="All Weavers">All Weavers</SelectItem>
+                    <SelectItem value="Padma Veni">Padma Veni</SelectItem>
+                    <SelectItem value="Ravi Kumar">Ravi Kumar</SelectItem>
+                    <SelectItem value="Suresh Murti">Suresh Murti</SelectItem>
+                    <SelectItem value="Own Factory">Own Factory</SelectItem>
+                  </Select>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 8 }}>Filter by Defect Type</div>
-                  <div style={{ position: "relative" }}>
-                    <motion.button onClick={() => { setDlDefectOpen(p => !p); setDlWeaverOpen(false); }} whileHover={{ backgroundColor: "rgba(110,15,45,0.05)" }}
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 16px", border: `1.5px solid ${T.borderDef}`, borderRadius: 11, background: "#FFFDF9", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, cursor: "pointer" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <SealWarning size={16} color={T.taupe} weight="duotone" /> {dlDefectType}
-                      </span>
-                      <PhCaretDown size={14} color={T.taupe} weight="bold" />
-                    </motion.button>
-                    {dlDefectOpen && (
-                      <div style={{ position: "absolute", top: 46, left: 0, right: 0, zIndex: 50, background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.13)", overflow: "hidden" }}>
-                        {["All Defect Types", "Thread Break", "Design Error", "Jari Issue", "Weight Problem", "Measurement Error"].map(d => (
-                          <button key={d} onClick={() => { setDlDefectType(d); setDlDefectOpen(false); }}
-                            style={{ display: "block", width: "100%", padding: "11px 16px", background: dlDefectType === d ? T.warmCream : "#FFFDF9", border: "none", textAlign: "left", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, cursor: "pointer", fontWeight: dlDefectType === d ? 700 : 400 }}>
-                            {d}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Select value={dlDefectType} onValueChange={setDlDefectType}>
+                    <SelectItem value="All Defect Types">All Defect Types</SelectItem>
+                    <SelectItem value="Thread Break">Thread Break</SelectItem>
+                    <SelectItem value="Design Error">Design Error</SelectItem>
+                    <SelectItem value="Jari Issue">Jari Issue</SelectItem>
+                    <SelectItem value="Weight Problem">Weight Problem</SelectItem>
+                    <SelectItem value="Measurement Error">Measurement Error</SelectItem>
+                  </Select>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 11, padding: "14px 16px" }}>
@@ -219,17 +192,17 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
+                  <Button
                     onClick={() => setShowDownloadDialog(false)}
-                    style={{ flex: 2, height: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `linear-gradient(135deg, ${T.antiqueGold} 0%, #B88730 100%)`, color: T.deepWine, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(200,155,71,0.30)" }}>
+                    variant="primary"
+                    size="lg"
+                    className="flex-[2]"
+                  >
                     <DownloadSimple size={18} weight="bold" /> Download PDF Report
-                  </motion.button>
-                  <motion.button onClick={() => setShowDownloadDialog(false)} whileHover={{ scale: 1.02 }}
-                    style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
+                  </Button>
+                  <Button onClick={() => setShowDownloadDialog(false)} variant="secondary" size="lg" className="flex-1">
                     Cancel
-                  </motion.button>
+                  </Button>
                 </div>
               </div>
             </ProductionDialog>
@@ -274,10 +247,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     This saree is stored separately in the defective stock area. Deduction has been automatically applied to the weaver's payment record.
                   </div>
                 </div>
-                <motion.button onClick={() => setViewDefect(null)} whileHover={{ scale: 1.02 }}
-                  style={{ height: 46, background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", color: "#FFFDF9", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                <Button onClick={() => setViewDefect(null)} variant="primary" size="lg" fullWidth>
                   Close
-                </motion.button>
+                </Button>
               </div>
             </ProductionDialog>
           )}

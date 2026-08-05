@@ -4,6 +4,7 @@ import { Supplier } from "../../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../../theme";
 import { FormState } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
+import { Field, Input, Select, SelectItem, Button, Textarea } from "../../../../../../shared/ui/primitives";
 
 /**
  * Supplier picker + basic purchase fields (top half of the Add/Edit Purchase
@@ -31,13 +32,11 @@ export function SupplierSection({
 }) {
   return (
     <>
-      <div style={{ marginBottom: 14 }}>
-        <label style={labelStyle} htmlFor="select-supplier">Select Supplier</label>
-        <select id="select-supplier"
-          style={{ ...inputStyle, cursor: "pointer" }}
+      <Field label="Select Supplier" className="mb-3.5">
+        <Select
+          placeholder="— Choose a registered supplier —"
           value={form.supplierId || (form.supplier ? "__other__" : "")}
-          onChange={(e) => {
-            const val = e.target.value;
+          onValueChange={(val) => {
             if (val === "" || val === "__other__") {
               setForm((f) => ({ ...f, supplierId: "", ...(val === "" ? { supplier: "", location: "", gstNumber: "" } : {}) }));
               return;
@@ -53,13 +52,12 @@ export function SupplierSection({
             }));
           }}
         >
-          <option value="">— Choose a registered supplier —</option>
           {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>{s.name} · {s.city} · {s.specialty}</option>
+            <SelectItem key={s.id} value={s.id}>{s.name} · {s.city} · {s.specialty}</SelectItem>
           ))}
-          <option value="__other__">Other (enter manually)</option>
-        </select>
-      </div>
+          <SelectItem value="__other__">Other (enter manually)</SelectItem>
+        </Select>
+      </Field>
 
       {selectedSupplier && (
         <div style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
@@ -80,78 +78,63 @@ export function SupplierSection({
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <div>
-          <label style={labelStyle} htmlFor="supplier-name">Supplier Name</label>
-          <input id="supplier-name"
-            style={inputStyle}
+        <Field label="Supplier Name">
+          <Input
             value={form.supplier}
             onChange={(e) => set("supplier", e.target.value)}
             placeholder="e.g. Ravi Silks"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="location">Location</label>
-          <input id="location"
-            style={inputStyle}
+        </Field>
+        <Field label="Location">
+          <Input
             value={form.location}
             onChange={(e) => set("location", e.target.value)}
             placeholder="e.g. Dharmavaram, AP"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="purchase-date">Purchase Date</label>
-          <input id="purchase-date"
+        </Field>
+        <Field label="Purchase Date">
+          <Input
             type="date"
-            style={inputStyle}
             value={form.date}
             onChange={(e) => set("date", e.target.value)}
           />
-        </div>
+        </Field>
         <div>
           <label style={labelStyle}>Number of Sarees</label>
           <div style={{ ...inputStyle, display: "flex", alignItems: "center", color: T.taupe, background: T.cream }}>
             {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line{sareeDetailsCount !== 1 ? "s" : ""} below
           </div>
         </div>
-        <div>
-          <label style={labelStyle} htmlFor="payment-status">Payment Status</label>
-          <select id="payment-status"
-            style={{ ...inputStyle, cursor: "pointer" }}
-            value={form.status}
-            onChange={(e) => set("status", e.target.value)}
-          >
-            <option>Paid</option>
-            <option>Pending</option>
-            <option>Partial</option>
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="gst-number">GST Number</label>
-          <input id="gst-number"
-            style={{ ...inputStyle, fontFamily: F.mono }}
+        <Field label="Payment Status">
+          <Select value={form.status} onValueChange={(v) => set("status", v)}>
+            <SelectItem value="Paid">Paid</SelectItem>
+            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Partial">Partial</SelectItem>
+          </Select>
+        </Field>
+        <Field label="GST Number">
+          <Input
+            className="font-mono"
             value={form.gstNumber}
             onChange={(e) => set("gstNumber", e.target.value.toUpperCase())}
             placeholder="e.g. 37ABCRS1234F1Z5"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="invoice-number">Invoice Number</label>
-          <input id="invoice-number"
-            style={{ ...inputStyle, fontFamily: F.mono }}
+        </Field>
+        <Field label="Invoice Number">
+          <Input
+            className="font-mono"
             value={form.invoiceNumber}
             onChange={(e) => set("invoiceNumber", e.target.value)}
             placeholder="e.g. INV-2026-118"
           />
-        </div>
-        <div>
-          <label style={labelStyle} htmlFor="bill-amount">Bill Amount</label>
-          <input id="bill-amount"
-            style={inputStyle}
+        </Field>
+        <Field label="Bill Amount">
+          <Input
             value={form.billAmount}
             onChange={(e) => set("billAmount", e.target.value)}
             placeholder="e.g. ₹34,000"
           />
-        </div>
+        </Field>
         <div>
           <label style={labelStyle}>Upload Invoice</label>
           <label
@@ -179,25 +162,28 @@ export function SupplierSection({
             <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
               <FileText size={12} color={T.royalBurgundy} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{form.invoiceFileName}</span>
-              <button
+              <Button
+                variant="link"
+                size="sm"
                 onClick={() => set("invoiceFileName", "")}
-                style={{ background: "none", border: "none", color: T.crimson, cursor: "pointer", fontSize: 12, fontFamily: F.ui, padding: 0 }}
+                className="h-auto p-0 text-[12px] text-[var(--text-danger)]"
               >
                 Remove
-              </button>
+              </Button>
             </div>
           )}
         </div>
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <label style={labelStyle} htmlFor="notes">Notes</label>
-        <textarea id="notes"
-          value={form.notes}
-          onChange={(e) => set("notes", e.target.value)}
-          rows={3}
-          style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }}
-        />
+        <Field label="Notes">
+          <Textarea
+            value={form.notes}
+            onChange={(e) => set("notes", e.target.value)}
+            rows={3}
+            className="resize-y"
+          />
+        </Field>
       </div>
     </>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Plus, Search, Edit2,
+  Plus, Edit2,
   LayoutGrid, LayoutList, FileText,
 } from "lucide-react";
 import { FactoryLoom, FACTORY_LOOMS_LIST } from "../data/factoryLooms";
@@ -13,6 +13,7 @@ import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
 import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
 import { FadeUp } from "./factory-loom/theme";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 
 // ── Main Page Export ──────────────────────────────────────────────────────────
 export function FactoryLoomPage() {
@@ -56,10 +57,9 @@ export function FactoryLoomPage() {
               <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 42, color: "#fff", margin: "0 0 8px", lineHeight: 1.1 }}>Factory Looms</h1>
               <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 560, margin: 0, lineHeight: 1.65 }}>Manage in-house factory looms, track batch assignments, materials, and production output.</p>
             </div>
-            <motion.button onClick={() => { setEditLoom(null); setShowModal(true); }} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: T.antiqueGold, color: T.darkBurgundy, border: "none", borderRadius: 12, padding: "12px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+            <Button onClick={() => { setEditLoom(null); setShowModal(true); }} variant="primary" size="lg" className="shrink-0">
               <Plus size={17} /> Add Factory Loom
-            </motion.button>
+            </Button>
           </div>
         </div>
         {[320, 460].map((sz, i) => <div key={i} style={{ position: "absolute" as const, right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.03})`, pointerEvents: "none" as const }} />)}
@@ -81,22 +81,18 @@ export function FactoryLoomPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 22 }}>
           <div style={{ display: "flex", gap: 8 }}>
             {(["all", "active", "idle", "maintenance"] as const).map(f => (
-              <button key={f} onClick={() => setSf(f)} style={{ padding: "7px 16px", borderRadius: 99, cursor: "pointer", fontFamily: F.ui, fontSize: 13, fontWeight: 600, background: sf === f ? T.royalBurgundy : "transparent", color: sf === f ? "#FFF" : T.taupe, border: sf === f ? "none" : `1px solid rgba(110,15,45,0.16)` }}>
+              <Button key={f} onClick={() => setSf(f)} variant={sf === f ? "primary" : "tertiary"} size="sm">
                 {f === "all" ? "All Looms" : f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
+              </Button>
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "8px 14px" }}>
-              <Search size={14} color={T.taupe} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom or operator..."
-                style={{ border: "none", outline: "none", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "transparent", width: 200 }} />
-            </div>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom or operator..." className="w-[200px]" />
             <div style={{ display: "flex", gap: 5 }}>
               {([["card", LayoutGrid, "Card"], ["table", LayoutList, "Table"]] as const).map(([v, Icon, label]) => (
-                <motion.button key={v} onClick={() => setView(v as any)} whileHover={{ scale: 1.04 }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 13px", borderRadius: 10, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: view === v ? T.royalBurgundy : "#FFF", color: view === v ? "#FFF" : T.taupe, border: view === v ? "none" : `1px solid ${T.borderDef}` }}>
+                <Button key={v} onClick={() => setView(v as any)} variant={view === v ? "primary" : "secondary"} size="sm">
                   <Icon size={13} />{label}
-                </motion.button>
+                </Button>
               ))}
             </div>
           </div>
@@ -129,8 +125,8 @@ export function FactoryLoomPage() {
                         <td style={{ ...TD, textAlign: "center" as const, fontWeight: 700, color: T.green }}>{done}</td>
                         <td style={TD}>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <motion.button onClick={() => setSelected(l)} whileHover={{ scale: 1.04 }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1px solid ${T.royalBurgundy}`, background: "transparent", color: T.royalBurgundy, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><FileText size={13} /> View</motion.button>
-                            <motion.button onClick={() => handleEdit(l)} whileHover={{ scale: 1.04 }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", color: T.taupe, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Edit2 size={13} /> Edit</motion.button>
+                            <Button onClick={() => setSelected(l)} variant="secondary" size="sm"><FileText size={13} /> View</Button>
+                            <Button onClick={() => handleEdit(l)} variant="tertiary" size="sm"><Edit2 size={13} /> Edit</Button>
                           </div>
                         </td>
                       </tr>

@@ -1,4 +1,5 @@
 import React from "react";
+import { Button, Field, Select, SelectItem } from "../../../shared/ui/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D", darkBurgundy: "#3D0E1A",
@@ -44,24 +45,6 @@ export function WholesaleCustomerSelectSection({
   onClose,
   onAddCustomerClick,
 }: WholesaleCustomerSelectSectionProps) {
-  const inputStyle: React.CSSProperties = {
-    width: "100%", height: 44, border: `1px solid ${T.borderDef}`, borderRadius: 10,
-    padding: "0 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown,
-    background: T.warmIvory, outline: "none", boxSizing: "border-box",
-  };
-
-  const selectStyle: React.CSSProperties = {
-    ...inputStyle, cursor: "pointer", appearance: "none",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6, display: "block",
-  };
-
-  const errStyle: React.CSSProperties = {
-    fontFamily: F.ui, fontSize: 12, color: T.crimson, marginTop: 4,
-  };
-
   const sectionLabel: React.CSSProperties = {
     fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe,
     textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 16,
@@ -71,20 +54,18 @@ export function WholesaleCustomerSelectSection({
   return (
     <div>
       <div style={sectionLabel}>1 · Wholesale Customer</div>
-      <div>
-        <label style={labelStyle} htmlFor="select-wholesale-customer">Select Wholesale Customer</label>
-        <select id="select-wholesale-customer"
+      <Field label="Select Wholesale Customer" error={errors.customerId} id="select-wholesale-customer">
+        <Select
           value={customerId}
-          onChange={e => handleCustomerSelect(e.target.value)}
-          style={{ ...selectStyle, borderColor: errors.customerId ? T.crimson : T.borderDef }}
+          onValueChange={handleCustomerSelect}
+          placeholder="— Select customer —"
+          invalid={!!errors.customerId}
         >
-          <option value="">— Select customer —</option>
           {WHOLESALE_CUSTOMERS.map(c => (
-            <option key={c.id} value={c.id}>{c.name} ({c.id}, {c.city})</option>
+            <SelectItem key={c.id} value={c.id}>{c.name} ({c.id}, {c.city})</SelectItem>
           ))}
-        </select>
-        {errors.customerId && <div style={errStyle}>{errors.customerId}</div>}
-      </div>
+        </Select>
+      </Field>
 
       {selectedCustomer && (
         <div style={{ marginTop: 14, background: "linear-gradient(135deg, rgba(110,15,45,0.04) 0%, rgba(110,15,45,0.02) 100%)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 14, overflow: "hidden" }}>
@@ -128,8 +109,10 @@ export function WholesaleCustomerSelectSection({
         </div>
       )}
 
-      <button
-        style={{ marginTop: 12, background: "none", border: "none", fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: 0, fontWeight: 600 }}
+      <Button
+        variant="link"
+        size="sm"
+        style={{ marginTop: 12, color: T.antiqueGold, padding: 0 }}
         onClick={() => {
           onClose();
           localStorage.setItem("bk_open_add_wholesale", "true");
@@ -137,7 +120,7 @@ export function WholesaleCustomerSelectSection({
         }}
       >
         ➕ Add New Customer
-      </button>
+      </Button>
     </div>
   );
 }

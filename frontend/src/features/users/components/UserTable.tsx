@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Search, ChevronDown, Edit2, ShieldOff, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
+import { Edit2, ShieldOff, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { T, F, ROLE_COLORS, ROLES } from "./theme";
 import { TableRow } from "./utils";
 import { SectionTitle, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 interface UserTableProps {
   allRows: TableRow[];
@@ -33,7 +34,7 @@ export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
   totalPages, ROWS_PER_PAGE, customUsers, setCustomUsers, toggleStatus,
-  setEditingMember, setViewingMember, cardStyle, inputStyle
+  setEditingMember, setViewingMember, cardStyle
 }: UserTableProps) {
   return (
     <div style={{ ...cardStyle, borderRadius: 20 }}>
@@ -47,25 +48,19 @@ export function UserTable({
           {/* Quick-filter pills */}
           <div style={{ display: "flex", gap: 6 }}>
             {["All Roles", "Finishing Staff"].map(pill => (
-              <button key={pill}
+              <Button key={pill} size="sm"
+                variant={roleFilter === pill ? "secondary" : "tertiary"}
                 onClick={() => { setRoleFilter(pill); setPage(1); }}
-                style={{ padding: "5px 12px", borderRadius: 999, border: `1px solid ${roleFilter === pill ? "rgba(44,74,139,0.40)" : T.borderDef}`, background: roleFilter === pill ? "rgba(44,74,139,0.09)" : "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: roleFilter === pill ? T.blue : T.taupe, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const }}
-              >{pill}</button>
+              >{pill}</Button>
             ))}
           </div>
           {/* Search */}
-          <div style={{ position: "relative" }}>
-            <Search size={14} color={T.taupe} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" style={{ ...inputStyle, width: 220, paddingLeft: 34, height: 38, fontSize: 13 }} />
-          </div>
+          <SearchInput value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" containerClassName="w-[220px]" />
           {/* Role filter dropdown */}
-          <div style={{ position: "relative" }}>
-            <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }} style={{ ...inputStyle, width: 170, height: 38, fontSize: 13, appearance: "none", paddingRight: 28, cursor: "pointer" }}>
-              <option value="All Roles">All Roles</option>
-              {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-            <ChevronDown size={13} color={T.taupe} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          </div>
+          <Select value={roleFilter} onValueChange={v => { setRoleFilter(v); setPage(1); }} className="w-[170px]">
+            <SelectItem value="All Roles">All Roles</SelectItem>
+            {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+          </Select>
         </div>
       </div>
 
@@ -116,36 +111,21 @@ export function UserTable({
 
               {/* Actions */}
               <div style={{ display: "flex", gap: 5 }}>
-                <button
+                <Button size="sm" variant="tertiary" iconLeft={Edit2}
                   onClick={() => fm && setEditingMember(fm)}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 9px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                >
-                  <Edit2 size={11} color={T.royalBurgundy} /> Edit
-                </button>
-                <button
+                >Edit</Button>
+                <Button size="sm" variant="danger-subtle" iconLeft={ShieldOff}
                   onClick={() => {
                     if (fm) { toggleStatus(fm.id); return; }
                     if (customUsers.some(c => c.empId === u.empId)) {
                       setCustomUsers(prev => prev.map(c => c.empId === u.empId ? { ...c, status: c.status === "Active" ? "Inactive" : "Active" } : c));
                     }
                   }}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.crimson, cursor: "pointer" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = T.crimsonBg; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                >
-                  <ShieldOff size={11} /> {u.status === "Active" ? "Deactivate" : "Activate"}
-                </button>
+                >{u.status === "Active" ? "Deactivate" : "Activate"}</Button>
                 {fm && (
-                  <button
+                  <Button size="sm" variant="tertiary" iconLeft={Eye}
                     onClick={() => setViewingMember(fm)}
-                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", border: `1px solid rgba(44,74,139,0.22)`, borderRadius: 7, background: "transparent", fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.blue, cursor: "pointer" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(44,74,139,0.07)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                  >
-                    <Eye size={11} /> View
-                  </button>
+                  >View</Button>
                 )}
               </div>
             </div>
@@ -159,23 +139,14 @@ export function UserTable({
           Showing {Math.min((page - 1) * ROWS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ROWS_PER_PAGE, filtered.length)} of {filtered.length} users
         </span>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: page === 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page === 1 ? 0.4 : 1, transition: "all 0.15s" }}
-            onMouseEnter={e => { if (page > 1) (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>
-            <ChevronLeft size={14} color={T.luxuryBrown} />
-          </button>
+          <IconButton label="Previous page" size="sm" variant="tertiary"
+            icon={ChevronLeft} onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
-            <button key={pg} onClick={() => setPage(pg)}
-              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${pg === page ? T.royalBurgundy : T.borderDef}`, background: pg === page ? T.royalBurgundy : "transparent", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: pg === page ? "#FFF" : T.luxuryBrown, cursor: "pointer", transition: "all 0.15s" }}
-            >{pg}</button>
+            <Button key={pg} size="sm" variant={pg === page ? "primary" : "tertiary"} onClick={() => setPage(pg)}
+            >{pg}</Button>
           ))}
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: page === totalPages ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page === totalPages ? 0.4 : 1, transition: "all 0.15s" }}
-            onMouseEnter={e => { if (page < totalPages) (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>
-            <ChevronRight size={14} color={T.luxuryBrown} />
-          </button>
+          <IconButton label="Next page" size="sm" variant="tertiary"
+            icon={ChevronRight} onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
         </div>
       </div>
     </div>

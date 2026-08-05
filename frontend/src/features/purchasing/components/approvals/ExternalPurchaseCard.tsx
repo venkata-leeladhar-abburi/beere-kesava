@@ -7,6 +7,7 @@ import {
 } from "../../../suppliers/contexts/SupplierContext";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ─── External purchase request card ───────────────────────────────────────────
 // Shows the whole purchase the admin filled in — supplier, invoice, and every
@@ -126,19 +127,16 @@ export function ExternalPurchaseCard({
       {/* Saree lines */}
       {sarees.length > 0 && (
         <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden" }}>
-          <button
+          <Button
             onClick={() => setOpen(o => !o)}
-            style={{
-              width: "100%", background: T.silkCream, border: "none", cursor: "pointer",
-              padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between",
-              fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown,
-            }}
+            variant="tertiary" size="md" fullWidth
+            className="justify-between rounded-none"
           >
             <span>Saree details — {totals.pieces} saree{totals.pieces !== 1 ? "s" : ""} to be tagged</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy }}>
               {open ? "Hide" : "View all"}
             </span>
-          </button>
+          </Button>
           {open && (
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
@@ -187,10 +185,10 @@ export function ExternalPurchaseCard({
       )}
 
       <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-        <GreenBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onApprove(req.id)}>
+        <GreenBtn className="flex-1" onClick={() => onApprove(req.id)}>
           <Check size={14} /> Approve &amp; Create Purchase
         </GreenBtn>
-        <CrimsonBtn style={{ flex: 1, justifyContent: "center" }} onClick={() => onReject(req.id)}>
+        <CrimsonBtn className="flex-1" onClick={() => onReject(req.id)}>
           <X size={14} /> Reject
         </CrimsonBtn>
       </div>

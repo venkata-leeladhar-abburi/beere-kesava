@@ -4,6 +4,7 @@ import { X, Edit2 } from "lucide-react";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
 import { T, F, EASE } from "./theme";
 import { StatusBadge } from "./UserBadges";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 export function ViewProfileModal({ member, onClose, onEdit }: {
   member: FinishingStaffMember;
@@ -37,9 +38,8 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
               </div>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <X size={15} color="#fff" />
-          </button>
+          <IconButton label="Close" icon={X} size="sm" variant="ghost" onClick={onClose}
+            className="bg-white/10 text-white hover:bg-white/20 hover:text-white" />
         </div>
 
         {/* Body */}
@@ -72,18 +72,12 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
           )}
 
           <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-            <button
-              onClick={onEdit}
-              style={{ flex: 1, height: 44, background: `linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
-            >
-              <Edit2 size={14} /> Edit Profile
-            </button>
-            <button
-              onClick={onClose}
-              style={{ flex: 1, height: 44, background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.royalBurgundy, cursor: "pointer" }}
-            >
+            <Button variant="primary" fullWidth iconLeft={Edit2} onClick={onEdit}>
+              Edit Profile
+            </Button>
+            <Button variant="secondary" fullWidth onClick={onClose}>
               Close
-            </button>
+            </Button>
           </div>
         </div>
       </motion.div>

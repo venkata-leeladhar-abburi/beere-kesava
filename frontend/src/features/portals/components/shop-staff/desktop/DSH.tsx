@@ -1,6 +1,7 @@
 import React from "react";
 import { FileText } from "lucide-react";
 import { C, F } from "../theme";
+import { Button } from "../../../../../shared/ui/primitives";
 
 /** Section heading with an optional right-aligned link button, used throughout the desktop layout. */
 export function DSH({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
@@ -11,9 +12,9 @@ export function DSH({ label, link, onLink }: { label: string; link?: string; onL
         <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
       </div>
       {link && (
-        <button onClick={onLink} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 999, background: C.burg, border: "none", fontFamily: F.u, fontWeight: 600, fontSize: 13, color: "#FFF", cursor: "pointer", boxShadow: "0 2px 10px rgba(107,26,42,0.28)" }}>
-          <FileText size={14} color="#FFF" /> {link}
-        </button>
+        <Button onClick={onLink} variant="primary" size="sm" iconLeft={FileText} className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] shadow-[0_2px_10px_rgba(107,26,42,0.28)]">
+          {link}
+        </Button>
       )}
     </div>
   );

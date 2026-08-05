@@ -1,7 +1,7 @@
 import React from "react";
-import { motion } from "motion/react";
-import { Search, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
+import { Button, SearchInput } from "../../../shared/ui/primitives";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -41,24 +41,22 @@ export function AllOrdersFilterBar({
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "22px 24px", boxShadow: "0 4px 18px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Top row: search & reset */}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: 280 }}>
-            <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <SearchInput
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Search by order ref, customer, saree type, or design..."
-              style={{ width: "100%", height: 42, paddingLeft: 42, paddingRight: 16, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFFDF9", border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", boxSizing: "border-box" }}
             />
           </div>
           {(search || statusFilter !== "all" || paymentFilter !== "all") && (
-            <motion.button 
+            <Button
               onClick={resetFilters}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{ display: "flex", alignItems: "center", gap: 6, height: 42, padding: "0 16px", background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              variant="tertiary"
+              size="md"
+              iconLeft={RotateCcw}
             >
-              <RotateCcw size={14} /> Reset Filters
-            </motion.button>
+              Reset Filters
+            </Button>
           )}
         </div>
 
@@ -87,19 +85,14 @@ export function AllOrdersFilterBar({
                 { key: "at-risk", label: "At Risk / Delayed" },
                 { key: "completed", label: "Completed" }
               ].map(item => (
-                <button
+                <Button
                   key={item.key}
                   onClick={() => setStatusFilter(item.key as any)}
-                  style={{
-                    fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 8, cursor: "pointer",
-                    background: statusFilter === item.key ? T.royalBurgundy : "transparent",
-                    color: statusFilter === item.key ? "#FFFDF9" : T.taupe,
-                    border: statusFilter === item.key ? "none" : `1.5px solid rgba(110,15,45,0.14)`,
-                    transition: "all 0.15s"
-                  }}
+                  size="sm"
+                  variant={statusFilter === item.key ? "primary" : "tertiary"}
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -114,19 +107,14 @@ export function AllOrdersFilterBar({
                 { key: "partial", label: "Partial" },
                 { key: "pending", label: "Pending" }
               ].map(item => (
-                <button
+                <Button
                   key={item.key}
                   onClick={() => setPaymentFilter(item.key as any)}
-                  style={{
-                    fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 8, cursor: "pointer",
-                    background: paymentFilter === item.key ? T.royalBurgundy : "transparent",
-                    color: paymentFilter === item.key ? "#FFFDF9" : T.taupe,
-                    border: paymentFilter === item.key ? "none" : `1.5px solid rgba(110,15,45,0.14)`,
-                    transition: "all 0.15s"
-                  }}
+                  size="sm"
+                  variant={paymentFilter === item.key ? "primary" : "tertiary"}
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

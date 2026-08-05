@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Printer, Share2, Download } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { toast } from "sonner";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -114,20 +115,15 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                   )}
                 </div>
               </div>
-              <motion.button
+              <IconButton
                 onClick={onClose}
-                whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.18)" }}
-                whileTap={{ scale: 0.95 }}
-                style={{
-                  width: 36, height: 36, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1.5px solid rgba(255,255,255,0.22)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", flexShrink: 0,
-                }}
-              >
-                <X size={18} color="#FFFDF9" />
-              </motion.button>
+                label="Close"
+                icon={X}
+                variant="secondary"
+                size="md"
+                shape="circle"
+                className="bg-white/10 border-white/20 text-white"
+              />
             </div>
 
             {/* Document body */}
@@ -286,62 +282,33 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
               gap: 10,
               flexShrink: 0,
             }}>
-              <motion.button
+              <Button
                 onClick={() => window.print()}
-                whileHover={{ scale: 1.02, boxShadow: "0 8px 28px rgba(110,15,45,0.25)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  flex: 1, height: 52, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 700, fontSize: 13,
-                  background: T.royalBurgundy, color: "#FFFDF9", border: "none",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                }}
+                variant="primary" size="lg" fullWidth className="flex-1" iconLeft={Printer}
               >
-                <Printer size={16} /> Print PO Document
-              </motion.button>
+                Print PO Document
+              </Button>
 
-              <motion.button
+              <Button
                 onClick={() => toast.success("PO document ready — share with vendor via WhatsApp or email")}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  flex: 1, height: 52, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 700, fontSize: 13,
-                  background: T.green, color: "#FFFFFF", border: "none",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                }}
+                variant="primary" size="lg" fullWidth className="flex-1" iconLeft={Share2}
               >
-                <Share2 size={16} /> Share with Vendor
-              </motion.button>
+                Share with Vendor
+              </Button>
 
-              <motion.button
+              <Button
                 onClick={() => window.print()}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  flex: 1, height: 48, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 600, fontSize: 13,
-                  background: "transparent", color: T.royalBurgundy,
-                  border: `1.5px solid rgba(110,15,45,0.22)`,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                }}
+                variant="secondary" size="lg" fullWidth className="flex-1" iconLeft={Download}
               >
-                <Download size={15} /> Download as PDF
-              </motion.button>
+                Download as PDF
+              </Button>
 
-              <motion.button
+              <Button
                 onClick={onClose}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  flex: 0.6, height: 44, borderRadius: 10, cursor: "pointer",
-                  fontFamily: F.ui, fontWeight: 500, fontSize: 13,
-                  background: "transparent", color: T.taupe,
-                  border: `1.5px solid rgba(110,15,45,0.14)`,
-                }}
+                variant="secondary" size="sm" className="flex-[0.6]"
               >
                 × Close
-              </motion.button>
+              </Button>
             </div>
           </motion.div>
         </motion.div>

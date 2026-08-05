@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pencil, Pause, Play, X } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionHeader } from "../common/primitives";
+import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "../../../../shared/ui/primitives";
 
 const SCHEDULES = [
   { title: "Monthly Weaver Payment Report", freq: "Every Month",  sendOn: "1st of every month · 9:00 AM",  to: "All Admin WhatsApp", format: ["PDF", "Excel"], lastSent: "01 May 2026 · 9:02 AM", active: true  },
@@ -30,10 +31,9 @@ export function ScheduledReportsSection() {
         <SectionHeader
           title="Scheduled Reports — Automatic Delivery"
           action={
-            <button onClick={() => setShowForm(!showForm)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: "transparent", border: `1px solid ${T.borderGold}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold, cursor: "pointer" }}>
-              <Plus size={14} />Add New Schedule →
-            </button>
+            <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowForm(!showForm)}>
+              Add New Schedule →
+            </Button>
           }
         />
         <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "4px 0 22px 13px" }}>
@@ -85,13 +85,14 @@ export function ScheduledReportsSection() {
 
               {/* Action buttons */}
               <div style={{ padding: "0 22px 20px", display: "flex", gap: 8 }}>
-                <button style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
-                  <Pencil size={14} />Edit
-                </button>
-                <button onClick={() => setScheduleStates(prev => prev.map((v, j) => j === i ? !v : v))}
-                  style={{ flex: 1, height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1px solid ${scheduleStates[i] ? "rgba(200,155,71,0.35)" : T.borderDef}`, borderRadius: 9, background: scheduleStates[i] ? "rgba(200,155,71,0.08)" : "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: scheduleStates[i] ? T.antiqueGold : T.taupe, cursor: "pointer" }}>
-                  {scheduleStates[i] ? <><Pause size={14} />Pause</> : <><Play size={14} />Resume</>}
-                </button>
+                <Button variant="secondary" size="md" iconLeft={Pencil} fullWidth>
+                  Edit
+                </Button>
+                <Button variant="secondary" size="md" fullWidth
+                  iconLeft={scheduleStates[i] ? Pause : Play}
+                  onClick={() => setScheduleStates(prev => prev.map((v, j) => j === i ? !v : v))}>
+                  {scheduleStates[i] ? "Pause" : "Resume"}
+                </Button>
               </div>
             </div>
           ))}
@@ -103,7 +104,7 @@ export function ScheduledReportsSection() {
             style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "24px 28px", marginBottom: 20, boxShadow: "0 4px 16px rgba(74,6,27,0.08)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown }}>Add New Schedule</div>
-              <button onClick={() => setShowForm(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} color={T.taupe} /></button>
+              <IconButton variant="ghost" size="sm" icon={X} label="Close" onClick={() => setShowForm(false)} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
               {[
@@ -117,17 +118,15 @@ export function ScheduledReportsSection() {
                 <div key={f.label}>
                   <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>{f.label}</label>
                   {f.type === "select" ? (
-                    <select style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }}>
-                      {f.opts.map((o: string) => <option key={o}>{o}</option>)}
-                    </select>
+                    <Select size="sm" defaultValue={f.opts[0]}>
+                      {f.opts.map((o: string) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </Select>
                   ) : f.type === "time" ? (
-                    <input type="time" defaultValue="09:00" style={{ width: "100%", height: 36, padding: "0 10px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, background: T.warmIvory, outline: "none" }} />
+                    <Input type="time" size="sm" defaultValue="09:00" />
                   ) : (
                     <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
                       {["PDF","Excel"].map(fmt => (
-                        <label key={fmt} style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, cursor: "pointer" }}>
-                          <input type="checkbox" defaultChecked style={{ accentColor: T.royalBurgundy }} />{fmt}
-                        </label>
+                        <CheckboxField key={fmt} label={fmt} defaultChecked />
                       ))}
                     </div>
                   )}
@@ -135,8 +134,8 @@ export function ScheduledReportsSection() {
               ))}
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16 }}>
-              <button onClick={() => setShowForm(false)} style={{ padding: "8px 18px", border: `1px solid ${T.borderDef}`, borderRadius: 8, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-              <button style={{ padding: "8px 20px", background: T.royalBurgundy, border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer" }}>💾 Save Schedule</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="primary" size="sm">💾 Save Schedule</Button>
             </div>
           </motion.div>
         )}

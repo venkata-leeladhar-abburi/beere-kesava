@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Facebook, Instagram, Youtube, Linkedin, Phone, Mail } from "lucide-react";
 import { imgBKLogo as imgBKBLogo } from "../../../../shared/constants/weaverImages";
 import { T, F } from "../theme";
+import { Button, Input, IconButton } from "../../../../shared/ui/primitives";
 
 export function ProductionFooter() {
   const [email, setEmail] = useState("");
@@ -24,10 +25,8 @@ export function ProductionFooter() {
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)", lineHeight: 1.6, marginBottom: 20, maxWidth: 240 }}>Tracking every saree from loom to delivery. Preserving traditional silk weaving since 1999.</div>
           <div style={{ display: "flex", gap: 12 }}>
-            {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-              <motion.div key={i} whileHover={{ scale: 1.15 }} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,253,249,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <Icon size={14} color="rgba(255,253,249,0.70)" />
-              </motion.div>
+            {[["Facebook", Facebook], ["Instagram", Instagram], ["Youtube", Youtube], ["Linkedin", Linkedin]].map(([name, Icon]: any, i) => (
+              <IconButton key={i} variant="ghost" size="sm" shape="circle" label={name} icon={Icon} />
             ))}
           </div>
         </div>
@@ -49,12 +48,10 @@ export function ProductionFooter() {
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.35)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>Newsletter</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email address"
-              style={{ fontFamily: F.ui, fontSize: 12, color: "#FFFDF9", background: "rgba(255,253,249,0.07)", border: "1px solid rgba(255,253,249,0.14)", borderRadius: 10, padding: "9px 12px", outline: "none", width: "100%", boxSizing: "border-box" }} />
-            <motion.button initial={{ backgroundColor: T.royalBurgundy }} animate={{ backgroundColor: T.royalBurgundy }} whileHover={{ scale: 1.02, backgroundColor: "#5A0A24" }} whileTap={{ scale: 0.97 }}
-              style={{ color: "#FFFDF9", border: "none", borderRadius: 10, padding: "9px 0", fontFamily: F.ui, fontWeight: 600, fontSize: 13, cursor: "pointer", width: "100%" }}>
+            <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email address" />
+            <Button variant="primary" fullWidth>
               Subscribe
-            </motion.button>
+            </Button>
           </div>
         </div>
       </div>

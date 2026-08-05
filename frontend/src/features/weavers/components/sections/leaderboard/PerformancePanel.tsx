@@ -8,6 +8,7 @@ import { T, F } from "../../theme";
 import { LEADERBOARD, QC_DATA } from "../../data";
 import { FadeUp, Avatar, ActionDialog, qcColor } from "../../common/primitives";
 import { DownloadGate } from "../../../../../shared/ui/DownloadAccess";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const [reportOpen, setReportOpen] = useState(false);
@@ -28,9 +29,9 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
               </div>
             </div>
             <DownloadGate>
-              <motion.button onClick={() => setReportOpen(true)} whileHover={{ scale: 1.03 }} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,253,249,0.12)", color: "#FFFDF9", border: "1px solid rgba(255,253,249,0.22)", borderRadius: 10, padding: "9px 18px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Download size={16} /> Download Full Report
-              </motion.button>
+              <Button onClick={() => setReportOpen(true)} variant="secondary" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20">
+                Download Full Report
+              </Button>
             </DownloadGate>
           </div>
 

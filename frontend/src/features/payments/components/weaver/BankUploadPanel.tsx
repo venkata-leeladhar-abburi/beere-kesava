@@ -7,6 +7,7 @@ import { WEAVERS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";
 import { ExcelRow, MatchedPayment, UnmatchedRow, UploadResult } from "../../types";
 import { Pip } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Bank Upload Panel ─────────────────────────────────────────────────────────
 export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (matched: MatchedPayment[]) => void; onReset?: () => void }) {
@@ -177,11 +178,11 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
         </div>
         <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
           {result && (
-            <motion.button whileHover={{ scale: 1.02 }} onClick={handleReset}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 9, color: T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const }}>
-              <X size={13} />Clear
-            </motion.button>
+            <Button variant="secondary" size="md" iconLeft={X} onClick={handleReset}>
+              Clear
+            </Button>
           )}
+          {/* Native file input — no design-system primitive covers file uploads; kept raw and visually hidden, triggered via the Button below. */}
           <input
             ref={fileInputRef}
             type="file"
@@ -189,14 +190,15 @@ export function BankUploadPanel({ onMatchUpdate, onReset }: { onMatchUpdate?: (m
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
-          <motion.button
-            whileHover={{ scale: 1.02 }}
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={UploadCloud}
+            loading={parsing}
             onClick={() => fileInputRef.current?.click()}
-            disabled={parsing}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", background: T.royalBurgundy, border: "none", borderRadius: 9, color: "#FFFDF9", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const, opacity: parsing ? 0.7 : 1 }}
           >
-            <UploadCloud size={14} />{parsing ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
-          </motion.button>
+            {parsing ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
+          </Button>
         </div>
       </div>
 

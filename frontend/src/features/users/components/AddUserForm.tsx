@@ -2,14 +2,14 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   UserPlus, CheckCircle2, Shield, Phone, Mail,
-  ChevronDown, Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, FileText, X
+  Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X
 } from "lucide-react";
 import {
-  T, F, EASE, cardStyle, inputStyle, labelStyle,
+  T, F, EASE, cardStyle,
   ROLE_TO_PORTAL, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
-  FieldFocus, FieldBlur
 } from "./theme";
 import { SectionTitle, RoleBadge, AccessBadge } from "./UserBadges";
+import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 
 interface AddUserFormProps {
   showSuccess: boolean;
@@ -75,12 +75,12 @@ export function AddUserForm({
                 </p>
               </div>
               <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={() => setShowSuccess(false)} style={{ flex: 1, height: 50, background: `linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)`, border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  <UserPlus size={16} /> Add Another User
-                </button>
-                <button onClick={() => setShowSuccess(false)} style={{ flex: 1, height: 50, background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.royalBurgundy, cursor: "pointer" }}>
+                <Button size="lg" variant="primary" fullWidth iconLeft={UserPlus} onClick={() => setShowSuccess(false)}>
+                  Add Another User
+                </Button>
+                <Button size="lg" variant="secondary" fullWidth onClick={() => setShowSuccess(false)}>
                   Done
-                </button>
+                </Button>
               </div>
             </motion.div>
           ) : (
@@ -110,66 +110,45 @@ export function AddUserForm({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px" }}>
                 {/* Col 1 */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-                  <div>
-                    <label style={labelStyle}>First Name <span style={{ color: T.crimson }}>*</span></label>
-                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Ravi" style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Last Name <span style={{ color: T.crimson }}>*</span></label>
-                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Kumar" style={inputStyle} onFocus={FieldFocus} onBlur={FieldBlur} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Mobile Number <span style={{ color: T.crimson }}>*</span></label>
-                    <div style={{ position: "relative" }}>
-                      <Phone size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                      <input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="+91 98765 43210" type="tel" style={{ ...inputStyle, paddingLeft: 36 }} onFocus={FieldFocus} onBlur={FieldBlur} />
-                    </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5, display: "flex", alignItems: "center", gap: 5 }}>
+                  <Field label="First Name" required>
+                    <Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Ravi" />
+                  </Field>
+                  <Field label="Last Name" required>
+                    <Input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Kumar" />
+                  </Field>
+                  <Field label="Mobile Number" required hint={
+                    <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
                       <Shield size={10} color={T.antiqueGold} /> This number will be used for OTP login via WhatsApp
-                    </div>
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Email ID <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-                    <div style={{ position: "relative" }}>
-                      <Mail size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@bksilks.com" type="email" style={{ ...inputStyle, paddingLeft: 36 }} onFocus={FieldFocus} onBlur={FieldBlur} />
-                    </div>
-                  </div>
+                    </span>
+                  }>
+                    <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="+91 98765 43210" type="tel" iconLeft={Phone} />
+                  </Field>
+                  <Field label="Email ID" hint="Optional">
+                    <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@bksilks.com" type="email" iconLeft={Mail} />
+                  </Field>
                 </div>
 
                 {/* Col 2 */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                   {/* Role */}
-                  <div>
-                    <label style={labelStyle}>Role <span style={{ color: T.crimson }}>*</span></label>
-                    <div style={{ position: "relative" }}>
-                      <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer", paddingRight: 36 }} onFocus={FieldFocus} onBlur={FieldBlur}>
-                        <option value="">Select a role…</option>
-                        {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                      </select>
-                      <ChevronDown size={14} color={T.taupe} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                    </div>
+                  <Field label="Role" required>
+                    <Select value={role} onValueChange={setRole} placeholder="Select a role…">
+                      {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </Select>
                     {role && <div style={{ marginTop: 8 }}><RoleBadge role={role} /></div>}
-                  </div>
+                  </Field>
 
                   {/* Portal Access — auto-filled */}
-                  <div>
-                    <label style={labelStyle}>Portal Access <span style={{ color: T.taupe, fontWeight: 400 }}>— Auto-filled</span></label>
-                    <div style={{ position: "relative" }}>
-                      <Lock size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-                      <input readOnly value={portal || "Determined by selected role"} style={{ ...inputStyle, paddingLeft: 36, background: "rgba(245,232,208,0.40)", color: portal ? T.royalBurgundy : T.taupe, cursor: "default", fontWeight: portal ? 500 : 400 }} />
-                    </div>
-                  </div>
+                  <Field label="Portal Access" hint="Auto-filled">
+                    <Input readOnly value={portal || "Determined by selected role"} iconLeft={Lock}
+                      className="bg-[rgba(245,232,208,0.40)] cursor-default" />
+                  </Field>
 
                   {/* Employee ID — auto-generated */}
-                  <div>
-                    <label style={labelStyle}>Employee ID <span style={{ color: T.taupe, fontWeight: 400 }}>— Auto-generated</span></label>
-                    <div style={{ position: "relative" }}>
-                      <Hash size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-                      <input readOnly value={autoEmpId} style={{ ...inputStyle, paddingLeft: 36, background: "rgba(245,232,208,0.40)", color: T.royalBurgundy, cursor: "default", fontFamily: F.mono, fontWeight: 600 }} />
-                    </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 5 }}>Assigned automatically as the next ID in sequence.</div>
-                  </div>
+                  <Field label="Employee ID" hint="Assigned automatically as the next ID in sequence.">
+                    <Input readOnly value={autoEmpId} iconLeft={Hash}
+                      className="bg-[rgba(245,232,208,0.40)] cursor-default font-code font-semibold" />
+                  </Field>
 
                   {/* Access Level — Admin only */}
                   <AnimatePresence>
@@ -181,17 +160,17 @@ export function AddUserForm({
                         transition={{ duration: 0.22, ease: EASE }}
                         style={{ overflow: "hidden" }}
                       >
-                        <label style={labelStyle}>Admin Access Level <span style={{ color: T.crimson }}>*</span></label>
-                        <div style={{ display: "flex", gap: 8 }}>
+                        <div className="bk-label-lg flex items-baseline gap-1">Admin Access Level <span style={{ color: T.crimson }}>*</span></div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
                           {ACCESS_LEVELS.map(lvl => {
                             const on = accessLevel === lvl;
-                            const m = ACCESS_LEVEL_META[lvl];
-                            const Icon = lvl === "Full Access" ? ShieldCheck : ShieldHalf;
+                            const IconCmp = lvl === "Full Access" ? ShieldCheck : ShieldHalf;
                             return (
-                              <button key={lvl} type="button" onClick={() => setAccessLevel(lvl)}
-                                style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "9px 12px", borderRadius: 10, cursor: "pointer", background: on ? m.bg : "#FFF8F0", border: `1.5px solid ${on ? m.border : "rgba(110,15,45,0.14)"}`, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: on ? m.color : T.taupe, transition: "all 0.15s" }}>
-                                <Icon size={14} color={on ? m.color : T.taupe} /> {lvl}
-                              </button>
+                              <Button key={lvl} type="button" size="sm" fullWidth
+                                variant={on ? "secondary" : "tertiary"}
+                                iconLeft={IconCmp}
+                                onClick={() => setAccessLevel(lvl)}
+                              >{lvl}</Button>
                             );
                           })}
                         </div>
@@ -210,44 +189,34 @@ export function AddUserForm({
                         transition={{ duration: 0.22, ease: EASE }}
                         style={{ overflow: "hidden" }}
                       >
-                        <label style={labelStyle}>
-                          Specialisation <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span>
-                        </label>
-                        <div style={{ position: "relative" }}>
-                          <Sparkles size={14} color={T.blue} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                          <input
+                        <Field label="Specialisation" hint="Optional">
+                          <Input
                             value={specialisation}
                             onChange={e => setSpecialisation(e.target.value)}
                             placeholder="e.g. Silk finishing, Zari polishing"
-                            style={{ ...inputStyle, paddingLeft: 36 }}
-                            onFocus={FieldFocus} onBlur={FieldBlur}
+                            iconLeft={Sparkles}
                           />
-                        </div>
+                        </Field>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
                   {/* Notes */}
-                  <div>
-                    <label style={labelStyle}>Notes <span style={{ color: T.taupe, fontWeight: 400 }}>— Optional</span></label>
-                    <div style={{ position: "relative" }}>
-                      <FileText size={14} color={T.taupe} style={{ position: "absolute", left: 12, top: 12, pointerEvents: "none" }} />
-                      <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder={isFinishing ? "Any additional info about this finishing staff member…" : "Any additional notes for this user…"} rows={3} style={{ ...inputStyle, paddingLeft: 36, resize: "none" as const, lineHeight: 1.55 }} onFocus={FieldFocus} onBlur={FieldBlur} />
-                    </div>
-                  </div>
+                  <Field label="Notes" hint="Optional">
+                    <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder={isFinishing ? "Any additional info about this finishing staff member…" : "Any additional notes for this user…"} rows={3} />
+                  </Field>
                 </div>
               </div>
 
               <div style={{ height: 1, background: T.borderDef, margin: "24px 0" }} />
 
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <motion.button whileHover={{ scale: canSubmit ? 1.02 : 1 }} whileTap={{ scale: canSubmit ? 0.97 : 1 }} onClick={handleSubmit} disabled={!canSubmit}
-                  style={{ height: 50, padding: "0 32px", background: canSubmit ? `linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)` : "rgba(139,112,96,0.15)", border: "none", borderRadius: 999, fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: canSubmit ? "#FFF" : T.taupe, cursor: canSubmit ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 8, boxShadow: canSubmit ? "0 4px 20px rgba(110,15,45,0.25)" : "none", transition: "all 0.2s" }}>
-                  <UserPlus size={16} /> Create User Account
-                </motion.button>
-                <button onClick={handleCancel} style={{ height: 50, padding: "0 28px", background: "transparent", border: `1px solid ${T.borderMed}`, borderRadius: 999, fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
-                  <X size={15} /> Cancel
-                </button>
+                <Button size="lg" variant="primary" iconLeft={UserPlus} onClick={handleSubmit} disabled={!canSubmit}>
+                  Create User Account
+                </Button>
+                <Button size="lg" variant="secondary" iconLeft={X} onClick={handleCancel}>
+                  Cancel
+                </Button>
                 {!canSubmit && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>Fill in all required fields to continue</span>}
               </div>
             </motion.div>

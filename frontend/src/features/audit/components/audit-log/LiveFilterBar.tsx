@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Search, Download, RefreshCw, X } from "lucide-react";
 import { F, T } from "./tokens";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 export function LiveFilterBar({
   search, setSearch,
@@ -49,22 +50,9 @@ export function LiveFilterBar({
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
             Last refreshed: just now
           </span>
-          <button style={{
-            border: `1px solid ${T.borderDef}`,
-            borderRadius: 8,
-            padding: "6px 12px",
-            background: "transparent",
-            fontFamily: F.ui,
-            fontSize: 12,
-            color: T.luxuryBrown,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}>
-            <RefreshCw size={13} />
+          <Button variant="secondary" size="sm" iconLeft={RefreshCw}>
             Refresh Now
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -82,23 +70,9 @@ export function LiveFilterBar({
           <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown }}>
             Search &amp; Filter Audit Log
           </span>
-          <button style={{
-            border: `1px solid ${T.antiqueGold}`,
-            borderRadius: 8,
-            padding: "7px 14px",
-            background: "transparent",
-            color: T.antiqueGold,
-            fontFamily: F.ui,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}>
-            <Download size={14} />
+          <Button variant="secondary" size="sm" iconLeft={Download} className="text-[#C89B47] border-[#C89B47]">
             Export
-          </button>
+          </Button>
         </div>
 
         {/* Filter row */}
@@ -109,106 +83,42 @@ export function LiveFilterBar({
           marginBottom: 14,
         }}>
           {/* Search */}
-          <div style={{ position: "relative" }}>
-            <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-              <Search size={14} color={T.taupe} />
-            </div>
-            <input aria-label="Search actions, users, records..."
-              type="text"
-              placeholder="Search actions, users, records..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                height: 40,
-                paddingLeft: 36,
-                paddingRight: 12,
-                background: "#FFF8F0",
-                border: `1px solid ${T.borderDef}`,
-                borderRadius: 10,
-                fontFamily: F.ui,
-                fontSize: 13,
-                color: T.luxuryBrown,
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
+          <SearchInput
+            aria-label="Search actions, users, records..."
+            placeholder="Search actions, users, records..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
           {/* Role */}
-          <select
-            value={roleFilter}
-            onChange={e => setRoleFilter(e.target.value)}
-            style={{
-              height: 40,
-              borderRadius: 10,
-              background: "#FFF8F0",
-              border: `1px solid ${T.borderDef}`,
-              fontFamily: F.ui,
-              fontSize: 13,
-              color: T.luxuryBrown,
-              padding: "0 12px",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            <option>All Roles</option>
-            <option>SUPERADMIN</option>
-            <option>ADMIN</option>
-            <option>WORKER STAFF</option>
-            <option>FINISHING STAFF</option>
-            <option>SHOP STAFF</option>
-          </select>
+          <Select value={roleFilter} onValueChange={setRoleFilter} placeholder="All Roles">
+            <SelectItem value="All Roles">All Roles</SelectItem>
+            <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
+            <SelectItem value="ADMIN">ADMIN</SelectItem>
+            <SelectItem value="WORKER STAFF">WORKER STAFF</SelectItem>
+            <SelectItem value="FINISHING STAFF">FINISHING STAFF</SelectItem>
+            <SelectItem value="SHOP STAFF">SHOP STAFF</SelectItem>
+          </Select>
           {/* Module */}
-          <select
-            value={moduleFilter}
-            onChange={e => setModuleFilter(e.target.value)}
-            style={{
-              height: 40,
-              borderRadius: 10,
-              background: "#FFF8F0",
-              border: `1px solid ${T.borderDef}`,
-              fontFamily: F.ui,
-              fontSize: 13,
-              color: T.luxuryBrown,
-              padding: "0 12px",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            <option>All Modules</option>
-            <option>MATERIALS</option>
-            <option>WEAVERS</option>
-            <option>RATES</option>
-            <option>SALES</option>
-            <option>PRODUCTION</option>
-            <option>APPROVALS</option>
-            <option>CUSTOMERS</option>
-          </select>
+          <Select value={moduleFilter} onValueChange={setModuleFilter} placeholder="All Modules">
+            <SelectItem value="All Modules">All Modules</SelectItem>
+            <SelectItem value="MATERIALS">MATERIALS</SelectItem>
+            <SelectItem value="WEAVERS">WEAVERS</SelectItem>
+            <SelectItem value="RATES">RATES</SelectItem>
+            <SelectItem value="SALES">SALES</SelectItem>
+            <SelectItem value="PRODUCTION">PRODUCTION</SelectItem>
+            <SelectItem value="APPROVALS">APPROVALS</SelectItem>
+            <SelectItem value="CUSTOMERS">CUSTOMERS</SelectItem>
+          </Select>
           {/* Action */}
-          <select
-            value={actionFilter}
-            onChange={e => setActionFilter(e.target.value)}
-            style={{
-              height: 40,
-              borderRadius: 10,
-              background: "#FFF8F0",
-              border: `1px solid ${T.borderDef}`,
-              fontFamily: F.ui,
-              fontSize: 13,
-              color: T.luxuryBrown,
-              padding: "0 12px",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            <option>All Actions</option>
-            <option>Create</option>
-            <option>Update</option>
-            <option>Approve</option>
-            <option>Issue</option>
-            <option>Dispatch</option>
-            <option>Sale</option>
-          </select>
+          <Select value={actionFilter} onValueChange={setActionFilter} placeholder="All Actions">
+            <SelectItem value="All Actions">All Actions</SelectItem>
+            <SelectItem value="Create">Create</SelectItem>
+            <SelectItem value="Update">Update</SelectItem>
+            <SelectItem value="Approve">Approve</SelectItem>
+            <SelectItem value="Issue">Issue</SelectItem>
+            <SelectItem value="Dispatch">Dispatch</SelectItem>
+            <SelectItem value="Sale">Sale</SelectItem>
+          </Select>
         </div>
 
         {/* Date + period row */}
@@ -216,59 +126,25 @@ export function LiveFilterBar({
           {/* Period pills */}
           <div style={{ display: "flex", gap: 6 }}>
             {["Today", "This Week", "This Month", "Last 3 Months", "All Time"].map(p => (
-              <button
+              <Button
                 key={p}
+                variant={periodFilter === p ? "primary" : "secondary"}
+                size="sm"
+                className="rounded-full"
                 onClick={() => setPeriodFilter(p)}
-                style={{
-                  borderRadius: 999,
-                  padding: "5px 14px",
-                  fontFamily: F.ui,
-                  fontSize: 12,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  border: periodFilter === p ? "none" : `1px solid ${T.borderDef}`,
-                  background: periodFilter === p ? T.royalBurgundy : "transparent",
-                  color: periodFilter === p ? "#fff" : T.luxuryBrown,
-                  transition: "all 0.15s",
-                }}
               >
                 {p}
-              </button>
+              </Button>
             ))}
           </div>
           {/* Apply / Clear */}
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button style={{
-              borderRadius: 999,
-              padding: "8px 18px",
-              background: T.royalBurgundy,
-              color: "#fff",
-              border: "none",
-              fontFamily: F.ui,
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}>
-              <Search size={13} />
+            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-full">
               Apply Filters
-            </button>
-            <button style={{
-              background: "none",
-              border: "none",
-              fontFamily: F.ui,
-              fontSize: 12,
-              color: T.taupe,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}>
-              <X size={13} />
+            </Button>
+            <Button variant="ghost" size="sm" iconLeft={X}>
               Clear
-            </button>
+            </Button>
           </div>
         </div>
 

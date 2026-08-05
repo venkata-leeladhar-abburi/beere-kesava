@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 interface ActionBarProps {
   hasAnyDispatchAction: boolean;
@@ -34,34 +35,9 @@ export function ActionBar({
       <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
           {/* Scan */}
-          <button
-            onClick={onScan}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "0 14px",
-              height: 38,
-              background: T.deepWine,
-              border: "none",
-              borderRadius: 10,
-              fontFamily: F.ui,
-              fontWeight: 600,
-              fontSize: 13,
-              color: "#FFF",
-              cursor: "pointer",
-              flexShrink: 0,
-              whiteSpace: "nowrap" as const,
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = T.royalBurgundy;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = T.deepWine;
-            }}
-          >
-            <Scan size={14} color="#FFF" /> Scan
-          </button>
+          <Button variant="primary" size="sm" iconLeft={Scan} onClick={onScan} className="shrink-0">
+            Scan
+          </Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             Scans a random unselected saree from the table below and selects it.
           </span>
@@ -119,89 +95,40 @@ export function ActionBar({
             )}
           </span>
           {canDispatchShop && (
-            <button
+            <Button
               onClick={() => onOpenModal("shop")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                padding: "0 18px",
-                height: 40,
-                background: T.antiqueGold,
-                border: "none",
-                borderRadius: 10,
-                fontFamily: F.ui,
-                fontWeight: 700,
-                fontSize: 13,
-                color: T.deepWine,
-                cursor: "pointer",
-              }}
+              iconLeft={ShoppingBag}
+              className="bg-[var(--bk-gold-500)] text-[var(--bk-burgundy-950)] font-bold hover:bg-[var(--bk-gold-500)]/90 border-none shadow-none"
             >
-              <ShoppingBag size={15} /> Dispatch to Shop
-            </button>
+              Dispatch to Shop
+            </Button>
           )}
           {canDispatchWholesale && (
-            <button
+            <Button
               onClick={() => onOpenModal("wholesale")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                padding: "0 18px",
-                height: 40,
-                background: "#FFF",
-                border: "none",
-                borderRadius: 10,
-                fontFamily: F.ui,
-                fontWeight: 700,
-                fontSize: 13,
-                color: T.royalBurgundy,
-                cursor: "pointer",
-              }}
+              iconLeft={Users}
+              className="bg-white text-[var(--text-brand)] font-bold hover:bg-white/90 border-none shadow-none"
             >
-              <Users size={15} /> Dispatch to Wholesale
-            </button>
+              Dispatch to Wholesale
+            </Button>
           )}
           {canRaiseQuotation && (
-            <button
+            <Button
               onClick={() => onOpenModal("quotation")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                padding: "0 18px",
-                height: 40,
-                background: "transparent",
-                border: `1px solid rgba(255,255,255,0.35)`,
-                borderRadius: 10,
-                fontFamily: F.ui,
-                fontWeight: 700,
-                fontSize: 13,
-                color: "#FFF",
-                cursor: "pointer",
-              }}
+              iconLeft={FileText}
+              className="bg-transparent text-white font-bold border border-white/35 hover:bg-white/10 shadow-none"
             >
-              <FileText size={15} /> Raise Quotation
-            </button>
+              Raise Quotation
+            </Button>
           )}
           {selectedCount > 0 && (
-            <button
+            <IconButton
+              icon={X}
+              label="Clear selection"
               onClick={onClearSelection}
-              title="Clear selection"
-              style={{
-                background: "rgba(255,255,255,0.12)",
-                border: "none",
-                borderRadius: 8,
-                width: 32,
-                height: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <X size={14} color="#FFF" />
-            </button>
+              size="sm"
+              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+            />
           )}
         </motion.div>
       )}

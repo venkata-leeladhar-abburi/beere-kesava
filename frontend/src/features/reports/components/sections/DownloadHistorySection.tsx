@@ -3,6 +3,7 @@ import { Users, Scissors, BarChart3, UsersRound, BellRing, Boxes, Store, Tag, Fi
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { FadeUp, SectionHeader } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 const DL_HISTORY = [
   { name: "Weaver Payment Report",   period: "May 2026",   generated: "22 May 2026", by: "Admin (RA)", format: "PDF + Excel" },
@@ -38,9 +39,9 @@ export function DownloadHistorySection() {
         <SectionHeader
           title="Previously Downloaded Reports"
           action={
-            <button style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer", textDecoration: "underline" }}>
+            <Button variant="link">
               Clear History →
-            </button>
+            </Button>
           }
         />
         <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "4px 0 22px 13px" }}>
@@ -81,9 +82,9 @@ export function DownloadHistorySection() {
               </div>
 
               {/* Download button */}
-              <button style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 42, background: T.royalBurgundy, border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFFDF9", cursor: "pointer", width: "100%" }}>
-                <Download size={15} />Download Again
-              </button>
+              <Button variant="primary" size="lg" iconLeft={Download} fullWidth>
+                Download Again
+              </Button>
             </div>
           ))}
         </div>

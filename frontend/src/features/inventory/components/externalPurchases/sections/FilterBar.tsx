@@ -1,9 +1,8 @@
 import React from "react";
-import { motion } from "motion/react";
-import { Search } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
-import { T, F } from "../theme";
+import { T } from "../theme";
 import { Select } from "../common/primitives";
+import { Button, SearchInput } from "../../../../../shared/ui/primitives";
 
 export interface FilterOptions {
   supplier: string[];
@@ -54,36 +53,12 @@ export function FilterBar({
         alignItems: "center",
         flexWrap: "wrap"
       }}>
-        <div style={{ position: "relative", flex: "1 1 280px" }}>
-          <Search
-            size={16}
-            color={T.taupe}
-            style={{
-              position: "absolute",
-              left: 14,
-              top: "50%",
-              transform: "translateY(-50%)",
-              pointerEvents: "none",
-            }}
-          />
-          <input
+        <div style={{ flex: "1 1 280px" }}>
+          <SearchInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onSearch={setSearch}
             placeholder="Search by supplier, ID, location, GST, invoice…"
-            style={{
-              width: "100%",
-              height: 44,
-              borderRadius: 12,
-              border: `1.5px solid ${T.borderDef}`,
-              background: T.silkCream,
-              fontFamily: F.ui,
-              fontSize: 14,
-              paddingLeft: 44,
-              paddingRight: 14,
-              color: T.luxuryBrown,
-              outline: "none",
-              boxSizing: "border-box",
-            }}
           />
         </div>
 
@@ -94,25 +69,18 @@ export function FilterBar({
             { key: "Pending", label: "Pending" },
             { key: "Partial", label: "Partial" },
           ].map(f => (
-            <motion.button
+            <Button
               key={f.key}
               onClick={() => setStatusFilter(f.key)}
-              whileHover={{ scale: 1.03 }}
-              style={{
-                fontFamily: F.ui,
-                fontSize: 13,
-                fontWeight: 600,
-                padding: "9px 18px",
-                borderRadius: 99,
-                cursor: "pointer",
-                background: statusFilter === f.key ? T.royalBurgundy : "transparent",
-                color: statusFilter === f.key ? "#FFFDF9" : T.taupe,
-                border: statusFilter === f.key ? "none" : `1.5px solid rgba(110,15,45,0.18)`,
-                transition: "all 0.18s"
-              }}
+              size="sm"
+              className={
+                statusFilter === f.key
+                  ? "rounded-full bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
+                  : "rounded-full bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
+              }
             >
               {f.label}
-            </motion.button>
+            </Button>
           ))}
         </div>
 
@@ -129,14 +97,13 @@ export function FilterBar({
         <Select value={fColor} options={opts.color} onChange={setFColor} />
 
         {filtersActive && (
-          <button onClick={clearFilters}
-            style={{
-              height: 44, padding: "0 14px", background: "transparent", color: T.royalBurgundy,
-              border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui,
-              fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto"
-            }}>
+          <Button
+            onClick={clearFilters}
+            variant="secondary"
+            className="ml-auto shadow-none"
+          >
             Clear filters
-          </button>
+          </Button>
         )}
       </div>
 
