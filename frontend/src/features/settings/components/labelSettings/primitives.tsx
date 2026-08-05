@@ -1,4 +1,5 @@
 import React from "react";
+import { labelsApi } from "../../../../shared/api/labels";
 
 export const F = {
   display: "'Plus Jakarta Sans', sans-serif",
@@ -25,41 +26,12 @@ export const T = {
 };
 
 export function BarcodePreview({ code }: { code: string }) {
-  const bars: { x: number; w: number; dark: boolean }[] = [];
-  let x = 0;
-  [2, 1, 2].forEach((w, i) => {
-    bars.push({ x, w, dark: i % 2 === 0 });
-    x += w;
-  });
-  for (let ci = 0; ci < Math.min(code.length, 16); ci++) {
-    const n = code.charCodeAt(ci);
-    [
-      ((n >> 5) % 3) + 1,
-      ((n >> 3) % 2) + 1,
-      ((n >> 1) % 3) + 1,
-      (n % 2) + 1,
-    ].forEach((w, i) => {
-      bars.push({ x, w, dark: i % 2 === 0 });
-      x += w;
-    });
-  }
-  [2, 3, 1, 1].forEach((w, i) => {
-    bars.push({ x, w, dark: i % 2 === 0 });
-    x += w;
-  });
   return (
-    <svg
-      width="100%"
-      height="36"
-      viewBox={`0 0 ${x} 36`}
-      preserveAspectRatio="none"
-    >
-      {bars
-        .filter((b) => b.dark)
-        .map((b, i) => (
-          <rect key={i} x={b.x} y={0} width={b.w} height={36} fill="#000" />
-        ))}
-    </svg>
+    <img
+      src={labelsApi.barcodeUrl(code)}
+      alt={`Barcode for ${code}`}
+      style={{ width: "100%", height: 36, objectFit: "contain" }}
+    />
   );
 }
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { labelsApi } from "../../../shared/api/labels";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -13,33 +14,12 @@ const F = {
 };
 
 function BarcodeStrip({ code }: { code: string }) {
-  const bars: { x: number; w: number; dark: boolean }[] = [];
-  let x = 0;
-
-  [2, 1, 2].forEach((w, i) => { bars.push({ x, w, dark: i % 2 === 0 }); x += w; });
-
-  for (let ci = 0; ci < code.length; ci++) {
-    const n = code.charCodeAt(ci);
-    const widths = [
-      (n >> 5) % 3 + 1,
-      (n >> 3) % 2 + 1,
-      (n >> 1) % 3 + 1,
-      n % 2 + 1,
-      (n >> 4) % 3 + 1,
-      (n >> 2) % 2 + 1,
-    ];
-    widths.forEach((w, i) => { bars.push({ x, w, dark: i % 2 === 0 }); x += w; });
-  }
-
-  [2, 3, 1, 1].forEach((w, i) => { bars.push({ x, w, dark: i % 2 === 0 }); x += w; });
-
-  const total = x;
   return (
-    <svg width="100%" height="44" viewBox={`0 0 ${total} 44`} preserveAspectRatio="none">
-      {bars.filter(b => b.dark).map((b, i) => (
-        <rect key={i} x={b.x} y={0} width={b.w} height={44} fill="#000000" />
-      ))}
-    </svg>
+    <img
+      src={labelsApi.barcodeUrl(code)}
+      alt={`Barcode for ${code}`}
+      style={{ width: "100%", height: 44, objectFit: "contain" }}
+    />
   );
 }
 
