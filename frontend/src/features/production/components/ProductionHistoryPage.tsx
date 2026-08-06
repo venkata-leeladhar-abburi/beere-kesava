@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search, ChevronDown, Eye, Calendar, Users, Download,
   CheckCircle2, Loader2, TriangleAlert,
 } from "lucide-react";
 import { ProductionHistoryFooter } from "./ProductionHistoryFooter";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
+import { useBatches } from "../contexts/BatchContext";
+import { qcApi } from "../../../shared/api/qc";
+import type { HistoryBatch } from "./types";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -35,34 +39,58 @@ const F = {
 // ── Batch data ────────────────────────────────────────────────────────────────
 type BatchStatus = "Printing Completed" | "Printing In Process" | "Challenge in Progress";
 
-interface Batch {
-  id: string;
-  designCode: string;
-  sareeType: string;
-  batchSize: number;
-  weavers: Array<{ initials: string; bg: string }>;
-  completion: number;
-  allPieces: number;
-  okPieces: number | null;
-  found: number | null;
-  status: BatchStatus;
-  makingCharges: string;
-  completedOn: string;
-  bulkOrder?: string;
-}
+const PIP_COLORS = ["#7C3AED", "#C0392B", "#0F766E", "#B45309"];
 
-const BATCHES: Batch[] = [
-  { id: "BATCH-448", designCode: "808-048", sareeType: "Self Brocade 336 ORS", batchSize: 4, weavers: [{ initials: "PV", bg: "#7C3AED" }, { initials: "RK", bg: "#C0392B" }], completion: 5, allPieces: 5, okPieces: 0, found: 0, status: "Printing Completed",    makingCharges: "₹1,25,000", completedOn: "30 May 2025", bulkOrder: "BO-12" },
-  { id: "BATCH-476", designCode: "808-048", sareeType: "Self Brocade 282 ORS", batchSize: 4, weavers: [{ initials: "SM", bg: "#0F766E" }, { initials: "AK", bg: "#B45309" }], completion: 4, allPieces: 4, okPieces: 0, found: 0, status: "Printing Completed",    makingCharges: "₹1,25,000", completedOn: "30 May 2025" },
-  { id: "BATCH-074", designCode: "808-048", sareeType: "Stripe Space 082 ORS", batchSize: 4, weavers: [{ initials: "PV", bg: "#7C3AED" }, { initials: "SM", bg: "#0F766E" }], completion: 4, allPieces: 4, okPieces: 2, found: 1, status: "Printing In Process",   makingCharges: "₹75,000",   completedOn: "02 Apr 2025" },
-  { id: "BATCH-081", designCode: "808-088", sareeType: "Heavy Zari 741 ORS",   batchSize: 4, weavers: [{ initials: "RK", bg: "#C0392B" }, { initials: "AK", bg: "#B45309" }], completion: 5, allPieces: 5, okPieces: 0, found: 1, status: "Challenge in Progress", makingCharges: "₹1,50,000", completedOn: "04 May 2025" },
-  { id: "BATCH-147", designCode: "808-048", sareeType: "Heavy Zari 741 ORS",   batchSize: 2, weavers: [{ initials: "PV", bg: "#7C3AED" }, { initials: "RK", bg: "#C0392B" }], completion: 2, allPieces: 2, okPieces: 1, found: 1, status: "Challenge in Progress", makingCharges: "₹30,000",   completedOn: "15 May 2025" },
-  { id: "BATCH-148", designCode: "808-088", sareeType: "Plane 344 ORS",         batchSize: 4, weavers: [{ initials: "SM", bg: "#0F766E" }, { initials: "AK", bg: "#B45309" }], completion: 3, allPieces: 3, okPieces: 0, found: 1, status: "Challenge in Progress", makingCharges: "₹80,000",   completedOn: "25 Apr 2025" },
-  { id: "BATCH-167", designCode: "808-048", sareeType: "Heavy Zari 741 ORS",   batchSize: 4, weavers: [{ initials: "PV", bg: "#7C3AED" }, { initials: "SM", bg: "#0F766E" }], completion: 3, allPieces: 3, okPieces: 1, found: 1, status: "Challenge in Progress", makingCharges: "₹80,000",   completedOn: "11 May 2025" },
-  { id: "BATCH-179", designCode: "808-048", sareeType: "Stripe Space 082 ORS", batchSize: 4, weavers: [{ initials: "RK", bg: "#C0392B" }, { initials: "AK", bg: "#B45309" }], completion: 3, allPieces: 3, okPieces: null, found: null, status: "Printing Completed",    makingCharges: "₹80,000",   completedOn: "25 Apr 2025" },
-  { id: "BATCH-354", designCode: "808-048", sareeType: "Happy Zari 741 ORS",   batchSize: 2, weavers: [{ initials: "PV", bg: "#7C3AED" }, { initials: "RK", bg: "#C0392B" }], completion: 2, allPieces: 2, okPieces: null, found: null, status: "Challenge in Progress", makingCharges: "₹80,000",   completedOn: "07 Apr 2025" },
-  { id: "BATCH-304", designCode: "808-048", sareeType: "Stripe Space 082 ORS", batchSize: 2, weavers: [{ initials: "SM", bg: "#0F766E" }, { initials: "AK", bg: "#B45309" }], completion: 2, allPieces: 2, okPieces: null, found: null, status: "Challenge in Progress", makingCharges: "₹80,000",   completedOn: "07 Apr 2025" },
-];
+// Derives the history table from real batch + QC data (same join pattern as
+// ProductionHistorySection.tsx). Only finalized ("completed") batches are
+// shown; per-saree QC outcomes (okPieces/found, making charges) come from QC
+// records joined by batchId — there is no separate "printing"/"embossing"
+// workflow tracked by the backend, so status is always "Printing Completed"
+// for every batch here (kept for label continuity with the styling, not a
+// tracked backend state).
+function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean } {
+  const { batches } = useBatches();
+  const { data: qcRecords = [], isLoading } = useQuery({
+    queryKey: ["qc", "all"],
+    queryFn: () => qcApi.list().then(r => r.items),
+  });
+
+  const historyBatches = useMemo(() => {
+    const completed = batches.filter(b => b.status === "completed");
+    return completed.map((b): HistoryBatch => {
+      const batchQc = qcRecords.filter(r => r.batchId === b.batchId);
+      const okPieces = batchQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
+      const found = batchQc.filter(r => r.result === "DEFECTIVE").length;
+      const makingCharges = batchQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
+
+      const seenWeavers = new Map<string, { initials: string; bg: string }>();
+      b.rows.forEach(r => {
+        if (r.weaverId && r.weaverInitials && !seenWeavers.has(r.weaverId)) {
+          seenWeavers.set(r.weaverId, { initials: r.weaverInitials, bg: PIP_COLORS[seenWeavers.size % PIP_COLORS.length]! });
+        }
+      });
+      const firstRow = b.rows.find(r => r.sareeTypeName || r.designCode);
+
+      return {
+        id: b.batchId,
+        designCode: firstRow?.designCode ?? "—",
+        sareeType: firstRow?.sareeTypeName ?? "—",
+        batchSize: b.totalCount,
+        weavers: Array.from(seenWeavers.values()),
+        completion: b.rows.filter(r => r.sareeId).length,
+        allPieces: b.totalCount,
+        okPieces: batchQc.length > 0 ? okPieces : null,
+        found: batchQc.length > 0 ? found : null,
+        status: "Printing Completed",
+        makingCharges: `₹${makingCharges.toLocaleString("en-IN")}`,
+        completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
+      };
+    });
+  }, [batches, qcRecords]);
+
+  return { batches: historyBatches, isLoading };
+}
 
 // ── Weaver avatar pip ─────────────────────────────────────────────────────────
 function Pip({ initials, bg }: { initials: string; bg: string }) {
@@ -173,7 +201,11 @@ function FilterBar() {
 }
 
 // ── Section 3: Stats bar ──────────────────────────────────────────────────────
-function StatsBar() {
+function StatsBar({ batches }: { batches: HistoryBatch[] }) {
+  const totalMakingCharges = batches.reduce(
+    (sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10),
+    0,
+  );
   return (
     <div style={{
       background: T.silkCream, padding: "11px 40px",
@@ -181,16 +213,16 @@ function StatsBar() {
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
       <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>
-        Showing <strong style={{ color: T.luxuryBrown }}>1 to 10</strong> of <strong style={{ color: T.luxuryBrown }}>25</strong> completed batches
+        Showing <strong style={{ color: T.luxuryBrown }}>{batches.length}</strong> of <strong style={{ color: T.luxuryBrown }}>{batches.length}</strong> completed batches
       </span>
       <div style={{ display: "flex", gap: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Completed:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>25</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{batches.length}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Making Charges:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹9,24,930</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{totalMakingCharges.toLocaleString("en-IN")}</span>
         </div>
       </div>
     </div>
@@ -221,7 +253,7 @@ const TD: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
-function TableSection() {
+function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoading: boolean }) {
   return (
     <div style={{ padding: "0 40px", background: T.warmIvory }}>
       <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", marginTop: 20 }}>
@@ -244,7 +276,13 @@ function TableSection() {
             </tr>
           </thead>
           <tbody>
-            {BATCHES.map((b, i) => (
+            {isLoading && (
+              <tr><td colSpan={13} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading production history…</td></tr>
+            )}
+            {!isLoading && batches.length === 0 && (
+              <tr><td colSpan={13} style={{ ...TD, textAlign: "center", color: T.taupe }}>No completed batches yet.</td></tr>
+            )}
+            {batches.map((b, i) => (
               <tr key={b.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#F8F4EF" }}>
                 <td style={TD}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
@@ -322,7 +360,7 @@ function TableSection() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0 24px" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          Showing 1 to 10 of 25 entries
+          Showing {batches.length} of {batches.length} entries
         </span>
         <div style={{ display: "flex", gap: 4 }}>
           {["Prev", "1", "2", "3", "Next"].map((p) => (
@@ -341,12 +379,13 @@ function TableSection() {
 }
 
 export function ProductionHistoryPage() {
+  const { batches, isLoading } = useHistoryBatches();
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <PageHeader />
       <FilterBar />
-      <StatsBar />
-      <TableSection />
+      <StatsBar batches={batches} />
+      <TableSection batches={batches} isLoading={isLoading} />
       <ProductionHistoryFooter />
     </div>
   );

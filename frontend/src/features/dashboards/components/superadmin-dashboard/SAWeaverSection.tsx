@@ -3,19 +3,45 @@ import { motion } from "motion/react";
 import { Rows, Clock as PhClock } from "@phosphor-icons/react";
 import { ChevronRight, Edit3, Layers3, Eye, Activity, MapPin, Phone, AlertTriangle } from "lucide-react";
 import { T, F } from "./theme";
-import { WEAVERS, WEAVER_RATES } from "./data";
 import { SectionHeader } from "./atoms";
+import { useDashboardWeavers } from "../beere-dashboard/hooks/useDashboardWeavers";
 
 interface SAWeaverSectionProps {
   onNavigate: (tab: string, ctx?: any) => void;
 }
 
 export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
+  const { data: weavers = [], isLoading } = useDashboardWeavers();
+
+  if (isLoading) {
+    return (
+      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+        <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
+        <div style={{ display: "flex", gap: 18 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ flex: 1, height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (weavers.length === 0) {
+    return (
+      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+        <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
+        <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "40px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          No weavers in database yet. Click "View All Weavers" to register a weaver.
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
-        {WEAVERS.map((w, i) => (
+        {weavers.map((w, i) => (
           <motion.div
             key={w.id}
             onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
@@ -58,8 +84,6 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
               }}>
                 {w.status === "active" ? (
                   <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
-                ) : w.status === "qc" ? (
-                  <PhClock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
                 ) : (
                   <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
                 )}
@@ -72,7 +96,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
                   letterSpacing: "0.5px",
                   textShadow: "0 1px 4px rgba(0,0,0,0.6)"
                 }}>
-                  {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                  {w.status === "active" ? "Currently Weaving" : "Idle"}
                 </span>
               </div>
             </div>
@@ -82,17 +106,12 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
                 <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
                   {w.name}
                 </div>
-                {w.batch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
-                    {w.batch}
-                  </span>
-                )}
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.village}</span>
+                  <span>{w.village || "—"}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
@@ -115,23 +134,16 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>₹</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>✓</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Making Charge</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Status</span>
                     <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
-                      {WEAVER_RATES[w.id] ? WEAVER_RATES[w.id].rate.split("/")[0] : "—"}
+                      {w.status === "active" ? "Active" : "Idle"}
                     </span>
                   </div>
                 </div>
               </div>
-
-              {WEAVER_RATES[w.id] && (
-                <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{WEAVER_RATES[w.id].type}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{WEAVER_RATES[w.id].code}</span>
-                </div>
-              )}
 
               <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
                 <motion.button

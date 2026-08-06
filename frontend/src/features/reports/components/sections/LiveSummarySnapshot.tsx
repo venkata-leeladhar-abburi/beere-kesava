@@ -18,6 +18,10 @@ export function LiveSummarySnapshot() {
     queryKey: ["reports", "sales-summary"],
     queryFn: () => reportsApi.salesSummary(),
   });
+  const { data: outstanding } = useQuery({
+    queryKey: ["reports", "outstanding-payments"],
+    queryFn: () => reportsApi.outstandingPayments(),
+  });
 
   const cards = [
     {
@@ -42,12 +46,17 @@ export function LiveSummarySnapshot() {
       label: "Wholesale Dispatched (Live)",
       value: sales ? `₹${sales.wholesale.totalSales.toLocaleString("en-IN")} · ${sales.wholesale.count} dispatches` : "—",
     },
+    {
+      icon: <ShoppingBag size={18} color={T.crimson} />,
+      label: "Total Outstanding Dues (Live)",
+      value: outstanding ? `₹${outstanding.totalOutstanding.toLocaleString("en-IN")} · ${outstanding.count} pending` : "—",
+    },
   ];
 
   return (
     <div style={{ padding: "0 48px", marginTop: 20 }}>
       <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14,
+        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14,
         background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "16px 20px",
         boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
       }}>
@@ -66,3 +75,4 @@ export function LiveSummarySnapshot() {
     </div>
   );
 }
+

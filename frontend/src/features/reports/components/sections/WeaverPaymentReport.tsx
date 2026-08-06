@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { IndianRupee, TrendingDown, CheckCircle2, Users, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
+import { weaversApi } from "../../../../shared/api/weavers";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, TH, TD } from "../common/primitives";
 
+// MOCK: no backend endpoint aggregates weaver making-charges by month, and
+// GET /payments/weavers carries no deduction *reason* (advance vs defective
+// saree) — only a single numeric `deduction` per payment. Both charts below
+// stay on static demo data; everything else on this page (summary cards +
+// table) is computed live from GET /weavers + GET /payments/weavers.
 const weaverPayMonthly = [
   { month: "Dec", amt: 380000 },
   { month: "Jan", amt: 395000 },
@@ -18,29 +25,41 @@ const deductionDonut = [
   { name: "Advance Deductions",    value: 17, color: T.antiqueGold },
   { name: "Defective Sarees",      value: 2,  color: T.crimson },
 ];
-// Saree-type breakdown per weaver (sb/hz/ps/bs/st counts — matches PaymentsPage WEAVERS pattern)
-const weaverPayRows = [
-  { code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   village: "Varanasi",      sb: 8, hz: 0, ps: 0, bs: 0, st: 0 },
-  { code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   village: "Rajatalab",     sb: 0, hz: 5, ps: 0, bs: 0, st: 0 },
-  { code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Bhelupura",     sb: 0, hz: 0, ps: 4, bs: 0, st: 0 },
-  { code: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     village: "Sigra",         sb: 0, hz: 0, ps: 0, bs: 5, st: 0 },
-  { code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     village: "Orderly Bazar", sb: 4, hz: 0, ps: 0, bs: 0, st: 0 },
-  { code: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    village: "Varanasi",      sb: 0, hz: 6, ps: 0, bs: 0, st: 0 },
-  { code: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   village: "Lanka",         sb: 0, hz: 0, ps: 8, bs: 0, st: 0 },
-  { code: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   village: "Lahurabir",     sb: 5, hz: 0, ps: 0, bs: 0, st: 0 },
-];
-function sareeBreakdown(r: typeof weaverPayRows[0]): string {
-  return [
-    r.sb > 0 && `SB×${r.sb}`,
-    r.hz > 0 && `HZ×${r.hz}`,
-    r.ps > 0 && `PS×${r.ps}`,
-    r.bs > 0 && `BS×${r.bs}`,
-    r.st > 0 && `ST×${r.st}`,
-  ].filter(Boolean).join(", ") || "—";
-}
 
 export function WeaverPaymentReport() {
-  const { getPaymentsForWeaver } = useWeaverPayments();
+  const { payments } = useWeaverPayments();
+  const { data: weaversRes, isLoading, isError } = useQuery({
+    queryKey: ["reports", "weavers-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const weavers = weaversRes?.items ?? [];
+
+  const weaverPayRows = useMemo(() => {
+    const byWeaver = new Map<string, typeof payments>();
+    for (const p of payments) {
+      const list = byWeaver.get(p.weaverId);
+      if (list) list.push(p);
+      else byWeaver.set(p.weaverId, [p]);
+    }
+    return weavers.map(w => {
+      const list = (byWeaver.get(w.id) ?? []).slice().sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt));
+      const latest = list[list.length - 1];
+      const totalSarees = list.reduce((s, p) => s + (p.noOfSarees ?? 0), 0);
+      return {
+        code: w.id,
+        name: w.name,
+        village: w.village ?? "—",
+        totalSarees,
+        latest,
+      };
+    });
+  }, [weavers, payments]);
+
+  const paidWeaverIds = new Set(payments.map(p => p.weaverId));
+  const totalDeductions = payments.reduce((s, p) => s + (p.deduction ?? 0), 0);
+  const totalNetPaid = payments.reduce((s, p) => s + p.amountPaid, 0);
+  const totalMakingCharges = totalNetPaid + totalDeductions;
+
   return (
     <div id="rep-weaver-payments" style={{ padding: "32px 40px" }}>
       <TabTitle title="Weaver Payment Report"
@@ -98,10 +117,10 @@ export function WeaverPaymentReport() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value="72 of 84" sub="12 payments pending" />
-        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value="₹4,20,000" sub="For May 2026" hi />
-        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value="₹18,400" sub="Advance amounts deducted" crimsonHi />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value="₹4,01,600" sub="After all deductions" greenHi />
+        <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
+        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={`₹${totalMakingCharges.toLocaleString("en-IN")}`} sub="All recorded payments" hi />
+        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={`₹${totalDeductions.toLocaleString("en-IN")}`} sub="Deducted from making charges" crimsonHi />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={`₹${totalNetPaid.toLocaleString("en-IN")}`} sub="After all deductions" greenHi />
       </div>
 
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
@@ -125,18 +144,26 @@ export function WeaverPaymentReport() {
                 </tr>
               </thead>
               <tbody>
+                {isLoading && (
+                  <tr><td style={TD} colSpan={7}>Loading…</td></tr>
+                )}
+                {isError && (
+                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={7}>Failed to load the weaver roster.</td></tr>
+                )}
+                {!isLoading && !isError && weaverPayRows.length === 0 && (
+                  <tr><td style={TD} colSpan={7}>No weavers on record yet.</td></tr>
+                )}
                 {weaverPayRows.map((r, i) => {
-                  const payments = getPaymentsForWeaver(r.code);
-                  const latest = payments[payments.length - 1];
+                  const latest = r.latest;
                   const amountPaid = latest?.amountPaid;
-                  const utr = latest?.utrNumber ?? "—";
-                  const firmName = latest?.firmName ?? "—";
+                  const utr = latest?.utrNumber || "—";
+                  const firmName = latest?.firmName || "—";
                   const paymentDate = latest?.paymentDate ?? "—";
                   return (
                     <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${latest ? T.green : T.antiqueGold}` }}>
                       <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span></td>
                       <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{sareeBreakdown(r)}</span></td>
+                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.totalSarees > 0 ? `${r.totalSarees} sarees` : "—"}</span></td>
                       <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: latest ? T.green : T.taupe }}>{amountPaid !== undefined ? `₹${amountPaid.toLocaleString("en-IN")}` : "—"}</td>
                       <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: latest ? T.green : T.taupe }}>{utr}</span></td>
                       <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{firmName}</span></td>
@@ -147,7 +174,7 @@ export function WeaverPaymentReport() {
               </tbody>
             </table>
           </div>
-          <TablePager total={84} showing={8} />
+          <TablePager total={weaverPayRows.length} showing={weaverPayRows.length} />
         </div>
       </FadeUp>
     </div>

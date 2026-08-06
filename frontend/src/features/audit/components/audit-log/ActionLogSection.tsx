@@ -59,15 +59,52 @@ function toActionEntry(log: ActionLogEntry): ActionEntry {
   };
 }
 
-export function ActionLogSection() {
+function withinPeriod(iso: string, period: string): boolean {
+  if (period === "All Time") return true;
+  const d = new Date(iso);
+  const now = new Date();
+  const days = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+  if (period === "Today") return d.toDateString() === now.toDateString();
+  if (period === "This Week") return days <= 7;
+  if (period === "This Month") return days <= 31;
+  if (period === "Last 3 Months") return days <= 92;
+  return true;
+}
+
+export function ActionLogSection({
+  search = "",
+  roleFilter = "All Roles",
+  moduleFilter = "All Modules",
+  actionFilter = "All Actions",
+  periodFilter = "All Time",
+}: {
+  search?: string;
+  roleFilter?: string;
+  moduleFilter?: string;
+  actionFilter?: string;
+  periodFilter?: string;
+} = {}) {
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["audit-log", "actions"],
-    queryFn: () => auditLogApi.listActions(),
+    queryKey: ["audit-log", "actions", moduleFilter],
+    queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter }),
   });
 
-  const entries: ActionEntry[] = (data?.items ?? []).map(toActionEntry);
+  const allEntries: ActionEntry[] = (data?.items ?? []).map(toActionEntry);
+  const rawItems = data?.items ?? [];
+
+  const entries: ActionEntry[] = allEntries.filter((entry, i) => {
+    if (roleFilter !== "All Roles" && entry.role !== roleFilter) return false;
+    if (actionFilter !== "All Actions" && !entry.action.toLowerCase().includes(actionFilter.toLowerCase())) return false;
+    if (!withinPeriod(rawItems[i].createdAt, periodFilter)) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const haystack = `${entry.action} ${entry.user} ${entry.record} ${entry.module}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
   const total = data?.total ?? 0;
 
   return (

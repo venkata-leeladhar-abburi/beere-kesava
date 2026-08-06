@@ -4,15 +4,15 @@ import { Check } from "lucide-react";
 import { PurchaseOrder } from "../../contexts/POContext";
 import { PurchaseRequest } from "../../../suppliers/contexts/SupplierContext";
 import { T, F } from "./tokens";
-import { PO_DATA, WARP_DATA, RATE_DATA } from "./data";
+import { WARP_DATA, RATE_DATA } from "./data";
 import { BulkActionStrip, EmptyState } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
-import { POCard } from "./POCard";
+import { POCard, POListItem } from "./POCard";
 import { WarpCard } from "./WarpCard";
 import { RateCard } from "./RateCard";
 import { ExternalPurchaseCard } from "./ExternalPurchaseCard";
 
-type POItem = typeof PO_DATA[0] & { notesAdmin?: string; urgency?: string; totalValue?: number };
+type POItem = POListItem;
 
 // ─── 3. TABS NAV ─────────────────────────────────────────────────────────────
 export function TabsNav({
@@ -56,6 +56,11 @@ export function TabsNav({
 }
 
 // ─── 4. TAB CONTENT ───────────────────────────────────────────────────────────
+import { useQueryClient } from "@tanstack/react-query";
+import { BackendWarpRequest } from "../../../../shared/api/warpRequests";
+import { BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
+
+// ─── 4. TAB CONTENT ───────────────────────────────────────────────────────────
 export function TabContent({
   activeTab,
   combinedPOList,
@@ -65,30 +70,33 @@ export function TabContent({
   warpList,
   rateList,
   allEmpty,
-  setPoList,
   approvePO,
   rejectPO,
   setViewDocPOId,
   decideExternal,
-  setWarpList,
-  setRateList,
 }: {
   activeTab: "po" | "ext" | "warp" | "rate";
   combinedPOList: POItem[];
   contextPendingItems: { id: string }[];
   pos: PurchaseOrder[];
   pendingRequests: PurchaseRequest[];
-  warpList: typeof WARP_DATA;
-  rateList: typeof RATE_DATA;
+  warpList: BackendWarpRequest[];
+  rateList: BackendRateChangeRequest[];
   allEmpty: boolean;
-  setPoList: React.Dispatch<React.SetStateAction<typeof PO_DATA>>;
   approvePO: (id: string) => void;
   rejectPO: (id: string) => void;
   setViewDocPOId: (id: string | null) => void;
   decideExternal: (id: string, status: "approved" | "rejected") => void;
-  setWarpList: React.Dispatch<React.SetStateAction<typeof WARP_DATA>>;
-  setRateList: React.Dispatch<React.SetStateAction<typeof RATE_DATA>>;
+  setWarpList?: any;
+  setRateList?: any;
 }) {
+  const queryClient = useQueryClient();
+  const handleWarpAction = () => {
+    void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
+  };
+  const handleRateAction = () => {
+    void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] });
+  };
   return (
     <div style={{ padding: "32px 56px 0" }}>
       <AnimatePresence mode="wait">
@@ -108,7 +116,7 @@ export function TabContent({
                 <BulkActionStrip
                   count={combinedPOList.length}
                   noun="purchase orders"
-                  onApproveAll={() => { setPoList([]); contextPendingItems.forEach(p => approvePO(p.id)); }}
+                  onApproveAll={() => contextPendingItems.forEach(p => approvePO(p.id))}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
@@ -116,7 +124,7 @@ export function TabContent({
                       <POCard
                         key={item.id}
                         item={item}
-                        onAction={id => setPoList(prev => prev.filter(p => p.id !== id))}
+                        onAction={() => {}}
                         onApprove={id => approvePO(id)}
                         onReject={id => rejectPO(id)}
                         onViewDoc={pos.some(p => p.id === item.id) ? (id) => setViewDocPOId(id) : undefined}
@@ -180,7 +188,7 @@ export function TabContent({
                 <BulkActionStrip
                   count={warpList.length}
                   noun="warp requests"
-                  onApproveAll={() => setWarpList([])}
+                  onApproveAll={handleWarpAction}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
@@ -188,7 +196,7 @@ export function TabContent({
                       <WarpCard
                         key={item.id}
                         item={item}
-                        onAction={id => setWarpList(prev => prev.filter(w => w.id !== id))}
+                        onAction={handleWarpAction}
                       />
                     ))}
                   </AnimatePresence>
@@ -214,7 +222,7 @@ export function TabContent({
                 <BulkActionStrip
                   count={rateList.length}
                   noun="rate change requests"
-                  onApproveAll={() => setRateList([])}
+                  onApproveAll={handleRateAction}
                 />
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <AnimatePresence>
@@ -222,7 +230,7 @@ export function TabContent({
                       <RateCard
                         key={item.id}
                         item={item}
-                        onAction={id => setRateList(prev => prev.filter(r => r.id !== id))}
+                        onAction={handleRateAction}
                       />
                     ))}
                   </AnimatePresence>

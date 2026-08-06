@@ -2,6 +2,8 @@ import { Building2, Users, IndianRupee, AlertTriangle, UserPlus } from "lucide-r
 import { imgShowroom } from "../../../../shared/constants/weaverImages";
 import { T, F } from "../theme";
 
+import { useCustomers } from "../../contexts/CustomersContext";
+
 // ── SECTION 1: PAGE HEADER ──────────────────────────────────────────────────
 export function PageHeader() {
   const headerBgImage = imgShowroom;
@@ -47,6 +49,8 @@ export function PageHeader() {
 
 // ── SECTION 2: CUSTOMER STATS STRIP ─────────────────────────────────────────
 export function StatsStrip() {
+  const { wholesaleCustomers = [], retailCustomers = [], customers = [] } = useCustomers() ?? {};
+
   return (
     <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
       <div style={{
@@ -59,11 +63,11 @@ export function StatsStrip() {
         minHeight: 140,
       }}>
         {[
-          { ico: <Building2 size={22} color="rgba(245,232,208,0.90)" />, label: "Wholesale Customers", val: "48", sub: "Active business relationships", hi: false },
-          { ico: <Users size={22} color="rgba(245,232,208,0.90)" />, label: "Retail Customers", val: "1,284", sub: "Profiles at point of sale", hi: false },
-          { ico: <IndianRupee size={22} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", val: "₹32.6L", sub: "This month · ↑ 18% vs last", hi: true },
-          { ico: <AlertTriangle size={22} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", val: "14", sub: "Total dues: ₹9,80,000", hi: false },
-          { ico: <UserPlus size={22} color="rgba(245,232,208,0.90)" />, label: "New This Month", val: "12", sub: "8 retail · 4 wholesale", hi: false },
+          { ico: <Building2 size={22} color="rgba(245,232,208,0.90)" />, label: "Wholesale Customers", val: String(wholesaleCustomers.length), sub: "Active business relationships", hi: false },
+          { ico: <Users size={22} color="rgba(245,232,208,0.90)" />, label: "Retail Customers", val: String(retailCustomers.length), sub: "Profiles at point of sale", hi: false },
+          { ico: <IndianRupee size={22} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", val: "₹0", sub: "Live Database", hi: true },
+          { ico: <AlertTriangle size={22} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", val: "0", sub: "Total dues: ₹0", hi: false },
+          { ico: <UserPlus size={22} color="rgba(245,232,208,0.90)" />, label: "Total Customers", val: String(customers.length), sub: `${retailCustomers.length} retail · ${wholesaleCustomers.length} wholesale`, hi: false },
         ].map((m, i, arr) => (
           <div key={m.label} style={{
             flex: 1,

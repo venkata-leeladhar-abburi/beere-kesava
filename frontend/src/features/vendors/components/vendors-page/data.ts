@@ -1,14 +1,7 @@
 import { T, MONTH_ABBR } from "./theme";
 import { Vendor, PurchaseTxn, VendorBill, VendorPaymentTxn } from "./types";
 
-export const INITIAL_VENDORS: Vendor[] = [
-  { id: "VEN-001", name: "Sri Venkateswara Textiles", initials: "SV", contactName: "Ravi Kumar", phone: "+91 94440 12345", whatsapp: "+91 94440 12345", city: "Ongole", state: "Andhra Pradesh", address: "12, Trunk Road, Ongole, Andhra Pradesh - 523001", gstCode: "37AAACS1234F1Z1", type: "Warp", terms: "Net 30", bankName: "SBI", accountNo: "31234567890", notes: "Reliable supplier since 2018. Provides premium quality warp yarn.", status: "active", totalOrders: 34, totalSpend: "18,40,000", outstanding: "0", lastOrder: "15 Jun 2026", rating: 5 },
-  { id: "VEN-002", name: "Lakshmi Thread House", initials: "LT", contactName: "Suresh Babu", phone: "+91 98888 22222", whatsapp: "+91 98888 22222", city: "Chennai", state: "Tamil Nadu", address: "82, Pondy Bazaar, T. Nagar, Chennai, Tamil Nadu - 600017", gstCode: "33AABCL4444G1Z2", type: "Warp / Resham", terms: "Net 15", bankName: "HDFC", accountNo: "09876543210", notes: "Specialises in fine grade warp and resham. Quick turnaround.", status: "active", totalOrders: 28, totalSpend: "12,60,000", outstanding: "0", lastOrder: "20 Jun 2026", rating: 4 },
-  { id: "VEN-003", name: "Kanchipuram Silks", initials: "KS", contactName: "Murugan R.", phone: "+91 99999 55555", city: "Kanchipuram", state: "Tamil Nadu", address: "15, Gandhi Road, Kanchipuram, Tamil Nadu - 631501", gstCode: "33BBBBK5555H1Z3", type: "Resham", terms: "Net 45", bankName: "Canara Bank", accountNo: "11223344556", notes: "Premium silk resham. Preferred vendor for high-end designs.", status: "overdue", totalOrders: 19, totalSpend: "9,80,000", outstanding: "2,20,000", lastOrder: "02 May 2026", rating: 4 },
-  { id: "VEN-004", name: "Mysore Silk Co.", initials: "MS", contactName: "Anand Prakash", phone: "+91 91111 33333", city: "Mysore", state: "Karnataka", address: "44, MG Road, Mysore, Karnataka - 570001", gstCode: "29CCCCM3333I1Z4", type: "Resham / Warp", terms: "Net 30", bankName: "ICICI", accountNo: "65432198765", notes: "Heritage supplier. Supplies both resham and warp at bulk rates.", status: "active", totalOrders: 22, totalSpend: "14,50,000", outstanding: "0", lastOrder: "10 Jun 2026", rating: 5 },
-  { id: "VEN-005", name: "Surat Zari Works", initials: "SZ", contactName: "Hardik Shah", phone: "+91 93333 77777", whatsapp: "+91 93333 77777", city: "Surat", state: "Gujarat", address: "102, Ring Road, Surat, Gujarat - 395002", gstCode: "24DDDDZ7777J1Z5", type: "Jari", terms: "Net 60", bankName: "Axis Bank", accountNo: "98765432101", notes: "Best quality Jari in the market. Occasional delays during festive season.", status: "active", totalOrders: 15, totalSpend: "11,20,000", outstanding: "0", lastOrder: "28 May 2026", rating: 4 },
-  { id: "VEN-006", name: "Varanasi Zari House", initials: "VZ", contactName: "Rakesh Tiwari", phone: "+91 95555 99999", city: "Varanasi", state: "Uttar Pradesh", address: "55, Dashashwamedh Ghat Road, Varanasi, UP - 221001", gstCode: "09EEEEV9999K1Z6", type: "Jari", terms: "Advance", bankName: "PNB", accountNo: "44556677889", notes: "Traditional Banarasi Jari. Advance payment required. Best quality.", status: "inactive", totalOrders: 8, totalSpend: "6,80,000", outstanding: "0", lastOrder: "4 months ago", rating: 3 },
-];
+export const INITIAL_VENDORS: Vendor[] = [];
 
 export const PAYMENT_TERMS = ["30 days", "15 days", "45 days", "60 days", "90 days", "Advance"];
 export const STATES = ["Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Gujarat", "Uttar Pradesh", "Maharashtra", "Kerala"];
@@ -56,11 +49,7 @@ export const DELIVERY_PERF: Record<string, { onTime: number; qualityRejects: num
   "VEN-005": { onTime: 88, qualityRejects: 3.1 },
   "VEN-006": { onTime: 68, qualityRejects: 6.2 },
 };
-const spendByType = [
-  { name: "Warp", value: 2840000, fill: T.royalBurgundy },
-  { name: "Resham", value: 1960000, fill: T.antiqueGold },
-  { name: "Jari", value: 1200000, fill: T.green },
-];
+const spendByType: any[] = [];
 
 export const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
   Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },

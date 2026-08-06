@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle2, Mail, Package, Phone, X } from "lucide-react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 
 import { VENDOR_CONTACTS } from "../../data/vendors";
 import { EASE, F, T } from "../../theme";
 import { VendorPayment } from "../../types";
+import { vendorsApi } from "../../../../shared/api/vendors";
 
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
@@ -13,8 +15,28 @@ export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPaymen
   const [sending, setSending]   = useState(false);
   const [sent, setSent]         = useState(false);
 
+  // Real vendor master data (phone, city, contact person) from GET
+  // /vendors. BackendVendor has no email field, so email always falls
+  // back to "—" here — see the MOCK comment on VENDOR_CONTACTS.
+  const { data: vendorsRes } = useQuery({
+    queryKey: ["contact-vendor-modal-vendors"],
+    queryFn: () => vendorsApi.list(),
+  });
+  const liveContactsByName = useMemo(() => {
+    const map = new Map<string, { phone: string; email: string; city: string; contactPerson: string }>();
+    for (const v of vendorsRes?.items ?? []) {
+      map.set(v.name, {
+        phone: v.phone || "—",
+        email: "—",
+        city: v.city || "—",
+        contactPerson: v.contactName || "—",
+      });
+    }
+    return map;
+  }, [vendorsRes]);
+
   const vp      = vendors.find(v => v.id === selected) ?? vendors[0];
-  const contact = VENDOR_CONTACTS[vp?.vendor ?? ""] ?? { phone: "—", email: "—", city: "—", contactPerson: "—" };
+  const contact = liveContactsByName.get(vp?.vendor ?? "") ?? VENDOR_CONTACTS[vp?.vendor ?? ""] ?? { phone: "—", email: "—", city: "—", contactPerson: "—" };
   const balance = vp ? vp.invoiceAmt - vp.paidAmt : 0;
 
   const handleSend = () => {

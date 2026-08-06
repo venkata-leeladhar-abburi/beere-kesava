@@ -93,7 +93,14 @@ export const ModelName = {
   LabelSettings: 'LabelSettings',
   AuditLog: 'AuditLog',
   ActionLog: 'ActionLog',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  RawMaterialStock: 'RawMaterialStock',
+  GrnReceipt: 'GrnReceipt',
+  GrnItem: 'GrnItem',
+  WarpRequest: 'WarpRequest',
+  RateChangeRequest: 'RateChangeRequest',
+  ScheduledReport: 'ScheduledReport',
+  ReportDownloadHistory: 'ReportDownloadHistory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -802,6 +809,118 @@ export const NotificationScalarFieldEnum = {
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const RawMaterialStockScalarFieldEnum = {
+  id: 'id',
+  materialType: 'materialType',
+  name: 'name',
+  grade: 'grade',
+  color: 'color',
+  unit: 'unit',
+  currentStock: 'currentStock',
+  reorderLevel: 'reorderLevel',
+  vendorId: 'vendorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RawMaterialStockScalarFieldEnum = (typeof RawMaterialStockScalarFieldEnum)[keyof typeof RawMaterialStockScalarFieldEnum]
+
+
+export const GrnReceiptScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  supplierName: 'supplierName',
+  invoiceNo: 'invoiceNo',
+  invoiceDate: 'invoiceDate',
+  receivedDate: 'receivedDate',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type GrnReceiptScalarFieldEnum = (typeof GrnReceiptScalarFieldEnum)[keyof typeof GrnReceiptScalarFieldEnum]
+
+
+export const GrnItemScalarFieldEnum = {
+  id: 'id',
+  grnId: 'grnId',
+  materialType: 'materialType',
+  name: 'name',
+  grade: 'grade',
+  color: 'color',
+  quantity: 'quantity',
+  unit: 'unit',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice'
+} as const
+
+export type GrnItemScalarFieldEnum = (typeof GrnItemScalarFieldEnum)[keyof typeof GrnItemScalarFieldEnum]
+
+
+export const WarpRequestScalarFieldEnum = {
+  id: 'id',
+  weaverId: 'weaverId',
+  loomNumber: 'loomNumber',
+  warpType: 'warpType',
+  lengthMeters: 'lengthMeters',
+  color: 'color',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  decidedAt: 'decidedAt',
+  decidedById: 'decidedById',
+  notes: 'notes'
+} as const
+
+export type WarpRequestScalarFieldEnum = (typeof WarpRequestScalarFieldEnum)[keyof typeof WarpRequestScalarFieldEnum]
+
+
+export const RateChangeRequestScalarFieldEnum = {
+  id: 'id',
+  sareeTypeCode: 'sareeTypeCode',
+  oldMakingCharge: 'oldMakingCharge',
+  newMakingCharge: 'newMakingCharge',
+  oldRetailPrice: 'oldRetailPrice',
+  newRetailPrice: 'newRetailPrice',
+  oldWholesalePrice: 'oldWholesalePrice',
+  newWholesalePrice: 'newWholesalePrice',
+  status: 'status',
+  reason: 'reason',
+  requestedById: 'requestedById',
+  decidedById: 'decidedById',
+  createdAt: 'createdAt',
+  decidedAt: 'decidedAt'
+} as const
+
+export type RateChangeRequestScalarFieldEnum = (typeof RateChangeRequestScalarFieldEnum)[keyof typeof RateChangeRequestScalarFieldEnum]
+
+
+export const ScheduledReportScalarFieldEnum = {
+  id: 'id',
+  reportName: 'reportName',
+  frequency: 'frequency',
+  format: 'format',
+  recipientEmail: 'recipientEmail',
+  active: 'active',
+  lastRunAt: 'lastRunAt',
+  nextRunAt: 'nextRunAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ScheduledReportScalarFieldEnum = (typeof ScheduledReportScalarFieldEnum)[keyof typeof ScheduledReportScalarFieldEnum]
+
+
+export const ReportDownloadHistoryScalarFieldEnum = {
+  id: 'id',
+  reportName: 'reportName',
+  fileType: 'fileType',
+  downloadUrl: 'downloadUrl',
+  downloadedById: 'downloadedById',
+  downloadedAt: 'downloadedAt',
+  filtersUsed: 'filtersUsed'
+} as const
+
+export type ReportDownloadHistoryScalarFieldEnum = (typeof ReportDownloadHistoryScalarFieldEnum)[keyof typeof ReportDownloadHistoryScalarFieldEnum]
 
 
 export const SortOrder = {

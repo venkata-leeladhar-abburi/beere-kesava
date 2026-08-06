@@ -1,6 +1,21 @@
 import { Injectable } from "@nestjs/common";
-import { DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult } from "../generated/prisma/client";
+import { DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+
+export interface CreateScheduleDto {
+  reportName: string;
+  frequency: ReportFrequency;
+  format?: string;
+  recipientEmail: string;
+}
+
+export interface RecordDownloadDto {
+  reportName: string;
+  fileType?: string;
+  downloadUrl?: string;
+  downloadedById?: string;
+  filtersUsed?: any;
+}
 
 @Injectable()
 export class ReportsService {
@@ -100,5 +115,47 @@ export class ReportsService {
         count: wholesaleAgg._count._all,
       },
     };
+  }
+
+  // Scheduled Reports
+  async listSchedules() {
+    const items = await this.prisma.scheduledReport.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return { items };
+  }
+
+  async createSchedule(dto: CreateScheduleDto) {
+    const item = await this.prisma.scheduledReport.create({
+      data: {
+        reportName: dto.reportName,
+        frequency: dto.frequency,
+        format: dto.format || "PDF",
+        recipientEmail: dto.recipientEmail,
+      },
+    });
+    return item;
+  }
+
+  // Report Download History
+  async listHistory() {
+    const items = await this.prisma.reportDownloadHistory.findMany({
+      include: { downloadedBy: true },
+      orderBy: { downloadedAt: "desc" },
+    });
+    return { items };
+  }
+
+  async recordDownload(dto: RecordDownloadDto) {
+    const item = await this.prisma.reportDownloadHistory.create({
+      data: {
+        reportName: dto.reportName,
+        fileType: dto.fileType || "PDF",
+        downloadUrl: dto.downloadUrl || null,
+        downloadedById: dto.downloadedById || null,
+        filtersUsed: dto.filtersUsed || undefined,
+      },
+    });
+    return item;
   }
 }

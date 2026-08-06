@@ -7,7 +7,7 @@ import { T, F } from "../theme";
 import { STATUS_CFG, Status } from "../types";
 import { WEAVERS, TABLE_COLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
-import { WeaverCardGrid, WeaverListView } from "./WeaverCardAndListViews";
+import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndListViews";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 
 // Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
@@ -145,12 +145,24 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   );
 }
 export function WeaverDirectory({ view, onSelect, onEdit, onBatches, extraWeavers = [] }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
+  // Build a real-roster lookup map so the table-view "View" button can resolve
+  // a clicked row id to a real weaver object (WEAVERS[] is empty mock).
+  const realWeavers = useRealWeavers(extraWeavers);
+  const realById = new Map(realWeavers.map(w => [w.id, w]));
+
   return (
     <div style={{ padding: "24px 48px 0" }}>
       <FadeUp>
         {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
         {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
-        {view === "table" && <WeaverTableView onSelect={id => { const w = [...WEAVERS, ...extraWeavers].find(x => x.id === id); if (w) onSelect(w); }} />}
+        {view === "table" && (
+          <WeaverTableView
+            onSelect={id => {
+              const w = realById.get(id);
+              if (w) onSelect(w);
+            }}
+          />
+        )}
       </FadeUp>
     </div>
   );

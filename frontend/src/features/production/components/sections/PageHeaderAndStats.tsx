@@ -1,8 +1,15 @@
 import React from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { imgSaree as imgSareeHero } from "../../../../shared/constants/weaverImages";
 import { T, F } from "../theme";
-import { STATS } from "../data";
+import { useBatches } from "../../contexts/BatchContext";
+import { qcApi } from "../../../../shared/api/qc";
+
+function isSameMonth(iso: string, ref: Date): boolean {
+  const d = new Date(iso);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+}
 
 export function PageHeader() {
   return (
@@ -26,6 +33,33 @@ export function PageHeader() {
 }
 
 export function StatsStrip() {
+  const { batches } = useBatches();
+  const { data: qcRecords = [] } = useQuery({
+    queryKey: ["qc", "stats-strip"],
+    queryFn: () => qcApi.list().then(r => r.items),
+  });
+
+  const now = new Date();
+  const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
+  const sareesInProduction = activeBatches.reduce(
+    (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed).length,
+    0,
+  );
+  const sareesCompletedThisMonth = qcRecords.filter(
+    r => r.result === "PASSED" && isSameMonth(r.qcDate, now),
+  ).length;
+  const sareesWaitingQc = batches.reduce(
+    (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed && b.status !== "draft").length,
+    0,
+  );
+
+  const STATS = [
+    { label: "TOTAL BATCHES ACTIVE RIGHT NOW",   value: String(activeBatches.length),          sub: "Across all weavers currently",  highlight: false, crimson: false, goldVal: false },
+    { label: "SAREES BEING PRODUCED",            value: String(sareesInProduction),            sub: "In progress across all batches", highlight: false, crimson: false, goldVal: false },
+    { label: "SAREES COMPLETED THIS MONTH",      value: String(sareesCompletedThisMonth),       sub: "QC-passed so far this month",   highlight: true,  crimson: false, goldVal: true  },
+    { label: "SAREES WAITING FOR QUALITY CHECK", value: String(sareesWaitingQc),                sub: sareesWaitingQc > 0 ? "⚠ Need quality check" : "All caught up", highlight: false, crimson: sareesWaitingQc > 0, goldVal: false },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}

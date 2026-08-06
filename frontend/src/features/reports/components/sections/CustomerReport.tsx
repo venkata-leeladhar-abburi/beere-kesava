@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
+import { invoicesApi } from "../../../../shared/api/invoices";
+import { salesApi } from "../../../../shared/api/sales";
 
-const topCustomers = [
-  { name: "Meenakshi Silks",        total: 840000 },
-  { name: "Kalavathi Exports",      total: 660000 },
-  { name: "Lakshmi Silks",          total: 900000 },
-  { name: "Padmavathi Textiles",    total: 600000 },
-  { name: "Vijaya Silk House",      total: 280000 },
-];
+// MOCK: telling "new" vs "returning" customers apart month-by-month needs a
+// full purchase-history timeline per customer that no backend endpoint
+// currently aggregates (GET /sales and GET /invoices don't expose a
+// per-customer "first ever purchase" marker). Stays on static demo data.
 const custMonthly = [
   { month: "Jan", newC: 8,  ret: 22 },
   { month: "Feb", newC: 11, ret: 24 },
@@ -20,22 +21,23 @@ const custMonthly = [
   { month: "Apr", newC: 14, ret: 28 },
   { month: "May", newC: 12, ret: 26 },
 ];
-const custSplitDonut = [
-  { name: "Wholesale",  value: 2840000, color: T.royalBurgundy },
-  { name: "Retail",     value: 420000,  color: T.antiqueGold },
-];
-const custRows = [
-  { name: "Lakshmi Silks",          type: "Wholesale", phone: "9412345678", purchases: 8,   spend: 9000000,  due: 0,      lastPurchase: "08 Apr 2026", status: "Active" },
-  { name: "Padmavathi Textiles",    type: "Wholesale", phone: "9823456789", purchases: 5,   spend: 3000000,  due: 135000, lastPurchase: "05 Apr 2026", status: "Overdue" },
-  { name: "Vijaya Silk House",      type: "Wholesale", phone: "9712345678", purchases: 3,   spend: 840000,   due: 0,      lastPurchase: "10 Apr 2026", status: "Active" },
-  { name: "Meenakshi Silks",        type: "Wholesale", phone: "9534567890", purchases: 12,  spend: 5040000,  due: 420000, lastPurchase: "15 Apr 2026", status: "Active" },
-  { name: "Kalavathi Exports",      type: "Wholesale", phone: "9645678901", purchases: 6,   spend: 3960000,  due: 45600,  lastPurchase: "18 Apr 2026", status: "Overdue" },
-  { name: "Priya Sharma",           type: "Retail",    phone: "9845678901", purchases: 3,   spend: 28500,    due: 0,      lastPurchase: "27 May 2026", status: "Active" },
-  { name: "Rekha Patel",            type: "Retail",    phone: "9712345678", purchases: 2,   spend: 26500,    due: 0,      lastPurchase: "25 May 2026", status: "Active" },
-  { name: "Anita Verma",            type: "Retail",    phone: "9823456789", purchases: 4,   spend: 41000,    due: 0,      lastPurchase: "22 May 2026", status: "Active" },
-];
 
-function downloadCustomerData(r: typeof custRows[0]) {
+interface CustomerRow {
+  id: string;
+  name: string;
+  type: "Wholesale" | "Retail";
+  phone: string;
+  city: string;
+  address: string;
+  gstCode: string;
+  purchases: number;
+  spend: number;
+  due: number;
+  lastPurchase: string;
+  status: "Active" | "Overdue";
+}
+
+function downloadCustomerData(r: CustomerRow) {
   const rows: string[][] = [
     ["Field", "Value"],
     ["Name", r.name],
@@ -62,6 +64,68 @@ function downloadCustomerData(r: typeof custRows[0]) {
 export function CustomerReport() {
   const [filter, setFilter] = useState("All Customers");
   const filters = ["All Customers", "Retail Only", "Wholesale Only", "Has Outstanding Dues", "No Purchases This Month"];
+
+  const { data: customersRes, isLoading, isError } = useQuery({
+    queryKey: ["reports", "customers-roster"],
+    queryFn: () => customersApi.list(),
+  });
+  const { data: invoicesRes } = useQuery({
+    queryKey: ["reports", "invoices"],
+    queryFn: () => invoicesApi.list(),
+  });
+  const { data: salesRes } = useQuery({
+    queryKey: ["reports", "sales"],
+    queryFn: () => salesApi.list(),
+  });
+
+  const custRows: CustomerRow[] = useMemo(() => {
+    const customers = customersRes?.items ?? [];
+    const invoices = invoicesRes?.items ?? [];
+    const sales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
+
+    return customers.map((c: BackendCustomer) => {
+      if (c.type === "WHOLESALE") {
+        const custInvoices = invoices.filter(i => i.customerId === c.id);
+        const spend = custInvoices.reduce((s, i) => s + Number(i.paid), 0);
+        const due = custInvoices.reduce((s, i) => s + (Number(i.total) - Number(i.paid)), 0);
+        const dates = custInvoices.map(i => i.invoiceDate).sort();
+        return {
+          id: c.id, name: c.name, type: "Wholesale" as const, phone: c.phone ?? "—",
+          city: c.city ?? "—", address: c.address ?? "—", gstCode: c.gstCode ?? "—",
+          purchases: custInvoices.length, spend, due,
+          lastPurchase: dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
+          status: due > 0 ? "Overdue" as const : "Active" as const,
+        };
+      }
+      const custSales = sales.filter(s => s.customerId === c.id);
+      const spend = custSales.reduce((s, sale) => s + Number(sale.amount), 0);
+      const dates = custSales.map(s => s.saleDate).sort();
+      return {
+        id: c.id, name: c.name, type: "Retail" as const, phone: c.phone ?? "—",
+        city: c.city ?? "—", address: c.address ?? "—", gstCode: c.gstCode ?? "—",
+        purchases: custSales.length, spend, due: 0,
+        lastPurchase: dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
+        status: "Active" as const,
+      };
+    });
+  }, [customersRes, invoicesRes, salesRes]);
+
+  const topCustomers = [...custRows].sort((a, b) => b.spend - a.spend).slice(0, 5).map(c => ({ name: c.name, total: c.spend }));
+  const maxTop = topCustomers[0]?.total || 1;
+  const wholesaleSpend = custRows.filter(c => c.type === "Wholesale").reduce((s, c) => s + c.spend, 0);
+  const retailSpend = custRows.filter(c => c.type === "Retail").reduce((s, c) => s + c.spend, 0);
+  const custSplitDonut = [
+    { name: "Wholesale", value: wholesaleSpend, color: T.royalBurgundy },
+    { name: "Retail",    value: retailSpend,    color: T.antiqueGold },
+  ].filter(d => d.value > 0);
+  const activeCount = custRows.filter(c => c.purchases > 0).length;
+  const overdueCount = custRows.filter(c => c.status === "Overdue").length;
+  const now = new Date();
+  const newThisMonthCount = (customersRes?.items ?? []).filter(c => {
+    const d = new Date(c.createdAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
   return (
     <div id="rep-customers" style={{ padding: "32px 40px" }}>
       <TabTitle title="Customer Report"
@@ -71,13 +135,16 @@ export function CustomerReport() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
         <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
+            {topCustomers.length === 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>No customer purchases recorded yet.</div>
+            )}
             {[...topCustomers].sort((a, b) => b.total - a.total).map((c, i) => (
               <div key={c.name}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>₹{(c.total / 100000).toFixed(1)}L</span>
                 </div>
-                <AnimBar pct={Math.round((c.total / 900000) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
+                <AnimBar pct={Math.round((c.total / maxTop) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
               </div>
             ))}
           </div>
@@ -106,6 +173,9 @@ export function CustomerReport() {
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", flexDirection: "column", gap: 7, padding: "0 8px" }}>
+            {custSplitDonut.length === 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>No revenue recorded yet.</div>
+            )}
             {custSplitDonut.map(d => (
               <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -120,10 +190,10 @@ export function CustomerReport() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 22, alignItems: "stretch" }}>
-        <SumCard icon={<UsersRound size={22} color={T.royalBurgundy} />} label="Total Customers (All Time)" value="284 customers" sub="Retail + wholesale" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Active This Month" value="38 customers" sub="Made a purchase" greenHi />
-        <SumCard icon={<TrendingUp size={22} color={T.antiqueGold} />} label="New This Month" value="12 customers" sub="First time buyers" hi />
-        <SumCard icon={<ShieldAlert size={22} color={T.crimson} />} label="Customers with Dues" value="14 customers" sub="Outstanding balance" crimsonHi />
+        <SumCard icon={<UsersRound size={22} color={T.royalBurgundy} />} label="Total Customers (All Time)" value={`${custRows.length} customers`} sub="Retail + wholesale" />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Active (All Time)" value={`${activeCount} customers`} sub="Made at least one purchase" greenHi />
+        <SumCard icon={<TrendingUp size={22} color={T.antiqueGold} />} label="New This Month" value={`${newThisMonthCount} customers`} sub="Added to the roster" hi />
+        <SumCard icon={<ShieldAlert size={22} color={T.crimson} />} label="Customers with Dues" value={`${overdueCount} customers`} sub="Outstanding balance" crimsonHi />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" as const }}>
@@ -154,8 +224,17 @@ export function CustomerReport() {
                 </tr>
               </thead>
               <tbody>
+                {isLoading && (
+                  <tr><td style={TD} colSpan={8}>Loading…</td></tr>
+                )}
+                {isError && (
+                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={8}>Failed to load customers.</td></tr>
+                )}
+                {!isLoading && !isError && custRows.length === 0 && (
+                  <tr><td style={TD} colSpan={8}>No customers on record yet.</td></tr>
+                )}
                 {custRows.map((r, i) => (
-                  <tr key={r.name} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream }}>
+                  <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream }}>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
                       <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
@@ -175,7 +254,7 @@ export function CustomerReport() {
               </tbody>
             </table>
           </div>
-          <TablePager total={284} showing={8} />
+          <TablePager total={custRows.length} showing={custRows.length} />
         </div>
       </FadeUp>
 
@@ -185,7 +264,7 @@ export function CustomerReport() {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Customer Details</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {custRows.map(r => (
-              <div key={r.name} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{r.name}</div>
                   <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
@@ -193,10 +272,10 @@ export function CustomerReport() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {r.type === "Wholesale" ? (
                     <>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City: <span style={{ color: T.luxuryBrown }}>—</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Address: <span style={{ color: T.luxuryBrown }}>—</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City: <span style={{ color: T.luxuryBrown }}>{r.city}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Address: <span style={{ color: T.luxuryBrown }}>{r.address}</span></div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST Code: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>—</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST Code: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.gstCode}</span></div>
                     </>
                   ) : (
                     <>

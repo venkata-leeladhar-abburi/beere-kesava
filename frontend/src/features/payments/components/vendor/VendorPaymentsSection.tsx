@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Search, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
 import { PODocumentModal } from "../../../purchasing/components/PODocumentModal";
 import { VENDOR_PAYMENTS } from "../../data/vendors";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { VendorMatchedRow, VendorPayment } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
@@ -25,6 +27,15 @@ const SHOW_OVERDUE_ALERT = false;
 export function VendorPaymentsSection() {
   const { pos } = usePO();
   const { firms, addExpenseEntry } = useFirms();
+  // Real total across GET /payments/vendors — VENDOR_PAYMENTS (the PO/
+  // invoice ledger below) has no backend source (see data/vendors.ts), so
+  // only this aggregate stat card is wired to live data for now.
+  const { data: vendorPaymentsRes } = useQuery({
+    queryKey: ["vendor-payments-section-totals"],
+    queryFn: () => vendorPaymentsApi.list(),
+  });
+  const totalVendorPaymentsRecorded = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
+
   const [vendorPayments, setVendorPayments] = useState<VendorPayment[]>(VENDOR_PAYMENTS);
   const [view, setView] = useState<"card" | "list" | "table">("card");
   const [selVendor, setSelVendor] = useState("VP-004");
@@ -66,12 +77,12 @@ export function VendorPaymentsSection() {
     toast.success(`${matched.length} vendor payment${matched.length !== 1 ? "s" : ""} matched and updated`);
   };
 
-  const selVP = vendorPayments.find(v => v.id === selVendor) ?? vendorPayments[3];
-  const selBalance = selVP.invoiceAmt - selVP.paidAmt;
+  const selVP = vendorPayments.find(v => v.id === selVendor) ?? vendorPayments[0];
+  const selBalance = selVP ? selVP.invoiceAmt - selVP.paidAmt : 0;
   const afterPay = selBalance - (parseFloat(payAmount) || 0);
 
   const overdueVendors = vendorPayments.filter(v => v.status === "Overdue");
-  const maxDaysOverdue = Math.max(...overdueVendors.map(v => v.daysOverdue ?? 0));
+  const maxDaysOverdue = overdueVendors.length > 0 ? Math.max(...overdueVendors.map(v => v.daysOverdue ?? 0)) : 0;
   const pendingBalance = vendorPayments.reduce((s, v) => s + (v.invoiceAmt - v.paidAmt), 0);
 
   const filtered = vendorPayments.filter(v => {
@@ -120,8 +131,8 @@ export function VendorPaymentsSection() {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
               label: "Total Vendor Payments",
-              value: "₹8,60,000",
-              sub: "Paid to vendors this month",
+              value: `₹${totalVendorPaymentsRecorded.toLocaleString("en-IN")}`,
+              sub: "All recorded vendor payments",
               hi: false, crimson: false, green: false,
             },
             {

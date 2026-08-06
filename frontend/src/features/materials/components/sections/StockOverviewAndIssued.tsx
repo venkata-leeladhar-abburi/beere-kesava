@@ -7,10 +7,37 @@ import { MAT_CARDS } from "../data";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
+import { useQuery } from "@tanstack/react-query";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+
 export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const ref = React.useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
+
+  const { data: stockRes } = useQuery({
+    queryKey: ["raw-material-stock-list"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const stockItems = stockRes?.items ?? [];
+
+  const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+
+  const cards = MAT_CARDS.map(card => {
+    if (card.name.toLowerCase().includes("warp")) {
+      return { ...card, stock: `${warpStock} kg` };
+    }
+    if (card.name.toLowerCase().includes("resham")) {
+      return { ...card, stock: `${reshamStock} kg` };
+    }
+    if (card.name.toLowerCase().includes("jari")) {
+      return { ...card, stock: `${jariStock} kg` };
+    }
+    return card;
+  });
+
   return (
     <section id="mat-stock-overview" style={{ padding: `40px ${px}px 0` }}>
       <motion.div ref={ref} initial={{ opacity: 0, y: 22 }} animate={inView ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 0.6, ease: EASE }}>
@@ -23,7 +50,7 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
         />
       </motion.div>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 18 : 28 }}>
-        {MAT_CARDS.map((card, i) => (
+        {cards.map((card, i) => (
           <FadeUp key={card.name} delay={i * 0.1} style={{ height: "100%" }}>
             <motion.div
               initial={{ boxShadow: "0px 6px 24px rgba(74,6,27,0.07)" }}

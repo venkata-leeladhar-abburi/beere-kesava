@@ -1,14 +1,21 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SumCard, TabTitle, StatusPill, TH, TD } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { invoicesApi } from "../../../../shared/api/invoices";
+import { bulkOrdersApi } from "../../../../shared/api/bulk-orders";
+import { customersApi } from "../../../../shared/api/customers";
 
-const overdueCustomers = [
-  { customer: "Padmavathi Textiles",    inv: "INV-2026-038", total: 600000,  paid: 465000, overdue: 135000, dueDate: "25 Apr 2026", days: 5,  lastReminder: "20 May 2026" },
-  { customer: "Narayana Silk Emporium", inv: "INV-2026-032", total: 300000,  paid: 254400, overdue: 45600,  dueDate: "20 Apr 2026", days: 3,  lastReminder: "19 May 2026" },
-  { customer: "Kalavathi Exports",      inv: "INV-2026-027", total: 660000,  paid: 614400, overdue: 45600,  dueDate: "02 May 2026", days: 2,  lastReminder: "21 May 2026" },
-];
+function daysBetween(a: Date, b: Date): number {
+  return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
+}
+
+// MOCK: no backend endpoint tracks raw-material stock levels/minimums (see
+// RawMaterialReport for the same gap) or a weaver's expected-completion date
+// vs actual progress — GET /batches only has a single batch-level dueDate,
+// not per-weaver-assignment tracking. Both stay on static demo data.
 const lowStockMaterials = [
   { type: "Resham", sub: "Blue",   batch: "RSH-B-022", current: 0, minimum: 5, shortage: 5, lastOrder: "Natraj Traders" },
   { type: "Resham", sub: "Maroon", batch: "RSH-M-018", current: 0, minimum: 5, shortage: 5, lastOrder: "Natraj Traders" },
@@ -17,10 +24,6 @@ const lowStockMaterials = [
 const lateWeavers = [
   { name: "Anand K.",  code: "71413724-378d-4336-93dd-1db33cba3510", batch: "BK-2026-03", expected: "20 May 2026", days: 11, done: 5, remaining: 2 },
   { name: "Meena R.",  code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", batch: "BK-2026-05", expected: "22 May 2026", days: 9,  done: 4, remaining: 1 },
-];
-const bulkOrders = [
-  { customer: "Meenakshi Silks",  order: "BO-2026-01", ordered: 20, produced: 12, shortage: 8, deadline: "15 Jun 2026", daysLeft: 14, status: "At Risk"  },
-  { customer: "Lakshmi Silks",    order: "BO-2026-02", ordered: 15, produced: 8,  shortage: 7, deadline: "10 Jun 2026", daysLeft: 9,  status: "At Risk"  },
 ];
 
 export function SubAlert({ label, color }: { label: string; color: string }) {
@@ -33,6 +36,47 @@ export function SubAlert({ label, color }: { label: string; color: string }) {
 }
 
 export function OverdueAlertsReport() {
+  const { data: invoicesRes, isLoading: invoicesLoading } = useQuery({
+    queryKey: ["reports", "invoices"],
+    queryFn: () => invoicesApi.list(),
+  });
+  const { data: customersRes } = useQuery({
+    queryKey: ["reports", "customers-roster"],
+    queryFn: () => customersApi.list(),
+  });
+  const { data: bulkOrdersRes, isLoading: bulkOrdersLoading } = useQuery({
+    queryKey: ["reports", "bulk-orders"],
+    queryFn: () => bulkOrdersApi.list(),
+  });
+
+  const customerNameById = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+  const now = new Date();
+
+  const overdueCustomers = (invoicesRes?.items ?? [])
+    .filter(inv => inv.status === "OVERDUE")
+    .map(inv => ({
+      customer: inv.customer?.name ?? customerNameById.get(inv.customerId) ?? "Unknown Customer",
+      inv: inv.id,
+      total: Number(inv.total),
+      paid: Number(inv.paid),
+      overdue: Number(inv.total) - Number(inv.paid),
+      dueDate: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-IN") : "—",
+      days: inv.dueDate ? daysBetween(now, new Date(inv.dueDate)) : 0,
+    }));
+
+  const atRiskOrders = (bulkOrdersRes?.items ?? [])
+    .filter(o => o.status === "AT_RISK" || o.status === "OVERDUE")
+    .map(o => ({
+      customer: customerNameById.get(o.customerId) ?? "Unknown Customer",
+      order: o.ref,
+      ordered: o.total,
+      produced: o.done,
+      shortage: o.shortage,
+      deadline: new Date(o.dueDate).toLocaleDateString("en-IN"),
+      daysLeft: daysBetween(new Date(o.dueDate), now),
+      status: o.status === "OVERDUE" ? "Overdue" : "At Risk",
+    }));
+
   return (
     <div id="rep-overdue" style={{ padding: "32px 40px" }}>
       <TabTitle title="Overdue & Alerts Report"
@@ -41,15 +85,15 @@ export function OverdueAlertsReport() {
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 8 }}>
         <Clock size={14} color={T.antiqueGold} />
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7B5C18" }}>This report always shows today's live status. Period filter does not apply.</span>
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginLeft: "auto" }}>Live as of 01 Jun 2026 · 9:00 AM</span>
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginLeft: "auto" }}>{now.toLocaleDateString("en-IN")} · {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
       </div>
 
       {/* 4 alert cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 32, alignItems: "stretch" }}>
-        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Customer Invoices Overdue" value="3 invoices" sub="Immediate follow-up needed" crimsonHi />
-        <SumCard icon={<Boxes size={22} color={T.antiqueGold} />} label="Raw Material Running Low" value="3 items" sub="Place purchase orders now" hi />
-        <SumCard icon={<Clock size={22} color={T.crimson} />} label="Weavers Running Behind Schedule" value="2 weavers" sub="Batches delayed" crimsonHi />
-        <SumCard icon={<ShieldAlert size={22} color={T.antiqueGold} />} label="Bulk Orders at Risk" value="2 orders" sub="May miss deadline" hi />
+        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Customer Invoices Overdue" value={`${overdueCustomers.length} invoices`} sub="Immediate follow-up needed" crimsonHi />
+        <SumCard icon={<Boxes size={22} color={T.antiqueGold} />} label="Raw Material Running Low" value={`${lowStockMaterials.length} items`} sub="Place purchase orders now" hi />
+        <SumCard icon={<Clock size={22} color={T.crimson} />} label="Weavers Running Behind Schedule" value={`${lateWeavers.length} weavers`} sub="Batches delayed" crimsonHi />
+        <SumCard icon={<ShieldAlert size={22} color={T.antiqueGold} />} label="Bulk Orders at Risk" value={`${atRiskOrders.length} orders`} sub="May miss deadline" hi />
       </div>
 
       {/* Overdue customers */}
@@ -68,6 +112,12 @@ export function OverdueAlertsReport() {
                 </tr>
               </thead>
               <tbody>
+                {invoicesLoading && (
+                  <tr><td style={TD} colSpan={9}>Loading…</td></tr>
+                )}
+                {!invoicesLoading && overdueCustomers.length === 0 && (
+                  <tr><td style={TD} colSpan={9}>No overdue invoices — everything is on track.</td></tr>
+                )}
                 {overdueCustomers.map((r, i) => (
                   <tr key={r.inv} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
@@ -79,7 +129,7 @@ export function OverdueAlertsReport() {
                     <td style={{ ...TD, textAlign: "center" }}>
                       <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span>
                     </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastReminder}</span></td>
+                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span></td>
                     <td style={{ ...TD, textAlign: "center" }}>
                       <Button variant="primary" size="sm" iconLeft={MessageSquare}>
                         Send WhatsApp Reminder
@@ -180,7 +230,13 @@ export function OverdueAlertsReport() {
               </tr>
             </thead>
             <tbody>
-              {bulkOrders.map((r, i) => (
+              {bulkOrdersLoading && (
+                <tr><td style={TD} colSpan={9}>Loading…</td></tr>
+              )}
+              {!bulkOrdersLoading && atRiskOrders.length === 0 && (
+                <tr><td style={TD} colSpan={9}>No bulk orders at risk right now.</td></tr>
+              )}
+              {atRiskOrders.map((r, i) => (
                 <tr key={r.order} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span></td>

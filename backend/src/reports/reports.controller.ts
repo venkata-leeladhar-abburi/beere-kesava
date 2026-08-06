@@ -1,8 +1,6 @@
-import { Controller, Get } from "@nestjs/common";
-import { ReportsService } from "./reports.service";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { ReportsService, CreateScheduleDto, RecordDownloadDto } from "./reports.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
 @Controller("reports")
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
@@ -20,5 +18,25 @@ export class ReportsController {
   @Get("sales-summary")
   getSalesSummary() {
     return this.reportsService.getSalesSummary();
+  }
+
+  @Get("schedules")
+  listSchedules() {
+    return this.reportsService.listSchedules();
+  }
+
+  @Post("schedules")
+  createSchedule(@Body() dto: CreateScheduleDto) {
+    return this.reportsService.createSchedule(dto);
+  }
+
+  @Get("history")
+  listHistory() {
+    return this.reportsService.listHistory();
+  }
+
+  @Post("history")
+  recordDownload(@Body() dto: RecordDownloadDto) {
+    return this.reportsService.recordDownload(dto);
   }
 }

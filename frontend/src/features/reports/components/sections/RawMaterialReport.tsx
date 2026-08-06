@@ -6,6 +6,13 @@ import {
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut, TH, TD } from "../common/primitives";
 
+// MOCK: this entire report has no backend source. GET /material-issues only
+// records what was issued *to* weavers (no "received from vendor" side, no
+// running stock balance), and there is no inventory/stock endpoint anywhere
+// that tracks opening/closing quantities of Warp, Resham, or Jari by
+// sub-type/color/grade. Wiring this properly needs a real stock-ledger
+// backend module (GRN receipts + issues -> running balance) that doesn't
+// exist yet — everything below stays on static demo data until it does.
 const rawReceivedData = [
   { material: "Warp",   may: 50, apr: 40 },
   { material: "Resham", may: 75, apr: 58 },

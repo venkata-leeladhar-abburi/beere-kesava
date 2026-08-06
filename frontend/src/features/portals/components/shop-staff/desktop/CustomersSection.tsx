@@ -1,19 +1,12 @@
 import React from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search, Star } from "lucide-react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
+import { customersApi } from "../../../../../shared/api/customers";
 
 type ShopCustomer = { name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
-
-const customers: ShopCustomer[] = [
-  { name: "Smt. Annapurna Devi", phone: "×××× 7823", purchases: 18, total: "₹1,84,000", last: "3 days ago", regular: true, initials: "AD" },
-  { name: "Smt. Lakshmi Bai", phone: "×××× 3412", purchases: 12, total: "₹1,62,000", last: "1 week ago", regular: true, initials: "LB" },
-  { name: "Sri Ramesh K.", phone: "×××× 4421", purchases: 4, total: "₹48,000", last: "2 weeks ago", regular: false, initials: "RK" },
-  { name: "Smt. Padmavathi", phone: "×××× 9981", purchases: 1, total: "₹12,500", last: "Today", regular: false, initials: "PD" },
-  { name: "Smt. Saraswathi", phone: "×××× 6634", purchases: 7, total: "₹84,000", last: "5 days ago", regular: true, initials: "SD" },
-  { name: "Smt. Rajeshwari", phone: "×××× 2218", purchases: 2, total: "₹28,000", last: "6 months ago", regular: false, initials: "RD" },
-];
 
 export function CustomersSection({
   bp, isTablet, canSeePrices, setSelectedCustomer,
@@ -21,6 +14,24 @@ export function CustomersSection({
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setSelectedCustomer: (c: ShopCustomer) => void;
 }) {
+  const { data: custRes } = useQuery({
+    queryKey: ["shop-staff-customers"],
+    queryFn: () => customersApi.list(),
+  });
+
+  const customers: ShopCustomer[] = React.useMemo(() => {
+    if (!custRes?.items) return [];
+    return custRes.items.map(c => ({
+      name: c.name,
+      phone: c.phone || "—",
+      purchases: 0,
+      total: "₹0",
+      last: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
+      regular: c.type === "RETAIL",
+      initials: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+    }));
+  }, [custRes]);
+
   return (
     <>
       <ShopDesktopHero

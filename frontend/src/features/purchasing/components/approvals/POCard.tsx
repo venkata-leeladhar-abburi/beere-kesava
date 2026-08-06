@@ -3,9 +3,24 @@ import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import { toast } from "sonner";
 import { T, F } from "./tokens";
-import { PO_DATA } from "./data";
 import { GreenBtn, CrimsonBtn, InfoStrip } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
+
+// Shape rendered by POCard — built from the real backend PurchaseOrder
+// (see ApprovalsPage.tsx's contextPendingItems, sourced from PurchaseOrdersContext).
+export interface POListItem {
+  id: string;
+  raised: string;
+  vendor: string;
+  vendorCity: string;
+  materials: { label: string; qty: string; icon: string }[];
+  estimated: string;
+  stock: string;
+  raisedBy: string;
+  notesAdmin?: string;
+  urgency?: string;
+  totalValue?: number;
+}
 
 // ─── PO Card ──────────────────────────────────────────────────────────────────
 export function POCard({
@@ -15,7 +30,7 @@ export function POCard({
   onReject,
   onViewDoc,
 }: {
-  item: typeof PO_DATA[0] & { notesAdmin?: string; urgency?: string; totalValue?: number };
+  item: POListItem;
   onAction: (id: string) => void;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;

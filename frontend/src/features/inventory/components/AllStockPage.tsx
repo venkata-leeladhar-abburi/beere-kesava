@@ -1,10 +1,12 @@
 import React, { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { Package } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { StockCard, StockSaree, StockStatus, StockSource } from "./StockCard";
 import { ViewStockDialog } from "./ViewStockDialog";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
+import { inventoryApi, BackendStockItem } from "../../../shared/api/inventory";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -38,30 +40,51 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
   );
 }
 
-const ALL_STOCK: StockSaree[] = [
-  { id: "RAVI-L2-001",   source: "outsourced", weaver: "Ravi Kumar",   weaverCode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", loom: 2, weight: "842g", qcDate: "08 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "RK", avatarBg: "#5A3E6B" },
-  { id: "PADMA-L1-001",  source: "outsourced", weaver: "Padma Veni",   weaverCode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", loom: 1, weight: "786g", qcDate: "07 Jun 2026", design: "BKB-022", sareeType: "PS-002 · Plain Silk",   status: "sold",       saleRef: "SAL-2026-041", customer: "Mrs. Kamala Reddy", assignedBy: "shop",  assignedAt: "Today · 11:42 AM",    initials: "PV", avatarBg: T.royalBurgundy },
-  { id: "BKB-L3-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 3, weight: "910g", qcDate: "09 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "BK", avatarBg: "#3D0E1A" },
-  { id: "SURESH-L2-001", source: "outsourced", weaver: "Suresh Murti", weaverCode: "a1bb101d-f0ee-4f65-b2f7-a7a86c24129f", loom: 2, weight: "798g", qcDate: "06 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "sold",       saleRef: "SAL-2026-038", customer: "Mrs. Anita Sharma", assignedBy: "admin", assignedAt: "Today · 10:15 AM",    initials: "SM", avatarBg: "#2D6B6B" },
-  { id: "BKB-L1-001",    source: "factory",    weaver: null,           weaverCode: null,     loom: 1, weight: "864g", qcDate: "05 Jun 2026", design: "BKB-031", sareeType: "HZ-003 · Heavy Zari",   status: "wholesale",  saleRef: "ORD-2026-041", customer: "Lakshmi Silks",     assignedBy: "admin", assignedAt: "Yesterday · 3:20 PM", initials: "BK", avatarBg: "#4A061B" },
-  { id: "ANAND-L1-001",  source: "outsourced", weaver: "Anand K.",     weaverCode: "71413724-378d-4336-93dd-1db33cba3510", loom: 1, weight: "752g", qcDate: "10 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "AK", avatarBg: "#4A6B4A" },
-  { id: "KAMALA-L2-001", source: "outsourced", weaver: "Kamala B.",    weaverCode: "51490482-11cf-425b-8d54-7bd918f6db18", loom: 2, weight: "876g", qcDate: "04 Jun 2026", design: "BKB-045", sareeType: "HZ-003 · Heavy Zari",   status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "KB", avatarBg: "#7A2040" },
-  { id: "MEENA-L1-001",  source: "outsourced", weaver: "Meena R.",     weaverCode: "95cc89ea-6cf3-418c-bf9b-299e59f47389", loom: 1, weight: "820g", qcDate: "03 Jun 2026", design: "BKB-038", sareeType: "SB-001 · Self Brocade", status: "available",  saleRef: null,           customer: null,                assignedBy: null,    assignedAt: null,                  initials: "MR", avatarBg: "#9B6B8A" },
-  { id: "BKB-L2-002",    source: "factory",    weaver: null,           weaverCode: null,     loom: 2, weight: "934g", qcDate: "02 Jun 2026", design: "BKB-019", sareeType: "BS-004 · Bridal",       status: "wholesale",  saleRef: "ORD-2026-038", customer: "Padmavathi Textiles",assignedBy: "admin", assignedAt: "Yesterday · 1:10 PM", initials: "BK", avatarBg: "#3D0E1A" },
+// ── Avatar palette for initials cards ────────────────────────────────────
+const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
-  { id: "RAVI-001-INV-RS-2026-118", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "717g", qcDate: "01 Jun 2026", design: "BKB-022", sareeType: "Plain Silk",   status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "RS", avatarBg: "#6B4A2D", supplier: "Ravi Silks",              supplierLocation: "Dharmavaram, AP", purchaseId: "EXT-2026-0001", invoiceNumber: "INV-RS-2026-118" },
-  { id: "MYSO-003-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "726g", qcDate: "05 Jun 2026", design: "BKB-038", sareeType: "Mysore Silk",  status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
-  { id: "MYSO-007-INV-MS-2026-552", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "800g", qcDate: "05 Jun 2026", design: "BKB-045", sareeType: "Mysore Silk",  status: "sold",      saleRef: "SAL-2026-052", customer: "Mrs. Sujatha Rao",  assignedBy: "shop", assignedAt: "Today · 12:05 PM", initials: "MS", avatarBg: "#4A5A7B", supplier: "Mysore Sarees",           supplierLocation: "Mysore, KA",      purchaseId: "EXT-2026-0002", invoiceNumber: "INV-MS-2026-552" },
-  { id: "CHEN-002-INV-CS-2026-073", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "754g", qcDate: "08 Jun 2026", design: "BKB-019", sareeType: "Kanjivaram",   status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "CS", avatarBg: "#7B4A5A", supplier: "Chennai Silks",           supplierLocation: "Chennai, TN",     purchaseId: "EXT-2026-0003", invoiceNumber: "INV-CS-2026-073" },
-  { id: "KANC-005-INV-KH-2026-209", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "868g", qcDate: "10 Jun 2026", design: "BKB-052", sareeType: "Kanjivaram",   status: "wholesale", saleRef: "ORD-2026-044", customer: "Vijaya Silk House", assignedBy: "admin",assignedAt: "Yesterday · 4:40 PM", initials: "KH", avatarBg: "#3D6B5A", supplier: "Kanchipuram House",       supplierLocation: "Kanchipuram, TN", purchaseId: "EXT-2026-0004", invoiceNumber: "INV-KH-2026-209" },
-  { id: "POCH-004-INV-PC-2026-301", source: "external", weaver: null, weaverCode: null, loom: 0, weight: "791g", qcDate: "11 Jun 2026", design: "BKB-031", sareeType: "Patola",       status: "available", saleRef: null,           customer: null,                assignedBy: null,   assignedAt: null,               initials: "PC", avatarBg: "#6B3D6B", supplier: "Pochampally Coop",        supplierLocation: "Pochampally, TG", purchaseId: "EXT-2026-0006", invoiceNumber: "INV-PC-2026-301" },
-];
+function formatQcDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function toStockSaree(item: BackendStockItem, index: number): StockSaree {
+  const initials = item.weaverName
+    ? item.weaverName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase()
+    : item.source === "factory" ? "BK" : "EX";
+  return {
+    id: item.sareeId,
+    source: item.source,
+    weaver: item.weaverName,
+    weaverCode: item.weaverId,
+    loom: item.loomNumber ? parseInt(item.loomNumber.replace(/\D/g, ""), 10) || 0 : 0,
+    weight: "—",                          // not in DB yet
+    qcDate: formatQcDate(item.qcDate),
+    design: item.designCode ?? "—",
+    sareeType: item.sareeTypeLabel ?? item.sareeTypeCode ?? "—",
+    status: item.status,
+    saleRef: item.saleRef,
+    customer: item.customer,
+    assignedBy: null,
+    assignedAt: null,
+    initials,
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+  };
+}
+
 
 export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StockStatus>("all");
   const [sourceFilter, setSourceFilter] = useState<"all" | StockSource>("all");
   const [viewSaree, setViewSaree] = useState<StockSaree | null>(null);
+
+  const { data: raw, isLoading, isError } = useQuery({
+    queryKey: ["stock-list"],
+    queryFn: () => inventoryApi.list(),
+  });
+
+  const ALL_STOCK: StockSaree[] = (raw ?? []).map((item, i) => toStockSaree(item, i));
 
   const filtered = ALL_STOCK.filter(s => {
     const q = search.toLowerCase();
@@ -197,7 +220,22 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
       {/* ── CARDS GRID ── */}
       <section style={{ padding: "24px 56px 56px" }}>
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <FadeUp>
+            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>
+              <Package size={48} color={T.taupe} style={{ marginBottom: 16, opacity: 0.3 }} />
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading inventory…</div>
+            </div>
+          </FadeUp>
+        ) : isError ? (
+          <FadeUp>
+            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid rgba(192,57,43,0.20)`, padding: "64px 32px", textAlign: "center" }}>
+              <Package size={48} color="#C0392B" style={{ marginBottom: 16, opacity: 0.5 }} />
+              <div style={{ fontFamily: F.display, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Couldn't load inventory</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
+            </div>
+          </FadeUp>
+        ) : filtered.length > 0 ? (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
               {pag.pageItems.map((s, i) => (
@@ -218,6 +256,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
           </FadeUp>
         )}
       </section>
+
 
       {/* ── DIALOG ── */}
       <AnimatePresence>

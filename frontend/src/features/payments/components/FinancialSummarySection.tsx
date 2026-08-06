@@ -19,10 +19,38 @@ export function SummaryLineItem({ label, value, color }: { label: string; value:
   );
 }
 
+import { useQuery } from "@tanstack/react-query";
+import { paymentsApi } from "../../../shared/api/payments";
+
 export function FinancialSummarySection() {
   const [downloadModal, setDownloadModal] = useState(false);
-  const pctIn  = Math.round((TOTAL_IN  / (TOTAL_IN + 1841000)) * 100);
-  const pctOut = Math.round((TOTAL_OUT / TOTAL_IN) * 100);
+
+  const { data: summary } = useQuery({
+    queryKey: ["payments-summary"],
+    queryFn: () => paymentsApi.getSummary(),
+  });
+
+  const totalIn = summary?.totalRevenue ?? TOTAL_IN;
+  const totalOut = summary?.totalExpenses ?? TOTAL_OUT;
+  const netCash = summary?.netCashFlow ?? NET;
+
+  const weaverTotal = summary?.weaverTotal ?? 0;
+  const vendorTotal = summary?.vendorTotal ?? 0;
+  const supplierTotal = summary?.supplierTotal ?? 0;
+
+  const dynamicComingIn = [
+    { label: "Retail & Wholesale Sales", value: formatINR(totalIn) },
+    { label: "Advance Collections", value: "₹0" },
+  ];
+
+  const dynamicGoingOut = [
+    { label: "Weavers Paid", value: formatINR(weaverTotal) },
+    { label: "Vendors Paid", value: formatINR(vendorTotal) },
+    { label: "Raw Material Suppliers", value: formatINR(supplierTotal) },
+  ];
+
+  const pctIn  = Math.min(100, Math.round((totalIn  / (totalIn + 1841000 || 1)) * 100));
+  const pctOut = Math.min(100, Math.round((totalOut / (totalIn || 1)) * 100));
 
   return (
     <div id="pay-summary" style={{ padding: "32px 40px" }}>
@@ -60,9 +88,9 @@ export function FinancialSummarySection() {
                 <ArrowDownCircle size={15} color={T.green} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_IN)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalIn)}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-              {COMING_IN.map(item => (
+              {dynamicComingIn.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
@@ -91,9 +119,9 @@ export function FinancialSummarySection() {
                 <ArrowUpCircle size={15} color={T.crimson} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(TOTAL_OUT)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalOut)}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-              {GOING_OUT.map(item => (
+              {dynamicGoingOut.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
@@ -122,7 +150,7 @@ export function FinancialSummarySection() {
                 <Wallet size={15} color={T.royalBurgundy} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(NET)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(netCash)}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
             </p>

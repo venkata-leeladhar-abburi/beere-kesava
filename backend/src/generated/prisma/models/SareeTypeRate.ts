@@ -290,6 +290,7 @@ export type SareeTypeRateWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"SareeTypeRate"> | Date | string
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
+  rateRequests?: Prisma.RateChangeRequestListRelationFilter
 }
 
 export type SareeTypeRateOrderByWithRelationInput = {
@@ -306,6 +307,7 @@ export type SareeTypeRateOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   batchSareeRows?: Prisma.BatchSareeRowOrderByRelationAggregateInput
   sarees?: Prisma.SareeOrderByRelationAggregateInput
+  rateRequests?: Prisma.RateChangeRequestOrderByRelationAggregateInput
 }
 
 export type SareeTypeRateWhereUniqueInput = Prisma.AtLeast<{
@@ -325,6 +327,7 @@ export type SareeTypeRateWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"SareeTypeRate"> | Date | string
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
+  rateRequests?: Prisma.RateChangeRequestListRelationFilter
 }, "code">
 
 export type SareeTypeRateOrderByWithAggregationInput = {
@@ -377,6 +380,7 @@ export type SareeTypeRateCreateInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutSareeTypeInput
   sarees?: Prisma.SareeCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateUncheckedCreateInput = {
@@ -393,6 +397,7 @@ export type SareeTypeRateUncheckedCreateInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutSareeTypeInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateUpdateInput = {
@@ -409,6 +414,7 @@ export type SareeTypeRateUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutSareeTypeNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUpdateManyWithoutSareeTypeNestedInput
 }
 
 export type SareeTypeRateUncheckedUpdateInput = {
@@ -425,6 +431,7 @@ export type SareeTypeRateUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutSareeTypeNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutSareeTypeNestedInput
 }
 
 export type SareeTypeRateCreateManyInput = {
@@ -536,6 +543,11 @@ export type SareeTypeRateNullableScalarRelationFilter = {
   isNot?: Prisma.SareeTypeRateWhereInput | null
 }
 
+export type SareeTypeRateScalarRelationFilter = {
+  is?: Prisma.SareeTypeRateWhereInput
+  isNot?: Prisma.SareeTypeRateWhereInput
+}
+
 export type DecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -576,6 +588,20 @@ export type SareeTypeRateUpdateOneWithoutSareesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SareeTypeRateUpdateToOneWithWhereWithoutSareesInput, Prisma.SareeTypeRateUpdateWithoutSareesInput>, Prisma.SareeTypeRateUncheckedUpdateWithoutSareesInput>
 }
 
+export type SareeTypeRateCreateNestedOneWithoutRateRequestsInput = {
+  create?: Prisma.XOR<Prisma.SareeTypeRateCreateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedCreateWithoutRateRequestsInput>
+  connectOrCreate?: Prisma.SareeTypeRateCreateOrConnectWithoutRateRequestsInput
+  connect?: Prisma.SareeTypeRateWhereUniqueInput
+}
+
+export type SareeTypeRateUpdateOneRequiredWithoutRateRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.SareeTypeRateCreateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedCreateWithoutRateRequestsInput>
+  connectOrCreate?: Prisma.SareeTypeRateCreateOrConnectWithoutRateRequestsInput
+  upsert?: Prisma.SareeTypeRateUpsertWithoutRateRequestsInput
+  connect?: Prisma.SareeTypeRateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SareeTypeRateUpdateToOneWithWhereWithoutRateRequestsInput, Prisma.SareeTypeRateUpdateWithoutRateRequestsInput>, Prisma.SareeTypeRateUncheckedUpdateWithoutRateRequestsInput>
+}
+
 export type SareeTypeRateCreateWithoutBatchSareeRowsInput = {
   code: string
   type: string
@@ -589,6 +615,7 @@ export type SareeTypeRateCreateWithoutBatchSareeRowsInput = {
   jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Date | string
   sarees?: Prisma.SareeCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateUncheckedCreateWithoutBatchSareeRowsInput = {
@@ -604,6 +631,7 @@ export type SareeTypeRateUncheckedCreateWithoutBatchSareeRowsInput = {
   jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Date | string
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateCreateOrConnectWithoutBatchSareeRowsInput = {
@@ -635,6 +663,7 @@ export type SareeTypeRateUpdateWithoutBatchSareeRowsInput = {
   jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sarees?: Prisma.SareeUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUpdateManyWithoutSareeTypeNestedInput
 }
 
 export type SareeTypeRateUncheckedUpdateWithoutBatchSareeRowsInput = {
@@ -650,6 +679,7 @@ export type SareeTypeRateUncheckedUpdateWithoutBatchSareeRowsInput = {
   jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutSareeTypeNestedInput
 }
 
 export type SareeTypeRateCreateWithoutSareesInput = {
@@ -665,6 +695,7 @@ export type SareeTypeRateCreateWithoutSareesInput = {
   jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateUncheckedCreateWithoutSareesInput = {
@@ -680,6 +711,7 @@ export type SareeTypeRateUncheckedCreateWithoutSareesInput = {
   jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutSareeTypeInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutSareeTypeInput
 }
 
 export type SareeTypeRateCreateOrConnectWithoutSareesInput = {
@@ -711,6 +743,7 @@ export type SareeTypeRateUpdateWithoutSareesInput = {
   jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUpdateManyWithoutSareeTypeNestedInput
 }
 
 export type SareeTypeRateUncheckedUpdateWithoutSareesInput = {
@@ -726,6 +759,87 @@ export type SareeTypeRateUncheckedUpdateWithoutSareesInput = {
   jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutSareeTypeNestedInput
+  rateRequests?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutSareeTypeNestedInput
+}
+
+export type SareeTypeRateCreateWithoutRateRequestsInput = {
+  code: string
+  type: string
+  description?: string | null
+  makingCharge: runtime.Decimal | runtime.DecimalJsLike | number | string
+  retailPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  wholesalePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stdWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  warpWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  reshamWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  updatedAt?: Date | string
+  batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutSareeTypeInput
+  sarees?: Prisma.SareeCreateNestedManyWithoutSareeTypeInput
+}
+
+export type SareeTypeRateUncheckedCreateWithoutRateRequestsInput = {
+  code: string
+  type: string
+  description?: string | null
+  makingCharge: runtime.Decimal | runtime.DecimalJsLike | number | string
+  retailPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  wholesalePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stdWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  warpWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  reshamWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  jariWeightG: runtime.Decimal | runtime.DecimalJsLike | number | string
+  updatedAt?: Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutSareeTypeInput
+  sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutSareeTypeInput
+}
+
+export type SareeTypeRateCreateOrConnectWithoutRateRequestsInput = {
+  where: Prisma.SareeTypeRateWhereUniqueInput
+  create: Prisma.XOR<Prisma.SareeTypeRateCreateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedCreateWithoutRateRequestsInput>
+}
+
+export type SareeTypeRateUpsertWithoutRateRequestsInput = {
+  update: Prisma.XOR<Prisma.SareeTypeRateUpdateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedUpdateWithoutRateRequestsInput>
+  create: Prisma.XOR<Prisma.SareeTypeRateCreateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedCreateWithoutRateRequestsInput>
+  where?: Prisma.SareeTypeRateWhereInput
+}
+
+export type SareeTypeRateUpdateToOneWithWhereWithoutRateRequestsInput = {
+  where?: Prisma.SareeTypeRateWhereInput
+  data: Prisma.XOR<Prisma.SareeTypeRateUpdateWithoutRateRequestsInput, Prisma.SareeTypeRateUncheckedUpdateWithoutRateRequestsInput>
+}
+
+export type SareeTypeRateUpdateWithoutRateRequestsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  retailPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  wholesalePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stdWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  warpWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  reshamWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutSareeTypeNestedInput
+  sarees?: Prisma.SareeUpdateManyWithoutSareeTypeNestedInput
+}
+
+export type SareeTypeRateUncheckedUpdateWithoutRateRequestsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  retailPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  wholesalePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stdWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  warpWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  reshamWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  jariWeightG?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutSareeTypeNestedInput
+  sarees?: Prisma.SareeUncheckedUpdateManyWithoutSareeTypeNestedInput
 }
 
 
@@ -736,11 +850,13 @@ export type SareeTypeRateUncheckedUpdateWithoutSareesInput = {
 export type SareeTypeRateCountOutputType = {
   batchSareeRows: number
   sarees: number
+  rateRequests: number
 }
 
 export type SareeTypeRateCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRows?: boolean | SareeTypeRateCountOutputTypeCountBatchSareeRowsArgs
   sarees?: boolean | SareeTypeRateCountOutputTypeCountSareesArgs
+  rateRequests?: boolean | SareeTypeRateCountOutputTypeCountRateRequestsArgs
 }
 
 /**
@@ -767,6 +883,13 @@ export type SareeTypeRateCountOutputTypeCountSareesArgs<ExtArgs extends runtime.
   where?: Prisma.SareeWhereInput
 }
 
+/**
+ * SareeTypeRateCountOutputType without action
+ */
+export type SareeTypeRateCountOutputTypeCountRateRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RateChangeRequestWhereInput
+}
+
 
 export type SareeTypeRateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
@@ -782,6 +905,7 @@ export type SareeTypeRateSelect<ExtArgs extends runtime.Types.Extensions.Interna
   updatedAt?: boolean
   batchSareeRows?: boolean | Prisma.SareeTypeRate$batchSareeRowsArgs<ExtArgs>
   sarees?: boolean | Prisma.SareeTypeRate$sareesArgs<ExtArgs>
+  rateRequests?: boolean | Prisma.SareeTypeRate$rateRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.SareeTypeRateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sareeTypeRate"]>
 
@@ -831,6 +955,7 @@ export type SareeTypeRateOmit<ExtArgs extends runtime.Types.Extensions.InternalA
 export type SareeTypeRateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRows?: boolean | Prisma.SareeTypeRate$batchSareeRowsArgs<ExtArgs>
   sarees?: boolean | Prisma.SareeTypeRate$sareesArgs<ExtArgs>
+  rateRequests?: boolean | Prisma.SareeTypeRate$rateRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.SareeTypeRateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SareeTypeRateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -841,6 +966,7 @@ export type $SareeTypeRatePayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {
     batchSareeRows: Prisma.$BatchSareeRowPayload<ExtArgs>[]
     sarees: Prisma.$SareePayload<ExtArgs>[]
+    rateRequests: Prisma.$RateChangeRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     code: string
@@ -1250,6 +1376,7 @@ export interface Prisma__SareeTypeRateClient<T, Null = never, ExtArgs extends ru
   readonly [Symbol.toStringTag]: "PrismaPromise"
   batchSareeRows<T extends Prisma.SareeTypeRate$batchSareeRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SareeTypeRate$batchSareeRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BatchSareeRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sarees<T extends Prisma.SareeTypeRate$sareesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SareeTypeRate$sareesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SareePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  rateRequests<T extends Prisma.SareeTypeRate$rateRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SareeTypeRate$rateRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RateChangeRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1728,6 +1855,30 @@ export type SareeTypeRate$sareesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.SareeScalarFieldEnum | Prisma.SareeScalarFieldEnum[]
+}
+
+/**
+ * SareeTypeRate.rateRequests
+ */
+export type SareeTypeRate$rateRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RateChangeRequest
+   */
+  select?: Prisma.RateChangeRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RateChangeRequest
+   */
+  omit?: Prisma.RateChangeRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RateChangeRequestInclude<ExtArgs> | null
+  where?: Prisma.RateChangeRequestWhereInput
+  orderBy?: Prisma.RateChangeRequestOrderByWithRelationInput | Prisma.RateChangeRequestOrderByWithRelationInput[]
+  cursor?: Prisma.RateChangeRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RateChangeRequestScalarFieldEnum | Prisma.RateChangeRequestScalarFieldEnum[]
 }
 
 /**

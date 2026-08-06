@@ -22,11 +22,17 @@ export class ApiError extends Error {
   }
 }
 
+function getAuthHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? (localStorage.getItem("token") || sessionStorage.getItem("token")) : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
       ...init?.headers,
     },
   });
@@ -47,7 +53,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 async function requestForm<T>(path: string, formData: FormData): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, { method: "POST", body: formData });
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+    },
+    body: formData,
+  });
   const body: unknown = await res.json().catch(() => null);
 
   if (!res.ok) {

@@ -1,27 +1,125 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle2, CircleAlert, Download, IndianRupee, Scissors, TrendingUp, Users } from "lucide-react";
 import { motion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { CASH_FLOW_DATA, COMPLIANCE_DATA, TOTAL_TOP5, WEAVER_DIST_DATA } from "../../data/analytics";
-import { INVOICES } from "../../data/invoices";
+// MOCK: no backend endpoint for monthly income/expense cash-flow time-series
+// aggregation exists anywhere (payments module, reports, or invoices) — this
+// chart alone stays on static demo data. Every other stat/chart below is
+// computed live. See data/analytics.ts for the fuller note.
+import { analyticsApi } from "../../../../shared/api/analytics";
 import { EASE, F, T } from "../../theme";
-import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { CashFlowTooltip } from "./CashFlowTooltip";
+import { weaversApi } from "../../../../shared/api/weavers";
+import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
+import { invoicesApi } from "../../../../shared/api/invoices";
+
+const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
 
 export function PaymentAnalyticsSection() {
   const [exportModal, setExportModal] = useState(false);
+
+  const { data: cashFlowRes } = useQuery({
+    queryKey: ["analytics-cash-flow"],
+    queryFn: () => analyticsApi.getCashFlow(),
+  });
+  const cashFlowData = cashFlowRes?.items ?? [];
+
+  // Top-5 weaver making-charges distribution, computed live from
+  // GET /payments/weavers grouped by weaverId + GET /weavers for names.
+  const { data: weaversRes } = useQuery({
+    queryKey: ["analytics-weavers-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const { data: weaverPaymentsRes } = useQuery({
+    queryKey: ["analytics-weaver-payments"],
+    queryFn: () => weaverPaymentsApi.list(),
+  });
+
+  const { data: vendorPaymentsRes } = useQuery({
+    queryKey: ["analytics-vendor-payments"],
+    queryFn: () => vendorPaymentsApi.list(),
+  });
+  const { data: supplierPaymentsRes } = useQuery({
+    queryKey: ["analytics-supplier-payments"],
+    queryFn: () => supplierPaymentsApi.list(),
+  });
+
+  const { weaverDistData, totalTop5 } = useMemo(() => {
+    const payments = weaverPaymentsRes?.items ?? [];
+    if (payments.length === 0) {
+      return { weaverDistData: [] as { name: string; amount: number; pct: number; color: string }[], totalTop5: 0 };
+    }
+    const nameById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.name]));
+    const totalsByWeaver = new Map<string, number>();
+    for (const p of payments) {
+      totalsByWeaver.set(p.weaverId, (totalsByWeaver.get(p.weaverId) ?? 0) + Number(p.amountPaid));
+    }
+    const top5 = Array.from(totalsByWeaver.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    const maxAmount = top5[0]?.[1] ?? 1;
+    const data = top5.map(([weaverId, amount], i) => ({
+      name: nameById.get(weaverId) ?? weaverId,
+      amount,
+      pct: Math.round((amount / maxAmount) * 100),
+      color: DIST_PALETTE[i % DIST_PALETTE.length],
+    }));
+    return { weaverDistData: data, totalTop5: data.reduce((s, d) => s + d.amount, 0) };
+  }, [weaverPaymentsRes, weaversRes]);
+
+  // Customer payment compliance (paid/partial/overdue counts), derived live
+  // from GET /invoices status field. Falls back to the static demo split
+  // only when there are no invoices yet.
+  const { data: invoicesRes } = useQuery({
+    queryKey: ["analytics-invoices"],
+    queryFn: () => invoicesApi.list(),
+  });
+  const invoiceCount = invoicesRes?.items.length ?? 0;
+  const complianceData = useMemo(() => {
+    const items = invoicesRes?.items ?? [];
+    if (items.length === 0) return [] as { name: string; value: number; color: string }[];
+    const paid = items.filter(i => i.status === "PAID").length;
+    const partial = items.filter(i => i.status === "PARTIAL").length;
+    const overdue = items.filter(i => i.status === "OVERDUE").length;
+    const pending = items.filter(i => i.status === "PENDING").length;
+    return [
+      { name: "Paid", value: paid, color: "#1E6640" },
+      { name: "Partial", value: partial, color: "#845E04" },
+      { name: "Overdue", value: overdue, color: "#C0392B" },
+      { name: "Pending", value: pending, color: "#69635E" },
+    ].filter(d => d.value > 0);
+  }, [invoicesRes]);
+
+  // Outstanding from customers = sum(total - paid) across real invoices.
+  const outstandingFromCustomers = (invoicesRes?.items ?? []).reduce(
+    (s, inv) => s + (Number(inv.total) - Number(inv.paid)), 0,
+  );
+  // Total vendor payments = sum of GET /payments/vendors amounts (all-time —
+  // the backend has no "this period" filter for these endpoints).
+  const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
+  // Net income = real customer collections minus real vendor/supplier/weaver
+  // payouts, all-time. There's no backend "this month" aggregation endpoint,
+  // so this is a live all-time figure rather than a calendar-month one.
+  const netIncome = useMemo(() => {
+    const collected = (invoicesRes?.items ?? []).reduce((s, inv) => s + Number(inv.paid), 0);
+    const supplierPaid = (supplierPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
+    const weaverPaid = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amountPaid), 0);
+    return collected - totalVendorPayments - supplierPaid - weaverPaid;
+  }, [invoicesRes, supplierPaymentsRes, weaverPaymentsRes, totalVendorPayments]);
+
   const METRICS = [
     {
       icon: <TrendingUp size={22} color={T.green} />,
       iconBg: T.greenBg,
       iconBorder: "rgba(30,102,64,0.18)",
-      label: "Net Income This Month",
-      value: "₹19,80,000",
-      sub: "After all deductions · May 2026",
-      color: T.green,
+      label: "Net Income (All-Time)",
+      value: `${netIncome < 0 ? "−" : ""}₹${Math.abs(netIncome).toLocaleString("en-IN")}`,
+      sub: "Customer collections minus vendor/supplier/weaver payouts",
+      color: netIncome >= 0 ? T.green : T.crimson,
       hi: false,
     },
     {
@@ -29,7 +127,7 @@ export function PaymentAnalyticsSection() {
       iconBg: T.crimsonBg,
       iconBorder: "rgba(192,57,43,0.18)",
       label: "Outstanding from Customers",
-      value: "₹18,41,000",
+      value: `₹${outstandingFromCustomers.toLocaleString("en-IN")}`,
       sub: "Pending invoice collections",
       color: T.crimson,
       hi: false,
@@ -39,8 +137,8 @@ export function PaymentAnalyticsSection() {
       iconBg: "rgba(110,15,45,0.08)",
       iconBorder: T.borderDef,
       label: "Paid to Top 5 Weavers",
-      value: `₹${TOTAL_TOP5.toLocaleString("en-IN")}`,
-      sub: "Making charges · May 2026",
+      value: `₹${totalTop5.toLocaleString("en-IN")}`,
+      sub: "Making charges · all recorded payments",
       color: T.royalBurgundy,
       hi: false,
     },
@@ -49,7 +147,7 @@ export function PaymentAnalyticsSection() {
       iconBg: "rgba(200,155,71,0.12)",
       iconBorder: T.borderGold,
       label: "Total Vendor Payments",
-      value: "₹8,60,000",
+      value: `₹${totalVendorPayments.toLocaleString("en-IN")}`,
       sub: "Raw materials & supplies",
       color: T.antiqueGold,
       hi: true,
@@ -142,7 +240,7 @@ export function PaymentAnalyticsSection() {
             {/* Chart body */}
             <div style={{ flex: 1, padding: "18px 10px 14px" }}>
               <ResponsiveContainer width="100%" height={210}>
-                <BarChart data={CASH_FLOW_DATA} barGap={4} barCategoryGap="28%">
+                <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
                   <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                   <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                   <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}L`} width={46} />
@@ -178,11 +276,17 @@ export function PaymentAnalyticsSection() {
             </div>
             {/* Chart body */}
             <div style={{ flex: 1, padding: "18px 10px 16px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              {complianceData.length === 0 ? (
+                <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  No invoices recorded yet.
+                </div>
+              ) : (
+              <>
               <ResponsiveContainer width="100%" height={170}>
                 <PieChart>
-                  <Pie key="compliance-pie" data={COMPLIANCE_DATA} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
+                  <Pie key="compliance-pie" data={complianceData} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
                     dataKey="value" stroke="none" paddingAngle={4}>
-                    {COMPLIANCE_DATA.map((entry) => (
+                    {complianceData.map((entry) => (
                       <Cell key={`cell-${entry.name}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -191,8 +295,8 @@ export function PaymentAnalyticsSection() {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", padding: "0 18px", marginTop: 4 }}>
-                {COMPLIANCE_DATA.map(d => {
-                  const pct = Math.round((d.value / INVOICES.length) * 100);
+                {complianceData.map(d => {
+                  const pct = invoiceCount > 0 ? Math.round((d.value / invoiceCount) * 100) : 0;
                   return (
                     <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 11, height: 11, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
@@ -205,6 +309,8 @@ export function PaymentAnalyticsSection() {
                   );
                 })}
               </div>
+              </>
+              )}
             </div>
           </div>
 
@@ -224,8 +330,13 @@ export function PaymentAnalyticsSection() {
             </div>
             {/* Weaver list */}
             <div style={{ flex: 1, padding: "20px 22px" }}>
-              {WEAVER_DIST_DATA.map((d, i) => (
-                <div key={d.name} style={{ marginBottom: i < WEAVER_DIST_DATA.length - 1 ? 18 : 0 }}>
+              {weaverDistData.length === 0 && (
+                <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  No weaver payments recorded yet.
+                </div>
+              )}
+              {weaverDistData.map((d, i) => (
+                <div key={d.name} style={{ marginBottom: i < weaverDistData.length - 1 ? 18 : 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>

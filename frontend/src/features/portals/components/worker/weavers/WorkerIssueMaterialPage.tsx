@@ -1,19 +1,30 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   CheckCircle2, Search, Layers, Scissors,
   Building2, Users, PenLine, Send, Sparkles, Clock,
 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { FieldLabel, SectionLabel, PageHeader, type IssueSource } from "./shared";
-import { WEAVERS } from "./weaversData";
+import { WEAVERS as FALLBACK_WEAVERS } from "./weaversData";
+import { weaversApi } from "../../../../../shared/api/weavers";
 import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
-// ─── Issue Material Page ─────────────────────────────────────────────────────
-// Note: this component is not currently wired into WorkerWeavers' composition
-// root (no caller passes `page === "issue"`); it is kept as-is from the
-// pre-split file. Renamed to WorkerIssueMaterialPage to avoid confusion with
-// the unrelated IssueMaterialPage in src/features/materials/components.
 export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
+  const { data: weaversRes } = useQuery({
+    queryKey: ["worker-issue-weavers"],
+    queryFn: () => weaversApi.list(),
+  });
+  const WEAVERS = React.useMemo(() => {
+    if (!weaversRes?.items) return [];
+    return weaversRes.items.map(w => ({
+      name: w.name,
+      code: w.id,
+      looms: w.looms,
+      avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
+    }));
+  }, [weaversRes]);
+
   const [source, setSource] = useState<IssueSource>(null);
   const [loomNum, setLoomNum] = useState("");
   const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
@@ -23,6 +34,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
   const [jariQty, setJariQty] = useState("");
   const [jariType, setJariType] = useState("Polyester");
   const [jariGrade, setJariGrade] = useState("2G");
+
   const [warpQty, setWarpQty] = useState("");
   const [warpUnit, setWarpUnit] = useState<"kg" | "g">("kg");
   const [reshamQty, setReshamQty] = useState("");

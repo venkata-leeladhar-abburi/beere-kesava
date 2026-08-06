@@ -1,21 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Tag, Banknote, Percent, RefreshCcw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
+import { salesApi } from "../../../../shared/api/sales";
+import { customersApi } from "../../../../shared/api/customers";
 
-const retailDailySales = [
-  { week: "W1 (1–7)", may: 11, apr: 9  },
-  { week: "W2 (8–15)",may: 14, apr: 11 },
-  { week: "W3 (16–22)",may: 13, apr: 10 },
-  { week: "W4 (23–31)",may: 10, apr: 9  },
-];
-const retailWeeklyData = [
-  { week: "Week 1", sarees: 11, revenue: 96500  },
-  { week: "Week 2", sarees: 14, revenue: 122000 },
-  { week: "Week 3", sarees: 13, revenue: 114500 },
-  { week: "Week 4", sarees: 10, revenue: 87000  },
-];
 function RetailWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
@@ -27,6 +18,11 @@ function RetailWeeklyTooltip({ active, payload, label }: any) {
     </div>
   );
 }
+
+// MOCK: GET /sales returns per-sale amount and sareeId only — it doesn't
+// join to a design code or saree "type" (Bridal Special / Heavy Zari / etc),
+// so a per-design or per-type revenue split can't be computed from real
+// data yet. Both charts below stay on static demo data.
 const retailDesignSales = [
   { design: "BKB-045", count: 14 },
   { design: "BKB-031", count: 11 },
@@ -40,18 +36,61 @@ const retailRevenueDonut = [
   { name: "Self Brocade",    value: 85000,  color: T.green },
   { name: "Plain Silk",      value: 43000,  color: T.taupe },
 ];
-const retailRows = [
-  { id: "SR-001", date: "28 May 2026", customer: "Walk-in Customer", phone: "—",          sarId: "BKS-0421", design: "BKB-045", type: "Bridal Special",  price: 12500, barcode: "Yes", bill: "Yes" },
-  { id: "SR-002", date: "27 May 2026", customer: "Priya Sharma",     phone: "9845678901", sarId: "BKS-0419", design: "BKB-031", type: "Heavy Zari",       price: 9800,  barcode: "Yes", bill: "Yes" },
-  { id: "SR-003", date: "26 May 2026", customer: "Walk-in Customer", phone: "—",          sarId: "BKS-0418", design: "BKB-022", type: "Self Brocade",     price: 8200,  barcode: "Yes", bill: "Yes" },
-  { id: "SR-004", date: "25 May 2026", customer: "Rekha Patel",      phone: "9712345678", sarId: "BKS-0415", design: "BKB-038", type: "Bridal Special",  price: 14000, barcode: "Yes", bill: "Yes" },
-  { id: "SR-005", date: "24 May 2026", customer: "Walk-in Customer", phone: "—",          sarId: "BKS-0412", design: "BKB-019", type: "Plain Silk",       price: 5500,  barcode: "Yes", bill: "Yes" },
-  { id: "SR-006", date: "23 May 2026", customer: "Anita Verma",      phone: "9823456789", sarId: "BKS-0410", design: "BKB-045", type: "Bridal Special",  price: 13500, barcode: "Yes", bill: "Yes" },
-  { id: "SR-007", date: "22 May 2026", customer: "Walk-in Customer", phone: "—",          sarId: "BKS-0408", design: "BKB-031", type: "Heavy Zari",       price: 8800,  barcode: "Yes", bill: "Yes" },
-  { id: "SR-008", date: "20 May 2026", customer: "RETURN",           phone: "—",          sarId: "BKS-0402", design: "BKB-022", type: "Self Brocade",     price: -7200, barcode: "Yes", bill: "Yes" },
-];
 
 export function RetailSalesReport() {
+  const { data: salesRes, isLoading, isError } = useQuery({
+    queryKey: ["reports", "sales"],
+    queryFn: () => salesApi.list(),
+  });
+  const { data: returnsRes } = useQuery({
+    queryKey: ["reports", "sale-returns"],
+    queryFn: () => salesApi.listReturns(),
+  });
+  const { data: customersRes } = useQuery({
+    queryKey: ["reports", "customers-roster"],
+    queryFn: () => customersApi.list(),
+  });
+
+  const retailSales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
+  const customerById = new Map((customersRes?.items ?? []).map(c => [c.id, c]));
+  const returnBySaleRef = new Map((returnsRes?.items ?? []).map(r => [r.saleRef, r]));
+
+  const retailRows = retailSales
+    .slice()
+    .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
+    .map(s => {
+      const ret = returnBySaleRef.get(s.ref);
+      const customer = s.customerId ? customerById.get(s.customerId) : undefined;
+      return {
+        id: s.ref,
+        date: new Date(s.saleDate).toLocaleDateString("en-IN"),
+        customer: ret ? "RETURN" : (customer?.name ?? "Walk-in Customer"),
+        phone: customer?.phone ?? "—",
+        sarId: s.sareeId,
+        price: ret ? -Number(ret.refundAmount) : Number(s.amount),
+      };
+    });
+
+  const totalRevenue = retailRows.filter(r => r.price > 0).reduce((s, r) => s + r.price, 0);
+  const returnsTotal = retailRows.filter(r => r.price < 0).length;
+  const avgSale = retailRows.length - returnsTotal > 0 ? totalRevenue / (retailRows.length - returnsTotal) : 0;
+
+  const retailWeeklyData = useMemo(() => {
+    const weeks = [
+      { label: "Week 1 (1–7)", from: 1, to: 7 },
+      { label: "Week 2 (8–15)", from: 8, to: 15 },
+      { label: "Week 3 (16–22)", from: 16, to: 22 },
+      { label: "Week 4 (23–31)", from: 23, to: 31 },
+    ];
+    return weeks.map(w => {
+      const inWeek = retailSales.filter(s => {
+        const day = new Date(s.saleDate).getDate();
+        return day >= w.from && day <= w.to;
+      });
+      return { week: w.label, sarees: inWeek.length, revenue: inWeek.reduce((s, sale) => s + Number(sale.amount), 0) };
+    });
+  }, [retailSales]);
+
   return (
     <div id="rep-retail" style={{ padding: "32px 40px" }}>
       <TabTitle title="Retail Sales Report"
@@ -128,25 +167,33 @@ export function RetailSalesReport() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Tag size={22} color={T.royalBurgundy} />} label="Total Sarees Sold at Shop" value="48 sarees" sub="This month" />
-        <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value="₹4,20,000" sub="May 2026" greenHi />
-        <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value="₹8,750" sub="Per saree" hi />
-        <SumCard icon={<RefreshCcw size={22} color={T.crimson} />} label="Total Returns at Shop" value="2 sarees" sub="This month" crimsonHi />
+        <SumCard icon={<Tag size={22} color={T.royalBurgundy} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" />
+        <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value={`₹${totalRevenue.toLocaleString("en-IN")}`} sub="All-time" greenHi />
+        <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? `₹${Math.round(avgSale).toLocaleString("en-IN")}` : "—"} sub="Per saree" hi />
+        <SumCard icon={<RefreshCcw size={22} color={T.crimson} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub="All-time" crimsonHi />
       </div>
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
                 <tr>
                   <th style={TH}>Sale ID</th><th style={TH}>Sale Date</th><th style={TH}>Customer Name</th>
-                  <th style={TH}>Phone</th><th style={TH}>Saree ID</th><th style={TH}>Design Code</th>
-                  <th style={TH}>Saree Type</th><th style={{ ...TH, textAlign: "right" }}>Retail Price</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Barcode Scanned</th><th style={{ ...TH, textAlign: "center" }}>Bill Generated</th>
+                  <th style={TH}>Phone</th><th style={TH}>Saree ID</th>
+                  <th style={{ ...TH, textAlign: "right" }}>Retail Price</th>
                 </tr>
               </thead>
               <tbody>
+                {isLoading && (
+                  <tr><td style={TD} colSpan={6}>Loading…</td></tr>
+                )}
+                {isError && (
+                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={6}>Failed to load retail sales.</td></tr>
+                )}
+                {!isLoading && !isError && retailRows.length === 0 && (
+                  <tr><td style={TD} colSpan={6}>No retail sales recorded yet.</td></tr>
+                )}
                 {retailRows.map((r, i) => (
                   <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.price < 0 ? T.crimson : T.green}` }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span></td>
@@ -154,17 +201,13 @@ export function RetailSalesReport() {
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
                     <td style={TD}><span style={{ color: T.taupe }}>{r.phone}</span></td>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sarId}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.design}</span></td>
-                    <td style={TD}>{r.type}</td>
                     <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>{r.price < 0 ? `−₹${Math.abs(r.price).toLocaleString("en-IN")}` : `₹${r.price.toLocaleString("en-IN")}`}</td>
-                    <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.barcode} type="ok" /></td>
-                    <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.bill} type="ok" /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <TablePager total={48} showing={8} />
+          <TablePager total={retailRows.length} showing={retailRows.length} />
         </div>
       </FadeUp>
     </div>

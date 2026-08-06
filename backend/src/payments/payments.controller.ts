@@ -31,6 +31,11 @@ export class PaymentsController {
     @InjectQueue(WEAVER_PAYMENTS_IMPORT_QUEUE) private readonly importQueue: Queue,
   ) {}
 
+  @Get("summary")
+  getPaymentSummary() {
+    return this.paymentsService.getPaymentSummary();
+  }
+
   @Post("weavers")
   createWeaverPayment(@Body() dto: CreateWeaverPaymentDto) {
     return this.paymentsService.createWeaverPayment(dto);

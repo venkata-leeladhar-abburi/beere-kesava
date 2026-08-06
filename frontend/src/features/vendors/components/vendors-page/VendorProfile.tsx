@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, Phone, Building2, FileText,
   IndianRupee, AlertTriangle, ArrowLeft, Package,
@@ -12,6 +13,7 @@ import { StatusPill, StarRating } from "./SharedBits";
 import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
+import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -26,6 +28,23 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   const [payFilter, setPayFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const ledger = React.useMemo(() => buildVendorLedger(vendor), [vendor]);
+  const { data: poRes } = useQuery({
+    queryKey: ["vendor-pos", vendor.id],
+    queryFn: () => purchaseOrdersApi.list(),
+  });
+  const orders = React.useMemo(() => {
+    if (!poRes?.items || poRes.items.length === 0) return ledger.orders;
+    const vendorPos = poRes.items.filter(p => p.vendorId === vendor.id || p.vendor?.id === vendor.id);
+    if (vendorPos.length === 0) return ledger.orders;
+    return vendorPos.map(p => ({
+      id: p.poNumber || p.id,
+      date: p.createdAt ? p.createdAt.split("T")[0] : "2026-05-01",
+      sareesCount: 1,
+      amount: `₹${Number(p.totalValue || 0).toLocaleString("en-IN")}`,
+      status: (p.status === "APPROVED" ? "Approved" : p.status === "RECEIVED" ? "Fulfilled" : p.status === "REJECTED" ? "Cancelled" : "Pending") as any,
+    }));
+  }, [poRes, vendor.id, ledger.orders]);
+
   const filteredBills = React.useMemo(
     () => ledger.bills.filter(b => matchesDateFilter(b.date, payFilter)),
     [ledger.bills, payFilter]
@@ -43,7 +62,6 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   }, [filteredTxns]);
   const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
-  const mockOrders = ledger.orders;
   return (
     <div style={{ padding: "40px 56px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
@@ -82,43 +100,37 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
         </div>
       </FadeUp>
 
-      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
+      <div style={{ display: "flex", borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            style={{ padding: "14px 22px", fontFamily: F.ui, fontSize: 14, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2, cursor: "pointer", transition: "all 0.2s" }}>
+          <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: "14px 24px", background: "transparent", border: "none", borderBottom: tab === t.key ? `3px solid ${T.royalBurgundy}` : "3px solid transparent", color: tab === t.key ? T.royalBurgundy : T.taupe, fontFamily: F.ui, fontSize: 15, fontWeight: tab === t.key ? 700 : 500, cursor: "pointer", transition: "all 0.2s ease", marginBottom: -2 }}>
             {t.label}
           </button>
         ))}
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
+        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
           {tab === "overview" && (
-            <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
                 {[
-                  { label: "Total Orders Ever", value: String(vendor.totalOrders), mono: false },
-                  { label: "Total Spend", value: `₹${vendor.totalSpend}`, color: T.royalBurgundy },
-                  { label: "Outstanding Balance", value: vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`, color: vendor.outstanding !== "0" ? T.crimson : T.green },
-                  { label: "Payment Terms", value: vendor.terms, mono: true },
+                  { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
+                  { label: "Total Orders", value: orders.length, sub: "All time", color: T.luxuryBrown },
+                  { label: "Pending Bills", value: inr(ledger.outstanding), sub: `${overdueBills.length} overdue`, color: ledger.outstanding > 0 ? T.crimson : T.green },
+                  { label: "Rating", value: `${vendor.rating} ★`, sub: "Vendor score", color: T.antiqueGold },
                 ].map(s => (
-                  <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{s.label}</div>
-                    <div style={{ fontFamily: s.mono ? F.mono : F.display, fontSize: s.mono ? 20 : 26, fontWeight: 700, color: (s as any).color || T.luxuryBrown }}>{s.value}</div>
+                  <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: 20 }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: s.color, margin: "6px 0 2px" }}>{s.value}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.sub}</div>
                   </div>
                 ))}
               </div>
-              {vendor.notes && (
-                <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "22px 26px", marginBottom: 16 }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 10 }}>NOTES</div>
-                  <p style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.65, margin: 0 }}>{vendor.notes}</p>
-                </div>
-              )}
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Recent Purchase Orders</div>
                 </div>
-                <PurchaseOrderHistoryTable orders={mockOrders.slice(0, 2)} />
+                <PurchaseOrderHistoryTable orders={orders.slice(0, 2)} />
               </div>
             </div>
           )}
@@ -128,7 +140,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 12 }}>Full Purchase Order History</div>
                 <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
               </div>
-              <PurchaseOrderHistoryTable orders={mockOrders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
+              <PurchaseOrderHistoryTable orders={orders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
             </div>
           )}
           {tab === "payments" && (

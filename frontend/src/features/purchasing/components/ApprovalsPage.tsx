@@ -5,21 +5,35 @@ import { PODocumentModal } from "./PODocumentModal";
 import { toast } from "sonner";
 
 import { T, F } from "./approvals/tokens";
-import { PO_DATA, WARP_DATA, RATE_DATA } from "./approvals/data";
+import { WARP_DATA, RATE_DATA } from "./approvals/data";
 import { ApprovalsHeader } from "./approvals/ApprovalsHeader";
 import { StatsStrip } from "./approvals/StatsStrip";
 import { TabsNav, TabContent } from "./approvals/TabContent";
 import { HistorySection } from "./approvals/HistorySection";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { warpRequestsApi } from "../../../shared/api/warpRequests";
+import { rateRequestsApi } from "../../../shared/api/rateRequests";
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ApprovalsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"po" | "ext" | "warp" | "rate">("po");
-  const [poList, setPoList]       = useState(PO_DATA);
-  const [warpList, setWarpList]   = useState(WARP_DATA);
-  const [rateList, setRateList]   = useState(RATE_DATA);
   const [histFilter, setHistFilter] = useState("All History");
   const [histPeriod, setHistPeriod] = useState("This Month");
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
+
+  const { data: warpRes } = useQuery({
+    queryKey: ["warp-requests-pending"],
+    queryFn: () => warpRequestsApi.list("PENDING"),
+  });
+  const warpList = warpRes?.items ?? [];
+
+  const { data: rateRes } = useQuery({
+    queryKey: ["rate-requests-pending"],
+    queryFn: () => rateRequestsApi.list("PENDING"),
+  });
+  const rateList = rateRes?.items ?? [];
 
   const { pos, approvePO, rejectPO } = usePO();
   const { requests, decideRequest } = useSuppliers();
@@ -35,8 +49,8 @@ export function ApprovalsPage() {
     );
   };
 
-  // Build combined PO list: context pending POs first, then static ones not duplicated
-  const contextPendingIds = new Set(pos.filter(p => p.status === "pending").map(p => p.id));
+  // Purchase Orders tab now renders exclusively from the real backend
+  // (PurchaseOrdersContext, GET /purchase-orders) filtered to PENDING.
   const contextPendingItems = pos
     .filter(p => p.status === "pending")
     .map(p => ({
@@ -52,8 +66,7 @@ export function ApprovalsPage() {
       urgency: p.urgency,
       totalValue: p.totalValue,
     }));
-  const staticItems = poList.filter(p => !contextPendingIds.has(p.id));
-  const combinedPOList = [...contextPendingItems, ...staticItems];
+  const combinedPOList = contextPendingItems;
 
   // Find PO for document view
   const viewDocPO = viewDocPOId
@@ -72,13 +85,20 @@ export function ApprovalsPage() {
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
-      <ApprovalsHeader poCount={combinedPOList.length} externalCount={pendingRequests.length} />
+      <ApprovalsHeader
+        poCount={combinedPOList.length}
+        externalCount={pendingRequests.length}
+        warpCount={warpList.length}
+        rateCount={rateList.length}
+      />
 
       <StatsStrip
         totalPending={combinedPOList.length + pendingRequests.length + warpList.length + rateList.length}
         poCount={combinedPOList.length}
         externalCount={pendingRequests.length}
         externalTotal={pendingRequests.reduce((sum, r) => sum + r.estimatedAmount, 0)}
+        warpCount={warpList.length}
+        rateCount={rateList.length}
       />
 
       <TabsNav tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -92,13 +112,10 @@ export function ApprovalsPage() {
         warpList={warpList}
         rateList={rateList}
         allEmpty={allEmpty}
-        setPoList={setPoList}
         approvePO={approvePO}
         rejectPO={rejectPO}
         setViewDocPOId={setViewDocPOId}
         decideExternal={decideExternal}
-        setWarpList={setWarpList}
-        setRateList={setRateList}
       />
 
       <HistorySection

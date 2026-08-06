@@ -1,17 +1,61 @@
-// ── Card grid and list views of the weaver directory ────────────────────────
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { Eye, MapPin, Phone, Edit3, Layers3, Activity, AlertTriangle } from "lucide-react";
 import { Clock, Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
+import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+
+export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
+  const { data: weaversRes } = useQuery({
+    queryKey: ["weavers-card-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const roster = weaversRes?.items ?? [];
+  const { data: statsList } = useQuery({
+    queryKey: ["weavers-card-stats", roster.map(w => w.id)],
+    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
+    enabled: roster.length > 0,
+  });
+  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
+
+  const realWeavers = roster.map(w => {
+    const s: BackendWeaverStats | undefined = statsById.get(w.id);
+    const status = (s && s.activeBatchRowsCount > 0 ? "active" : "idle") as "active" | "idle" | "qc";
+    return {
+      id: w.id,
+      name: w.name,
+      initials: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
+      bg: T.royalBurgundy,
+      village: w.village || "—",
+      cluster: w.cluster || "—",
+      mobile: w.phone || "—",
+      looms: w.looms,
+      status,
+      batch: s && s.activeBatchRowsCount > 0 ? `${s.activeBatchRowsCount} active` : "",
+      design: "—",
+      photo: w.photoUrl || null,
+      thisMonth: s?.totalSareesWoven ?? 0,
+      passRate: s?.qcPassRate ?? 0,
+      totalEver: s?.totalSareesWoven ?? 0,
+      totalPaid: "—",
+      lastActive: "—",
+    };
+  });
+
+
+
+  return [...realWeavers, ...extraWeavers];
+}
 
 export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
   const [showAll, setShowAll] = useState(false);
-  const allWeavers = [...WEAVERS, ...extraWeavers];
+  const allWeavers = useRealWeavers(extraWeavers);
   const visible = showAll ? allWeavers : allWeavers.slice(0, 4);
+
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
@@ -165,8 +209,9 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
 }
 export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
   const [showAll, setShowAll] = useState(false);
-  const allWeavers = [...WEAVERS, ...extraWeavers];
+  const allWeavers = useRealWeavers(extraWeavers);
   const visible = showAll ? allWeavers : allWeavers.slice(0, 5);
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       {/* Header row */}

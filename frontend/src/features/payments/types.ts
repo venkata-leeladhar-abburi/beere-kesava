@@ -75,7 +75,7 @@ export interface VendorUploadResult {
   fileName: string; totalRows: number; matched: VendorMatchedRow[]; unmatched: VendorUnmatchedRow[];
 }
 
-export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Receipt";
+export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Receipt" | "Supplier Payment";
 
 export type PayHistStatus = "Paid" | "Partial" | "Pending";
 

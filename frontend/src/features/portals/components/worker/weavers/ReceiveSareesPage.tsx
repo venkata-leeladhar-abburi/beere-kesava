@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Camera, UploadCloud, CheckCircle2, AlertTriangle,
   Plus, Printer,
@@ -6,7 +7,8 @@ import {
 import { C, F, card } from "../tokens";
 import { FieldLabel, PageHeader, type ReceivedSareeLog } from "./shared";
 import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
-import { WEAVERS, WEAVER_BATCHES, type WeaverBatchData } from "./weaversData";
+import { WEAVERS as FALLBACK_WEAVERS, WEAVER_BATCHES, type WeaverBatchData } from "./weaversData";
+import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
@@ -22,12 +24,27 @@ interface RejectedSaree {
 }
 
 export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
+  const { data: weaversRes } = useQuery({
+    queryKey: ["worker-receive-weavers"],
+    queryFn: () => weaversApi.list(),
+  });
+  const WEAVERS = React.useMemo(() => {
+    if (!weaversRes?.items) return [];
+    return weaversRes.items.map(w => ({
+      name: w.name,
+      code: w.id,
+      looms: w.looms,
+      avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
+    }));
+  }, [weaversRes]);
+
   const [activeSection, setActiveSection] = useState<"outsourced" | "own">("outsourced");
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(WEAVERS[0]);
+  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(WEAVERS[0] ?? null);
   const [batches, setBatches] = useState<Record<string, WeaverBatchData[]>>(() => JSON.parse(JSON.stringify(WEAVER_BATCHES)));
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(WEAVER_BATCHES[WEAVERS[0].code]?.[0]?.id ?? null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(WEAVER_BATCHES[WEAVERS[0]?.code]?.[0]?.id ?? null);
   const [selectedSareeNo, setSelectedSareeNo] = useState<number | null>(null);
   const [sareeSort, setSareeSort] = useState<"serial" | "status">("serial");
+
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
   const [hasPhoto, setHasPhoto] = useState(false);

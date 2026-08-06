@@ -210,26 +210,26 @@ const FIRM_FINANCIAL_ENTRIES: {
   date: string;
   notes?: string;
 }[] = [
-  { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale order — Mysore Crepe batch", amount: 420000, date: "2026-06-10" },
-  { firmName: "Surat Zari Works", kind: "INCOME", category: "Retail Sale", description: "Retail walk-in — Heavy Zari collection", amount: 85000, date: "2026-06-18" },
-  { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Kanjivaram special order", amount: 310000, date: "2026-06-25" },
-  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payment — Padma Veni (June)", amount: 95000, date: "2026-06-05" },
-  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Material Purchase", description: "Raw silk purchase — Bangalore supplier", amount: 215000, date: "2026-06-12" },
-  { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Factory Maintenance", description: "Factory electricity & maintenance", amount: 18000, date: "2026-06-20" },
-  { firmName: "Surat Zari Works", kind: "MISC", category: "Misc Expense", description: "Festival bonus to staff", amount: 25000, date: "2026-06-15", notes: "Eid bonus — 5 staff members" },
+    { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale order — Mysore Crepe batch", amount: 420000, date: "2026-06-10" },
+    { firmName: "Surat Zari Works", kind: "INCOME", category: "Retail Sale", description: "Retail walk-in — Heavy Zari collection", amount: 85000, date: "2026-06-18" },
+    { firmName: "Surat Zari Works", kind: "INCOME", category: "Wholesale Sale", description: "Kanjivaram special order", amount: 310000, date: "2026-06-25" },
+    { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payment — Padma Veni (June)", amount: 95000, date: "2026-06-05" },
+    { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Material Purchase", description: "Raw silk purchase — Bangalore supplier", amount: 215000, date: "2026-06-12" },
+    { firmName: "Surat Zari Works", kind: "EXPENSE", category: "Factory Maintenance", description: "Factory electricity & maintenance", amount: 18000, date: "2026-06-20" },
+    { firmName: "Surat Zari Works", kind: "MISC", category: "Misc Expense", description: "Festival bonus to staff", amount: 25000, date: "2026-06-15", notes: "Eid bonus — 5 staff members" },
 
-  { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale dispatch — Kanchipuram bundle", amount: 780000, date: "2026-06-08" },
-  { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Retail Sale", description: "Retail silk sale — premium segment", amount: 120000, date: "2026-06-22" },
-  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Material Purchase", description: "Zari thread bulk purchase", amount: 340000, date: "2026-06-03" },
-  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Salaries", description: "Staff salaries — June", amount: 180000, date: "2026-06-01" },
-  { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Shop Maintenance", description: "Shop air-conditioning repair", amount: 22000, date: "2026-06-14" },
+    { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Wholesale Sale", description: "Wholesale dispatch — Kanchipuram bundle", amount: 780000, date: "2026-06-08" },
+    { firmName: "Kanchipuram Silks", kind: "INCOME", category: "Retail Sale", description: "Retail silk sale — premium segment", amount: 120000, date: "2026-06-22" },
+    { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Material Purchase", description: "Zari thread bulk purchase", amount: 340000, date: "2026-06-03" },
+    { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Salaries", description: "Staff salaries — June", amount: 180000, date: "2026-06-01" },
+    { firmName: "Kanchipuram Silks", kind: "EXPENSE", category: "Shop Maintenance", description: "Shop air-conditioning repair", amount: 22000, date: "2026-06-14" },
 
-  { firmName: "Sri Venkateswara Textiles", kind: "INCOME", category: "Wholesale Sale", description: "Gadwal Cotton wholesale", amount: 290000, date: "2026-06-12" },
-  { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payments — June batch", amount: 145000, date: "2026-06-04" },
-  { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Material Purchase", description: "Cotton yarn purchase", amount: 98000, date: "2026-06-09" },
-  { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Expense", description: "Exhibition participation fee", amount: 15000, date: "2026-06-18", notes: "Handloom expo Hyderabad" },
-  { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Income", description: "Commission from referral", amount: 8500, date: "2026-06-20", notes: "Referral fee from Suresh Traders" },
-];
+    { firmName: "Sri Venkateswara Textiles", kind: "INCOME", category: "Wholesale Sale", description: "Gadwal Cotton wholesale", amount: 290000, date: "2026-06-12" },
+    { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Weaver Payments", description: "Weaver payments — June batch", amount: 145000, date: "2026-06-04" },
+    { firmName: "Sri Venkateswara Textiles", kind: "EXPENSE", category: "Material Purchase", description: "Cotton yarn purchase", amount: 98000, date: "2026-06-09" },
+    { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Expense", description: "Exhibition participation fee", amount: 15000, date: "2026-06-18", notes: "Handloom expo Hyderabad" },
+    { firmName: "Sri Venkateswara Textiles", kind: "MISC", category: "Misc Income", description: "Commission from referral", amount: 8500, date: "2026-06-20", notes: "Referral fee from Suresh Traders" },
+  ];
 
 // Copied verbatim from frontend/src/features/pricing/components/rates-pricing/sareeTypeData.ts (INITIAL_RATES).
 const SAREE_TYPE_RATES = [

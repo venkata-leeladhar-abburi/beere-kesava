@@ -16,11 +16,21 @@ import { useInView } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { imgBKLogo, imgSareeFooter } from '../../../../shared/constants/weaverImages';
 import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
-import { METRICS, WEAVERS, WEAVER_RATES, MATS, ACT } from './data';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
+import { useDashboardMetrics } from './hooks/useDashboardMetrics';
+import { useDashboardAnalytics } from './hooks/useDashboardAnalytics';
 
 function SareesProduced(props: any) { return null; }
 function FeaturedProduct(props: any) { return null; }
+
+/** Icon set in the same order as the metrics array from useDashboardMetrics. */
+const METRIC_ICONS = [
+  <Users size={22} color={T.warmCream} />,
+  <Layers size={22} color={T.warmCream} />,
+  <IndianRupee size={22} color={T.warmCream} />,
+  <CheckCircle2 size={22} color={T.warmCream} />,
+  <Package size={22} color={T.warmCream} />,
+];
 
 const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 const imgShowroom    = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
@@ -124,12 +134,14 @@ function MobileHero() {
 // MOBILE — METRICS
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobileMetrics() {
-  const normal = METRICS.filter(m => !m.hi);
-  const highlighted = METRICS.find(m => m.hi)!;
+  const { metrics, isLoading } = useDashboardMetrics();
+  const displayMetrics = metrics.map((m, i) => ({ ...m, val: isLoading ? "—" : m.val, ico: METRIC_ICONS[i] }));
+  const normal = displayMetrics.filter(m => !m.hi);
+  const highlighted = displayMetrics.find(m => m.hi) ?? displayMetrics[0];
   const top2 = normal.slice(0, 2);
   const bot2 = normal.slice(2, 4);
 
-  const SmallCard = ({ m, delay = 0 }: { m: typeof METRICS[0]; delay?: number }) => {
+  const SmallCard = ({ m, delay = 0 }: { m: typeof displayMetrics[0]; delay?: number }) => {
     const ref = useRef<HTMLDivElement>(null);
     const inView = useInView(ref, { once: true });
     return (
@@ -208,6 +220,14 @@ function MobileMetrics() {
 // MOBILE — PERFORMANCE
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobilePerformance() {
+  const { qcPassRate, paymentsCollectedPct, isLoading } = useDashboardAnalytics();
+  // "Inventory" has no backend source — raw-material stock tracking is not
+  // implemented (documented gap, same as desktop ThreeCol.tsx).
+  const progBars = [
+    { label: "Production (QC Pass)", pct: isLoading ? 0 : qcPassRate, color: T.antiqueGold },
+    { label: "Inventory", pct: 0, color: T.royalBurgundy },
+    { label: "Payments Collected", pct: isLoading ? 0 : paymentsCollectedPct, color: DARK_MAROON },
+  ];
   return (
     <FadeUp style={{ padding: "24px 16px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${T.borderDef}` }}>
@@ -220,10 +240,10 @@ function MobilePerformance() {
       <div style={{ background: T.warmIvory, borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.06)", padding: "20px", marginBottom: 14 }}>
         <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 18, color: T.luxuryBrown, marginBottom: 16, letterSpacing: "-0.1px" }}>Production Progress</div>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-          <Donut size={140} />
+          <Donut size={140} pct={isLoading ? 0 : qcPassRate} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[{ label: "Production", pct: 72, color: T.antiqueGold }, { label: "Inventory", pct: 84, color: T.royalBurgundy }, { label: "Payments", pct: 46, color: DARK_MAROON }].map(b => (
+          {progBars.map(b => (
             <div key={b.label}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.05px" }}>{b.label}</span>

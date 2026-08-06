@@ -6,7 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
 import { T, F, EASE } from "../../theme";
-import { STAGE_CFG, BATCHES } from "../../data";
+import { STAGE_CFG } from "../../data";
 import type { Batch } from "../../types";
 import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
@@ -336,7 +336,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
           </tbody>
         </table>
       </div>
-      <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {BATCHES.length} batches</div>
+      <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {batches.length} batches</div>
     </div>
   );
 }

@@ -84,9 +84,9 @@ export function RetailCustomersSection({
               placeholder="Search by customer name or phone..."
             />
           </div>
-          <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({retailData.length})</Pill>
-          <Pill active={retailStatusFilter === "regular"} onClick={() => setRetailStatusFilter("regular")}>Regular Buyers ({retailData.filter(r => r.regular).length})</Pill>
-          <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({retailData.filter(r => r.inactive).length})</Pill>
+          <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({filteredRetail.length})</Pill>
+          <Pill active={retailStatusFilter === "regular"} onClick={() => setRetailStatusFilter("regular")}>Regular Buyers ({filteredRetail.filter(r => r.regular).length})</Pill>
+          <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({filteredRetail.filter(r => r.inactive).length})</Pill>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
           <div style={{ width: 160 }}>

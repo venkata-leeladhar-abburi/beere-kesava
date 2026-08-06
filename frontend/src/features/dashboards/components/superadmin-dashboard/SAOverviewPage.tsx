@@ -6,9 +6,14 @@ import {
 } from "lucide-react";
 import { imgHero } from "../../../../shared/constants/imageData";
 import { T, F, G, NUM, EASE } from "./theme";
-import { SA_METRICS, MATS } from "./data";
+import { MATS } from "./data";
 import { SectionHeader, AnimatedNumber } from "./atoms";
 import { SAWeaverSection } from "./SAWeaverSection";
+import { useDashboardMetrics } from "../beere-dashboard/hooks/useDashboardMetrics";
+import { useDashboardAnalytics } from "../beere-dashboard/hooks/useDashboardAnalytics";
+import {
+  Users, Layers, IndianRupee as IcoIndianRupee, Truck, Clock,
+} from "lucide-react";
 
 function SAHero() {
   return (
@@ -71,7 +76,31 @@ function SAHero() {
   );
 }
 
+/** Icon set in the same order as the metrics array from useDashboardMetrics, plus a superadmin-only "Pending Approvals" tile. */
+const SA_ICONS = [
+  <Users size={22} color={T.warmCream} />,
+  <Layers size={22} color={T.warmCream} />,
+  <IcoIndianRupee size={22} color={T.warmCream} />,
+  <CheckCircle2 size={22} color={T.warmCream} />,
+  <Truck size={22} color={T.warmCream} />,
+];
+
 function SAMetricsBar() {
+  const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
+  const { pendingApprovalsCount, isLoading: analyticsLoading } = useDashboardAnalytics();
+
+  const saMetrics = [
+    ...metrics.map((m, i) => ({ ...m, ico: SA_ICONS[i], val: metricsLoading ? "—" : m.val })),
+    {
+      ico: <Clock size={22} color={T.warmCream} />,
+      label: "Pending Approvals",
+      val: analyticsLoading ? "—" : String(pendingApprovalsCount),
+      sub: "Require review",
+      hi: false,
+      crimsonHi: pendingApprovalsCount > 0,
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -80,7 +109,7 @@ function SAMetricsBar() {
       style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {SA_METRICS.map((m: any, i) => (
+        {saMetrics.map((m: any, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -90,7 +119,7 @@ function SAMetricsBar() {
               flex: 1, padding: "28px 18px",
               backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : m.crimsonHi ? "linear-gradient(135deg, rgba(192,57,43,0.16) 0%, rgba(192,57,43,0.05) 100%)" : "none",
               backgroundColor: "rgba(0,0,0,0)",
-              borderRight: i < SA_METRICS.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
+              borderRight: i < saMetrics.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
               display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "pointer",
             }}
           >
@@ -170,6 +199,9 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
   );
 }
 
+// NOTE: raw-material stock (Warp/Resham/Jari kg-on-hand, %-capacity) has no
+// backend module — same documented gap as the Materials feature elsewhere
+// in this sweep. MATS below stays static mock data; do not invent numbers.
 function SARawMaterial() {
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>

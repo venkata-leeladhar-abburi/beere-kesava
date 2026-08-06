@@ -2,11 +2,36 @@ import React from "react";
 import { motion } from "motion/react";
 import { Check, X, Settings } from "lucide-react";
 import { T, F } from "./tokens";
-import { RATE_DATA } from "./data";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
 
+import { BackendRateChangeRequest, rateRequestsApi } from "../../../../shared/api/rateRequests";
+import { toast } from "sonner";
+
 // ─── Rate Card ────────────────────────────────────────────────────────────────
-export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onAction: (id: string) => void }) {
+export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; onAction: (id: string) => void }) {
+  const handleApprove = async () => {
+    try {
+      await rateRequestsApi.approve(item.id);
+      toast.success(`Approved rate change for ${item.sareeTypeCode}`);
+      onAction(item.id);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve rate change");
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await rateRequestsApi.reject(item.id);
+      toast.success(`Rejected rate change for ${item.sareeTypeCode}`);
+      onAction(item.id);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reject rate change");
+    }
+  };
+
+  const diff = Number(item.newMakingCharge) - Number(item.oldMakingCharge);
+  const diffLabel = (diff >= 0 ? `+₹${diff}` : `-₹${Math.abs(diff)}`);
+
   return (
     <motion.div
       layout
@@ -28,14 +53,14 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Settings size={16} color={T.royalBurgundy} />
           <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-            Rate Change Request
+            Rate Change Request ({item.id})
           </span>
         </div>
         <span style={{
           fontFamily: F.mono, fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "4px 10px",
         }}>
-          {item.raised}
+          {new Date(item.createdAt).toLocaleDateString("en-IN")}
         </span>
       </div>
 
@@ -51,7 +76,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Saree Type:</span>
         <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
-          {item.sareeType} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>({item.code})</span>
+          {item.sareeType?.type || item.sareeTypeCode} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>({item.sareeTypeCode})</span>
         </span>
       </div>
 
@@ -66,7 +91,7 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
             CURRENT RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.crimson }}>
-            {item.currentRate}
+            ₹{Number(item.oldMakingCharge).toLocaleString("en-IN")}
           </div>
         </div>
 
@@ -82,42 +107,38 @@ export function RateCard({ item, onAction }: { item: typeof RATE_DATA[0]; onActi
             REQUESTED RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.green }}>
-            {item.requestedRate}
+            ₹{Number(item.newMakingCharge).toLocaleString("en-IN")}
           </div>
         </div>
       </div>
 
       {/* Diff */}
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-        Difference: <strong style={{ color: T.green }}>{item.diff}</strong> per saree · Impact on weaver earnings will apply immediately after approval.
+        Difference: <strong style={{ color: diff >= 0 ? T.green : T.crimson }}>{diffLabel}</strong> per saree
       </div>
 
       {/* Reason */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Reason given:</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontStyle: "italic" }}>
-          "{item.reason}"
-        </span>
-      </div>
+      {item.reason && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Reason given:</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontStyle: "italic" }}>
+            "{item.reason}"
+          </span>
+        </div>
+      )}
 
       {/* Requested by */}
       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Requested by:</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{item.raisedBy}</span>
-        <span style={{
-          fontFamily: F.mono, fontSize: 12, color: T.taupe,
-          background: T.cream, borderRadius: 5, padding: "2px 7px",
-        }}>
-          {item.raised}
-        </span>
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{item.requestedBy?.firstName} {item.requestedBy?.lastName}</span>
       </div>
 
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-        <GreenBtn className="flex-1" onClick={() => onAction(item.id)}>
+        <GreenBtn className="flex-1" onClick={handleApprove}>
           <Check size={14} /> Approve Rate Change
         </GreenBtn>
-        <CrimsonBtn className="flex-1" onClick={() => onAction(item.id)}>
+        <CrimsonBtn className="flex-1" onClick={handleReject}>
           <X size={14} /> Reject
         </CrimsonBtn>
       </div>

@@ -49,7 +49,7 @@ export class MaterialIssuesService {
     const year = new Date().getFullYear();
     const id = await this.idGenerator.nextFormatted(`${MIR_ID_PREFIX_BASE}-${year}`);
 
-    return this.prisma.materialIssueRecord.create({
+    const record = await this.prisma.materialIssueRecord.create({
       data: {
         id,
         weaverId: dto.weaverId,
@@ -63,6 +63,22 @@ export class MaterialIssuesService {
       },
       include: includeItems,
     });
+
+    // Deduct issued material quantities from RawMaterialStock
+    for (const item of dto.items) {
+      const stock = await this.prisma.rawMaterialStock.findFirst({
+        where: { materialType: item.materialType },
+      });
+      if (stock) {
+        const newStock = Math.max(0, Number(stock.currentStock) - Number(item.quantity));
+        await this.prisma.rawMaterialStock.update({
+          where: { id: stock.id },
+          data: { currentStock: newStock },
+        });
+      }
+    }
+
+    return record;
   }
 
   async findAll(

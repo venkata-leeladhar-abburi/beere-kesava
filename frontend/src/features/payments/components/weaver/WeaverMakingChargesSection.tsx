@@ -1,16 +1,17 @@
-import React, { useState } from "react";
-import { BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, Search, UserCheck, Wallet } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, Search, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
-import { WEAVERS } from "../../data/weavers";
+import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
+import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { RATES, calcCharges, calcNet } from "../../utils/charges";
-import { formatINR } from "../../utils/format";
 import { FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
@@ -18,14 +19,68 @@ import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
 
+const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
+
+/**
+ * Maps a real Weaver + that weaver's most recent WeaverPayment (from
+ * GET /payments/weavers) into the local WeaverRecord shape this section's
+ * card/list views expect. The backend does not track saree design-type
+ * breakdown (sb/hz/ps/bs/st design counts) per weaver — those are always 0
+ * here; the sarees-completed figure instead comes from the payment's
+ * noOfSarees field (shown via the uploadedNoOfSarees override, same as the
+ * Excel-upload flow already did).
+ */
+function toWeaverRecord(w: BackendWeaver, index: number, latestPayment: BackendWeaverPayment | undefined): WeaverRecord {
+  return {
+    id: w.id,
+    name: w.name,
+    initials: w.initials,
+    bg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    village: w.village || "—",
+    sb: 0, hz: 0, ps: 0, bs: 0, st: 0,
+    advance: latestPayment?.deduction ? Number(latestPayment.deduction) : 0,
+    status: latestPayment ? "Paid" : "Pending",
+    uploadedAmount: latestPayment ? Number(latestPayment.amountPaid) : undefined,
+    uploadedDeduction: latestPayment?.deduction !== undefined && latestPayment?.deduction !== null ? Number(latestPayment.deduction) : undefined,
+    uploadedNoOfSarees: latestPayment?.noOfSarees ?? undefined,
+    uploadedBatchNo: latestPayment?.batchNo ?? undefined,
+    uploadedLoomNumber: latestPayment?.loomNumber ?? undefined,
+  };
+}
+
 export function WeaverMakingChargesSection() {
-  const [weaversList, setWeaversList] = useState<WeaverRecord[]>(WEAVERS);
+  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError } = useQuery({
+    queryKey: ["payments-weavers-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const { data: paymentsRes, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useQuery({
+    queryKey: ["payments-weaver-payments"],
+    queryFn: () => weaverPaymentsApi.list(),
+  });
+
+  const roster = weaversRes?.items ?? [];
+  const payments = paymentsRes?.items ?? [];
+
+  const weaversList: WeaverRecord[] = useMemo(() => {
+    const latestByWeaver = new Map<string, BackendWeaverPayment>();
+    for (const p of payments) {
+      const existing = latestByWeaver.get(p.weaverId);
+      if (!existing || new Date(p.paymentDate) > new Date(existing.paymentDate)) {
+        latestByWeaver.set(p.weaverId, p);
+      }
+    }
+    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id)));
+  }, [roster, payments]);
+
+  const isLoading = weaversLoading || paymentsLoading;
+  const isError = weaversError || paymentsError;
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
   const [search, setSearch] = useState("");
   const [downloadModal, setDownloadModal] = useState(false);
   const [selWeaver, setSelWeaver] = useState<WeaverRecord | null>(null);
-  
+
   const [filterVillage, setFilterVillage] = useState("All Villages");
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
   const { batches } = useBatches();
@@ -35,6 +90,11 @@ export function WeaverMakingChargesSection() {
     { key: "card", Icon: LayoutGrid, label: "Card View" },
     { key: "list", Icon: LayoutList, label: "List View" },
   ] as const;
+
+  const villageOptions = useMemo(
+    () => Array.from(new Set(weaversList.map(w => w.village).filter(v => v && v !== "—"))).sort(),
+    [weaversList],
+  );
 
   const filtered = weaversList.filter(w => {
     const matchSearch = !search || w.name.toLowerCase().includes(search.toLowerCase()) || w.id.toLowerCase().includes(search.toLowerCase()) || w.village.toLowerCase().includes(search.toLowerCase());
@@ -220,14 +280,13 @@ export function WeaverMakingChargesSection() {
         </div>
 
         {/* ── Upload Bank Payment File panel ──────────────────── */}
-        {/* NOTE: this now saves directly to the real backend (real Weaver
-            UUIDs), so it can no longer flip the "Paid" status on this
-            page's mock weaversList — that list still keys on fake "WV-XXX"
-            ids that don't match real backend Weaver ids. Wiring that
-            requires rebuilding this whole directory off GET /weavers. */}
+        {/* Saves directly to the real backend (real Weaver UUIDs). The
+            "Paid"/"Pending" status and gross/net figures above are now
+            derived live from GET /weavers + GET /payments/weavers, so a
+            successful import is reflected here once the query refetches. */}
         <BankUploadPanel
           onReset={() => {
-            setWeaversList(WEAVERS);
+            void refetchPayments();
           }}
         />
 
@@ -263,7 +322,7 @@ export function WeaverMakingChargesSection() {
             Select All Filtered
           </label>
           <DropBtn value="All Weavers" options={["All Weavers", "Master Weavers", "Junior Weavers"]} />
-          <DropBtn value={filterVillage} options={["All Villages", "Varanasi", "Rajatalab", "Bhelupura", "Sigra", "Orderly Bazar", "Lanka", "Lahurabir"]} onChange={setFilterVillage} />
+          <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <DropBtn value="All Making Charge Rate" options={["All Making Charge Rate", "Self Brocade (₹450)", "Heavy Zari (₹680)", "Plain Silk (₹280)"]} />
           <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
@@ -273,6 +332,25 @@ export function WeaverMakingChargesSection() {
           </div>
         </div>
 
+        {/* ── Loading / error / empty states ──────────────────── */}
+        {isLoading ? (
+          <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            Loading weaver making charges…
+          </div>
+        ) : isError ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <AlertTriangle size={26} color={T.crimson} style={{ marginBottom: 10 }} />
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.crimson, fontWeight: 600 }}>Couldn't load weaver payment data.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 4 }}>Please try refreshing the page.</div>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+              {weaversList.length === 0 ? "No weavers registered yet." : "No weavers match the current search/filters."}
+            </div>
+          </div>
+        ) : (
+        <>
         {/* ── Card view grid ───────────────────────────────────── */}
         {view === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
@@ -368,6 +446,8 @@ export function WeaverMakingChargesSection() {
               );
             })}
           </div>
+        )}
+        </>
         )}
 
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Weaver Report" desc="Generate and download the weaver making charges payment report." actionLabel="Download" icon={Download} />

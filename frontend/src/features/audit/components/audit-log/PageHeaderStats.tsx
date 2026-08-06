@@ -1,8 +1,51 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { F, T } from "./tokens";
 import { StatCol } from "./shared";
+import { auditLogApi } from "../../../../shared/api/audit-log";
+
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
 
 export function PageHeaderStats() {
+  const { data: actionsData } = useQuery({
+    queryKey: ["audit-log", "actions", "stats"],
+    queryFn: () => auditLogApi.listActions({ pageSize: 100 }),
+  });
+  const { data: loginsData } = useQuery({
+    queryKey: ["audit-log", "logins", "stats"],
+    queryFn: () => auditLogApi.list(100),
+  });
+
+  const actions = actionsData?.items ?? [];
+  const totalActions = actionsData?.total ?? 0;
+  const todayStr = new Date().toDateString();
+  const actionsToday = actions.filter(a => new Date(a.createdAt).toDateString() === todayStr).length;
+
+  const userCounts = new Map<string, { name: string; count: number; last: string }>();
+  for (const a of actions) {
+    if (!a.user) continue;
+    const key = `${a.user.firstName} ${a.user.lastName}`;
+    const entry = userCounts.get(key) ?? { name: key, count: 0, last: a.createdAt };
+    entry.count += 1;
+    if (new Date(a.createdAt) > new Date(entry.last)) entry.last = a.createdAt;
+    userCounts.set(key, entry);
+  }
+  const mostActive = [...userCounts.values()].sort((a, b) => b.count - a.count)[0];
+
+  const logins = loginsData?.items ?? [];
+  const loginsToday = logins.filter(l => l.status === "LOGIN" && new Date(l.createdAt).toDateString() === todayStr).length;
+
+  const lastAction = actions[0];
+
   return (
     <>
       {/* ── 1. PAGE HEADER ── */}
@@ -91,7 +134,7 @@ export function PageHeaderStats() {
             color: "#fff",
             whiteSpace: "nowrap",
           }}>
-            2,840 Total Log Entries
+            {totalActions.toLocaleString("en-IN")} Total Log Entries
           </div>
           {/* Chip 2 — live */}
           <div style={{
@@ -178,7 +221,7 @@ export function PageHeaderStats() {
           <StatCol
             icon="📋"
             label="TOTAL ACTIONS LOGGED"
-            value="2,840"
+            value={totalActions.toLocaleString("en-IN")}
             sub="From day one of the system"
             divider
           />
@@ -186,7 +229,7 @@ export function PageHeaderStats() {
           <StatCol
             icon="⚡"
             label="ACTIONS TODAY"
-            value="48"
+            value={String(actionsToday)}
             sub="↑ Live · Updates in real time"
             divider
           />
@@ -194,10 +237,10 @@ export function PageHeaderStats() {
           <StatCol
             icon="👤"
             label="MOST ACTIVE USER TODAY"
-            value="Admin (BK)"
+            value={mostActive?.name ?? "—"}
             valueFontSize={22}
             valueColor={T.antiqueGold}
-            sub="18 actions · Last active 12 mins ago"
+            sub={mostActive ? `${mostActive.count} actions · Last active ${timeAgo(mostActive.last)}` : "No activity yet"}
             divider
             highlight
           />
@@ -205,17 +248,17 @@ export function PageHeaderStats() {
           <StatCol
             icon="🔑"
             label="LOGIN SESSIONS TODAY"
-            value="12"
-            sub="Across all 5 roles"
+            value={String(loginsToday)}
+            sub="Across all roles"
             divider
           />
           {/* Col 5 */}
           <StatCol
             icon="🕐"
             label="LAST ACTION RECORDED"
-            value="2 mins ago"
+            value={lastAction ? timeAgo(lastAction.createdAt) : "—"}
             valueFontSize={20}
-            sub="Worker Staff · Material issued"
+            sub={lastAction ? `${lastAction.role} · ${lastAction.action}` : "No actions recorded yet"}
           />
         </div>
       </div>

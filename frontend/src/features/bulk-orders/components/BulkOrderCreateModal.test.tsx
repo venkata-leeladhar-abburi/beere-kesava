@@ -33,16 +33,18 @@ describe("BulkOrderCreateModal validation", () => {
     expect(screen.getByText("Quantity must be at least 1")).toBeInTheDocument();
   });
 
-  it("submits successfully once all required fields are valid", () => {
+  it("submits successfully once all required fields are valid", async () => {
     const { onSubmit } = setup();
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "40" } });
     fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
 
-    // Selecting a customer is driven by the child section; simulate it the way a
-    // real user would by picking the first seeded wholesale customer's option.
     const customerSelect = screen.getByLabelText("Select Wholesale Customer");
-    fireEvent.change(customerSelect, { target: { value: WHOLESALE_CUSTOMERS[0].id } });
+    fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
+
+    const optionText = new RegExp(WHOLESALE_CUSTOMERS[0].name);
+    const option = await screen.findByText(optionText);
+    fireEvent.click(option);
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
 
@@ -53,7 +55,7 @@ describe("BulkOrderCreateModal validation", () => {
     expect(submitted.ref).toBe("ORD-2026-050");
   });
 
-  it("clears previous errors once the form becomes valid", () => {
+  it("clears previous errors once the form becomes valid", async () => {
     setup();
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.getByText("Quantity must be at least 1")).toBeInTheDocument();
@@ -61,9 +63,15 @@ describe("BulkOrderCreateModal validation", () => {
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "10" } });
     fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
     const customerSelect = screen.getByLabelText("Select Wholesale Customer");
-    fireEvent.change(customerSelect, { target: { value: WHOLESALE_CUSTOMERS[0].id } });
+    fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
+
+    const optionText = new RegExp(WHOLESALE_CUSTOMERS[0].name);
+    const option = await screen.findByText(optionText);
+    fireEvent.click(option);
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.queryByText("Quantity must be at least 1")).not.toBeInTheDocument();
   });
+
 });
+

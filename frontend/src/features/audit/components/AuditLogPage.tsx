@@ -11,7 +11,7 @@ export function AuditLogPage() {
   const [roleFilter, setRoleFilter] = useState("All Roles");
   const [moduleFilter, setModuleFilter] = useState("All Modules");
   const [actionFilter, setActionFilter] = useState("All Actions");
-  const [periodFilter, setPeriodFilter] = useState("Today");
+  const [periodFilter, setPeriodFilter] = useState("All Time");
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif" }}>
@@ -28,7 +28,13 @@ export function AuditLogPage() {
         />
       </div>
 
-      <ActionLogSection />
+      <ActionLogSection
+        search={search}
+        roleFilter={roleFilter}
+        moduleFilter={moduleFilter}
+        actionFilter={actionFilter}
+        periodFilter={periodFilter}
+      />
       <LoginHistorySection />
       <NoticeFooter />
     </div>

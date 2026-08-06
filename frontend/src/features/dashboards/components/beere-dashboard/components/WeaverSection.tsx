@@ -28,6 +28,17 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
     );
   }
 
+  if (weavers.length === 0) {
+    return (
+      <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
+        <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
+        <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "40px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          No weavers in database yet. Click "View All Weavers" to register a weaver.
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />

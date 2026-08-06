@@ -9,6 +9,7 @@ export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; bor
   "Vendor Payment":   { bg: "rgba(200,155,71,0.12)",  color: "#8B6018",       border: "#C89B47" },
   "Weaver Payment":   { bg: "rgba(110,15,45,0.10)",   color: "#6E0F2D",       border: "#6E0F2D" },
   "Customer Receipt": { bg: "rgba(30,102,64,0.10)",   color: "#1E6640",       border: "#1E6640" },
+  "Supplier Payment": { bg: "rgba(74,107,138,0.12)",  color: "#2E5A8A",       border: "#4A6B8A" },
 };
 
 export const HIST_STATUS_CFG: Record<PayHistStatus, { bg: string; color: string }> = {
@@ -20,6 +21,7 @@ export const HIST_STATUS_CFG: Record<PayHistStatus, { bg: string; color: string 
 export function getHistTypeIcon(type: PayHistType) {
   if (type === "Customer Receipt") return { Icon: ArrowDownCircle, color: T.green,         iconBg: T.greenBg,                  iconBorder: "rgba(30,102,64,0.22)"  };
   if (type === "Weaver Payment")   return { Icon: Scissors,        color: T.royalBurgundy, iconBg: "rgba(110,15,45,0.08)",     iconBorder: T.borderDef             };
+  if (type === "Supplier Payment") return { Icon: Package,         color: "#2E5A8A",       iconBg: "rgba(74,107,138,0.12)",    iconBorder: "rgba(74,107,138,0.22)" };
   return                                  { Icon: Package,         color: "#8B6018",       iconBg: "rgba(200,155,71,0.12)",    iconBorder: T.borderGold            };
 }
 

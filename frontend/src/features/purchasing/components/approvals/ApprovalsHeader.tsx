@@ -6,9 +6,13 @@ import { T, F } from "./tokens";
 export function ApprovalsHeader({
   poCount,
   externalCount,
+  warpCount,
+  rateCount,
 }: {
   poCount: number;
   externalCount: number;
+  warpCount: number;
+  rateCount: number;
 }) {
   return (
     <div style={{
@@ -78,7 +82,7 @@ export function ApprovalsHeader({
             color: "#FFF", display: "flex", alignItems: "center", gap: 8,
           }}>
             <Package size={14} color={T.goldLight} />
-            3 Warp Requests Pending
+            {warpCount} Warp Request{warpCount !== 1 ? "s" : ""} Pending
           </div>
           <div style={{
             background: "rgba(255,255,255,0.10)", backdropFilter: "blur(12px)",
@@ -87,7 +91,7 @@ export function ApprovalsHeader({
             color: "#FFF", display: "flex", alignItems: "center", gap: 8,
           }}>
             <TrendingUp size={14} color={T.antiqueGold} />
-            2 Rate Change Requests Pending
+            {rateCount} Rate Change Request{rateCount !== 1 ? "s" : ""} Pending
           </div>
         </div>
       </div>

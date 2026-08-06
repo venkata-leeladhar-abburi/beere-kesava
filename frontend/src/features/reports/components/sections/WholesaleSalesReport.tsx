@@ -5,6 +5,12 @@ import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
 
+// MOCK: no backend endpoint aggregates wholesale revenue by calendar month
+// or by week — GET /bulk-orders returns the current snapshot of each order
+// (amountDue/amountPaid/dueDate) with no historical monthly rollup. This
+// trend chart stays on static demo data; the outstanding-by-customer bar,
+// invoice-status donut, summary cards, and table below are all computed
+// live from useBulkOrders (GET /bulk-orders).
 const wsMonthlyRev = [
   { month: "Dec", rev: 2100000 },
   { month: "Jan", rev: 2350000 },
@@ -13,26 +19,7 @@ const wsMonthlyRev = [
   { month: "Apr", rev: 2680000 },
   { month: "May", rev: 2840000 },
 ];
-const wsOutstanding = [
-  { customer: "Padmavathi Textiles", amt: 135000,  color: T.crimson },
-  { customer: "Narayana Emporium",   amt: 45600,   color: T.crimson },
-  { customer: "Meenakshi Silks",     amt: 420000,  color: T.antiqueGold },
-  { customer: "Kalavathi Exports",   amt: 45600,   color: T.crimson },
-  { customer: "Vijaya Silk House",   amt: 0,       color: T.green },
-];
-const wsInvStatus = [
-  { name: "Paid",          value: 2, color: T.green },
-  { name: "Partially Paid",value: 1, color: T.antiqueGold },
-  { name: "Overdue",       value: 3, color: T.crimson },
-];
-const wsTableRows = [
-  { inv: "INV-2026-041", customer: "Lakshmi Silks",          date: "08 Apr 2026", sarees: 18, type: "Mixed",          total: 900000,  recv: 900000,  due: 0,      dueDate: "28 Apr 2026", status: "Paid",    daysLeft: 0   },
-  { inv: "INV-2026-038", customer: "Padmavathi Textiles",    date: "05 Apr 2026", sarees: 12, type: "Bridal Special", total: 600000,  recv: 465000,  due: 135000, dueDate: "25 Apr 2026", status: "Overdue", daysLeft: -5  },
-  { inv: "INV-2026-035", customer: "Vijaya Silk House",      date: "10 Apr 2026", sarees: 8,  type: "Heavy Zari",     total: 280000,  recv: 280000,  due: 0,      dueDate: "30 Apr 2026", status: "Paid",    daysLeft: 0   },
-  { inv: "INV-2026-032", customer: "Narayana Silk Emporium", date: "01 Apr 2026", sarees: 10, type: "Mixed",          total: 300000,  recv: 254400,  due: 45600,  dueDate: "20 Apr 2026", status: "Overdue", daysLeft: -3  },
-  { inv: "INV-2026-029", customer: "Meenakshi Silks",        date: "15 Apr 2026", sarees: 20, type: "Bridal Special", total: 840000,  recv: 420000,  due: 420000, dueDate: "05 May 2026", status: "Partial", daysLeft: 0   },
-  { inv: "INV-2026-027", customer: "Kalavathi Exports",      date: "18 Apr 2026", sarees: 15, type: "Self Brocade",   total: 660000,  recv: 614400,  due: 45600,  dueDate: "02 May 2026", status: "Overdue", daysLeft: -2  },
-];
+// Same gap as above — no weekly dispatch-count aggregation on the backend.
 const wholesaleWeeklyData = [
   { week: "Week 1", sarees: 20, revenue: 900000 },
   { week: "Week 2", sarees: 12, revenue: 600000 },
@@ -53,6 +40,23 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
 
 export function WholesaleSalesReport() {
   const { bulkOrders } = useBulkOrders();
+
+  const maxOutstanding = Math.max(1, ...bulkOrders.map(o => (o.amountDue ?? 0) - (o.amountPaid ?? 0)));
+  const wsOutstanding = bulkOrders.map(o => {
+    const amt = Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0));
+    return { customer: o.customer, amt, color: amt === 0 ? T.green : (o.status === "overdue" ? T.crimson : T.antiqueGold) };
+  });
+
+  const wsInvStatus = (["paid", "partial", "pending"] as const).map(status => ({
+    name: status === "paid" ? "Paid" : status === "partial" ? "Partially Paid" : "Pending",
+    value: bulkOrders.filter(o => (o.paymentStatus ?? "pending") === status).length,
+    color: status === "paid" ? T.green : status === "partial" ? T.antiqueGold : T.crimson,
+  })).filter(d => d.value > 0);
+
+  const totalInvoiced = bulkOrders.reduce((s, o) => s + (o.amountDue ?? 0), 0);
+  const totalCollected = bulkOrders.reduce((s, o) => s + (o.amountPaid ?? 0), 0);
+  const totalOutstanding = totalInvoiced - totalCollected;
+
   return (
     <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
       <TabTitle title="Wholesale Sales Report"
@@ -69,12 +73,12 @@ export function WholesaleSalesReport() {
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{wholesaleWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees (All Orders)</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrders.reduce((s, o) => s + o.total, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{wholesaleWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{totalInvoiced.toLocaleString("en-IN")}</div>
               </div>
             </div>
           </div>
@@ -107,19 +111,26 @@ export function WholesaleSalesReport() {
 
         <ChartCard title="How Much Each Customer Still Owes" sub="Outstanding balance per customer">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
+            {wsOutstanding.length === 0 && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
+            )}
             {wsOutstanding.map((d, i) => (
               <div key={d.customer}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : `₹${d.amt.toLocaleString("en-IN")}`}</span>
                 </div>
-                <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / 500000) * 100)} color={d.color} height={6} delay={i * 0.06} />
+                <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} color={d.color} height={6} delay={i * 0.06} />
               </div>
             ))}
           </div>
         </ChartCard>
 
-        <ChartCard title="Invoice Status This Period" sub="May 2026 invoices">
+        <ChartCard title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown">
+          {wsInvStatus.length === 0 ? (
+            <div style={{ padding: "20px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
+          ) : (
+          <>
           <ResponsiveContainer width="100%" height={150}>
             <PieChart>
               <Pie key="ws-inv-pie" data={wsInvStatus} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
@@ -139,14 +150,16 @@ export function WholesaleSalesReport() {
               </div>
             ))}
           </div>
+          </>
+          )}
         </ChartCard>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<ReceiptText size={22} color={T.royalBurgundy} />} label="Total Invoices Raised" value="12 invoices" sub="May 2026" />
-        <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value="₹28,40,000" sub="Across all customers" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value="₹18,60,000" sub="Payments received" greenHi />
-        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Total Outstanding" value="₹9,80,000" sub="Yet to be collected" crimsonHi />
+        <SumCard icon={<ReceiptText size={22} color={T.royalBurgundy} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" />
+        <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value={`₹${totalInvoiced.toLocaleString("en-IN")}`} sub="Across all customers" />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value={`₹${totalCollected.toLocaleString("en-IN")}`} sub="Payments received" greenHi />
+        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Total Outstanding" value={`₹${Math.max(totalOutstanding, 0).toLocaleString("en-IN")}`} sub="Yet to be collected" crimsonHi />
       </div>
 
       <FadeUp>

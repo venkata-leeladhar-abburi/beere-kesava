@@ -1,13 +1,22 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, LayoutGrid, LayoutList, Receipt, Search, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { PAY_HISTORY } from "../../data/history";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
-import { Invoice } from "../../types";
+import { Invoice, PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { HIST_STATUS_CFG, HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
+import { vendorsApi } from "../../../../shared/api/vendors";
+import { suppliersApi } from "../../../../shared/api/suppliers";
+import { weaversApi } from "../../../../shared/api/weavers";
+import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
+import { invoicesApi } from "../../../../shared/api/invoices";
+
+function formatHistDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 export function PaymentHistorySection() {
   const [dateFilter,   setDateFilter]   = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -18,7 +27,99 @@ export function PaymentHistorySection() {
   const [page,         setPage]         = useState(1);
   const PER_PAGE = 10;
 
-  const filtered = PAY_HISTORY.filter(r => {
+  const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });
+  const { data: suppliersRes } = useQuery({ queryKey: ["history-suppliers"], queryFn: () => suppliersApi.list() });
+  const { data: weaversRes } = useQuery({ queryKey: ["history-weavers"], queryFn: () => weaversApi.list() });
+  const { data: vendorPaymentsRes, isLoading: vendorPayLoading, isError: vendorPayError } = useQuery({
+    queryKey: ["history-vendor-payments"],
+    queryFn: () => vendorPaymentsApi.list(),
+  });
+  const { data: supplierPaymentsRes, isLoading: supplierPayLoading, isError: supplierPayError } = useQuery({
+    queryKey: ["history-supplier-payments"],
+    queryFn: () => supplierPaymentsApi.list(),
+  });
+  const { data: weaverPaymentsRes, isLoading: weaverPayLoading, isError: weaverPayError } = useQuery({
+    queryKey: ["history-weaver-payments"],
+    queryFn: () => weaverPaymentsApi.list(),
+  });
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
+    queryKey: ["history-invoices"],
+    queryFn: () => invoicesApi.list(),
+  });
+
+  const isLoading = vendorPayLoading || weaverPayLoading || supplierPayLoading || invoicesLoading;
+  const isError = vendorPayError || weaverPayError || supplierPayError || invoicesError;
+
+  const PAY_HISTORY_LIVE: PayHistRecord[] = useMemo(() => {
+    const vendorNameById = new Map((vendorsRes?.items ?? []).map(v => [v.id, v.name]));
+    const supplierNameById = new Map((suppliersRes?.items ?? []).map(s => [s.id, s.name]));
+    const weaverNameById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.name]));
+
+    const vendorRows: PayHistRecord[] = (vendorPaymentsRes?.items ?? []).map(p => ({
+      id: `VP-${p.id}`,
+      date: formatHistDate(p.date),
+      type: "Vendor Payment",
+      party: vendorNameById.get(p.vendorId) ?? p.vendorId,
+      refNo: p.id,
+      description: "Vendor payment",
+      amount: Number(p.amount),
+      status: "Paid",
+      mode: p.method ?? "—",
+      utr: p.utr ?? undefined,
+      recordedBy: "Admin",
+    }));
+
+    const supplierRows: PayHistRecord[] = (supplierPaymentsRes?.items ?? []).map(p => ({
+      id: `SUP-${p.id}`,
+      date: formatHistDate(p.date),
+      type: "Supplier Payment",
+      party: supplierNameById.get(p.supplierId) ?? p.supplierId,
+      refNo: p.id,
+      description: "Supplier payment",
+      amount: Number(p.amount),
+      status: "Paid",
+      mode: p.method ?? "—",
+      utr: p.utr ?? undefined,
+      recordedBy: "Admin",
+    }));
+
+    const weaverRows: PayHistRecord[] = (weaverPaymentsRes?.items ?? []).map(p => ({
+      id: `WP-${p.id}`,
+      date: formatHistDate(p.paymentDate),
+      type: "Weaver Payment",
+      party: weaverNameById.get(p.weaverId) ?? p.weaverId,
+      refNo: p.weaverId,
+      description: "Making charges",
+      amount: Number(p.amountPaid),
+      status: "Paid",
+      mode: "Bank Transfer",
+      utr: p.utrNumber ?? undefined,
+      recordedBy: "Admin",
+    }));
+
+    const customerRows: PayHistRecord[] = (invoicesRes?.items ?? []).flatMap(inv =>
+      inv.payments.map(pay => ({
+        id: `INV-${pay.id}`,
+        date: formatHistDate(pay.date),
+        type: "Customer Receipt" as const,
+        party: inv.customer?.name ?? "Unknown Customer",
+        refNo: inv.id,
+        description: "Invoice collection",
+        invoicePO: inv.id,
+        amount: Number(pay.amount),
+        status: inv.status === "PAID" ? ("Paid" as const) : inv.status === "PARTIAL" ? ("Partial" as const) : ("Pending" as const),
+        mode: pay.method ?? "Bank Transfer",
+        utr: pay.utr ?? undefined,
+        recordedBy: "Admin",
+      })),
+    );
+
+    return [...vendorRows, ...supplierRows, ...weaverRows, ...customerRows].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [vendorPaymentsRes, supplierPaymentsRes, weaverPaymentsRes, invoicesRes, vendorsRes, suppliersRes, weaversRes]);
+
+  const filtered = PAY_HISTORY_LIVE.filter(r => {
     if (typeFilter   !== "All Payment Types" && r.type   !== typeFilter)   return false;
     if (statusFilter !== "All Statuses"      && r.status !== statusFilter) return false;
     if (!matchesDateFilter(r.date, dateFilter)) return false;
@@ -112,7 +213,7 @@ export function PaymentHistorySection() {
             {/* Type dropdown */}
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
               style={{ height: 38, padding: "0 12px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", cursor: "pointer" }}>
-              {["All Payment Types","Vendor Payment","Weaver Payment","Customer Receipt"].map(o => <option key={o}>{o}</option>)}
+              {["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(o => <option key={o}>{o}</option>)}
             </select>
 
             {/* Status dropdown */}
@@ -138,6 +239,17 @@ export function PaymentHistorySection() {
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
+        {/* ── Loading / error states ──────────────────────────── */}
+        {isLoading ? (
+          <div style={{ textAlign: "center", padding: "60px 0", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            Loading payment history…
+          </div>
+        ) : isError ? (
+          <div style={{ textAlign: "center", padding: "60px 0", fontFamily: F.ui, fontSize: 14, color: T.crimson }}>
+            Couldn't load vendor/weaver payment history. Please try refreshing the page.
+          </div>
+        ) : (
+        <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, alignItems: "stretch", marginBottom: 32 }}>
@@ -365,6 +477,8 @@ export function PaymentHistorySection() {
               </div>
             </div>
           </div>
+        )}
+        </>
         )}
       </FadeUp>
     </div>

@@ -323,3 +323,30 @@ export const NotificationTargetType = {
 } as const
 
 export type NotificationTargetType = (typeof NotificationTargetType)[keyof typeof NotificationTargetType]
+
+
+export const WarpRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type WarpRequestStatus = (typeof WarpRequestStatus)[keyof typeof WarpRequestStatus]
+
+
+export const RateRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type RateRequestStatus = (typeof RateRequestStatus)[keyof typeof RateRequestStatus]
+
+
+export const ReportFrequency = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+} as const
+
+export type ReportFrequency = (typeof ReportFrequency)[keyof typeof ReportFrequency]

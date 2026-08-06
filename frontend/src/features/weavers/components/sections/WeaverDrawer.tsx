@@ -20,9 +20,53 @@ import { useDesignLibrary, DispatchRecord } from "../../../design-library/contex
 import { DispatchDetailsModal } from "../../../production/components/DispatchDetailsModal";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { weaversApi } from "../../../../shared/api/weavers";
+
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
   const [mode, setMode] = useState<"view" | "edit">(initialMode);
+  const queryClient = useQueryClient();
+
+  const nameParts = (weaver?.name || "").split(" ");
+  const [editForm, setEditForm] = useState({
+    firstName: nameParts[0] || "",
+    lastName: nameParts.slice(1).join(" ") || "",
+    email: (weaver as any)?.email || "",
+    phone: weaver?.mobile || "",
+    village: weaver?.village || "",
+    looms: String(weaver?.looms || 0),
+    bankName: (weaver as any)?.bankName || "",
+    accountNo: (weaver as any)?.accountNo || "",
+    ifsc: (weaver as any)?.ifsc || "",
+  });
+
+  const updateWeaver = useMutation({
+    mutationFn: (data: any) => weaversApi.update(weaver!.id, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+      setMode("view");
+    },
+  });
+
+  const handleSaveEdit = () => {
+    if (!weaver?.id) return;
+    updateWeaver.mutate({
+      firstName: editForm.firstName,
+      lastName: editForm.lastName,
+      email: editForm.email,
+      phone: editForm.phone,
+      village: editForm.village,
+      looms: parseInt(editForm.looms) || 0,
+      bankName: editForm.bankName,
+      accountNo: editForm.accountNo,
+      ifsc: editForm.ifsc,
+    });
+  };
   const [batchDateFilter, setBatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [paymentDateFilter, setPaymentDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [dispatchDateFilter, setDispatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -137,24 +181,46 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>JPG or PNG · Max 5MB</div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {[
-                { label: "First Name", value: weaver.name.split(" ")[0] || "" },
-                { label: "Last Name", value: weaver.name.split(" ").slice(1).join(" ") || "" },
-                { label: "Email ID", value: "" },
-                { label: "Mobile Number", value: weaver.mobile },
-                { label: "Village / Location", value: weaver.village },
-                { label: "Number of Looms", value: String(weaver.looms) },
-                { label: "Bank Account Number", value: "" },
-                { label: "IFSC Code", value: "SBIN0001234" },
-                { label: "Bank Name", value: "State Bank of India" },
-              ].map(f => (
-                <div key={f.label}>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>{f.label}</label>
-                  <input defaultValue={f.value} placeholder={f.label} style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
-                </div>
-              ))}
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>First Name</label>
+                <input value={editForm.firstName} onChange={e => setEditForm(p => ({ ...p, firstName: e.target.value }))} placeholder="First Name" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Last Name</label>
+                <input value={editForm.lastName} onChange={e => setEditForm(p => ({ ...p, lastName: e.target.value }))} placeholder="Last Name" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Email ID</label>
+                <input value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email ID" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Mobile Number</label>
+                <input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="Mobile Number" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Village / Location</label>
+                <input value={editForm.village} onChange={e => setEditForm(p => ({ ...p, village: e.target.value }))} placeholder="Village" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Number of Looms</label>
+                <input value={editForm.looms} onChange={e => setEditForm(p => ({ ...p, looms: e.target.value }))} placeholder="Looms" type="number" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Bank Account Number</label>
+                <input value={editForm.accountNo} onChange={e => setEditForm(p => ({ ...p, accountNo: e.target.value }))} placeholder="Bank Account Number" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>IFSC Code</label>
+                <input value={editForm.ifsc} onChange={e => setEditForm(p => ({ ...p, ifsc: e.target.value }))} placeholder="IFSC Code" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 4, display: "block" }}>Bank Name</label>
+                <input value={editForm.bankName} onChange={e => setEditForm(p => ({ ...p, bankName: e.target.value }))} placeholder="Bank Name" style={{ width: "100%", height: 46, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "0 14px", fontFamily: F.ui, boxSizing: "border-box" }} />
+              </div>
             </div>
-            <button onClick={() => setMode("view")} style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}><Save size={16} /> Save changes</button>
+            <button disabled={updateWeaver.isPending} onClick={handleSaveEdit} style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontFamily: F.ui, fontWeight: 700, cursor: "pointer", opacity: updateWeaver.isPending ? 0.7 : 1 }}>
+              <Save size={16} /> {updateWeaver.isPending ? "Saving..." : "Save changes"}
+            </button>
           </div>
         )}
 

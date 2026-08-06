@@ -8,11 +8,15 @@ export function StatsStrip({
   poCount,
   externalCount,
   externalTotal,
+  warpCount,
+  rateCount,
 }: {
   totalPending: number;
   poCount: number;
   externalCount: number;
   externalTotal: number;
+  warpCount: number;
+  rateCount: number;
 }) {
   return (
     <div style={{
@@ -72,9 +76,9 @@ export function StatsStrip({
         <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
           WARP REQUESTS
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>3</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{warpCount}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(231,201,131,0.70)", marginTop: 6 }}>
-          Oldest: 2 days ago
+          Pending review
         </div>
       </div>
 
@@ -83,7 +87,7 @@ export function StatsStrip({
         <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           RATE CHANGES
         </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>2</div>
+        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>{rateCount}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
           ⚠ From admin · Pending
         </div>

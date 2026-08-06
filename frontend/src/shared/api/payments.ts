@@ -127,3 +127,18 @@ export const vendorPaymentsApi = {
       `/payments/vendors?pageSize=100${vendorId ? `&vendorId=${vendorId}` : ""}`,
     ),
 };
+
+export interface PaymentSummaryResponse {
+  weaverTotal: number;
+  vendorTotal: number;
+  supplierTotal: number;
+  totalExpenses: number;
+  totalRevenue: number;
+  netCashFlow: number;
+  outstandingAmount: number;
+  outstandingCount: number;
+}
+
+export const paymentsApi = {
+  getSummary: () => apiClient.get<PaymentSummaryResponse>("/payments/summary"),
+};

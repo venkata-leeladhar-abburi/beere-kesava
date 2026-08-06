@@ -4,6 +4,9 @@ import { T, F, EASE } from '../theme';
 import { MATS } from '../data.tsx';
 import { SectionHeader, FadeUp } from '../ui';
 
+// NOTE: raw-material stock (Warp/Resham/Jari kg-on-hand, %-capacity) has no
+// backend module — same documented gap as the Materials feature elsewhere in
+// this sweep. MATS stays static mock data; do not invent numbers.
 export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>

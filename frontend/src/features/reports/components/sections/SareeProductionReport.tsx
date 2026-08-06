@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp, Factory, CheckCircle2, Boxes, Package, AlertTriangle, Truck, IndianRupee,
 } from "lucide-react";
@@ -11,7 +12,16 @@ import {
   FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar,
   TablePager, StatusPill, TH, TD,
 } from "../common/primitives";
+import { batchesApi } from "../../../../shared/api/batches";
+import { qcApi } from "../../../../shared/api/qc";
+import { weaversApi } from "../../../../shared/api/weavers";
+import { reportsApi } from "../../../../shared/api/reports";
 
+// MOCK: no backend endpoint tracks weekly production trend, own-factory vs
+// outsourced split, or per-pipeline-stage saree counts (dispatched / finished
+// / assigned-to-finishing / etc). GET /reports/production-summary only
+// returns a total count and a QC pass/semi/defective breakdown — that part
+// (the QC donut below) is wired live; these three stay on static demo data.
 const PRODUCTION_SOURCE_DATA = [
   { name: "Own Factory",          value: 142, fill: "#6E0F2D" },
   { name: "Outsourced (Weavers)", value: 106, fill: "#C89B47" },
@@ -31,12 +41,10 @@ const prodStageData = [
   { stage: "Waiting Quality Check",count: 14,  color: T.royalBurgundy },
   { stage: "Weaving in Progress",  count: 48,  color: T.antiqueGold },
 ];
-const qcDonutData = [
-  { name: "Passed",      value: 238, color: T.green },
-  { name: "Minor Issues",value: 0,   color: T.antiqueGold },
-  { name: "Rejected",    value: 10,  color: T.crimson },
-];
-// External purchases summary — mirrors ExternalPurchasesPage data shape (local sample data; that page has no shared context)
+// MOCK: no backend module exists yet for ready-made sarees bought from
+// external suppliers (separate from the weaver-production pipeline) — no
+// /external-purchases endpoint or similar. Mirrors ExternalPurchasesPage's
+// data shape; that page is on the same static sample data for the same reason.
 const externalPurchaseRows = [
   { supplier: "Ravi Silks",                location: "Dharmavaram, AP", gstNumber: "37ABCRS1234F1Z5", invoiceNumber: "INV-RS-2026-118", billAmount: 34000,  sareeCount: 4,  date: "01 Jun 2026", sareeIds: ["EXT-2026-0001-001", "EXT-2026-0001-002", "EXT-2026-0001-003", "EXT-2026-0001-004"] },
   { supplier: "Mysore Sarees",             location: "Mysore, KA",      gstNumber: "29MYSRS5678K1Z2", invoiceNumber: "INV-MS-2026-552", billAmount: 74400,  sareeCount: 12, date: "05 Jun 2026", sareeIds: ["EXT-2026-0002-001", "EXT-2026-0002-002", "EXT-2026-0002-003"] },
@@ -94,20 +102,57 @@ export function ExternalPurchasesSection() {
   );
 }
 
-const prodTableRows = [
-  { code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   batches: 1, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-032",  charges: 3600  },
-  { code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   batches: 1, produced: 5,  passed: 5,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 3400  },
-  { code: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-038",  charges: 4800  },
-  { code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 1120  },
-  { code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-022",  charges: 1800  },
-  { code: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-031",  charges: 1800  },
-  { code: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   batches: 2, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 2240  },
-  { code: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    batches: 1, produced: 6,  passed: 6,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 4080  },
-  { code: "7bf84351-1b39-45b3-91a3-87d9acc36e8a", name: "Sundar Rao",   batches: 2, produced: 12, passed: 12, rejected: 0, passRate: 100, designs: "BKB-032",  charges: 5400  },
-  { code: "d7821e03-634a-4d48-b4e5-7d6c0265c4e7", name: "Deepa M.",     batches: 2, produced: 10, passed: 9,  rejected: 1, passRate: 90,  designs: "BKB-038",  charges: 9600  },
-];
-
 export function SareeProductionReport() {
+  const { data: batchesRes } = useQuery({ queryKey: ["reports", "batches"], queryFn: () => batchesApi.list() });
+  const { data: qcRes } = useQuery({ queryKey: ["reports", "qc"], queryFn: () => qcApi.list() });
+  const { data: weaversRes } = useQuery({ queryKey: ["reports", "weavers-roster"], queryFn: () => weaversApi.list() });
+  const { data: production } = useQuery({ queryKey: ["reports", "production-summary"], queryFn: () => reportsApi.productionSummary() });
+
+  const prodTableRows = useMemo(() => {
+    const batches = batchesRes?.items ?? [];
+    const qcBySareeId = new Map((qcRes?.items ?? []).filter(q => q.sareeId).map(q => [q.sareeId, q]));
+    const weaverNameById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.name]));
+
+    interface Acc { batches: Set<string>; produced: number; passed: number; rejected: number; designs: Set<string>; charges: number }
+    const byWeaver = new Map<string, Acc>();
+    for (const batch of batches) {
+      for (const row of batch.rows) {
+        if (row.recipientType !== "WEAVER" || !row.weaverId) continue;
+        let acc = byWeaver.get(row.weaverId);
+        if (!acc) { acc = { batches: new Set(), produced: 0, passed: 0, rejected: 0, designs: new Set(), charges: 0 }; byWeaver.set(row.weaverId, acc); }
+        acc.batches.add(row.batchId);
+        acc.produced += 1;
+        if (row.designCode) acc.designs.add(row.designCode);
+        const qc = row.sareeId ? qcBySareeId.get(row.sareeId) : undefined;
+        if (qc) {
+          if (qc.result === "PASSED") acc.passed += 1;
+          else if (qc.result === "DEFECTIVE") acc.rejected += 1;
+          acc.charges += Number(qc.payable);
+        }
+      }
+    }
+    return Array.from(byWeaver.entries()).map(([weaverId, acc]) => ({
+      code: weaverId,
+      name: weaverNameById.get(weaverId) ?? "Unknown Weaver",
+      batches: acc.batches.size,
+      produced: acc.produced,
+      passed: acc.passed,
+      rejected: acc.rejected,
+      passRate: acc.produced > 0 ? Math.round((acc.passed / acc.produced) * 100) : 0,
+      designs: acc.designs.size > 0 ? Array.from(acc.designs).join(", ") : "—",
+      charges: acc.charges,
+    })).sort((a, b) => b.produced - a.produced);
+  }, [batchesRes, qcRes, weaversRes]);
+
+  const qcDonutData = [
+    { name: "Passed",     value: production?.qcByResult.PASSED ?? 0,    color: T.green },
+    { name: "Semi",       value: production?.qcByResult.SEMI ?? 0,      color: T.antiqueGold },
+    { name: "Rejected",   value: production?.qcByResult.DEFECTIVE ?? 0, color: T.crimson },
+  ];
+  const totalQc = qcDonutData.reduce((s, d) => s + d.value, 0);
+  const passRatePct = totalQc > 0 ? Math.round((qcDonutData[0].value / totalQc) * 100) : 0;
+  const dispatchedCount = production?.finishingByStatus?.["DISPATCHED"] ?? 0;
+
   return (
     <div id="rep-production" style={{ padding: "32px 40px" }}>
       <TabTitle title="Saree Production Report"
@@ -169,7 +214,7 @@ export function SareeProductionReport() {
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", pointerEvents: "none" }}>
-              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>96%</div>
+              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>{totalQc > 0 ? `${passRatePct}%` : "—"}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Pass Rate</div>
             </div>
           </div>
@@ -225,12 +270,12 @@ export function SareeProductionReport() {
         </div>
       </div>
 
-      {/* 4 summary cards */}
+      {/* 4 summary cards — live from GET /reports/production-summary */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total Sarees Produced" value="248" sub="↑ 14% vs April 2026" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Passed Quality Check" value="238" sub="96% pass rate" greenHi />
-        <SumCard icon={<AlertTriangle size={22} color={T.crimson} />} label="Total Rejected" value="10" sub="4% rejection rate" crimsonHi />
-        <SumCard icon={<Truck size={22} color={T.antiqueGold} />} label="Total Dispatched" value="186" sub="To wholesale customers" hi />
+        <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total Sarees Produced" value={`${production?.totalSareesProduced ?? 0}`} sub="All batches" />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Passed Quality Check" value={`${qcDonutData[0].value}`} sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"} greenHi />
+        <SumCard icon={<AlertTriangle size={22} color={T.crimson} />} label="Total Rejected" value={`${qcDonutData[2].value}`} sub={totalQc > 0 ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate` : "No QC records yet"} crimsonHi />
+        <SumCard icon={<Truck size={22} color={T.antiqueGold} />} label="Total Dispatched" value={`${dispatchedCount}`} sub="To wholesale customers" hi />
       </div>
 
       {/* Production table */}
@@ -252,6 +297,9 @@ export function SareeProductionReport() {
                 </tr>
               </thead>
               <tbody>
+                {prodTableRows.length === 0 && (
+                  <tr><td style={TD} colSpan={9}>No sarees assigned to weavers yet.</td></tr>
+                )}
                 {prodTableRows.map((r, i) => (
                   <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span></td>
@@ -268,20 +316,22 @@ export function SareeProductionReport() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
-                <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-                  <td colSpan={3} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, background: T.warmCream }}>Totals (showing 10 of 84 weavers)</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, background: T.warmCream }}>67</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: T.warmCream }}>64</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson, background: T.warmCream }}>3</td>
-                  <td style={{ ...TD, textAlign: "center", background: T.warmCream }}><StatusPill label="96%" type="ok" /></td>
-                  <td style={{ ...TD, background: T.warmCream }} />
-                  <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>₹{prodTableRows.reduce((s, r) => s + r.charges, 0).toLocaleString("en-IN")}</td>
-                </tr>
-              </tfoot>
+              {prodTableRows.length > 0 && (
+                <tfoot>
+                  <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
+                    <td colSpan={3} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, background: T.warmCream }}>Totals ({prodTableRows.length} weavers)</td>
+                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</td>
+                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</td>
+                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</td>
+                    <td style={{ ...TD, background: T.warmCream }} />
+                    <td style={{ ...TD, background: T.warmCream }} />
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>₹{prodTableRows.reduce((s, r) => s + r.charges, 0).toLocaleString("en-IN")}</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
-          <TablePager total={84} showing={10} />
+          <TablePager total={prodTableRows.length} showing={prodTableRows.length} />
         </div>
       </FadeUp>
 

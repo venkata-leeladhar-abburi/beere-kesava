@@ -6,10 +6,18 @@ interface AuthState {
   isAuthenticated: boolean;
   role: Role | null;
   phone: string | null;
+  token?: string | null;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    mobile: string;
+    role: string;
+  } | null;
 }
 
 interface AuthContextValue extends AuthState {
-  login: (phone: string) => void;
+  login: (phone: string, token?: string, user?: AuthState["user"]) => void;
   selectRole: (role: Role | null) => void;
   logout: () => void;
   /**
@@ -47,12 +55,17 @@ function loadState(): AuthState {
   } catch {
     // ignore
   }
-  return { isAuthenticated: false, role: null, phone: null };
+  return { isAuthenticated: false, role: null, phone: null, token: null, user: null };
 }
 
 function saveState(state: AuthState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (state.token) {
+      localStorage.setItem("token", state.token);
+    } else {
+      localStorage.removeItem("token");
+    }
   } catch {
     // ignore
   }
@@ -71,11 +84,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAdminViewingAs(null);
   }, []);
 
-  const login = useCallback((phone: string) => {
+  const login = useCallback((phone: string, token?: string, user?: AuthState["user"]) => {
     // A fresh login is never a continuation of somebody's admin session.
     try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
     setAdminViewingAs(null);
-    setState({ isAuthenticated: true, role: null, phone });
+    const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
+    setState({ isAuthenticated: true, role: normalizedRole, phone, token: token || null, user: user || null });
   }, []);
 
   // Entering or leaving a staff portal always writes the flag and then calls

@@ -1,24 +1,67 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Shield, DownloadSimple, SealWarning, WarningCircle,
 } from "@phosphor-icons/react";
 import { T, F } from "../theme";
-import { DEFECTIVE_DATA } from "../data";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { qcApi } from "../../../../shared/api/qc";
+import { weaversApi } from "../../../../shared/api/weavers";
+
+interface DefectiveRow {
+  id: string;
+  weaver: string;
+  batch: string;
+  sareeType: string;
+  defects: string[];
+  qcDate: string;
+  deduction: string;
+}
 
 export function DefectiveSareesSection({ superadmin = false }: { superadmin?: boolean; onNavigate?: (tab: string) => void } & CodeCallbacks) {
   const [timeFiler, setTimeFilter] = useState("All Time");
   const [weaverFilter, setWeaverFilter] = useState("All Weavers");
   const [defectFilter, setDefectFilter] = useState("All Defect Types");
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
-  const [viewDefect, setViewDefect] = useState<typeof DEFECTIVE_DATA[0] | null>(null);
+  const [viewDefect, setViewDefect] = useState<DefectiveRow | null>(null);
   const [dlWeaver, setDlWeaver] = useState("All Weavers");
   const [dlDefectType, setDlDefectType] = useState("All Defect Types");
   const [dlPeriod, setDlPeriod] = useState("This Month");
+
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
+    queryKey: ["qc", "all"],
+    queryFn: () => qcApi.list().then(r => r.items),
+  });
+  const { data: weavers = [] } = useQuery({
+    queryKey: ["weavers", "lookup"],
+    queryFn: () => weaversApi.list().then(r => r.items),
+  });
+  const weaverLookup = useMemo(() => new Map(weavers.map(w => [w.id, w.name])), [weavers]);
+
+  // Only DEFECTIVE-result QC records represent sarees that failed quality
+  // check — SEMI/PASSED sarees aren't shown here.
+  const DEFECTIVE_DATA: DefectiveRow[] = useMemo(
+    () =>
+      qcRecords
+        .filter(r => r.result === "DEFECTIVE")
+        .map(r => ({
+          id: r.sareeId,
+          weaver: r.weaverId ? (weaverLookup.get(r.weaverId) ?? "Unknown Weaver") : "Own Factory",
+          batch: r.batchId ?? "—",
+          // NOTE(backend gap): BackendQcRecord doesn't include the saree type
+          // — the QC list endpoint doesn't join batchSareeRow.sareeType, so
+          // this column can't be populated without fabricating data.
+          sareeType: "—",
+          defects: r.defects,
+          qcDate: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+          deduction: `₹${Math.round(Number(r.deduction)).toLocaleString("en-IN")}`,
+        })),
+    [qcRecords, weaverLookup],
+  );
 
   const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
   const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}` };
@@ -67,7 +110,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <div style={{ borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Defective Sarees All Time</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, marginBottom: 4 }}>
-                  48 sarees
+                  {DEFECTIVE_DATA.length} sarees
                 </div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>🔒 Superadmin only — not visible to Admin</div>
               </div>
@@ -109,6 +152,15 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               </tr>
             </thead>
             <tbody>
+              {qcLoading && (
+                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading defective sarees…</td></tr>
+              )}
+              {qcError && (
+                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.crimson }}>Failed to load defective sarees.</td></tr>
+              )}
+              {!qcLoading && !qcError && DEFECTIVE_DATA.length === 0 && (
+                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.taupe }}>No defective sarees recorded yet.</td></tr>
+              )}
               {DEFECTIVE_DATA.map((row, i) => (
                 <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#FFF" }}>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{row.id}</span></td>

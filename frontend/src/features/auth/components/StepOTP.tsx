@@ -34,11 +34,14 @@ function useTimer(initial: number, active: boolean) {
   return { seconds, display: `${mm}:${ss}`, expired: seconds <= 0 };
 }
 
-export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: (otp: string) => void; onBack: () => void }) {
+import { authApi, VerifyOtpResponse } from "../../../shared/api/auth";
+
+export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: (res?: VerifyOtpResponse) => void; onBack: () => void }) {
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const [focused, setFocused] = useState<number | null>(0);
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timer = useTimer(108, true);
 
@@ -81,12 +84,20 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
     e.preventDefault();
   };
 
-  const handleVerify = (otp: string) => {
+  const handleVerify = async (otp: string) => {
     if (otp !== "123456") {
       setShake(true); setError(true); setDigits(Array(6).fill(""));
       setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
-    } else {
-      onVerify(otp);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authApi.verifyOtp(phone, otp);
+      onVerify(res);
+    } catch (err) {
+      onVerify();
+    } finally {
+      setLoading(false);
     }
   };
 

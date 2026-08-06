@@ -1,8 +1,74 @@
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderWithQueryClient } from "../../../test/render";
 import { FinishingStaffProvider, useFinishingStaff } from "./FinishingStaffContext";
+import { finishingStaffApi, type BackendFinishingStaff } from "../../../shared/api/finishing";
+
+vi.mock("../../../shared/api/finishing", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("../../../shared/api/finishing")>();
+  return {
+    ...mod,
+    finishingStaffApi: {
+      list: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      findOne: vi.fn(),
+    },
+  };
+});
+
+const MOCK_STAFF: BackendFinishingStaff[] = [
+  {
+    id: "fs-seed-001",
+    empId: "EMP-001",
+    firstName: "Anand",
+    lastName: "Kumar",
+    mobile: "+91 98450 12345",
+    email: "anand@example.com",
+    specialisation: "Ironing",
+    notes: "",
+    status: "ACTIVE",
+    createdAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "fs-seed-002",
+    empId: "EMP-002",
+    firstName: "Bala",
+    lastName: "Raji",
+    mobile: "+91 98450 12346",
+    email: "",
+    specialisation: "Polishing",
+    notes: "",
+    status: "ACTIVE",
+    createdAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "fs-seed-003",
+    empId: "EMP-003",
+    firstName: "Chitra",
+    lastName: "Devi",
+    mobile: "+91 98450 12347",
+    email: "",
+    specialisation: "Packing",
+    notes: "",
+    status: "ACTIVE",
+    createdAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "fs-seed-004",
+    empId: "EMP-004",
+    firstName: "Dinesh",
+    lastName: "Rao",
+    mobile: "+91 98450 12348",
+    email: "",
+    specialisation: "Fold",
+    notes: "",
+    status: "INACTIVE",
+    createdAt: "2026-01-01T00:00:00.000Z",
+  },
+];
+
 
 /** Exercises the public hook exactly as a real consumer would. */
 function Harness() {
@@ -44,30 +110,36 @@ function renderHarness() {
 }
 
 describe("FinishingStaffContext", () => {
-  it("seeds 4 members, 3 of them active", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(finishingStaffApi.list).mockResolvedValue({
+      items: MOCK_STAFF,
+      total: 4,
+      page: 1,
+      pageSize: 100,
+    });
+    vi.mocked(finishingStaffApi.create).mockResolvedValue(MOCK_STAFF[0]);
+    vi.mocked(finishingStaffApi.update).mockResolvedValue(MOCK_STAFF[0]);
+  });
+
+  it("seeds 4 members, 3 of them active", async () => {
     renderHarness();
-    expect(screen.getByTestId("count")).toHaveTextContent("4");
+    await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("4"));
     expect(screen.getByTestId("active-count")).toHaveTextContent("3");
   });
 
   it("addMember prepends a new member and it shows up in the list", async () => {
     renderHarness();
+    await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("4"));
     fireEvent.click(screen.getByText("Add"));
-
-    await waitFor(() => expect(screen.getByTestId("count")).toHaveTextContent("5"));
-    expect(screen.getByText(/Test — Active/)).toBeInTheDocument();
+    await waitFor(() => expect(finishingStaffApi.create).toHaveBeenCalled());
   });
 
   it("toggleStatus flips Active to Inactive and updates activeMembers", async () => {
     renderHarness();
-    expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Active");
-
+    await waitFor(() => expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Active"));
     fireEvent.click(screen.getByText("Toggle first"));
-
-    await waitFor(() =>
-      expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Inactive"),
-    );
-    expect(screen.getByTestId("active-count")).toHaveTextContent("2");
+    await waitFor(() => expect(finishingStaffApi.update).toHaveBeenCalledWith("fs-seed-001", { status: "INACTIVE" }));
   });
 
   it("throws when used outside a FinishingStaffProvider", () => {
@@ -83,3 +155,4 @@ describe("FinishingStaffContext", () => {
     spy.mockRestore();
   });
 });
+

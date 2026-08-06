@@ -15,6 +15,9 @@ import {
   top10Customers, revenueSplit, newVsReturning, frequentBuyers, inactiveAlerts,
 } from "../data";
 
+import { useQuery } from "@tanstack/react-query";
+import { analyticsApi } from "../../../../shared/api/analytics";
+
 export interface CustomerAnalyticsSectionProps {
   analyticsDateFilter: DateFilterState;
   setAnalyticsDateFilter: (f: DateFilterState) => void;
@@ -22,6 +25,16 @@ export interface CustomerAnalyticsSectionProps {
 
 // ── SECTION 3: CUSTOMER ANALYTICS ───────────────────────────────────────────
 export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDateFilter }: CustomerAnalyticsSectionProps) {
+  const { data: revSplitRes } = useQuery({
+    queryKey: ["analytics-revenue-split"],
+    queryFn: () => analyticsApi.getRevenueSplit(),
+  });
+
+  const liveRevSplit = [
+    { name: "Retail Store", value: revSplitRes?.retail ?? 0, fill: T.greenMid },
+    { name: "Wholesale Sales", value: revSplitRes?.wholesale ?? 0, fill: T.royalBurgundy },
+  ];
+  const totalRevLakhs = ((revSplitRes?.total ?? 0) / 100000).toFixed(1);
   return (
     <div style={{ padding: "96px 56px 48px" }}>
       <SectionTitle
@@ -63,9 +76,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           {/* Summary strip */}
           <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
             {[
-              { label: "Top Spender", val: "₹12.4L", color: T.royalBurgundy },
-              { label: "Combined Value", val: "₹79.5L", color: T.antiqueGold },
-              { label: "Avg Spend", val: "₹7.95L", color: T.greenMid },
+              { label: "Top Spender", val: "₹0", color: T.royalBurgundy },
+              { label: "Combined Value", val: "₹0", color: T.antiqueGold },
+              { label: "Avg Spend", val: "₹0", color: T.greenMid },
             ].map((s, i) => (
               <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
@@ -76,7 +89,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           {/* Custom ranked bar rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
             {top10Customers.map((c, i) => {
-              const maxSpend = top10Customers[0].spend;
+              const maxSpend = top10Customers[0]?.spend || 1;
               const pct = Math.round((c.spend / maxSpend) * 100);
               const isTop = i === 0;
               const barBg = i === 0 ? `linear-gradient(90deg, ${T.royalBurgundy}, #A01535)` : i === 1 ? `linear-gradient(90deg, ${T.antiqueGold}, #E7C983)` : i === 2 ? `linear-gradient(90deg, ${T.greenMid}, #3BA86A)` : `linear-gradient(90deg, rgba(200,155,71,0.40), rgba(200,155,71,0.20))`;
@@ -131,23 +144,23 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
               <PieChart key="pie-chart" id="revenue-pie-chart">
-                <Pie key="revenue-pie" id="revenue-pie" data={revenueSplit} innerRadius={75} outerRadius={108} paddingAngle={3} dataKey="value" nameKey="name" stroke="none">
-                  {revenueSplit.map((entry, index) => (
+                <Pie key="revenue-pie" id="revenue-pie" data={liveRevSplit} innerRadius={75} outerRadius={108} paddingAngle={3} dataKey="value" nameKey="name" stroke="none">
+                  {liveRevSplit.map((entry, index) => (
                     <Cell key={`cell-pie-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>₹32.6L</span>
+              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>₹{totalRevLakhs}L</span>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Total Revenue</span>
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 28, marginTop: 18 }}>
-            {revenueSplit.map((item, i) => (
+            {liveRevSplit.map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: item.fill }} />
-                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}: {(item.value/100000).toFixed(1)}L</span>
+                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}: ₹{(item.value/100000).toFixed(1)}L</span>
               </div>
             ))}
           </div>
@@ -313,13 +326,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {[
-              { state: "Andhra Pradesh", count: 18, pct: 37, size: 24, color: T.royalBurgundy },
-              { state: "Telangana",      count: 14, pct: 29, size: 20, color: T.antiqueGold  },
-              { state: "Tamil Nadu",     count: 8,  pct: 17, size: 16, color: T.taupe        },
-              { state: "Karnataka",      count: 5,  pct: 10, size: 12, color: T.greenMid     },
-              { state: "Others",         count: 3,  pct: 6,  size: 8,  color: "#999"         },
-            ].map((loc, i) => (
+            {([].map as any)((loc: any, i: number) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 28, display: "flex", justifyContent: "center" }}>
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />
@@ -345,43 +352,28 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "28px 24px", minHeight: 300 }}>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>State-wise Share</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20 }}>48 customers across 5 states</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20 }}>0 customers across 0 states</div>
           <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[
-                    { name: "Andhra Pradesh", value: 37, fill: T.royalBurgundy },
-                    { name: "Telangana",      value: 29, fill: T.antiqueGold },
-                    { name: "Tamil Nadu",     value: 17, fill: T.taupe },
-                    { name: "Karnataka",      value: 10, fill: T.greenMid },
-                    { name: "Others",         value: 7,  fill: "#C9BAB0" },
-                  ]}
-                  innerRadius={62}
-                  outerRadius={94}
+                  data={[]}
+                  innerRadius={60}
+                  outerRadius={85}
                   paddingAngle={3}
                   dataKey="value"
+                  nameKey="name"
                   stroke="none"
-                >
-                  {[T.royalBurgundy, T.antiqueGold, T.taupe, T.greenMid, "#C9BAB0"].map((color, i) => (
-                    <Cell key={`geo-cell-${i}`} fill={color} />
-                  ))}
-                </Pie>
+                />
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-              <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>5</span>
+              <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>0</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>States</span>
             </div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "10px 18px", marginTop: 22, justifyContent: "center" }}>
-            {[
-              { name: "Andhra Pradesh", pct: 37, color: T.royalBurgundy },
-              { name: "Telangana",      pct: 29, color: T.antiqueGold },
-              { name: "Tamil Nadu",     pct: 17, color: T.taupe },
-              { name: "Karnataka",      pct: 10, color: T.greenMid },
-              { name: "Others",         pct: 7,  color: "#C9BAB0" },
-            ].map((s, i) => (
+            {([].map as any)((s: any, i: number) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{s.name}</span>

@@ -34,11 +34,18 @@ import { SalesModule } from "./sales/sales.module";
 import { ScanModule } from "./scan/scan.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { UsersModule } from "./users/users.module";
-import { VendorsModule } from "./vendors/vendors.module";
 import { WeaversModule } from "./weavers/weavers.module";
+import { VendorsModule } from "./vendors/vendors.module";
+import { RawMaterialsModule } from "./raw-materials/raw-materials.module";
+import { WarpRequestsModule } from "./warp-requests/warp-requests.module";
+import { RateRequestsModule } from "./rate-requests/rate-requests.module";
+import { AnalyticsModule } from "./analytics/analytics.module";
+
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
+    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
@@ -64,6 +71,10 @@ import { WeaversModule } from "./weavers/weavers.module";
     FactoryLoomsModule,
     BatchesModule,
     MaterialIssuesModule,
+    RawMaterialsModule,
+    WarpRequestsModule,
+    RateRequestsModule,
+    AnalyticsModule,
     QcModule,
     FinishingModule,
     CustomersModule,

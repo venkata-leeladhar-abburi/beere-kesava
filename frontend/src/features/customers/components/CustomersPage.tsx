@@ -14,6 +14,7 @@ import { CustomerModals } from "./modals/CustomerModals";
 import { monthsSinceLabel } from "./utils";
 import { retailData, inactiveData, wholesaleData } from "./data";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
+import { useCustomers } from "../contexts/CustomersContext";
 
 /**
  * Composition root for the Customers feature (Wholesale + Retail + Analytics
@@ -26,7 +27,28 @@ import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 export function CustomersPage() {
   const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
   const [retailView, setRetailView] = useState<"card"|"list">("card");
-  const [showAddWholesale, setShowAddWholesale] = useState(false);
+  const [showAddWholesale, setShowAddWholesale] = useState(false);  const { customers = [], updateCustomer } = useCustomers() ?? {};
+
+  const wholesaleList = React.useMemo(() => {
+    const backendWholesale = customers.filter(c => c.type === "WHOLESALE");
+    const mapped = backendWholesale.map(c => ({
+      id: c.id,
+      name: c.name,
+      code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+      city: c.city || "—",
+      status: "clear" as const,
+      orders: 0,
+      spend: "0",
+      out: "0",
+      terms: "30 days",
+      lastOrder: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—",
+      activeOrder: null,
+      duesMsg: "✓ All Payments Clear",
+      gstNumber: c.gstCode || "—",
+      visitingCard: c.visitingCardUrl || "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80",
+    }));
+    return [...mapped, ...wholesaleData];
+  }, [customers]);
 
   useEffect(() => {
     if (localStorage.getItem("bk_open_add_wholesale") === "true") {
@@ -40,7 +62,6 @@ export function CustomersPage() {
       }, 100);
     }
   }, []);
-  const [wholesaleList, setWholesaleList] = useState<WholesaleCustomer[]>(wholesaleData);
   const [selectedWholesaleCust, setSelectedWholesaleCust] = useState<WholesaleCustomer | null>(null);
   const [wholesaleTab, setWholesaleTab] = useState<WholesaleTab>("Overview");
   const [wholesaleOrderDateFilter, setWholesaleOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -66,9 +87,25 @@ export function CustomersPage() {
   const [viewingBulkOrder, setViewingBulkOrder] = useState<{ order: BulkOrder; tab: "overview" | "sarees" | "payments" | "quotations" } | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const retailCities = React.useMemo(() => Array.from(new Set(retailData.map(r => r.city))).sort(), []);
+  const retailList = React.useMemo(() => {
+    const backendRetail = customers.filter(c => c.type === "RETAIL");
+    const mapped = backendRetail.map(c => ({
+      name: c.name,
+      initials: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+      phone: c.phone || "—",
+      city: c.city || "—",
+      purchases: 0,
+      spend: "0",
+      lastVisit: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
+      regular: true,
+      inactive: false,
+    }));
+    return [...mapped, ...retailData];
+  }, [customers]);
+
+  const retailCities = React.useMemo(() => Array.from(new Set(retailList.map(r => r.city))).sort(), [retailList]);
   const filteredRetail = React.useMemo(() => {
-    return retailData
+    return retailList
       .filter(r => {
         const q = retailSearch.trim().toLowerCase();
         const matchSearch = q === "" || r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
@@ -79,9 +116,9 @@ export function CustomersPage() {
       .sort((a, b) => {
         if (retailSort === "purchases") return b.purchases - a.purchases;
         if (retailSort === "recent") return monthsSinceLabel(a.lastVisit) - monthsSinceLabel(b.lastVisit);
-        return parseInt(b.spend.replace(/,/g, ""), 10) - parseInt(a.spend.replace(/,/g, ""), 10);
+        return parseInt((b.spend || "0").replace(/,/g, ""), 10) - parseInt((a.spend || "0").replace(/,/g, ""), 10);
       });
-  }, [retailSearch, retailStatusFilter, retailCityFilter, retailSort]);
+  }, [retailList, retailSearch, retailStatusFilter, retailCityFilter, retailSort]);
 
   const inactiveCities = React.useMemo(() => Array.from(new Set(inactiveData.map(r => r.city))).sort(), []);
   const filteredInactive = React.useMemo(() => {
@@ -120,7 +157,13 @@ export function CustomersPage() {
           setWholesaleTab={setWholesaleTab}
           onBack={() => setSelectedWholesaleCust(null)}
           onSave={updated => {
-            setWholesaleList(prev => prev.map(w => w.id === selectedWholesaleCust.id ? updated : w));
+            if (updateCustomer && selectedWholesaleCust.id) {
+              updateCustomer(selectedWholesaleCust.id, {
+                name: updated.name,
+                city: updated.city,
+                gstCode: updated.gstNumber,
+              });
+            }
             setSelectedWholesaleCust(updated);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);

@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
 import { getSareeTypeByName } from "../../../pricing/components/RatesPricingPage";
 import { T, F } from "../theme";
-import { HISTORY_BATCHES } from "../data";
 import type { CodeCallbacks } from "../types";
+import type { HistoryBatch } from "../types";
+import { useBatches } from "../../contexts/BatchContext";
+import { qcApi } from "../../../../shared/api/qc";
 import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitives";
 import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
+
+const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
 function HistoryBatchSquares({ size }: { size: number }) {
   const colors = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
@@ -30,6 +35,51 @@ function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode
 export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { batches } = useBatches();
+  const { data: qcRecords = [], isLoading: qcLoading } = useQuery({
+    queryKey: ["qc", "all"],
+    queryFn: () => qcApi.list().then(r => r.items),
+  });
+
+  // History table shows finalized (completed) batches only. Per-saree QC
+  // outcomes (okPieces/found, making charges) come from real QC records
+  // joined by batchId — there is no separate "printing"/"embossing"
+  // workflow tracked by the backend, so status is simply "Printing
+  // Completed" for every finalized batch here (kept for label continuity
+  // with the rest of the section's styling, not a tracked backend state).
+  const HISTORY_BATCHES: HistoryBatch[] = useMemo(() => {
+    const completed = batches.filter(b => b.status === "completed");
+    return completed.map((b): HistoryBatch => {
+      const batchQc = qcRecords.filter(r => r.batchId === b.batchId);
+      const okPieces = batchQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
+      const found = batchQc.filter(r => r.result === "DEFECTIVE").length;
+      const makingCharges = batchQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
+
+      const seenWeavers = new Map<string, { initials: string; bg: string }>();
+      b.rows.forEach(r => {
+        if (r.weaverId && r.weaverInitials && !seenWeavers.has(r.weaverId)) {
+          seenWeavers.set(r.weaverId, { initials: r.weaverInitials, bg: PIP_COLORS[seenWeavers.size % PIP_COLORS.length]! });
+        }
+      });
+      const firstRow = b.rows.find(r => r.sareeTypeName || r.designCode);
+
+      return {
+        id: b.batchId,
+        designCode: firstRow?.designCode ?? "—",
+        sareeType: firstRow?.sareeTypeName ?? "—",
+        batchSize: b.totalCount,
+        weavers: Array.from(seenWeavers.values()),
+        completion: b.rows.filter(r => r.sareeId).length,
+        allPieces: b.totalCount,
+        okPieces: batchQc.length > 0 ? okPieces : null,
+        found: batchQc.length > 0 ? found : null,
+        status: "Printing Completed",
+        makingCharges: `₹${makingCharges.toLocaleString("en-IN")}`,
+        completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
+      };
+    });
+  }, [batches, qcRecords]);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [rPeriod, setRPeriod] = useState("This Month");
   const [rFormat, setRFormat] = useState("PDF");
@@ -81,16 +131,18 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
 
         <div style={{ background: T.silkCream, padding: "10px 24px", borderLeft: `1px solid ${T.borderDef}`, borderRight: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>
-            Showing <strong style={{ color: T.luxuryBrown }}>1 to 10</strong> of <strong style={{ color: T.luxuryBrown }}>25</strong> completed batches
+            Showing <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> of <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> completed batches
           </span>
           <div style={{ display: "flex", gap: 28 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Completed:</span>
-              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>25</span>
+              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{HISTORY_BATCHES.length}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Making Charges:</span>
-              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹9,24,930</span>
+              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>
+                ₹{HISTORY_BATCHES.reduce((sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10), 0).toLocaleString("en-IN")}
+              </span>
             </div>
           </div>
         </div>
@@ -112,6 +164,12 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               </tr>
             </thead>
             <tbody>
+              {qcLoading && (
+                <tr><td colSpan={10} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading production history…</td></tr>
+              )}
+              {!qcLoading && HISTORY_BATCHES.length === 0 && (
+                <tr><td colSpan={10} style={{ ...TD, textAlign: "center", color: T.taupe }}>No completed batches yet.</td></tr>
+              )}
               {HISTORY_BATCHES.filter(b =>
                 !search || b.id.toLowerCase().includes(search.toLowerCase()) || b.sareeType.toLowerCase().includes(search.toLowerCase())
               ).map((b, i) => (
@@ -173,7 +231,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             </tbody>
           </table>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderTop: `1px solid ${T.borderDef}` }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing 1 to 10 of 25 entries</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing {HISTORY_BATCHES.length} of {HISTORY_BATCHES.length} entries</span>
             <div style={{ display: "flex", gap: 4 }}>
               {["Prev", "1", "2", "3", "Next"].map(p => (
                 <Button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}

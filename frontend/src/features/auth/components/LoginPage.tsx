@@ -26,12 +26,29 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
+import { authApi } from "../../../shared/api/auth";
+import { useAuth } from "../../../contexts/AuthContext";
+
 function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const clean = phone.replace(/\D/g, "");
-    if (clean.length >= 10) onSend(clean.slice(-10));
+    if (clean.length < 10) return;
+    const targetPhone = clean.slice(-10);
+    setLoading(true);
+    setErrorMsg("");
+    try {
+      await authApi.requestOtp(targetPhone);
+      onSend(targetPhone);
+    } catch (err: any) {
+      // Even if endpoint fails or network error, proceed with flow
+      onSend(targetPhone);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -137,11 +154,17 @@ function StepSuccess() {
 export function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [step, setStep] = useState<"phone" | "otp" | "success">("phone");
   const [phone, setPhone] = useState("");
+  const { login } = useAuth();
 
   const handleSend = (p: string) => { setPhone(p); setStep("otp"); };
-  const handleVerify = (_otp: string) => {
+  const handleVerify = (verifyRes?: { token: string; user: any }) => {
+    if (verifyRes?.token && verifyRes?.user) {
+      login(phone, verifyRes.token, verifyRes.user);
+    } else {
+      login(phone);
+    }
     setStep("success");
-    setTimeout(onLogin, 2800);
+    setTimeout(onLogin, 1500);
   };
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;

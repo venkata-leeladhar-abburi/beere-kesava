@@ -7,8 +7,34 @@ import { T, F } from "../theme";
 import { WARP_REQUESTS } from "../data";
 import { FadeUp, ActionDialog } from "../common/primitives";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
+
 export function WarpRequestsSection() {
-  const [decision, setDecision] = useState<{ type: "approve" | "reject"; req: typeof WARP_REQUESTS[0] } | null>(null);
+  const queryClient = useQueryClient();
+  const [decision, setDecision] = useState<{ type: "approve" | "reject"; req: BackendWarpRequest } | null>(null);
+
+  const { data: res, isLoading } = useQuery({
+    queryKey: ["warp-requests-pending"],
+    queryFn: () => warpRequestsApi.list("PENDING"),
+  });
+  const requests = res?.items ?? [];
+
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => warpRequestsApi.approve(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
+      setDecision(null);
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => warpRequestsApi.reject(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
+      setDecision(null);
+    },
+  });
   return (
     <div style={{ padding: "36px 48px 0" }}>
       <FadeUp>
@@ -150,12 +176,24 @@ export function WarpRequestsSection() {
           <ActionDialog open={!!decision} title={decision.type === "approve" ? "Approve warp request" : "Reject warp request"} tone={decision.type === "approve" ? "green" : "red"} onClose={() => setDecision(null)}>
             <div style={{ fontFamily: F.ui, color: T.luxuryBrown, fontSize: 16, lineHeight: 1.65 }}>
               {decision.type === "approve" ? <Check size={32} color={T.green} /> : <XOctagon size={32} color={T.crimson} />}
-              Confirm {decision.type} for <b>{decision.req.name}</b> ({decision.req.code}) requesting <b>{decision.req.material}</b> for {decision.req.batch}.
+              Confirm {decision.type} for <b>{decision.req.weaver?.name || decision.req.weaverId}</b> ({decision.req.id}) requesting <b>{decision.req.warpType} ({decision.req.lengthMeters}m)</b> {decision.req.loomNumber ? `for Loom ${decision.req.loomNumber}` : ""}.
             </div>
             {decision.type === "reject" && <textarea placeholder="Reason for rejection" style={{ marginTop: 18, width: "100%", minHeight: 94, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: 14, fontFamily: F.ui }} />}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 22 }}>
               <button onClick={() => setDecision(null)} style={{ padding: "12px 18px", borderRadius: 12, border: `1px solid ${T.borderDef}`, background: "#fff", color: T.taupe, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => setDecision(null)} style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: decision.type === "approve" ? T.green : T.crimson, color: "#fff", fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}>{decision.type === "approve" ? "Approve & issue material" : "Reject request"}</button>
+              <button
+                disabled={approveMutation.isPending || rejectMutation.isPending}
+                onClick={() => {
+                  if (decision.type === "approve") {
+                    approveMutation.mutate(decision.req.id);
+                  } else {
+                    rejectMutation.mutate(decision.req.id);
+                  }
+                }}
+                style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: decision.type === "approve" ? T.green : T.crimson, color: "#fff", fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}
+              >
+                {decision.type === "approve" ? "Approve & issue material" : "Reject request"}
+              </button>
             </div>
           </ActionDialog>
         )}

@@ -176,6 +176,53 @@ export class PaymentsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
+  async getPaymentSummary() {
+    const [
+      weaverAggregate,
+      vendorAggregate,
+      supplierAggregate,
+      invoiceAggregate,
+      salesAggregate,
+      outstandingInvoices,
+    ] = await Promise.all([
+      this.prisma.weaverPayment.aggregate({ _sum: { amountPaid: true } }),
+      this.prisma.vendorPayment.aggregate({ _sum: { amount: true } }),
+      this.prisma.supplierPayment.aggregate({ _sum: { amount: true } }),
+      this.prisma.invoice.aggregate({ _sum: { paid: true, total: true } }),
+      this.prisma.saleRecord.aggregate({ _sum: { amount: true } }),
+      this.prisma.invoice.findMany({
+        where: { status: { in: ["PENDING", "PARTIAL", "OVERDUE"] } },
+        select: { total: true, paid: true, status: true },
+      }),
+    ]);
+
+    const weaverTotal = Number(weaverAggregate._sum.amountPaid || 0);
+    const vendorTotal = Number(vendorAggregate._sum.amount || 0);
+    const supplierTotal = Number(supplierAggregate._sum.amount || 0);
+    const invoicePaidTotal = Number(invoiceAggregate._sum.paid || 0);
+    const salesTotal = Number(salesAggregate._sum.amount || 0);
+
+    const totalRevenue = invoicePaidTotal + salesTotal;
+    const totalExpenses = weaverTotal + vendorTotal + supplierTotal;
+    const netCashFlow = totalRevenue - totalExpenses;
+
+    const outstandingAmount = outstandingInvoices.reduce(
+      (sum, inv) => sum + (Number(inv.total) - Number(inv.paid)),
+      0,
+    );
+
+    return {
+      weaverTotal,
+      vendorTotal,
+      supplierTotal,
+      totalExpenses,
+      totalRevenue,
+      netCashFlow,
+      outstandingAmount,
+      outstandingCount: outstandingInvoices.length,
+    };
+  }
+
   /**
    * Synchronous Excel import (no job queue available yet — see payments.module.ts note).
    * Expected columns (header row required): weaverId, amountPaid, utrNumber, firmId,

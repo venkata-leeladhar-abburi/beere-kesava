@@ -13,6 +13,11 @@ export const REPORTS_CHIPS = [
 ];
 
 // ── SECTION 2 — STATS STRIP ──────────────────────────────────────────────────
+// MOCK: these are meta-stats about report *usage* (reports generated, last
+// generated, downloads this month) — no backend endpoint tracks that
+// activity (see the "no download history" gap noted in
+// DownloadHistorySection.tsx and the "no scheduling backend" gap in
+// ScheduledReportsSection.tsx). Static hero copy until that exists.
 export const REPORT_METRICS = [
   {
     ico: React.createElement(BarChart2, { size: 22, color: "rgba(245,232,208,0.90)" }),

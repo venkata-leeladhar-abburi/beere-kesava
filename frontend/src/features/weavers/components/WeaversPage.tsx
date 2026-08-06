@@ -41,18 +41,56 @@ import { ImportWeaversModal } from "./modals/ImportWeaversModal";
 export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
   const location = useLocation();
   const navState = location.state as { weaverId?: string; mode?: "view" | "edit" } | null;
-  const initialSelected = navState?.weaverId ? WEAVERS.find(w => w.id === navState.weaverId) || null : null;
+
+  // When navigating here from AllWeaversPage with a weaverId, fetch the real
+  // weaver object from the backend instead of looking it up in WEAVERS[] (which
+  // is an empty mock array — the lookup always returned null, silently breaking
+  // the drawer).
+  const { data: navWeaver } = useQuery({
+    queryKey: ["weaver-nav", navState?.weaverId],
+    queryFn: () => weaversApi.findOne(navState!.weaverId!),
+    enabled: !!navState?.weaverId,
+  });
+
+  // Map the backend BackendWeaver shape to the shape WeaverDrawer expects
+  // (same shape produced by useRealWeavers). When the query is loading,
+  // navWeaverObj is undefined and initialSelected stays null.
+  const navWeaverObj = navWeaver
+    ? {
+        id: navWeaver.id,
+        name: navWeaver.name,
+        initials: navWeaver.initials || `${navWeaver.firstName.charAt(0)}${navWeaver.lastName.charAt(0)}`,
+        bg: "#6E0F2D",
+        village: navWeaver.village || "—",
+        cluster: navWeaver.cluster || "—",
+        mobile: navWeaver.phone || "—",
+        looms: navWeaver.looms,
+        status: "idle" as const,
+        batch: "",
+        design: "—",
+        photo: navWeaver.photoUrl || null,
+        thisMonth: 0,
+        passRate: 0,
+        totalEver: 0,
+        totalPaid: "—",
+        lastActive: "—",
+      }
+    : null;
 
   const [view, setView] = useState("card");
   const [filter, setFilter] = useState("All Weavers");
   const [search, setSearch] = useState("");
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(initialSelected);
+  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
   const [extraWeavers, setExtraWeavers] = useState<typeof WEAVERS>([]);
   const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
+
+  // Use the live-fetched weaver when navigating from AllWeavers, otherwise the
+  // manually selected one from the directory.
+  const activeWeaver = navWeaverObj ?? selectedWeaver;
 
   // Real aggregate numbers for the hero stats strip. GET /weavers/leaderboard
   // only returns the top 10, so the roster + per-weaver GET /weavers/:id/stats
@@ -79,9 +117,9 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
     { label: "TOTAL PAID TO WEAVERS", value: "—", sub: "Not tracked by the backend yet", gold: false, crimson: false },
   ];
 
-  if (selectedWeaver) {
+  if (activeWeaver) {
     return (
-      <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />
+      <WeaverDrawer weaver={activeWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />
     );
   }
 

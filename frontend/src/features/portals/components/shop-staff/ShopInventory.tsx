@@ -15,6 +15,8 @@ import {
 
 import { C, F, TEAL, Card, Btn, Chip } from './theme';
 import { Button, Input } from "../../../../shared/ui/primitives";
+import { scanApi, ScanLookupResult } from "../../../../shared/api/scan";
+
 function ShopInventory() {
   const canSeePrices = useCanSeePrices();
   const { isMobile } = useResponsive();
@@ -22,6 +24,16 @@ function ShopInventory() {
   const [filter, setFilter] = useState("All Sarees");
   const [loomFilter, setLoomFilter] = useState<string[]>([]);
   const [weaverFilter, setWeaverFilter] = useState<string[]>([]);
+  const [scanResult, setScanResult] = useState<ScanLookupResult | null>(null);
+
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length >= 4) {
+      scanApi.lookup(q).then(setScanResult).catch(() => setScanResult(null));
+    } else {
+      setScanResult(null);
+    }
+  }, [search]);
 
   const inventory = [
     { id: "PADMA-L1-004", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null, loom: "L1", weaver: "Padma Veni" },
@@ -107,6 +119,12 @@ function ShopInventory() {
         <div style={{ marginBottom: 14 }}>
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by Saree ID, design, weaver, or loom" iconLeft={Search} size="lg" containerClassName="rounded-xl h-12" />
         </div>
+        {scanResult && (
+          <div style={{ background: "rgba(30,102,64,0.08)", border: "1px solid rgba(30,102,64,0.25)", borderRadius: 12, padding: "12px 16px", marginBottom: 14, fontFamily: F.u, fontSize: 13, color: C.text }}>
+            <div style={{ fontWeight: 700, color: C.green, marginBottom: 4 }}>✓ Verified DB Record Found: {scanResult.sareeId}</div>
+            <div>Weaver: <b>{scanResult.weaver?.name || "—"}</b> · Design: <b>{scanResult.design?.code || "—"}</b> · Status: <b>{scanResult.inventoryStatus || "QC PASSED"}</b></div>
+          </div>
+        )}
         <div style={{ display: "flex", gap: 8, overflowX: "auto" as const, paddingBottom: 4, marginBottom: 12 }}>
           {filters.map(f => (
             <Button

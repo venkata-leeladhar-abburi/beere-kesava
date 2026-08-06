@@ -39,17 +39,22 @@ const PAGE_TITLES: Record<Tab, string> = {
 interface WorkerPortalProps { onBack?: () => void }
 
 function MobileProfile() {
+  const { user, phone } = useAuth();
+  const userName = user?.name || "Ravi Kumar";
+  const initials = userName.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase() || "RK";
+  const userPhone = user?.mobile || phone || "WK-042";
+
   return (
     <div style={{ paddingBottom: 32 }}>
       {/* Hero banner */}
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, padding: "28px 20px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>RK</span>
+            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>{initials}</span>
           </div>
           <div>
-            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>WK-042</div>
+            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{userName}</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>+91 {userPhone}</div>
             <div style={{ marginTop: 6, display: "inline-block", background: "rgba(196,146,58,0.30)", border: "1px solid rgba(196,146,58,0.50)", borderRadius: 999, padding: "3px 10px" }}>
               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04" }}>Floor Supervisor</span>
             </div>

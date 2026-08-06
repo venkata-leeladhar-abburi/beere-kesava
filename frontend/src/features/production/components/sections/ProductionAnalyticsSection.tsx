@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChartBar, FunnelSimple, Trophy, ShoppingBag, DownloadSimple,
 } from "@phosphor-icons/react";
 import { T, F } from "../theme";
-import { WEEKLY_DATA, STAGE_FUNNEL, TOP_WEAVERS_CHART, ORDER_PROGRESS, ANALYTICS_PERIODS } from "../data";
+// WEEKLY_DATA and TOP_WEAVERS_CHART have no backend source yet — there is no
+// endpoint for weekly production time-series or a per-weaver sarees-produced
+// leaderboard scoped to production. They stay mock (clearly labelled below)
+// until such an endpoint exists; STAGE_FUNNEL and ORDER_PROGRESS are derived
+// from real batch/bulk-order data.
+import { WEEKLY_DATA, TOP_WEAVERS_CHART, ANALYTICS_PERIODS } from "../data";
+import { useBatches } from "../../contexts/BatchContext";
+import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
 
@@ -36,6 +44,35 @@ export function ProductionAnalyticsSection() {
   const [period, setPeriod] = useState("This Month");
   const maxWeekly = Math.max(...WEEKLY_DATA.map(d => d.produced));
   const maxWeaverSarees = TOP_WEAVERS_CHART[0]?.sarees ?? 1;
+
+  const { batches } = useBatches();
+  const { bulkOrders } = useBulkOrders();
+
+  const STAGE_FUNNEL = useMemo(() => {
+    const active = batches.filter(b => b.status === "active" || b.status === "draft");
+    let weaving = 0, submitted = 0, qcPassed = 0;
+    for (const b of active) {
+      const completeCount = b.rows.filter(rowComplete).length;
+      const qcPassedCount = b.rows.filter(r => r.qcPassed).length;
+      if (qcPassedCount > 0 && qcPassedCount === b.totalCount) qcPassed++;
+      else if (completeCount === b.totalCount && b.totalCount > 0) submitted++;
+      else weaving++;
+    }
+    const inStock = batches.filter(b => b.status === "completed").length;
+    const max = Math.max(weaving, submitted, qcPassed, inStock, 1);
+    return [
+      { label: "Weaving in Progress",       count: weaving,   color: "#845E04",   widthPct: Math.round((weaving / max) * 100) },
+      { label: "Submitted — Waiting QC",    count: submitted, color: T.blueGray,  widthPct: Math.round((submitted / max) * 100) },
+      { label: "Quality Check Passed",      count: qcPassed,  color: T.green,     widthPct: Math.round((qcPassed / max) * 100) },
+      { label: "In Stock — Ready for Sale", count: inStock,   color: T.green,     widthPct: Math.round((inStock / max) * 100) },
+    ];
+  }, [batches]);
+  const totalActiveBatches = batches.filter(b => b.status === "active" || b.status === "draft").length;
+
+  const ORDER_PROGRESS = useMemo(
+    () => bulkOrders.map(o => ({ name: o.customer, done: o.done, total: o.total })),
+    [bulkOrders],
+  );
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState("PDF");
   const [exportIncludes, setExportIncludes] = useState<Record<string, boolean>>({
@@ -123,7 +160,7 @@ export function ProductionAnalyticsSection() {
             <ChartCardHeader
               icon={<FunnelSimple size={22} color={T.royalBurgundy} weight="duotone" />}
               title="Where Are All Batches Right Now"
-              sub="All 24 active batches by production stage"
+              sub={`All ${totalActiveBatches} active batch${totalActiveBatches === 1 ? "" : "es"} by production stage`}
             />
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, justifyContent: "center" }}>
@@ -148,7 +185,7 @@ export function ProductionAnalyticsSection() {
 
             <div style={{ marginTop: 18, background: T.warmCream, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>Total active batches</span>
-              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>24</span>
+              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{totalActiveBatches}</span>
             </div>
           </div>
 

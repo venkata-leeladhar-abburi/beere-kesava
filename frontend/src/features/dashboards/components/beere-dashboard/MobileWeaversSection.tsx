@@ -1,14 +1,17 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from 'lucide-react';
-import { Rows, Clock as PhClock } from "@phosphor-icons/react";
+import { Rows } from "@phosphor-icons/react";
 import { T, F, G, EASE } from './theme';
-import { WEAVERS, MATS } from './data';
+import { MATS } from './data';
 import { AnimatedBar } from './ui';
+import { useDashboardWeavers } from './hooks/useDashboardWeavers';
 
 export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
+  const { data: weavers = [], isLoading } = useDashboardWeavers();
+
   return (
     <div style={{ padding: "24px 16px 0" }}>
       <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -18,8 +21,19 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
         </div>
         <button onClick={() => onNavigate("AllWeavers")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
       </div>
+      {isLoading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} style={{ height: 320, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+          ))}
+        </div>
+      ) : weavers.length === 0 ? (
+        <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          No weavers in database yet.
+        </div>
+      ) : (
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-        {WEAVERS.map((w, i) => (
+        {weavers.map((w, i) => (
           <motion.div
             key={w.id}
             onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
@@ -50,7 +64,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
               {/* Floating ID badge in top left */}
               <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                {w.id}
+                {w.id.slice(0, 8).toUpperCase()}
               </div>
 
               {/* Floating status pill */}
@@ -65,8 +79,6 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               }}>
                 {w.status === "active" ? (
                   <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
-                ) : w.status === "qc" ? (
-                  <PhClock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
                 ) : (
                   <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
                 )}
@@ -79,29 +91,24 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                   letterSpacing: "0.5px",
                   textShadow: "0 1px 4px rgba(0,0,0,0.6)"
                 }}>
-                  {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
+                  {w.status === "active" ? "Currently Weaving" : "Inactive"}
                 </span>
               </div>
             </div>
 
             {/* Content Area */}
             <div style={{ padding: "20px", display: "flex", flexDirection: "column" }}>
-              {/* Name and Batch */}
+              {/* Name */}
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
                 <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
                   {w.name}
                 </div>
-                {w.batch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
-                    {w.batch}
-                  </span>
-                )}
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                  <span>{w.village}</span>
+                  <span>{w.village ?? "—"}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
@@ -155,10 +162,14 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
           </motion.div>
         ))}
       </div>
+      )}
     </div>
   );
 }
 
+// NOTE: raw-material stock has no backend module (documented gap, same as
+// desktop RawMaterial.tsx and SAOverviewPage's SARawMaterial). MATS stays
+// static mock data below.
 export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });

@@ -99,10 +99,10 @@ export function WholesaleCustomersSection({
       {/* Wholesale stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 28, alignItems: "stretch" }}>
         {[
-          { ico: <Building2 size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Wholesale Customers", v: "48", c: T.luxuryBrown, sub: "Active business relationships" },
-          { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: "₹9,80,000", c: T.crimson, sub: "Across all overdue accounts" },
-          { ico: <Eye size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "Active Orders Right Now", v: "6", c: T.antiqueGold, sub: "Bulk orders in production" },
-          { ico: <Users size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive Customers", v: "5", c: T.taupe, sub: "No order in 6+ months" },
+          { ico: <Building2 size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Wholesale Customers", v: String(wholesaleList.length), c: T.luxuryBrown, sub: "Active business relationships" },
+          { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: "₹0", c: T.crimson, sub: "Across all overdue accounts" },
+          { ico: <Eye size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "Active Orders Right Now", v: "0", c: T.antiqueGold, sub: "Bulk orders in production" },
+          { ico: <Users size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive Customers", v: "0", c: T.taupe, sub: "No order in 6+ months" },
         ].map((st, i) => (
           <div key={i} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
             <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -123,10 +123,10 @@ export function WholesaleCustomersSection({
           <div style={{ width: 300 }}>
             <SearchInput aria-label="Search by business name, city..." placeholder="Search by business name, city..." />
           </div>
-          <Pill active={true}>All Wholesale (48)</Pill>
-          <Pill active={false}>Active (28)</Pill>
-          <Pill active={false}>Has Dues (14)</Pill>
-          <Pill active={false}>Inactive (5)</Pill>
+          <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
+          <Pill active={false}>Active ({wholesaleList.length})</Pill>
+          <Pill active={false}>Has Dues (0)</Pill>
+          <Pill active={false}>Inactive (0)</Pill>
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>

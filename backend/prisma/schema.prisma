@@ -225,6 +225,24 @@ enum NotificationTargetType {
   ROLE
 }
 
+enum WarpRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RateRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReportFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // ID generation — DB-side counters so business IDs (EMP-NNN, PO-2026-NNN, ...)
 // never collide, per Backend_Architecture_Design.pdf §6.1.
@@ -297,6 +315,10 @@ model User {
   raisedQuotations     Quotation[]              @relation("RaisedBy")
   requestedPurchases   PurchaseRequest[]        @relation("RequestedBy")
   decidedPurchases     PurchaseRequest[]        @relation("DecidedBy")
+  decidedWarpRequests  WarpRequest[]            @relation("DecidedWarpRequests")
+  requestedRateChanges RateChangeRequest[]     @relation("RequestedRateChanges")
+  decidedRateChanges   RateChangeRequest[]     @relation("DecidedRateChanges")
+  reportDownloads      ReportDownloadHistory[]
 
   @@index([role])
 }
@@ -342,6 +364,7 @@ model Weaver {
   qcRecords      QcRecord[]
   sarees         Saree[]
   payments       WeaverPayment[]
+  warpRequests   WarpRequest[]
 
   @@index([status])
 }
@@ -400,6 +423,7 @@ model SareeTypeRate {
 
   batchSareeRows BatchSareeRow[]
   sarees         Saree[]
+  rateRequests   RateChangeRequest[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -821,6 +845,8 @@ model Vendor {
 
   purchaseOrders PurchaseOrder[]
   vendorPayments VendorPayment[]
+  rawStock       RawMaterialStock[]
+  grnReceipts    GrnReceipt[]
 }
 
 model Purchase {
@@ -1078,4 +1104,130 @@ model Notification {
   @@index([userId])
   @@index([role])
   @@index([readAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Raw Material Stock & GRNs
+// ─────────────────────────────────────────────────────────────────────────
+
+model RawMaterialStock {
+  id           String       @id @default(uuid())
+  materialType MaterialType
+  name         String
+  grade        String?
+  color        String?
+  unit         String       @default("KG")
+  currentStock Decimal      @default(0) @db.Decimal(12, 3)
+  reorderLevel Decimal      @default(10) @db.Decimal(12, 3)
+  vendorId     String?
+  vendor       Vendor?      @relation(fields: [vendorId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([materialType])
+}
+
+model GrnReceipt {
+  id           String    @id // GRN-2026-NNN
+  vendorId     String?
+  vendor       Vendor?   @relation(fields: [vendorId], references: [id])
+  supplierName String
+  invoiceNo    String?
+  invoiceDate  DateTime?
+  receivedDate DateTime  @default(now())
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  items GrnItem[]
+}
+
+model GrnItem {
+  id           String       @id @default(uuid())
+  grnId        String
+  grn          GrnReceipt   @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  materialType MaterialType
+  name         String
+  grade        String?
+  color        String?
+  quantity     Decimal      @db.Decimal(12, 3)
+  unit         String       @default("KG")
+  unitPrice    Decimal      @db.Decimal(12, 2)
+  totalPrice   Decimal      @db.Decimal(12, 2)
+
+  @@index([grnId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Workflows: Warp Requests & Rate Change Requests
+// ─────────────────────────────────────────────────────────────────────────
+
+model WarpRequest {
+  id           String            @id // WR-2026-NNN
+  weaverId     String
+  weaver       Weaver            @relation(fields: [weaverId], references: [id])
+  loomNumber   String?
+  warpType     String
+  lengthMeters Decimal           @db.Decimal(10, 2)
+  color        String?
+  status       WarpRequestStatus @default(PENDING)
+  requestedAt  DateTime          @default(now())
+  decidedAt    DateTime?
+  decidedById  String?
+  decidedBy    User?             @relation("DecidedWarpRequests", fields: [decidedById], references: [id])
+  notes        String?
+
+  @@index([weaverId])
+  @@index([status])
+}
+
+model RateChangeRequest {
+  id                String            @id // RCR-2026-NNN
+  sareeTypeCode    String
+  sareeType        SareeTypeRate     @relation(fields: [sareeTypeCode], references: [code])
+  oldMakingCharge   Decimal           @db.Decimal(12, 2)
+  newMakingCharge   Decimal           @db.Decimal(12, 2)
+  oldRetailPrice    Decimal           @db.Decimal(12, 2)
+  newRetailPrice    Decimal           @db.Decimal(12, 2)
+  oldWholesalePrice Decimal           @db.Decimal(12, 2)
+  newWholesalePrice Decimal           @db.Decimal(12, 2)
+  status            RateRequestStatus @default(PENDING)
+  reason            String?
+  requestedById    String
+  requestedBy      User              @relation("RequestedRateChanges", fields: [requestedById], references: [id])
+  decidedById      String?
+  decidedBy        User?             @relation("DecidedRateChanges", fields: [decidedById], references: [id])
+  createdAt        DateTime          @default(now())
+  decidedAt        DateTime?
+
+  @@index([sareeTypeCode])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Reports — Scheduling & History
+// ─────────────────────────────────────────────────────────────────────────
+
+model ScheduledReport {
+  id             String          @id @default(uuid())
+  reportName     String
+  frequency      ReportFrequency
+  format         String          @default("PDF")
+  recipientEmail String
+  active         Boolean         @default(true)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  createdAt      DateTime        @default(now())
+}
+
+model ReportDownloadHistory {
+  id            String   @id @default(uuid())
+  reportName    String
+  fileType      String   @default("PDF")
+  downloadUrl   String?
+  downloadedById String?
+  downloadedBy  User?    @relation(fields: [downloadedById], references: [id])
+  downloadedAt  DateTime @default(now())
+  filtersUsed   Json?
+
+  @@index([downloadedAt])
 }

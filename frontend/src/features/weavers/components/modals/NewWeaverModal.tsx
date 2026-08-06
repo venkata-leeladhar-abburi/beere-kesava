@@ -46,6 +46,9 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
     mutationFn: (payload: CreateWeaverPayload) => weaversApi.create(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
       setForm(EMPTY_FORM);
       setError(null);
       setExpanded(false);

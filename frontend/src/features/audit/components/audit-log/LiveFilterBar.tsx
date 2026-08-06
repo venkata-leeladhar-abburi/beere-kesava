@@ -10,12 +10,14 @@ export function LiveFilterBar({
   moduleFilter, setModuleFilter,
   actionFilter, setActionFilter,
   periodFilter, setPeriodFilter,
+  resultsLabel,
 }: {
   search: string; setSearch: (v: string) => void;
   roleFilter: string; setRoleFilter: (v: string) => void;
   moduleFilter: string; setModuleFilter: (v: string) => void;
   actionFilter: string; setActionFilter: (v: string) => void;
   periodFilter: string; setPeriodFilter: (v: string) => void;
+  resultsLabel?: string;
 }) {
   return (
     <>
@@ -150,7 +152,7 @@ export function LiveFilterBar({
 
         {/* Results label */}
         <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 10 }}>
-          Showing 48 entries for today · 2,840 total in system
+          {resultsLabel ?? "Filters apply to the action log below."}
         </div>
       </div>
     </>

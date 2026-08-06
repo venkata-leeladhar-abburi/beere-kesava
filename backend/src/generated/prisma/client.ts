@@ -254,3 +254,38 @@ export type ActionLog = Prisma.ActionLogModel
  * 
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model RawMaterialStock
+ * 
+ */
+export type RawMaterialStock = Prisma.RawMaterialStockModel
+/**
+ * Model GrnReceipt
+ * 
+ */
+export type GrnReceipt = Prisma.GrnReceiptModel
+/**
+ * Model GrnItem
+ * 
+ */
+export type GrnItem = Prisma.GrnItemModel
+/**
+ * Model WarpRequest
+ * 
+ */
+export type WarpRequest = Prisma.WarpRequestModel
+/**
+ * Model RateChangeRequest
+ * 
+ */
+export type RateChangeRequest = Prisma.RateChangeRequestModel
+/**
+ * Model ScheduledReport
+ * 
+ */
+export type ScheduledReport = Prisma.ScheduledReportModel
+/**
+ * Model ReportDownloadHistory
+ * 
+ */
+export type ReportDownloadHistory = Prisma.ReportDownloadHistoryModel

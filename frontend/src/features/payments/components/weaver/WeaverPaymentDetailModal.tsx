@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
 import { SareeTypeCard, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
+import { ratesApi } from "../../../../shared/api/rates";
 import { RATE_ROWS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
@@ -21,13 +23,25 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
 
+  // Real saree-type rate card from GET /rates. Falls back to the static
+  // RATE_ROWS demo rates only if the backend has no rates configured yet.
+  const { data: ratesRes } = useQuery({
+    queryKey: ["rates-for-weaver-payment-detail"],
+    queryFn: () => ratesApi.list(),
+  });
+  const rateRows = useMemo(() => {
+    const items = ratesRes?.items ?? [];
+    if (items.length === 0) return RATE_ROWS;
+    return items.map(r => ({ code: r.code, name: r.description || r.type, rate: Number(r.makingCharge) }));
+  }, [ratesRes]);
+
   if (!weaver) return null;
 
   const chargeRows = [
     { key: "sb", count: weaver.sb }, { key: "hz", count: weaver.hz }, { key: "ps", count: weaver.ps },
     { key: "bs", count: weaver.bs }, { key: "st", count: weaver.st },
-  ].map(r => ({ ...r, rate: RATE_ROWS.find(rr => rr.code.slice(0, 2).toLowerCase() === r.key)! }))
-    .filter(r => r.count > 0);
+  ].map(r => ({ ...r, rate: rateRows.find(rr => rr.code.slice(0, 2).toLowerCase() === r.key) }))
+    .filter((r): r is typeof r & { rate: NonNullable<typeof r.rate> } => r.count > 0 && !!r.rate);
   const totalCharges = calcCharges(weaver);
 
   const payments = getPaymentsForWeaver(weaver.id);
