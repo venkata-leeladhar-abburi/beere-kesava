@@ -11,7 +11,6 @@ const card: React.CSSProperties = {
 const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown };
 const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 };
 const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
-const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
 
 interface WeaverLeaderboardClusterRowProps {
   top10: any[];
@@ -54,7 +53,7 @@ export function WeaverLeaderboardClusterRow({
             <XAxis type="number" hide />
             <YAxis type="category" dataKey="short" width={116} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
             <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass · ${L(p.payload.payout)} earned`, p.payload.name]} />
+              formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass`, p.payload.name]} />
             <Bar dataKey="produced" radius={[0, 6, 6, 0]}
               label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
               {top10.map(w => <Cell key={w.id} fill={qcColor(w.periodPassRate)} />)}

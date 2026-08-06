@@ -1,12 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateQuotationDto } from "./dto/create-quotation.dto";
 import { ListQuotationsQueryDto } from "./dto/list-quotations-query.dto";
 import { ReceiveQuotationSareesDto } from "./dto/receive-quotation-sarees.dto";
 import { QuotationsService } from "./quotations.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Finishing-house workflow (assign to finishing, receive back) — WORKER access only.
 @Controller("quotations")
+@RequireRoles(UserRole.WORKER)
 export class QuotationsController {
   constructor(private readonly quotationsService: QuotationsService) {}
 

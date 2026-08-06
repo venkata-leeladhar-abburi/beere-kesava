@@ -7,6 +7,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
 import { ListPurchaseOrdersQueryDto } from "./dto/list-purchase-orders-query.dto";
+import { ReceiveGrnDto } from "./dto/receive-grn.dto";
 import { RejectPurchaseOrderDto } from "./dto/reject-purchase-order.dto";
 
 @Injectable()
@@ -33,8 +34,21 @@ export class PurchaseOrdersService {
         deliveryDate: dto.deliveryDate,
         totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,
+        items: dto.items?.length
+          ? {
+              create: dto.items.map((item) => ({
+                materialType: item.materialType,
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit ?? "KG",
+                unitPrice: item.unitPrice ?? null,
+                totalPrice:
+                  item.unitPrice !== undefined ? item.quantity * item.unitPrice : null,
+              })),
+            }
+          : undefined,
       },
-      include: { vendor: true },
+      include: { vendor: true, items: true },
     });
 
     await this.auditLog.recordAction({
@@ -128,17 +142,34 @@ export class PurchaseOrdersService {
     return updated;
   }
 
-  async receiveGrn(id: string, dto: ActorOnlyDto) {
+  async receiveGrn(id: string, dto: ReceiveGrnDto) {
     const po = await this.findOne(id);
     this.assertStatus(po.status, PurchaseOrderStatus.APPROVED, "received against a GRN");
 
+    // If the receiving clerk already logged the material receipt via
+    // POST /materials/grn, link the real GrnReceipt here. Otherwise fall back
+    // to a display-only code so existing callers keep working.
+    let grnReceipt = null;
+    if (dto.grnReceiptId) {
+      grnReceipt = await this.prisma.grnReceipt.findUnique({ where: { id: dto.grnReceiptId } });
+      if (!grnReceipt) {
+        throw new NotFoundException(`GRN receipt ${dto.grnReceiptId} not found`);
+      }
+    }
+
     const year = new Date().getFullYear();
-    const grnId = await this.idGenerator.nextFormatted(`GRN-${year}`);
+    const grnId = grnReceipt?.id ?? (await this.idGenerator.nextFormatted(`GRN-${year}`));
+    const actualReceivedDate = dto.actualReceivedDate ? new Date(dto.actualReceivedDate) : new Date();
 
     const updated = await this.prisma.purchaseOrder.update({
       where: { id },
-      data: { status: PurchaseOrderStatus.RECEIVED, grnId },
-      include: { vendor: true },
+      data: {
+        status: PurchaseOrderStatus.RECEIVED,
+        grnId,
+        grnReceiptId: grnReceipt?.id,
+        actualReceivedDate,
+      },
+      include: { vendor: true, items: true, grnReceipt: true },
     });
 
     await this.auditLog.recordAction({

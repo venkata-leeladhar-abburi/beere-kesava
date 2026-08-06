@@ -42,6 +42,7 @@ export type VendorPaymentMinAggregateOutputType = {
   utr: string | null
   method: string | null
   firmId: string | null
+  billId: string | null
 }
 
 export type VendorPaymentMaxAggregateOutputType = {
@@ -52,6 +53,7 @@ export type VendorPaymentMaxAggregateOutputType = {
   utr: string | null
   method: string | null
   firmId: string | null
+  billId: string | null
 }
 
 export type VendorPaymentCountAggregateOutputType = {
@@ -62,6 +64,7 @@ export type VendorPaymentCountAggregateOutputType = {
   utr: number
   method: number
   firmId: number
+  billId: number
   _all: number
 }
 
@@ -82,6 +85,7 @@ export type VendorPaymentMinAggregateInputType = {
   utr?: true
   method?: true
   firmId?: true
+  billId?: true
 }
 
 export type VendorPaymentMaxAggregateInputType = {
@@ -92,6 +96,7 @@ export type VendorPaymentMaxAggregateInputType = {
   utr?: true
   method?: true
   firmId?: true
+  billId?: true
 }
 
 export type VendorPaymentCountAggregateInputType = {
@@ -102,6 +107,7 @@ export type VendorPaymentCountAggregateInputType = {
   utr?: true
   method?: true
   firmId?: true
+  billId?: true
   _all?: true
 }
 
@@ -199,6 +205,7 @@ export type VendorPaymentGroupByOutputType = {
   utr: string | null
   method: string | null
   firmId: string | null
+  billId: string | null
   _count: VendorPaymentCountAggregateOutputType | null
   _avg: VendorPaymentAvgAggregateOutputType | null
   _sum: VendorPaymentSumAggregateOutputType | null
@@ -232,8 +239,10 @@ export type VendorPaymentWhereInput = {
   utr?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   method?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   firmId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
+  billId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
   firm?: Prisma.XOR<Prisma.FirmNullableScalarRelationFilter, Prisma.FirmWhereInput> | null
+  bill?: Prisma.XOR<Prisma.VendorBillNullableScalarRelationFilter, Prisma.VendorBillWhereInput> | null
 }
 
 export type VendorPaymentOrderByWithRelationInput = {
@@ -244,8 +253,10 @@ export type VendorPaymentOrderByWithRelationInput = {
   utr?: Prisma.SortOrderInput | Prisma.SortOrder
   method?: Prisma.SortOrderInput | Prisma.SortOrder
   firmId?: Prisma.SortOrderInput | Prisma.SortOrder
+  billId?: Prisma.SortOrderInput | Prisma.SortOrder
   vendor?: Prisma.VendorOrderByWithRelationInput
   firm?: Prisma.FirmOrderByWithRelationInput
+  bill?: Prisma.VendorBillOrderByWithRelationInput
 }
 
 export type VendorPaymentWhereUniqueInput = Prisma.AtLeast<{
@@ -259,8 +270,10 @@ export type VendorPaymentWhereUniqueInput = Prisma.AtLeast<{
   utr?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   method?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   firmId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
+  billId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
   firm?: Prisma.XOR<Prisma.FirmNullableScalarRelationFilter, Prisma.FirmWhereInput> | null
+  bill?: Prisma.XOR<Prisma.VendorBillNullableScalarRelationFilter, Prisma.VendorBillWhereInput> | null
 }, "id">
 
 export type VendorPaymentOrderByWithAggregationInput = {
@@ -271,6 +284,7 @@ export type VendorPaymentOrderByWithAggregationInput = {
   utr?: Prisma.SortOrderInput | Prisma.SortOrder
   method?: Prisma.SortOrderInput | Prisma.SortOrder
   firmId?: Prisma.SortOrderInput | Prisma.SortOrder
+  billId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VendorPaymentCountOrderByAggregateInput
   _avg?: Prisma.VendorPaymentAvgOrderByAggregateInput
   _max?: Prisma.VendorPaymentMaxOrderByAggregateInput
@@ -289,6 +303,7 @@ export type VendorPaymentScalarWhereWithAggregatesInput = {
   utr?: Prisma.StringNullableWithAggregatesFilter<"VendorPayment"> | string | null
   method?: Prisma.StringNullableWithAggregatesFilter<"VendorPayment"> | string | null
   firmId?: Prisma.StringNullableWithAggregatesFilter<"VendorPayment"> | string | null
+  billId?: Prisma.StringNullableWithAggregatesFilter<"VendorPayment"> | string | null
 }
 
 export type VendorPaymentCreateInput = {
@@ -299,6 +314,7 @@ export type VendorPaymentCreateInput = {
   method?: string | null
   vendor: Prisma.VendorCreateNestedOneWithoutVendorPaymentsInput
   firm?: Prisma.FirmCreateNestedOneWithoutVendorPaymentsInput
+  bill?: Prisma.VendorBillCreateNestedOneWithoutPaymentsInput
 }
 
 export type VendorPaymentUncheckedCreateInput = {
@@ -309,6 +325,7 @@ export type VendorPaymentUncheckedCreateInput = {
   utr?: string | null
   method?: string | null
   firmId?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentUpdateInput = {
@@ -319,6 +336,7 @@ export type VendorPaymentUpdateInput = {
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendor?: Prisma.VendorUpdateOneRequiredWithoutVendorPaymentsNestedInput
   firm?: Prisma.FirmUpdateOneWithoutVendorPaymentsNestedInput
+  bill?: Prisma.VendorBillUpdateOneWithoutPaymentsNestedInput
 }
 
 export type VendorPaymentUncheckedUpdateInput = {
@@ -329,6 +347,7 @@ export type VendorPaymentUncheckedUpdateInput = {
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type VendorPaymentCreateManyInput = {
@@ -339,6 +358,7 @@ export type VendorPaymentCreateManyInput = {
   utr?: string | null
   method?: string | null
   firmId?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentUpdateManyMutationInput = {
@@ -357,6 +377,7 @@ export type VendorPaymentUncheckedUpdateManyInput = {
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type VendorPaymentListRelationFilter = {
@@ -377,6 +398,7 @@ export type VendorPaymentCountOrderByAggregateInput = {
   utr?: Prisma.SortOrder
   method?: Prisma.SortOrder
   firmId?: Prisma.SortOrder
+  billId?: Prisma.SortOrder
 }
 
 export type VendorPaymentAvgOrderByAggregateInput = {
@@ -391,6 +413,7 @@ export type VendorPaymentMaxOrderByAggregateInput = {
   utr?: Prisma.SortOrder
   method?: Prisma.SortOrder
   firmId?: Prisma.SortOrder
+  billId?: Prisma.SortOrder
 }
 
 export type VendorPaymentMinOrderByAggregateInput = {
@@ -401,6 +424,7 @@ export type VendorPaymentMinOrderByAggregateInput = {
   utr?: Prisma.SortOrder
   method?: Prisma.SortOrder
   firmId?: Prisma.SortOrder
+  billId?: Prisma.SortOrder
 }
 
 export type VendorPaymentSumOrderByAggregateInput = {
@@ -446,6 +470,48 @@ export type VendorPaymentUncheckedUpdateManyWithoutVendorNestedInput = {
   connect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
   update?: Prisma.VendorPaymentUpdateWithWhereUniqueWithoutVendorInput | Prisma.VendorPaymentUpdateWithWhereUniqueWithoutVendorInput[]
   updateMany?: Prisma.VendorPaymentUpdateManyWithWhereWithoutVendorInput | Prisma.VendorPaymentUpdateManyWithWhereWithoutVendorInput[]
+  deleteMany?: Prisma.VendorPaymentScalarWhereInput | Prisma.VendorPaymentScalarWhereInput[]
+}
+
+export type VendorPaymentCreateNestedManyWithoutBillInput = {
+  create?: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput> | Prisma.VendorPaymentCreateWithoutBillInput[] | Prisma.VendorPaymentUncheckedCreateWithoutBillInput[]
+  connectOrCreate?: Prisma.VendorPaymentCreateOrConnectWithoutBillInput | Prisma.VendorPaymentCreateOrConnectWithoutBillInput[]
+  createMany?: Prisma.VendorPaymentCreateManyBillInputEnvelope
+  connect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+}
+
+export type VendorPaymentUncheckedCreateNestedManyWithoutBillInput = {
+  create?: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput> | Prisma.VendorPaymentCreateWithoutBillInput[] | Prisma.VendorPaymentUncheckedCreateWithoutBillInput[]
+  connectOrCreate?: Prisma.VendorPaymentCreateOrConnectWithoutBillInput | Prisma.VendorPaymentCreateOrConnectWithoutBillInput[]
+  createMany?: Prisma.VendorPaymentCreateManyBillInputEnvelope
+  connect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+}
+
+export type VendorPaymentUpdateManyWithoutBillNestedInput = {
+  create?: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput> | Prisma.VendorPaymentCreateWithoutBillInput[] | Prisma.VendorPaymentUncheckedCreateWithoutBillInput[]
+  connectOrCreate?: Prisma.VendorPaymentCreateOrConnectWithoutBillInput | Prisma.VendorPaymentCreateOrConnectWithoutBillInput[]
+  upsert?: Prisma.VendorPaymentUpsertWithWhereUniqueWithoutBillInput | Prisma.VendorPaymentUpsertWithWhereUniqueWithoutBillInput[]
+  createMany?: Prisma.VendorPaymentCreateManyBillInputEnvelope
+  set?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  disconnect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  delete?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  connect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  update?: Prisma.VendorPaymentUpdateWithWhereUniqueWithoutBillInput | Prisma.VendorPaymentUpdateWithWhereUniqueWithoutBillInput[]
+  updateMany?: Prisma.VendorPaymentUpdateManyWithWhereWithoutBillInput | Prisma.VendorPaymentUpdateManyWithWhereWithoutBillInput[]
+  deleteMany?: Prisma.VendorPaymentScalarWhereInput | Prisma.VendorPaymentScalarWhereInput[]
+}
+
+export type VendorPaymentUncheckedUpdateManyWithoutBillNestedInput = {
+  create?: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput> | Prisma.VendorPaymentCreateWithoutBillInput[] | Prisma.VendorPaymentUncheckedCreateWithoutBillInput[]
+  connectOrCreate?: Prisma.VendorPaymentCreateOrConnectWithoutBillInput | Prisma.VendorPaymentCreateOrConnectWithoutBillInput[]
+  upsert?: Prisma.VendorPaymentUpsertWithWhereUniqueWithoutBillInput | Prisma.VendorPaymentUpsertWithWhereUniqueWithoutBillInput[]
+  createMany?: Prisma.VendorPaymentCreateManyBillInputEnvelope
+  set?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  disconnect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  delete?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  connect?: Prisma.VendorPaymentWhereUniqueInput | Prisma.VendorPaymentWhereUniqueInput[]
+  update?: Prisma.VendorPaymentUpdateWithWhereUniqueWithoutBillInput | Prisma.VendorPaymentUpdateWithWhereUniqueWithoutBillInput[]
+  updateMany?: Prisma.VendorPaymentUpdateManyWithWhereWithoutBillInput | Prisma.VendorPaymentUpdateManyWithWhereWithoutBillInput[]
   deleteMany?: Prisma.VendorPaymentScalarWhereInput | Prisma.VendorPaymentScalarWhereInput[]
 }
 
@@ -498,6 +564,7 @@ export type VendorPaymentCreateWithoutVendorInput = {
   utr?: string | null
   method?: string | null
   firm?: Prisma.FirmCreateNestedOneWithoutVendorPaymentsInput
+  bill?: Prisma.VendorBillCreateNestedOneWithoutPaymentsInput
 }
 
 export type VendorPaymentUncheckedCreateWithoutVendorInput = {
@@ -507,6 +574,7 @@ export type VendorPaymentUncheckedCreateWithoutVendorInput = {
   utr?: string | null
   method?: string | null
   firmId?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentCreateOrConnectWithoutVendorInput = {
@@ -546,6 +614,53 @@ export type VendorPaymentScalarWhereInput = {
   utr?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   method?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
   firmId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
+  billId?: Prisma.StringNullableFilter<"VendorPayment"> | string | null
+}
+
+export type VendorPaymentCreateWithoutBillInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Date | string
+  utr?: string | null
+  method?: string | null
+  vendor: Prisma.VendorCreateNestedOneWithoutVendorPaymentsInput
+  firm?: Prisma.FirmCreateNestedOneWithoutVendorPaymentsInput
+}
+
+export type VendorPaymentUncheckedCreateWithoutBillInput = {
+  id?: string
+  vendorId: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Date | string
+  utr?: string | null
+  method?: string | null
+  firmId?: string | null
+}
+
+export type VendorPaymentCreateOrConnectWithoutBillInput = {
+  where: Prisma.VendorPaymentWhereUniqueInput
+  create: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput>
+}
+
+export type VendorPaymentCreateManyBillInputEnvelope = {
+  data: Prisma.VendorPaymentCreateManyBillInput | Prisma.VendorPaymentCreateManyBillInput[]
+  skipDuplicates?: boolean
+}
+
+export type VendorPaymentUpsertWithWhereUniqueWithoutBillInput = {
+  where: Prisma.VendorPaymentWhereUniqueInput
+  update: Prisma.XOR<Prisma.VendorPaymentUpdateWithoutBillInput, Prisma.VendorPaymentUncheckedUpdateWithoutBillInput>
+  create: Prisma.XOR<Prisma.VendorPaymentCreateWithoutBillInput, Prisma.VendorPaymentUncheckedCreateWithoutBillInput>
+}
+
+export type VendorPaymentUpdateWithWhereUniqueWithoutBillInput = {
+  where: Prisma.VendorPaymentWhereUniqueInput
+  data: Prisma.XOR<Prisma.VendorPaymentUpdateWithoutBillInput, Prisma.VendorPaymentUncheckedUpdateWithoutBillInput>
+}
+
+export type VendorPaymentUpdateManyWithWhereWithoutBillInput = {
+  where: Prisma.VendorPaymentScalarWhereInput
+  data: Prisma.XOR<Prisma.VendorPaymentUpdateManyMutationInput, Prisma.VendorPaymentUncheckedUpdateManyWithoutBillInput>
 }
 
 export type VendorPaymentCreateWithoutFirmInput = {
@@ -555,6 +670,7 @@ export type VendorPaymentCreateWithoutFirmInput = {
   utr?: string | null
   method?: string | null
   vendor: Prisma.VendorCreateNestedOneWithoutVendorPaymentsInput
+  bill?: Prisma.VendorBillCreateNestedOneWithoutPaymentsInput
 }
 
 export type VendorPaymentUncheckedCreateWithoutFirmInput = {
@@ -564,6 +680,7 @@ export type VendorPaymentUncheckedCreateWithoutFirmInput = {
   date?: Date | string
   utr?: string | null
   method?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentCreateOrConnectWithoutFirmInput = {
@@ -599,6 +716,7 @@ export type VendorPaymentCreateManyVendorInput = {
   utr?: string | null
   method?: string | null
   firmId?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentUpdateWithoutVendorInput = {
@@ -608,6 +726,7 @@ export type VendorPaymentUpdateWithoutVendorInput = {
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firm?: Prisma.FirmUpdateOneWithoutVendorPaymentsNestedInput
+  bill?: Prisma.VendorBillUpdateOneWithoutPaymentsNestedInput
 }
 
 export type VendorPaymentUncheckedUpdateWithoutVendorInput = {
@@ -617,10 +736,52 @@ export type VendorPaymentUncheckedUpdateWithoutVendorInput = {
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type VendorPaymentUncheckedUpdateManyWithoutVendorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type VendorPaymentCreateManyBillInput = {
+  id?: string
+  vendorId: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Date | string
+  utr?: string | null
+  method?: string | null
+  firmId?: string | null
+}
+
+export type VendorPaymentUpdateWithoutBillInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vendor?: Prisma.VendorUpdateOneRequiredWithoutVendorPaymentsNestedInput
+  firm?: Prisma.FirmUpdateOneWithoutVendorPaymentsNestedInput
+}
+
+export type VendorPaymentUncheckedUpdateWithoutBillInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorId?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type VendorPaymentUncheckedUpdateManyWithoutBillInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -635,6 +796,7 @@ export type VendorPaymentCreateManyFirmInput = {
   date?: Date | string
   utr?: string | null
   method?: string | null
+  billId?: string | null
 }
 
 export type VendorPaymentUpdateWithoutFirmInput = {
@@ -644,6 +806,7 @@ export type VendorPaymentUpdateWithoutFirmInput = {
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendor?: Prisma.VendorUpdateOneRequiredWithoutVendorPaymentsNestedInput
+  bill?: Prisma.VendorBillUpdateOneWithoutPaymentsNestedInput
 }
 
 export type VendorPaymentUncheckedUpdateWithoutFirmInput = {
@@ -653,6 +816,7 @@ export type VendorPaymentUncheckedUpdateWithoutFirmInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type VendorPaymentUncheckedUpdateManyWithoutFirmInput = {
@@ -662,6 +826,7 @@ export type VendorPaymentUncheckedUpdateManyWithoutFirmInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   utr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -674,8 +839,10 @@ export type VendorPaymentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   utr?: boolean
   method?: boolean
   firmId?: boolean
+  billId?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }, ExtArgs["result"]["vendorPayment"]>
 
 export type VendorPaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -686,8 +853,10 @@ export type VendorPaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   utr?: boolean
   method?: boolean
   firmId?: boolean
+  billId?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }, ExtArgs["result"]["vendorPayment"]>
 
 export type VendorPaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -698,8 +867,10 @@ export type VendorPaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   utr?: boolean
   method?: boolean
   firmId?: boolean
+  billId?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }, ExtArgs["result"]["vendorPayment"]>
 
 export type VendorPaymentSelectScalar = {
@@ -710,20 +881,24 @@ export type VendorPaymentSelectScalar = {
   utr?: boolean
   method?: boolean
   firmId?: boolean
+  billId?: boolean
 }
 
-export type VendorPaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "amount" | "date" | "utr" | "method" | "firmId", ExtArgs["result"]["vendorPayment"]>
+export type VendorPaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "amount" | "date" | "utr" | "method" | "firmId" | "billId", ExtArgs["result"]["vendorPayment"]>
 export type VendorPaymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }
 export type VendorPaymentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }
 export type VendorPaymentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   firm?: boolean | Prisma.VendorPayment$firmArgs<ExtArgs>
+  bill?: boolean | Prisma.VendorPayment$billArgs<ExtArgs>
 }
 
 export type $VendorPaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -731,6 +906,7 @@ export type $VendorPaymentPayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {
     vendor: Prisma.$VendorPayload<ExtArgs>
     firm: Prisma.$FirmPayload<ExtArgs> | null
+    bill: Prisma.$VendorBillPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -740,6 +916,7 @@ export type $VendorPaymentPayload<ExtArgs extends runtime.Types.Extensions.Inter
     utr: string | null
     method: string | null
     firmId: string | null
+    billId: string | null
   }, ExtArgs["result"]["vendorPayment"]>
   composites: {}
 }
@@ -1136,6 +1313,7 @@ export interface Prisma__VendorPaymentClient<T, Null = never, ExtArgs extends ru
   readonly [Symbol.toStringTag]: "PrismaPromise"
   vendor<T extends Prisma.VendorDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VendorDefaultArgs<ExtArgs>>): Prisma.Prisma__VendorClient<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   firm<T extends Prisma.VendorPayment$firmArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VendorPayment$firmArgs<ExtArgs>>): Prisma.Prisma__FirmClient<runtime.Types.Result.GetResult<Prisma.$FirmPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  bill<T extends Prisma.VendorPayment$billArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VendorPayment$billArgs<ExtArgs>>): Prisma.Prisma__VendorBillClient<runtime.Types.Result.GetResult<Prisma.$VendorBillPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1172,6 +1350,7 @@ export interface VendorPaymentFieldRefs {
   readonly utr: Prisma.FieldRef<"VendorPayment", 'String'>
   readonly method: Prisma.FieldRef<"VendorPayment", 'String'>
   readonly firmId: Prisma.FieldRef<"VendorPayment", 'String'>
+  readonly billId: Prisma.FieldRef<"VendorPayment", 'String'>
 }
     
 
@@ -1589,6 +1768,25 @@ export type VendorPayment$firmArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   include?: Prisma.FirmInclude<ExtArgs> | null
   where?: Prisma.FirmWhereInput
+}
+
+/**
+ * VendorPayment.bill
+ */
+export type VendorPayment$billArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VendorBill
+   */
+  select?: Prisma.VendorBillSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VendorBill
+   */
+  omit?: Prisma.VendorBillOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VendorBillInclude<ExtArgs> | null
+  where?: Prisma.VendorBillWhereInput
 }
 
 /**

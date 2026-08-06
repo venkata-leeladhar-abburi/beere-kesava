@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
 import { EASE, F, T, useFirms } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
@@ -22,13 +23,28 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
 
-  const handleSave = () => {
-    if (!amount || !utr || !firmId) return;
+  const handleSave = async () => {
+    const numericAmount = parseFloat(amount);
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) return;
     setSaving(true);
-    setTimeout(() => {
-      onSave(parseFloat(amount), firmId, utr);
+    const targetVendorId = vp.vendorId || vp.id;
+    try {
+      if (targetVendorId) {
+        await vendorPaymentsApi.create({
+          vendorId: targetVendorId,
+          amount: numericAmount,
+          utr: utr.trim() || undefined,
+          method: method.trim() || undefined,
+          firmId: firmId.trim() || undefined,
+          date: date || undefined,
+        });
+      }
+      onSave(numericAmount, firmId, utr);
+    } catch (err) {
+      console.error("Failed to record vendor payment:", err);
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   return (

@@ -9,6 +9,7 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useCurrentWeaver } from "./useCurrentWeaver";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -24,7 +25,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
 
 
@@ -32,12 +33,13 @@ export function PaymentLedgerPage() {
   const { isMobile } = useResponsive();
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { batches } = useBatches();
-  
-  const myPayments = getPaymentsForWeaver(CURRENT_WEAVER_ID);
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+
+  const myPayments = weaverId ? getPaymentsForWeaver(weaverId) : [];
 
   const myWeaverRows = useMemo(() => {
-    return batches.flatMap(b => b.rows.map(r => ({ ...r, batchId: b.batchId })).filter(r => r.weaverId === CURRENT_WEAVER_ID));
-  }, [batches]);
+    return batches.flatMap(b => b.rows.map(r => ({ ...r, batchId: b.batchId })).filter(r => r.weaverId === weaverId));
+  }, [batches, weaverId]);
 
   const passedSarees = useMemo(() => {
     return myWeaverRows.filter(r => r.qcPassed === true);
@@ -78,6 +80,28 @@ export function PaymentLedgerPage() {
   const isPaid = currentPayment !== null;
 
   const fmtAmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
+  if (weaverLoading) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY EARNINGS" title="My Payment Ledger" sub="Earnings, deductions, balance" />
+        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your payment ledger…</div>
+      </div>
+    );
+  }
+
+  if (weaverError || !weaverId) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY EARNINGS" title="My Payment Ledger" sub="Earnings, deductions, balance" />
+        <div style={{ margin: "40px 20px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+          <AlertTriangle size={28} color={C.crim} style={{ margin: "0 auto 10px" }} />
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>Couldn't find your weaver profile</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ paddingBottom: 32 }}>

@@ -1,13 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateFinishingAssignmentDto } from "./dto/create-finishing-assignment.dto";
 import { ListFinishingAssignmentsQueryDto } from "./dto/list-finishing-assignments-query.dto";
 import { ReceiveFinishingReturnDto } from "./dto/receive-finishing-return.dto";
 import { FinishingAssignmentsService } from "./finishing-assignments.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. Create/receive should require
-// "production.finishing.assign" once auth exists.
+// Production/operational module — WORKER access only.
 @Controller("finishing/assignments")
+@RequireRoles(UserRole.WORKER)
 export class FinishingAssignmentsController {
   constructor(private readonly finishingAssignmentsService: FinishingAssignmentsService) {}
 

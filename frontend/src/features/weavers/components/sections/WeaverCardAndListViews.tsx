@@ -52,7 +52,7 @@ export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
 }
 
 export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const allWeavers = useRealWeavers(extraWeavers);
   const visible = showAll ? allWeavers : allWeavers.slice(0, 4);
 

@@ -9,6 +9,9 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useCurrentWeaver } from "./useCurrentWeaver";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -24,27 +27,93 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
 import { Button, Input, Textarea, Field } from '../../../../shared/ui/primitives';
 
+const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
+  warp: "WARP", resham: "RESHAM", jari: "JARI",
+};
 
 export function WarpRequestPage() {
   const { isMobile, isTablet } = useResponsive();
-  const [selectedBatch, setSelectedBatch] = useState<"086" | "089">("086");
+  const { batches } = useBatches();
+  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const queryClient = useQueryClient();
+
+  // Batches the logged-in weaver actually has rows in — no more fake BATCH-086/089.
+  const myBatches = useMemo(() => {
+    return batches
+      .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
+      .filter(b => b.myRows.length > 0 && b.status !== "completed");
+  }, [batches, weaverId]);
+
+  const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+  const activeBatchId = selectedBatch ?? myBatches[0]?.batchId ?? null;
+  const activeBatch = myBatches.find(b => b.batchId === activeBatchId) ?? null;
+
   const [materials, setMaterials] = useState({ warp: false, resham: false, jari: false });
   const [amounts, setAmounts] = useState({ warp: "", resham: "", jari: "" });
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [showForm, setShowForm] = useState(true);
 
-  // BATCH-086 is 60% (above 50% = unlocked), BATCH-089 is 50% (unlocked)
-  const batchProgress = selectedBatch === "086"
-    ? { total: 5, done: 3, pct: 60, unlocked: true }
-    : { total: 8, done: 4, pct: 50, unlocked: true };
+  const batchProgress = useMemo(() => {
+    if (!activeBatch) return { total: 0, done: 0, pct: 0 };
+    const total = activeBatch.myRows.length;
+    const done = activeBatch.myRows.filter(r => r.qcPassed === true || r.sareeId).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { total, done, pct };
+  }, [activeBatch]);
 
-  // Demo: BATCH-086 locked at 37.5% for demonstration; switch logic below
-  const isLocked = selectedBatch === "086" ? false : false; // both unlocked per spec
+  const isLocked = batchProgress.pct < 50;
+
+  // Previous requests raised by this weaver, most recent first.
+  const { data: warpRequestsData } = useQuery({
+    queryKey: ["warpRequests"],
+    queryFn: () => warpRequestsApi.list(),
+  });
+  const myPrevRequests: BackendWarpRequest[] = useMemo(() => {
+    return (warpRequestsData?.items ?? [])
+      .filter(r => r.weaverId === weaverId)
+      .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
+  }, [warpRequestsData, weaverId]);
+
+  const createRequestMutation = useMutation({
+    mutationFn: async () => {
+      if (!weaverId) throw new Error("No weaver profile resolved for this login.");
+      const selectedMaterials = (["warp", "resham", "jari"] as const).filter(m => materials[m]);
+      await Promise.all(selectedMaterials.map(mat =>
+        warpRequestsApi.create({
+          weaverId,
+          warpType: MATERIAL_TO_WARP_TYPE[mat],
+          lengthMeters: parseFloat(amounts[mat]) || 0,
+          notes: reason || undefined,
+        }),
+      ));
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["warpRequests"] });
+      setSubmitted(true);
+    },
+    onError: (err) => {
+      // eslint-disable-next-line no-console -- surface submit failures instead of failing silently
+      console.error("Failed to submit warp request:", err);
+    },
+  });
+
+  if (weaverLoading) {
+    return <div style={{ padding: "60px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading…</div>;
+  }
+
+  if (weaverError || !weaverId) {
+    return (
+      <div style={{ padding: "60px 20px", textAlign: "center" as const }}>
+        <AlertTriangle size={28} color={C.crim} style={{ margin: "0 auto 12px" }} />
+        <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>Couldn't find your weaver profile</div>
+        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -61,6 +130,19 @@ export function WarpRequestPage() {
     );
   }
 
+  if (myBatches.length === 0) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · WARP REQUEST" title="Raise Warp Request" sub="Request additional material" />
+        <div style={{ margin: "20px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+          <Package size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>You have no active batches yet.</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Warp requests can only be raised against a batch assigned to you.</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ paddingBottom: 32 }}>
       <HeroHeader eyebrow="SINCE 1999 · WARP REQUEST" title="Raise Warp Request" sub="Request additional material" />
@@ -68,18 +150,18 @@ export function WarpRequestPage() {
       {/* Batch Selector */}
       <div style={{ padding: "16px 20px 8px" }}>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginBottom: 10 }}>Which batch?</div>
-        <div style={{ display: "flex", gap: 10 }}>
-          {(["086", "089"] as const).map(b => (
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
+          {myBatches.map(b => (
             <Button
-              key={b}
-              onClick={() => setSelectedBatch(b)}
+              key={b.batchId}
+              onClick={() => setSelectedBatch(b.batchId)}
               size="sm"
               className={
-                selectedBatch === b
+                activeBatchId === b.batchId
                   ? "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-[#6B1A2A] font-semibold text-xs text-white"
                   : "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-transparent font-semibold text-xs text-[#6B1A2A]"
               }
-            >BATCH-{b}</Button>
+            >{b.batchId}</Button>
           ))}
         </div>
       </div>
@@ -97,12 +179,12 @@ export function WarpRequestPage() {
                 You can raise a warp request only after submitting 50% of your batch. This ensures enough progress before more material is given.
               </div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 8 }}>Your current progress:</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 12 }}>3 of 8 sarees submitted</div>
-              <ProgressBar pct={37.5} height={12} />
-              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "right" as const, marginTop: 4, marginBottom: 16 }}>37.5% complete</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 12 }}>{batchProgress.done} of {batchProgress.total} sarees submitted</div>
+              <ProgressBar pct={batchProgress.pct} height={12} />
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "right" as const, marginTop: 4, marginBottom: 16 }}>{batchProgress.pct}% complete</div>
               <div style={{ background: C.cream, borderRadius: 10, padding: "12px 16px", textAlign: "left" as const }}>
-                <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, marginBottom: 8 }}>You need 1 more saree to unlock the warp request (50% = 4 sarees)</div>
-                <ProgressBar pct={(37.5 / 50) * 100} height={6} />
+                <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5, marginBottom: 8 }}>Reach 50% progress to unlock warp requests for this batch.</div>
+                <ProgressBar pct={(batchProgress.pct / 50) * 100} height={6} />
               </div>
             </Card>
           </div>
@@ -139,7 +221,7 @@ export function WarpRequestPage() {
               {/* Batch Reference */}
               <div style={{ marginBottom: 18 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 8 }}>Batch Reference</div>
-                <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14 }}>BATCH-{selectedBatch}</div>
+                <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14 }}>{activeBatchId}</div>
               </div>
 
               {/* Material checkboxes */}
@@ -193,10 +275,11 @@ export function WarpRequestPage() {
 
           <div style={{ margin: isMobile ? "0 20px" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "80%" : 560, padding: isMobile ? undefined : "0 20px", display: "flex", justifyContent: isMobile ? undefined : "flex-end" }}>
             <Button
-              onClick={() => (materials.warp || materials.resham || materials.jari) ? setSubmitted(true) : undefined}
-              className={isMobile ? "w-full h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white" : "w-[200px] h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white"}
+              onClick={() => (materials.warp || materials.resham || materials.jari) ? createRequestMutation.mutate() : undefined}
+              disabled={createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
+              className={isMobile ? "w-full h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60" : "w-[200px] h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60"}
             >
-              <Send size={18} /> Send Warp Request
+              <Send size={18} /> {createRequestMutation.isPending ? "Sending…" : "Send Warp Request"}
             </Button>
           </div>
         </>
@@ -205,13 +288,26 @@ export function WarpRequestPage() {
       {/* Previous Requests */}
       <SectionTitle title="Your Previous Requests" />
       {(() => {
-        const PREV_REQUESTS = [
-          { id: "WR-014-01", material: "3 kg Warp", batch: "BATCH-086", date: "10 Jun 2026", status: "✓ Approved", color: C.green, bg: "rgba(30,102,64,0.10)" },
-          { id: "WR-014-02", material: "Resham Red 500g", batch: "BATCH-089", date: "05 Jun 2026", status: "✗ Rejected", color: C.crim, bg: "rgba(192,57,43,0.10)" },
-          { id: "WR-014-03", material: "2 kg Warp", batch: "BATCH-086", date: "01 Jun 2026", status: "✓ Approved", color: C.green, bg: "rgba(30,102,64,0.10)" },
-        ];
+        const rows = myPrevRequests.map(r => ({
+          id: r.id.slice(0, 8),
+          material: `${r.lengthMeters}m ${r.warpType}${r.color ? ` (${r.color})` : ""}`,
+          batch: r.loomNumber ?? "—",
+          date: new Date(r.requestedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+          status: r.status === "APPROVED" ? "✓ Approved" : r.status === "REJECTED" ? "✗ Rejected" : "⏳ Pending",
+          color: r.status === "APPROVED" ? C.green : r.status === "REJECTED" ? C.crim : C.gold,
+          bg: r.status === "APPROVED" ? "rgba(30,102,64,0.10)" : r.status === "REJECTED" ? "rgba(192,57,43,0.10)" : "rgba(196,146,58,0.15)",
+        }));
+
+        if (rows.length === 0) {
+          return (
+            <div style={{ margin: "0 20px 8px", background: C.cream, borderRadius: 14, padding: "24px 20px", textAlign: "center" as const }}>
+              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>You haven't raised any warp requests yet.</div>
+            </div>
+          );
+        }
+
         if (isMobile) {
-          return PREV_REQUESTS.map((r, i) => (
+          return rows.map((r, i) => (
             <div key={i} style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</div>
@@ -225,12 +321,12 @@ export function WarpRequestPage() {
           <div style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
             <div style={{ minWidth: isTablet ? 640 : undefined }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                {["Request ID", "Material", "Batch", "Status", "Date"].map(h => (
+                {["Request ID", "Material", "Loom", "Status", "Date"].map(h => (
                   <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
                 ))}
               </div>
-              {PREV_REQUESTS.map((r, i) => (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: i < PREV_REQUESTS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+              {rows.map((r, i) => (
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: i < rows.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.material}</div>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.batch}</div>

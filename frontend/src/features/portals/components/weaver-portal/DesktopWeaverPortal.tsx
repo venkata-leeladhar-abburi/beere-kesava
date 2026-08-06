@@ -9,7 +9,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Layers, ClipboardCheck, Package, CreditCard } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
-import { CURRENT_WEAVER_ID, F, MyBatchEntry, Tab5 } from "./theme";
+import { F, MyBatchEntry, Tab5 } from "./theme";
+import { useCurrentWeaver } from "./useCurrentWeaver";
 
 import { NotificationsPage } from "./NotificationsPage";
 import { TopNav } from "./desktop/TopNav";
@@ -33,12 +34,13 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
 
   const { batches } = useBatches();
   const { getRecordsForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
-  const weaverMaterialRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const weaverMaterialRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
-  const matSummary = getMaterialSummaryForWeaver(CURRENT_WEAVER_ID);
-  const matByBatch = getMaterialSummaryByBatch(CURRENT_WEAVER_ID);
+  const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
+  const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === CURRENT_WEAVER_ID) }))
+    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
     .filter(b => b.myRows.length > 0);
 
   // Completed: every saree row assigned to this weaver in the batch has passed QC
@@ -49,7 +51,7 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        .filter(r => r.weaverId === CURRENT_WEAVER_ID && r.qcPassed === false)
+        .filter(r => r.weaverId === weaverId && r.qcPassed === false)
         .map(r => ({
           sareeId: r.sareeId,
           batchId: b.batchId,
@@ -61,7 +63,7 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
           deduction: 450,
         }))
     );
-  }, [batches]);
+  }, [batches, weaverId]);
 
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
@@ -98,7 +100,17 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
       />
 
       {/* ── Page Content ── */}
+      {!showNotifs && weaverLoading && (
+        <div style={{ margin: "40px 24px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: "#8A7F76" }}>Loading your weaver profile…</div>
+      )}
+      {!showNotifs && !weaverLoading && (weaverError || !weaverId) && (
+        <div style={{ margin: "40px 24px", background: "#FFF", borderRadius: 14, padding: "28px 20px", textAlign: "center" as const, border: "1px solid rgba(107,26,42,0.12)" }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: "#1A0A0F", fontWeight: 600 }}>Couldn't find your weaver profile</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: "#8A7F76", marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+        </div>
+      )}
       <AnimatePresence mode="wait">
+        {(showNotifs || (!weaverLoading && !weaverError && weaverId)) && (
         <motion.div key={showNotifs ? "notifs" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
 
           {/* ════════ NOTIFICATIONS ════════ */}
@@ -144,6 +156,7 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
           )}
 
         </motion.div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>

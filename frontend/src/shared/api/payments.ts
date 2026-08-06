@@ -107,6 +107,7 @@ export interface CreateVendorPaymentPayload {
   utr?: string;
   method?: string;
   firmId?: string;
+  billId?: string;
 }
 
 export interface BackendVendorPayment {
@@ -117,6 +118,7 @@ export interface BackendVendorPayment {
   utr: string | null;
   method: string | null;
   firmId: string | null;
+  billId?: string | null;
 }
 
 export const vendorPaymentsApi = {

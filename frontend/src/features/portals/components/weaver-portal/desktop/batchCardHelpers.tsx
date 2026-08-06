@@ -2,12 +2,14 @@ import React from "react";
 import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
 import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
 import { Package } from "lucide-react";
-import { C, F, CURRENT_WEAVER_ID } from "../theme";
+import { C, F } from "../theme";
+import { useCurrentWeaver } from "../useCurrentWeaver";
 
 // ─── Materials given to the current weaver for a specific batch (aggregated by type) ──
 export function useMaterialsGivenForBatch(batchId: string) {
   const { getRecordsForWeaver } = useMaterialIssue();
-  const records = getRecordsForWeaver(CURRENT_WEAVER_ID).filter(r => r.batchId === batchId && r.status !== "cancelled");
+  const { weaverId } = useCurrentWeaver();
+  const records = weaverId ? getRecordsForWeaver(weaverId).filter(r => r.batchId === batchId && r.status !== "cancelled") : [];
   const totals: Record<string, { qty: number; unit: string }> = {};
   records.forEach(r => r.materials.forEach(m => {
     if (!totals[m.materialType]) totals[m.materialType] = { qty: 0, unit: m.unit };
@@ -19,7 +21,8 @@ export function useMaterialsGivenForBatch(batchId: string) {
 // ─── Dispatch instructions sent to the current weaver, linked to a specific batch ──
 export function DispatchInstructionsBlock({ batchId }: { batchId: string }) {
   const { getDispatchesForWeaver } = useDesignLibrary();
-  const myDispatches = getDispatchesForWeaver(CURRENT_WEAVER_ID).filter(d => d.batches.includes(batchId));
+  const { weaverId } = useCurrentWeaver();
+  const myDispatches = weaverId ? getDispatchesForWeaver(weaverId).filter(d => d.batches.includes(batchId)) : [];
   if (myDispatches.length === 0) return null;
   return (
     <div>

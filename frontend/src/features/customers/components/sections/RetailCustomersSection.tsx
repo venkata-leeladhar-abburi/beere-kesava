@@ -1,16 +1,27 @@
+import { useState } from "react";
 import {
-  Download, Eye, UserPlus,
+  Download, Eye, UserPlus, Plus,
   LayoutGrid, AlignJustify, MapPin,
   Phone, Calendar, Star, IndianRupee, AlertTriangle, Users,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { SectionTitle, Pill } from "../common/primitives";
-import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { SectionTitle, Pill, FadeUp } from "../common/primitives";
+import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
 import { retailData } from "../data";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
+import { useCustomers } from "../../contexts/CustomersContext";
+
+interface RetailFormState {
+  name: string;
+  phone: string;
+  city: string;
+  address: string;
+}
+
+const EMPTY_RETAIL_FORM: RetailFormState = { name: "", phone: "", city: "", address: "" };
 
 export interface RetailCustomersSectionProps {
   retailView: "card" | "list";
@@ -38,13 +49,85 @@ export function RetailCustomersSection({
   retailCityFilter, setRetailCityFilter, retailSort, setRetailSort,
   retailCities, filteredRetail, onViewHistory, onDownloadConfirm,
 }: RetailCustomersSectionProps) {
+  const { addCustomer } = useCustomers();
+  const [showAddRetail, setShowAddRetail] = useState(false);
+  const [form, setForm] = useState<RetailFormState>(EMPTY_RETAIL_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateField = <K extends keyof RetailFormState>(key: K, value: RetailFormState[K]) =>
+    setForm(f => ({ ...f, [key]: value }));
+
+  const closeAddRetail = () => {
+    setShowAddRetail(false);
+    setForm(EMPTY_RETAIL_FORM);
+    setError(null);
+  };
+
+  const handleSaveRetail = async () => {
+    setError(null);
+    if (!form.name.trim() || !form.phone.trim()) {
+      setError("Customer Name and Phone Number are required.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await addCustomer({
+        name: form.name.trim(),
+        type: "RETAIL",
+        phone: form.phone.trim(),
+        city: form.city.trim() || undefined,
+        address: form.address.trim() || undefined,
+      });
+      closeAddRetail();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save customer. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div style={{ padding: "0 56px 64px 56px" }}>
       <SectionTitle
         title="Retail Customers"
-        sub="Retail customer profiles are created automatically when a sale is recorded at the shop. Admin can view all profiles and purchase history."
+        sub="Retail customer profiles are created automatically when a sale is recorded at the shop. Admin can also add a profile manually, view all profiles, and see purchase history."
         action="📥 Download Retail Customer List →"
       />
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -60, marginBottom: 24 }}>
+        <Button onClick={() => (showAddRetail ? closeAddRetail() : setShowAddRetail(true))} variant="primary" iconLeft={Plus}>
+          Add New Retail Customer →
+        </Button>
+      </div>
+
+      {showAddRetail && (
+        <FadeUp>
+          <div style={{ background: "#FFF", borderRadius: 16, padding: 32, border: `1px solid ${T.borderDef}`, marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Retail Customer</h3>
+              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the customer's contact details.</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <Field label="Customer Name *"><Input aria-label="Customer's full name" type="text" placeholder="Customer's full name" value={form.name} onChange={e => updateField("name", e.target.value)} /></Field>
+                <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" value={form.phone} onChange={e => updateField("phone", e.target.value)} /></Field>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <Field label="City"><Input aria-label="City" type="text" placeholder="City" value={form.city} onChange={e => updateField("city", e.target.value)} /></Field>
+                <Field label="Address"><Input aria-label="Address" type="text" placeholder="Address" value={form.address} onChange={e => updateField("address", e.target.value)} /></Field>
+              </div>
+            </div>
+            {error && (
+              <div style={{ marginTop: 20, padding: "10px 14px", background: T.crimsonBg, color: T.crimson, borderRadius: 8, fontFamily: F.ui, fontSize: 13 }}>{error}</div>
+            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid ${T.borderDef}` }}>
+              <Button onClick={closeAddRetail} variant="tertiary" disabled={submitting}>Cancel</Button>
+              <Button onClick={handleSaveRetail} variant="primary" disabled={submitting}>{submitting ? "Saving…" : "✓ Save Customer"}</Button>
+            </div>
+          </div>
+        </FadeUp>
+      )}
 
       <div style={{ marginBottom: 24 }}>
         <DateFilterBar filter={retailOverviewDateFilter} onChange={setRetailOverviewDateFilter} />

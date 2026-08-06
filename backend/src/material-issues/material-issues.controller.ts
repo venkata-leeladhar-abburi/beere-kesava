@@ -12,15 +12,16 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { signatureUploadOptions } from "../common/storage/upload.config";
+import { UserRole } from "../generated/prisma/client";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
 import { MaterialIssuesService } from "./material-issues.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. Create should require
-// "production.material_issue.create" once auth exists.
+// Production/operational module — WORKER access only.
 @Controller("material-issues")
+@RequireRoles(UserRole.WORKER)
 export class MaterialIssuesController {
   constructor(private readonly materialIssuesService: MaterialIssuesService) {}
 

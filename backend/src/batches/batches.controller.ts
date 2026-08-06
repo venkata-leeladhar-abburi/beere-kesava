@@ -10,34 +10,43 @@ import {
   Post,
   Query,
 } from "@nestjs/common";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { UserRole } from "../generated/prisma/client";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
 import { BatchesService } from "./batches.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Production module — WORKER has full read/write; WEAVER can only read
+// batches that include rows assigned to them (self-scoped in the service).
 @Controller("batches")
+@RequireRoles(UserRole.WORKER, UserRole.WEAVER)
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
   @Post()
+  @RequireRoles(UserRole.WORKER)
   create(@Body() dto: CreateBatchDto) {
     return this.batchesService.create(dto);
   }
 
   @Get()
-  findAll(@Query() query: ListBatchesQueryDto) {
-    return this.batchesService.findAll(query);
+  findAll(@CurrentUser() user: AuthenticatedUser, @Query() query: ListBatchesQueryDto) {
+    const weaverId = user.role === UserRole.WEAVER ? user.id : undefined;
+    return this.batchesService.findAll(query, weaverId);
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.batchesService.findOne(id);
+  findOne(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
+    const weaverId = user.role === UserRole.WEAVER ? user.id : undefined;
+    return this.batchesService.findOne(id, weaverId);
   }
 
   @Patch(":id/rows/:serial")
+  @RequireRoles(UserRole.WORKER)
   assignRow(
     @Param("id") id: string,
     @Param("serial", ParseIntPipe) serial: number,
@@ -48,6 +57,7 @@ export class BatchesController {
 
   @Post(":id/finalize")
   @HttpCode(HttpStatus.OK)
+  @RequireRoles(UserRole.WORKER)
   finalize(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
     return this.batchesService.finalize(id, dto);
   }

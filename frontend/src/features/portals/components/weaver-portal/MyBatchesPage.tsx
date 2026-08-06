@@ -9,6 +9,7 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useCurrentWeaver } from "./useCurrentWeaver";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -24,17 +25,19 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, BatchQuickFilter, MyBatchEntry
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, BatchQuickFilter, MyBatchEntry
 } from './theme';
 
 
 export function MyBatchesPage() {
   const { isMobile, cols } = useResponsive();
   const { batches } = useBatches();
+  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { getPaymentsForWeaver } = useWeaverPayments();
   const [quickFilter, setQuickFilter] = useState<BatchQuickFilter>("all");
 
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === CURRENT_WEAVER_ID) }))
+    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
     .filter(b => b.myRows.length > 0);
 
   // Completed: every saree row assigned to this weaver in the batch has passed QC
@@ -47,7 +50,7 @@ export function MyBatchesPage() {
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        .filter(r => r.weaverId === CURRENT_WEAVER_ID && r.qcPassed === false)
+        .filter(r => r.weaverId === weaverId && r.qcPassed === false)
         .map(r => ({
           sareeId: r.sareeId,
           batchId: b.batchId,
@@ -70,6 +73,28 @@ export function MyBatchesPage() {
     if (quickFilter === "qc-pending") return b.myRows.some(r => r.qcPassed !== true);
     return true;
   });
+
+  if (weaverLoading) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
+        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your batches…</div>
+      </div>
+    );
+  }
+
+  if (weaverError || !weaverId) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
+        <div style={{ margin: "40px 20px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+          <AlertTriangle size={28} color={C.crim} style={{ margin: "0 auto 10px" }} />
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>Couldn't find your weaver profile</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -97,22 +122,30 @@ export function MyBatchesPage() {
       {/* Weaver Identity */}
       <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: myDefectiveSarees.length > 0 ? 16 : 0 }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>RK</span>
+          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{weaver?.initials ?? "—"}</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Ravi Kumar</div>
-          <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 3 }}>WVR-014 · Handloom Weaver</div>
+          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{weaver?.name ?? "Weaver"}</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 3 }}>{weaver?.village ? `${weaver.village} · ` : ""}Handloom Weaver</div>
         </div>
         <div style={{ border: `1px solid ${C.gold}`, color: C.gold, borderRadius: 999, padding: "6px 14px", fontFamily: F.m, fontSize: 12, flexShrink: 0, whiteSpace: "nowrap" as const }}>{totalMyActive} Active {totalMyActive === 1 ? "Batch" : "Batches"}</div>
       </div>
 
       {/* Stats Strip — spacious, clearly readable */}
+      {(() => {
+        const allMyRows = myWeaverBatches.flatMap(b => b.myRows);
+        const producedCount = allMyRows.length;
+        const qcPassedCount = allMyRows.filter(r => r.qcPassed === true).length;
+        const qcPassPct = producedCount > 0 ? Math.round((qcPassedCount / producedCount) * 100) : 0;
+        const earnedTotal = weaverId ? getPaymentsForWeaver(weaverId).reduce((sum, p) => sum + p.amountPaid, 0) : 0;
+        const statsData = [
+          { label: "Produced", val: `${producedCount}` },
+          { label: "QC Pass", val: producedCount > 0 ? `${qcPassPct}%` : "—", highlight: true },
+          { label: "Earned", val: `₹${earnedTotal.toLocaleString("en-IN")}` },
+        ];
+        return (
       <div style={{ background: C.dark, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex" }}>
-        {[
-          { label: "Produced", val: "18" },
-          { label: "QC Pass", val: "97%", highlight: true },
-          { label: "Earned", val: "₹8,100" },
-        ].map((s, i) => (
+        {statsData.map((s, i) => (
           <div key={i} style={{
             flex: 1, padding: "16px 10px", textAlign: "center" as const,
             borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
@@ -122,6 +155,8 @@ export function MyBatchesPage() {
           </div>
         ))}
       </div>
+        );
+      })()}
 
       {/* Active Batches */}
       {showActiveSection && (

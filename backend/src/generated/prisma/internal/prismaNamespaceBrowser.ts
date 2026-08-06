@@ -82,6 +82,8 @@ export const ModelName = {
   Vendor: 'Vendor',
   Purchase: 'Purchase',
   PurchaseOrder: 'PurchaseOrder',
+  VendorBill: 'VendorBill',
+  PurchaseOrderItem: 'PurchaseOrderItem',
   PurchaseRequest: 'PurchaseRequest',
   Firm: 'Firm',
   FirmFinancialEntry: 'FirmFinancialEntry',
@@ -614,11 +616,41 @@ export const PurchaseOrderScalarFieldEnum = {
   urgency: 'urgency',
   status: 'status',
   grnId: 'grnId',
+  grnReceiptId: 'grnReceiptId',
+  actualReceivedDate: 'actualReceivedDate',
   rejectionReason: 'rejectionReason',
   createdAt: 'createdAt'
 } as const
 
 export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]
+
+
+export const VendorBillScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  poId: 'poId',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  status: 'status',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type VendorBillScalarFieldEnum = (typeof VendorBillScalarFieldEnum)[keyof typeof VendorBillScalarFieldEnum]
+
+
+export const PurchaseOrderItemScalarFieldEnum = {
+  id: 'id',
+  purchaseOrderId: 'purchaseOrderId',
+  materialType: 'materialType',
+  name: 'name',
+  quantity: 'quantity',
+  unit: 'unit',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice'
+} as const
+
+export type PurchaseOrderItemScalarFieldEnum = (typeof PurchaseOrderItemScalarFieldEnum)[keyof typeof PurchaseOrderItemScalarFieldEnum]
 
 
 export const PurchaseRequestScalarFieldEnum = {
@@ -695,7 +727,8 @@ export const VendorPaymentScalarFieldEnum = {
   date: 'date',
   utr: 'utr',
   method: 'method',
-  firmId: 'firmId'
+  firmId: 'firmId',
+  billId: 'billId'
 } as const
 
 export type VendorPaymentScalarFieldEnum = (typeof VendorPaymentScalarFieldEnum)[keyof typeof VendorPaymentScalarFieldEnum]
@@ -852,7 +885,8 @@ export const GrnItemScalarFieldEnum = {
   quantity: 'quantity',
   unit: 'unit',
   unitPrice: 'unitPrice',
-  totalPrice: 'totalPrice'
+  totalPrice: 'totalPrice',
+  rejectedQuantity: 'rejectedQuantity'
 } as const
 
 export type GrnItemScalarFieldEnum = (typeof GrnItemScalarFieldEnum)[keyof typeof GrnItemScalarFieldEnum]

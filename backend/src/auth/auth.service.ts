@@ -17,6 +17,8 @@ export class AuthService {
     return digits.length >= 10 ? digits.slice(-10) : digits;
   }
 
+  private readonly otpTtlMs = 5 * 60 * 1000;
+
   async requestOtp(dto: RequestOtpDto) {
     const phone = this.cleanPhone(dto.phone);
 
@@ -32,6 +34,26 @@ export class AuthService {
       ? await this.prisma.weaver.findFirst({ where: { phone: { contains: phone } } })
       : null;
 
+    // Persist the OTP so verifyOtp has a real row to validate against
+    // (code is always fixed to "123456" for now, per product decision — no
+    // SMS/WhatsApp sending yet — but the OtpCode table is now actually used).
+    const expiresAt = new Date(Date.now() + this.otpTtlMs);
+    const existing = await this.prisma.otpCode.findFirst({
+      where: { phoneNumber: phone, consumedAt: null },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existing) {
+      await this.prisma.otpCode.update({
+        where: { id: existing.id },
+        data: { code: "123456", expiresAt, attempts: 0 },
+      });
+    } else {
+      await this.prisma.otpCode.create({
+        data: { phoneNumber: phone, code: "123456", expiresAt },
+      });
+    }
+
     // For fixed OTP demo mode, any valid phone number registered or default can receive OTP 123456
     return {
       success: true,
@@ -44,10 +66,32 @@ export class AuthService {
   async verifyOtp(dto: VerifyOtpDto) {
     const phone = this.cleanPhone(dto.phone);
 
+    const otpRow = await this.prisma.otpCode.findFirst({
+      where: { phoneNumber: phone, consumedAt: null },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!otpRow) {
+      throw new UnauthorizedException("No OTP was requested for this phone number.");
+    }
+
+    if (otpRow.expiresAt < new Date()) {
+      throw new UnauthorizedException("OTP has expired. Please request a new one.");
+    }
+
     // OTP validation - fixed to 123456
-    if (dto.code !== "123456") {
+    if (dto.code !== "123456" || dto.code !== otpRow.code) {
+      await this.prisma.otpCode.update({
+        where: { id: otpRow.id },
+        data: { attempts: { increment: 1 } },
+      });
       throw new UnauthorizedException("Invalid OTP code. Please use 123456.");
     }
+
+    await this.prisma.otpCode.update({
+      where: { id: otpRow.id },
+      data: { consumedAt: new Date() },
+    });
 
     await this.ensureDefaultUsers();
 
@@ -113,14 +157,23 @@ export class AuthService {
   }
 
   async ensureDefaultUsers() {
+    // NOTE: empId here uses a "SEED-" prefix, deliberately distinct from the
+    // sequential "EMP-xxx" ids the general Add User flow generates via
+    // IdGeneratorService (see users.service.ts). Reusing "EMP-001"/"EMP-002"
+    // previously caused a real bug: whichever claimed that id first (a normal
+    // user created through the UI, or this seed) silently blocked the other,
+    // so the SuperAdmin/Admin seed could end up never created. Existence is
+    // checked by mobile number only, since that's the real unique identity
+    // used for OTP login.
+
     // Seed SuperAdmin if not existing
     const superAdmin = await this.prisma.user.findFirst({
-      where: { OR: [{ mobile: "9999999999" }, { empId: "EMP-001" }] },
+      where: { mobile: "9999999999" },
     });
     if (!superAdmin) {
       await this.prisma.user.create({
         data: {
-          empId: "EMP-001",
+          empId: "SEED-SUPERADMIN",
           firstName: "Super",
           lastName: "Admin",
           mobile: "9999999999",
@@ -133,12 +186,12 @@ export class AuthService {
 
     // Seed Admin if not existing
     const admin = await this.prisma.user.findFirst({
-      where: { OR: [{ mobile: "8888888888" }, { empId: "EMP-002" }] },
+      where: { mobile: "8888888888" },
     });
     if (!admin) {
       await this.prisma.user.create({
         data: {
-          empId: "EMP-002",
+          empId: "SEED-ADMIN",
           firstName: "Store",
           lastName: "Admin",
           mobile: "8888888888",

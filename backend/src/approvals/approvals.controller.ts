@@ -1,10 +1,10 @@
 import { Controller, Get } from "@nestjs/common";
+import { AdminOnly } from "../auth/decorators/require-roles.decorator";
 import { ApprovalsService } from "./approvals.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. This route is superadmin-only per the
-// architecture doc §1.2 once auth exists.
+// Admin/superadmin-only per the architecture doc §1.2.
 @Controller("approvals")
+@AdminOnly()
 export class ApprovalsController {
   constructor(private readonly approvalsService: ApprovalsService) {}
 

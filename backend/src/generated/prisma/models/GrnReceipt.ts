@@ -208,6 +208,7 @@ export type GrnReceiptWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"GrnReceipt"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorNullableScalarRelationFilter, Prisma.VendorWhereInput> | null
   items?: Prisma.GrnItemListRelationFilter
+  purchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }
 
 export type GrnReceiptOrderByWithRelationInput = {
@@ -221,6 +222,7 @@ export type GrnReceiptOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   vendor?: Prisma.VendorOrderByWithRelationInput
   items?: Prisma.GrnItemOrderByRelationAggregateInput
+  purchaseOrders?: Prisma.PurchaseOrderOrderByRelationAggregateInput
 }
 
 export type GrnReceiptWhereUniqueInput = Prisma.AtLeast<{
@@ -237,6 +239,7 @@ export type GrnReceiptWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"GrnReceipt"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorNullableScalarRelationFilter, Prisma.VendorWhereInput> | null
   items?: Prisma.GrnItemListRelationFilter
+  purchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }, "id">
 
 export type GrnReceiptOrderByWithAggregationInput = {
@@ -277,6 +280,7 @@ export type GrnReceiptCreateInput = {
   createdAt?: Date | string
   vendor?: Prisma.VendorCreateNestedOneWithoutGrnReceiptsInput
   items?: Prisma.GrnItemCreateNestedManyWithoutGrnInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptUncheckedCreateInput = {
@@ -289,6 +293,7 @@ export type GrnReceiptUncheckedCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   items?: Prisma.GrnItemUncheckedCreateNestedManyWithoutGrnInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptUpdateInput = {
@@ -301,6 +306,7 @@ export type GrnReceiptUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   vendor?: Prisma.VendorUpdateOneWithoutGrnReceiptsNestedInput
   items?: Prisma.GrnItemUpdateManyWithoutGrnNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptUncheckedUpdateInput = {
@@ -313,6 +319,7 @@ export type GrnReceiptUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.GrnItemUncheckedUpdateManyWithoutGrnNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptCreateManyInput = {
@@ -355,6 +362,11 @@ export type GrnReceiptListRelationFilter = {
 
 export type GrnReceiptOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type GrnReceiptNullableScalarRelationFilter = {
+  is?: Prisma.GrnReceiptWhereInput | null
+  isNot?: Prisma.GrnReceiptWhereInput | null
 }
 
 export type GrnReceiptCountOrderByAggregateInput = {
@@ -437,6 +449,22 @@ export type GrnReceiptUncheckedUpdateManyWithoutVendorNestedInput = {
   deleteMany?: Prisma.GrnReceiptScalarWhereInput | Prisma.GrnReceiptScalarWhereInput[]
 }
 
+export type GrnReceiptCreateNestedOneWithoutPurchaseOrdersInput = {
+  create?: Prisma.XOR<Prisma.GrnReceiptCreateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedCreateWithoutPurchaseOrdersInput>
+  connectOrCreate?: Prisma.GrnReceiptCreateOrConnectWithoutPurchaseOrdersInput
+  connect?: Prisma.GrnReceiptWhereUniqueInput
+}
+
+export type GrnReceiptUpdateOneWithoutPurchaseOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.GrnReceiptCreateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedCreateWithoutPurchaseOrdersInput>
+  connectOrCreate?: Prisma.GrnReceiptCreateOrConnectWithoutPurchaseOrdersInput
+  upsert?: Prisma.GrnReceiptUpsertWithoutPurchaseOrdersInput
+  disconnect?: Prisma.GrnReceiptWhereInput | boolean
+  delete?: Prisma.GrnReceiptWhereInput | boolean
+  connect?: Prisma.GrnReceiptWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GrnReceiptUpdateToOneWithWhereWithoutPurchaseOrdersInput, Prisma.GrnReceiptUpdateWithoutPurchaseOrdersInput>, Prisma.GrnReceiptUncheckedUpdateWithoutPurchaseOrdersInput>
+}
+
 export type GrnReceiptCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.GrnReceiptCreateWithoutItemsInput, Prisma.GrnReceiptUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.GrnReceiptCreateOrConnectWithoutItemsInput
@@ -460,6 +488,7 @@ export type GrnReceiptCreateWithoutVendorInput = {
   notes?: string | null
   createdAt?: Date | string
   items?: Prisma.GrnItemCreateNestedManyWithoutGrnInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptUncheckedCreateWithoutVendorInput = {
@@ -471,6 +500,7 @@ export type GrnReceiptUncheckedCreateWithoutVendorInput = {
   notes?: string | null
   createdAt?: Date | string
   items?: Prisma.GrnItemUncheckedCreateNestedManyWithoutGrnInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptCreateOrConnectWithoutVendorInput = {
@@ -513,6 +543,70 @@ export type GrnReceiptScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"GrnReceipt"> | Date | string
 }
 
+export type GrnReceiptCreateWithoutPurchaseOrdersInput = {
+  id: string
+  supplierName: string
+  invoiceNo?: string | null
+  invoiceDate?: Date | string | null
+  receivedDate?: Date | string
+  notes?: string | null
+  createdAt?: Date | string
+  vendor?: Prisma.VendorCreateNestedOneWithoutGrnReceiptsInput
+  items?: Prisma.GrnItemCreateNestedManyWithoutGrnInput
+}
+
+export type GrnReceiptUncheckedCreateWithoutPurchaseOrdersInput = {
+  id: string
+  vendorId?: string | null
+  supplierName: string
+  invoiceNo?: string | null
+  invoiceDate?: Date | string | null
+  receivedDate?: Date | string
+  notes?: string | null
+  createdAt?: Date | string
+  items?: Prisma.GrnItemUncheckedCreateNestedManyWithoutGrnInput
+}
+
+export type GrnReceiptCreateOrConnectWithoutPurchaseOrdersInput = {
+  where: Prisma.GrnReceiptWhereUniqueInput
+  create: Prisma.XOR<Prisma.GrnReceiptCreateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedCreateWithoutPurchaseOrdersInput>
+}
+
+export type GrnReceiptUpsertWithoutPurchaseOrdersInput = {
+  update: Prisma.XOR<Prisma.GrnReceiptUpdateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedUpdateWithoutPurchaseOrdersInput>
+  create: Prisma.XOR<Prisma.GrnReceiptCreateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedCreateWithoutPurchaseOrdersInput>
+  where?: Prisma.GrnReceiptWhereInput
+}
+
+export type GrnReceiptUpdateToOneWithWhereWithoutPurchaseOrdersInput = {
+  where?: Prisma.GrnReceiptWhereInput
+  data: Prisma.XOR<Prisma.GrnReceiptUpdateWithoutPurchaseOrdersInput, Prisma.GrnReceiptUncheckedUpdateWithoutPurchaseOrdersInput>
+}
+
+export type GrnReceiptUpdateWithoutPurchaseOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierName?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  receivedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vendor?: Prisma.VendorUpdateOneWithoutGrnReceiptsNestedInput
+  items?: Prisma.GrnItemUpdateManyWithoutGrnNestedInput
+}
+
+export type GrnReceiptUncheckedUpdateWithoutPurchaseOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierName?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  receivedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.GrnItemUncheckedUpdateManyWithoutGrnNestedInput
+}
+
 export type GrnReceiptCreateWithoutItemsInput = {
   id: string
   supplierName: string
@@ -522,6 +616,7 @@ export type GrnReceiptCreateWithoutItemsInput = {
   notes?: string | null
   createdAt?: Date | string
   vendor?: Prisma.VendorCreateNestedOneWithoutGrnReceiptsInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptUncheckedCreateWithoutItemsInput = {
@@ -533,6 +628,7 @@ export type GrnReceiptUncheckedCreateWithoutItemsInput = {
   receivedDate?: Date | string
   notes?: string | null
   createdAt?: Date | string
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutGrnReceiptInput
 }
 
 export type GrnReceiptCreateOrConnectWithoutItemsInput = {
@@ -560,6 +656,7 @@ export type GrnReceiptUpdateWithoutItemsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   vendor?: Prisma.VendorUpdateOneWithoutGrnReceiptsNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptUncheckedUpdateWithoutItemsInput = {
@@ -571,6 +668,7 @@ export type GrnReceiptUncheckedUpdateWithoutItemsInput = {
   receivedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptCreateManyVendorInput = {
@@ -592,6 +690,7 @@ export type GrnReceiptUpdateWithoutVendorInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.GrnItemUpdateManyWithoutGrnNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptUncheckedUpdateWithoutVendorInput = {
@@ -603,6 +702,7 @@ export type GrnReceiptUncheckedUpdateWithoutVendorInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.GrnItemUncheckedUpdateManyWithoutGrnNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutGrnReceiptNestedInput
 }
 
 export type GrnReceiptUncheckedUpdateManyWithoutVendorInput = {
@@ -622,10 +722,12 @@ export type GrnReceiptUncheckedUpdateManyWithoutVendorInput = {
 
 export type GrnReceiptCountOutputType = {
   items: number
+  purchaseOrders: number
 }
 
 export type GrnReceiptCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | GrnReceiptCountOutputTypeCountItemsArgs
+  purchaseOrders?: boolean | GrnReceiptCountOutputTypeCountPurchaseOrdersArgs
 }
 
 /**
@@ -645,6 +747,13 @@ export type GrnReceiptCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Type
   where?: Prisma.GrnItemWhereInput
 }
 
+/**
+ * GrnReceiptCountOutputType without action
+ */
+export type GrnReceiptCountOutputTypeCountPurchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PurchaseOrderWhereInput
+}
+
 
 export type GrnReceiptSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -657,6 +766,7 @@ export type GrnReceiptSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   vendor?: boolean | Prisma.GrnReceipt$vendorArgs<ExtArgs>
   items?: boolean | Prisma.GrnReceipt$itemsArgs<ExtArgs>
+  purchaseOrders?: boolean | Prisma.GrnReceipt$purchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.GrnReceiptCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["grnReceipt"]>
 
@@ -699,6 +809,7 @@ export type GrnReceiptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type GrnReceiptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.GrnReceipt$vendorArgs<ExtArgs>
   items?: boolean | Prisma.GrnReceipt$itemsArgs<ExtArgs>
+  purchaseOrders?: boolean | Prisma.GrnReceipt$purchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.GrnReceiptCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GrnReceiptIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -713,6 +824,7 @@ export type $GrnReceiptPayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     vendor: Prisma.$VendorPayload<ExtArgs> | null
     items: Prisma.$GrnItemPayload<ExtArgs>[]
+    purchaseOrders: Prisma.$PurchaseOrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1119,6 +1231,7 @@ export interface Prisma__GrnReceiptClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   vendor<T extends Prisma.GrnReceipt$vendorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GrnReceipt$vendorArgs<ExtArgs>>): Prisma.Prisma__VendorClient<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.GrnReceipt$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GrnReceipt$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrnItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  purchaseOrders<T extends Prisma.GrnReceipt$purchaseOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GrnReceipt$purchaseOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1597,6 +1710,30 @@ export type GrnReceipt$itemsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.GrnItemScalarFieldEnum | Prisma.GrnItemScalarFieldEnum[]
+}
+
+/**
+ * GrnReceipt.purchaseOrders
+ */
+export type GrnReceipt$purchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PurchaseOrder
+   */
+  select?: Prisma.PurchaseOrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PurchaseOrder
+   */
+  omit?: Prisma.PurchaseOrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PurchaseOrderInclude<ExtArgs> | null
+  where?: Prisma.PurchaseOrderWhereInput
+  orderBy?: Prisma.PurchaseOrderOrderByWithRelationInput | Prisma.PurchaseOrderOrderByWithRelationInput[]
+  cursor?: Prisma.PurchaseOrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PurchaseOrderScalarFieldEnum | Prisma.PurchaseOrderScalarFieldEnum[]
 }
 
 /**

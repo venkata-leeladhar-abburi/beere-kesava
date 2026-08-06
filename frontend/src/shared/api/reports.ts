@@ -46,6 +46,16 @@ export interface CreateSchedulePayload {
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   format?: string;
   recipientEmail: string;
+  actorId?: string;
+}
+
+export interface UpdateSchedulePayload {
+  reportName?: string;
+  frequency?: "DAILY" | "WEEKLY" | "MONTHLY";
+  format?: string;
+  recipientEmail?: string;
+  active?: boolean;
+  actorId?: string;
 }
 
 export interface ReportDownloadHistoryItem {
@@ -72,6 +82,9 @@ export const reportsApi = {
   salesSummary: () => apiClient.get<SalesSummaryReport>("/reports/sales-summary"),
   listSchedules: () => apiClient.get<{ items: ScheduledReportItem[] }>("/reports/schedules"),
   createSchedule: (payload: CreateSchedulePayload) => apiClient.post<ScheduledReportItem>("/reports/schedules", payload),
-  listHistory: () => apiClient.get<{ items: ReportDownloadHistoryItem[] }>("/reports/history"),
+  updateSchedule: (id: string, payload: UpdateSchedulePayload) =>
+    apiClient.patch<ScheduledReportItem>(`/reports/schedules/${id}`, payload),
+  deleteSchedule: (id: string) => apiClient.delete<{ success: boolean }>(`/reports/schedules/${id}`),
+  listHistory: () => apiClient.get<{ items: ReportDownloadHistoryItem[]; total: number }>("/reports/history"),
   recordDownload: (payload: RecordDownloadPayload) => apiClient.post<ReportDownloadHistoryItem>("/reports/history", payload),
 };

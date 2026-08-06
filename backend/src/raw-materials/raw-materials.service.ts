@@ -19,6 +19,7 @@ export interface CreateGrnDto {
     quantity: number;
     unit?: string;
     unitPrice: number;
+    rejectedQuantity?: number;
   }[];
 }
 
@@ -68,14 +69,18 @@ export class RawMaterialsService {
               unit: item.unit || "KG",
               unitPrice: item.unitPrice,
               totalPrice: item.quantity * item.unitPrice,
+              rejectedQuantity: item.rejectedQuantity ?? 0,
             })),
           },
         },
         include: { items: true, vendor: true },
       });
 
-      // Increment / update stock levels
+      // Increment / update stock levels — only the accepted portion of each
+      // delivery counts towards usable stock; rejected quantity is tracked
+      // on the GrnItem for vendor quality reporting but never added.
       for (const item of dto.items) {
+        const acceptedQuantity = item.quantity - (item.rejectedQuantity ?? 0);
         const existing = await tx.rawMaterialStock.findFirst({
           where: {
             materialType: item.materialType,
@@ -89,7 +94,7 @@ export class RawMaterialsService {
           await tx.rawMaterialStock.update({
             where: { id: existing.id },
             data: {
-              currentStock: { increment: item.quantity },
+              currentStock: { increment: acceptedQuantity },
             },
           });
         } else {
@@ -100,7 +105,7 @@ export class RawMaterialsService {
               grade: item.grade || null,
               color: item.color || null,
               unit: item.unit || "KG",
-              currentStock: item.quantity,
+              currentStock: acceptedQuantity,
               vendorId: dto.vendorId || null,
             },
           });

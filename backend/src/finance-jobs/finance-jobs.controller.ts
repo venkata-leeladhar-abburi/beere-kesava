@@ -1,10 +1,11 @@
 import { Controller, Post } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { OverduePaymentsService } from "./overdue-payments.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. This manual-trigger endpoint should be
-// SUPERADMIN/ACCOUNTANT-only once auth lands.
+// Manual-trigger endpoint for a system-wide financial job — ACCOUNTANT/ADMIN only.
 @Controller("finance-jobs")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class FinanceJobsController {
   constructor(private readonly overduePaymentsService: OverduePaymentsService) {}
 

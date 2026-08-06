@@ -63,13 +63,13 @@ export default function App() {
 
             {/* Admin Portal */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="materials" replace />} />
+              <Route index element={<Navigate to="overview" replace />} />
               <Route path=":tab" element={<AdminDashboardPage />} />
             </Route>
 
             {/* Superadmin Portal */}
             <Route path="/superadmin" element={<SuperadminLayout />}>
-              <Route index element={<Navigate to="materials" replace />} />
+              <Route index element={<Navigate to="overview" replace />} />
               <Route path=":tab" element={<SuperadminDashboardPage />} />
             </Route>
 

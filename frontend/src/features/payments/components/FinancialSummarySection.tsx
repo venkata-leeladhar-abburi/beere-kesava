@@ -3,7 +3,6 @@ import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet } from 
 import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
-import { COMING_IN, GOING_OUT, IF_ALL, NET, TOTAL_IN, TOTAL_OUT } from "../data/summary";
 import { F, T } from "../theme";
 import { formatINR } from "../utils/format";
 import { AnimBar, FadeUp } from "./common/motion";
@@ -30,9 +29,9 @@ export function FinancialSummarySection() {
     queryFn: () => paymentsApi.getSummary(),
   });
 
-  const totalIn = summary?.totalRevenue ?? TOTAL_IN;
-  const totalOut = summary?.totalExpenses ?? TOTAL_OUT;
-  const netCash = summary?.netCashFlow ?? NET;
+  const totalIn = summary?.totalRevenue ?? 0;
+  const totalOut = summary?.totalExpenses ?? 0;
+  const netCash = summary?.netCashFlow ?? 0;
 
   const weaverTotal = summary?.weaverTotal ?? 0;
   const vendorTotal = summary?.vendorTotal ?? 0;
@@ -168,7 +167,7 @@ export function FinancialSummarySection() {
                 <CalendarClock size={15} color={T.antiqueGold} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(IF_ALL)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalIn + (summary?.outstandingAmount ?? 0))}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>

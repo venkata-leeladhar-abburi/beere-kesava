@@ -31,4 +31,10 @@ export class CreateVendorPaymentDto {
   @IsOptional()
   @IsUUID()
   firmId?: string;
+
+  // Optional: when present, this payment settles (partially or fully)
+  // against the given vendor bill, and the bill's status is recomputed.
+  @IsOptional()
+  @IsUUID()
+  billId?: string;
 }

@@ -1,7 +1,11 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { ReportsService, CreateScheduleDto, RecordDownloadDto } from "./reports.service";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
+import { ReportsService, CreateScheduleDto, UpdateScheduleDto, RecordDownloadDto } from "./reports.service";
 
+// Financial/business reporting — ACCOUNTANT access only.
 @Controller("reports")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
@@ -30,9 +34,22 @@ export class ReportsController {
     return this.reportsService.createSchedule(dto);
   }
 
+  @Patch("schedules/:id")
+  updateSchedule(@Param("id") id: string, @Body() dto: UpdateScheduleDto) {
+    return this.reportsService.updateSchedule(id, dto);
+  }
+
+  @Delete("schedules/:id")
+  deleteSchedule(@Param("id") id: string, @Query("actorId") actorId?: string) {
+    return this.reportsService.deleteSchedule(id, actorId);
+  }
+
   @Get("history")
-  listHistory() {
-    return this.reportsService.listHistory();
+  listHistory(@Query("take") take?: string, @Query("skip") skip?: string) {
+    return this.reportsService.listHistory(
+      take ? Number(take) : undefined,
+      skip ? Number(skip) : undefined,
+    );
   }
 
   @Post("history")

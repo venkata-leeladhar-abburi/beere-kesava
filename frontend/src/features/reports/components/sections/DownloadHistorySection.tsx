@@ -5,21 +5,22 @@ import { T, F } from "../theme";
 import { FadeUp, SectionHeader } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
-// MOCK: no backend endpoint records report generation/download history (no
-// /reports/downloads or similar). The audit-log module (GET /audit-log)
-// tracks business-entity actions, not report exports, so there's no real
-// source to wire this list to yet.
+// Wired to real backend: GET /reports/history (ReportDownloadHistory model),
+// recorded via POST /reports/history whenever a report is generated/downloaded.
 import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "../../../../shared/api/reports";
 
 export function DownloadHistorySection() {
-  if (!useDownloadsAllowed()) return null;
+  const downloadsAllowed = useDownloadsAllowed();
 
-  const { data: histRes } = useQuery({
+  const { data: histRes, isLoading, isError } = useQuery({
     queryKey: ["reports-download-history"],
     queryFn: () => reportsApi.listHistory(),
+    enabled: downloadsAllowed,
   });
   const historyItems = histRes?.items ?? [];
+
+  if (!downloadsAllowed) return null;
   const dlIconMap: Record<string, React.ReactNode> = {
     "Weaver Payment Report":  <Users size={24} color={T.antiqueGold} />,
     "Production Report":      <Scissors size={24} color={T.antiqueGold} />,
@@ -47,7 +48,15 @@ export function DownloadHistorySection() {
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, alignItems: "stretch" }}>
-          {historyItems.length === 0 ? (
+          {isLoading ? (
+            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
+              Loading download history…
+            </div>
+          ) : isError ? (
+            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
+              Failed to load download history.
+            </div>
+          ) : historyItems.length === 0 ? (
             <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
               No report download history recorded yet.
             </div>

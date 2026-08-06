@@ -1,13 +1,15 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
 import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
 import { SalesService } from "./sales.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Retail/customer-facing module — SHOP access only.
 @Controller("sales")
+@RequireRoles(UserRole.SHOP)
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 

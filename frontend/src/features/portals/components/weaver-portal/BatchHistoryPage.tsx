@@ -9,6 +9,7 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useCurrentWeaver } from "./useCurrentWeaver";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -24,7 +25,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, FadeUpBatch, BG_IMAGE, FABRIC_BG, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
 
@@ -32,16 +33,23 @@ import { Button, Input } from '../../../../shared/ui/primitives';
 export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: () => void; defaultFilter?: "all" | "active" | "completed" }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "completed">(defaultFilter);
+  const { batches } = useBatches();
+  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
-  const filtered = BATCH_LIST.filter(b => {
-    const matchSearch = !search || b.id.toLowerCase().includes(search.toLowerCase()) || b.name.toLowerCase().includes(search.toLowerCase()) || b.design.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || b.status === statusFilter;
+  const myWeaverBatches: (MyBatchEntry & { derivedStatus: "active" | "completed" })[] = batches
+    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
+    .filter(b => b.myRows.length > 0)
+    .map(b => ({ ...b, derivedStatus: b.myRows.every(r => r.qcPassed === true) ? "completed" as const : "active" as const }));
+
+  const filtered = myWeaverBatches.filter(b => {
+    const matchSearch = !search || b.batchId.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || b.derivedStatus === statusFilter;
     return matchSearch && matchStatus;
   });
 
-  const activeCount = BATCH_LIST.filter(b => b.status === "active").length;
-  const completedCount = BATCH_LIST.filter(b => b.status === "completed").length;
-  const totalSarees = BATCH_LIST.reduce((s, b) => s + b.done, 0);
+  const activeCount = myWeaverBatches.filter(b => b.derivedStatus === "active").length;
+  const completedCount = myWeaverBatches.filter(b => b.derivedStatus === "completed").length;
+  const totalSarees = myWeaverBatches.reduce((s, b) => s + b.myRows.length, 0);
 
   const T2 = {
     silkCream: "#F7F2EA", warmIvory: "#FFFDF9", royalBurgundy: "#6E0F2D",
@@ -49,6 +57,24 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
     taupe: "#69635E", warmCream: "#F5E8D0", green: "#1E6640",
     borderDef: "rgba(110,15,45,0.10)",
   };
+
+  if (weaverLoading) {
+    return (
+      <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontFamily: F.u, fontSize: 14, color: T2.taupe }}>Loading your batch history…</span>
+      </div>
+    );
+  }
+
+  if (weaverError || !weaverId) {
+    return (
+      <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", gap: 8, padding: 40 }}>
+        <AlertTriangle size={28} color={T2.taupe} />
+        <span style={{ fontFamily: F.u, fontSize: 14, color: T2.luxuryBrown, fontWeight: 600 }}>Couldn't find your weaver profile</span>
+        <span style={{ fontFamily: F.u, fontSize: 13, color: T2.taupe }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</span>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, fontFamily: F.u }}>
@@ -62,7 +88,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           </Button>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{ width: 20, height: 1, background: T2.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>Ravi Kumar · WVR-014 · Weaver History</span>
+            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>{weaver?.name ?? "Weaver"} · Weaver History</span>
           </div>
           <h1 style={{ fontFamily: F.d, fontWeight: 400, fontSize: "clamp(32px, 3vw, 52px)", color: T2.warmCream, margin: "0 0 12px", lineHeight: 1.1 }}>
             {defaultFilter === "completed" ? "Completed Batches" : "Batch History"}{" "}
@@ -75,7 +101,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           </p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
             {[
-              { label: `${BATCH_LIST.length} Total Batches`, color: T2.antiqueGold, bg: "rgba(200,155,71,0.15)", border: "rgba(200,155,71,0.30)" },
+              { label: `${myWeaverBatches.length} Total Batches`, color: T2.antiqueGold, bg: "rgba(200,155,71,0.15)", border: "rgba(200,155,71,0.30)" },
               { label: `${activeCount} Currently Active`, color: T2.warmCream, bg: "rgba(30,102,64,0.18)", border: "rgba(30,102,64,0.35)" },
               { label: `${completedCount} Completed`, color: T2.warmCream, bg: "rgba(29,78,216,0.15)", border: "rgba(29,78,216,0.30)" },
             ].map(p => (
@@ -85,7 +111,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           {/* Metrics bar */}
           <div style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
             {[
-              { label: "Total Batches",    val: `${BATCH_LIST.length}`, sub: "All time",             Icon: Layers,       hi: false },
+              { label: "Total Batches",    val: `${myWeaverBatches.length}`, sub: "All time",             Icon: Layers,       hi: false },
               { label: "Sarees Produced",  val: `${totalSarees}`,       sub: "Across all batches",   Icon: CheckCircle2, hi: true  },
               { label: "Active Now",       val: `${activeCount}`,       sub: "Currently weaving",    Icon: Clock,        hi: false },
               { label: "Completed",        val: `${completedCount}`,    sub: "Fully finished",       Icon: ListChecks,   hi: false },
@@ -109,7 +135,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
       <div style={{ background: T2.warmIvory, borderBottom: `1px solid ${T2.borderDef}`, padding: "0 48px", position: "sticky" as const, top: 64, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
           {([
-            { key: "all",       label: "All Batches", count: BATCH_LIST.length },
+            { key: "all",       label: "All Batches", count: myWeaverBatches.length },
             { key: "active",    label: "Active",      count: activeCount },
             { key: "completed", label: "Completed",   count: completedCount },
           ] as const).map(f => (
@@ -151,8 +177,10 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
             {filtered.map((b, i) => (
-              <FadeUpBatch key={b.id} delay={i * 0.04}>
-                <BatchCard b={b} />
+              <FadeUpBatch key={b.batchId} delay={i * 0.04}>
+                {b.derivedStatus === "completed"
+                  ? <CompletedBatchCard b={b} />
+                  : <MobileBatchCard b={b} idx={i} />}
               </FadeUpBatch>
             ))}
           </div>

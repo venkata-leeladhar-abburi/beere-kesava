@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateFinancialEntryDto } from "./dto/create-financial-entry.dto";
 import { CreateFirmDto } from "./dto/create-firm.dto";
 import { ListFinancialEntriesQueryDto } from "./dto/list-financial-entries-query.dto";
@@ -6,9 +8,9 @@ import { ListFirmsQueryDto } from "./dto/list-firms-query.dto";
 import { UpdateFirmDto } from "./dto/update-firm.dto";
 import { FirmsService } from "./firms.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Firm ledgers — financial, ACCOUNTANT access only.
 @Controller("firms")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class FirmsController {
   constructor(private readonly firmsService: FirmsService) {}
 

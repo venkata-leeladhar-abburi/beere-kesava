@@ -49,7 +49,7 @@ function useRealTableRows() {
 }
 
 export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const { rows: TABLE_ROWS, isLoading, isError } = useRealTableRows();
   const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
   const TD: React.CSSProperties = { padding: "16px 18px", borderBottom: "1px solid rgba(110,15,45,0.06)", verticalAlign: "middle" };

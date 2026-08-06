@@ -1,25 +1,14 @@
 import React from 'react';
 import { T, F } from './theme';
-import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck, IcoWarehouse, IcoYarnInventory, IcoHandshake } from './ui';
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
+import { IcoWarehouse, IcoYarnInventory, IcoResourceMgmt, IcoQualityCheck, IcoInvoice, IcoHandshake } from './ui';
 import { imgWarp as imgWarp, imgResham as imgResham, imgJari as imgJari } from "../../../../shared/constants/imageData";
 
-export const METRICS = [
-  { ico: <IcoResourceMgmt sz={22} col={T.warmCream} />, label: "Active Weavers",   val: "9",     sub: "↑ 12% vs last month", hi: false },
-  { ico: <IcoFabricRoll   sz={22} col={T.warmCream} />, label: "Sarees Produced",  val: "248",   sub: "↑ 14% vs last month", hi: false },
-  { ico: <IcoInvoice      sz={22} col={T.warmCream} />, label: "Pending Payments", val: "₹2.4L", sub: "2 overdue",           hi: true  },
-  { ico: <IcoQualityCheck sz={22} col={T.warmCream} />, label: "Ready for Sale",   val: "84",    sub: "Sarees",              hi: false },
-  { ico: <IcoTruck        sz={22} col={T.warmCream} />, label: "Dispatched",       val: "32",    sub: "Sarees this week",    hi: false },
-];
-
-export const WEAVERS: any[] = [];
-
-export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "8937070a-ea63-43f3-9cb4-dcbcfd362ff7": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "11278a51-a26d-4eaa-adbf-bedbfa7fdf46": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "71413724-378d-4336-93dd-1db33cba3510": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
-};
+// NOTE: the METRICS, WEAVERS, and WEAVER_RATES exports that used to live here
+// (hardcoded "9 active weavers"/"248 sarees"/fake per-weaver rate lookup)
+// have been removed as dead mock data — MetricsBar now reads
+// useDashboardMetrics() and WeaverSection reads useDashboardWeavers()
+// (both backend-wired, see ../hooks/). Nothing in this dashboard imported
+// those three exports anymore; they were leftover scaffolding.
 
 export const MATS = [
   {

@@ -9,6 +9,8 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { notificationsApi, BackendNotification } from "../../../../shared/api/notifications";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -24,27 +26,77 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_WEAVER_ID, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, WNFilter, WeaverNotif, WNPriority
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, WNFilter, WeaverNotif, WNPriority, WNCategory
 } from './theme';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 
+// Backend Notification rows have no priority/category fields of their own
+// (just a free-form `type` string + `payload`) — this is a real, wired-up
+// feed (GET /notifications, PATCH /notifications/:id/read), but the
+// priority/category badges the weaver-portal UI wants are inferred from the
+// `type` string since the backend doesn't model them yet.
+function inferCategory(type: string): WNCategory {
+  const t = type.toUpperCase();
+  if (t.includes("PAYMENT")) return "payment";
+  if (t.includes("WARP")) return "warp";
+  return "batch";
+}
+function inferPriority(type: string): WNPriority {
+  const t = type.toUpperCase();
+  if (t.includes("REJECT") || t.includes("FAIL") || t.includes("DEFECT")) return "critical";
+  if (t.includes("PENDING") || t.includes("WARN")) return "warning";
+  if (t.includes("APPROVE") || t.includes("PAID") || t.includes("SUCCESS") || t.includes("COMPLETE")) return "success";
+  return "info";
+}
+function humanizeType(type: string): string {
+  return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+function toWeaverNotif(n: BackendNotification): WeaverNotif {
+  const created = new Date(n.createdAt);
+  const today = new Date();
+  const isToday = created.toDateString() === today.toDateString();
+  return {
+    id: n.id,
+    priority: inferPriority(n.type),
+    category: inferCategory(n.type),
+    title: humanizeType(n.type),
+    body: n.payload ? Object.entries(n.payload).map(([k, v]) => `${humanizeType(k)}: ${v}`).join(" · ") : "No further details provided.",
+    time: created.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+    date: isToday ? "Today" : created.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    read: n.readAt !== null,
+  };
+}
 
 export function NotificationsPage() {
   const { isMobile, isTablet } = useResponsive();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [filter, setFilter]     = useState<WNFilter>("all");
   const [selected, setSelected] = useState<WeaverNotif | null>(null);
-  const [readIds, setReadIds]   = useState<Set<number>>(new Set(WN_DATA.filter(n => n.read).map(n => n.id)));
 
-  const markRead    = (id: number) => setReadIds(prev => new Set([...prev, id]));
-  const markAllRead = () => setReadIds(new Set(WN_DATA.map(n => n.id)));
+  const { data, isLoading } = useQuery({
+    queryKey: ["notifications", user?.id],
+    queryFn: () => notificationsApi.list({ userId: user?.id, role: "WEAVER" }),
+    enabled: !!user?.id,
+  });
 
-  const filtered = filter === "all" ? WN_DATA : WN_DATA.filter(n => n.priority === filter);
-  const unread   = WN_DATA.filter(n => !readIds.has(n.id)).length;
+  const ALL_NOTIFS: WeaverNotif[] = useMemo(() => (data?.items ?? []).map(toWeaverNotif), [data]);
+
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] }),
+  });
+
+  const markRead    = (id: string) => markReadMutation.mutate(id);
+  const markAllRead = () => ALL_NOTIFS.filter(n => !n.read).forEach(n => markReadMutation.mutate(n.id));
+
+  const filtered = filter === "all" ? ALL_NOTIFS : ALL_NOTIFS.filter(n => n.priority === filter);
+  const unread   = ALL_NOTIFS.filter(n => !n.read).length;
 
   const grouped: Record<string, WeaverNotif[]> = {};
   filtered.forEach(n => { if (!grouped[n.date]) grouped[n.date] = []; grouped[n.date].push(n); });
 
-  const countByPriority = (p: WNPriority) => WN_DATA.filter(n => n.priority === p).length;
+  const countByPriority = (p: WNPriority) => ALL_NOTIFS.filter(n => n.priority === p).length;
 
   return (
     <div style={{ minHeight: "calc(100dvh - 64px)", background: WN_T.silkCream, fontFamily: F.u }}>
@@ -60,7 +112,7 @@ export function NotificationsPage() {
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
             <div style={{ width: 20, height: 1, background: WN_T.antiqueGold, opacity: 0.6 }} />
             <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>
-              Ravi Kumar · WVR-014 · Notifications
+              {user?.name ?? "Weaver"} · Notifications
             </span>
           </motion.div>
 
@@ -96,11 +148,11 @@ export function NotificationsPage() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35, ease: WN_EASE }}
             style={{ display: "flex", flexWrap: isMobile ? "wrap" as const : "nowrap" as const, gap: 0, marginTop: isMobile ? 20 : 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
             {[
-              { label: "Total",    val: WN_DATA.length,                                       Icon: Bell,          hi: false },
+              { label: "Total",    val: ALL_NOTIFS.length,                                       Icon: Bell,          hi: false },
               { label: "Unread",   val: unread,                                               Icon: Inbox,         hi: unread > 0 },
               { label: "Critical", val: countByPriority("critical"),                          Icon: AlertTriangle, hi: false, col: "#FCA5A5" },
-              { label: "Today",    val: WN_DATA.filter(n => n.date === "Today").length,       Icon: Zap,           hi: false },
-              { label: "Resolved", val: readIds.size,                                         Icon: CheckCircle2,  hi: false, col: "#6EE7B7" },
+              { label: "Today",    val: ALL_NOTIFS.filter(n => n.date === "Today").length,       Icon: Zap,           hi: false },
+              { label: "Resolved", val: ALL_NOTIFS.filter(n => n.read).length,                                         Icon: CheckCircle2,  hi: false, col: "#6EE7B7" },
             ].map((m, i) => (
               <div key={m.label} style={{ width: isMobile ? "calc(50% - 1px)" : undefined, flex: isMobile ? undefined : 1, padding: isMobile ? "14px 12px" : "20px 22px", borderRight: isMobile ? (i % 2 === 0 ? "1px solid rgba(245,232,208,0.07)" : "none") : (i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none"), borderTop: isMobile && i >= 2 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: isMobile ? 10 : 14, boxSizing: "border-box" as const }}>
                 <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -121,7 +173,7 @@ export function NotificationsPage() {
         <div className="wp-filter-scroll" style={{ display: "flex", alignItems: "center", gap: 0, height: 58, overflowX: isMobile ? "auto" : "visible", scrollbarWidth: "none" } as React.CSSProperties}>
           {WN_FILTERS.map(f => {
             const isActive = filter === f.key;
-            const count = f.key === "all" ? WN_DATA.length : WN_DATA.filter(n => n.priority === f.key).length;
+            const count = f.key === "all" ? ALL_NOTIFS.length : ALL_NOTIFS.filter(n => n.priority === f.key).length;
             const cfg = f.key !== "all" ? WN_PRIORITY[f.key] : null;
             return (
               <Button key={f.key} onClick={() => setFilter(f.key)} variant="ghost"
@@ -169,7 +221,7 @@ export function NotificationsPage() {
                 {items.map((n, i) => {
                   const pcfg   = WN_PRIORITY[n.priority];
                   const catCfg = WN_CATEGORY[n.category];
-                  const isRead     = readIds.has(n.id);
+                  const isRead     = n.read;
                   const isSelected = selected?.id === n.id;
                   const PIcon = pcfg.Icon;
                   const CIcon = catCfg.Icon;
@@ -229,13 +281,12 @@ export function NotificationsPage() {
                             >
                               <IconButton
                                 icon={Check}
-                                label={isRead ? "Mark unread" : "Mark read"}
+                                label={isRead ? "Read" : "Mark read"}
                                 onClick={e => {
                                   e.stopPropagation();
-                                  if (isRead) setReadIds(prev => { const s = new Set(prev); s.delete(n.id); return s; });
-                                  else markRead(n.id);
+                                  if (!isRead) markRead(n.id);
                                 }}
-                                title={isRead ? "Mark unread" : "Mark read"}
+                                title={isRead ? "Already read" : "Mark read"}
                                 shape="circle"
                                 size="sm"
                                 className="border-[1.5px] border-[var(--n-border)] bg-[var(--n-bg)] text-[var(--n-color)]"
@@ -251,13 +302,21 @@ export function NotificationsPage() {
             </div>
           ))}
 
-          {filtered.length === 0 && (
+          {isLoading && (
+            <div style={{ textAlign: "center" as const, padding: "80px 40px", fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>Loading notifications…</div>
+          )}
+
+          {!isLoading && filtered.length === 0 && (
             <div style={{ textAlign: "center" as const, padding: "80px 40px" }}>
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${WN_T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                 <Inbox size={28} color={WN_T.taupe} />
               </div>
-              <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: WN_T.luxuryBrown, marginBottom: 8 }}>No notifications</div>
-              <div style={{ fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>No notifications match the current filter.</div>
+              <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: WN_T.luxuryBrown, marginBottom: 8 }}>
+                {ALL_NOTIFS.length === 0 ? "No notifications yet" : "No notifications"}
+              </div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>
+                {ALL_NOTIFS.length === 0 ? "You'll see updates about your batches, materials, warp requests, and payments here." : "No notifications match the current filter."}
+              </div>
             </div>
           )}
         </div>

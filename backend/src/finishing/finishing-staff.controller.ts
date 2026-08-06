@@ -1,13 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateFinishingStaffDto } from "./dto/create-finishing-staff.dto";
 import { ListFinishingStaffQueryDto } from "./dto/list-finishing-staff-query.dto";
 import { UpdateFinishingStaffDto } from "./dto/update-finishing-staff.dto";
 import { FinishingStaffService } from "./finishing-staff.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. Create/update should require
-// "production.finishing_staff.manage" once auth exists.
+// Production/operational module — WORKER access only.
 @Controller("finishing/staff")
+@RequireRoles(UserRole.WORKER)
 export class FinishingStaffController {
   constructor(private readonly finishingStaffService: FinishingStaffService) {}
 

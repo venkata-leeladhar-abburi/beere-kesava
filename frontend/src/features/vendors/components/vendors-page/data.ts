@@ -40,15 +40,18 @@ export function buildLedger(list: { id: string; type: string; totalSpend: string
 
 export const MATERIAL_FILL: Record<string, string> = { Warp: T.royalBurgundy, Resham: T.antiqueGold, Jari: T.green };
 
-// On-time delivery % per vendor id (from GRN receipts). Drives the reliability scatter.
-export const DELIVERY_PERF: Record<string, { onTime: number; qualityRejects: number }> = {
-  "VEN-001": { onTime: 96, qualityRejects: 1.2 },
-  "VEN-002": { onTime: 91, qualityRejects: 2.4 },
-  "VEN-003": { onTime: 74, qualityRejects: 4.8 },
-  "VEN-004": { onTime: 94, qualityRejects: 1.8 },
-  "VEN-005": { onTime: 88, qualityRejects: 3.1 },
-  "VEN-006": { onTime: 68, qualityRejects: 6.2 },
-};
+// GAP: on-time-delivery % and quality-reject % per vendor cannot be computed
+// from real data today. PurchaseOrder has `deliveryDate` (expected) but no
+// actual-received timestamp — `grnId` set on receive is a freshly generated
+// display string (see purchase-orders.service.ts#receiveGrn), not a foreign
+// key to GrnReceipt, so PO cannot be joined to a GRN's real `receivedDate`.
+// Separately, neither GrnReceipt nor GrnItem (backend/prisma/schema.prisma)
+// carries any rejected-quantity/quality field. There is nothing to
+// aggregate, so this metric was removed rather than faked — see
+// VendorAnalyticsSection.tsx's "Delivery Reliability" card for the honest
+// not-tracked state. (Previously this was a `DELIVERY_PERF` map keyed to
+// fake ids like "VEN-001", which never matched real vendor UUIDs anyway —
+// every real vendor was silently falling back to the same flat mock numbers.)
 const spendByType: any[] = [];
 
 export const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {

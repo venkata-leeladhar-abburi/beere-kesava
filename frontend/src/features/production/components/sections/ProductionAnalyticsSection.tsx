@@ -1,15 +1,17 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChartBar, FunnelSimple, Trophy, ShoppingBag, DownloadSimple,
 } from "@phosphor-icons/react";
 import { T, F } from "../theme";
-// WEEKLY_DATA and TOP_WEAVERS_CHART have no backend source yet — there is no
-// endpoint for weekly production time-series or a per-weaver sarees-produced
-// leaderboard scoped to production. They stay mock (clearly labelled below)
+// TOP_WEAVERS_CHART has no backend source yet — there is no endpoint for a
+// per-weaver sarees-produced leaderboard scoped to production. It stays mock
 // until such an endpoint exists; STAGE_FUNNEL and ORDER_PROGRESS are derived
-// from real batch/bulk-order data.
-import { WEEKLY_DATA, TOP_WEAVERS_CHART, ANALYTICS_PERIODS } from "../data";
+// from real batch/bulk-order data, and the monthly production chart below is
+// wired to GET /analytics/production-trend-monthly.
+import { TOP_WEAVERS_CHART, ANALYTICS_PERIODS } from "../data";
+import { analyticsApi } from "../../../../shared/api/analytics";
 import { useBatches } from "../../contexts/BatchContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { rowComplete } from "./batches/ContextBatchCard";
@@ -40,10 +42,29 @@ function ChartCardHeader({ icon, title, sub }: { icon: React.ReactNode; title: s
   );
 }
 
+function formatMonthLabel(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  if (!year || !m) return month;
+  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+}
+
 export function ProductionAnalyticsSection() {
   const [period, setPeriod] = useState("This Month");
-  const maxWeekly = Math.max(...WEEKLY_DATA.map(d => d.produced));
   const maxWeaverSarees = TOP_WEAVERS_CHART[0]?.sarees ?? 1;
+
+  const {
+    data: productionTrendRes,
+    isLoading: productionTrendLoading,
+    isError: productionTrendError,
+  } = useQuery({
+    queryKey: ["analytics-production-trend-monthly"],
+    queryFn: () => analyticsApi.getProductionTrendMonthly(6),
+  });
+  const monthlyProductionData = (productionTrendRes?.items ?? []).map(d => ({
+    ...d,
+    label: formatMonthLabel(d.month),
+  }));
+  const maxMonthly = Math.max(1, ...monthlyProductionData.map(d => Math.max(d.produced, d.passed)));
 
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
@@ -114,46 +135,62 @@ export function ProductionAnalyticsSection() {
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
               icon={<ChartBar size={22} color={T.royalBurgundy} weight="duotone" />}
-              title="Sarees Produced Each Week"
-              sub="Produced vs dispatched — this month"
+              title="Sarees Produced Each Month"
+              sub="Produced vs QC-passed — last 6 months"
             />
 
+            {productionTrendLoading ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                Loading production trend…
+              </div>
+            ) : productionTrendError ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+                Failed to load production trend.
+              </div>
+            ) : monthlyProductionData.length === 0 ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                No production data yet.
+              </div>
+            ) : (
+            <>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minHeight: 180 }}>
-              {WEEKLY_DATA.map(d => (
-                <div key={d.week} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              {monthlyProductionData.map(d => (
+                <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
                     <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>/{d.dispatched}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
                     <motion.div
                       initial={{ height: 0 }}
-                      whileInView={{ height: `${(d.produced / maxWeekly) * 100}%` }}
+                      whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
                       style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
                     />
                     <motion.div
                       initial={{ height: 0 }}
-                      whileInView={{ height: `${(d.dispatched / maxWeekly) * 100}%` }}
+                      whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
                       style={{ width: 22, background: `linear-gradient(180deg, ${T.antiqueGold} 0%, #B88730 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
                     />
                   </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.week}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>
-              {[{ color: T.royalBurgundy, label: "Produced" }, { color: T.antiqueGold, label: "Dispatched" }].map(l => (
+              {[{ color: T.royalBurgundy, label: "Produced" }, { color: T.antiqueGold, label: "QC Passed" }].map(l => (
                 <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>{l.label}</span>
                 </div>
               ))}
             </div>
+            </>
+            )}
           </div>
 
           <div style={{ ...CARD_STYLE }}>

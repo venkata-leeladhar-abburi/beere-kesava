@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useMaterialIssue } from '../../../materials/contexts/MaterialIssueContext';
 import {
-  C, F, CURRENT_WEAVER_ID, Tab5
+  C, F, Tab5
 } from './theme';
+import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 
 import { MyBatchesPage } from './MyBatchesPage';
@@ -23,7 +24,8 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
   const [showProfile, setShowProfile] = useState(false);
 
   const { getRecordsForWeaver } = useMaterialIssue();
-  const pendingConfirmCount = getRecordsForWeaver(CURRENT_WEAVER_ID).filter(r => r.status === 'pending-signature').length;
+  const { weaverId } = useCurrentWeaver();
+  const pendingConfirmCount = weaverId ? getRecordsForWeaver(weaverId).filter(r => r.status === 'pending-signature').length : 0;
 
   const TABS: { id: Tab5; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'batches',   label: 'My Batches', icon: <ClipboardList size={20} />, },

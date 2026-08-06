@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 
 import {
-  C, F, SectionTitle, Card, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, CURRENT_WEAVER_ID
+  C, F, SectionTitle, Card, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
+import { useCurrentWeaver } from "./useCurrentWeaver";
 import { ReferenceHistorySection } from "./ReferenceHistorySection";
 import { Button } from "../../../../shared/ui/primitives";
 
@@ -22,9 +23,10 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
-  const matSummary = getMaterialSummaryForWeaver(CURRENT_WEAVER_ID);
-  const matByBatch = getMaterialSummaryByBatch(CURRENT_WEAVER_ID);
+  const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
+  const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
 
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [hasSig, setHasSig] = useState(false);
@@ -33,7 +35,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const [requestSent, setRequestSent] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
-  const weaverRecords = getRecordsForWeaver(CURRENT_WEAVER_ID);
+  const weaverRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingRecords = weaverRecords.filter(r => r.status === "pending-signature");
   const signedRecords = weaverRecords.filter(r => r.status === "signed");
   const pending = pendingRecords[0] ?? null;
@@ -41,7 +43,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const mySarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        .filter(r => r.weaverId === CURRENT_WEAVER_ID)
+        .filter(r => r.weaverId === weaverId)
         .map(r => ({
           batchId: b.batchId,
           sareeId: r.sareeId || "Pending Setup",
@@ -52,12 +54,12 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
           qcPassed: r.qcPassed
         }))
     );
-  }, [batches]);
+  }, [batches, weaverId]);
 
   const myWeavingBatches = useMemo(() => {
     return batches
       .map(b => {
-        const rows = b.rows.filter(r => r.weaverId === CURRENT_WEAVER_ID);
+        const rows = b.rows.filter(r => r.weaverId === weaverId);
         return {
           batchId: b.batchId,
           status: b.status,
@@ -67,13 +69,13 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         };
       })
       .filter(b => b.rowsCount > 0);
-  }, [batches]);
+  }, [batches, weaverId]);
 
   const myDesignCodes = Array.from(new Set(
     batches
       .filter(b => b.status === "active")
       .flatMap(b => b.rows)
-      .filter(r => r.weaverId === CURRENT_WEAVER_ID)
+      .filter(r => r.weaverId === weaverId)
       .map(r => r.designCode)
       .filter((c): c is string => Boolean(c))
   ));
@@ -91,6 +93,27 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
     setConfirmed(false); setConfirmedRecord(null);
     setSigMethod("none"); setHasSig(false); setRequestSent(false);
   };
+
+  if (weaverLoading) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MATERIAL RECEIPT" title="Confirm Materials" sub="Sign to confirm receipt" />
+        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your material receipts…</div>
+      </div>
+    );
+  }
+
+  if (weaverError || !weaverId) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MATERIAL RECEIPT" title="Confirm Materials" sub="Sign to confirm receipt" />
+        <div style={{ margin: "40px 20px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, fontWeight: 600 }}>Couldn't find your weaver profile</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
+        </div>
+      </div>
+    );
+  }
 
   if (confirmed && confirmedRecord) {
     return (

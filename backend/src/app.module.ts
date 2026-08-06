@@ -40,6 +40,7 @@ import { RawMaterialsModule } from "./raw-materials/raw-materials.module";
 import { WarpRequestsModule } from "./warp-requests/warp-requests.module";
 import { RateRequestsModule } from "./rate-requests/rate-requests.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
+import { VendorBillsModule } from "./vendor-bills/vendor-bills.module";
 
 import { AuthModule } from "./auth/auth.module";
 
@@ -88,6 +89,7 @@ import { AuthModule } from "./auth/auth.module";
     FirmsModule,
     ReportsModule,
     PaymentsModule,
+    VendorBillsModule,
     FinanceJobsModule,
     NotificationsModule,
     LabelsModule,

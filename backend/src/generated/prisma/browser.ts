@@ -173,6 +173,16 @@ export type Purchase = Prisma.PurchaseModel
  */
 export type PurchaseOrder = Prisma.PurchaseOrderModel
 /**
+ * Model VendorBill
+ * 
+ */
+export type VendorBill = Prisma.VendorBillModel
+/**
+ * Model PurchaseOrderItem
+ * 
+ */
+export type PurchaseOrderItem = Prisma.PurchaseOrderItemModel
+/**
  * Model PurchaseRequest
  * 
  */

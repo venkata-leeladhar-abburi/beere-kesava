@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
+import { UserRole } from "../generated/prisma/client";
 import { SuppliersService } from "./suppliers.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Supplier master data (purchasing) — financial, ACCOUNTANT access only.
 @Controller("suppliers")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 

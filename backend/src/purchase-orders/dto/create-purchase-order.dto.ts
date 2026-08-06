@@ -1,4 +1,37 @@
-import { IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { Type } from "class-transformer";
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  ValidateNested,
+} from "class-validator";
+import { MaterialType } from "../../generated/prisma/client";
+
+export class CreatePurchaseOrderItemDto {
+  @IsEnum(MaterialType)
+  materialType!: MaterialType;
+
+  @IsString()
+  name!: string;
+
+  @IsNumber()
+  @Min(0)
+  quantity!: number;
+
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  unitPrice?: number;
+}
 
 export class CreatePurchaseOrderDto {
   // No auth yet — the acting user's id is supplied explicitly for the action
@@ -25,4 +58,10 @@ export class CreatePurchaseOrderDto {
   @IsOptional()
   @IsString()
   urgency?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePurchaseOrderItemDto)
+  items?: CreatePurchaseOrderItemDto[];
 }

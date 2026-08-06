@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { ListInvoicesQueryDto } from "./dto/list-invoices-query.dto";
 import { InvoicesService } from "./invoices.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Financial module — ACCOUNTANT access only.
 @Controller("invoices")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 

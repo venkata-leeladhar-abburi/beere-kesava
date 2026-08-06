@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateRateDto } from "./dto/create-rate.dto";
 import { ListRatesQueryDto } from "./dto/list-rates-query.dto";
 import { UpdateRateDto } from "./dto/update-rate.dto";
 import { RatesService } from "./rates.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Rate card management — financial, ACCOUNTANT access only.
 @Controller("rates")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class RatesController {
   constructor(private readonly ratesService: RatesService) {}
 

@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { T, F, G, NUM } from '../theme';
 import { AnimatedNumber, Card, SectionHeader, Donut, BarChart } from '../ui';
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
+import { analyticsApi } from '../../../../../shared/api/analytics';
+
+function formatMonthLabel(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  if (!year || !m) return month;
+  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+}
 
 export function ProductionProgress() {
   const { qcPassRate, paymentsCollectedPct, isLoading } = useDashboardAnalytics();
@@ -49,6 +57,15 @@ export function ProductionProgress() {
 export function SareesProduced({ compact }: { compact?: boolean }) {
   const [period, setPeriod] = useState("Month");
   const { totalSareesProduced, activeBatchesCount, weaversWorkingCount, isLoading } = useDashboardAnalytics();
+  const { data: productionTrendRes } = useQuery({
+    queryKey: ["analytics-production-trend-monthly", "dashboard"],
+    queryFn: () => analyticsApi.getProductionTrendMonthly(4),
+  });
+  const monthlyBars = (productionTrendRes?.items ?? []).map(d => ({
+    w: formatMonthLabel(d.month),
+    p: d.produced,
+    d: d.passed,
+  }));
   return (
     <Card style={{ flex: compact ? undefined : "0 0 44%", display: "flex", flexDirection: "column", padding: compact ? "24px 24px 0" : "32px 32px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
@@ -75,18 +92,12 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
           <TrendingUp size={12} color={T.green} />
-          {/* Period-over-period trend requires a time-series endpoint that
-              doesn't exist yet (same gap as the weekly bar chart below). */}
           <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.1px" }}>Total to date</span>
         </div>
       </div>
-      {/* BarChart shows a fixed illustrative weekly produced-vs-dispatched
-          split — there is no backend endpoint for per-week production/
-          dispatch time-series (documented gap, consistent with the rest of
-          this sweep having no monthly cash-flow time-series either). */}
-      <div style={{ flex: 1, minHeight: 130 }}><BarChart /></div>
+      <div style={{ flex: 1, minHeight: 130 }}><BarChart data={monthlyBars} /></div>
       <div style={{ display: "flex", gap: 22, paddingBottom: 14 }}>
-        {[{ dot: T.royalBurgundy, label: "Produced" }, { dot: T.antiqueGold, label: "Dispatched" }].map(l => (
+        {[{ dot: T.royalBurgundy, label: "Produced" }, { dot: T.antiqueGold, label: "QC Passed" }].map(l => (
           <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.dot, flexShrink: 0 }} />
             <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>{l.label}</span>

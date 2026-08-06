@@ -19,7 +19,6 @@ import { useResponsive } from "../../../../hooks/useResponsive";
 import { imgBKLogo, imgSareeFooter } from '../../../../shared/constants/weaverImages';
 import { SectionNavigator, MAIN_NAV_H } from '../../../../shared/ui/SectionNavigator';
 import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
-import { METRICS, WEAVERS, WEAVER_RATES, MATS, ACT } from './data.tsx';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
 // @ts-ignore
 import imgHero from '../../../../assets/hero.webp';

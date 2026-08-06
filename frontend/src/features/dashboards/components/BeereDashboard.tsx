@@ -69,7 +69,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   };
 
   // Map path to active tab
-  let nav = "Materials";
+  let nav = "Overview";
   if (tab === "materials") nav = "Materials";
   else if (tab === "weavers") nav = "Weavers";
   else if (tab === "all-weavers") nav = "AllWeavers";
