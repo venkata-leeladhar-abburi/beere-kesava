@@ -192,7 +192,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                         {r.icon}
                         <span>{r.label}</span>
                       </div>
-                      <div style={{ fontFamily: weaver.id === "WV-001" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
+                      <div style={{ fontFamily: weaver.id === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
                     </div>
                   ))}
                 </div>

@@ -95,16 +95,16 @@ export function ExternalPurchasesSection() {
 }
 
 const prodTableRows = [
-  { code: "WV-001", name: "Ravi Kumar",   batches: 1, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-032",  charges: 3600  },
-  { code: "WV-002", name: "Padma Veni",   batches: 1, produced: 5,  passed: 5,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 3400  },
-  { code: "WV-005", name: "Anand K.",     batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-038",  charges: 4800  },
-  { code: "WV-007", name: "Suresh Murti", batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 1120  },
-  { code: "WV-012", name: "Meena R.",     batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-022",  charges: 1800  },
-  { code: "WV-018", name: "Lakshmi D.",   batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-031",  charges: 1800  },
-  { code: "WV-024", name: "Venkat Rao",   batches: 2, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 2240  },
-  { code: "WV-031", name: "Kamala B.",    batches: 1, produced: 6,  passed: 6,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 4080  },
-  { code: "WV-041", name: "Sundar Rao",   batches: 2, produced: 12, passed: 12, rejected: 0, passRate: 100, designs: "BKB-032",  charges: 5400  },
-  { code: "WV-055", name: "Deepa M.",     batches: 2, produced: 10, passed: 9,  rejected: 1, passRate: 90,  designs: "BKB-038",  charges: 9600  },
+  { code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   batches: 1, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-032",  charges: 3600  },
+  { code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   batches: 1, produced: 5,  passed: 5,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 3400  },
+  { code: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-038",  charges: 4800  },
+  { code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 1120  },
+  { code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     batches: 1, produced: 4,  passed: 4,  rejected: 0, passRate: 100, designs: "BKB-022",  charges: 1800  },
+  { code: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   batches: 1, produced: 5,  passed: 4,  rejected: 1, passRate: 80,  designs: "BKB-031",  charges: 1800  },
+  { code: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   batches: 2, produced: 8,  passed: 8,  rejected: 0, passRate: 100, designs: "BKB-019",  charges: 2240  },
+  { code: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    batches: 1, produced: 6,  passed: 6,  rejected: 0, passRate: 100, designs: "BKB-045",  charges: 4080  },
+  { code: "7bf84351-1b39-45b3-91a3-87d9acc36e8a", name: "Sundar Rao",   batches: 2, produced: 12, passed: 12, rejected: 0, passRate: 100, designs: "BKB-032",  charges: 5400  },
+  { code: "d7821e03-634a-4d48-b4e5-7d6c0265c4e7", name: "Deepa M.",     batches: 2, produced: 10, passed: 9,  rejected: 1, passRate: 90,  designs: "BKB-038",  charges: 9600  },
 ];
 
 export function SareeProductionReport() {

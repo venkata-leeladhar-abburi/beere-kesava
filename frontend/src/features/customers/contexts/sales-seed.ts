@@ -2,14 +2,14 @@ import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary, SareeOrigin, Saree
 
 // ─── Seed reference data (codes match the source pages exactly) ───────────────
 const WEAVERS = [
-  { weaverId: "WV-001", weaverName: "Ravi Kumar",   weaverLoom: 2 },
-  { weaverId: "WV-002", weaverName: "Padma Veni",   weaverLoom: 1 },
-  { weaverId: "WV-005", weaverName: "Anand K.",     weaverLoom: 3 },
-  { weaverId: "WV-007", weaverName: "Suresh Murti", weaverLoom: 2 },
-  { weaverId: "WV-012", weaverName: "Meena R.",     weaverLoom: 4 },
-  { weaverId: "WV-018", weaverName: "Lakshmi D.",   weaverLoom: 2 },
-  { weaverId: "WV-024", weaverName: "Venkat Rao",   weaverLoom: 3 },
-  { weaverId: "WV-031", weaverName: "Kamala B.",    weaverLoom: 1 },
+  { weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar",   weaverLoom: 2 },
+  { weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", weaverName: "Padma Veni",   weaverLoom: 1 },
+  { weaverId: "71413724-378d-4336-93dd-1db33cba3510", weaverName: "Anand K.",     weaverLoom: 3 },
+  { weaverId: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", weaverName: "Suresh Murti", weaverLoom: 2 },
+  { weaverId: "95cc89ea-6cf3-418c-bf9b-299e59f47389", weaverName: "Meena R.",     weaverLoom: 4 },
+  { weaverId: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", weaverName: "Lakshmi D.",   weaverLoom: 2 },
+  { weaverId: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", weaverName: "Venkat Rao",   weaverLoom: 3 },
+  { weaverId: "51490482-11cf-425b-8d54-7bd918f6db18", weaverName: "Kamala B.",    weaverLoom: 1 },
 ];
 
 const FACTORY_LOOMS = [

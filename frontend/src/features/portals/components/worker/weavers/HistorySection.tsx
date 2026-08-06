@@ -6,11 +6,11 @@ import { Button, Input } from "../../../../../shared/ui/primitives";
 
 // ─── History Section ─────────────────────────────────────────────────────────
 const HISTORY_DATA: (ReceivedSareeLog & { sareeType: string })[] = [
-  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", color: "Gold",   status: "Passed QC" },
-  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  color: "Maroon", status: "Passed QC" },
-  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"WV-007",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",color: "Red",    status: "Defective" },
-  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "WV-002", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", color: "Green",  status: "Passed QC" },
-  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "WV-001", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  color: "Blue",   status: "Passed QC" },
+  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", color: "Gold",   status: "Passed QC" },
+  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  color: "Maroon", status: "Passed QC" },
+  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"11278a51-a26d-4eaa-adbf-bedbfa7fdf46",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",color: "Red",    status: "Defective" },
+  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", color: "Green",  status: "Passed QC" },
+  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  color: "Blue",   status: "Passed QC" },
   { id: "BKB-L3-002",   weaver: "Own Loom 3", wcode: "",        batch: "BATCH-OWN",weight: "774g", date: "14 Jul 2026", sareeType: "Kanjivaram",   color: "Cream",  status: "Passed QC" },
 ];
 

@@ -51,7 +51,7 @@ export const SAREE_TYPES = [
 ];
 
 export const WEAVERS_LIST = [
-  { id: "WV-002", name: "Padma Veni", initials: "PV", looms: 3 },
-  { id: "WV-001", name: "Ravi Kumar", initials: "RK", looms: 5 },
-  { id: "WV-007", name: "Suresh Murti", initials: "SM", looms: 2 },
+  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni", initials: "PV", looms: 3 },
+  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar", initials: "RK", looms: 5 },
+  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", initials: "SM", looms: 2 },
 ];

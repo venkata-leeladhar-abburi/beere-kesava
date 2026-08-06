@@ -26,14 +26,14 @@ export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 // ── Local weaver directory (mirrors WeaversPage.tsx) ─────────────────────────
 export interface WeaverLite { id: string; name: string; village: string; initials: string; bg: string; status: "active" | "qc" | "idle"; looms: number; phone: string; }
 export const WEAVERS: WeaverLite[] = [
-  { id: "WV-001", name: "Ravi Kumar",   village: "Dharmavaram, AP",        initials: "RK", bg: "#5A3E6B", status: "active", looms: 3, phone: "98765 43210" },
-  { id: "WV-002", name: "Padma Veni",   village: "Pochampally, Telangana", initials: "PV", bg: "#9B6B8A", status: "active", looms: 2, phone: "87654 38834" },
-  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP",        initials: "SM", bg: "#2D6B6B", status: "qc",     looms: 2, phone: "76549 99982" },
-  { id: "WV-005", name: "Anand K.",     village: "Pochampally, Telangana", initials: "AK", bg: "#4A6B4A", status: "active", looms: 2, phone: "65438 77723" },
-  { id: "WV-012", name: "Meena R.",     village: "Siddipet, Telangana",    initials: "MR", bg: "#9B6B8A", status: "active", looms: 1, phone: "54327 66614" },
-  { id: "WV-018", name: "Lakshmi D.",   village: "Dharmavaram, AP",        initials: "LD", bg: "#2D7D6B", status: "qc",     looms: 2, phone: "43216 33341" },
-  { id: "WV-024", name: "Venkat Rao",   village: "Venkatagiri, AP",        initials: "VR", bg: "#4A5E7A", status: "idle",   looms: 4, phone: "32105 11122" },
-  { id: "WV-031", name: "Kamala B.",    village: "Pochampally, Telangana", initials: "KB", bg: "#7A2040", status: "active", looms: 3, phone: "21098 55589" },
+  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   village: "Dharmavaram, AP",        initials: "RK", bg: "#5A3E6B", status: "active", looms: 3, phone: "98765 43210" },
+  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   village: "Pochampally, Telangana", initials: "PV", bg: "#9B6B8A", status: "active", looms: 2, phone: "87654 38834" },
+  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Venkatagiri, AP",        initials: "SM", bg: "#2D6B6B", status: "qc",     looms: 2, phone: "76549 99982" },
+  { id: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     village: "Pochampally, Telangana", initials: "AK", bg: "#4A6B4A", status: "active", looms: 2, phone: "65438 77723" },
+  { id: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     village: "Siddipet, Telangana",    initials: "MR", bg: "#9B6B8A", status: "active", looms: 1, phone: "54327 66614" },
+  { id: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   village: "Dharmavaram, AP",        initials: "LD", bg: "#2D7D6B", status: "qc",     looms: 2, phone: "43216 33341" },
+  { id: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   village: "Venkatagiri, AP",        initials: "VR", bg: "#4A5E7A", status: "idle",   looms: 4, phone: "32105 11122" },
+  { id: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    village: "Pochampally, Telangana", initials: "KB", bg: "#7A2040", status: "active", looms: 3, phone: "21098 55589" },
 ];
 export const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
   active: { label: "Active",   color: T.green,   bg: "rgba(30,102,64,0.10)" },

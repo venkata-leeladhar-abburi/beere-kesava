@@ -13,17 +13,17 @@ export const METRICS = [
 ];
 
 export const WEAVERS = [
-  { name: "Padma Veni",   id: "WV-002", batch: "BATCH-086", sarees: 18, pct: 85, status: "active", ac: T.royalBurgundy, img: imgPadmaVeni, village: "Pochampally, Telangana", mobile: "×××× 8834", looms: 2, initials: "PV", bg: "#9B6B8A" },
-  { name: "Ravi Kumar",   id: "WV-001", batch: "BATCH-079", sarees: 12, pct: 68, status: "active", ac: "#1E6640",        img: imgRaviKumar, village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, initials: "RK", bg: "#5A3E6B" },
-  { name: "Suresh Murti", id: "WV-007", batch: "BATCH-081", sarees: 7,  pct: 35, status: "qc",     ac: "#374151",        img: imgSureshMurti, village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, initials: "SM", bg: "#2D6B6B" },
-  { name: "Anand K.",     id: "WV-005", batch: "BATCH-083", sarees: 9,  pct: 72, status: "active", ac: T.antiqueGold,    img: imgAnandK, village: "Pochampally, Telangana", mobile: "×××× 7723", looms: 2, initials: "AK", bg: "#4A6B4A" },
+  { name: "Padma Veni",   id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", sarees: 18, pct: 85, status: "active", ac: T.royalBurgundy, img: imgPadmaVeni, village: "Pochampally, Telangana", mobile: "×××× 8834", looms: 2, initials: "PV", bg: "#9B6B8A" },
+  { name: "Ravi Kumar",   id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-079", sarees: 12, pct: 68, status: "active", ac: "#1E6640",        img: imgRaviKumar, village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, initials: "RK", bg: "#5A3E6B" },
+  { name: "Suresh Murti", id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", batch: "BATCH-081", sarees: 7,  pct: 35, status: "qc",     ac: "#374151",        img: imgSureshMurti, village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, initials: "SM", bg: "#2D6B6B" },
+  { name: "Anand K.",     id: "71413724-378d-4336-93dd-1db33cba3510", batch: "BATCH-083", sarees: 9,  pct: 72, status: "active", ac: T.antiqueGold,    img: imgAnandK, village: "Pochampally, Telangana", mobile: "×××× 7723", looms: 2, initials: "AK", bg: "#4A6B4A" },
 ];
 
 export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "WV-001": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "WV-002": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "WV-007": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "WV-005": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
+  "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "8937070a-ea63-43f3-9cb4-dcbcfd362ff7": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "11278a51-a26d-4eaa-adbf-bedbfa7fdf46": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "71413724-378d-4336-93dd-1db33cba3510": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
 };
 
 export const MATS = [

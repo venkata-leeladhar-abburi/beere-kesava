@@ -39,7 +39,7 @@ export const PO_DATA = [
 
 export const WARP_DATA = [
   {
-    id: "W001", name: "Ravi Kumar", code: "WV-001", photo: imgRaviKumar,
+    id: "W001", name: "Ravi Kumar", code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", photo: imgRaviKumar,
     batch: "BATCH-089", raised: "2 days ago",
     material: "3 kg Warp", reason: "Extra sarees for Lakshmi Silks order",
     done: 4, total: 8, pct: 50, qualifies: true,
@@ -47,7 +47,7 @@ export const WARP_DATA = [
     stock: "Warp 142 kg — enough to fulfil this request",
   },
   {
-    id: "W002", name: "Padma Veni", code: "WV-002", photo: imgPadmaVeni,
+    id: "W002", name: "Padma Veni", code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", photo: imgPadmaVeni,
     batch: "BATCH-086", raised: "1 day ago",
     material: "2 kg Warp + Resham Red 500g", reason: "Design change by admin",
     done: 3, total: 5, pct: 60, qualifies: true,
@@ -55,7 +55,7 @@ export const WARP_DATA = [
     stock: "Warp 142 kg · Resham Red 22 kg available",
   },
   {
-    id: "W003", name: "Suresh Murti", code: "WV-007", photo: imgSureshMurti,
+    id: "W003", name: "Suresh Murti", code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", photo: imgSureshMurti,
     batch: "BATCH-081", raised: "Today",
     material: "4 kg Warp", reason: "More sarees for stock",
     done: 2, total: 4, pct: 50, qualifies: true,

@@ -20,14 +20,14 @@ const deductionDonut = [
 ];
 // Saree-type breakdown per weaver (sb/hz/ps/bs/st counts — matches PaymentsPage WEAVERS pattern)
 const weaverPayRows = [
-  { code: "WV-001", name: "Ravi Kumar",   village: "Varanasi",      sb: 8, hz: 0, ps: 0, bs: 0, st: 0 },
-  { code: "WV-002", name: "Padma Veni",   village: "Rajatalab",     sb: 0, hz: 5, ps: 0, bs: 0, st: 0 },
-  { code: "WV-007", name: "Suresh Murti", village: "Bhelupura",     sb: 0, hz: 0, ps: 4, bs: 0, st: 0 },
-  { code: "WV-005", name: "Anand K.",     village: "Sigra",         sb: 0, hz: 0, ps: 0, bs: 5, st: 0 },
-  { code: "WV-012", name: "Meena R.",     village: "Orderly Bazar", sb: 4, hz: 0, ps: 0, bs: 0, st: 0 },
-  { code: "WV-031", name: "Kamala B.",    village: "Varanasi",      sb: 0, hz: 6, ps: 0, bs: 0, st: 0 },
-  { code: "WV-024", name: "Venkat Rao",   village: "Lanka",         sb: 0, hz: 0, ps: 8, bs: 0, st: 0 },
-  { code: "WV-018", name: "Lakshmi D.",   village: "Lahurabir",     sb: 5, hz: 0, ps: 0, bs: 0, st: 0 },
+  { code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   village: "Varanasi",      sb: 8, hz: 0, ps: 0, bs: 0, st: 0 },
+  { code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   village: "Rajatalab",     sb: 0, hz: 5, ps: 0, bs: 0, st: 0 },
+  { code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Bhelupura",     sb: 0, hz: 0, ps: 4, bs: 0, st: 0 },
+  { code: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     village: "Sigra",         sb: 0, hz: 0, ps: 0, bs: 5, st: 0 },
+  { code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     village: "Orderly Bazar", sb: 4, hz: 0, ps: 0, bs: 0, st: 0 },
+  { code: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    village: "Varanasi",      sb: 0, hz: 6, ps: 0, bs: 0, st: 0 },
+  { code: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   village: "Lanka",         sb: 0, hz: 0, ps: 8, bs: 0, st: 0 },
+  { code: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   village: "Lahurabir",     sb: 5, hz: 0, ps: 0, bs: 0, st: 0 },
 ];
 function sareeBreakdown(r: typeof weaverPayRows[0]): string {
   return [

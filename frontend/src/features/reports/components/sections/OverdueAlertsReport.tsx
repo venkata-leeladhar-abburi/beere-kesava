@@ -15,8 +15,8 @@ const lowStockMaterials = [
   { type: "Resham", sub: "Cream",  batch: "RSH-C-019", current: 0, minimum: 4, shortage: 4, lastOrder: "Kumar Silks"    },
 ];
 const lateWeavers = [
-  { name: "Anand K.",  code: "WV-005", batch: "BK-2026-03", expected: "20 May 2026", days: 11, done: 5, remaining: 2 },
-  { name: "Meena R.",  code: "WV-012", batch: "BK-2026-05", expected: "22 May 2026", days: 9,  done: 4, remaining: 1 },
+  { name: "Anand K.",  code: "71413724-378d-4336-93dd-1db33cba3510", batch: "BK-2026-03", expected: "20 May 2026", days: 11, done: 5, remaining: 2 },
+  { name: "Meena R.",  code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", batch: "BK-2026-05", expected: "22 May 2026", days: 9,  done: 4, remaining: 1 },
 ];
 const bulkOrders = [
   { customer: "Meenakshi Silks",  order: "BO-2026-01", ordered: 20, produced: 12, shortage: 8, deadline: "15 Jun 2026", daysLeft: 14, status: "At Risk"  },

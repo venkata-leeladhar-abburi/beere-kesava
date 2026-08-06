@@ -162,9 +162,9 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
                     <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.10)`, padding: "18px 20px" }}>
                       <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.dark, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Active Weavers</div>
                       {[
-                        { name: "Padma Veni",  code: "WV-002", batch: "BATCH-086", progress: "3/5", avatar: "PV" },
-                        { name: "Ravi Kumar",  code: "WV-001", batch: "BATCH-089", progress: "4/8", avatar: "RK" },
-                        { name: "Suresh Murti", code: "WV-007", batch: "BATCH-081", progress: "2/4", avatar: "SM" },
+                        { name: "Padma Veni",  code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", progress: "3/5", avatar: "PV" },
+                        { name: "Ravi Kumar",  code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", progress: "4/8", avatar: "RK" },
+                        { name: "Suresh Murti", code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", batch: "BATCH-081", progress: "2/4", avatar: "SM" },
                       ].map((w, i) => (
                         <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < 2 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                           <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

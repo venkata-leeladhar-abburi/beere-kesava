@@ -93,7 +93,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
     const initialsOf = (name: string) => name.split(" ").filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase() ?? "").join("") || "WV";
     const palette = ["#5A3E6B", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040", "#6B4A2A"];
     const rows: ImportedWeaver[] = valid.map((v, i) => ({
-      id: `WV-${String(nextIdStart + i).padStart(3, "0")}`,
+      id: crypto.randomUUID(),
       name: v.name, village: v.village, photo: null,
       initials: initialsOf(v.name), bg: palette[(nextIdStart + i) % palette.length],
       status: v.status, thisMonth: 0, passRate: 0, totalEver: 0,

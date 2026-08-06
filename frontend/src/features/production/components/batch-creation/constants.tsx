@@ -33,14 +33,14 @@ export const G = {
 
 // ─── Weavers ──────────────────────────────────────────────────────────────────
 export const WEAVERS = [
-  { id: "WV-001", name: "Ravi Kumar",   initials: "RK", loom: 2, bg: "#6E0F2D" },
-  { id: "WV-002", name: "Padma Veni",   initials: "PV", loom: 1, bg: "#C4923A" },
-  { id: "WV-003", name: "Suresh Murti", initials: "SM", loom: 2, bg: "#69635E" },
-  { id: "WV-005", name: "Anand K.",     initials: "AK", loom: 1, bg: "#4A061B" },
-  { id: "WV-012", name: "Meena R.",     initials: "MR", loom: 3, bg: "#A05080" },
-  { id: "WV-018", name: "Lakshmi D.",   initials: "LD", loom: 1, bg: "#C4923A" },
-  { id: "WV-024", name: "Venkat Rao",   initials: "VR", loom: 1, bg: "#1E6640" },
-  { id: "WV-031", name: "Kamala B.",    initials: "KB", loom: 1, bg: "#3D0E1A" },
+  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   initials: "RK", loom: 2, bg: "#6E0F2D" },
+  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   initials: "PV", loom: 1, bg: "#C4923A" },
+  { id: "a1bb101d-f0ee-4f65-b2f7-a7a86c24129f", name: "Suresh Murti", initials: "SM", loom: 2, bg: "#69635E" },
+  { id: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     initials: "AK", loom: 1, bg: "#4A061B" },
+  { id: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     initials: "MR", loom: 3, bg: "#A05080" },
+  { id: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   initials: "LD", loom: 1, bg: "#C4923A" },
+  { id: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   initials: "VR", loom: 1, bg: "#1E6640" },
+  { id: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    initials: "KB", loom: 1, bg: "#3D0E1A" },
 ];
 
 // ─── Saree types (mirrors RatesPricingPage seed) ─────────────────────────────

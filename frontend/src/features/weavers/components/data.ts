@@ -17,44 +17,44 @@ import { T } from "./theme";
 import type { Status, AnalyticsWeaver, ProductionRow } from "./types";
 
 export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "WV-001": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "WV-002": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "WV-007": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "WV-005": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
-  "WV-012": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "WV-018": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "WV-031": { code: "BS-004", type: "Bridal Special", rate: "₹820/saree" },
+  "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "8937070a-ea63-43f3-9cb4-dcbcfd362ff7": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "11278a51-a26d-4eaa-adbf-bedbfa7fdf46": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "71413724-378d-4336-93dd-1db33cba3510": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
+  "95cc89ea-6cf3-418c-bf9b-299e59f47389": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
+  "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
+  "51490482-11cf-425b-8d54-7bd918f6db18": { code: "BS-004", type: "Bridal Special", rate: "₹820/saree" },
 };
 
 export const WEAVERS = [
-  { id: "WV-001", name: "Ravi Kumar", village: "Dharmavaram, AP", photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B", status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: 2140, looms: 3, batch: "BATCH-079", design: "BKB-042", mobile: "×××× 4521", totalPaid: "₹8,42,000", lastActive: "Today" },
-  { id: "WV-002", name: "Padma Veni", village: "Pochampally, Telangana", photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A", status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: 1840, looms: 2, batch: "BATCH-086", design: "BKB-051", mobile: "×××× 8834", totalPaid: "₹6,90,000", lastActive: "Today" },
-  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP", photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B", status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: 980, looms: 2, batch: "BATCH-081", design: "BKB-040", mobile: "×××× 9982", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
-  { id: "WV-005", name: "Anand K.", village: "Pochampally, Telangana", photo: imgAnandK, initials: "AK", bg: "#4A6B4A", status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: 1560, looms: 2, batch: "BATCH-083", design: "BKB-047", mobile: "×××× 7723", totalPaid: "₹5,84,000", lastActive: "Today" },
-  { id: "WV-012", name: "Meena R.", village: "Siddipet, Telangana", photo: null, initials: "MR", bg: "#9B6B8A", status: "active" as Status, thisMonth: 6, passRate: 89, totalEver: 720, looms: 1, batch: "BATCH-088", design: "BKB-033", mobile: "×××× 6614", totalPaid: "₹2,68,000", lastActive: "Today" },
-  { id: "WV-018", name: "Lakshmi D.", village: "Dharmavaram, AP", photo: null, initials: "LD", bg: "#2D7D6B", status: "qc" as Status, thisMonth: 11, passRate: 96, totalEver: 1320, looms: 2, batch: "BATCH-080", design: "BKB-040", mobile: "×××× 3341", totalPaid: "₹4,92,000", lastActive: "Yesterday" },
-  { id: "WV-024", name: "Venkat Rao", village: "Venkatagiri, AP", photo: null, initials: "VR", bg: "#4A5E7A", status: "idle" as Status, thisMonth: 0, passRate: 95, totalEver: 2480, looms: 4, batch: null, design: null, mobile: "×××× 1122", totalPaid: "₹9,28,000", lastActive: "3 days ago" },
-  { id: "WV-031", name: "Kamala B.", village: "Pochampally, Telangana", photo: null, initials: "KB", bg: "#7A2040", status: "active" as Status, thisMonth: 14, passRate: 99, totalEver: 3120, looms: 3, batch: "BATCH-084", design: "BKB-055", mobile: "×××× 5589", totalPaid: "₹11,64,000", lastActive: "Today" },
+  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar", village: "Dharmavaram, AP", photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B", status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: 2140, looms: 3, batch: "BATCH-079", design: "BKB-042", mobile: "×××× 4521", totalPaid: "₹8,42,000", lastActive: "Today" },
+  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni", village: "Pochampally, Telangana", photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A", status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: 1840, looms: 2, batch: "BATCH-086", design: "BKB-051", mobile: "×××× 8834", totalPaid: "₹6,90,000", lastActive: "Today" },
+  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Venkatagiri, AP", photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B", status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: 980, looms: 2, batch: "BATCH-081", design: "BKB-040", mobile: "×××× 9982", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
+  { id: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.", village: "Pochampally, Telangana", photo: imgAnandK, initials: "AK", bg: "#4A6B4A", status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: 1560, looms: 2, batch: "BATCH-083", design: "BKB-047", mobile: "×××× 7723", totalPaid: "₹5,84,000", lastActive: "Today" },
+  { id: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.", village: "Siddipet, Telangana", photo: null, initials: "MR", bg: "#9B6B8A", status: "active" as Status, thisMonth: 6, passRate: 89, totalEver: 720, looms: 1, batch: "BATCH-088", design: "BKB-033", mobile: "×××× 6614", totalPaid: "₹2,68,000", lastActive: "Today" },
+  { id: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.", village: "Dharmavaram, AP", photo: null, initials: "LD", bg: "#2D7D6B", status: "qc" as Status, thisMonth: 11, passRate: 96, totalEver: 1320, looms: 2, batch: "BATCH-080", design: "BKB-040", mobile: "×××× 3341", totalPaid: "₹4,92,000", lastActive: "Yesterday" },
+  { id: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao", village: "Venkatagiri, AP", photo: null, initials: "VR", bg: "#4A5E7A", status: "idle" as Status, thisMonth: 0, passRate: 95, totalEver: 2480, looms: 4, batch: null, design: null, mobile: "×××× 1122", totalPaid: "₹9,28,000", lastActive: "3 days ago" },
+  { id: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.", village: "Pochampally, Telangana", photo: null, initials: "KB", bg: "#7A2040", status: "active" as Status, thisMonth: 14, passRate: 99, totalEver: 3120, looms: 3, batch: "BATCH-084", design: "BKB-055", mobile: "×××× 5589", totalPaid: "₹11,64,000", lastActive: "Today" },
 ];
 /** Element type of WEAVERS — lives here, not in types.ts, to avoid a
  *  data.ts <-> types.ts circular import. */
 export type ImportedWeaver = typeof WEAVERS[0];
 export const TABLE_ROWS = [
-  { id: "WV-001", name: "Ravi Kumar", village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: "2,140", totalPaid: "₹8,42,000", lastActive: "Today" },
-  { id: "WV-002", name: "Padma Veni", village: "Pochampally, TG", mobile: "×××× 8834", looms: 2, status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: "1,840", totalPaid: "₹6,90,000", lastActive: "Today" },
-  { id: "WV-003", name: "Krishnamma", village: "Venkatagiri, AP", mobile: "×××× 2210", looms: 2, status: "idle" as Status, thisMonth: 0, passRate: 96, totalEver: "2,640", totalPaid: "₹9,84,000", lastActive: "3 days ago" },
-  { id: "WV-004", name: "Rajesh T.", village: "Siddipet, TG", mobile: "×××× 5567", looms: 1, status: "active" as Status, thisMonth: 5, passRate: 91, totalEver: "620", totalPaid: "₹2,18,000", lastActive: "Today" },
-  { id: "WV-005", name: "Anand K.", village: "Pochampally, TG", mobile: "×××× 7723", looms: 2, status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: "1,560", totalPaid: "₹5,84,000", lastActive: "Today" },
-  { id: "WV-006", name: "Saraswati M.", village: "Dharmavaram, AP", mobile: "×××× 3341", looms: 3, status: "qc" as Status, thisMonth: 11, passRate: 98, totalEver: "3,240", totalPaid: "₹12,40,000", lastActive: "Yesterday" },
-  { id: "WV-007", name: "Suresh Murti", village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: "980", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
-  { id: "WV-008", name: "Bhavani K.", village: "Siddipet, TG", mobile: "×××× 6614", looms: 1, status: "idle" as Status, thisMonth: 0, passRate: 88, totalEver: "440", totalPaid: "₹1,60,000", lastActive: "5 days ago" },
+  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar", village: "Dharmavaram, AP", mobile: "×××× 4521", looms: 3, status: "active" as Status, thisMonth: 12, passRate: 94, totalEver: "2,140", totalPaid: "₹8,42,000", lastActive: "Today" },
+  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni", village: "Pochampally, TG", mobile: "×××× 8834", looms: 2, status: "active" as Status, thisMonth: 18, passRate: 97, totalEver: "1,840", totalPaid: "₹6,90,000", lastActive: "Today" },
+  { id: "a1bb101d-f0ee-4f65-b2f7-a7a86c24129f", name: "Krishnamma", village: "Venkatagiri, AP", mobile: "×××× 2210", looms: 2, status: "idle" as Status, thisMonth: 0, passRate: 96, totalEver: "2,640", totalPaid: "₹9,84,000", lastActive: "3 days ago" },
+  { id: "0b509a71-5efa-495e-baa3-e010541548da", name: "Rajesh T.", village: "Siddipet, TG", mobile: "×××× 5567", looms: 1, status: "active" as Status, thisMonth: 5, passRate: 91, totalEver: "620", totalPaid: "₹2,18,000", lastActive: "Today" },
+  { id: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.", village: "Pochampally, TG", mobile: "×××× 7723", looms: 2, status: "active" as Status, thisMonth: 9, passRate: 92, totalEver: "1,560", totalPaid: "₹5,84,000", lastActive: "Today" },
+  { id: "c5122ba3-c872-41d6-aaa7-2ea01df5a1dc", name: "Saraswati M.", village: "Dharmavaram, AP", mobile: "×××× 3341", looms: 3, status: "qc" as Status, thisMonth: 11, passRate: 98, totalEver: "3,240", totalPaid: "₹12,40,000", lastActive: "Yesterday" },
+  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Venkatagiri, AP", mobile: "×××× 9982", looms: 2, status: "qc" as Status, thisMonth: 7, passRate: 98, totalEver: "980", totalPaid: "₹3,64,000", lastActive: "Yesterday" },
+  { id: "79334303-940b-40ec-a418-eb0ce280132c", name: "Bhavani K.", village: "Siddipet, TG", mobile: "×××× 6614", looms: 1, status: "idle" as Status, thisMonth: 0, passRate: 88, totalEver: "440", totalPaid: "₹1,60,000", lastActive: "5 days ago" },
 ];
 export const LEADERBOARD = [
-  { rank: 1, name: "Padma Veni", id: "WV-002", sarees: 18, rate: 97, photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A" },
-  { rank: 2, name: "Kamala B.", id: "WV-031", sarees: 14, rate: 99, photo: null, initials: "KB", bg: "#7A2040" },
-  { rank: 3, name: "Ravi Kumar", id: "WV-001", sarees: 12, rate: 94, photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B" },
-  { rank: 4, name: "Lakshmi D.", id: "WV-018", sarees: 11, rate: 96, photo: null, initials: "LD", bg: "#2D7D6B" },
-  { rank: 5, name: "Suresh Murti", id: "WV-007", sarees: 7, rate: 98, photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B" },
+  { rank: 1, name: "Padma Veni", id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", sarees: 18, rate: 97, photo: imgPadmaVeni, initials: "PV", bg: "#9B6B8A" },
+  { rank: 2, name: "Kamala B.", id: "51490482-11cf-425b-8d54-7bd918f6db18", sarees: 14, rate: 99, photo: null, initials: "KB", bg: "#7A2040" },
+  { rank: 3, name: "Ravi Kumar", id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", sarees: 12, rate: 94, photo: imgRaviKumar, initials: "RK", bg: "#5A3E6B" },
+  { rank: 4, name: "Lakshmi D.", id: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", sarees: 11, rate: 96, photo: null, initials: "LD", bg: "#2D7D6B" },
+  { rank: 5, name: "Suresh Murti", id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", sarees: 7, rate: 98, photo: imgSureshMurti, initials: "SM", bg: "#2D6B6B" },
 ];
 export const QC_DATA = [
   { name: "Passed", value: 238, color: T.green },
@@ -65,10 +65,10 @@ export const QC_DATA = [
 // missing before: everything looked the same regardless of whether it wanted
 // a decision from you or was just a record of something already finished.
 export const ACTIVITIES = [
-  { icon: "⚠️", category: "Material", action: "Material request pending", detail: "Suresh Murti (WV-007) requested 4 kg Warp — awaiting your approval", time: "Today", needsAction: true, weaverId: "WV-007" },
-  { icon: "✅", category: "Quality Check", action: "Quality check submitted", detail: "Padma Veni (WV-002) submitted 18 sarees — 17 passed, 1 rejected", time: "Yesterday", needsAction: false, weaverId: "WV-002" },
-  { icon: "📦", category: "Batch", action: "New batch issued", detail: "BATCH-089 given to Ravi Kumar (WV-001) — extra sarees for the Lakshmi Silks order", time: "2 hours ago", needsAction: false, weaverId: "WV-001" },
-  { icon: "🔄", category: "Batch", action: "Batch completed", detail: "Kamala B. (WV-031) completed BATCH-084 — 14 sarees woven, all passed quality check", time: "3 days ago", needsAction: false, weaverId: "WV-031" },
+  { icon: "⚠️", category: "Material", action: "Material request pending", detail: "Suresh Murti (11278a51-a26d-4eaa-adbf-bedbfa7fdf46) requested 4 kg Warp — awaiting your approval", time: "Today", needsAction: true, weaverId: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46" },
+  { icon: "✅", category: "Quality Check", action: "Quality check submitted", detail: "Padma Veni (8937070a-ea63-43f3-9cb4-dcbcfd362ff7) submitted 18 sarees — 17 passed, 1 rejected", time: "Yesterday", needsAction: false, weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7" },
+  { icon: "📦", category: "Batch", action: "New batch issued", detail: "BATCH-089 given to Ravi Kumar (b5f9178c-b1b9-4871-a7c3-0d68a462d57a) — extra sarees for the Lakshmi Silks order", time: "2 hours ago", needsAction: false, weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a" },
+  { icon: "🔄", category: "Batch", action: "Batch completed", detail: "Kamala B. (51490482-11cf-425b-8d54-7bd918f6db18) completed BATCH-084 — 14 sarees woven, all passed quality check", time: "3 days ago", needsAction: false, weaverId: "51490482-11cf-425b-8d54-7bd918f6db18" },
   { icon: "💰", category: "Payment", action: "Payment processed", detail: "Monthly making charges disbursed to 84 weavers — ₹4.2L total paid this month", time: "2 days ago", needsAction: false },
 ];
 export const BATCH_HISTORY = [
@@ -96,9 +96,9 @@ export const STATS = [
 ];
 
 export const WARP_REQUESTS = [
-  { name: "Ravi Kumar", code: "WV-001", batch: "BATCH-089", photo: imgRaviKumar, raised: "2 days ago", material: "3 kg Warp", reason: "Extra sarees for Lakshmi Silks order", done: 4, total: 8, pct: 50 },
-  { name: "Padma Veni", code: "WV-002", batch: "BATCH-086", photo: imgPadmaVeni, raised: "1 day ago", material: "2 kg Warp + Resham Red 500g", reason: "Design change by admin", done: 3, total: 5, pct: 60 },
-  { name: "Suresh Murti", code: "WV-007", batch: "BATCH-081", photo: imgSureshMurti, raised: "Today", material: "4 kg Warp", reason: "More sarees for stock", done: 2, total: 4, pct: 50 },
+  { name: "Ravi Kumar", code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", photo: imgRaviKumar, raised: "2 days ago", material: "3 kg Warp", reason: "Extra sarees for Lakshmi Silks order", done: 4, total: 8, pct: 50 },
+  { name: "Padma Veni", code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", photo: imgPadmaVeni, raised: "1 day ago", material: "2 kg Warp + Resham Red 500g", reason: "Design change by admin", done: 3, total: 5, pct: 60 },
+  { name: "Suresh Murti", code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", batch: "BATCH-081", photo: imgSureshMurti, raised: "Today", material: "4 kg Warp", reason: "More sarees for stock", done: 2, total: 4, pct: 50 },
 ];
 
 export const FILTER_PILLS = ["All Weavers", "Currently Working", "Submitted — Waiting Quality Check", "Idle — No Active Batch"];

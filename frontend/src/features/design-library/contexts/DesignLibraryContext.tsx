@@ -42,7 +42,7 @@ export interface DesignEntry {
 export interface DispatchRecord {
   id: string;
   recipientType: "weaver" | "loom";
-  recipientId: string;      // weaver id (e.g. "WV-001") or loom label (e.g. "Loom 3")
+  recipientId: string;      // weaver id (e.g. "b5f9178c-b1b9-4871-a7c3-0d68a462d57a") or loom label (e.g. "Loom 3")
   recipientName: string;
   batches: string[];        // linked batch IDs
   instructions: string;
@@ -81,7 +81,7 @@ const INITIAL_DISPATCHES: DispatchRecord[] = [
   {
     id: "DISP-001",
     recipientType: "weaver",
-    recipientId: "WV-002",
+    recipientId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7",
     recipientName: "Padma Veni",
     batches: ["BATCH-086"],
     instructions: "Maintain light warp tension in the borders. Ensure Resham thread transition is smooth in pallu section.",
@@ -125,7 +125,7 @@ const INITIAL_DISPATCHES: DispatchRecord[] = [
   {
     id: "DISP-003",
     recipientType: "weaver",
-    recipientId: "WV-001",
+    recipientId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
     recipientName: "Ravi Kumar",
     batches: ["BATCH-094"],
     instructions: "Keep border width consistent at 5cm. Lotus motif on pallu only — double-check alignment before starting each saree.",
@@ -136,7 +136,7 @@ const INITIAL_DISPATCHES: DispatchRecord[] = [
   {
     id: "DISP-004",
     recipientType: "weaver",
-    recipientId: "WV-001",
+    recipientId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
     recipientName: "Ravi Kumar",
     batches: ["BATCH-078"],
     instructions: "Check spacing: 2cm x 2cm throughout body. Keep zari check pattern even across all four sarees.",

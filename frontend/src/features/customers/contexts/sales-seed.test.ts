@@ -85,9 +85,9 @@ describe("ageBucket", () => {
 describe("rankSellers", () => {
   it("aggregates produced/sold/revenue per weaver and computes sell-through", () => {
     const sarees: UnifiedSaree[] = [
-      makeSaree({ sareeId: "A", origin: "weaver", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverLoom: 2, status: "retail", sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 1000 } }),
-      makeSaree({ sareeId: "B", origin: "weaver", weaverId: "WV-001", weaverName: "Ravi Kumar", weaverLoom: 2, status: "unsold" }),
-      makeSaree({ sareeId: "C", origin: "weaver", weaverId: "WV-002", weaverName: "Padma Veni", weaverLoom: 1, status: "wholesale", sale: { saleRef: "S2", channel: "wholesale", date: "x", customer: "c", amount: 2000 } }),
+      makeSaree({ sareeId: "A", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: "retail", sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 1000 } }),
+      makeSaree({ sareeId: "B", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: "unsold" }),
+      makeSaree({ sareeId: "C", origin: "weaver", weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", weaverName: "Padma Veni", weaverLoom: 1, status: "wholesale", sale: { saleRef: "S2", channel: "wholesale", date: "x", customer: "c", amount: 2000 } }),
       // Different origin — must not be counted for the "weaver" ranking.
       makeSaree({ sareeId: "D", origin: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", status: "retail" }),
     ];
@@ -95,7 +95,7 @@ describe("rankSellers", () => {
     const ranked = rankSellers(sarees, "weaver");
     expect(ranked).toHaveLength(2);
 
-    const ravi = ranked.find(r => r.key === "WV-001")!;
+    const ravi = ranked.find(r => r.key === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a")!;
     expect(ravi.produced).toBe(2);
     expect(ravi.sold).toBe(1);
     expect(ravi.retail).toBe(1);
@@ -103,7 +103,7 @@ describe("rankSellers", () => {
     expect(ravi.revenue).toBe(1000);
     expect(ravi.sellThroughPct).toBe(50);
 
-    const padma = ranked.find(r => r.key === "WV-002")!;
+    const padma = ranked.find(r => r.key === "8937070a-ea63-43f3-9cb4-dcbcfd362ff7")!;
     expect(padma.wholesale).toBe(1);
     expect(padma.revenue).toBe(2000);
   });

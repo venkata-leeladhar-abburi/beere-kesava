@@ -330,7 +330,7 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
 
 
 // ─── Payment section constants ───────────────────────────────────────────────
-const CURRENT_WEAVER_ID = "WV-001";
+const CURRENT_WEAVER_ID = "b5f9178c-b1b9-4871-a7c3-0d68a462d57a";
 
 // Static month data — charges/deductions are set per-production-cycle
 const CURRENT_MONTH_LABEL = "May 2026";
