@@ -1,7 +1,13 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, Matches } from "class-validator";
+import { IsEmail, IsEnum, IsOptional, IsString, IsUUID, Length, Matches } from "class-validator";
 import { ActiveStatus } from "../../generated/prisma/client";
 
 export class UpdateFinishingStaffDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsOptional()
   @IsString()
   @Length(1, 100)

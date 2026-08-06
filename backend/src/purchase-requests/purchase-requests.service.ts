@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma, PurchaseRequestStatus } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -8,7 +9,10 @@ import { ListPurchaseRequestsQueryDto } from "./dto/list-purchase-requests-query
 
 @Injectable()
 export class PurchaseRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async create(dto: CreatePurchaseRequestDto) {
     const requester = await this.prisma.user.findUnique({ where: { id: dto.requestedById } });
@@ -23,7 +27,7 @@ export class PurchaseRequestsService {
       }
     }
 
-    return this.prisma.purchaseRequest.create({
+    const request = await this.prisma.purchaseRequest.create({
       data: {
         supplierId: dto.supplierId,
         requestedById: dto.requestedById,
@@ -34,6 +38,17 @@ export class PurchaseRequestsService {
         reason: dto.reason,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.requestedById,
+      module: "PURCHASE_REQUESTS",
+      action: `Created purchase request for ${dto.quantity} x ${dto.sareeType}`,
+      entityType: "PurchaseRequest",
+      entityId: request.id,
+      recordLabel: dto.sareeType,
+    });
+
+    return request;
   }
 
   async findAll(
@@ -78,7 +93,7 @@ export class PurchaseRequestsService {
       throw new NotFoundException(`User ${dto.decidedById} not found`);
     }
 
-    return this.prisma.purchaseRequest.update({
+    const updated = await this.prisma.purchaseRequest.update({
       where: { id },
       data: {
         status: dto.decision,
@@ -87,5 +102,18 @@ export class PurchaseRequestsService {
         decisionNote: dto.decisionNote,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.decidedById,
+      module: "PURCHASE_REQUESTS",
+      action: `${dto.decision === PurchaseRequestStatus.APPROVED ? "Approved" : "Rejected"} purchase request for ${request.sareeType}`,
+      entityType: "PurchaseRequest",
+      entityId: id,
+      recordLabel: request.sareeType ?? undefined,
+      oldValue: request.status,
+      newValue: dto.decision,
+    });
+
+    return updated;
   }
 }

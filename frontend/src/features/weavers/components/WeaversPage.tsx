@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { useBatches } from "../../production/contexts/BatchContext";
 
 import { T, F } from "./theme";
 import { WEAVERS } from "./data";
 import { ActionDialog } from "./common/primitives";
-import { PageHeader, StatsStrip } from "./sections/PageHeaderAndStats";
+import { PageHeader, StatsStrip, WeaverStatTile } from "./sections/PageHeaderAndStats";
+import { weaversApi } from "../../../shared/api/weavers";
 import { WarpRequestsSection } from "./sections/WarpRequestsSection";
 import { AllWeaversControls } from "./sections/WeaverDirectoryControls";
 import { WeaverDirectory } from "./sections/WeaverTableAndDirectory";
@@ -52,6 +54,31 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
 
+  // Real aggregate numbers for the hero stats strip. GET /weavers/leaderboard
+  // only returns the top 10, so the roster + per-weaver GET /weavers/:id/stats
+  // calls are used to compute true totals/averages across everyone.
+  const { data: weaversRes } = useQuery({
+    queryKey: ["weavers-page-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const roster = weaversRes?.items ?? [];
+  const { data: statsList } = useQuery({
+    queryKey: ["weavers-page-stats", roster.map(w => w.id)],
+    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
+    enabled: roster.length > 0,
+  });
+  const allStats = statsList ?? [];
+  const totalActiveWeavers = roster.filter(w => w.status === "ACTIVE").length;
+  const totalSareesWoven = allStats.reduce((s, st) => s + st.totalSareesWoven, 0);
+  const avgPassRate = allStats.length ? Math.round(allStats.reduce((s, st) => s + st.qcPassRate, 0) / allStats.length) : 0;
+  const realStats: WeaverStatTile[] = [
+    { label: "TOTAL ACTIVE WEAVERS", value: `${totalActiveWeavers}`, sub: "All currently working with the firm", gold: false, crimson: false },
+    { label: "TOTAL SAREES WOVEN", value: `${totalSareesWoven}`, sub: "All-time, across all weavers", gold: false, crimson: false },
+    { label: "QUALITY CHECK PASS RATE", value: `${avgPassRate}%`, sub: "Average across all weavers", gold: true, crimson: false },
+    { label: "WARP REQUESTS PENDING", value: "—", sub: "Not tracked by the backend yet", gold: false, crimson: false },
+    { label: "TOTAL PAID TO WEAVERS", value: "—", sub: "Not tracked by the backend yet", gold: false, crimson: false },
+  ];
+
   if (selectedWeaver) {
     return (
       <WeaverDrawer weaver={selectedWeaver} initialMode={drawerMode} onClose={() => setSelectedWeaver(null)} onNavigate={onNavigate} />
@@ -61,7 +88,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PageHeader />
-      <StatsStrip />
+      <StatsStrip stats={realStats} />
       <WarpRequestsSection />
       <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)} />
       <WeaverDirectory view={view} extraWeavers={extraWeavers} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />

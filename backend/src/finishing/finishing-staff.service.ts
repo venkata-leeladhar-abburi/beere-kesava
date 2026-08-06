@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
@@ -14,11 +15,13 @@ export class FinishingStaffService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreateFinishingStaffDto) {
     const empId = await this.idGenerator.nextFormatted(FINISHING_STAFF_ID_PREFIX);
-    return this.prisma.finishingStaff.create({
+    const name = `${dto.firstName} ${dto.lastName}`.trim();
+    const staff = await this.prisma.finishingStaff.create({
       data: {
         empId,
         firstName: dto.firstName,
@@ -29,6 +32,17 @@ export class FinishingStaffService {
         notes: dto.notes,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "FINISHING",
+      action: `Added finishing staff ${name}`,
+      entityType: "FinishingStaff",
+      entityId: staff.id,
+      recordLabel: name,
+    });
+
+    return staff;
   }
 
   async findAll(
@@ -70,7 +84,19 @@ export class FinishingStaffService {
   }
 
   async update(id: string, dto: UpdateFinishingStaffDto) {
-    await this.findOne(id);
-    return this.prisma.finishingStaff.update({ where: { id }, data: dto });
+    const before = await this.findOne(id);
+    const { actorId, ...data } = dto;
+    const updated = await this.prisma.finishingStaff.update({ where: { id }, data });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "FINISHING",
+      action: `Updated finishing staff ${before.firstName} ${before.lastName}`,
+      entityType: "FinishingStaff",
+      entityId: id,
+      recordLabel: `${before.firstName} ${before.lastName}`,
+    });
+
+    return updated;
   }
 }

@@ -2,6 +2,12 @@ import { Type } from "class-transformer";
 import { IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 
 export class CreateSupplierPaymentDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsUUID()
   supplierId!: string;
 

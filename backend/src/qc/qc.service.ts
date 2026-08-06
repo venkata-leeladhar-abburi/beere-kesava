@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma, QcResult } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -26,7 +27,10 @@ function computeQcPayment(
 
 @Injectable()
 export class QcService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async create(dto: CreateQcRecordDto) {
     const row = await this.prisma.batchSareeRow.findUnique({
@@ -81,6 +85,16 @@ export class QcService {
         data: { qcPassed: dto.result !== QcResult.DEFECTIVE },
       }),
     ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.inspectedById,
+      module: "QC",
+      action: `Recorded QC result ${dto.result} for saree ${dto.sareeId}`,
+      entityType: "QcRecord",
+      entityId: dto.sareeId,
+      recordLabel: dto.sareeId,
+      newValue: dto.result,
+    });
 
     return record;
   }

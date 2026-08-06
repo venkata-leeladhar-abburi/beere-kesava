@@ -3,6 +3,12 @@ import { RecipientType } from "../../generated/prisma/client";
 
 /** PATCH /batches/:id/rows/:serial — assign a saree row to a weaver or factory loom. */
 export class AssignBatchRowDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsEnum(RecipientType)
   recipientType!: RecipientType;
 

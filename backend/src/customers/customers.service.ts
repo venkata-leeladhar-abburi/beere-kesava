@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -8,10 +9,25 @@ import { UpdateCustomerDto } from "./dto/update-customer.dto";
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
-  create(dto: CreateCustomerDto) {
-    return this.prisma.customer.create({ data: dto });
+  async create(dto: CreateCustomerDto) {
+    const { actorId, ...data } = dto;
+    const customer = await this.prisma.customer.create({ data });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "CUSTOMERS",
+      action: `Added customer ${customer.name}`,
+      entityType: "Customer",
+      entityId: customer.id,
+      recordLabel: customer.name,
+    });
+
+    return customer;
   }
 
   async findAll(
@@ -52,7 +68,19 @@ export class CustomersService {
   }
 
   async update(id: string, dto: UpdateCustomerDto) {
-    await this.findOne(id);
-    return this.prisma.customer.update({ where: { id }, data: dto });
+    const before = await this.findOne(id);
+    const { actorId, ...data } = dto;
+    const updated = await this.prisma.customer.update({ where: { id }, data });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "CUSTOMERS",
+      action: `Updated customer ${before.name}`,
+      entityType: "Customer",
+      entityId: id,
+      recordLabel: before.name,
+    });
+
+    return updated;
   }
 }

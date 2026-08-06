@@ -2,7 +2,14 @@
 import { motion } from "motion/react";
 import { T, F } from "../theme";
 import { imgPadmaVeni } from "../../../../shared/constants/weaverImages";
-import { STATS } from "../data";
+
+export interface WeaverStatTile {
+  label: string;
+  value: string;
+  sub: string;
+  gold?: boolean;
+  crimson?: boolean;
+}
 
 export function PageHeader() {
   return (
@@ -25,7 +32,7 @@ export function PageHeader() {
   );
 }
 
-export function StatsStrip() {
+export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -34,7 +41,7 @@ export function StatsStrip() {
       style={{ padding: `0 48px`, marginTop: -72, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {STATS.map((m, i) => (
+        {stats.map((m, i) => (
           <motion.div
             key={m.label}
             initial={{ opacity: 0, y: 20, backgroundColor: "rgba(0,0,0,0)" }}
@@ -44,7 +51,7 @@ export function StatsStrip() {
             style={{
               flex: 1, padding: "28px 22px",
               backgroundImage: m.gold ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-              borderRight: i < STATS.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
+              borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
               display: "flex", alignItems: "center", gap: 14, position: "relative",
               cursor: "pointer",
             }}

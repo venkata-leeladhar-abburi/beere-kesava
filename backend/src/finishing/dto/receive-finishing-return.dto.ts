@@ -1,7 +1,13 @@
-import { IsEnum, IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsEnum, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { DamageSeverity, FinishingCondition } from "../../generated/prisma/client";
 
 export class ReceiveFinishingReturnDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsEnum(FinishingCondition)
   condition!: FinishingCondition;
 

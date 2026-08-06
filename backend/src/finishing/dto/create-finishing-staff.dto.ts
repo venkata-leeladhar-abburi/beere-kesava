@@ -1,6 +1,12 @@
-import { IsEmail, IsOptional, IsString, Length, Matches } from "class-validator";
+import { IsEmail, IsOptional, IsString, IsUUID, Length, Matches } from "class-validator";
 
 export class CreateFinishingStaffDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsString()
   @Length(1, 100)
   firstName!: string;

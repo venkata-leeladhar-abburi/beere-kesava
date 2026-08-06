@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { DispatchType, Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -12,7 +13,10 @@ const include = {
 
 @Injectable()
 export class DispatchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async create(dto: CreateDispatchDto) {
     if (dto.type === DispatchType.WHOLESALE && dto.customerId) {
@@ -75,6 +79,15 @@ export class DispatchService {
     await this.prisma.inventoryRecord.updateMany({
       where: { sareeId: { in: dto.sareeIds } },
       data: { status: "DISPATCHED" },
+    });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "DISPATCH",
+      action: `Dispatched ${dto.sareeIds.length} saree(s) (${dto.type})`,
+      entityType: "DispatchRecord",
+      entityId: created.id,
+      recordLabel: dto.lrNumber ?? dto.invoiceNumber ?? created.id,
     });
 
     return this.findOne(created.id);

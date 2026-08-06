@@ -10,6 +10,7 @@ import {
   Post,
   Query,
 } from "@nestjs/common";
+import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
@@ -47,7 +48,7 @@ export class BatchesController {
 
   @Post(":id/finalize")
   @HttpCode(HttpStatus.OK)
-  finalize(@Param("id") id: string) {
-    return this.batchesService.finalize(id);
+  finalize(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
+    return this.batchesService.finalize(id, dto);
   }
 }

@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { BatchStatus, Prisma, RecipientType } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
@@ -14,12 +16,13 @@ export class BatchesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreateBatchDto) {
     const id = await this.idGenerator.nextFormatted(BATCH_ID_PREFIX);
 
-    return this.prisma.batch.create({
+    const batch = await this.prisma.batch.create({
       data: {
         id,
         totalCount: dto.totalCount,
@@ -33,6 +36,17 @@ export class BatchesService {
       },
       include: { rows: { orderBy: { serial: "asc" } } },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "BATCHES",
+      action: `Created batch ${batch.id}`,
+      entityType: "Batch",
+      entityId: batch.id,
+      recordLabel: batch.id,
+    });
+
+    return batch;
   }
 
   async findAll(
@@ -100,7 +114,7 @@ export class BatchesService {
 
     const sareeId = await this.buildSareeId(dto, serial);
 
-    return this.prisma.batchSareeRow.update({
+    const updatedRow = await this.prisma.batchSareeRow.update({
       where: { batchId_serial: { batchId, serial } },
       data: {
         sareeId,
@@ -112,20 +126,44 @@ export class BatchesService {
         bulkOrderRef: dto.bulkOrderRef,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "BATCHES",
+      action: `Assigned row ${serial} of batch ${batchId} to ${sareeId}`,
+      entityType: "BatchSareeRow",
+      entityId: `${batchId}-${serial}`,
+      recordLabel: sareeId,
+    });
+
+    return updatedRow;
   }
 
-  async finalize(id: string) {
+  async finalize(id: string, dto?: ActorOnlyDto) {
     const batch = await this.findOne(id);
     if (batch.status !== BatchStatus.DRAFT) {
       throw new BadRequestException(
         `Batch must be DRAFT to be finalized (currently ${batch.status})`,
       );
     }
-    return this.prisma.batch.update({
+    const updated = await this.prisma.batch.update({
       where: { id },
       data: { status: BatchStatus.ACTIVE },
       include: { rows: { orderBy: { serial: "asc" } } },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto?.actorId,
+      module: "BATCHES",
+      action: `Finalized batch ${id}`,
+      entityType: "Batch",
+      entityId: id,
+      recordLabel: id,
+      oldValue: BatchStatus.DRAFT,
+      newValue: BatchStatus.ACTIVE,
+    });
+
+    return updated;
   }
 
   // Matches the frontend's generateSareeId(weaverName, loom, seq) convention:

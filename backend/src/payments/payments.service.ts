@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -23,14 +24,17 @@ export interface ImportResult {
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async createWeaverPayment(dto: CreateWeaverPaymentDto) {
     const weaver = await this.prisma.weaver.findUnique({ where: { id: dto.weaverId } });
     if (!weaver) {
       throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
     }
-    return this.prisma.weaverPayment.create({
+    const payment = await this.prisma.weaverPayment.create({
       data: {
         weaverId: dto.weaverId,
         amountPaid: dto.amountPaid,
@@ -43,6 +47,18 @@ export class PaymentsService {
         deduction: dto.deduction,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "PAYMENTS",
+      action: `Recorded payment of ${dto.amountPaid} to weaver ${weaver.name}`,
+      entityType: "WeaverPayment",
+      entityId: payment.id,
+      recordLabel: weaver.name,
+      newValue: String(dto.amountPaid),
+    });
+
+    return payment;
   }
 
   async findAllWeaverPayments(
@@ -69,7 +85,7 @@ export class PaymentsService {
     if (!supplier) {
       throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
     }
-    return this.prisma.supplierPayment.create({
+    const payment = await this.prisma.supplierPayment.create({
       data: {
         supplierId: dto.supplierId,
         amount: dto.amount,
@@ -79,6 +95,18 @@ export class PaymentsService {
         firmId: dto.firmId,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "PAYMENTS",
+      action: `Recorded payment of ${dto.amount} to supplier ${supplier.name}`,
+      entityType: "SupplierPayment",
+      entityId: payment.id,
+      recordLabel: supplier.name,
+      newValue: String(dto.amount),
+    });
+
+    return payment;
   }
 
   async findAllSupplierPayments(
@@ -105,7 +133,7 @@ export class PaymentsService {
     if (!vendor) {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
-    return this.prisma.vendorPayment.create({
+    const payment = await this.prisma.vendorPayment.create({
       data: {
         vendorId: dto.vendorId,
         amount: dto.amount,
@@ -115,6 +143,18 @@ export class PaymentsService {
         firmId: dto.firmId,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "PAYMENTS",
+      action: `Recorded payment of ${dto.amount} to vendor ${vendor.name}`,
+      entityType: "VendorPayment",
+      entityId: payment.id,
+      recordLabel: vendor.name,
+      newValue: String(dto.amount),
+    });
+
+    return payment;
   }
 
   async findAllVendorPayments(

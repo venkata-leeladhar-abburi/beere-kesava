@@ -1,17 +1,79 @@
 // ── Table view + directory container that switches between card/list/table ─
 import React, { useState } from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
 import { T, F } from "../theme";
-import { STATUS_CFG } from "../types";
-import { WEAVERS, TABLE_ROWS, TABLE_COLS } from "../data";
+import { STATUS_CFG, Status } from "../types";
+import { WEAVERS, TABLE_COLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverCardGrid, WeaverListView } from "./WeaverCardAndListViews";
+import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+
+// Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
+// The stats endpoint has no monthly breakdown, total-paid, or last-active
+// timestamp yet, so those columns show "—" rather than an invented number.
+function useRealTableRows() {
+  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
+    queryKey: ["weavers-table-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const roster = weaversRes?.items ?? [];
+  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
+    queryKey: ["weavers-table-stats", roster.map(w => w.id)],
+    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
+    enabled: roster.length > 0,
+  });
+  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
+  const rows = roster.map(w => {
+    const s: BackendWeaverStats | undefined = statsById.get(w.id);
+    return {
+      id: w.id,
+      name: w.name,
+      village: w.village || "—",
+      mobile: w.phone || "—",
+      looms: w.looms,
+      status: (s && s.activeBatchRowsCount > 0 ? "active" : "idle") as Status,
+      thisMonth: 0,
+      passRate: s?.qcPassRate ?? 0,
+      totalEver: String(s?.totalSareesWoven ?? 0),
+      totalPaid: "—",
+      lastActive: "—",
+    };
+  });
+  return {
+    rows,
+    isLoading: rosterLoading || (roster.length > 0 && statsLoading),
+    isError: rosterError || statsError,
+  };
+}
 
 export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
   const [showAll, setShowAll] = useState(false);
+  const { rows: TABLE_ROWS, isLoading, isError } = useRealTableRows();
   const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
   const TD: React.CSSProperties = { padding: "16px 18px", borderBottom: "1px solid rgba(110,15,45,0.06)", verticalAlign: "middle" };
+  if (isLoading) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+        Loading weavers…
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.crimson }}>
+        Couldn't load weavers.
+      </div>
+    );
+  }
+  if (TABLE_ROWS.length === 0) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>
+        No weavers yet.
+      </div>
+    );
+  }
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <div style={{ overflowX: "auto" }}>

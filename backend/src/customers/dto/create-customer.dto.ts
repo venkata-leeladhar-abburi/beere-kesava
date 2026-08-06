@@ -1,7 +1,13 @@
-import { IsEnum, IsOptional, IsString, Length } from "class-validator";
+import { IsEnum, IsOptional, IsString, IsUUID, Length } from "class-validator";
 import { CustomerType } from "../../generated/prisma/client";
 
 export class CreateCustomerDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsString()
   @Length(1, 150)
   name!: string;

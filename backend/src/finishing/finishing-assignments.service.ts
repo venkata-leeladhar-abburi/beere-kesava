@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { FinishingAssignmentStatus, Prisma, QcResult } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -13,7 +14,10 @@ const include = {
 
 @Injectable()
 export class FinishingAssignmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   // Bulk-assigns one or more QC-passed sarees to a finishing staff member —
   // mirrors the frontend's "assign selected sarees" flow.
@@ -58,10 +62,21 @@ export class FinishingAssignmentsService {
       })),
     });
 
-    return this.prisma.finishingAssignment.findMany({
+    const created = await this.prisma.finishingAssignment.findMany({
       where: { sareeId: { in: dto.sareeIds } },
       include,
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.assignedById,
+      module: "FINISHING",
+      action: `Assigned ${dto.sareeIds.length} saree(s) to finishing staff ${dto.finishingStaffId}`,
+      entityType: "FinishingAssignment",
+      entityId: dto.sareeIds.join(","),
+      recordLabel: dto.sareeIds.join(", "),
+    });
+
+    return created;
   }
 
   async findAll(
@@ -127,7 +142,7 @@ export class FinishingAssignmentsService {
       },
     });
 
-    return this.prisma.finishingAssignment.update({
+    const updated = await this.prisma.finishingAssignment.update({
       where: { id },
       data: {
         status: FinishingAssignmentStatus.RETURNED,
@@ -139,5 +154,18 @@ export class FinishingAssignmentsService {
       },
       include,
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "FINISHING",
+      action: `Recorded finishing return for saree ${assignment.sareeId} (${dto.condition})`,
+      entityType: "FinishingAssignment",
+      entityId: id,
+      recordLabel: assignment.sareeId,
+      oldValue: FinishingAssignmentStatus.AWAITING_RETURN,
+      newValue: FinishingAssignmentStatus.RETURNED,
+    });
+
+    return updated;
   }
 }

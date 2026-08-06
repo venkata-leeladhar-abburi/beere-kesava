@@ -1,7 +1,13 @@
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { BulkOrderStatus, OrderPaymentStatus } from "../../generated/prisma/client";
 
 export class UpdateBulkOrderDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsOptional()
   @IsEnum(BulkOrderStatus)
   status?: BulkOrderStatus;

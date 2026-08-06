@@ -1,6 +1,12 @@
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsUUID } from "class-validator";
 
 export class UpdateCustomerDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsOptional()
   @IsString()
   name?: string;

@@ -1,7 +1,13 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsString, Length, Min } from "class-validator";
+import { IsNumber, IsOptional, IsString, IsUUID, Length, Min } from "class-validator";
 
 export class CreateRateDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsString()
   @Length(1, 30)
   code!: string;

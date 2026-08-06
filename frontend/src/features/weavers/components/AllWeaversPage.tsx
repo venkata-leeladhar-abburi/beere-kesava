@@ -6,7 +6,7 @@ import {
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
 import { Rows } from "@phosphor-icons/react";
-import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
+import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
@@ -55,31 +55,22 @@ interface Weaver {
   lastActive: string;
 }
 
-// ── MOCK PRODUCTION STATS ───────────────────────────────────────────────
-// The backend Weaver record (see shared/api/weavers.ts) only has identity/
-// roster fields — name, village, cluster, looms, status(ACTIVE|INACTIVE),
-// photo, contact, bank details. It has no concept of "this month's output",
-// QC pass rate, current batch, total paid, or last-active timestamp — those
-// live in the production/payments/QC modules, which are NOT wired to this
-// page (explicitly out of scope here; wiring them requires the batch/QC/
-// payments backend integration, tracked separately). Below is a small pool
-// of placeholder production numbers, cycled onto each *real* weaver by
-// index purely so the existing card layout still has something to render
-// in those slots. None of these numbers are tied to the specific weaver
-// they're displayed on — do not treat them as real.
-const MOCK_PRODUCTION_STATS: Omit<Weaver, "id" | "name" | "village" | "mobile" | "photo" | "initials" | "looms">[] = [
-  { avatarBg: "#5A3E6B",         status: "active", accentColor: "#5A3E6B",       thisMonth: 12, passRate: 94, totalSarees: 2140, batch: "BATCH-079", totalPaid: "₹8,42,000",  lastActive: "Today"      },
-  { avatarBg: T.royalBurgundy,   status: "active", accentColor: T.royalBurgundy, thisMonth: 18, passRate: 97, totalSarees: 1840, batch: "BATCH-086", totalPaid: "₹6,90,000",  lastActive: "Today"      },
-  { avatarBg: "#2D6B6B",         status: "qc",     accentColor: "#2D6B6B",       thisMonth:  7, passRate: 98, totalSarees:  980, batch: "BATCH-081", totalPaid: "₹3,64,000",  lastActive: "Yesterday"  },
-  { avatarBg: "#4A6B4A",         status: "active", accentColor: T.antiqueGold,   thisMonth:  9, passRate: 92, totalSarees: 1560, batch: "BATCH-083", totalPaid: "₹5,84,000",  lastActive: "Today"      },
-  { avatarBg: "#9B6B8A",         status: "active", accentColor: "#9B6B8A",       thisMonth:  6, passRate: 89, totalSarees:  720, batch: "BATCH-088", totalPaid: "₹2,68,000",  lastActive: "Today"      },
-  { avatarBg: "#2D7D6B",         status: "qc",     accentColor: "#2D7D6B",       thisMonth: 11, passRate: 96, totalSarees: 1320, batch: "BATCH-080", totalPaid: "₹4,92,000",  lastActive: "Yesterday"  },
-  { avatarBg: "#4A5E7A",         status: "idle",   accentColor: T.taupe,         thisMonth:  0, passRate: 95, totalSarees: 2480, batch: null,         totalPaid: "₹9,28,000",  lastActive: "3 days ago" },
-  { avatarBg: "#7A2040",         status: "active", accentColor: "#7A2040",       thisMonth: 14, passRate: 99, totalSarees: 3120, batch: "BATCH-084", totalPaid: "₹11,64,000", lastActive: "Today"      },
-];
+// ── Real production stats ────────────────────────────────────────────────
+// GET /weavers/:id/stats gives live QC/production numbers per weaver
+// (totalSareesWoven, qcPassRate, activeBatchRowsCount, materialIssueCount).
+// It does NOT expose a monthly breakdown, current batch id, total amount
+// paid, or a last-active timestamp — those live in the batch/payments
+// modules and are not wired here. Those specific fields are shown as
+// unavailable ("—" / 0) rather than invented, per the design note below.
+const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
-function toDisplayWeaver(w: BackendWeaver, index: number): Weaver {
-  const mock = MOCK_PRODUCTION_STATS[index % MOCK_PRODUCTION_STATS.length];
+function statusFromStats(stats: BackendWeaverStats | undefined): Status {
+  if (!stats) return "idle";
+  if (stats.activeBatchRowsCount > 0) return "active";
+  return "idle";
+}
+
+function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverStats | undefined): Weaver {
   return {
     id: w.id,
     name: w.name,
@@ -88,7 +79,17 @@ function toDisplayWeaver(w: BackendWeaver, index: number): Weaver {
     photo: w.photoUrl || null,
     initials: w.initials,
     looms: w.looms,
-    ...mock,
+    avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    accentColor: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
+    status: statusFromStats(stats),
+    // No monthly breakdown from the backend yet — only an all-time total.
+    thisMonth: 0,
+    passRate: stats?.qcPassRate ?? 0,
+    totalSarees: stats?.totalSareesWoven ?? 0,
+    // No current-batch id, payments total, or last-active timestamp exposed yet.
+    batch: null,
+    totalPaid: "—",
+    lastActive: "—",
   };
 }
 
@@ -128,15 +129,27 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const [villageFilter, setVillageFilter] = useState<"all" | string>("all");
   const [sortBy, setSortBy] = useState<"name" | "output" | "looms">("name");
 
-  // Real weaver roster/identity records from the backend. Production stats
-  // (thisMonth, passRate, batch, totalPaid, lastActive) are NOT backed by
-  // the API yet — see the MOCK_PRODUCTION_STATS comment above.
-  const { data: weaversRes, isLoading, isError } = useQuery({
+  // Real weaver roster/identity records from the backend.
+  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
     queryKey: ["weavers-directory"],
     queryFn: () => weaversApi.list(),
   });
 
-  const ALL_WEAVERS: Weaver[] = (weaversRes?.items ?? []).map(toDisplayWeaver);
+  const roster = weaversRes?.items ?? [];
+
+  // Live per-weaver production/QC stats (thisMonth, batch id, totalPaid,
+  // lastActive are NOT exposed by this endpoint yet — see toDisplayWeaver).
+  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
+    queryKey: ["weavers-directory-stats", roster.map(w => w.id)],
+    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
+    enabled: roster.length > 0,
+  });
+
+  const isLoading = rosterLoading || (roster.length > 0 && statsLoading);
+  const isError = rosterError || statsError;
+
+  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
+  const ALL_WEAVERS: Weaver[] = roster.map((w, i) => toDisplayWeaver(w, i, statsById.get(w.id)));
 
   const villages = Array.from(new Set(ALL_WEAVERS.map(w => w.village))).sort();
 
@@ -146,7 +159,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
     const matchVillage = villageFilter === "all" || w.village === villageFilter;
     return matchSearch && matchStatus && matchVillage;
   }).sort((a, b) => {
-    if (sortBy === "output") return b.thisMonth - a.thisMonth;
+    if (sortBy === "output") return b.totalSarees - a.totalSarees;
     if (sortBy === "looms") return b.looms - a.looms;
     return a.name.localeCompare(b.name);
   });
@@ -154,7 +167,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const activeCount = ALL_WEAVERS.filter(w => w.status === "active").length;
   const qcCount     = ALL_WEAVERS.filter(w => w.status === "qc").length;
   const idleCount   = ALL_WEAVERS.filter(w => w.status === "idle").length;
-  const totalSarees = ALL_WEAVERS.reduce((s, w) => s + w.thisMonth, 0);
+  const totalSarees = ALL_WEAVERS.reduce((s, w) => s + w.totalSarees, 0);
 
   return (
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
@@ -204,10 +217,10 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
             {[
               { label: "Total Active Weavers",    val: `${activeCount + qcCount}`,  sub: "All currently with the firm",     Icon: Users,        hi: false },
-              { label: "Sarees Produced This Month", val: `${totalSarees}`,          sub: "↑ 14% more than last month",     Icon: Layers,       hi: true  },
-              { label: "Quality Check Pass Rate",  val: `${ALL_WEAVERS.length ? Math.round(ALL_WEAVERS.reduce((s,w) => s + w.passRate, 0) / ALL_WEAVERS.length) : 0}%`, sub: "Only 4% rejected this month", Icon: CheckCircle2, hi: false },
-              { label: "Warp Requests Pending",    val: "3",                         sub: "Need approval today",             Icon: Clock,        hi: false },
-              { label: "Total Paid to Weavers",    val: "₹4.2L",                    sub: "This month's making charges",     Icon: Star,         hi: false },
+              { label: "Total Sarees Woven",       val: `${totalSarees}`,           sub: "All-time, across all weavers",   Icon: Layers,       hi: true  },
+              { label: "Quality Check Pass Rate",  val: `${ALL_WEAVERS.length ? Math.round(ALL_WEAVERS.reduce((s,w) => s + w.passRate, 0) / ALL_WEAVERS.length) : 0}%`, sub: "Average across all weavers", Icon: CheckCircle2, hi: false },
+              { label: "Warp Requests Pending",    val: "—",                        sub: "Not tracked by the backend yet",  Icon: Clock,        hi: false },
+              { label: "Total Paid to Weavers",    val: "—",                        sub: "Not tracked by the backend yet",  Icon: Star,         hi: false },
             ].map((m, i) => (
               <div key={m.label} style={{ flex: 1, padding: "20px 20px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -254,7 +267,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           <div style={{ width: 220 }}>
             <Select value={sortBy} onValueChange={v => setSortBy(v as any)} size="sm">
               <SelectItem value="name">Sort: Name</SelectItem>
-              <SelectItem value="output">Sort: This Month's Output</SelectItem>
+              <SelectItem value="output">Sort: Total Sarees Woven</SelectItem>
               <SelectItem value="looms">Sort: Looms</SelectItem>
             </Select>
           </div>

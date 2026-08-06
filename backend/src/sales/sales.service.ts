@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma, SalesChannel } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
@@ -22,6 +23,7 @@ export class SalesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async createSale(dto: CreateSaleDto) {
@@ -56,6 +58,16 @@ export class SalesService {
         data: { status: dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL" },
       }),
     ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Recorded sale ${saleRef} of saree ${dto.sareeId} (${dto.channel})`,
+      entityType: "SaleRecord",
+      entityId: saleRef,
+      recordLabel: saleRef,
+      newValue: String(dto.amount),
+    });
 
     return this.findOneSale(saleRef);
   }
@@ -117,6 +129,15 @@ export class SalesService {
         data: { status: restocked ? "UNSOLD" : "RETURNED" },
       }),
     ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Recorded return ${returnRef} of saree ${dto.sareeId}`,
+      entityType: "ReturnRecord",
+      entityId: returnRef,
+      recordLabel: returnRef,
+    });
 
     return this.findOneReturn(returnRef);
   }

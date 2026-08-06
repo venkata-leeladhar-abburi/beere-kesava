@@ -14,6 +14,12 @@ import {
 import { DispatchType } from "../../generated/prisma/client";
 
 export class CreateDispatchDto {
+  // No auth yet — the acting user's id is supplied explicitly for the action
+  // feed until JWT/OTP auth exists and req.user is available.
+  @IsOptional()
+  @IsUUID()
+  actorId?: string;
+
   @IsEnum(DispatchType)
   type!: DispatchType;
 

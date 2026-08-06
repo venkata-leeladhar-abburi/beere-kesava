@@ -1,17 +1,26 @@
 // ── Performance leaderboard + QC results panel (row 1 of the leaderboard section) ─
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
 import { Medal, CheckCircle, WarningCircle, Clock } from "@phosphor-icons/react";
 import { PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../../theme";
-import { LEADERBOARD, QC_DATA } from "../../data";
+import { QC_DATA } from "../../data";
 import { FadeUp, Avatar, ActionDialog, qcColor } from "../../common/primitives";
 import { DownloadGate } from "../../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../../shared/ui/primitives";
+import { weaversApi } from "../../../../../shared/api/weavers";
 
 export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const [reportOpen, setReportOpen] = useState(false);
+
+  // Real top-10 leaderboard, ranked by QC pass rate (see GET /weavers/leaderboard).
+  const { data: leaderboard = [], isLoading, isError } = useQuery({
+    queryKey: ["weavers-leaderboard"],
+    queryFn: () => weaversApi.getLeaderboard(),
+  });
+
   return (
     <>
       <FadeUp>
@@ -46,11 +55,18 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 </div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Top Weavers This Month</div>
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 24, paddingLeft: 48 }}>Ranked by number of sarees produced in May 2026</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 24, paddingLeft: 48 }}>Ranked by QC pass rate, all-time</div>
 
+              {isLoading ? (
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, padding: "24px 0", textAlign: "center" }}>Loading leaderboard…</div>
+              ) : isError ? (
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.crimson, padding: "24px 0", textAlign: "center" }}>Couldn't load the leaderboard.</div>
+              ) : leaderboard.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, padding: "24px 0", textAlign: "center", fontStyle: "italic" }}>No weaver performance data yet.</div>
+              ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                {LEADERBOARD.map((l, i) => (
-                  <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 18, padding: "18px 0", borderBottom: i < LEADERBOARD.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}>
+                {leaderboard.map((l, i) => (
+                  <div key={l.weaverId} style={{ display: "flex", alignItems: "center", gap: 18, padding: "18px 0", borderBottom: i < leaderboard.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}>
 
                     {/* Rank badge */}
                     <div style={{
@@ -58,34 +74,30 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                       background: i === 0 ? "linear-gradient(135deg, #C89B47, #E7C983)" : i === 1 ? "rgba(139,112,96,0.15)" : "rgba(110,15,45,0.06)",
                       border: i === 0 ? "none" : `1px solid rgba(110,15,45,0.10)`,
                     }}>
-                      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: i === 0 ? "#FFFFFF" : i === 1 ? T.taupe : "rgba(110,15,45,0.45)" }}>{l.rank}</span>
+                      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: i === 0 ? "#FFFFFF" : i === 1 ? T.taupe : "rgba(110,15,45,0.45)" }}>{i + 1}</span>
                     </div>
 
                     {/* Avatar */}
-                    <Avatar photo={l.photo} initials={l.initials} bg={l.bg} size={54} />
+                    <Avatar photo={l.photoUrl || null} initials={l.initials} bg={T.royalBurgundy} size={54} />
 
                     {/* Name + ID */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{l.name}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{l.id}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{l.village || "—"}</div>
                     </div>
 
                     {/* Stats */}
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
                       <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>
-                        {l.sarees}
+                        {l.totalSareesWoven}
                         <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontWeight: 400, marginLeft: 5 }}>sarees</span>
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, color: qcColor(l.rate), fontWeight: 700, marginTop: 4 }}>{l.rate}% pass rate</div>
-                    </div>
-
-                    {/* On-time badge */}
-                    <div style={{ background: "rgba(30,102,64,0.09)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "6px 13px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, flexShrink: 0 }}>
-                      On Time
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: qcColor(l.qcPassRate), fontWeight: 700, marginTop: 4 }}>{l.qcPassRate}% pass rate</div>
                     </div>
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
             {/* ── Right: QC Results ── */}

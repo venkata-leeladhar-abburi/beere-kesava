@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
@@ -14,6 +15,7 @@ export class BulkOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreateBulkOrderDto) {
@@ -25,7 +27,7 @@ export class BulkOrdersService {
     const year = new Date().getFullYear();
     const ref = await this.idGenerator.nextFormatted(`${ORDER_ID_PREFIX_BASE}-${year}`);
 
-    return this.prisma.bulkOrder.create({
+    const order = await this.prisma.bulkOrder.create({
       data: {
         ref,
         customerId: dto.customerId,
@@ -41,6 +43,17 @@ export class BulkOrdersService {
         photoUrls: dto.photoUrls ?? [],
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "BULK_ORDERS",
+      action: `Created bulk order ${ref}`,
+      entityType: "BulkOrder",
+      entityId: ref,
+      recordLabel: ref,
+    });
+
+    return order;
   }
 
   async findAll(
@@ -78,13 +91,25 @@ export class BulkOrdersService {
 
   async update(ref: string, dto: UpdateBulkOrderDto) {
     await this.findOne(ref);
-    return this.prisma.bulkOrder.update({
+    const { actorId, ...rest } = dto;
+    const updated = await this.prisma.bulkOrder.update({
       where: { ref },
       data: {
-        ...dto,
+        ...rest,
         talliedDate: dto.tallied ? new Date() : undefined,
       },
       include: { customer: true },
     });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "BULK_ORDERS",
+      action: `Updated bulk order ${ref}`,
+      entityType: "BulkOrder",
+      entityId: ref,
+      recordLabel: ref,
+    });
+
+    return updated;
   }
 }
