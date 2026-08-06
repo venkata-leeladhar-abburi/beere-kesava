@@ -36,6 +36,7 @@ const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a521
 const imgShowroom    = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 import { MobileMenuDrawer, MobileTopNav } from './MobileNavDrawer';
+import { Button } from "../../../../shared/ui/primitives";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MOBILE — HERO
@@ -110,20 +111,22 @@ function MobileHero() {
           transition={{ duration: 0.6, delay: 1.1, ease: EASE }}
           style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
         >
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 14, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px", boxShadow: `0 6px 20px rgba(110,15,45,0.38)` }}
-          >
-            Explore Production <ChevronRight size={12} color={T.warmCream} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            style={{ display: "inline-flex", alignItems: "center", padding: "10px 16px", borderRadius: 14, cursor: "pointer", background: "rgba(245,232,208,0.12)", border: "1px solid rgba(245,232,208,0.30)", fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.92)", letterSpacing: "0.1px" }}
-          >
-            View Reports
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} style={{ borderRadius: 14, boxShadow: `0 6px 20px rgba(110,15,45,0.38)` }}>
+            <Button
+              variant="primary"
+              className="!gap-2 !py-[11px] !px-5 !rounded-[14px] !border-none !bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] !text-[#F5E8D0] !text-xs !font-semibold !tracking-[0.1px]"
+            >
+              Explore Production <ChevronRight size={12} color={T.warmCream} />
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ borderRadius: 14 }}>
+            <Button
+              variant="tertiary"
+              className="!py-[10px] !px-4 !rounded-[14px] !bg-white/12 !border !border-white/30 !text-[rgba(245,232,208,0.92)] !text-xs !font-medium !tracking-[0.1px] hover:!bg-white/16 hover:!text-[rgba(245,232,208,0.92)]"
+            >
+              View Reports
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     </section>
@@ -311,13 +314,14 @@ function MobileFooter() {
               <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: "8px 0 10px", letterSpacing: "0.05px" }}>
                 Four generations of passion, woven into every creation.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, border: "1px solid rgba(200,155,71,0.28)", background: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.goldLight, letterSpacing: "0.1px" }}
-              >
-                Know Our Story <ArrowRight size={11} color={T.goldLight} />
-              </motion.button>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", borderRadius: 12 }}>
+                <Button
+                  variant="tertiary"
+                  className="!gap-1.5 !py-[7px] !px-3.5 !rounded-xl !border !border-[rgba(200,155,71,0.28)] !bg-[rgba(200,155,71,0.09)] !text-xs !font-medium !text-[#E7C983] hover:!bg-[rgba(200,155,71,0.14)] hover:!text-[#E7C983]"
+                >
+                  Know Our Story <ArrowRight size={11} color={T.goldLight} />
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>

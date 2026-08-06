@@ -6,6 +6,7 @@ import { T, F, G, EASE } from './theme';
 import { MATS } from './data';
 import { AnimatedBar } from './ui';
 import { useDashboardWeavers } from './hooks/useDashboardWeavers';
+import { Button } from "../../../../shared/ui/primitives";
 
 export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,7 +20,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
           <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Active Weavers</span>
         </div>
-        <button onClick={() => onNavigate("AllWeavers")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
+        <Button onClick={() => onNavigate("AllWeavers")} variant="link" className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]">View All →</Button>
       </div>
       {isLoading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -133,30 +134,36 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 8, paddingTop: 8 }}>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Eye size={14} /> Details
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                >
-                  <Edit3 size={13} /> Edit
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Layers3 size={14} /> Batches
-                </motion.button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                  >
+                    <Eye size={14} /> Details
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-transparent !text-[#6E0F2D] !border !border-[#6E0F2D] !rounded-xl !py-2.5 !px-1 !text-xs !font-semibold hover:!bg-[rgba(110,15,45,0.05)] hover:!text-[#6E0F2D]"
+                  >
+                    <Edit3 size={13} /> Edit
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                  >
+                    <Layers3 size={14} /> Batches
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </motion.div>
@@ -180,7 +187,7 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
           <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Raw Material Overview</span>
         </div>
-        <button onClick={() => onNavigate("Materials")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
+        <Button onClick={() => onNavigate("Materials")} variant="link" className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]">View All →</Button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {MATS.map((m, i) => (

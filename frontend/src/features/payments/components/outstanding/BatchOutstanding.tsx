@@ -6,6 +6,7 @@ import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "../../../custome
 import { Card, Empty, ExportBtn, SectionTitle, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Outstanding by batch (in-house batches across weavers + factory looms) ───
 export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
@@ -77,8 +78,8 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
             ].filter(Boolean).join(" · ");
             return (
               <div key={g.key} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                <button onClick={() => setOpen(isOpen ? null : g.key)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
+                <Button variant="ghost" onClick={() => setOpen(isOpen ? null : g.key)}
+                  className={`h-auto w-full justify-start gap-[14px] rounded-none px-[18px] py-[14px] text-left ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{g.key}</div>
@@ -97,7 +98,7 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
                       </div>
                     ))}
                   </div>
-                </button>
+                </Button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>

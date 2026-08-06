@@ -5,6 +5,7 @@ import { Rows } from '@phosphor-icons/react';
 import { T, F } from '../theme';
 import { SectionHeader } from '../ui';
 import { useDashboardWeavers } from '../hooks/useDashboardWeavers';
+import { Button } from '../../../../../shared/ui/primitives';
 
 export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
   const { data: weavers = [], isLoading } = useDashboardWeavers();
@@ -142,30 +143,36 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               </div>
 
               <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Eye size={14} /> Details
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                >
-                  <Edit3 size={13} /> Edit
-                </motion.button>
-                <motion.button
-                  onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
-                  whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                >
-                  <Layers3 size={14} /> Batches
-                </motion.button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                  >
+                    <Eye size={14} /> Details
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "edit" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-transparent !text-[#6E0F2D] !border !border-[#6E0F2D] !rounded-xl !py-2.5 !px-1 !text-xs !font-semibold hover:!bg-[rgba(110,15,45,0.05)] hover:!text-[#6E0F2D]"
+                  >
+                    <Edit3 size={13} /> Edit
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ flex: 1 }}>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); }}
+                    variant="tertiary"
+                    fullWidth
+                    className="!gap-1.5 !bg-[rgba(110,15,45,0.04)] !text-[#6E0F2D] !border-[1.5px] !border-[rgba(110,15,45,0.15)] !rounded-xl !py-2.5 !px-1 !text-xs !font-bold hover:!bg-[rgba(110,15,45,0.08)] hover:!text-[#6E0F2D]"
+                  >
+                    <Layers3 size={14} /> Batches
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </motion.div>

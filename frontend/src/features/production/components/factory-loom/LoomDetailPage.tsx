@@ -15,6 +15,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { T, F } from "./theme";
 import { STATUS_CFG } from "./types";
 import { LoomMaterialsTab } from "./LoomMaterialsTab";
+import { Button } from "../../../../shared/ui/primitives";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -92,9 +93,9 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
     <>
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, top: 0, zIndex: 10 }}>
-        <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 14, padding: "8px 4px" }}>
-          <ArrowLeft size={18} /> Back to Factory Looms
-        </button>
+        <Button onClick={onBack} variant="link" iconLeft={ArrowLeft} className="text-[#6E0F2D] font-bold text-sm">
+          Back to Factory Looms
+        </Button>
         <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
       </div>
 
@@ -128,10 +129,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
       <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
         {TABS.map(t => (
-          <button key={t.k} onClick={() => setTab(t.k as any)}
-            style={{ padding: "16px 0", display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: tab === t.k ? T.royalBurgundy : T.taupe, background: "transparent", border: "none", borderBottom: `3px solid ${tab === t.k ? T.royalBurgundy : "transparent"}`, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" as const }}>
+          <Button key={t.k} onClick={() => setTab(t.k as any)} variant="ghost"
+            className={`h-auto py-4 rounded-none gap-2 text-sm font-semibold whitespace-nowrap border-b-[3px] ${tab === t.k ? "border-[#6E0F2D] text-[#6E0F2D]" : "border-transparent text-[var(--text-tertiary)]"} hover:bg-transparent`}>
             {t.icon}{t.l}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -261,10 +262,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                               <td style={{ padding: "9px 10px", fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</td>
                               <td style={{ padding: "9px 10px" }}>
                                 {idx === 0 && batchDispatches.length > 0
-                                  ? <button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })}
-                                      style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                                  ? <Button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })} variant="link"
+                                      className="text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
                                       {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
-                                    </button>
+                                    </Button>
                                   : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>}
                               </td>
                               <td style={{ padding: "9px 10px" }}>
@@ -345,10 +346,9 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
       </div>
 
       <div style={{ padding: "24px 32px", borderTop: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, bottom: 0, display: "flex", gap: 16 }}>
-        <motion.button onClick={() => onEdit(loom)} whileHover={{ scale: 1.02 }}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.royalBurgundy, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "14px 0", fontFamily: F.ui, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>
-          <Edit2 size={16} /> Edit Details
-        </motion.button>
+        <Button onClick={() => onEdit(loom)} variant="primary" size="lg" iconLeft={Edit2} fullWidth className="text-base">
+          Edit Details
+        </Button>
       </div>
     </div>
 

@@ -1,9 +1,9 @@
 import React from "react";
-import { motion } from "motion/react";
 import { Stack, ArrowRight } from "@phosphor-icons/react";
 import { BatchRecord } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-import { T, F, G, rowComplete } from "./constants";
+import { T, F, rowComplete } from "./constants";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
@@ -21,9 +21,9 @@ export function DraftsTab({
           <Stack size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No batches yet.</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 6 }}>Create a batch to get started.</div>
-          <motion.button onClick={() => setTab("new")} whileHover={{ scale: 1.02 }} style={{ marginTop: 20, height: 44, padding: "0 24px", background: G.button, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={() => setTab("new")} variant="primary" size="lg" className="mt-5 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
             Create New Batch
-          </motion.button>
+          </Button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -56,10 +56,9 @@ export function DraftsTab({
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{pct}% complete · Updated {new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
                 </div>
                 {!isCompleted && (
-                  <motion.button onClick={() => openDraft(b)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 20px", background: G.button, color: "#fff", border: "none", borderRadius: 11, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                  <Button onClick={() => openDraft(b)} variant="primary" size="md" className="shrink-0 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
                     {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} weight="bold" />
-                  </motion.button>
+                  </Button>
                 )}
               </div>
             );

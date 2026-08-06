@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Factory, Truck, Users } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SellerRank, rankSellers } from "../../../customers/contexts/SalesContext";
 import { Card, ExportBtn, ScrollTable, SectionTitle, exportCsv, inr, td, tdMono, th } from "./primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Who is selling more ──────────────────────────────────────────────────────
 const RANK_PAGE = 5;
@@ -71,15 +72,15 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
             Showing {visible.length} of {ranks.length}
           </span>
           {remaining > 0 ? (
-            <motion.button onClick={() => setShown(s => s + RANK_PAGE)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.20)`, borderRadius: 10, padding: "10px 20px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-              <ChevronDown size={15} /> Load more ({Math.min(RANK_PAGE, remaining)} more)
-            </motion.button>
+            <Button variant="secondary" size="sm" iconLeft={ChevronDown} onClick={() => setShown(s => s + RANK_PAGE)}
+              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.20)] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]">
+              Load more ({Math.min(RANK_PAGE, remaining)} more)
+            </Button>
           ) : (
-            <motion.button onClick={() => setShown(RANK_PAGE)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent", color: T.taupe, border: `1.5px solid rgba(110,15,45,0.16)`, borderRadius: 10, padding: "10px 20px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-              <ChevronUp size={15} /> Show less
-            </motion.button>
+            <Button variant="tertiary" size="sm" iconLeft={ChevronUp} onClick={() => setShown(RANK_PAGE)}
+              className="rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.16)] bg-transparent text-[var(--text-tertiary)]">
+              Show less
+            </Button>
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function UserProfileModal({ onClose, role }: { onClose: () => void; role: "admin" | "superadmin" | "shop" | "weaver" }) {
   return (
@@ -8,9 +9,14 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: `1px solid rgba(139,26,46,0.12)`, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
         {/* Banner */}
         <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, border: "none", background: "rgba(255,255,255,0.12)", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={16} color="#FFF" />
-          </button>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            variant="ghost"
+            shape="circle"
+            className="absolute top-4 right-4 border-none bg-white/12 text-white hover:bg-white/20 hover:text-white"
+          />
 
           <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
             <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
@@ -53,9 +59,13 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
           </div>
 
           <div style={{ marginTop: 24, textAlign: "center" as const }}>
-            <button onClick={onClose} style={{ background: "#6B1A2A", color: "#FFF", border: "none", borderRadius: 999, padding: "10px 24px", fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 14px rgba(107,26,42,0.2)" }}>
+            <Button
+              onClick={onClose}
+              variant="primary"
+              className="!rounded-full !bg-[#6B1A2A] !px-6 !shadow-[0_4px_14px_rgba(107,26,42,0.2)] hover:!bg-[#5A1523]"
+            >
               Close Profile
-            </button>
+            </Button>
           </div>
         </div>
       </motion.div>

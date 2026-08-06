@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Download, Lock, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { Button } from "../../../../shared/ui/primitives";
 import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
 import { HISTORY } from "./staticData";
@@ -60,41 +61,31 @@ export function RateHistorySection() {
 
           {/* Pagination */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button
+            <Button
+              variant="secondary" size="sm" iconLeft={ChevronLeft}
+              className="rounded-[8px] text-[var(--text-tertiary)]"
               onClick={() => setHistPage(p => Math.max(1, p - 1))}
-              style={{
-                background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 12,
-                display: "flex", alignItems: "center", gap: 4,
-              }}
             >
-              <ChevronLeft size={13} /> Previous
-            </button>
+              Previous
+            </Button>
             {[1, 2, 3].map(p => (
-              <button
+              <Button
                 key={p}
+                variant={histPage === p ? "primary" : "tertiary"}
+                size="sm"
+                className="h-[30px] w-[30px] rounded-[8px] p-0"
                 onClick={() => setHistPage(p)}
-                style={{
-                  width: 30, height: 30, borderRadius: 8, border: "none",
-                  background: histPage === p ? T.royalBurgundy : "transparent",
-                  color: histPage === p ? "#fff" : T.taupe,
-                  fontFamily: F.ui, fontSize: 13, cursor: "pointer",
-                  fontWeight: histPage === p ? 600 : 400,
-                }}
               >
                 {p}
-              </button>
+              </Button>
             ))}
-            <button
+            <Button
+              variant="secondary" size="sm" iconRight={ChevronRight}
+              className="rounded-[8px] text-[var(--text-tertiary)]"
               onClick={() => setHistPage(p => Math.min(3, p + 1))}
-              style={{
-                background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 12,
-                display: "flex", alignItems: "center", gap: 4,
-              }}
             >
-              Next <ChevronRight size={13} />
-            </button>
+              Next
+            </Button>
           </div>
         </div>
       </div>

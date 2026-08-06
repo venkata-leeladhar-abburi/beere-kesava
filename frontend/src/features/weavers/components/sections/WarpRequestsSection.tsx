@@ -9,6 +9,7 @@ import { FadeUp, ActionDialog } from "../common/primitives";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
+import { Button, Textarea } from "../../../../shared/ui/primitives";
 
 export function WarpRequestsSection() {
   const queryClient = useQueryClient();
@@ -146,24 +147,22 @@ export function WarpRequestsSection() {
 
                 {/* Action buttons */}
                 <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>
-                  <motion.button
+                  <Button
                     onClick={() => setDecision({ type: "approve", req: r })}
-                    whileHover={{ scale: 1.02, backgroundColor: "#145230" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: T.green, color: "#FFFFFF", border: "none", borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                    variant="primary"
+                    className="flex-1 rounded-xl bg-[#1F774E] hover:bg-[#15603D] shadow-none"
                   >
                     <CheckCircle size={22} weight="fill" />
                     Approve
-                  </motion.button>
-                  <motion.button
+                  </Button>
+                  <Button
                     onClick={() => setDecision({ type: "reject", req: r })}
-                    whileHover={{ scale: 1.02, backgroundColor: "rgba(192,57,43,0.08)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: T.crimson, background: "rgba(192,57,43,0.05)", border: `1.5px solid rgba(192,57,43,0.30)`, borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                    variant="danger-subtle"
+                    className="flex-1 rounded-xl"
                   >
                     <XCircle size={22} weight="fill" />
                     Reject
-                  </motion.button>
+                  </Button>
                 </div>
               </motion.div>
             ))}
@@ -178,11 +177,12 @@ export function WarpRequestsSection() {
               {decision.type === "approve" ? <Check size={32} color={T.green} /> : <XOctagon size={32} color={T.crimson} />}
               Confirm {decision.type} for <b>{decision.req.weaver?.name || decision.req.weaverId}</b> ({decision.req.id}) requesting <b>{decision.req.warpType} ({decision.req.lengthMeters}m)</b> {decision.req.loomNumber ? `for Loom ${decision.req.loomNumber}` : ""}.
             </div>
-            {decision.type === "reject" && <textarea placeholder="Reason for rejection" style={{ marginTop: 18, width: "100%", minHeight: 94, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: 14, fontFamily: F.ui }} />}
+            {decision.type === "reject" && <Textarea placeholder="Reason for rejection" className="mt-[18px] min-h-[94px]" />}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 22 }}>
-              <button onClick={() => setDecision(null)} style={{ padding: "12px 18px", borderRadius: 12, border: `1px solid ${T.borderDef}`, background: "#fff", color: T.taupe, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
-              <button
+              <Button onClick={() => setDecision(null)} variant="secondary" className="rounded-xl">Cancel</Button>
+              <Button
                 disabled={approveMutation.isPending || rejectMutation.isPending}
+                loading={approveMutation.isPending || rejectMutation.isPending}
                 onClick={() => {
                   if (decision.type === "approve") {
                     approveMutation.mutate(decision.req.id);
@@ -190,10 +190,11 @@ export function WarpRequestsSection() {
                     rejectMutation.mutate(decision.req.id);
                   }
                 }}
-                style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: decision.type === "approve" ? T.green : T.crimson, color: "#fff", fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}
+                variant={decision.type === "approve" ? "primary" : "danger"}
+                className={decision.type === "approve" ? "rounded-xl bg-[#1F774E] hover:bg-[#15603D]" : "rounded-xl"}
               >
                 {decision.type === "approve" ? "Approve & issue material" : "Reject request"}
-              </button>
+              </Button>
             </div>
           </ActionDialog>
         )}

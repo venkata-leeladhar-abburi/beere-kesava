@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Search } from "lucide-react";
 import { Palette, ArrowRight } from "@phosphor-icons/react";
 import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
 import type { BatchRecord, SareeRow } from "../../../contexts/BatchContext";
 import { T, F } from "../../theme";
+import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -141,14 +141,13 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
         </div>
 
         <div style={{ marginTop: "auto", paddingTop: 8 }}>
-          <motion.button
+          <Button
             onClick={(e) => { e.stopPropagation(); onNavigateBatches?.(b.batchId); }}
-            whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-            whileTap={{ scale: 0.98 }}
-            style={{ width: "100%", height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.16)`, borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+            variant="secondary" size="md" iconLeft={ArrowRight} fullWidth
+            className="border-[1.5px] border-[rgba(110,15,45,0.16)] bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] hover:bg-[rgba(110,15,45,0.08)]"
           >
-            <ArrowRight size={14} weight="bold" /> Open in Batch Creation
-          </motion.button>
+            Open in Batch Creation
+          </Button>
         </div>
       </div>
     </motion.div>
@@ -203,7 +202,8 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
               {b.status === "active" ? "Active" : "Draft"}
             </span>
           </div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 34, height: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,0.22)", background: "rgba(26,10,15,0.45)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 600 }}>×</button>
+          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm"
+            className="absolute top-4 right-4 rounded-[10px] border border-white/22 bg-[rgba(26,10,15,0.45)] text-white hover:bg-[rgba(26,10,15,0.6)]" />
         </div>
 
         <div style={{ padding: 24, overflowY: "auto", display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
@@ -270,19 +270,18 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-              <div style={{ position: "relative", flex: "1 1 200px" }}>
-                <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, boxSizing: "border-box" }} />
+              <div style={{ flex: "1 1 200px" }}>
+                <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full" />
               </div>
-              <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-                {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
-              </select>
-              <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-                {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
-              </select>
-              <select value={qcFilter} onChange={e => setQcFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-                {["All", "QC Passed", "In Progress"].map(q => <option key={q} value={q}>{q === "All" ? "All QC Status" : q}</option>)}
-              </select>
+              <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px]">
+                {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
+              </Select>
+              <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[130px]">
+                {orderOptions.map(o => <SelectItem key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</SelectItem>)}
+              </Select>
+              <Select value={qcFilter} onValueChange={setQcFilter} size="sm" className="w-auto min-w-[130px]">
+                {["All", "QC Passed", "In Progress"].map(q => <SelectItem key={q} value={q}>{q === "All" ? "All QC Status" : q}</SelectItem>)}
+              </Select>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -321,12 +320,12 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
         </div>
 
         <div style={{ padding: "18px 24px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 12, background: T.warmIvory }}>
-          <motion.button onClick={onClose} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} style={{ flex: 1, height: 44, background: "#FFFFFF", color: T.taupe, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-11">
             Close Details
-          </motion.button>
-          <motion.button onClick={onOpenCreation} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} style={{ flex: 1.5, height: 44, background: T.royalBurgundy, color: "#FFFFFF", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <ArrowRight size={16} weight="bold" /> Open in Batch Creation
-          </motion.button>
+          </Button>
+          <Button onClick={onOpenCreation} variant="primary" size="lg" iconLeft={ArrowRight} className="flex-[1.5] h-11">
+            Open in Batch Creation
+          </Button>
         </div>
       </motion.div>
     </motion.div>

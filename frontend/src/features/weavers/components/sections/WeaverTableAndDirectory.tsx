@@ -9,6 +9,7 @@ import { WEAVERS, TABLE_COLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndListViews";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { Button } from "../../../../shared/ui/primitives";
 
 // Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
 // The stats endpoint has no monthly breakdown, total-paid, or last-active
@@ -121,14 +122,14 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span></td>
                   <td style={TD}>
-                    <motion.button
+                    <Button
                       onClick={() => onSelect(r.id)}
-                      whileHover={{ scale: 1.04, background: "rgba(110,15,45,0.10)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 15px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
                     >
                       <PhEye size={18} weight="regular" /> View
-                    </motion.button>
+                    </Button>
                   </td>
                 </motion.tr>
               );
@@ -138,7 +139,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <motion.button onClick={() => setShowAll(true)} whileHover={{ scale: 1.02 }} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.royalBurgundy, background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.35)" }}>Load More Weavers</motion.button>
+          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
         </div>
       )}
     </div>

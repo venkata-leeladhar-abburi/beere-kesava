@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
 import { F, T, BulkOrder, useFirms } from "../../theme";
 import { Invoice } from "../../types";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
@@ -26,7 +27,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{firmName}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
           </div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "#FFF", cursor: "pointer", display: "flex", padding: 4 }}><X size={20} /></button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-[rgba(255,255,255,0.12)]" />
         </div>
         {/* Invoice Body */}
         <div style={{ padding: "18px 24px" }}>

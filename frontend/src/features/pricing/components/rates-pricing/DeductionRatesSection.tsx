@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Check, X, AlertTriangle, ChevronRight, Package, Layers, Tag } from "lucide-react";
-import { T, F, cardStyle, inputStyle, labelStyle } from "./theme";
+import { T, F, cardStyle, labelStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
+import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 
 export function DeductionRatesSection() {
   const [editDeduction, setEditDeduction] = useState<string | null>("warp");
@@ -32,16 +33,13 @@ export function DeductionRatesSection() {
               Applied when returned warp weight is less than the standard issued weight for the saree type.
             </p>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 2 weeks ago</div>
-            <button
+            <Button
+              variant="secondary" iconLeft={Edit2}
+              className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
               onClick={() => setEditDeduction(editDeduction === "warp" ? null : "warp")}
-              style={{
-                width: "100%", background: "transparent", border: `1px solid ${T.borderDef}`,
-                borderRadius: 8, padding: "8px 0", fontFamily: F.ui, fontSize: 12,
-                color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              }}
             >
-              <Edit2 size={12} /> Edit Rate
-            </button>
+              Edit Rate
+            </Button>
           </div>
 
           {/* Warp inline edit */}
@@ -58,15 +56,15 @@ export function DeductionRatesSection() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                     <div>
                       <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (₹ per gram) *</label>
-                      <input id="deduction-rate-per-gram" type="number" defaultValue="5.20" style={inputStyle} />
+                      <NumberInput id="deduction-rate-per-gram" addonLeft="₹" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                     </div>
                     <div>
                       <label style={labelStyle} htmlFor="applies-after-variance-grams">Applies After Variance (grams) *</label>
-                      <input id="applies-after-variance-grams" type="number" defaultValue="5" style={inputStyle} />
+                      <NumberInput id="applies-after-variance-grams" defaultValue={5} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                     </div>
                     <div>
                       <label style={labelStyle} htmlFor="reason">Reason</label>
-                      <textarea id="reason" rows={2} style={{ ...inputStyle, resize: "none" }} placeholder="e.g. Vendor price increase…" />
+                      <Textarea id="reason" rows={2} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="e.g. Vendor price increase…" />
                     </div>
                   </div>
                   <div style={{
@@ -79,20 +77,12 @@ export function DeductionRatesSection() {
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button style={{
-                      flex: 1, background: T.green, color: "#fff", border: "none", borderRadius: 999,
-                      padding: "8px 0", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                    }}>
-                      <Check size={13} /> Save
-                    </button>
-                    <button onClick={() => setEditDeduction(null)} style={{
-                      flex: 1, background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                      borderRadius: 999, padding: "8px 0", fontFamily: F.ui, fontSize: 12, cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                    }}>
-                      <X size={13} /> Cancel
-                    </button>
+                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
+                      Save
+                    </Button>
+                    <Button variant="secondary" iconLeft={X} className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
+                      Cancel
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -118,16 +108,13 @@ export function DeductionRatesSection() {
             Applied when returned resham (silk thread) weight is less than the standard issued quantity for the design.
           </p>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 1 month ago</div>
-          <button
+          <Button
+            variant="secondary" iconLeft={Edit2}
+            className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
             onClick={() => setEditDeduction(editDeduction === "resham" ? null : "resham")}
-            style={{
-              width: "100%", background: "transparent", border: `1px solid ${T.borderDef}`,
-              borderRadius: 8, padding: "8px 0", fontFamily: F.ui, fontSize: 12,
-              color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
           >
-            <Edit2 size={12} /> Edit Rate
-          </button>
+            Edit Rate
+          </Button>
           <AnimatePresence>
             {editDeduction === "resham" && (
               <motion.div
@@ -140,15 +127,15 @@ export function DeductionRatesSection() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
                     <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (₹ per gram) *</label>
-                    <input id="deduction-rate-per-gram-2" type="number" defaultValue="15.00" style={inputStyle} />
+                    <NumberInput id="deduction-rate-per-gram-2" addonLeft="₹" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-grams-2">Applies After Variance (grams) *</label>
-                    <input id="applies-after-variance-grams-2" type="number" defaultValue="3" style={inputStyle} />
+                    <NumberInput id="applies-after-variance-grams-2" defaultValue={3} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="reason-2">Reason</label>
-                    <textarea id="reason-2" rows={2} style={{ ...inputStyle, resize: "none" }} />
+                    <Textarea id="reason-2" rows={2} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div style={{
                     background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
@@ -158,12 +145,12 @@ export function DeductionRatesSection() {
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>Rate applies to all future calculations.</span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button style={{ flex: 1, background: T.green, color: "#fff", border: "none", borderRadius: 999, padding: "8px 0", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                      <Check size={13} /> Save
-                    </button>
-                    <button onClick={() => setEditDeduction(null)} style={{ flex: 1, background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe, borderRadius: 999, padding: "8px 0", fontFamily: F.ui, fontSize: 12, cursor: "pointer" }}>
+                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
+                      Save
+                    </Button>
+                    <Button variant="secondary" className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -193,16 +180,13 @@ export function DeductionRatesSection() {
             Applied when returned jari is less than the standard issued quantity. Measured in reels, not grams.
           </p>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 3 weeks ago</div>
-          <button
+          <Button
+            variant="secondary" iconLeft={Edit2}
+            className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
             onClick={() => setEditDeduction(editDeduction === "jari" ? null : "jari")}
-            style={{
-              width: "100%", background: "transparent", border: `1px solid ${T.borderDef}`,
-              borderRadius: 8, padding: "8px 0", fontFamily: F.ui, fontSize: 12,
-              color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
           >
-            <Edit2 size={12} /> Edit Rate
-          </button>
+            Edit Rate
+          </Button>
           <AnimatePresence>
             {editDeduction === "jari" && (
               <motion.div
@@ -215,15 +199,15 @@ export function DeductionRatesSection() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
                     <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (₹ per reel) *</label>
-                    <input id="deduction-rate-per-reel" type="number" defaultValue="42.00" style={inputStyle} />
+                    <NumberInput id="deduction-rate-per-reel" addonLeft="₹" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-reels">Applies After Variance (reels) *</label>
-                    <input id="applies-after-variance-reels" type="number" defaultValue="1" style={inputStyle} />
+                    <NumberInput id="applies-after-variance-reels" defaultValue={1} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="reason-3">Reason</label>
-                    <textarea id="reason-3" rows={2} style={{ ...inputStyle, resize: "none" }} />
+                    <Textarea id="reason-3" rows={2} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div style={{
                     background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
@@ -233,12 +217,12 @@ export function DeductionRatesSection() {
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>Rate applies to all future Jari deduction calculations.</span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button style={{ flex: 1, background: T.green, color: "#fff", border: "none", borderRadius: 999, padding: "8px 0", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    <Button variant="primary" className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
                       Save
-                    </button>
-                    <button onClick={() => setEditDeduction(null)} style={{ flex: 1, background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe, borderRadius: 999, padding: "8px 0", fontFamily: F.ui, fontSize: 12, cursor: "pointer" }}>
+                    </Button>
+                    <Button variant="secondary" className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </motion.div>

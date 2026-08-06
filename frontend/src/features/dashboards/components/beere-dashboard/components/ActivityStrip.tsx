@@ -5,6 +5,7 @@ import { Scissors, Users, Package, IndianRupee } from 'lucide-react';
 import { T, F, G, EASE } from '../theme';
 import { ACT } from '../data.tsx';
 import { auditLogApi } from '../../../../../shared/api/audit-log';
+import { Button } from '../../../../../shared/ui/primitives';
 
 function timeAgo(isoDate: string): string {
   const diffMs = Date.now() - new Date(isoDate).getTime();
@@ -59,14 +60,15 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
             </div>
             <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.75)", paddingLeft: 13, letterSpacing: "0.1px" }}>Live operational feed</span>
           </div>
-          <motion.button
-            onClick={() => onNavigate("Notifications")}
-            whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.14)" }}
-            whileTap={{ scale: 0.97 }}
-            style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: "8px 20px", borderRadius: 10, border: "1px solid rgba(200,155,71,0.28)", backgroundColor: "rgba(200,155,71,0.07)", letterSpacing: "0.2px" }}
-          >
-            View All Activity →
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} style={{ borderRadius: 10 }}>
+            <Button
+              onClick={() => onNavigate("Notifications")}
+              variant="tertiary"
+              className="!py-2 !px-5 !rounded-[10px] !border !border-[rgba(200,155,71,0.28)] !bg-[rgba(200,155,71,0.07)] !text-[#C89B47] !text-[13px] !font-semibold !tracking-[0.2px] hover:!bg-[rgba(200,155,71,0.14)] hover:!text-[#C89B47]"
+            >
+              View All Activity →
+            </Button>
+          </motion.div>
         </div>
         <div style={{ display: "flex", gap: 14 }}>
           {liveActions.map((a, i) => (

@@ -16,6 +16,7 @@ import { CashFlowTooltip } from "./CashFlowTooltip";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
+import { Button } from "../../../../shared/ui/primitives";
 
 const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
 
@@ -171,19 +172,10 @@ export function PaymentAnalyticsSection() {
             </p>
           </div>
           <DownloadGate>
-            <button
-              style={{
-                display: "flex", alignItems: "center", gap: 7, padding: "10px 18px",
-                background: "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))",
-                border: `1.5px solid ${T.borderGold}`, borderRadius: 10, cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.22), rgba(200,155,71,0.08))"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(200,155,71,0.15), rgba(200,155,71,0.05))"; }}
-            >
-              <Download size={15} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>Export Report</span>
-            </button>
+            <Button variant="secondary" size="md" iconLeft={Download}
+              className="rounded-[10px] border-[1.5px] border-[rgba(200,155,71,0.22)] bg-gradient-to-br from-[rgba(200,155,71,0.15)] to-[rgba(200,155,71,0.05)] text-[#C89B47] hover:from-[rgba(200,155,71,0.22)] hover:to-[rgba(200,155,71,0.08)]">
+              Export Report
+            </Button>
           </DownloadGate>
         </div>
 

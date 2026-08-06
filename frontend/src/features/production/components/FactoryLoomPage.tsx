@@ -137,7 +137,7 @@ export function FactoryLoomPage() {
       {(loadError || saveError) && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{loadError ? `Could not load factory looms: ${loadError}` : saveError}</span>
-          {loadError && <button onClick={() => void loadLooms()} style={{ background: "transparent", border: `1px solid ${T.crimson}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, cursor: "pointer" }}>Retry</button>}
+          {loadError && <Button onClick={() => void loadLooms()} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>}
         </div>
       )}
       {loading && !loadError && (

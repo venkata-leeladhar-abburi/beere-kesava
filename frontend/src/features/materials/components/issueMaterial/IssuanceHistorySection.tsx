@@ -1,10 +1,11 @@
 import React from "react";
-import { CheckCircle2, Clock, Eye, Search } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { renderIssuedMaterials } from "./materialFormatters";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   signed: { label: "Signed", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -32,15 +33,12 @@ export function IssuanceHistorySection({
       <h2 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.luxuryBrown, margin: "0 0 20px" }}>Material Issuance History</h2>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
-        <div style={{ position: "relative" as const, flex: "1 1 260px" }}>
-          <Search size={15} color={T.taupe} style={{ position: "absolute" as const, left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…"
-            style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 12px 0 36px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }} />
+        <div style={{ flex: "1 1 260px" }}>
+          <SearchInput value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
         </div>
-        <select value={histWeaverFilter} onChange={e => setHistWeaverFilter(e.target.value)}
-          style={{ height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 12px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFF" }}>
-          {weaverNames.map(n => <option key={n} value={n}>{n}</option>)}
-        </select>
+        <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
+          {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+        </Select>
       </div>
 
       <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
@@ -87,9 +85,15 @@ export function IssuanceHistorySection({
                     <span style={{ background: badge.bg, color: badge.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>{badge.label}</span>
                   </td>
                   <td style={{ padding: "12px 14px" }}>
-                    <button onClick={() => setViewRecord(r)} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>
-                      <Eye size={12} /> View Details
-                    </button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      iconLeft="view"
+                      onClick={() => setViewRecord(r)}
+                      className="whitespace-nowrap border-[rgba(200,155,71,0.22)] text-[#6E0F2D]"
+                    >
+                      View Details
+                    </Button>
                   </td>
                 </tr>
               );
@@ -100,9 +104,9 @@ export function IssuanceHistorySection({
 
       {totalPages > 0 && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginTop: 20 }}>
-          <button disabled={histPage === 1} onClick={() => setHistPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", cursor: histPage === 1 ? "not-allowed" : "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, opacity: histPage === 1 ? 0.5 : 1 }}>← Prev</button>
+          <Button variant="secondary" size="sm" disabled={histPage === 1} onClick={() => setHistPage(p => p - 1)}>← Prev</Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Page {histPage} of {totalPages}</span>
-          <button disabled={histPage === totalPages} onClick={() => setHistPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "#FFF", cursor: histPage === totalPages ? "not-allowed" : "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, opacity: histPage === totalPages ? 0.5 : 1 }}>Next →</button>
+          <Button variant="secondary" size="sm" disabled={histPage === totalPages} onClick={() => setHistPage(p => p + 1)}>Next →</Button>
         </div>
       )}
     </div>

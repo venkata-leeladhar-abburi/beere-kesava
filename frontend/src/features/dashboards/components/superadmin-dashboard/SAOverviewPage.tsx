@@ -9,6 +9,7 @@ import { T, F, G, NUM, EASE } from "./theme";
 import { MATS } from "./data";
 import { SectionHeader, AnimatedNumber } from "./atoms";
 import { SAWeaverSection } from "./SAWeaverSection";
+import { Button } from "../../../../shared/ui/primitives";
 import { useDashboardMetrics } from "../beere-dashboard/hooks/useDashboardMetrics";
 import { useDashboardAnalytics } from "../beere-dashboard/hooks/useDashboardAnalytics";
 import {
@@ -167,32 +168,38 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
       <SectionHeader title="Quick Actions" actionText="" small />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
         {actions.map((a, i) => (
-          <motion.button key={a.nav}
+          <motion.div key={a.nav}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.45, delay: i * 0.09 }}
             whileHover={{ y: -5, boxShadow: "0 16px 48px rgba(74,6,27,0.12)" }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setNav(a.nav)}
-            style={{ padding: "22px 20px", borderRadius: 20, border: `1px solid ${a.border}`, background: a.bg, cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 10, position: "relative" }}
+            style={{ borderRadius: 20, border: `1px solid ${a.border}`, background: a.bg, position: "relative" }}
           >
-            {a.badge && (
-              <div style={{ position: "absolute", top: 14, right: 14, width: 22, height: 22, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#fff" }}>{a.badge}</span>
+            <Button
+              onClick={() => setNav(a.nav)}
+              variant="tertiary"
+              fullWidth
+              className="!h-auto !py-[22px] !px-5 !rounded-[20px] !border-none !bg-transparent !justify-start !text-left !flex-col !items-start !gap-2.5"
+            >
+              {a.badge && (
+                <div style={{ position: "absolute", top: 14, right: 14, width: 22, height: 22, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#fff" }}>{a.badge}</span>
+                </div>
+              )}
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.60)", border: `1px solid ${a.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {a.icon}
               </div>
-            )}
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.60)", border: `1px solid ${a.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {a.icon}
-            </div>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.luxuryBrown, letterSpacing: "-0.1px", marginBottom: 3 }}>{a.label}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>{a.sub}</div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, color: a.color, fontFamily: F.ui, fontWeight: 500, fontSize: 12 }}>
-              Open <ChevronRight size={12} />
-            </div>
-          </motion.button>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 16, color: T.luxuryBrown, letterSpacing: "-0.1px", marginBottom: 3 }}>{a.label}</div>
+                <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe }}>{a.sub}</div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, color: a.color, fontFamily: F.ui, fontWeight: 500, fontSize: 12 }}>
+                Open <ChevronRight size={12} />
+              </div>
+            </Button>
+          </motion.div>
         ))}
       </div>
     </section>

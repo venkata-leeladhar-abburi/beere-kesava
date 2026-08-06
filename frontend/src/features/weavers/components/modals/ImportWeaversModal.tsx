@@ -6,6 +6,7 @@ import { UploadSimple } from "@phosphor-icons/react";
 import { T, F } from "../theme";
 import { Status, ParsedWeaverRow } from "../types";
 import type { ImportedWeaver } from "../data";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
   open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
@@ -116,7 +117,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
-          <button onClick={() => { reset(); onClose(); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe }}><X size={22} /></button>
+          <IconButton onClick={() => { reset(); onClose(); }} variant="ghost" icon={X} label="Close" className="text-[var(--text-tertiary)]" />
         </div>
         <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
           Upload a .xlsx or .csv file with columns <b>Name</b>, <b>Village</b>, <b>Mobile</b>, and optionally <b>Looms</b> and <b>Status</b>.
@@ -176,14 +177,14 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
         )}
 
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 28, borderTop: `1px solid ${T.borderDef}`, paddingTop: 20 }}>
-          <button onClick={() => { reset(); onClose(); }} style={{ padding: "12px 22px", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "transparent", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-          <motion.button
+          <Button onClick={() => { reset(); onClose(); }} variant="secondary" className="rounded-[10px]">Cancel</Button>
+          <Button
             disabled={valid.length === 0} onClick={handleConfirm}
-            whileHover={valid.length > 0 ? { scale: 1.02 } : {}}
-            style={{ padding: "12px 26px", borderRadius: 10, border: "none", background: valid.length > 0 ? T.royalBurgundy : "rgba(110,15,45,0.25)", color: "#FFFDF9", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: valid.length > 0 ? "pointer" : "not-allowed" }}
+            variant="primary"
+            className="rounded-[10px] bg-[#6E0F2D]"
           >
             Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
-          </motion.button>
+          </Button>
         </div>
       </motion.div>
     </div>

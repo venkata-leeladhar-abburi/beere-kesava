@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Eye, MapPin, Phone, Package } from "lucide-react";
+import { MapPin, Phone, Package } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { StatusPill, StarRating } from "./SharedBits";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Vendor) => void }) {
   const [hov, setHov] = useState(false);
@@ -46,10 +47,17 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last: {vendor.lastOrder}</span>
         </div>
         <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
-          <motion.button onClick={() => onView(vendor)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ width: "100%", padding: "9px 0", background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, color: "#FFF", border: "none", borderRadius: 10, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <Eye size={13} /> View Profile
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+            <Button
+              onClick={() => onView(vendor)}
+              variant="primary"
+              iconLeft="view"
+              fullWidth
+              className="rounded-[10px] bg-[linear-gradient(135deg,#4A061B,#6E0F2D)]"
+            >
+              View Profile
+            </Button>
+          </motion.div>
         </div>
       </div>
     </motion.div>

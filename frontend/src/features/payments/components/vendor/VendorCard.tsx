@@ -6,6 +6,7 @@ import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
 import { F, T } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
 import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
+import { Button, CurrencyInput } from "../../../../shared/ui/primitives";
 
 export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
@@ -98,14 +99,16 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                       </div>
                     ) : (
                       <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                        <input
-                          type="number"
-                          value={invoiceDrafts[mi] || ""}
-                          onChange={e => setInvoiceDrafts(prev => ({ ...prev, [mi]: e.target.value }))}
+                        <CurrencyInput
+                          value={invoiceDrafts[mi] ? Number(invoiceDrafts[mi]) : ""}
+                          onValueChange={v => setInvoiceDrafts(prev => ({ ...prev, [mi]: v === "" ? "" : String(v) }))}
                           placeholder="Invoice amount in ₹"
-                          style={{ flex: 1, height: 28, fontFamily: F.ui, fontSize: 12, padding: "0 8px", borderRadius: 6, border: `1px solid ${T.borderDef}`, outline: "none", background: "#FFFFFF", boxSizing: "border-box" as const }}
+                          size="sm"
+                          className="flex-1"
                         />
-                        <button
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             const val = parseFloat(invoiceDrafts[mi]);
@@ -113,10 +116,10 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                               setMaterialInvoiceAmount(matchedPO.id, mi, val);
                             }
                           }}
-                          style={{ height: 28, padding: "0 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, background: "#FDFBF7", border: `1px solid ${T.borderDef}`, borderRadius: 6, cursor: "pointer" }}
+                          className="rounded-[6px]"
                         >
                           Save
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -151,50 +154,26 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         
                 <div style={{ display: "flex", gap: 8 }}>
           {matchedPO && onViewPO && (
-            <button
-              onClick={onViewPO}
-              style={{
-                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                border: `1.5px solid ${T.borderGold}`, borderRadius: 8, background: T.warmCream,
-                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, cursor: "pointer",
-              }}
-            >
+            <Button variant="secondary" size="sm" onClick={onViewPO}
+              className="rounded-[8px] border-[1.5px] border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#C89B47]">
               View PO
-            </button>
+            </Button>
           )}
-          <button
-            onClick={onView}
-            style={{
-              padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8, background: "#fff",
-              fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
-            }}
-          >
+          <Button variant="secondary" size="sm" onClick={onView}
+            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
             Statement
-          </button>
+          </Button>
           {onAddInvoice && (
-            <button
-              onClick={onAddInvoice}
-              style={{
-                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8, background: "#fff",
-                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
-              }}
-            >
-              <FileText size={13} /> Add Invoice
-            </button>
+            <Button variant="secondary" size="sm" iconLeft={FileText} onClick={onAddInvoice}
+              className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+              Add Invoice
+            </Button>
           )}
           {!isPaid && (
-            <button
-              onClick={() => onPay(vp.id)}
-              style={{
-                padding: "0 14px", height: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                border: "none", borderRadius: 8, background: selected ? T.deepWine : T.royalBurgundy,
-                fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
-              }}
-            >
+            <Button variant="primary" size="sm" onClick={() => onPay(vp.id)}
+              className={`rounded-[8px] ${selected ? "bg-[#4A0A1D]" : "bg-[#6E0F2D]"}`}>
               Pay Now
-            </button>
+            </Button>
           )}
         </div>
       </div>

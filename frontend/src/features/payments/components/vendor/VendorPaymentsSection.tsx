@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Search, Wallet } from "lucide-react";
+import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ import { VendorDetailModal } from "./VendorDetailModal";
 import { VendorPayNowModal } from "./VendorPayNowModal";
 import { VendorUploadPanel } from "./VendorUploadPanel";
 import { RecordVendorPaymentSidebar } from "./RecordVendorPaymentSidebar";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -118,10 +119,10 @@ export function VendorPaymentsSection() {
             </p>
           </div>
           <DownloadGate>
-            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-              <Download size={15} />Download Vendor Payment Report
-            </motion.button>
+            <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}
+              className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
+              Download Vendor Payment Report
+            </Button>
           </DownloadGate>
         </div>
 
@@ -185,9 +186,9 @@ export function VendorPaymentsSection() {
                 <span style={{ fontFamily: F.mono }}>₹{overdueVendors.reduce((s, v) => s + v.invoiceAmt - v.paidAmt, 0).toLocaleString("en-IN")}</span>
               </span>
             </div>
-            <button onClick={() => setContactModal(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: T.crimson, border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer", flexShrink: 0 }}>
+            <Button variant="danger" size="md" onClick={() => setContactModal(true)} className="flex-shrink-0 rounded-[8px]">
               Contact Vendors
-            </button>
+            </Button>
           </div>
         )}
 
@@ -196,23 +197,19 @@ export function VendorPaymentsSection() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
-              <motion.button key={key} onClick={() => setView(key as any)}
-                animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
-                transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
-                <Icon size={13} />{label}
-              </motion.button>
+              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
+                onClick={() => setView(key as any)}
+                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
+                {label}
+              </Button>
             ))}
           </div>
           <DropBtn value={vendorFilter} options={["All Vendors", "Sri Lakshmi Raw Silks", "Banarasi Thread House", "Nanak Silk Traders", "Vijaylakshmi Silks", "Ratan Zari Works"]} onChange={setVendorFilter} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-            style={{ padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer", outline: "none" }}>
-            {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <option key={s}>{s}</option>)}
-          </select>
-          <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..."
-              style={{ width: "100%", padding: "8px 12px 8px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+            {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </Select>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
           </div>
         </div>
 
@@ -251,7 +248,7 @@ export function VendorPaymentsSection() {
                     {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4 }}>{vp.daysOverdue}d</span>}
                   </div>
                   <VendorBadge status={vp.status} />
-                  <button onClick={() => setViewDetails(vp)} style={{ padding: "6px 14px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>View</button>
+                  <Button variant="secondary" size="sm" onClick={() => setViewDetails(vp)} className="rounded-[7px] text-[#6E0F2D]">View</Button>
                 </div>
               );
             })}
@@ -308,14 +305,15 @@ export function VendorPaymentsSection() {
                             </td>
                             <td style={{ ...TD, textAlign: "center" as const }}>
                               {vp.status === "Paid" ? (
-                                <button style={{ padding: "5px 12px", background: "rgba(30,102,64,0.09)", color: T.green, border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "default", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                  <CheckCircle2 size={11} />Paid
-                                </button>
+                                <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
+                                  className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100">
+                                  Paid
+                                </Button>
                               ) : (
-                                <button onClick={() => setSelVendor(vp.id)}
-                                  style={{ padding: "5px 12px", background: selVendor === vp.id ? T.royalBurgundy : "transparent", color: selVendor === vp.id ? "#FFFDF9" : T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                                <Button variant={selVendor === vp.id ? "primary" : "secondary"} size="sm" onClick={() => setSelVendor(vp.id)}
+                                  className={selVendor === vp.id ? "rounded-[7px] border-[#6E0F2D] bg-[#6E0F2D]" : "rounded-[7px] border-[#6E0F2D] text-[#6E0F2D]"}>
                                   Pay Now
-                                </button>
+                                </Button>
                               )}
                             </td>
                           </tr>

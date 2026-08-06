@@ -194,7 +194,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
 
       <ActionDialog open={reportOpen} title="Download weaver performance report" onClose={() => setReportOpen(false)}>
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.6 }}><FileText size={34} color={T.royalBurgundy} /><div><b>May 2026 full report is ready.</b><br />Includes leaderboard, QC pass/reject summary, pending dues, and batch-wise production.</div></div>
-        <button onClick={() => setReportOpen(false)} style={{ marginTop: 22, width: "100%", background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 12, padding: 14, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}><Download size={16} /> Download PDF</button>
+        <Button onClick={() => setReportOpen(false)} variant="primary" fullWidth className="mt-[22px] rounded-xl bg-[#6E0F2D]"><Download size={16} /> Download PDF</Button>
       </ActionDialog>
     </>
   );

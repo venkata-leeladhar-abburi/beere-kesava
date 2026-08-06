@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { EASE, F, T } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
+import { Button, Field, IconButton, Input } from "../../../../shared/ui/primitives";
 
 // ── Vendor Pay Now Modal ──────────────────────────────────────────────────────
 export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onClose: () => void }) {
@@ -13,9 +14,6 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
   const [invoiceNo, setInvoiceNo] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
-
-  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
 
   const handleSave = () => {
     if (!file) return;
@@ -36,9 +34,8 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Add Invoice — {vp.vendor}</div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
         </div>
 
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -63,21 +60,19 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
               <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             </div>
           </div>
-          <div>
-            <label style={labelStyle} htmlFor="vendor-invoice-number">Vendor Invoice Number</label>
-            <input id="vendor-invoice-number" value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="invoice-date">Invoice Date</label>
-            <input id="invoice-date" type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
-          </div>
+          <Field label="Vendor Invoice Number" id="vendor-invoice-number">
+            <Input value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" />
+          </Field>
+          <Field label="Invoice Date" id="invoice-date">
+            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </Field>
         </div>
 
         <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button onClick={onClose} style={{ padding: "0 18px", height: 40, border: `1.5px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleSave} disabled={!file || saving} style={{ padding: "0 18px", height: 40, border: "none", borderRadius: 9, background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: file ? "pointer" : "not-allowed", opacity: !file || saving ? 0.6 : 1 }}>
-            {saving ? "Saving..." : "Add Invoice"}
-          </button>
+          <Button variant="secondary" onClick={onClose} className="rounded-[9px]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={!file || saving} loading={saving} className="rounded-[9px] bg-[#6E0F2D]">
+            Add Invoice
+          </Button>
         </div>
       </motion.div>
     </div>

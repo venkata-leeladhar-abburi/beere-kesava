@@ -1,11 +1,12 @@
 import React from "react";
 import { motion } from "motion/react";
-import { CheckCircle2, X } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
 import { resolveSignatureUrl } from "../../../../shared/api/material-issues";
 import { EASE, F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { materialIcon } from "./materialFormatters";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ── View Details Modal ────────────────────────────────────────────────────────
 export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; onClose: () => void }) {
@@ -18,7 +19,14 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700, marginBottom: 4 }}>{record.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={16} color="#FFF" /></button>
+          <IconButton
+            icon="close"
+            label="Close"
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="bg-white/10 text-white hover:bg-white/20 hover:text-white"
+          />
         </div>
         <div style={{ padding: "22px 26px", display: "flex", flexDirection: "column" as const, gap: 18 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -97,7 +105,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             </div>
           )}
 
-          <button onClick={onClose} style={{ height: 46, borderRadius: 12, border: "none", background: T.royalBurgundy, color: "#FFF", fontFamily: F.ui, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Close</button>
+          <Button variant="primary" size="lg" onClick={onClose} className="w-full">Close</Button>
         </div>
       </motion.div>
     </div>

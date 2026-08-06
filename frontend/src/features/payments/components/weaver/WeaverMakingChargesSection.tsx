@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, Search, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -303,10 +303,9 @@ export function WeaverMakingChargesSection() {
             ))}
           </div>
           <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={filtered.length > 0 && filtered.every(w => selectedIds.has(w.id))}
-              onChange={() => {
+              onCheckedChange={() => {
                 const allSelected = filtered.every(w => selectedIds.has(w.id));
                 setSelectedIds(prev => {
                   const next = new Set(prev);
@@ -317,7 +316,6 @@ export function WeaverMakingChargesSection() {
                   return next;
                 });
               }}
-              style={{ accentColor: T.royalBurgundy }}
             />
             Select All Filtered
           </label>
@@ -325,10 +323,8 @@ export function WeaverMakingChargesSection() {
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <DropBtn value="All Making Charge Rate" options={["All Making Charge Rate", "Self Brocade (₹450)", "Heavy Zari (₹680)", "Plain Silk (₹280)"]} />
-          <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..."
-              style={{ width: "100%", padding: "7px 12px 7px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
           </div>
         </div>
 
@@ -386,17 +382,10 @@ export function WeaverMakingChargesSection() {
                   }}
                 >
                   {/* Checkbox */}
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedIds.has(w.id)}
-                    onChange={() => toggleSelection(w.id)}
-                    style={{
-                      width: 17,
-                      height: 17,
-                      cursor: "pointer",
-                      accentColor: T.royalBurgundy,
-                      marginRight: 4,
-                    }}
+                    onCheckedChange={() => toggleSelection(w.id)}
+                    className="mr-1"
                   />
                   <Pip initials={w.initials} bg={w.bg} size={38} />
                   <div style={{ flex: "0 0 180px" }}>
@@ -429,19 +418,9 @@ export function WeaverMakingChargesSection() {
                   <div style={{ flex: "0 0 110px" }}>
                     <StatusBadge status={w.status} />
                   </div>
-                  <button
-                    onClick={() => setSelWeaver(w)}
-                    style={{
-                      padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                      background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                      color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                  >
-                    <Eye size={12} /> Details
-                  </button>
+                  <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
+                    Details
+                  </Button>
                 </div>
               );
             })}

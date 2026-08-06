@@ -205,7 +205,7 @@ export function BatchCreationPage() {
       {directoryError && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Could not load weavers/factory looms: {directoryError}</span>
-          <button onClick={() => void loadDirectories()} style={{ background: "transparent", border: `1px solid ${T.red}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.red, cursor: "pointer" }}>Retry</button>
+          <Button onClick={() => void loadDirectories()} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
         </div>
       )}
 

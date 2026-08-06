@@ -2,6 +2,7 @@ import React from "react";
 import { CheckCircle2, Clock, PenLine, Send } from "lucide-react";
 import { F, T } from "./theme";
 import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Signature capture block (mirrors WorkerWeavers WeaverSigBlock, T/F tokens) ─
 export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, signed, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed, canvasRef }: {
@@ -15,30 +16,34 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 4 }}>
-        <button onClick={() => setSigMethod("here")} style={{
-          padding: "18px 16px", borderRadius: 14, cursor: "pointer", textAlign: "center" as const, position: "relative" as const,
-          background: sigMethod === "here" ? "rgba(110,15,45,0.05)" : "#FFF",
-          border: `${sigMethod === "here" ? 2 : 1}px solid ${sigMethod === "here" ? T.royalBurgundy : T.borderDef}`,
-        }}>
+        <Button
+          variant="tertiary"
+          onClick={() => setSigMethod("here")}
+          className={`h-auto flex-col whitespace-normal rounded-[14px] px-4 py-[18px] text-center relative border ${
+            sigMethod === "here" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[var(--border-default)] bg-white"
+          }`}
+        >
           {sigMethod === "here" && <div style={{ position: "absolute" as const, top: 8, right: 8, width: 16, height: 16, background: T.antiqueGold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={10} color="#FFF" /></div>}
           <div style={{ width: 44, height: 44, borderRadius: 12, background: sigMethod === "here" ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <PenLine size={20} color={sigMethod === "here" ? T.royalBurgundy : T.taupe} />
           </div>
           <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Sign Here on This Screen</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Weaver signs on this device</div>
-        </button>
-        <button onClick={() => setSigMethod("remote")} style={{
-          padding: "18px 16px", borderRadius: 14, cursor: "pointer", textAlign: "center" as const, position: "relative" as const,
-          background: sigMethod === "remote" ? "rgba(110,15,45,0.05)" : "#FFF",
-          border: `${sigMethod === "remote" ? 2 : 1}px solid ${sigMethod === "remote" ? T.royalBurgundy : T.borderDef}`,
-        }}>
+        </Button>
+        <Button
+          variant="tertiary"
+          onClick={() => setSigMethod("remote")}
+          className={`h-auto flex-col whitespace-normal rounded-[14px] px-4 py-[18px] text-center relative border ${
+            sigMethod === "remote" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[var(--border-default)] bg-white"
+          }`}
+        >
           {sigMethod === "remote" && <div style={{ position: "absolute" as const, top: 8, right: 8, width: 16, height: 16, background: T.antiqueGold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={10} color="#FFF" /></div>}
           <div style={{ width: 44, height: 44, borderRadius: 12, background: sigMethod === "remote" ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <Send size={20} color={sigMethod === "remote" ? T.royalBurgundy : T.taupe} />
           </div>
           <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Send to Weaver's Phone</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>Weaver signs remotely</div>
-        </button>
+        </Button>
       </div>
 
       {sigMethod === "here" && (
@@ -60,7 +65,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
               <Clock size={24} color={T.antiqueGold} style={{ margin: "0 auto 8px" }} />
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>Waiting for signature…</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>Request sent to {weaverName}'s mobile (+91 {weaverPhone})</div>
-              <button onClick={() => setRemoteConfirmed(true)} style={{ background: "none", border: "none", fontFamily: F.ui, fontSize: 12, color: T.taupe, cursor: "pointer", textDecoration: "underline" }}>Demo: Signed →</button>
+              <Button variant="tertiary" size="sm" onClick={() => setRemoteConfirmed(true)} className="underline text-[var(--text-tertiary)]">Demo: Signed →</Button>
             </div>
           ) : (
             <>
@@ -68,9 +73,9 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 3 }}>Sending to</div>
                 <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
               </div>
-              <button onClick={() => setRemoteSent(true)} style={{ width: "100%", height: 48, borderRadius: 12, background: T.royalBurgundy, border: "none", color: "#FFF", fontFamily: F.ui, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <Send size={15} /> Send Signature Request
-              </button>
+              <Button variant="primary" size="lg" onClick={() => setRemoteSent(true)} iconLeft={Send} className="w-full">
+                Send Signature Request
+              </Button>
             </>
           )}
         </div>

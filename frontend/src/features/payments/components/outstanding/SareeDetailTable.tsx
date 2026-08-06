@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { T, F } from "../../theme";
 import { UnifiedSaree } from "../../../customers/contexts/SalesContext";
 import { AgePill, Empty, Pill, ScrollTable, td, tdMono, th, inr } from "./primitives";
+import { Button } from "../../../../shared/ui/primitives";
 
 export type TableMode = "outstanding" | "sold" | "produced";
 
@@ -120,22 +121,19 @@ export function DrilldownTabs({ produced, sold, outstanding, showBatch = false, 
         {tabs.map(t => {
           const on = view === t.key;
           return (
-            <button key={t.key} onClick={() => setView(t.key)}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
-                padding: "8px 16px", borderRadius: 99, fontFamily: F.ui, fontSize: 13, fontWeight: 700,
-                background: on ? t.color : "#FFFFFF",
-                color: on ? "#FFFDF9" : T.taupe,
-                border: on ? "none" : `1.5px solid ${T.borderDef}`,
-                transition: "all 0.16s",
-              }}>
-              {t.label}
-              <span style={{
-                fontFamily: F.mono, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
-                background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
-                color: on ? "#FFFDF9" : t.color,
-              }}>{t.rows.length}</span>
-            </button>
+            <div key={t.key} style={{ "--tab-color": t.color } as React.CSSProperties}>
+              <Button variant={on ? "primary" : "secondary"} size="sm" onClick={() => setView(t.key)}
+                className={on
+                  ? "rounded-full border-none bg-[var(--tab-color)] text-[#FFFDF9]"
+                  : "rounded-full border-[1.5px] border-[var(--border-default)] bg-white text-[var(--text-tertiary)]"}>
+                {t.label}
+                <span style={{
+                  fontFamily: F.mono, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
+                  background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
+                  color: on ? "#FFFDF9" : t.color,
+                }}>{t.rows.length}</span>
+              </Button>
+            </div>
           );
         })}
       </div>

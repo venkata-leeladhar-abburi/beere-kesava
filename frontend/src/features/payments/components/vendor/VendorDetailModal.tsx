@@ -6,6 +6,7 @@ import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
 import { EASE, F, T } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ── Vendor Detail Modal ───────────────────────────────────────────────────────
 export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onClose: () => void }) {
@@ -23,9 +24,8 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{vendorName}</div>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: T.goldLight, marginTop: 4 }}>{vp.poNumber}</div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
         </div>
 
         <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
@@ -102,7 +102,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
         </div>
 
         <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ height: 40, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>Close</button>
+          <Button variant="primary" onClick={onClose} className="rounded-full bg-[#6E0F2D]">Close</Button>
         </div>
       </motion.div>
     </div>

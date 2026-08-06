@@ -6,6 +6,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { PaymentsPage } from "../../payments/components/PaymentsPage";
 import { DownloadAccessProvider } from "../../../shared/ui/DownloadAccess";
+import { Button, IconButton } from "../../../shared/ui/primitives";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -116,14 +117,11 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
               const isActive = active === item.key;
               const Icon = item.icon;
               return (
-                <button
+                <Button
                   key={item.key}
+                  variant="tertiary"
                   onClick={() => set(item.slug)}
-                  style={{
-                    height: "100%", padding: compact ? "0 12px" : "0 18px", flexShrink: 0,
-                    border: "none", background: "transparent", cursor: "pointer",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-                  }}
+                  className={`!h-full ${compact ? "!px-3" : "!px-[18px]"} !shrink-0 !border-none !bg-transparent !flex-col !gap-1.5 !rounded-none hover:!bg-transparent`}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
@@ -133,7 +131,7 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
                     }}>{item.label}</span>
                   </div>
                   <div style={{ height: 2, width: "100%", background: isActive ? T.antiqueGold : "transparent", borderRadius: 2 }} />
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -141,18 +139,34 @@ function TopNav({ active, set, onBack, onLogout, onProfile }: {
 
         {/* Right actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <button onClick={onProfile} title="Profile"
-            style={{ width: 38, height: 38, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.30)", background: "rgba(255,255,255,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <UserRound size={17} color={T.warmCream} />
-          </button>
-          <button onClick={onBack} title="Switch portal"
-            style={{ padding: "8px 14px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)", background: "rgba(255,255,255,0.06)", cursor: "pointer", color: T.warmCream, fontFamily: F.ui, fontWeight: 600, fontSize: 12, display: compact ? "none" : "flex", alignItems: "center", gap: 6 }}>
-            Switch Portal
-          </button>
-          <button onClick={onLogout} title="Log out"
-            style={{ width: 38, height: 38, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.30)", background: "rgba(255,255,255,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <LogOut size={17} color={T.warmCream} />
-          </button>
+          <IconButton
+            icon={UserRound}
+            label="Profile"
+            title="Profile"
+            onClick={onProfile}
+            variant="ghost"
+            shape="circle"
+            className="border border-[rgba(200,155,71,0.30)] bg-white/6 text-[#F5E8D0] hover:bg-white/12 hover:text-[#F5E8D0]"
+          />
+          {!compact && (
+            <Button
+              onClick={onBack}
+              title="Switch portal"
+              variant="tertiary"
+              className="!rounded-full !border !border-[rgba(200,155,71,0.30)] !bg-white/6 !text-[#F5E8D0] !gap-1.5 hover:!bg-white/12 hover:!text-[#F5E8D0]"
+            >
+              Switch Portal
+            </Button>
+          )}
+          <IconButton
+            icon={LogOut}
+            label="Log out"
+            title="Log out"
+            onClick={onLogout}
+            variant="ghost"
+            shape="circle"
+            className="border border-[rgba(200,155,71,0.30)] bg-white/6 text-[#F5E8D0] hover:bg-white/12 hover:text-[#F5E8D0]"
+          />
         </div>
       </nav>
     </motion.div>

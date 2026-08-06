@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus } from "lucide-react";
-import { T, F, inputStyle, labelStyle } from "./theme";
+import { Button, Input } from "../../../../shared/ui/primitives";
+import { T, F, labelStyle } from "./theme";
 import { JariUnit, jariFromReels, jariToReels, jariGrams, trimNum } from "./jariUtils";
 
 /**
@@ -19,24 +20,21 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
         <label style={{ ...labelStyle, marginBottom: 3 }}>Jari ({unit})</label>
         <div style={{ display: "flex", background: "rgba(110,15,45,0.06)", borderRadius: 999, padding: 2, marginBottom: 3 }}>
           {(["reels", "buns"] as JariUnit[]).map(u => (
-            <button key={u} type="button" onClick={() => setUnit(u)}
-              style={{
-                border: "none", borderRadius: 999, padding: "3px 10px", cursor: "pointer",
-                fontFamily: F.ui, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
-                background: unit === u ? T.luxuryBrown : "transparent",
-                color: unit === u ? "#FFF" : T.taupe,
-              }}>
+            <Button key={u} type="button" variant="ghost" size="sm" onClick={() => setUnit(u)}
+              className={`h-auto rounded-full px-2.5 py-[3px] text-[12px] font-semibold capitalize font-[var(--font-ui)] ${
+                unit === u ? "bg-[#3B2314] text-white hover:bg-[#3B2314] hover:text-white" : "text-[var(--text-tertiary)]"
+              }`}>
               {u}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
-      <input aria-label="0" type="number" value={shown} placeholder="0"
+      <Input aria-label="0" type="number" value={shown} placeholder="0"
         onChange={e => {
           const v = e.target.value;
           onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));
         }}
-        style={inputStyle} />
+        className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>
         {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns · {trimNum(jariGrams(reelsNum), 0)}g
       </div>
@@ -95,11 +93,11 @@ export function SareeTypeCombobox({
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <input
+      <Input
         value={query}
         onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        style={inputStyle}
+        className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
         placeholder="e.g. Self Brocade or type a new name…"
         autoComplete="off"
       />
@@ -117,22 +115,18 @@ export function SareeTypeCombobox({
             }}
           >
             {filtered.map(opt => (
-              <button key={opt} onMouseDown={() => { onChange(opt); setQuery(opt); setOpen(false); }}
-                style={{ width: "100%", display: "block", textAlign: "left", padding: "9px 14px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.05)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "none")}
+              <Button key={opt} variant="ghost" onMouseDown={() => { onChange(opt); setQuery(opt); setOpen(false); }}
+                className="h-auto w-full justify-start rounded-none px-3.5 py-[9px] text-[13px] font-normal text-[#3B2314] hover:bg-[rgba(110,15,45,0.05)]"
               >
                 {opt}
-              </button>
+              </Button>
             ))}
             {showNew && (
-              <button onMouseDown={() => { onChange(query.trim()); setOpen(false); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, textAlign: "left", padding: "9px 14px", border: "none", borderTop: filtered.length > 0 ? `1px solid ${T.borderDef}` : "none", background: "rgba(110,15,45,0.03)", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.07)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "rgba(110,15,45,0.03)")}
+              <Button variant="ghost" onMouseDown={() => { onChange(query.trim()); setOpen(false); }}
+                className={`h-auto w-full justify-start gap-2 rounded-none px-3.5 py-[9px] text-[13px] font-normal text-[#6E0F2D] bg-[rgba(110,15,45,0.03)] hover:bg-[rgba(110,15,45,0.07)] ${filtered.length > 0 ? "border-t border-[rgba(110,15,45,0.10)]" : ""}`}
               >
                 <Plus size={13} /> Add &ldquo;{query.trim()}&rdquo; as new type
-              </button>
+              </Button>
             )}
           </motion.div>
         )}
