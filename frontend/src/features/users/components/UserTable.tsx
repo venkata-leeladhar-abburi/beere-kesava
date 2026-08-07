@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit2, ShieldOff, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Edit2, ShieldOff, Eye, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { T, F, ROLE_COLORS, ROLES } from "./theme";
 import { TableRow } from "./utils";
@@ -22,6 +22,7 @@ interface UserTableProps {
   totalPages: number;
   ROWS_PER_PAGE: number;
   onToggleStatus: (row: TableRow) => void;
+  onDelete: (row: TableRow) => void;
   setEditingMember: (m: FinishingStaffMember | null) => void;
   setViewingMember: (m: FinishingStaffMember | null) => void;
   cardStyle: React.CSSProperties;
@@ -31,7 +32,7 @@ interface UserTableProps {
 export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
-  totalPages, ROWS_PER_PAGE, onToggleStatus,
+  totalPages, ROWS_PER_PAGE, onToggleStatus, onDelete,
   setEditingMember, setViewingMember, cardStyle, inputStyle
 }: UserTableProps) {
   return (
@@ -69,7 +70,7 @@ export function UserTable({
       {/* Table */}
       <div style={{ overflowX: "auto" as const }}>
         {/* Header */}
-        <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 170px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderTop: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, minWidth: 980 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 230px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderTop: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, minWidth: 1040 }}>
           {["Emp ID", "Full Name", "Role", "Access", "Mobile Number", "Portal Access", "Date Added", "Status", "Actions"].map(col => (
             <div key={col} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{col}</div>
           ))}
@@ -82,7 +83,7 @@ export function UserTable({
           const fm = u.finishingMember;
           return (
             <div key={u.empId + i}
-              style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 170px", gap: 0, padding: "15px 28px", borderBottom: i < pagedRows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)", alignItems: "center", minWidth: 980, transition: "background 0.15s" }}
+              style={{ display: "grid", gridTemplateColumns: "100px 1fr 140px 130px 160px 1fr 110px 90px 230px", gap: 0, padding: "15px 28px", borderBottom: i < pagedRows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)", alignItems: "center", minWidth: 1040, transition: "background 0.15s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(110,15,45,0.025)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.40)"; }}
             >
@@ -115,6 +116,9 @@ export function UserTable({
                 <Button size="sm" variant="danger-subtle" iconLeft={ShieldOff}
                   onClick={() => onToggleStatus(u)}
                 >{u.status === "Active" ? "Deactivate" : "Activate"}</Button>
+                <Button size="sm" variant="danger-subtle" iconLeft={Trash2}
+                  onClick={() => onDelete(u)}
+                >Delete</Button>
                 {fm && (
                   <Button size="sm" variant="tertiary" iconLeft={Eye}
                     onClick={() => setViewingMember(fm)}

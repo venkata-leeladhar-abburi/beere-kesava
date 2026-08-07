@@ -312,6 +312,12 @@ model User {
   dateAdded   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  // Set when this User's role is WEAVER — links to the actual Weaver record
+  // auto-created alongside it, so the roster shows up in the Weavers module
+  // instead of only existing as an invisible User row.
+  linkedWeaverId String? @unique
+  linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
+
   permissionOverrides  UserPermissionOverride[]
   auditLogs            AuditLog[]
   actionLogs           ActionLog[]
@@ -348,6 +354,11 @@ model OtpCode {
 
 model Weaver {
   id        String       @id @default(uuid())
+  // Human-facing weaver ID (e.g. "Wea-001") — gap-filled against the count of
+  // existing weavers, not a monotonic counter: deleting a weaver frees its
+  // number for the next one created. Distinct from `id` (UUID), which is the
+  // real FK target everywhere else and never changes.
+  code      String       @unique
   name      String
   firstName String
   lastName  String
@@ -372,6 +383,7 @@ model Weaver {
   sarees         Saree[]
   payments       WeaverPayment[]
   warpRequests   WarpRequest[]
+  linkedUser     User?
 
   @@index([status])
 }
@@ -979,6 +991,7 @@ model Firm {
   invoicePayments  InvoicePayment[]
   quotations       Quotation[]
   dispatchRecords  DispatchRecord[]
+  grnReceipts      GrnReceipt[]
 }
 
 model FirmFinancialEntry {
@@ -1189,6 +1202,11 @@ model GrnReceipt {
   id           String    @id // GRN-2026-NNN
   vendorId     String?
   vendor       Vendor?   @relation(fields: [vendorId], references: [id])
+  // Which of the company's legal firms this material was purchased for/by —
+  // was previously always displayed as a hardcoded "Beere Kesava Silks
+  // (Head Firm)" placeholder on the frontend with no real backing data.
+  firmId       String?
+  firm         Firm?     @relation(fields: [firmId], references: [id])
   supplierName String
   invoiceNo    String?
   invoiceDate  DateTime?

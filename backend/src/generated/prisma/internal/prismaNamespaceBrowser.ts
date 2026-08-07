@@ -169,7 +169,8 @@ export const UserScalarFieldEnum = {
   accessLevel: 'accessLevel',
   status: 'status',
   dateAdded: 'dateAdded',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  linkedWeaverId: 'linkedWeaverId'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -190,6 +191,7 @@ export type OtpCodeScalarFieldEnum = (typeof OtpCodeScalarFieldEnum)[keyof typeo
 
 export const WeaverScalarFieldEnum = {
   id: 'id',
+  code: 'code',
   name: 'name',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -864,6 +866,7 @@ export type RawMaterialStockScalarFieldEnum = (typeof RawMaterialStockScalarFiel
 export const GrnReceiptScalarFieldEnum = {
   id: 'id',
   vendorId: 'vendorId',
+  firmId: 'firmId',
   supplierName: 'supplierName',
   invoiceNo: 'invoiceNo',
   invoiceDate: 'invoiceDate',

@@ -40,7 +40,7 @@ export function HistorySection({
   histPeriod: string;
   setHistPeriod: (v: string) => void;
 }) {
-  const { data: actionsRes, isLoading } = useQuery({
+  const { data: actionsRes, isLoading, isError } = useQuery({
     queryKey: ["approval-history"],
     queryFn: () => auditLogApi.listActions({ module: "APPROVALS", pageSize: 200 }),
   });
@@ -146,6 +146,10 @@ export function HistorySection({
         {isLoading ? (
           <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
             Loading approval history…
+          </div>
+        ) : isError ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+            Failed to load approval history. Please try again.
           </div>
         ) : filteredRows.length === 0 ? (
           <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>

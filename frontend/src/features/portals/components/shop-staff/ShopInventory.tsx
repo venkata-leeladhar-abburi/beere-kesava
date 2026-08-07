@@ -3,7 +3,9 @@ import { useResponsive } from "../../../../hooks/useResponsive";
 import { Send } from "lucide-react";
 
 
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { inventoryApi } from '../../../../shared/api/inventory';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
@@ -35,14 +37,28 @@ function ShopInventory() {
     }
   }, [search]);
 
-  const inventory = [
-    { id: "PADMA-L1-004", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 10 Jun", status: "available", supplier: null, loom: "L1", weaver: "Padma Veni" },
-    { id: "RAVI-L2-008", src: "factory", design: "HZ-003", name: "Maroon Heavy Zari", color: "#8B2020", sareeColor: "Maroon", type: "Heavy Brocade", price: "₹12,000", received: "Received 09 Jun", status: "available", supplier: null, loom: "L2", weaver: "Ravi Kumar" },
-    { id: "BKB-L3-002", src: "factory", design: "PS-002", name: "Cream Plain Silk", color: "#F5F5DC", sareeColor: "Cream", type: "Plain Weave", price: "₹5,500", received: "Received 08 Jun", status: "available", supplier: null, loom: "L3", weaver: "Lakshmi Devi" },
-    { id: "EXT-RAVI-001", src: "external", design: "External", name: "Silk Checks", color: "#C9A86C", sareeColor: "Gold", type: "Checks", price: "₹6,200", received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
-    { id: "EXT-RAVI-002", src: "external", design: "External", name: "Floral Design", color: "#D4A5C5", sareeColor: "Pink", type: "Floral", price: "₹7,800", received: "Purchased 05 Jun", status: "available", supplier: "Ravi Silks", loom: null, weaver: null },
-    { id: "PADMA-L1-003", src: "factory", design: "HZ-003", name: "Cream Zari Border", color: "#E8D5B0", sareeColor: "Cream", type: "Self Brocade", price: "₹8,500", received: "Received 07 Jun", status: "reserved", supplier: null, loom: "L1", weaver: "Padma Veni" },
-  ];
+  const { data: inventoryRes, isLoading: inventoryLoading, isError: inventoryError } = useQuery({
+    queryKey: ["shop-inventory-list"],
+    queryFn: () => inventoryApi.list(),
+  });
+
+  const inventory = useMemo(() => {
+    return (inventoryRes ?? []).map(item => ({
+      id: item.sareeId,
+      src: item.source ?? "factory",
+      design: item.designCode ?? "—",
+      name: item.sareeTypeLabel ?? "Pure Silk Saree",
+      color: "#6B1A2A",
+      sareeColor: "Silk",
+      type: item.sareeTypeCode ?? "Standard",
+      price: "₹8,500",
+      received: item.qcDate ? `Received ${new Date(item.qcDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}` : "In Stock",
+      status: (item.status === "sold" ? "reserved" : "available") as "available" | "reserved",
+      supplier: item.customer ?? null,
+      loom: item.loomNumber ? `L${item.loomNumber}` : null,
+      weaver: item.weaverName ?? null,
+    }));
+  }, [inventoryRes]);
 
   const looms = Array.from(new Set(inventory.map(s => s.loom).filter(Boolean))) as string[];
   const weavers = Array.from(new Set(inventory.map(s => s.weaver).filter(Boolean))) as string[];
@@ -186,7 +202,22 @@ function ShopInventory() {
       </Card>
 
       {/* Inventory list */}
-      {filtered.map((s, i) => (
+      {inventoryLoading && (
+        <div style={{ margin: "0 20px 12px", padding: 18, fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const }}>
+          Loading inventory…
+        </div>
+      )}
+      {inventoryError && (
+        <div style={{ margin: "0 20px 12px", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.30)", borderRadius: 16, padding: 18, fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.crim, textAlign: "center" as const }}>
+          Failed to load shop inventory.
+        </div>
+      )}
+      {!inventoryLoading && !inventoryError && filtered.length === 0 && (
+        <div style={{ margin: "0 20px 12px", padding: 18, fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const }}>
+          No sarees in stock.
+        </div>
+      )}
+      {!inventoryLoading && !inventoryError && filtered.map((s, i) => (
         <div key={i} style={{ margin: "0 20px 12px", background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}`, boxShadow: "0 2px 12px rgba(44,24,16,0.07)", padding: 18, display: "flex", gap: 14 }}>
           <div style={{ width: 6, borderRadius: 3, background: s.color, flexShrink: 0, alignSelf: "stretch" }} />
           <div style={{ flex: 1, minWidth: 0 }}>

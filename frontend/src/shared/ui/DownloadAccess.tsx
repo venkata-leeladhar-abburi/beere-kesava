@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
 // ─── Download / export access ────────────────────────────────────────────────
 // Pages here are shared between the Admin, Superadmin and Accountant portals.
@@ -6,6 +7,14 @@ import React from "react";
 // system, so their portal mounts this provider with `allowed={false}` and every
 // download control checks it. Defaults to true so the other portals are
 // unaffected.
+//
+// Separately, the logged-in user's real `accessLevel` field
+// (`DOWNLOAD_RESTRICTED`, see backend/prisma/schema.prisma) is combined in —
+// any staff account flagged that way loses download access regardless of
+// which portal mounts this provider or what `allowed` it was passed. Note
+// this is a frontend display-only restriction: it hides/disables the download
+// controls in the UI, but the underlying API endpoints are not gated, so it
+// is not a real security boundary.
 const DownloadAccessContext = React.createContext<boolean>(true);
 
 export function DownloadAccessProvider({ allowed, children }: { allowed: boolean; children: React.ReactNode }) {
@@ -16,9 +25,18 @@ export function DownloadAccessProvider({ allowed, children }: { allowed: boolean
   );
 }
 
-/** True when the current portal is allowed to download or export. */
+/**
+ * True when the current portal is allowed to download or export.
+ * Combines the per-portal provider flag (e.g. the Accountant portal, which
+ * mounts `allowed={false}` regardless of accessLevel) with the logged-in
+ * user's real `accessLevel`, so a `DOWNLOAD_RESTRICTED` account loses
+ * download access everywhere, even in portals that never mount the provider.
+ */
 export function useDownloadsAllowed(): boolean {
-  return React.useContext(DownloadAccessContext);
+  const portalAllowed = React.useContext(DownloadAccessContext);
+  const { user } = useAuth();
+  const restrictedByAccessLevel = user?.accessLevel === "DOWNLOAD_RESTRICTED";
+  return portalAllowed && !restrictedByAccessLevel;
 }
 
 /** Renders its children only where downloading is permitted. */

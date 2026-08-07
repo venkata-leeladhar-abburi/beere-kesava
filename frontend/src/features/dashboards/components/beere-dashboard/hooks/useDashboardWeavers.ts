@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { weaversApi, BackendWeaver } from "../../../../../shared/api/weavers";
+import { resolveAssetUrl } from "../../../../../shared/api/uploads";
 
 /** Background colours for initials avatars (cycles through 5 options). */
 const BG_COLORS = ["#9B6B8A", "#5A3E6B", "#2D6B6B", "#4A6B4A", "#6B4A3E"];
@@ -21,11 +22,11 @@ function backendToDashboardWeaver(w: BackendWeaver, idx: number): DashboardWeave
     id: w.id,
     name: w.name,
     initials: w.initials,
-    img: w.photoUrl || null,
+    img: resolveAssetUrl(w.photoUrl),
     village: w.village,
     mobile: w.phone ? `×××× ${w.phone.slice(-4)}` : "—",
     looms: w.looms,
-    status: w.status === "ACTIVE" ? "active" : "inactive",
+    status: (!w.status || String(w.status).toUpperCase() === "ACTIVE") ? "active" : "inactive",
     bg: BG_COLORS[idx % BG_COLORS.length] ?? "#9B6B8A",
   };
 }
@@ -39,11 +40,13 @@ export function useDashboardWeavers() {
     queryKey: ["weavers", "dashboard-preview"],
     queryFn: async () => {
       const res = await weaversApi.list(100);
-      return res.items
-        .filter((w) => w.status === "ACTIVE")
+      const items: BackendWeaver[] = Array.isArray(res) ? res : ((res as any)?.items ?? []);
+      const activeList = items.filter((w) => !w.status || String(w.status).toUpperCase() === "ACTIVE");
+      const listToUse = activeList.length > 0 ? activeList : items;
+      return listToUse
         .slice(0, 4)
         .map((w, i) => backendToDashboardWeaver(w, i));
     },
-    staleTime: 120_000,
+    staleTime: 60_000,
   });
 }

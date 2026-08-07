@@ -222,6 +222,8 @@ interface MaterialIssueContextValue {
   getMaterialSummaryByBatch: (weaverId: string) => BatchMaterialSummary[];
   updateSignatureStatus: (recordId: string, method: "here" | "remote") => void;
   finalizeReceivedWeight: (id: string, finalWeightGrams: number) => void;
+  isError: boolean;
+  error: unknown;
 }
 
 const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(null);
@@ -232,7 +234,7 @@ const RECEIVED_SAREES_KEY = ["materialIssue", "receivedSarees"] as const;
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: issueRecords = [] } = useQuery({
+  const { data: issueRecords = [], isError, error } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
     queryFn: async () => {
       const [issuesRes, weaversRes, loomsRes] = await Promise.all([
@@ -361,7 +363,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     updateSignatureStatusMutation.mutate({ recordId, method });
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
       {children}
     </MaterialIssueContext.Provider>
   );

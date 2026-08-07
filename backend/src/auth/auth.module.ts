@@ -22,7 +22,10 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     JwtStrategy,
     // Registered globally: every route requires a valid JWT unless marked @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    // Registered globally too, but it's a no-op unless a route carries @RequirePermissions(...).
+    // Registered globally too; it's a no-op unless a route carries
+    // @RequirePermissions(...) or @RequireRoles(...). @RequirePermissions
+    // does a real DB lookup against Permission/RolePermission/
+    // UserPermissionOverride (via the global PrismaModule).
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
   exports: [AuthService],

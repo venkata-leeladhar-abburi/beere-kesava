@@ -18,7 +18,7 @@ export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPaymen
   // Real vendor master data (phone, city, contact person) from GET
   // /vendors. BackendVendor has no email field, so email always falls
   // back to "—" here — see the MOCK comment on VENDOR_CONTACTS.
-  const { data: vendorsRes } = useQuery({
+  const { data: vendorsRes, isError: vendorsError } = useQuery({
     queryKey: ["contact-vendor-modal-vendors"],
     queryFn: () => vendorsApi.list(),
   });
@@ -85,6 +85,12 @@ Thank you.`;
         </div>
 
         <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
+
+          {vendorsError && (
+            <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
+              Failed to load live vendor contact details — showing fallback data where available.
+            </div>
+          )}
 
           {/* Vendor selector */}
           <div>

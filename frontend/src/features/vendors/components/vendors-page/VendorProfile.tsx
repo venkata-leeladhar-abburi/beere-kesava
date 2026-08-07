@@ -16,6 +16,7 @@ import { VendorEditFormTab } from "./VendorEditFormTab";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorBillsApi, VendorBillStatus } from "../../../../shared/api/vendor-bills";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -29,7 +30,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   const [orderDateFilter, setOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [payFilter, setPayFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
-  const { data: poRes, isLoading: posLoading } = useQuery({
+  const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
     queryKey: ["vendor-pos", vendor.id],
     queryFn: () => purchaseOrdersApi.list(),
   });
@@ -128,7 +129,8 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     filteredTxns.forEach(t => m.set(t.mode, (m.get(t.mode) || 0) + t.amount));
     return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
   }, [filteredTxns]);
-  const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+  const moneyVisible = useMoneyVisible();
+  const inr = (n: number) => (moneyVisible ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
 
   return (
     <div style={{ padding: "40px 56px" }}>
@@ -158,11 +160,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
           <div style={{ display: "flex", gap: 48, alignItems: "center" }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>TOTAL SPEND</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>₹{realTotalSpend.toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{moneyVisible ? `₹${realTotalSpend.toLocaleString("en-IN")}` : "—"}</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{!moneyVisible ? "—" : vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`}</div>
             </div>
           </div>
         </div>
@@ -200,6 +202,8 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 </div>
                 {posLoading ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
+                ) : posError ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
                 ) : orders.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
                 ) : (
@@ -216,6 +220,8 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
               </div>
               {posLoading ? (
                 <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
+              ) : posError ? (
+                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
               ) : orders.length === 0 ? (
                 <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
               ) : (

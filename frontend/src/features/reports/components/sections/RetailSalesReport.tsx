@@ -6,6 +6,7 @@ import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
+import { batchesApi } from "../../../../shared/api/batches";
 
 function RetailWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
@@ -19,57 +20,69 @@ function RetailWeeklyTooltip({ active, payload, label }: any) {
   );
 }
 
-// MOCK: GET /sales returns per-sale amount and sareeId only — it doesn't
-// join to a design code or saree "type" (Bridal Special / Heavy Zari / etc),
-// so a per-design or per-type revenue split can't be computed from real
-// data yet. Both charts below stay on static demo data.
-const retailDesignSales = [
-  { design: "BKB-045", count: 14 },
-  { design: "BKB-031", count: 11 },
-  { design: "BKB-022", count: 9  },
-  { design: "BKB-038", count: 8  },
-  { design: "BKB-019", count: 6  },
-];
-const retailRevenueDonut = [
-  { name: "Bridal Special",  value: 180000, color: T.royalBurgundy },
-  { name: "Heavy Zari",      value: 112000, color: T.antiqueGold },
-  { name: "Self Brocade",    value: 85000,  color: T.green },
-  { name: "Plain Silk",      value: 43000,  color: T.taupe },
-];
-
 export function RetailSalesReport() {
-  const { data: salesRes, isLoading, isError } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError } = useQuery({
     queryKey: ["reports", "sales"],
     queryFn: () => salesApi.list(),
   });
-  const { data: returnsRes } = useQuery({
+  const { data: returnsRes, isError: returnsError } = useQuery({
     queryKey: ["reports", "sale-returns"],
     queryFn: () => salesApi.listReturns(),
   });
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isError: customersError } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
+  const { data: batchesRes } = useQuery({
+    queryKey: ["reports", "batches-design-type"],
+    queryFn: () => batchesApi.list(),
+  });
 
-  const retailSales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
-  const customerById = new Map((customersRes?.items ?? []).map(c => [c.id, c]));
-  const returnBySaleRef = new Map((returnsRes?.items ?? []).map(r => [r.saleRef, r]));
+  const isError = salesError || returnsError || customersError;
 
-  const retailRows = retailSales
-    .slice()
-    .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
-    .map(s => {
-      const ret = returnBySaleRef.get(s.ref);
-      const customer = s.customerId ? customerById.get(s.customerId) : undefined;
-      return {
-        id: s.ref,
-        date: new Date(s.saleDate).toLocaleDateString("en-IN"),
-        customer: ret ? "RETURN" : (customer?.name ?? "Walk-in Customer"),
-        phone: customer?.phone ?? "—",
-        sarId: s.sareeId,
-        price: ret ? -Number(ret.refundAmount) : Number(s.amount),
-      };
-    });
+  const retailSales = useMemo(() => {
+    return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
+  }, [salesRes]);
+
+  const customerById = useMemo(() => {
+    return new Map((customersRes?.items ?? []).map(c => [c.id, c]));
+  }, [customersRes]);
+
+  const returnBySaleRef = useMemo(() => {
+    return new Map((returnsRes?.items ?? []).map(r => [r.saleRef, r]));
+  }, [returnsRes]);
+
+  const sareeInfoMap = useMemo(() => {
+    const map = new Map<string, { designCode: string | null; sareeTypeCode: string | null }>();
+    if (batchesRes?.items) {
+      for (const b of batchesRes.items) {
+        for (const r of b.rows) {
+          if (r.sareeId) {
+            map.set(r.sareeId, { designCode: r.designCode, sareeTypeCode: r.sareeTypeCode });
+          }
+        }
+      }
+    }
+    return map;
+  }, [batchesRes]);
+
+  const retailRows = useMemo(() => {
+    return retailSales
+      .slice()
+      .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
+      .map(s => {
+        const ret = returnBySaleRef.get(s.ref);
+        const customer = s.customerId ? customerById.get(s.customerId) : undefined;
+        return {
+          id: s.ref,
+          date: new Date(s.saleDate).toLocaleDateString("en-IN"),
+          customer: ret ? "RETURN" : (customer?.name ?? "Walk-in Customer"),
+          phone: customer?.phone ?? "—",
+          sarId: s.sareeId,
+          price: ret ? -Number(ret.refundAmount) : Number(s.amount),
+        };
+      });
+  }, [retailSales, returnBySaleRef, customerById]);
 
   const totalRevenue = retailRows.filter(r => r.price > 0).reduce((s, r) => s + r.price, 0);
   const returnsTotal = retailRows.filter(r => r.price < 0).length;
@@ -91,6 +104,43 @@ export function RetailSalesReport() {
     });
   }, [retailSales]);
 
+  // Top designs sold dynamically from sales & batch saree rows
+  const retailDesignSales = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const sale of retailSales) {
+      const info = sareeInfoMap.get(sale.sareeId);
+      const code = info?.designCode ?? "General Design";
+      counts[code] = (counts[code] || 0) + 1;
+    }
+
+    return Object.entries(counts)
+      .map(([design, count]) => ({ design, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [retailSales, sareeInfoMap]);
+
+  // Dynamic revenue by saree type
+  const retailRevenueDonut = useMemo(() => {
+    const typeMap: Record<string, number> = {};
+    const colors = [T.royalBurgundy, T.antiqueGold, T.green, T.taupe];
+
+    for (const sale of retailSales) {
+      const info = sareeInfoMap.get(sale.sareeId);
+      const type = info?.sareeTypeCode ?? "Silk Saree";
+      typeMap[type] = (typeMap[type] || 0) + Number(sale.amount);
+    }
+
+    const entries = Object.entries(typeMap);
+    if (entries.length === 0) return [];
+    return entries.map(([name, value], i) => ({
+      name,
+      value,
+      color: colors[i % colors.length],
+    }));
+  }, [retailSales, sareeInfoMap]);
+
+  const maxDesignCount = Math.max(1, ...(retailDesignSales.map(d => d.count)));
+
   return (
     <div id="rep-retail" style={{ padding: "32px 40px" }}>
       <TabTitle title="Retail Sales Report"
@@ -103,7 +153,7 @@ export function RetailSalesReport() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Sarees Sold Each Week This Month</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>May 2026 — weekly breakdown</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Current Month — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
@@ -130,39 +180,53 @@ export function RetailSalesReport() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
         <ChartCard title="Which Designs Sold Most at Retail" sub="Top 5 designs by saree count">
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "10px 0" }}>
-            {retailDesignSales.map((d, i) => (
-              <div key={d.design}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
+          {retailDesignSales.length === 0 ? (
+            <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No retail sales recorded yet.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "10px 0" }}>
+              {retailDesignSales.map((d, i) => (
+                <div key={d.design}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
+                  </div>
+                  <AnimBar pct={Math.round((d.count / maxDesignCount) * 100)} color={T.royalBurgundy} height={7} delay={i * 0.07} />
                 </div>
-                <AnimBar pct={Math.round((d.count / retailDesignSales[0].count) * 100)} color={T.royalBurgundy} height={7} delay={i * 0.07} />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </ChartCard>
 
-        <ChartCard title="Revenue by Saree Type" sub="Retail revenue split — May 2026">
-          <ResponsiveContainer width="100%" height={150}>
-            <PieChart>
-              <Pie key="ret-rev-pie" data={retailRevenueDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
-                {retailRevenueDonut.map(e => <Cell key={`ret-rev-cell-${e.name}`} fill={e.color} />)}
-              </Pie>
-              <Tooltip key="ret-rev-tip" formatter={(v: any, n: any) => [`₹${Number(v).toLocaleString("en-IN")}`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 4px" }}>
-            {retailRevenueDonut.map(d => (
-              <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
-                </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{(d.value / 1000).toFixed(0)}k</span>
+        <ChartCard title="Revenue by Saree Type" sub="Retail revenue split">
+          {retailRevenueDonut.length === 0 ? (
+            <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No retail sales recorded yet.
+            </div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={150}>
+                <PieChart>
+                  <Pie key="ret-rev-pie" data={retailRevenueDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
+                    {retailRevenueDonut.map(e => <Cell key={`ret-rev-cell-${e.name}`} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip key="ret-rev-tip" formatter={(v: any, n: any) => [`₹${Number(v).toLocaleString("en-IN")}`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 4px" }}>
+                {retailRevenueDonut.map(d => (
+                  <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
+                    </div>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{d.value.toLocaleString("en-IN")}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </ChartCard>
       </div>
 
@@ -185,16 +249,16 @@ export function RetailSalesReport() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading && (
+                {salesLoading && (
                   <tr><td style={TD} colSpan={6}>Loading…</td></tr>
                 )}
                 {isError && (
                   <tr><td style={{ ...TD, color: T.crimson }} colSpan={6}>Failed to load retail sales.</td></tr>
                 )}
-                {!isLoading && !isError && retailRows.length === 0 && (
+                {!salesLoading && !isError && retailRows.length === 0 && (
                   <tr><td style={TD} colSpan={6}>No retail sales recorded yet.</td></tr>
                 )}
-                {retailRows.map((r, i) => (
+                {!salesLoading && !isError && retailRows.map((r, i) => (
                   <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.price < 0 ? T.crimson : T.green}` }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span></td>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span></td>
@@ -213,4 +277,3 @@ export function RetailSalesReport() {
     </div>
   );
 }
-

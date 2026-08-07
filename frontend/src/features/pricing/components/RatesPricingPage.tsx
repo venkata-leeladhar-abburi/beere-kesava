@@ -58,16 +58,26 @@ export type { JariUnit } from "./rates-pricing/jariUtils";
 // ═══════════════════════════════════════════════════════════════════════════
 export function RatesPricingPage() {
   // Saree types — fetched from the backend; setRates keeps optimistic local edits
-  const [rates, setRates] = useState<SareeTypeRecord[]>(INITIAL_RATES);
+  const [rates, setRates] = useState<SareeTypeRecord[]>([]);
   const [viewCard, setViewCard] = useState<SareeTypeRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  useEffect(() => {
+  function loadRates() {
+    setIsLoading(true);
+    setIsError(false);
     ratesApi
       .list()
       .then((res) => setRates(res.items.map(toRecord)))
-      .catch(() => {
-        // keep the local seed as a fallback if the backend is unreachable
-      });
+      .catch((err: unknown) => {
+        console.error("Failed to load rates", err);
+        setIsError(true);
+      })
+      .finally(() => setIsLoading(false));
+  }
+
+  useEffect(() => {
+    loadRates();
   }, []);
 
   function persistEdit(code: string, updates: Partial<SareeTypeRecord>) {
@@ -139,12 +149,24 @@ export function RatesPricingPage() {
         style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
       >
         <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-          {[
-            { label: "TOTAL SAREE TYPES",       val: String(rates.length),  sub: "All with short codes and rates set",  hi: false, crimson: false, goldVal: false },
-            { label: "LAST RATE CHANGE",         val: "3 days ago",           sub: "Self Brocade · ₹420 → ₹450",        hi: false, crimson: false, goldVal: false },
-            { label: "HIGHEST MAKING CHARGE",    val: "₹1,200",              sub: "Bridal Special · BS-004",            hi: true,  crimson: false, goldVal: true  },
-            { label: "LOWEST MAKING CHARGE",     val: "₹220",               sub: "Light Cotton · LC-005 per saree",    hi: false, crimson: false, goldVal: false },
-          ].map((m, i) => (
+          {(() => {
+            const hasRates = rates.length > 0;
+            const highest = hasRates
+              ? rates.reduce((a, b) => (Number(a.charge) >= Number(b.charge) ? a : b))
+              : null;
+            const lowest = hasRates
+              ? rates.reduce((a, b) => (Number(a.charge) <= Number(b.charge) ? a : b))
+              : null;
+            const mostRecent = hasRates
+              ? rates.find((r) => r.changed === "Just now") ?? rates[0]
+              : null;
+            return [
+              { label: "TOTAL SAREE TYPES", val: String(rates.length), sub: hasRates ? "All with short codes and rates set" : "No saree types configured yet", hi: false, crimson: false, goldVal: false },
+              { label: "LAST RATE CHANGE", val: mostRecent ? mostRecent.changed : "—", sub: mostRecent ? `${mostRecent.type} · ₹${parseInt(mostRecent.charge).toLocaleString("en-IN")}` : "No rate changes yet", hi: false, crimson: false, goldVal: false },
+              { label: "HIGHEST MAKING CHARGE", val: highest ? `₹${parseInt(highest.charge).toLocaleString("en-IN")}` : "—", sub: highest ? `${highest.type} · ${highest.code}` : "No rates configured yet", hi: true, crimson: false, goldVal: true },
+              { label: "LOWEST MAKING CHARGE", val: lowest ? `₹${parseInt(lowest.charge).toLocaleString("en-IN")}` : "—", sub: lowest ? `${lowest.type} · ${lowest.code} per saree` : "No rates configured yet", hi: false, crimson: false, goldVal: false },
+            ];
+          })().map((m, i) => (
             <motion.div
               key={m.label}
               initial={{ opacity: 0, y: 20 }}
@@ -176,13 +198,39 @@ export function RatesPricingPage() {
       </motion.div>
 
       {/* 3. SECTION A — MAKING CHARGE RATES */}
-      <MakingChargesSection
-        rates={rates}
-        setRates={setRates}
-        onView={setViewCard}
-        onPersistEdit={persistEdit}
-        onPersistNew={persistNew}
-      />
+      {isLoading ? (
+        <div style={{ padding: "96px 56px 48px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+          Loading rate catalog…
+        </div>
+      ) : isError ? (
+        <div style={{ padding: "96px 56px 48px" }}>
+          <div style={{
+            fontFamily: F.ui, fontSize: 14, color: T.crimson,
+            background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)",
+            borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center",
+            justifyContent: "space-between", gap: 16,
+          }}>
+            <span>Failed to load the rate catalog. Please check your connection and try again.</span>
+            <button
+              onClick={loadRates}
+              style={{
+                background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 999,
+                padding: "8px 18px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : (
+        <MakingChargesSection
+          rates={rates}
+          setRates={setRates}
+          onView={setViewCard}
+          onPersistEdit={persistEdit}
+          onPersistNew={persistNew}
+        />
+      )}
 
       {/* 4. SECTION B — RAW MATERIAL DEDUCTION RATES */}
       <DeductionRatesSection />

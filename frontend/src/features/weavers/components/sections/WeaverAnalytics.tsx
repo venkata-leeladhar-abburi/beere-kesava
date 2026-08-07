@@ -12,6 +12,7 @@ import { STATUS_MIX_META, CLUSTER_FILLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { resolveAssetUrl } from "../../../../shared/api/uploads";
 
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
@@ -51,7 +52,7 @@ export function WeaverAnalytics() {
         cluster: (w.cluster || w.village || "—").split(",")[0].trim(),
         looms: w.looms,
         status,
-        photo: w.photoUrl || null,
+        photo: resolveAssetUrl(w.photoUrl),
         initials: w.initials,
         bg: AVATAR_PALETTE[i % AVATAR_PALETTE.length],
         produced, passed,

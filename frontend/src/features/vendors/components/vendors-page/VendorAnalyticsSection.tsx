@@ -28,7 +28,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   // ---- Derived analytics -------------------------------------------------
   const num = (s: string) => parseFloat(s.replace(/,/g, "")) || 0;
 
-  const { data: poRes, isLoading: posLoading } = useQuery({
+  const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
     queryKey: ["all-vendor-pos"],
     queryFn: () => purchaseOrdersApi.list(),
   });
@@ -201,7 +201,15 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           </div>
         )}
 
-        {!posLoading && rows.length === 0 && (
+        {!posLoading && posError && (
+          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+            <AlertTriangle size={40} color={T.crimson} style={{ marginBottom: 12 }} />
+            <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>Failed to load vendor purchase orders.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
+          </div>
+        )}
+
+        {!posLoading && !posError && rows.length === 0 && (
           <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
             <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
             <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No vendor purchases recorded in this period.</div>
@@ -209,7 +217,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           </div>
         )}
 
-        {!posLoading && rows.length > 0 && <>
+        {!posLoading && !posError && rows.length > 0 && <>
         {/* Row 1 — spend trend + material mix */}
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
           <div style={cardStyle}>

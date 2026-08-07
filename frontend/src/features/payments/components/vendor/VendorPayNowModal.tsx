@@ -18,6 +18,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
@@ -27,6 +28,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
     const numericAmount = parseFloat(amount);
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) return;
     setSaving(true);
+    setSaveError(null);
     const targetVendorId = vp.vendorId || vp.id;
     try {
       if (targetVendorId) {
@@ -42,6 +44,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
       onSave(numericAmount, firmId, utr);
     } catch (err) {
       console.error("Failed to record vendor payment:", err);
+      setSaveError(err instanceof Error ? err.message : "Failed to record payment. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -143,6 +146,11 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         </div>
 
+        {saveError && (
+          <div style={{ margin: "0 28px", padding: "10px 14px", borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 600 }}>
+            {saveError}
+          </div>
+        )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}` }}>
           <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
           <button onClick={handleSave} disabled={saving} style={{ height: 42, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>

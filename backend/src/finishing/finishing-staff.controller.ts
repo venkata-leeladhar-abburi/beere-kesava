@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateFinishingStaffDto } from "./dto/create-finishing-staff.dto";
@@ -30,5 +30,10 @@ export class FinishingStaffController {
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateFinishingStaffDto) {
     return this.finishingStaffService.update(id, dto);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.finishingStaffService.remove(id);
   }
 }

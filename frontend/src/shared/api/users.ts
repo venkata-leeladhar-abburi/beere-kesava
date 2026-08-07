@@ -21,6 +21,7 @@ export interface BackendUser {
   status: BackendStatus;
   dateAdded: string;
   updatedAt: string;
+  linkedWeaverId: string | null;
 }
 
 interface PaginatedResponse<T> {
@@ -67,6 +68,14 @@ export interface CreateUserPayload {
   email?: string;
   role: BackendRole;
   accessLevel?: BackendAccessLevel;
+  // Only used when role is WEAVER — populates the linked Weaver record.
+  photoUrl?: string;
+  village?: string;
+  cluster?: string;
+  looms?: number;
+  bankName?: string;
+  accountNo?: string;
+  ifsc?: string;
 }
 
 export const usersApi = {
@@ -77,4 +86,6 @@ export const usersApi = {
 
   updateStatus: (id: string, status: BackendStatus) =>
     apiClient.patch<BackendUser>(`/users/${id}`, { status }),
+
+  remove: (id: string) => apiClient.delete<void>(`/users/${id}`),
 };

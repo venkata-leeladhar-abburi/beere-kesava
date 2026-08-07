@@ -17,7 +17,7 @@ import { NewSaleFlow } from "./shop-staff/NewSaleFlow";
 import { ProcessReturn } from "./shop-staff/ProcessReturn";
 import { CustomerProfiles } from "./shop-staff/CustomerProfiles";
 import { SalesReport } from "./shop-staff/SalesReport";
-import { UserProfileModal } from "./shop-staff/UserProfileModal";
+import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { MobileHeader } from "./shop-staff/MobileHeader";
 import { MobileTabBar } from "./shop-staff/MobileTabBar";
 import { DesktopTopNav } from "./shop-staff/desktop/DesktopTopNav";
@@ -268,7 +268,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
       <AnimatePresence>
         {showProfileModal && (
-          <UserProfileModal onClose={() => setShowProfileModal(false)} role="shop" />
+          <UserProfileModal onClose={() => setShowProfileModal(false)} />
         )}
       </AnimatePresence>
     </div>

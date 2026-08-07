@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 
 export interface ReceiptRecord {
   grnId: string;
@@ -56,15 +58,39 @@ function renderMaterialsSummary(summary: string) {
 }
 
 interface ReceiptHistoryTableProps {
-  receiptHistory: ReceiptRecord[];
+  receiptHistory?: ReceiptRecord[];
   compact?: boolean;
 }
 
-export function ReceiptHistoryTable({ receiptHistory, compact = false }: ReceiptHistoryTableProps) {
+export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compact = false }: ReceiptHistoryTableProps) {
   const [historySearch, setHistorySearch] = useState("");
   const [historyPage, setHistoryPage] = useState(1);
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const PAGE_SIZE = 10;
+
+  const { data: rawGrns } = useQuery({
+    queryKey: ["grn-receipts"],
+    queryFn: () => rawMaterialsApi.listGrns(),
+  });
+
+  const receiptHistory = useMemo<ReceiptRecord[]>(() => {
+    if (rawGrns?.items && rawGrns.items.length > 0) {
+      return rawGrns.items.map(g => {
+        const anyRejected = g.items.some(i => Number(i.rejectedQuantity ?? 0) > 0);
+        return {
+          grnId: g.id,
+          poRef: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+          vendor: g.supplierName ?? "Vendor",
+          firmName: g.firm?.firmName ?? "—",
+          dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+          materialsSummary: g.items.map(i => `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${i.quantity} ${i.quantity > 10 ? "kg" : "Buns"})`).join(", "),
+          receivedBy: "—",
+          status: (anyRejected ? "Short" : "Match") as ReceiptRecord["status"],
+        };
+      });
+    }
+    return propReceiptHistory ?? [];
+  }, [rawGrns, propReceiptHistory]);
 
   const filteredHistory = receiptHistory
     .slice(0, 20)

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
+import { ActiveStatus, DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 
@@ -131,7 +131,95 @@ export class ReportsService {
     };
   }
 
-  // Scheduled Reports
+  async getDashboardMetrics() {
+    const [
+      activeWeavers,
+      totalSareesProduced,
+      invoiceTotals,
+      overdueCount,
+      readyForSale,
+      dispatchedCount,
+    ] = await Promise.all([
+      this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.count({ where: { sareeId: { not: null } } }),
+      this.prisma.invoice.aggregate({
+        where: { status: { in: [InvoiceStatus.PENDING, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE] } },
+        _sum: { total: true, paid: true },
+      }),
+      this.prisma.invoice.count({ where: { status: InvoiceStatus.OVERDUE } }),
+      this.prisma.batchSareeRow.count({ where: { qcPassed: true } }),
+      this.prisma.dispatchRecord.count(),
+    ]);
+
+    const totalInvoiced = Number(invoiceTotals._sum.total ?? 0);
+    const totalPaid = Number(invoiceTotals._sum.paid ?? 0);
+
+    return {
+      activeWeavers,
+      totalSareesProduced,
+      totalOutstanding: Math.max(0, totalInvoiced - totalPaid),
+      overdueCount,
+      readyForSale,
+      dispatchedCount,
+    };
+  }
+
+  async getProductionAnalytics() {
+    const [
+      activeBatchCount,
+      activeBatchWeavers,
+      activeWeaversTotal,
+      activeBatchDesigns,
+      designLibraryTotal,
+      overdueInvoiceCount,
+      invoiceTotals,
+      invoicePaymentTotals,
+      rawMaterialStockTotal,
+      dispatchTotal,
+      inStockSareesTotal,
+    ] = await Promise.all([
+      this.prisma.batch.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.findMany({
+        where: { batch: { status: "ACTIVE" }, weaverId: { not: null } },
+        select: { weaverId: true },
+        distinct: ["weaverId"],
+      }),
+      this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.findMany({
+        where: { designCode: { not: null } },
+        select: { designCode: true },
+        distinct: ["designCode"],
+      }),
+      this.prisma.designLibrary.count(),
+      this.prisma.invoice.count({ where: { status: InvoiceStatus.OVERDUE } }),
+      this.prisma.invoice.aggregate({ _sum: { total: true, paid: true } }),
+      this.prisma.invoicePayment.aggregate({ _sum: { amount: true } }),
+      this.prisma.rawMaterialStock.aggregate({ _sum: { currentStock: true } }),
+      this.prisma.dispatchRecord.count(),
+      this.prisma.batchSareeRow.count({ where: { qcPassed: true } }),
+    ]);
+
+    const totalInvoiced = Number(invoiceTotals._sum.total ?? 0);
+    const totalPaid = Number(invoicePaymentTotals._sum.amount ?? 0);
+    const paymentsCollectedPct =
+      totalInvoiced > 0 ? Math.round((totalPaid / totalInvoiced) * 100) : 0;
+
+    const weaversWorking = Math.max(activeBatchWeavers.length, activeWeaversTotal);
+    const designCodes = Math.max(activeBatchDesigns.length, designLibraryTotal);
+    const rawMaterialStockKg = Number(rawMaterialStockTotal._sum.currentStock ?? 0);
+
+    return {
+      activeBatchesCount: activeBatchCount,
+      weaversWorkingCount: weaversWorking,
+      designCodesCount: designCodes,
+      overdueInvoicesCount: overdueInvoiceCount,
+      paymentsCollectedPct,
+      rawMaterialStockKg,
+      dispatchCount: dispatchTotal,
+      inStockSareesCount: inStockSareesTotal,
+    };
+  }
+
   async listSchedules() {
     const items = await this.prisma.scheduledReport.findMany({
       orderBy: { createdAt: "desc" },

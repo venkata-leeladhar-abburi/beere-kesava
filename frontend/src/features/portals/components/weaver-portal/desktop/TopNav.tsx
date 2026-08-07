@@ -3,6 +3,11 @@ import { Bell, ChevronLeft, LogOut, UserRound } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, Tab5 } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
+import { useAuth } from "../../../../../contexts/AuthContext";
+
+function initialsOf(name: string): string {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
+}
 
 export function TopNav({
   isTablet, NAV, active, showNotifs, setActive, setShowNotifs,
@@ -24,6 +29,11 @@ export function TopNav({
   selectRole: (role: any) => void;
   navigate: (path: string) => void;
 }) {
+  const { user } = useAuth();
+  const name = user?.name || "—";
+  const initials = initialsOf(name);
+  const subtitle = user?.empId ? `${user.empId} · Handloom` : "Handloom";
+
   return (
     <div style={{ background: "#FFF", borderBottom: `1px solid ${C.bdr}`, position: "sticky" as const, top: 0, zIndex: 200, boxShadow: "0 1px 10px rgba(107,26,42,0.07)" }}>
       <div style={{ maxWidth: 1440, margin: "0 auto", padding: isTablet ? "0 24px" : "0 48px", display: "flex", alignItems: "center", height: 64, gap: isTablet ? 16 : 28 }}>
@@ -87,11 +97,11 @@ export function TopNav({
               }
             >
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>RK</span>
+                <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initials}</span>
               </div>
               <div style={{ textAlign: "left" as const }}>
-                <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Ravi Kumar</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>WVR-014 · Handloom</div>
+                <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>{name}</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{subtitle}</div>
               </div>
               <ChevronLeft size={13} color={C.muted} style={{ transform: showProfile ? "rotate(-90deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
             </Button>
@@ -99,11 +109,11 @@ export function TopNav({
               <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFF", borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
                 <div style={{ padding: "16px 18px", background: "rgba(107,26,42,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(107,26,42,0.28)" }}>
-                    <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>RK</span>
+                    <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
                   </div>
                   <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Ravi Kumar</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>

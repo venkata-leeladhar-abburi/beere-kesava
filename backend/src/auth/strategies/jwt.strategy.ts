@@ -1,13 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { UserRole } from "../../generated/prisma/client";
+import { UserRole, AccessLevel } from "../../generated/prisma/client";
 
 export interface JwtPayload {
   sub: string | undefined;
   mobile: string;
   role: UserRole;
   name: string;
+  accessLevel?: AccessLevel;
 }
 
 export interface AuthenticatedUser {
@@ -15,6 +16,7 @@ export interface AuthenticatedUser {
   mobile: string;
   role: UserRole;
   name: string;
+  accessLevel?: AccessLevel;
 }
 
 @Injectable()
@@ -34,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       mobile: payload.mobile,
       role: payload.role,
       name: payload.name,
+      accessLevel: payload.accessLevel,
     };
   }
 }

@@ -9,6 +9,7 @@ import { WEAVERS } from "./data";
 import { ActionDialog } from "./common/primitives";
 import { PageHeader, StatsStrip, WeaverStatTile } from "./sections/PageHeaderAndStats";
 import { weaversApi } from "../../../shared/api/weavers";
+import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { WarpRequestsSection } from "./sections/WarpRequestsSection";
 import { AllWeaversControls } from "./sections/WeaverDirectoryControls";
 import { WeaverDirectory } from "./sections/WeaverTableAndDirectory";
@@ -68,7 +69,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
         status: "idle" as const,
         batch: "",
         design: "—",
-        photo: navWeaver.photoUrl || null,
+        photo: resolveAssetUrl(navWeaver.photoUrl),
         thisMonth: 0,
         passRate: 0,
         totalEver: 0,

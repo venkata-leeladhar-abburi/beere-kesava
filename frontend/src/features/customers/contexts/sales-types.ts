@@ -94,4 +94,6 @@ export interface SalesContextValue {
   purchases: PurchaseSummary[];
   recordSale: (sareeId: string, sale: SaleInfo) => void;
   recordReturn: (sareeId: string, ret: ReturnInfo) => void;
+  isError: boolean;
+  error: unknown;
 }

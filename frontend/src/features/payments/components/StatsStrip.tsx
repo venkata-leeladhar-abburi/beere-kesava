@@ -7,27 +7,31 @@ import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../..
 import { invoicesApi } from "../../../shared/api/invoices";
 import { EASE, F, T } from "../theme";
 import { AnimCount } from "./common/motion";
+import { useMoneyVisible } from "../../../shared/ui/MoneyValue";
 
 export function StatsStrip() {
   // Same live data sources as PaymentAnalyticsSection.tsx: weaver/vendor/
   // supplier payments and invoices, all fetched all-time (the backend has
   // no "this month" filter on these endpoints).
-  const { data: weaverPaymentsRes } = useQuery({
+  const { data: weaverPaymentsRes, isLoading: weaverPaymentsLoading, isError: weaverPaymentsError } = useQuery({
     queryKey: ["analytics-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
   });
-  const { data: vendorPaymentsRes } = useQuery({
+  const { data: vendorPaymentsRes, isLoading: vendorPaymentsLoading, isError: vendorPaymentsError } = useQuery({
     queryKey: ["analytics-vendor-payments"],
     queryFn: () => vendorPaymentsApi.list(),
   });
-  const { data: supplierPaymentsRes } = useQuery({
+  const { data: supplierPaymentsRes, isLoading: supplierPaymentsLoading, isError: supplierPaymentsError } = useQuery({
     queryKey: ["analytics-supplier-payments"],
     queryFn: () => supplierPaymentsApi.list(),
   });
-  const { data: invoicesRes } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: ["analytics-invoices"],
     queryFn: () => invoicesApi.list(),
   });
+
+  const isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
+  const isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
 
   const paidToWeavers = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amountPaid), 0);
   const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
@@ -40,7 +44,8 @@ export function StatsStrip() {
     return collectedFromCustomers - totalVendorPayments - supplierPaid - paidToWeavers;
   }, [supplierPaymentsRes, collectedFromCustomers, totalVendorPayments, paidToWeavers]);
 
-  const fmt = (n: number) => `${n < 0 ? "−" : ""}₹${Math.abs(n).toLocaleString("en-IN")}`;
+  const moneyVisible = useMoneyVisible();
+  const fmt = (n: number) => (moneyVisible ? `${n < 0 ? "−" : ""}₹${Math.abs(n).toLocaleString("en-IN")}` : "—");
 
   const STATS = [
     {
@@ -96,7 +101,16 @@ export function StatsStrip() {
         overflow: "hidden",
         minHeight: 140,
       }}>
-        {STATS.map((s, i) => (
+        {isLoading ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "28px 22px" }}>
+            <span style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(245,232,208,0.85)" }}>Loading payment stats…</span>
+          </div>
+        ) : isError ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "28px 22px" }}>
+            <AlertTriangle size={20} color="#F47B72" />
+            <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#F47B72" }}>Failed to load payment stats. Please retry.</span>
+          </div>
+        ) : STATS.map((s, i) => (
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 20 }}

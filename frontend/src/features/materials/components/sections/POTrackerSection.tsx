@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { usePO, PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";
-import { PO_STATUS_CFG, MAT_TAG } from "../data";
+import { PO_STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { POFilter } from "../types";
 import { FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
@@ -19,7 +19,7 @@ export function POTrackerSection({
   onNavigate?: (tab: string, ctx?: any) => void;
 }) {
   const { px } = useContext(MobileCtx);
-  const { pos } = usePO();
+  const { pos, isError } = usePO();
   const [filter, setFilter] = useState<POFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
@@ -74,7 +74,11 @@ export function POTrackerSection({
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {isError ? (
+        <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid rgba(192,57,43,0.25)`, padding: "32px 24px", textAlign: "center" }}>
+          <div style={{ fontFamily: F.ui, fontSize: 14, color: "#C0392B", fontWeight: 700 }}>Failed to load purchase orders.</div>
+        </div>
+      ) : filtered.length === 0 ? (
         <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "32px 24px", textAlign: "center" }}>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No purchase orders in this category.</div>
         </div>

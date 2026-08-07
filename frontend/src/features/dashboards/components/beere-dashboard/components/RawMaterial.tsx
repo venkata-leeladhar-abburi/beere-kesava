@@ -1,18 +1,42 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'motion/react';
 import { T, F, EASE } from '../theme';
 import { MATS } from '../data.tsx';
 import { SectionHeader, FadeUp } from '../ui';
+import { rawMaterialsApi } from '../../../../../shared/api/rawMaterials';
 
-// NOTE: raw-material stock (Warp/Resham/Jari kg-on-hand, %-capacity) has no
-// backend module — same documented gap as the Materials feature elsewhere in
-// this sweep. MATS stays static mock data; do not invent numbers.
 export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
+    queryKey: ["raw-material-stock-list"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const stockItems = stockRes?.items ?? [];
+
+  const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+
+  const mats = MATS.map(m => {
+    if (m.name === "Warp") return { ...m, stock: `${warpStock} kg in stock` };
+    if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg in stock` };
+    if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns in stock` };
+    return m;
+  });
+
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" onAction={() => onNavigate("Materials")} />
+      {stockError && (
+        <div style={{ padding: "12px 16px", marginBottom: 20, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
+          Failed to load raw material stock.
+        </div>
+      )}
+      {stockLoading && (
+        <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock…</div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
-        {MATS.map((m, i) => (
+        {mats.map((m, i) => (
           <FadeUp key={m.name} delay={i * 0.1} style={{ height: "100%" }}>
             <motion.div
               onClick={() => onNavigate("Materials")}

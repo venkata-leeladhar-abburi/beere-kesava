@@ -31,7 +31,7 @@ export class PurchaseOrdersService {
       data: {
         poNumber,
         vendorId: dto.vendorId,
-        deliveryDate: dto.deliveryDate,
+        deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : undefined,
         totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,
         items: dto.items?.length

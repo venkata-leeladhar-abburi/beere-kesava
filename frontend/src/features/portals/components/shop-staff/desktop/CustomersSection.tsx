@@ -32,6 +32,10 @@ export function CustomersSection({
     }));
   }, [custRes]);
 
+  const totalCustomers = customers.length;
+  const regularCustomers = customers.filter(c => c.regular).length;
+  const topCustomer = customers[0]?.name ?? "—";
+
   return (
     <>
       <ShopDesktopHero
@@ -40,12 +44,12 @@ export function CustomersSection({
         titleMain="Customer Profiles"
         titleSub="& Purchase History"
         description="All retail customers — browse their history, spending patterns, and contact details. Regular customers are starred for easy identification."
-        pills={[{ text: "1,284 Total Customers" }, { text: "8 New This Month", color: C.gold }, ...(canSeePrices ? [{ text: "₹1,84,000 Top Spender" }] : [])]}
+        pills={[{ text: `${totalCustomers} Total Customers` }, { text: `${regularCustomers} Regular Customers`, color: C.gold }]}
         stats={[
-          { label: "TOTAL CUSTOMERS", val: "1,284", sub: "All time" },
-          { label: "NEW THIS MONTH", val: "8", sub: "June 2026", highlight: true },
-          ...(canSeePrices ? [{ label: "TOP SPENDER", val: "₹1,84,000", sub: "Smt. Annapurna Devi" }] : []),
-          { label: "REGULAR CUSTOMERS", val: "3", sub: "Shown below (starred)" },
+          { label: "TOTAL CUSTOMERS", val: String(totalCustomers), sub: "Registered in system" },
+          { label: "REGULAR CUSTOMERS", val: String(regularCustomers), sub: "Wholesale & repeat buyers", highlight: true },
+          ...(canSeePrices ? [{ label: "RECENT SIGNUP", val: topCustomer, sub: "Latest customer" }] : []),
+          { label: "PORTAL STATS", val: "Active", sub: "Live customer records", crimson: true },
         ]}
         bgUrl={SILK_BG}
       />

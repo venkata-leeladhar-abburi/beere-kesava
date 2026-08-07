@@ -1,14 +1,63 @@
-import { useState } from "react";
-import { Download, Lock, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, Lock } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
-import { HISTORY } from "./staticData";
+import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
+
+interface HistoryRow {
+  date: string;
+  by: string;
+  what: string;
+  old: string;
+  next: string;
+  reason: string;
+}
+
+function toHistoryRow(req: BackendRateChangeRequest): HistoryRow {
+  const dateSrc = req.decidedAt ?? req.createdAt;
+  const date = new Date(dateSrc).toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+  }).replace(",", " ·");
+  const by = req.decidedBy ? `${req.decidedBy.firstName} ${req.decidedBy.lastName}` : `${req.requestedBy.firstName} ${req.requestedBy.lastName}`;
+  const status = req.status === "REJECTED" ? " (Rejected)" : "";
+  return {
+    date,
+    by,
+    what: `${req.sareeType?.type ?? req.sareeTypeCode} Making Charge${status}`,
+    old: `₹${Number(req.oldMakingCharge).toLocaleString("en-IN")}/saree`,
+    next: `₹${Number(req.newMakingCharge).toLocaleString("en-IN")}/saree`,
+    reason: req.reason ?? "—",
+  };
+}
 
 export function RateHistorySection() {
-  const [histPage, setHistPage] = useState(1);
   const [histDateFilter, setHistDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  function loadHistory() {
+    setIsLoading(true);
+    setIsError(false);
+    Promise.all([rateRequestsApi.list("APPROVED"), rateRequestsApi.list("REJECTED")])
+      .then(([approved, rejected]) => {
+        const all = [...approved.items, ...rejected.items].sort(
+          (a, b) => new Date(b.decidedAt ?? b.createdAt).getTime() - new Date(a.decidedAt ?? a.createdAt).getTime(),
+        );
+        setHistory(all.map(toHistoryRow));
+      })
+      .catch((err: unknown) => {
+        console.error("Failed to load rate change history", err);
+        setIsError(true);
+      })
+      .finally(() => setIsLoading(false));
+  }
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   return (
     <div style={{ padding: "48px 56px" }}>
@@ -23,6 +72,27 @@ export function RateHistorySection() {
 
       <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
 
+      {isLoading ? (
+        <div style={{ ...cardStyle, padding: "32px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+          Loading rate change history…
+        </div>
+      ) : isError ? (
+        <div style={{
+          ...cardStyle, padding: "16px 20px", display: "flex", alignItems: "center",
+          justifyContent: "space-between", gap: 16, borderLeft: `4px solid ${T.crimson}`,
+        }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load rate change history.</span>
+          <button
+            onClick={loadHistory}
+            style={{
+              background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 999,
+              padding: "7px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
       <div style={cardStyle}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -33,7 +103,14 @@ export function RateHistorySection() {
             </tr>
           </thead>
           <tbody>
-            {HISTORY.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).map((row, i) => (
+            {history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ ...tdStyle, textAlign: "center", padding: "32px 16px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>
+                  No rate changes recorded yet.
+                </td>
+              </tr>
+            )}
+            {history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).map((row, i) => (
               <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(110,15,45,0.015)" }}>
                 <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{row.date}</td>
                 <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{row.by}</td>
@@ -58,46 +135,12 @@ export function RateHistorySection() {
             </span>
           </div>
 
-          {/* Pagination */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button
-              onClick={() => setHistPage(p => Math.max(1, p - 1))}
-              style={{
-                background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 12,
-                display: "flex", alignItems: "center", gap: 4,
-              }}
-            >
-              <ChevronLeft size={13} /> Previous
-            </button>
-            {[1, 2, 3].map(p => (
-              <button
-                key={p}
-                onClick={() => setHistPage(p)}
-                style={{
-                  width: 30, height: 30, borderRadius: 8, border: "none",
-                  background: histPage === p ? T.royalBurgundy : "transparent",
-                  color: histPage === p ? "#fff" : T.taupe,
-                  fontFamily: F.ui, fontSize: 13, cursor: "pointer",
-                  fontWeight: histPage === p ? 600 : 400,
-                }}
-              >
-                {p}
-              </button>
-            ))}
-            <button
-              onClick={() => setHistPage(p => Math.min(3, p + 1))}
-              style={{
-                background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 12,
-                display: "flex", alignItems: "center", gap: 4,
-              }}
-            >
-              Next <ChevronRight size={13} />
-            </button>
-          </div>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+            {history.length} {history.length === 1 ? "entry" : "entries"}
+          </span>
         </div>
       </div>
+      )}
     </div>
   );
 }

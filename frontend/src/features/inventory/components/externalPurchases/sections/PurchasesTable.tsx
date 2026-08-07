@@ -201,7 +201,7 @@ export function PurchasesTable({
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={13}
+                  colSpan={14}
                   style={{
                     padding: "40px 16px",
                     textAlign: "center",
@@ -210,7 +210,7 @@ export function PurchasesTable({
                     color: T.taupe,
                   }}
                 >
-                  No purchases match your filters.
+                  {totalCount === 0 ? "No external purchases recorded yet." : "No purchases match your filters."}
                 </td>
               </tr>
             )}

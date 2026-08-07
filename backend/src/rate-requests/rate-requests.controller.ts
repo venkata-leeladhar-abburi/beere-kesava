@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
-import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole, RateRequestStatus } from "../generated/prisma/client";
 import { RateRequestsService, CreateRateRequestDto } from "./rate-requests.service";
 
@@ -22,13 +23,13 @@ export class RateRequestsController {
   }
 
   @Patch(":id/approve")
-  @AdminOnly()
+  @RequirePermissions("rate_requests.approve")
   approve(@Param("id") id: string, @Body("decidedById") decidedById?: string) {
     return this.rateRequestsService.approve(id, decidedById);
   }
 
   @Patch(":id/reject")
-  @AdminOnly()
+  @RequirePermissions("rate_requests.reject")
   reject(
     @Param("id") id: string,
     @Body("decidedById") decidedById?: string,

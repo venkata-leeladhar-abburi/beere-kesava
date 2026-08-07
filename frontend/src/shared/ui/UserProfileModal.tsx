@@ -1,12 +1,49 @@
 import React from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
-import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { useAuth } from "../../contexts/AuthContext";
+import { BACKEND_TO_FRONTEND_ROLE, BackendRole } from "../api/users";
+import { IconButton, Button } from "./primitives";
 
-export function UserProfileModal({ onClose, role }: { onClose: () => void; role: "admin" | "superadmin" | "shop" | "weaver" }) {
+const ROLE_TITLE: Record<string, string> = {
+  Admin: "Store Administrator",
+  "Worker Staff": "Worker Staff",
+  "Finishing Staff": "Finishing Staff",
+  Weaver: "Master Handloom Weaver",
+  "Shop Staff": "Shop Showroom Staff",
+  Accountant: "Accountant",
+};
+
+function formatJoined(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+/**
+ * Single real profile modal, driven entirely by the authenticated user's
+ * actual backend data (see AuthContext / POST /auth/verify-otp) — no
+ * per-role mock name/email/phone/join-date. Fields with no real value show
+ * "—" rather than a fabricated placeholder. Shared across every
+ * portal/dashboard's profile button; there is only one of these now.
+ */
+export function UserProfileModal({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
+
+  const name = user?.name || "—";
+  const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const frontendRole = user?.role ? (BACKEND_TO_FRONTEND_ROLE[user.role as BackendRole] ?? user.role) : "—";
+  const joined = formatJoined(user?.dateAdded);
+
+  const rows: { label: string; value: string }[] = [
+    { label: "Email Address", value: user?.email || "—" },
+    { label: "Phone Number", value: user?.mobile ? `+91 ${user.mobile}` : "—" },
+    ...(joined ? [{ label: "Joined Date", value: joined }] : []),
+    ...(user?.accessLevel && frontendRole === "Admin" ? [{ label: "Access Level", value: user.accessLevel === "FULL_ACCESS" ? "Full Access" : "Semi Access" }] : []),
+  ];
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", padding: 20 }}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: `1px solid rgba(139,26,46,0.12)`, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ width: "100%", maxWidth: 440, background: "#FFFDF9", borderRadius: 24, overflow: "hidden", border: "1px solid rgba(139,26,46,0.12)", boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
         {/* Banner */}
         <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
           <IconButton
@@ -19,37 +56,31 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
 
           <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
             <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, color: "#FFF" }}>
-              {role === "admin" ? "AD" : role === "superadmin" ? "SA" : role === "shop" ? "PS" : "RK"}
+              {initials}
             </span>
           </div>
 
           <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>
-            {role === "admin" ? "Ravi Shankar" : role === "superadmin" ? "Venkata Leeladhar Abburi" : role === "shop" ? "Priya Sharma" : "Ravi Kumar"}
+            {name}
           </div>
 
           <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
-            {role === "admin" ? "ADM-001" : role === "superadmin" ? "SADM-001" : role === "shop" ? "SS-001" : "WV-001 / WVR-014"}
+            {user?.empId || "—"}
           </div>
 
           <div style={{ marginTop: 8, display: "inline-block", background: "rgba(196,146,58,0.22)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "4px 14px" }}>
             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#845E04" }}>
-              {role === "admin" ? "Store Administrator" : role === "superadmin" ? "Super Administrator" : role === "shop" ? "Showroom Sales Staff" : "Master Handloom Weaver"}
+              {ROLE_TITLE[frontendRole] ?? frontendRole}
             </span>
           </div>
         </div>
 
         {/* Details List */}
         <div style={{ padding: "24px 24px" }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#69635E", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Work Details</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "#69635E", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Contact & Account Details</div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {[
-              { label: "Email Address", value: role === "admin" ? "admin@beerekesava.com" : role === "superadmin" ? "leeladhar@beerekesava.com" : role === "shop" ? "priya.sharma@beerekesava.com" : "ravikumar.wvr@gmail.com" },
-              { label: "Phone Number", value: role === "admin" ? "+91 94405 88991" : role === "superadmin" ? "+91 98480 22338" : role === "shop" ? "+91 99088 12345" : "+91 99088 77665" },
-              { label: "Factory/Office", value: role === "shop" ? "Dharmavaram Main Showroom, AP" : "Dharmavaram Factory Outlet, AP" },
-              { label: "Joined Date", value: role === "admin" ? "January 2019" : role === "superadmin" ? "June 2012" : role === "shop" ? "October 2022" : "March 2018" },
-              ...(role === "weaver" ? [{ label: "Loom Assignment", value: "Loom 2 & Loom 5 (Active)" }] : [])
-            ].map(item => (
+            {rows.map(item => (
               <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(139,26,46,0.06)", paddingBottom: 10 }}>
                 <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#69635E" }}>{item.label}</span>
                 <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "#1A0A0F", textAlign: "right" as const }}>{item.value}</span>
@@ -58,10 +89,7 @@ export function UserProfileModal({ onClose, role }: { onClose: () => void; role:
           </div>
 
           <div style={{ marginTop: 24, textAlign: "center" as const }}>
-            <Button
-              onClick={onClose}
-              className="bg-[#6B1A2A] text-white rounded-full px-6 shadow-[0_4px_14px_rgba(107,26,42,0.2)]"
-            >
+            <Button onClick={onClose} className="bg-[#6B1A2A] text-white rounded-full px-6 shadow-[0_4px_14px_rgba(107,26,42,0.2)]">
               Close Profile
             </Button>
           </div>

@@ -10,18 +10,6 @@ import { customersApi, BackendCustomer } from "../../../../shared/api/customers"
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { salesApi } from "../../../../shared/api/sales";
 
-// MOCK: telling "new" vs "returning" customers apart month-by-month needs a
-// full purchase-history timeline per customer that no backend endpoint
-// currently aggregates (GET /sales and GET /invoices don't expose a
-// per-customer "first ever purchase" marker). Stays on static demo data.
-const custMonthly = [
-  { month: "Jan", newC: 8,  ret: 22 },
-  { month: "Feb", newC: 11, ret: 24 },
-  { month: "Mar", newC: 9,  ret: 26 },
-  { month: "Apr", newC: 14, ret: 28 },
-  { month: "May", newC: 12, ret: 26 },
-];
-
 interface CustomerRow {
   id: string;
   name: string;
@@ -65,18 +53,19 @@ export function CustomerReport() {
   const [filter, setFilter] = useState("All Customers");
   const filters = ["All Customers", "Retail Only", "Wholesale Only", "Has Outstanding Dues", "No Purchases This Month"];
 
-  const { data: customersRes, isLoading, isError } = useQuery({
+  const { data: customersRes, isLoading, isError: customersError } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
-  const { data: invoicesRes } = useQuery({
+  const { data: invoicesRes, isError: invoicesError } = useQuery({
     queryKey: ["reports", "invoices"],
     queryFn: () => invoicesApi.list(),
   });
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isError: salesError } = useQuery({
     queryKey: ["reports", "sales"],
     queryFn: () => salesApi.list(),
   });
+  const isError = customersError || invoicesError || salesError;
 
   const custRows: CustomerRow[] = useMemo(() => {
     const customers = customersRes?.items ?? [];
@@ -110,6 +99,30 @@ export function CustomerReport() {
     });
   }, [customersRes, invoicesRes, salesRes]);
 
+  // Dynamic monthly New vs Returning customer acquisition
+  const custMonthly = useMemo(() => {
+    const customers = customersRes?.items ?? [];
+    const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const newMap: Record<string, number> = {};
+    const retMap: Record<string, number> = {};
+
+    for (const c of customers) {
+      const d = new Date(c.createdAt);
+      if (!isNaN(d.getTime())) {
+        const m = d.toLocaleString("en-US", { month: "short" });
+        newMap[m] = (newMap[m] || 0) + 1;
+      }
+    }
+
+    const activeMonths = monthsOrder.filter(m => newMap[m] !== undefined);
+    if (activeMonths.length === 0) return [];
+    return activeMonths.map(m => ({
+      month: m,
+      newC: newMap[m] || 0,
+      ret: retMap[m] || 0,
+    }));
+  }, [customersRes]);
+
   const topCustomers = [...custRows].sort((a, b) => b.spend - a.spend).slice(0, 5).map(c => ({ name: c.name, total: c.spend }));
   const maxTop = topCustomers[0]?.total || 1;
   const wholesaleSpend = custRows.filter(c => c.type === "Wholesale").reduce((s, c) => s + c.spend, 0);
@@ -135,14 +148,17 @@ export function CustomerReport() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
         <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
-            {topCustomers.length === 0 && (
+            {isError && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "8px 0" }}>Failed to load customer purchases.</div>
+            )}
+            {!isError && topCustomers.length === 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>No customer purchases recorded yet.</div>
             )}
-            {[...topCustomers].sort((a, b) => b.total - a.total).map((c, i) => (
+            {!isError && [...topCustomers].sort((a, b) => b.total - a.total).map((c, i) => (
               <div key={c.name}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>₹{(c.total / 100000).toFixed(1)}L</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>₹{c.total.toLocaleString("en-IN")}</span>
                 </div>
                 <AnimBar pct={Math.round((c.total / maxTop) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
               </div>
@@ -150,20 +166,30 @@ export function CustomerReport() {
           </div>
         </ChartCard>
 
-        <ChartCard title="New vs Returning Customers Each Month" sub="Last 5 months">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={custMonthly} barGap={4}>
-              <CartesianGrid key="cust-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
-              <Tooltip key="cust-tip" content={<ChartTip suffix=" customers" />} />
-              <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
-              <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={T.antiqueGold}   radius={[4,4,0,0] as any} opacity={0.7} />
-            </BarChart>
-          </ResponsiveContainer>
+        <ChartCard title="New vs Returning Customers Each Month" sub="Monthly customer growth">
+          {custMonthly.length === 0 ? (
+            <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No customer records yet.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={custMonthly} barGap={4}>
+                <CartesianGrid key="cust-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
+                <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
+                <Tooltip key="cust-tip" content={<ChartTip suffix=" customers" />} />
+                <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
+                <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={T.antiqueGold}   radius={[4,4,0,0] as any} opacity={0.7} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </ChartCard>
 
-        <ChartCard title="Retail vs Wholesale Revenue Split" sub="Revenue contribution — May 2026">
+        <ChartCard title="Retail vs Wholesale Revenue Split" sub="Revenue contribution">
+          {isError ? (
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, padding: "16px 8px" }}>Failed to load revenue split.</div>
+          ) : (
+          <>
           <ResponsiveContainer width="100%" height={150}>
             <PieChart>
               <Pie key="cust-split-pie" data={custSplitDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
@@ -182,10 +208,12 @@ export function CustomerReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{(d.value / 100000).toFixed(1)}L</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{d.value.toLocaleString("en-IN")}</span>
               </div>
             ))}
           </div>
+          </>
+          )}
         </ChartCard>
       </div>
 
@@ -298,4 +326,3 @@ export function CustomerReport() {
     </div>
   );
 }
-

@@ -6,7 +6,7 @@ import { SectionTitle } from "./theme";
 import { FileText, Check } from "lucide-react";
 
 
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
@@ -18,6 +18,20 @@ import {
 
 import { C, F, TEAL, Card, Btn, Chip, useCanSeePrices } from './theme';
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { useQuery } from "@tanstack/react-query";
+import { salesApi } from "../../../../shared/api/sales";
+import { customersApi } from "../../../../shared/api/customers";
+
+function dateLabel(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+}
+
+function timeLabel(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
 function SalesReport() {
   const canSeePrices = useCanSeePrices();
   const [period, setPeriod] = useState<"today" | "week" | "month" | "3months">("today");
@@ -27,35 +41,76 @@ function SalesReport() {
   const [exportFormat, setExportFormat] = useState<"pdf" | "csv" | "excel">("pdf");
   const [exportDone, setExportDone] = useState(false);
 
-  const dailySales = [
-    { time: "11:42 AM", id: "PADMA-L1-004", design: "BKB-045", customer: "Smt. Annapurna", pay: "UPI", amt: "₹8,500", src: "factory" },
-    { time: "10:30 AM", id: "RAVI-L2-008", design: "BKB-031", customer: "Sri Ramesh K.", pay: "Card", amt: "₹12,000", src: "factory" },
-    { time: "9:45 AM", id: "BKB-L3-002", design: "BKB-022", customer: "Smt. Lakshmi", pay: "Cash", amt: "₹5,500", src: "factory" },
-    { time: "9:20 AM", id: "EXT-RAVI-001", design: "External", customer: "Smt. Padmavathi", pay: "UPI", amt: "₹6,200", src: "external" },
-    { time: "9:05 AM", id: "PADMA-L1-003", design: "BKB-045", customer: "Smt. Saraswathi", pay: "Cash", amt: "₹8,500", src: "factory" },
-  ];
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-report"],
+    queryFn: () => salesApi.list(100),
+  });
 
-  const totalToday = dailySales.reduce((sum, s) => sum + Number(s.amt.replace(/[₹,]/g, "")), 0);
+  const { data: returnsRes } = useQuery({
+    queryKey: ["returns-list-report"],
+    queryFn: () => salesApi.listReturns(100),
+  });
+
+  const { data: customersRes } = useQuery({
+    queryKey: ["customers-list-report"],
+    queryFn: () => customersApi.list(100),
+  });
+
+  const salesList = salesRes?.items ?? [];
+  const returnsList = returnsRes?.items ?? [];
+  const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+
+  const dailySales = salesList.map(s => ({
+    time: timeLabel(s.saleDate),
+    id: s.sareeId,
+    design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
+    customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Customer",
+    pay: "Counter",
+    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    src: "factory",
+  }));
+
+  const totalToday = salesList.reduce((sum, s) => sum + Number(s.amount), 0);
   const fmtINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
   const designData = [
-    { design: "BKB-045", count: 84 }, { design: "BKB-031", count: 62 },
-    { design: "BKB-022", count: 48 }, { design: "BKB-038", count: 32 }, { design: "Others", count: 22 },
+    { design: "Retail Sales", count: salesList.filter(s => s.channel === "RETAIL").length },
+    { design: "Wholesale Sales", count: salesList.filter(s => s.channel === "WHOLESALE").length },
+    { design: "Returns", count: returnsList.length },
   ];
 
-  const topCustomers = [
-    { name: "Smt. Annapurna Devi", purchases: 8, amt: "₹68,000" },
-    { name: "Smt. Lakshmi Bai", purchases: 5, amt: "₹42,000" },
-    { name: "Smt. Saraswathi", purchases: 4, amt: "₹34,000" },
-    { name: "Sri Ramesh K.", purchases: 2, amt: "₹24,500" },
-    { name: "Smt. Padmavathi", purchases: 1, amt: "₹12,500" },
-  ];
+  const topCustomers = useMemo(() => {
+    const map = new Map<string, { name: string; purchases: number; total: number }>();
+    for (const s of salesList) {
+      const custId = s.customerId ?? "walkin";
+      const name = s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Counter Customer";
+      const existing = map.get(custId) ?? { name, purchases: 0, total: 0 };
+      existing.purchases += 1;
+      existing.total += Number(s.amount);
+      map.set(custId, existing);
+    }
+    const sorted = Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 5);
+    if (sorted.length === 0 && customersRes?.items) {
+      return customersRes.items.slice(0, 5).map(c => ({
+        name: c.name,
+        purchases: 0,
+        amt: "₹0",
+      }));
+    }
+    return sorted.map(c => ({
+      name: c.name,
+      purchases: c.purchases,
+      amt: `₹${c.total.toLocaleString("en-IN")}`,
+    }));
+  }, [salesList, customerMap, customersRes]);
 
-  const returns = [
-    { date: "10 Jun", id: "RAVI-L2-007", customer: "Smt. Meenakshi", reason: "Wrong Design", amt: "₹12,000" },
-    { date: "05 Jun", id: "PADMA-L1-001", customer: "Smt. Kalpana", reason: "Defective", amt: "₹8,500" },
-    { date: "02 Jun", id: "BKB-L3-001", customer: "Sri Venkat", reason: "Changed Mind", amt: "₹5,500" },
-  ];
+  const returns = returnsList.map(r => ({
+    date: dateLabel(r.returnDate),
+    id: r.sareeId,
+    customer: "Returned Item",
+    reason: r.reason,
+    amt: r.refundAmount ? `₹${Number(r.refundAmount).toLocaleString("en-IN")}` : "₹0",
+  }));
 
   return (
     <div style={{ paddingBottom: 32 }}>

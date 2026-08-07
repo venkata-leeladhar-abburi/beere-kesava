@@ -18,4 +18,8 @@ export type TableRow = {
   // Present only for rows sourced from the backend (not Finishing Staff) —
   // needed to target PATCH /users/:id for status toggles etc.
   backendId?: string;
+  // Present only for rows sourced from GET /weavers that have no matching
+  // User row (a weaver registered directly via the Weavers module, not
+  // through Add User) — needed to target PATCH /weavers/:id instead.
+  weaverOnlyId?: string;
 };

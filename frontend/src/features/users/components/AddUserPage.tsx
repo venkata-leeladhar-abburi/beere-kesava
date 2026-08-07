@@ -17,13 +17,33 @@ import { formatBackendDate, TableRow } from "./utils";
 import { SectionTitle, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
+import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
-import { AddUserForm } from "./AddUserForm";
+import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
 import { ApiError } from "../../../shared/api/client";
 import {
   BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
   backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
 } from "../../../shared/api/users";
+import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
+
+// Weavers registered directly via the Weavers module (not through Add User)
+// have no User row at all, so they'd otherwise be invisible here. Matched
+// against backendUsers by phone number to avoid double-listing a weaver that
+// *does* have a linked User row (see users.service.ts's auto-link on create).
+function weaverToTableRow(w: BackendWeaver): TableRow {
+  return {
+    empId: w.code,
+    firstName: w.firstName,
+    lastName: w.lastName,
+    role: "Weaver",
+    mobile: w.phone,
+    portal: ROLE_TO_PORTAL["Weaver"] ?? "",
+    dateAdded: formatBackendDate(w.createdAt),
+    status: w.status === "ACTIVE" ? "Active" : "Inactive",
+    weaverOnlyId: w.id,
+  };
+}
 
 function backendUserToTableRow(u: BackendUser): TableRow {
   const frontendRole = BACKEND_TO_FRONTEND_ROLE[u.role];
@@ -41,6 +61,10 @@ function backendUserToTableRow(u: BackendUser): TableRow {
   };
 }
 
+const EMPTY_WEAVER_FIELDS: WeaverFieldsState = {
+  photoUrl: "", village: "", looms: "", bankName: "", accountNo: "", ifsc: "",
+};
+
 const ROLE_ICONS: Record<string, React.ElementType> = {
   "Admin": Shield,
   "Worker Staff": Briefcase,
@@ -51,7 +75,7 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
 };
 
 export function AddUserPage() {
-  const { members, addMember, updateMember, toggleStatus } = useFinishingStaff();
+  const { members, addMember, updateMember, toggleStatus, deleteMember } = useFinishingStaff();
 
   // ── Form state ──────────────────────────────────────────────────────────
   const [firstName,      setFirstName]      = useState("");
@@ -62,6 +86,7 @@ export function AddUserPage() {
   const [accessLevel,    setAccessLevel]    = useState<AccessLevel>("Full Access");
   const [specialisation, setSpecialisation] = useState("");
   const [notes,          setNotes]          = useState("");
+  const [weaverFields,   setWeaverFields]   = useState<WeaverFieldsState>(EMPTY_WEAVER_FIELDS);
   const [showSuccess,    setShowSuccess]    = useState(false);
   const [createdUser,    setCreatedUser]    = useState<{ name: string; role: string; mobile: string; empId: string; accessLevel?: AccessLevel } | null>(null);
   const [submitError,    setSubmitError]    = useState<string | null>(null);
@@ -72,6 +97,7 @@ export function AddUserPage() {
   // stays on FinishingStaffContext, its own domain (see backend architecture
   // doc §4: finishing_staff is a separate table from users).
   const [backendUsers,   setBackendUsers]   = useState<TableRow[]>([]);
+  const [weaverOnlyRows, setWeaverOnlyRows] = useState<TableRow[]>([]);
   const [loadError,      setLoadError]      = useState<string | null>(null);
   const [loading,        setLoading]        = useState(true);
 
@@ -79,8 +105,13 @@ export function AddUserPage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const res = await usersApi.list();
-      setBackendUsers(res.items.map(backendUserToTableRow));
+      const [usersRes, weaversRes] = await Promise.all([usersApi.list(), weaversApi.list()]);
+      const rows = usersRes.items.map(backendUserToTableRow);
+      setBackendUsers(rows);
+      const linkedMobiles = new Set(rows.map(r => r.mobile));
+      setWeaverOnlyRows(
+        weaversRes.items.filter(w => !linkedMobiles.has(w.phone)).map(weaverToTableRow),
+      );
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : "Could not reach the server.");
     } finally {
@@ -103,6 +134,7 @@ export function AddUserPage() {
 
   const portal = role ? ROLE_TO_PORTAL[role] ?? "" : "";
   const isFinishing = role === "Finishing Staff";
+  const isWeaver = role === "Weaver";
   const isAdmin = role === "Admin";
   const canSubmit = firstName.trim() && lastName.trim() && mobile.trim() && role;
 
@@ -110,13 +142,14 @@ export function AddUserPage() {
   // Backend-sourced users + finishing staff from the shared context.
   const allRows: TableRow[] = useMemo(() => [
     ...backendUsers,
+    ...weaverOnlyRows,
     ...members.map(m => ({
       empId: m.empId, firstName: m.firstName, lastName: m.lastName,
       role: "Finishing Staff", mobile: m.mobile,
       portal: "Finishing Staff (No Portal)", dateAdded: m.dateAdded,
       status: m.status, finishingMember: m,
     })),
-  ], [members, backendUsers]);
+  ], [members, backendUsers, weaverOnlyRows]);
 
   // Finishing Staff IDs aren't backend-generated (no User row exists for
   // them), so keep a lightweight local next-id fallback for that path only.
@@ -141,6 +174,15 @@ export function AddUserPage() {
       return;
     }
 
+    let looms: number | undefined;
+    if (isWeaver && weaverFields.looms.trim()) {
+      looms = Number(weaverFields.looms);
+      if (Number.isNaN(looms) || looms < 0) {
+        setSubmitError("Number of looms must be a valid non-negative number.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const created = await usersApi.create({
@@ -150,6 +192,14 @@ export function AddUserPage() {
         email: email.trim() || undefined,
         role: FRONTEND_TO_BACKEND_ROLE[role],
         accessLevel: isAdmin ? frontendAccessLevelToBackend(accessLevel) : undefined,
+        ...(isWeaver ? {
+          photoUrl: weaverFields.photoUrl || undefined,
+          village: weaverFields.village.trim() || undefined,
+          looms,
+          bankName: weaverFields.bankName.trim() || undefined,
+          accountNo: weaverFields.accountNo.trim() || undefined,
+          ifsc: weaverFields.ifsc.trim() || undefined,
+        } : {}),
       });
       setBackendUsers(prev => [backendUserToTableRow(created), ...prev]);
       setCreatedUser({
@@ -168,6 +218,7 @@ export function AddUserPage() {
   function resetForm() {
     setFirstName(""); setLastName(""); setMobile(""); setEmail("");
     setRole(""); setAccessLevel("Full Access"); setSpecialisation(""); setNotes("");
+    setWeaverFields(EMPTY_WEAVER_FIELDS);
   }
 
   function handleCancel() { resetForm(); setShowSuccess(false); setSubmitError(null); }
@@ -175,6 +226,16 @@ export function AddUserPage() {
   async function handleToggleStatus(row: TableRow) {
     if (row.finishingMember) {
       toggleStatus(row.finishingMember.id);
+      return;
+    }
+    if (row.weaverOnlyId) {
+      const nextStatus = row.status === "Active" ? "INACTIVE" : "ACTIVE";
+      try {
+        const updated = await weaversApi.update(row.weaverOnlyId, { status: nextStatus });
+        setWeaverOnlyRows(prev => prev.map(w => (w.weaverOnlyId === updated.id ? weaverToTableRow(updated) : w)));
+      } catch {
+        // Non-fatal — same pattern as the backend-user path below.
+      }
       return;
     }
     if (!row.backendId) return;
@@ -185,6 +246,46 @@ export function AddUserPage() {
     } catch {
       // Non-fatal — the row simply won't reflect the change; a toast/error
       // banner here would be the next improvement once a notification system exists.
+    }
+  }
+
+  const [deletingRow,  setDeletingRow]  = useState<TableRow | null>(null);
+  const [deleting,     setDeleting]     = useState(false);
+  const [deleteError,  setDeleteError]  = useState<string | null>(null);
+
+  function handleDelete(row: TableRow) {
+    setDeleteError(null);
+    setDeletingRow(row);
+  }
+
+  function cancelDelete() {
+    if (deleting) return;
+    setDeletingRow(null);
+    setDeleteError(null);
+  }
+
+  async function confirmDelete() {
+    if (!deletingRow) return;
+    const row = deletingRow;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      if (row.finishingMember) {
+        await deleteMember(row.finishingMember.id);
+      } else if (row.weaverOnlyId) {
+        await weaversApi.remove(row.weaverOnlyId);
+        setWeaverOnlyRows(prev => prev.filter(w => w.weaverOnlyId !== row.weaverOnlyId));
+      } else if (row.backendId) {
+        await usersApi.remove(row.backendId);
+        setBackendUsers(prev => prev.filter(u => u.backendId !== row.backendId));
+      }
+      setDeletingRow(null);
+    } catch (err) {
+      setDeleteError(
+        err instanceof ApiError ? err.message : `Could not delete ${row.firstName} ${row.lastName}. Please try again.`,
+      );
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -334,6 +435,7 @@ export function AddUserPage() {
             setShowSuccess={setShowSuccess}
             createdUser={createdUser}
             isFinishing={isFinishing}
+            isWeaver={isWeaver}
             isAdmin={isAdmin}
             firstName={firstName}
             setFirstName={setFirstName}
@@ -353,6 +455,8 @@ export function AddUserPage() {
             setSpecialisation={setSpecialisation}
             notes={notes}
             setNotes={setNotes}
+            weaverFields={weaverFields}
+            setWeaverFields={setWeaverFields}
             canSubmit={Boolean(canSubmit) && !submitting}
             handleSubmit={handleSubmit}
             handleCancel={handleCancel}
@@ -386,6 +490,7 @@ export function AddUserPage() {
             totalPages={totalPages}
             ROWS_PER_PAGE={ROWS_PER_PAGE}
             onToggleStatus={row => void handleToggleStatus(row)}
+            onDelete={handleDelete}
             setEditingMember={setEditingMember}
             setViewingMember={setViewingMember}
             cardStyle={cardStyle}
@@ -411,6 +516,18 @@ export function AddUserPage() {
             member={editingMember}
             onClose={() => setEditingMember(null)}
             onSave={updates => { updateMember(editingMember.id, updates); setEditingMember(null); }}
+          />
+        )}
+        {deletingRow && (
+          <ConfirmDialog
+            key="delete"
+            title={`Delete ${deletingRow.firstName} ${deletingRow.lastName}?`}
+            message={`This permanently removes this ${deletingRow.role} record and cannot be undone. If they have existing records — batches, QC entries, payments, assignments — deletion will be blocked; deactivate them instead.`}
+            confirmLabel="Delete Permanently"
+            loading={deleting}
+            error={deleteError}
+            onConfirm={() => void confirmDelete()}
+            onCancel={cancelDelete}
           />
         )}
       </AnimatePresence>

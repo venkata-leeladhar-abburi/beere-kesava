@@ -3,7 +3,7 @@ import { motion, useInView } from "motion/react";
 import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight } from "lucide-react";
 import { useMaterialIssue } from "../../contexts/MaterialIssueContext";
 import { T, F, EASE, G_GOLD, MobileCtx } from "../theme";
-import { MAT_CARDS } from "../data";
+import { MAT_CARDS_TEMPLATE } from "../materialConfig";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
@@ -15,7 +15,7 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
   const ref = React.useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
 
-  const { data: stockRes } = useQuery({
+  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
     queryKey: ["raw-material-stock-list"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
@@ -25,7 +25,7 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
   const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
 
-  const cards = MAT_CARDS.map(card => {
+  const cards = MAT_CARDS_TEMPLATE.map(card => {
     if (card.name.toLowerCase().includes("warp")) {
       return { ...card, stock: `${warpStock} kg` };
     }
@@ -49,6 +49,14 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
           actionVariant="solid"
         />
       </motion.div>
+      {stockError && (
+        <div style={{ padding: "12px 16px", marginBottom: 20, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 700 }}>
+          Failed to load stock data.
+        </div>
+      )}
+      {stockLoading && (
+        <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock…</div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 18 : 28 }}>
         {cards.map((card, i) => (
           <FadeUp key={card.name} delay={i * 0.1} style={{ height: "100%" }}>
@@ -77,7 +85,7 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
 
 export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
-  const { issueRecords } = useMaterialIssue();
+  const { issueRecords, isError: issueError } = useMaterialIssue();
 
   const now = new Date();
   const thisMonthRecords = issueRecords.filter(r => {
@@ -110,7 +118,12 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: G_GOLD }} />
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: issueError ? "#C0392B" : G_GOLD }} />
+        {issueError && (
+          <div style={{ position: "absolute", top: 10, right: 14, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#C0392B" }}>
+            Failed to load issued materials.
+          </div>
+        )}
 
         <div style={{ flex: "1 1 25%", display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

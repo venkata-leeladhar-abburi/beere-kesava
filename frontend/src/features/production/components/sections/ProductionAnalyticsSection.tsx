@@ -5,18 +5,19 @@ import {
   ChartBar, FunnelSimple, Trophy, ShoppingBag, DownloadSimple,
 } from "@phosphor-icons/react";
 import { T, F } from "../theme";
-// TOP_WEAVERS_CHART has no backend source yet — there is no endpoint for a
-// per-weaver sarees-produced leaderboard scoped to production. It stays mock
-// until such an endpoint exists; STAGE_FUNNEL and ORDER_PROGRESS are derived
-// from real batch/bulk-order data, and the monthly production chart below is
-// wired to GET /analytics/production-trend-monthly.
-import { TOP_WEAVERS_CHART, ANALYTICS_PERIODS } from "../data";
+// STAGE_FUNNEL and ORDER_PROGRESS are derived from real batch/bulk-order
+// data; the monthly production chart is wired to
+// GET /analytics/production-trend-monthly, and the top-weavers chart below
+// is wired to GET /weavers/production-leaderboard.
+import { ANALYTICS_PERIODS } from "../data";
 import { analyticsApi } from "../../../../shared/api/analytics";
+import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "../../contexts/BatchContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
+import { pipColor } from "../batch-creation/PickerModals";
 
 const CARD_STYLE: React.CSSProperties = {
   background: "#FFFFFF",
@@ -50,7 +51,23 @@ function formatMonthLabel(month: string): string {
 
 export function ProductionAnalyticsSection() {
   const [period, setPeriod] = useState("This Month");
-  const maxWeaverSarees = TOP_WEAVERS_CHART[0]?.sarees ?? 1;
+
+  const {
+    data: productionLeaderboardRes,
+    isLoading: productionLeaderboardLoading,
+    isError: productionLeaderboardError,
+  } = useQuery({
+    queryKey: ["weavers-production-leaderboard"],
+    queryFn: () => weaversApi.getProductionLeaderboard(6),
+  });
+  const topWeavers = (productionLeaderboardRes ?? []).map(w => ({
+    weaverId: w.weaverId,
+    name: w.name,
+    initials: w.initials,
+    bg: pipColor(w.weaverId),
+    sarees: w.sareesProduced,
+  }));
+  const maxWeaverSarees = topWeavers[0]?.sarees ?? 1;
 
   const {
     data: productionTrendRes,
@@ -230,12 +247,25 @@ export function ProductionAnalyticsSection() {
             <ChartCardHeader
               icon={<Trophy size={22} color={T.royalBurgundy} weight="duotone" />}
               title="Top 5 Weavers This Month"
-              sub="Ranked by number of sarees produced"
+              sub="Ranked by number of sarees produced — last 6 months"
             />
 
+            {productionLeaderboardLoading ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                Loading top weavers…
+              </div>
+            ) : productionLeaderboardError ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+                Failed to load top weavers.
+              </div>
+            ) : topWeavers.length === 0 ? (
+              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                No production data yet.
+              </div>
+            ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, justifyContent: "center" }}>
-              {TOP_WEAVERS_CHART.map((w, i) => (
-                <div key={w.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {topWeavers.map((w, i) => (
+                <div key={w.weaverId} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? "rgba(200,155,71,0.18)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? T.antiqueGold : T.taupe }}>{i + 1}</span>
                   </div>
@@ -259,6 +289,7 @@ export function ProductionAnalyticsSection() {
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
 

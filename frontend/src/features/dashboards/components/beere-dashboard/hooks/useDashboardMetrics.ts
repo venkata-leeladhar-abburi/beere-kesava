@@ -31,14 +31,18 @@ export function useDashboardMetrics() {
   const weavers = useQuery({
     queryKey: ["weavers", "active-count"],
     queryFn: async () => {
-      const res = await weaversApi.list(200);
-      return res.items.filter((w) => w.status === "ACTIVE").length;
+      const res = await weaversApi.list(100);
+      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      return items.filter((w) => w.status === "ACTIVE").length;
     },
     staleTime: 60_000,
   });
 
   const isLoading =
     outstanding.isLoading || production.isLoading || sales.isLoading || weavers.isLoading;
+
+  const isError =
+    outstanding.isError || production.isError || sales.isError || weavers.isError;
 
   const activeWeavers = weavers.data ?? 0;
   const totalProduced = production.data?.totalSareesProduced ?? 0;
@@ -57,6 +61,7 @@ export function useDashboardMetrics() {
 
   return {
     isLoading,
+    isError,
     metrics: [
       {
         label: "Active Weavers",

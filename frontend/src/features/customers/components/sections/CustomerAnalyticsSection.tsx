@@ -44,22 +44,27 @@ export interface CustomerAnalyticsSectionProps {
 
 // ── SECTION 3: CUSTOMER ANALYTICS ───────────────────────────────────────────
 export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDateFilter }: CustomerAnalyticsSectionProps) {
-  const { data: revSplitRes } = useQuery({
+  const { data: revSplitRes, isLoading: revSplitLoading, isError: revSplitError } = useQuery({
     queryKey: ["analytics-revenue-split"],
     queryFn: () => analyticsApi.getRevenueSplit(),
   });
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isLoading: customersLoading, isError: customersError } = useQuery({
     queryKey: ["customer-analytics-customers"],
     queryFn: () => customersApi.list(),
   });
-  const { data: invoicesRes } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: ["customer-analytics-invoices"],
     queryFn: () => invoicesApi.list(),
   });
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError } = useQuery({
     queryKey: ["customer-analytics-sales"],
     queryFn: () => salesApi.list(),
   });
+  // custRows (Top 10 Customers, Frequent Buyers, Inactive, Locations charts)
+  // is a join of customers + invoices + sales — a failure in any of those
+  // three real-backend queries makes the derived rows wrong/incomplete.
+  const custDataLoading = customersLoading || invoicesLoading || salesLoading;
+  const custDataError = customersError || invoicesError || salesError;
   const {
     data: newVsReturningRes,
     isLoading: newVsReturningLoading,
@@ -232,10 +237,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
           {/* Custom ranked bar rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-            {top10Customers.length === 0 && (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>Loading top customers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600, padding: "8px 0" }}>Failed to load top customers.</div>
+            ) : top10Customers.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>No customer purchases recorded yet.</div>
-            )}
-            {top10Customers.map((c, i) => {
+            ) : null}
+            {!custDataLoading && !custDataError && top10Customers.map((c, i) => {
               const maxSpend = top10Customers[0]?.spend || 1;
               const pct = Math.round((c.spend / maxSpend) * 100);
               const isTop = i === 0;
@@ -288,6 +297,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               className="self-start"
             /></DownloadGate>
           </div>
+          {revSplitLoading ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 240 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading revenue split…</span>
+            </div>
+          ) : revSplitError ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 240 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load revenue split.</span>
+            </div>
+          ) : (
+          <>
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
               <PieChart key="pie-chart" id="revenue-pie-chart">
@@ -311,6 +330,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
 
         {/* Chart 3: New vs Returning */}
@@ -387,10 +408,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
-            {frequentBuyers.length === 0 && (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading frequent buyers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load frequent buyers.</div>
+            ) : frequentBuyers.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customer purchases recorded yet.</div>
-            )}
-            {frequentBuyers.map((fb, i) => (
+            ) : null}
+            {!custDataLoading && !custDataError && frequentBuyers.map((fb, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
@@ -434,10 +459,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-            {inactiveAlerts.length === 0 && (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading inactive customers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load inactive customers.</div>
+            ) : inactiveAlerts.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No inactive customers — everyone has purchased recently.</div>
-            )}
-            {inactiveAlerts.map((al, i) => (
+            ) : null}
+            {!custDataLoading && !custDataError && inactiveAlerts.map((al, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
@@ -488,10 +517,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {locationData.length === 0 && (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading customer locations…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load customer locations.</div>
+            ) : locationData.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customers on record yet.</div>
-            )}
-            {locationData.map((loc, i) => (
+            ) : null}
+            {!custDataLoading && !custDataError && locationData.map((loc, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 28, display: "flex", justifyContent: "center" }}>
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />

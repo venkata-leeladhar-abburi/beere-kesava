@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Download, Eye, UserPlus, Plus,
   LayoutGrid, AlignJustify, MapPin,
@@ -10,9 +11,9 @@ import { T, F } from "../theme";
 import { SectionTitle, Pill, FadeUp } from "../common/primitives";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
-import { retailData } from "../data";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";
+import { salesApi } from "../../../../shared/api/sales";
 
 interface RetailFormState {
   name: string;
@@ -49,74 +50,101 @@ export function RetailCustomersSection({
   retailCityFilter, setRetailCityFilter, retailSort, setRetailSort,
   retailCities, filteredRetail, onViewHistory, onDownloadConfirm,
 }: RetailCustomersSectionProps) {
-  const { addCustomer } = useCustomers();
+  const { addCustomer, retailCustomers } = useCustomers();
   const [showAddRetail, setShowAddRetail] = useState(false);
   const [form, setForm] = useState<RetailFormState>(EMPTY_RETAIL_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-retail-section"],
+    queryFn: () => salesApi.list(),
+  });
+
   const updateField = <K extends keyof RetailFormState>(key: K, value: RetailFormState[K]) =>
     setForm(f => ({ ...f, [key]: value }));
 
-  const closeAddRetail = () => {
-    setShowAddRetail(false);
-    setForm(EMPTY_RETAIL_FORM);
-    setError(null);
-  };
+  const openAddRetail = () => { setForm(EMPTY_RETAIL_FORM); setError(null); setShowAddRetail(true); };
+  const closeAddRetail = () => { setShowAddRetail(false); setError(null); };
 
   const handleSaveRetail = async () => {
-    setError(null);
-    if (!form.name.trim() || !form.phone.trim()) {
-      setError("Customer Name and Phone Number are required.");
-      return;
-    }
+    if (!form.name.trim()) { setError("Customer name is required."); return; }
+    if (!form.phone.trim()) { setError("Phone number is required."); return; }
     setSubmitting(true);
+    setError(null);
     try {
       await addCustomer({
-        name: form.name.trim(),
         type: "RETAIL",
+        name: form.name.trim(),
         phone: form.phone.trim(),
         city: form.city.trim() || undefined,
         address: form.address.trim() || undefined,
       });
-      closeAddRetail();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save customer. Please try again.");
+      setShowAddRetail(false);
+      setForm(EMPTY_RETAIL_FORM);
+    } catch (err: any) {
+      setError(err?.message || "Failed to save retail customer.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <div style={{ padding: "0 56px 64px 56px" }}>
-      <SectionTitle
-        title="Retail Customers"
-        sub="Retail customer profiles are created automatically when a sale is recorded at the shop. Admin can also add a profile manually, view all profiles, and see purchase history."
-        action="📥 Download Retail Customer List →"
-      />
+  const now = new Date();
+  const newThisMonthCount = useMemo(() => {
+    return retailCustomers.filter(c => {
+      const d = new Date(c.createdAt);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }).length;
+  }, [retailCustomers, now]);
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -60, marginBottom: 24 }}>
-        <Button onClick={() => (showAddRetail ? closeAddRetail() : setShowAddRetail(true))} variant="primary" iconLeft={Plus}>
-          Add New Retail Customer →
-        </Button>
+  const retailSalesThisMonth = useMemo(() => {
+    const items = salesRes?.items ?? [];
+    return items.filter(s => {
+      if (s.channel !== "RETAIL") return false;
+      const d = new Date(s.saleDate);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+  }, [salesRes, now]);
+
+  const totalRetailRevenueMonth = useMemo(() => {
+    return retailSalesThisMonth.reduce((acc, s) => acc + Number(s.amount), 0);
+  }, [retailSalesThisMonth]);
+
+  const inactiveCount = useMemo(() => {
+    return filteredRetail.filter(r => r.inactive).length;
+  }, [filteredRetail]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28, flexWrap: "wrap" as const, gap: 16 }}>
+        <div>
+          <SectionTitle
+            title="Retail Customers"
+            sub="Browse all retail buyers from the point of sale, view their purchase history, and register new customers."
+          />
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button onClick={openAddRetail} variant="primary" iconLeft={Plus}>Add Retail Customer</Button>
+        </div>
       </div>
 
       {showAddRetail && (
         <FadeUp>
-          <div style={{ background: "#FFF", borderRadius: 16, padding: 32, border: `1px solid ${T.borderDef}`, marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Retail Customer</h3>
-              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the customer's contact details.</p>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <Field label="Customer Name *"><Input aria-label="Customer's full name" type="text" placeholder="Customer's full name" value={form.name} onChange={e => updateField("name", e.target.value)} /></Field>
-                <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" value={form.phone} onChange={e => updateField("phone", e.target.value)} /></Field>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <Field label="City"><Input aria-label="City" type="text" placeholder="City" value={form.city} onChange={e => updateField("city", e.target.value)} /></Field>
-                <Field label="Address"><Input aria-label="Address" type="text" placeholder="Address" value={form.address} onChange={e => updateField("address", e.target.value)} /></Field>
-              </div>
+          <div style={{ background: T.warmIvory, border: `1px solid ${T.borderGold}`, borderRadius: 16, padding: "28px", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.06)" }}>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20 }}>+ Register New Retail Customer</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <Field label="Customer Name *">
+                <Input value={form.name} onChange={e => updateField("name", e.target.value)} placeholder="e.g. Smt. Sunitha Reddy" />
+              </Field>
+              <Field label="Phone Number *">
+                <Input value={form.phone} onChange={e => updateField("phone", e.target.value)} placeholder="e.g. +91 98765 43210" />
+              </Field>
+              <Field label="City">
+                <Input value={form.city} onChange={e => updateField("city", e.target.value)} placeholder="e.g. Dharmavaram" />
+              </Field>
+              <Field label="Address / Landmark">
+                <Input value={form.address} onChange={e => updateField("address", e.target.value)} placeholder="e.g. Main Road, Near Bus Stand" />
+              </Field>
             </div>
             {error && (
               <div style={{ marginTop: 20, padding: "10px 14px", background: T.crimsonBg, color: T.crimson, borderRadius: 8, fontFamily: F.ui, fontSize: 13 }}>{error}</div>
@@ -136,10 +164,10 @@ export function RetailCustomersSection({
       {/* Retail stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 28, alignItems: "stretch" }}>
         {[
-          { ico: <Users size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Retail Customers", v: "1,284", c: T.luxuryBrown, sub: "Profiles at point of sale" },
-          { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: "8", c: T.antiqueGold, sub: "Added via new sale entries" },
-          { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: "₹4,20,000", c: T.greenMid, sub: "Total from all retail sales" },
-          { ico: <AlertTriangle size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive — No Visit in 6M", v: "3", c: T.taupe, sub: "Consider reaching out" },
+          { ico: <Users size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Retail Customers", v: retailCustomers.length.toLocaleString("en-IN"), c: T.luxuryBrown, sub: "Profiles at point of sale" },
+          { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: String(newThisMonthCount), c: T.antiqueGold, sub: "Added via new sale entries" },
+          { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: `₹${totalRetailRevenueMonth.toLocaleString("en-IN")}`, c: T.greenMid, sub: "Total from all retail sales" },
+          { ico: <AlertTriangle size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive — No Visit in 6M", v: String(inactiveCount), c: T.taupe, sub: "Consider reaching out" },
         ].map((st, i) => (
           <div key={i} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
             <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -200,110 +228,108 @@ export function RetailCustomersSection({
               variant={retailView === "list" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setRetailView("list")}
-              className="rounded-none border-l"
+              className="rounded-none"
             />
           </div>
         </div>
       </div>
-      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>{filteredRetail.length} customer{filteredRetail.length !== 1 ? "s" : ""} found</div>
 
-      {/* Retail Cards View */}
-      {retailView === "card" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-          {filteredRetail.length === 0 && (
-            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 20px", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</div>
-          )}
-          {filteredRetail.map((r, i) => (
-            <div key={i} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              <div style={{ height: 4, background: r.regular ? T.antiqueGold : r.inactive ? T.taupe : T.royalBurgundy }} />
-              <div style={{ padding: "22px 22px 0", flex: 1 }}>
-                <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 18 }}>
-                  <div style={{ width: 60, height: 60, minWidth: 60, borderRadius: "50%", background: T.warmCream, border: `2px solid ${T.borderGold}`, color: T.luxuryBrown, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
-                    {r.initials}
+      {/* Grid or Table */}
+      {filteredRetail.length === 0 ? (
+        <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 20px", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</div>
+      ) : retailView === "card" ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          {filteredRetail.map(r => (
+            <div key={r.id} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 22, boxShadow: "0 2px 12px rgba(74,6,27,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
+                    {r.name.replace("Smt. ", "").substring(0, 2).toUpperCase()}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", lineHeight: 1.2 }}>{r.name}</h4>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                      {r.regular && (
-                        <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4 }}>
-                          <Star size={11} fill={T.luxuryBrown} /> Regular
-                        </span>
-                      )}
-                      {r.inactive && (
-                        <span style={{ background: T.crimsonBg, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>Inactive</span>
-                      )}
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</span>
+                      {r.regular && <Star size={14} color={T.antiqueGold} fill={T.antiqueGold} />}
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                      <MapPin size={12} color={T.taupe} /> {r.city}
                     </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>
-                    <Phone size={13} color={T.taupe} />{r.phone}
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>
-                    <MapPin size={13} color={T.taupe} />{r.city}
-                  </div>
+                {r.inactive && (
+                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "3px 8px", borderRadius: 6 }}>Inactive</span>
+                )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}>₹{r.totalSpend.toLocaleString("en-IN")}</div>
                 </div>
-                <div style={{ height: 1, background: T.borderDef, marginBottom: 18 }} />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 4 }}>Total Purchases</div>
-                    <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{r.purchases}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 4 }}>Total Spent</div>
-                    <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>₹{r.spend}</div>
-                  </div>
-                </div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6, marginBottom: 22 }}>
-                  <Calendar size={13} color={T.taupe} /> Last visit: {r.lastVisit}
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
                 </div>
               </div>
-              <div style={{ padding: "0 22px 22px", display: "flex", gap: 8 }}>
-                <Button onClick={() => onViewHistory(r)} iconLeft={Eye} fullWidth className="whitespace-nowrap">
-                  View Purchase History
-                </Button>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Phone size={12} /> {r.phone}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Calendar size={12} /> Last visit: {r.lastVisit}</div>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                <Button variant="secondary" size="sm" fullWidth onClick={() => onViewHistory(r)}>Purchase History</Button>
                 <DownloadGate>
-                  <Button
-                    onClick={() => onDownloadConfirm(r)}
-                    iconLeft={Download}
-                    variant="tertiary"
-                    title="Download Data"
-                    className="whitespace-nowrap"
-                  >
-                    Download
-                  </Button>
+                  <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
                 </DownloadGate>
               </div>
             </div>
           ))}
         </div>
-      )}
-
-      {/* Retail List View */}
-      {retailView === "list" && (
+      ) : (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 14 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                {["Customer Name", "Phone", "City", "Total Purchases", "Total Spend", "Last Visit", "Regular Buyer", "Action"].map(h => (
-                  <th key={h} style={{ padding: "14px 18px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
-                ))}
+              <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>
+                <th style={{ padding: "14px 18px" }}>Customer Name</th>
+                <th style={{ padding: "14px 18px" }}>City</th>
+                <th style={{ padding: "14px 18px" }}>Phone</th>
+                <th style={{ padding: "14px 18px" }}>Total Spend</th>
+                <th style={{ padding: "14px 18px" }}>Purchases</th>
+                <th style={{ padding: "14px 18px" }}>Last Visit</th>
+                <th style={{ padding: "14px 18px" }}>Status</th>
+                <th style={{ padding: "14px 18px", textAlign: "right" as const }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredRetail.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: "40px 18px", textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</td></tr>
-              )}
               {filteredRetail.map((r, i) => (
-                <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{r.name}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.taupe, fontSize: 13 }}>{r.phone}</td>
+                <tr key={r.id} style={{ borderBottom: i < filteredRetail.length - 1 ? `1px solid ${T.borderDef}` : "none", fontFamily: F.ui, fontSize: 14 }}>
+                  <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      {r.name}
+                      {r.regular && <Star size={12} color={T.antiqueGold} fill={T.antiqueGold} />}
+                    </div>
+                  </td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.city}</td>
-                  <td style={{ padding: "14px 18px", color: T.antiqueGold, fontWeight: 600 }}>{r.purchases}</td>
-                  <td style={{ padding: "14px 18px", color: T.luxuryBrown, fontWeight: 600 }}>₹{r.spend}</td>
+                  <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.taupe }}>{r.phone}</td>
+                  <td style={{ padding: "14px 18px", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.totalSpend.toLocaleString("en-IN")}</td>
+                  <td style={{ padding: "14px 18px", fontFamily: F.mono }}>{r.totalPurchases} sarees</td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.lastVisit}</td>
-                  <td style={{ padding: "14px 18px" }}>{r.regular ? <span style={{ background: T.goldLight, padding: "3px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>⭐ Regular</span> : "—"}</td>
-                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onViewHistory(r)} variant="link">View</Button></td>
+                  <td style={{ padding: "14px 18px" }}>
+                    {r.inactive ? (
+                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "2px 6px", borderRadius: 4 }}>Inactive</span>
+                    ) : (
+                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.greenMid, background: T.greenBg, padding: "2px 6px", borderRadius: 4 }}>Active</span>
+                    )}
+                  </td>
+                  <td style={{ padding: "14px 18px", textAlign: "right" as const }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+                      <Button variant="secondary" size="sm" onClick={() => onViewHistory(r)}>History</Button>
+                      <DownloadGate>
+                        <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
+                      </DownloadGate>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

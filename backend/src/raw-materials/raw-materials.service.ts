@@ -3,9 +3,13 @@ import { PrismaService } from "../prisma/prisma.service";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { MaterialType } from "../generated/prisma/client";
+import { fromGrams, toGrams } from "../common/weight-units.util";
 
 export interface CreateGrnDto {
   vendorId?: string;
+  // Which of the company's legal firms this purchase belongs to. Optional —
+  // left null shows as unattributed rather than a fabricated firm name.
+  firmId?: string;
   supplierName: string;
   invoiceNo?: string;
   invoiceDate?: string;
@@ -41,7 +45,7 @@ export class RawMaterialsService {
 
   async listGrns() {
     const grns = await this.prisma.grnReceipt.findMany({
-      include: { vendor: true, items: true },
+      include: { vendor: true, firm: true, items: true },
       orderBy: { createdAt: "desc" },
     });
     return { items: grns };
@@ -55,6 +59,7 @@ export class RawMaterialsService {
         data: {
           id: grnId,
           vendorId: dto.vendorId || null,
+          firmId: dto.firmId || null,
           supplierName: dto.supplierName,
           invoiceNo: dto.invoiceNo || null,
           invoiceDate: dto.invoiceDate ? new Date(dto.invoiceDate) : null,
@@ -73,7 +78,7 @@ export class RawMaterialsService {
             })),
           },
         },
-        include: { items: true, vendor: true },
+        include: { items: true, vendor: true, firm: true },
       });
 
       // Increment / update stock levels — only the accepted portion of each
@@ -91,10 +96,16 @@ export class RawMaterialsService {
         });
 
         if (existing) {
+          // Convert through grams before adding — the GRN line item's unit
+          // (item.unit) and the existing stock row's unit (existing.unit)
+          // aren't guaranteed to match.
+          const existingGrams = toGrams(Number(existing.currentStock), existing.unit);
+          const receivedGrams = toGrams(acceptedQuantity, item.unit || "KG");
+          const newStock = fromGrams(existingGrams + receivedGrams, existing.unit);
           await tx.rawMaterialStock.update({
             where: { id: existing.id },
             data: {
-              currentStock: { increment: acceptedQuantity },
+              currentStock: newStock,
             },
           });
         } else {

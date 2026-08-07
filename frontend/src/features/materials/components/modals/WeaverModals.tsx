@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Layers, Tag, Sparkles, Palette, Printer } from "lucide-react";
 import { T, F } from "../theme";
-import { W_STATUS } from "../data";
+import { W_STATUS } from "../materialConfig";
 import type { WeaverMat } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";

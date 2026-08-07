@@ -1,11 +1,27 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
+import { nextSequenceId } from "../common/sequence-id.util";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateWeaverDto } from "./dto/create-weaver.dto";
 import { ListWeaversQueryDto } from "./dto/list-weavers-query.dto";
 import { UpdateWeaverDto } from "./dto/update-weaver.dto";
+
+export const WEAVER_CODE_PREFIX = "WEA";
+
+/**
+ * Gap-filled weaver code (e.g. "Wea-001"), scoped to however many Weaver
+ * rows currently exist — deleting a weaver frees its number for reuse.
+ * Exported standalone so UsersService can call it from inside its own
+ * transaction when auto-creating a linked Weaver for a WEAVER-role User.
+ */
+export async function nextWeaverCode(
+  client: Pick<Prisma.TransactionClient, "weaver">,
+): Promise<string> {
+  const existing = await client.weaver.findMany({ select: { code: true } });
+  return nextSequenceId(existing.map((w) => w.code), WEAVER_CODE_PREFIX);
+}
 
 export interface WeaverStats {
   weaverId: string;
@@ -26,6 +42,15 @@ export interface WeaverLeaderboardEntry {
   qcPassRate: number;
 }
 
+export interface WeaverProductionLeaderboardEntry {
+  weaverId: string;
+  name: string;
+  initials: string;
+  photoUrl: string;
+  village: string | null;
+  sareesProduced: number;
+}
+
 @Injectable()
 export class WeaversService {
   constructor(
@@ -36,24 +61,37 @@ export class WeaversService {
   async create(dto: CreateWeaverDto) {
     const name = `${dto.firstName} ${dto.lastName}`.trim();
     const initials = (dto.initials ?? dto.firstName).toUpperCase().slice(0, 10);
+    const code = await nextWeaverCode(this.prisma);
 
-    const weaver = await this.prisma.weaver.create({
-      data: {
-        name,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        initials,
-        village: dto.village,
-        cluster: dto.cluster,
-        looms: dto.looms ?? 0,
-        photoUrl: dto.photoUrl,
-        email: dto.email,
-        phone: dto.phone,
-        bankName: dto.bankName,
-        accountNo: dto.accountNo,
-        ifsc: dto.ifsc,
-      },
-    });
+    let weaver;
+    try {
+      weaver = await this.prisma.weaver.create({
+        data: {
+          code,
+          name,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          initials,
+          village: dto.village,
+          cluster: dto.cluster,
+          looms: dto.looms ?? 0,
+          photoUrl: dto.photoUrl,
+          email: dto.email,
+          phone: dto.phone,
+          bankName: dto.bankName,
+          accountNo: dto.accountNo,
+          ifsc: dto.ifsc,
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        // Extremely rare race on the gap-filled code (two simultaneous
+        // creates computing the same lowest gap) — surfaced as a conflict
+        // rather than a raw 500 so the caller knows to just retry.
+        throw new ConflictException("Weaver code was just taken by a concurrent request — please retry.");
+      }
+      throw error;
+    }
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,
@@ -125,6 +163,43 @@ export class WeaversService {
     return updated;
   }
 
+  async remove(id: string) {
+    const weaver = await this.prisma.weaver.findUnique({
+      where: { id },
+      include: { linkedUser: true },
+    });
+    if (!weaver) {
+      throw new NotFoundException(`Weaver ${id} not found`);
+    }
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        // Symmetric with UsersService.remove(): this weaver may itself be
+        // the linked record behind a WEAVER-role User row — delete both
+        // sides together so neither is left dangling.
+        if (weaver.linkedUser) {
+          await tx.user.delete({ where: { id: weaver.linkedUser.id } });
+        }
+        await tx.weaver.delete({ where: { id } });
+      });
+
+      await this.auditLog.recordAction({
+        module: "WEAVERS",
+        action: `Deleted weaver ${weaver.name}`,
+        entityType: "Weaver",
+        entityId: id,
+        recordLabel: weaver.name,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ConflictException(
+          "This weaver has existing records (batches, QC entries, payments, etc.) and can't be deleted. Deactivate them instead.",
+        );
+      }
+      throw error;
+    }
+  }
+
   /** Returns live-calculated performance metrics for a single weaver. */
   async getWeaverStats(id: string): Promise<WeaverStats> {
     await this.findOne(id); // throws 404 if not found
@@ -137,7 +212,7 @@ export class WeaversService {
         // QC records where this weaver's saree passed
         this.prisma.qcRecord.count({
           where: {
-            saree: { weaverId: id },
+            weaverId: id,
             result: "PASSED",
           },
         }),
@@ -220,5 +295,50 @@ export class WeaversService {
     });
 
     return entries.slice(0, 10);
+  }
+
+  /**
+   * Returns the top-5 weaver leaderboard ranked by PRODUCTION VOLUME (QC
+   * records recorded) within a trailing window, rather than QC pass rate.
+   * Used by the Production Analytics "Top Weavers" chart, which cares about
+   * output within the selected period, not all-time quality.
+   */
+  async getProductionLeaderboard(months = 6): Promise<WeaverProductionLeaderboardEntry[]> {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - months);
+
+    const grouped = await this.prisma.qcRecord.groupBy({
+      by: ["weaverId"],
+      where: { weaverId: { not: null }, qcDate: { gte: cutoff } },
+      _count: { sareeId: true },
+      orderBy: { _count: { sareeId: "desc" } },
+      take: 5,
+    });
+
+    const weaverIds = grouped
+      .map((g) => g.weaverId)
+      .filter((id): id is string => !!id);
+
+    if (weaverIds.length === 0) return [];
+
+    const weavers = await this.prisma.weaver.findMany({
+      where: { id: { in: weaverIds } },
+      select: { id: true, name: true, initials: true, photoUrl: true, village: true },
+    });
+    const weaverMap = new Map(weavers.map((w) => [w.id, w]));
+
+    return grouped
+      .filter((g) => g.weaverId && weaverMap.has(g.weaverId))
+      .map((g) => {
+        const w = weaverMap.get(g.weaverId as string)!;
+        return {
+          weaverId: w.id,
+          name: w.name,
+          initials: w.initials,
+          photoUrl: w.photoUrl,
+          village: w.village,
+          sareesProduced: g._count.sareeId,
+        };
+      });
   }
 }

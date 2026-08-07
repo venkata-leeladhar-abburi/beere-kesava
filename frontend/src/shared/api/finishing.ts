@@ -45,6 +45,8 @@ export const finishingStaffApi = {
 
   update: (id: string, payload: UpdateFinishingStaffPayload) =>
     apiClient.patch<BackendFinishingStaff>(`/finishing/staff/${id}`, payload),
+
+  remove: (id: string) => apiClient.delete<void>(`/finishing/staff/${id}`),
 };
 
 // ─── Finishing assignments ──────────────────────────────────────────────────

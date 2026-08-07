@@ -1,9 +1,11 @@
 import React from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
+import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
 import { imgSaree } from "../../../../shared/constants/weaverImages";
 import { T, F, EASE } from "../theme";
 import { AnimCount } from "../common/primitives";
-import { REPORT_METRICS } from "../data";
+import { reportsApi } from "../../../../shared/api/reports";
 
 export function ReportsHeader() {
   return (
@@ -54,8 +56,73 @@ export function ReportsHeader() {
   );
 }
 
-
 export function ReportsStatsStrip() {
+  const { data: schedRes } = useQuery({
+    queryKey: ["reports-schedules-list"],
+    queryFn: () => reportsApi.listSchedules(),
+  });
+  const { data: histRes } = useQuery({
+    queryKey: ["reports-download-history"],
+    queryFn: () => reportsApi.listHistory(),
+  });
+
+  const totalGenerated = histRes?.total ?? 0;
+  const activeSchedules = (schedRes?.items ?? []).filter((s) => s.active).length;
+  const lastItem = histRes?.items?.[0];
+
+  const now = new Date();
+  const downloadsThisMonth = (histRes?.items ?? []).filter((h) => {
+    const d = new Date(h.downloadedAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  let lastGenText = "None";
+  if (lastItem) {
+    const diffMs = now.getTime() - new Date(lastItem.downloadedAt).getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) lastGenText = "Just now";
+    else if (diffHours < 24) lastGenText = `${diffHours}h ago`;
+    else lastGenText = `${Math.floor(diffHours / 24)}d ago`;
+  }
+
+  const metrics = [
+    {
+      ico: <BarChart2 size={22} color="rgba(245,232,208,0.90)" />,
+      label: "Reports Generated",
+      val: String(totalGenerated),
+      sub: totalGenerated === 0 ? "No reports generated yet" : "Total recorded downloads",
+      hi: false,
+    },
+    {
+      ico: <Clock size={22} color="rgba(245,232,208,0.90)" />,
+      label: "Last Generated",
+      val: lastGenText,
+      sub: lastItem ? lastItem.reportName : "Awaiting first export",
+      hi: false,
+    },
+    {
+      ico: <Calendar size={22} color="rgba(231,201,131,0.95)" />,
+      label: "Scheduled Reports",
+      val: String(activeSchedules),
+      sub: "Active auto-delivery schedules",
+      hi: true,
+    },
+    {
+      ico: <Download size={22} color="rgba(245,232,208,0.90)" />,
+      label: "Downloads This Month",
+      val: String(downloadsThisMonth),
+      sub: `${downloadsThisMonth} recorded this month`,
+      hi: false,
+    },
+    {
+      ico: <FileText size={22} color="rgba(245,232,208,0.90)" />,
+      label: "Report Categories",
+      val: "8",
+      sub: "Full business coverage",
+      hi: false,
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -72,7 +139,7 @@ export function ReportsStatsStrip() {
         overflow: "hidden",
         minHeight: 148,
       }}>
-        {REPORT_METRICS.map((m, i) => (
+        {metrics.map((m, i) => (
           <motion.div
             key={m.label}
             initial={{ opacity: 0, y: 20 }}
@@ -82,7 +149,7 @@ export function ReportsStatsStrip() {
               flex: 1,
               padding: "28px 24px",
               backgroundImage: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none",
-              borderRight: i < REPORT_METRICS.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
+              borderRight: i < metrics.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
               display: "flex",
               alignItems: "center",
               gap: 16,
@@ -121,3 +188,4 @@ export function ReportsStatsStrip() {
     </motion.div>
   );
 }
+

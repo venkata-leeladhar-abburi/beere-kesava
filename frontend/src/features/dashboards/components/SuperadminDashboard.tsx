@@ -11,7 +11,7 @@ import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
 import { SATopNav } from "./superadmin-dashboard/SATopNav";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
 import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
-import { UserProfileModal } from "./superadmin-dashboard/UserProfileModal";
+import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import {
   RatesPricingPage, DesignLibraryPage, BatchCreationPage, ApprovalsPage, AuditLogPage,
   LabelSettingsPage, ExternalPurchasesPage, AddUserPage, IssueMaterialPage, MaterialsPage,
@@ -193,7 +193,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       )}
       <AnimatePresence>
         {showProfileModal && (
-          <UserProfileModal onClose={() => setShowProfileModal(false)} role="superadmin" />
+          <UserProfileModal onClose={() => setShowProfileModal(false)} />
         )}
       </AnimatePresence>
     </div>

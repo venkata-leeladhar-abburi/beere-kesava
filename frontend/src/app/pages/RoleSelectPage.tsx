@@ -173,7 +173,7 @@ function PortalCard({
 
 // ── RoleSelectPage ─────────────────────────────────────────────────────────────
 export function RoleSelectPage() {
-  const { isAuthenticated, role: currentRole, selectRole, logout, clearAdminView } = useAuth();
+  const { isAuthenticated, role: currentRole, logout, clearAdminView } = useAuth();
   const navigate = useNavigate();
   const { isMobile, isTablet } = useResponsive();
   const [hovered, setHovered] = useState<Role | null>(null);
@@ -186,13 +186,17 @@ export function RoleSelectPage() {
 
   const stacked = isMobile || isTablet;
 
-  function handleRoleSelect(role: Role) {
-    // Choosing a portal here is a first-hand login, not an admin looking in on
-    // a staff portal — drop any leftover flag so shop staff can't inherit an
-    // earlier admin session's money visibility on a shared device.
+  // Reaching this page with isAuthenticated=true but no role means the OTP
+  // login didn't resolve a real backend role for this session (a stale or
+  // corrupted client-side state) — NOT a case where the user gets to
+  // self-assign whichever portal they click. Previously this called
+  // selectRole(role) directly, letting anyone freely become Admin/SuperAdmin
+  // with zero verification. Now every card just forces a fresh phone+OTP
+  // login instead, so the real backend-resolved role is what decides access.
+  function handleRoleSelect(_role: Role) {
     clearAdminView();
-    selectRole(role);
-    navigate(ROLE_ROUTES[role]);
+    logout();
+    navigate("/login");
   }
 
   return (

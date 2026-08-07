@@ -24,7 +24,7 @@ import { paymentsApi } from "../../../shared/api/payments";
 export function FinancialSummarySection() {
   const [downloadModal, setDownloadModal] = useState(false);
 
-  const { data: summary } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useQuery({
     queryKey: ["payments-summary"],
     queryFn: () => paymentsApi.getSummary(),
   });
@@ -72,6 +72,16 @@ export function FinancialSummarySection() {
           </DownloadGate>
         </div>
 
+        {summaryLoading ? (
+          <div style={{ marginTop: 24, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Loading financial summary…
+          </div>
+        ) : summaryError ? (
+          <div style={{ marginTop: 24, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>
+            Failed to load financial summary. Please retry.
+          </div>
+        ) : (
+        <>
         {/* Compact info-card grid — 4 stat cards side by side */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
@@ -174,6 +184,8 @@ export function FinancialSummarySection() {
           </motion.div>
 
         </div>
+        </>
+        )}
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Financial Report" desc="Generate and download the financial summary report for this month." actionLabel="Download" icon={Download} />
       </FadeUp>
     </div>

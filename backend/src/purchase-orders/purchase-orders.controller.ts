@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
-import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreatePurchaseOrderDto } from "./dto/create-purchase-order.dto";
@@ -32,14 +33,14 @@ export class PurchaseOrdersController {
 
   @Post(":id/approve")
   @HttpCode(HttpStatus.OK)
-  @AdminOnly()
+  @RequirePermissions("po.approve")
   approve(@Param("id") id: string, @Body() dto: ActorOnlyDto) {
     return this.purchaseOrdersService.approve(id, dto);
   }
 
   @Post(":id/reject")
   @HttpCode(HttpStatus.OK)
-  @AdminOnly()
+  @RequirePermissions("procurement.po.reject")
   reject(@Param("id") id: string, @Body() dto: RejectPurchaseOrderDto) {
     return this.purchaseOrdersService.reject(id, dto);
   }

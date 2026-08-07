@@ -1,16 +1,18 @@
 import React, { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Tag, Layers, FileText, Boxes, Calendar, Package, ArrowRight, CheckCircle2,
   Filter, ChevronDown, ChevronUp, Check, LayoutList, LayoutGrid, QrCode,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, EASE, MobileCtx } from "../theme";
-import { STATUS_CFG, MAT_TAG, BATCH_DATA, MAT_FILTERS, STATUS_FILTERS, STATUS_FILTER_MAP } from "../data";
-import type { BatchRow } from "../types";
+import { STATUS_CFG, MAT_TAG, MAT_FILTERS, STATUS_FILTERS, STATUS_FILTER_MAP } from "../materialConfig";
+import type { BatchRow, StatusType } from "../types";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
   const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "0.6px", textTransform: "uppercase" as const, padding: "14px 16px", textAlign: "left" as const, whiteSpace: "nowrap" as const, borderBottom: `1px solid rgba(110,15,45,0.08)`, background: T.silkCream };
@@ -203,7 +205,34 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
   const [selectedBatch, setSelectedBatch] = useState<BatchRow | null>(null);
   const [barcodeBatch, setBarcodeBatch] = useState<BatchRow | null>(null);
 
-  const filtered = BATCH_DATA.filter(b => {
+  const { data: grnRes } = useQuery({
+    queryKey: ["raw-material-grns-list"],
+    queryFn: () => rawMaterialsApi.listGrns(),
+  });
+
+  const grnItems = grnRes?.items ?? [];
+
+  const liveBatchRows: BatchRow[] = grnItems.flatMap(grn =>
+    grn.items.map(item => {
+      const remaining = item.quantity - (item.rejectedQuantity ?? 0);
+      const statusType: StatusType = remaining > 10 ? "good" : remaining > 0 ? "warning" : "empty";
+      return {
+        id: grn.id,
+        type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+        details: `${item.name}${item.grade ? ` (${item.grade})` : ""}`,
+        vendor: grn.supplierName,
+        date: grn.receivedDate ? new Date(grn.receivedDate).toLocaleDateString("en-IN") : "—",
+        received: item.quantity,
+        given: item.rejectedQuantity ?? 0,
+        remaining,
+        statusType,
+      };
+    })
+  );
+
+  const batchSource = liveBatchRows;
+
+  const filtered = batchSource.filter(b => {
     const matchMat = matFilter === "All Materials" || b.type === matFilter.replace(" Only", "");
     const matchStatus = statusFilter === "All Status" || b.statusType === STATUS_FILTER_MAP[statusFilter];
     const matchSearch = search === "" || b.id.toLowerCase().includes(search.toLowerCase()) || b.vendor.toLowerCase().includes(search.toLowerCase());
@@ -317,7 +346,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
 
       {(statusFilter !== "All Status" || matFilter !== "All Materials" || search) && (
         <div style={{ marginBottom: 12, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-          Showing <strong style={{ color: T.luxuryBrown }}>{filtered.length}</strong> of {BATCH_DATA.length} batches
+          Showing <strong style={{ color: T.luxuryBrown }}>{filtered.length}</strong> of {batchSource.length} batches
           {statusFilter !== "All Status" && <> · Status: <strong style={{ color: T.royalBurgundy }}>{statusFilter}</strong></>}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
-import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { WarpRequestsService, CreateWarpRequestDto } from "./warp-requests.service";
@@ -33,13 +34,13 @@ export class WarpRequestsController {
   }
 
   @Patch(":id/approve")
-  @AdminOnly()
+  @RequirePermissions("warp_requests.approve")
   approve(@Param("id") id: string, @Body("decidedById") decidedById?: string) {
     return this.warpRequestsService.approve(id, decidedById);
   }
 
   @Patch(":id/reject")
-  @AdminOnly()
+  @RequirePermissions("warp_requests.reject")
   reject(
     @Param("id") id: string,
     @Body("decidedById") decidedById?: string,

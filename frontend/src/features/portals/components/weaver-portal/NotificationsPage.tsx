@@ -74,7 +74,7 @@ export function NotificationsPage() {
   const [filter, setFilter]     = useState<WNFilter>("all");
   const [selected, setSelected] = useState<WeaverNotif | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: () => notificationsApi.list({ userId: user?.id, role: "WEAVER" }),
     enabled: !!user?.id,
@@ -306,7 +306,17 @@ export function NotificationsPage() {
             <div style={{ textAlign: "center" as const, padding: "80px 40px", fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>Loading notifications…</div>
           )}
 
-          {!isLoading && filtered.length === 0 && (
+          {!isLoading && isError && (
+            <div style={{ textAlign: "center" as const, padding: "80px 40px" }}>
+              <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+                <Inbox size={28} color="#C0392B" />
+              </div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Failed to load notifications</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: WN_T.taupe }}>Please try refreshing the page.</div>
+            </div>
+          )}
+
+          {!isLoading && !isError && filtered.length === 0 && (
             <div style={{ textAlign: "center" as const, padding: "80px 40px" }}>
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${WN_T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                 <Inbox size={28} color={WN_T.taupe} />

@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Plus, Edit2,
   LayoutGrid, LayoutList, FileText,
@@ -7,7 +8,6 @@ import {
 import { FactoryLoom } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
 import { STATUS_CFG, LoomBatch, LoomMaterial, LoomSaree } from "./factory-loom/types";
-import { SAMPLE_BATCHES, SAMPLE_MATERIALS, SAMPLE_SAREES } from "./factory-loom/sampleData";
 import { AddLoomModal } from "./factory-loom/AddLoomModal";
 import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
@@ -15,6 +15,9 @@ import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
 import { FadeUp } from "./factory-loom/theme";
 import { ApiError } from "../../../shared/api/client";
 import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { batchesApi } from "../../../shared/api/batches";
+import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
+import { qcApi } from "../../../shared/api/qc";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
@@ -48,9 +51,80 @@ export function FactoryLoomPage() {
   const [showModal, setShowModal] = useState(false);
   const [editLoom, setEditLoom] = useState<FactoryLoom|null>(null);
   const [selected, setSelected] = useState<FactoryLoom|null>(null);
-  const [batches] = useState<LoomBatch[]>(SAMPLE_BATCHES);
-  const [materials] = useState<LoomMaterial[]>(SAMPLE_MATERIALS);
-  const [sarees] = useState<LoomSaree[]>(SAMPLE_SAREES);
+
+  const { data: batchesRes } = useQuery({
+    queryKey: ["factory-loom-batches"],
+    queryFn: () => batchesApi.list(),
+  });
+
+  const { data: stockRes } = useQuery({
+    queryKey: ["factory-loom-materials"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+
+  const { data: qcRes } = useQuery({
+    queryKey: ["factory-loom-qc"],
+    queryFn: () => qcApi.list(500),
+  });
+
+  const batches = useMemo<LoomBatch[]>(() => {
+    if (!batchesRes?.items) return [];
+    return batchesRes.items.map(b => {
+      const completedCount = b.rows.filter(r => r.qcPassed).length;
+      return {
+        batchId: b.id,
+        loomId: b.rows.find(r => r.recipientType === "FACTORY_LOOM")?.factoryLoomId ?? "FL-001",
+        sareeCount: b.totalCount,
+        completedCount,
+        dueDate: new Date(b.dueDate).toLocaleDateString("en-IN"),
+        designCode: b.rows[0]?.designCode ?? "Design",
+        designName: b.rows[0]?.designCode ?? "Design",
+        orderRef: b.id,
+        status: b.status.toLowerCase() as any,
+        startDate: new Date(b.createdAt).toLocaleDateString("en-IN"),
+      };
+    });
+  }, [batchesRes]);
+
+  const materials = useMemo<LoomMaterial[]>(() => {
+    if (!stockRes?.items) return [];
+    return stockRes.items.map(item => ({
+      batchId: `RM-${item.id.slice(-6).toUpperCase()}`,
+      loomId: "FL-001",
+      mirId: `MIR-${item.id.slice(-4).toUpperCase()}`,
+      date: new Date(item.updatedAt).toLocaleDateString("en-IN"),
+      materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+      description: item.name,
+      quantity: item.currentStock,
+      unit: item.unit,
+      grnBatch: `GRN-${item.id.slice(-6).toUpperCase()}`,
+      issuedBy: "Admin",
+    }));
+  }, [stockRes]);
+
+  const sarees = useMemo<LoomSaree[]>(() => {
+    if (!batchesRes?.items) return [];
+    const qcMap = new Map((qcRes?.items ?? []).map(q => [q.sareeId, q]));
+    const list: LoomSaree[] = [];
+
+    for (const b of batchesRes.items) {
+      for (const r of b.rows) {
+        if (r.recipientType === "FACTORY_LOOM" && r.sareeId) {
+          const qc = qcMap.get(r.sareeId);
+          list.push({
+            sareeId: r.sareeId,
+            loomId: r.factoryLoomId ?? "FL-001",
+            batchId: b.id,
+            sareeType: r.sareeTypeCode ?? r.designCode ?? "Silk Saree",
+            status: qc ? "complete" : r.sareeId ? "in-progress" : "pending",
+            completedDate: qc ? new Date(qc.qcDate).toLocaleDateString("en-IN") : undefined,
+            qualityStatus: qc ? (qc.result === "PASSED" ? "pass" : "fail") : undefined,
+          });
+        }
+      }
+    }
+    return list;
+  }, [batchesRes, qcRes]);
 
   const loadLooms = useCallback(async () => {
     setLoading(true);
@@ -94,130 +168,178 @@ export function FactoryLoomPage() {
           installedYear: l.installedYear ? Number(l.installedYear) : undefined,
           notes: l.notes,
         });
-        // create() always defaults to ACTIVE server-side; patch if a different status was chosen.
         const final =
           l.status !== "active"
             ? await factoryLoomsApi.update(created.id, { status: FRONTEND_TO_BACKEND_STATUS[l.status] })
             : created;
         setLooms(prev => [backendLoomToFrontend(final), ...prev]);
       }
+      setShowModal(false);
       setEditLoom(null);
     } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : "Could not save this loom. Please try again.");
+      setSaveError(err instanceof ApiError ? err.message : "Could not save the loom.");
     }
   };
-  const handleEdit = (l: FactoryLoom) => { setEditLoom(l); setShowModal(true); setSelected(null); };
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.4px", textTransform: "uppercase" as const, padding: "13px 18px", textAlign: "left" as const, borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { padding: "13px 18px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const, fontFamily: F.ui, fontSize: 13 };
+  const handleStatusChange = async (loomId: string, st: FactoryLoom["status"]) => {
+    try {
+      const updated = await factoryLoomsApi.update(loomId, { status: FRONTEND_TO_BACKEND_STATUS[st] });
+      setLooms(prev => prev.map(l => (l.id === loomId ? backendLoomToFrontend(updated) : l)));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Could not update status.");
+    }
+  };
 
-  if (selected) return <LoomDetailPage loom={selected} onBack={() => setSelected(null)} onEdit={handleEdit} />;
+  if (selected) {
+    return (
+      <LoomDetailPage
+        loom={selected}
+        onBack={() => setSelected(null)}
+        onEdit={l => { setEditLoom(l); setShowModal(true); }}
+      />
+    );
+  }
 
   return (
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
-      <div style={{ background: T.darkBurgundy, position: "relative" as const, overflow: "hidden", minHeight: 190, display: "flex", alignItems: "stretch" }}>
-        <div style={{ flex: 1, padding: "44px 56px", zIndex: 10, position: "relative" as const }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-            <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>SINCE 1999 · PEOPLE</span>
+    <div style={{ background: "#FFFDF9", minHeight: "100vh", paddingBottom: 60 }}>
+      {/* Top Banner */}
+      <div style={{ background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "28px 56px", borderBottom: `1px solid ${T.borderDef}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <h1 style={{ fontFamily: F.display, fontSize: 26, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.3px" }}>
+              Factory Looms & Power Loom Management
+            </h1>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", margin: "4px 0 0 0" }}>
+              Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
+            </p>
           </div>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <div>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 42, color: "#fff", margin: "0 0 8px", lineHeight: 1.1 }}>Factory Looms</h1>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 560, margin: 0, lineHeight: 1.65 }}>Manage in-house factory looms, track batch assignments, materials, and production output.</p>
-            </div>
-            <Button onClick={() => { setEditLoom(null); setShowModal(true); }} variant="primary" size="lg" className="shrink-0">
-              <Plus size={17} /> Add Factory Loom
-            </Button>
-          </div>
+          <Button variant="secondary" iconLeft={Plus} onClick={() => { setEditLoom(null); setShowModal(true); }}>
+            Register New Power Loom
+          </Button>
         </div>
-        {[320, 460].map((sz, i) => <div key={i} style={{ position: "absolute" as const, right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.03})`, pointerEvents: "none" as const }} />)}
+
+        {/* Stats Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginTop: 24 }}>
+          {[
+            { label: "Total In-House Looms", val: looms.length, sub: "Registered units" },
+            { label: "Active Looms", val: looms.filter(l => l.status === "active").length, sub: "Currently weaving", color: T.green },
+            { label: "Idle Looms", val: looms.filter(l => l.status === "idle").length, sub: "Awaiting warp / weaver", color: T.antiqueGold },
+            { label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", color: T.crimson },
+          ].map((st, i) => (
+            <div key={i} style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "14px 18px" }}>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(255,253,249,0.60)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</div>
+              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: st.color || "#FFFDF9", marginTop: 2 }}>{st.val}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,253,249,0.50)", marginTop: 2 }}>{st.sub}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {(loadError || saveError) && (
-        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{loadError ? `Could not load factory looms: ${loadError}` : saveError}</span>
-          {loadError && <button onClick={() => void loadLooms()} style={{ background: "transparent", border: `1px solid ${T.crimson}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, cursor: "pointer" }}>Retry</button>}
-        </div>
-      )}
-      {loading && !loadError && (
-        <div style={{ padding: "10px 56px", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>Loading factory looms…</div>
-      )}
-
-      {/* Stats */}
-      <div style={{ background: "#FFF", borderBottom: `1px solid ${T.borderDef}`, padding: "14px 56px", display: "flex", gap: 28 }}>
-        {[{ l: "Total Looms", v: looms.length, c: T.luxuryBrown }, { l: "Active", v: looms.filter(l => l.status === "active").length, c: T.green }, { l: "Idle", v: looms.filter(l => l.status === "idle").length, c: T.antiqueGold }, { l: "Maintenance", v: looms.filter(l => l.status === "maintenance").length, c: T.crimson }].map(s => (
-          <div key={s.l} style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: s.c }}>{s.v}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{s.l}</div>
+      {/* Main Body */}
+      <div style={{ padding: "32px 56px 0" }}>
+        {loadError && (
+          <div style={{ background: "rgba(192,57,43,0.08)", border: `1px solid ${T.crimson}`, color: T.crimson, borderRadius: 12, padding: "14px 20px", marginBottom: 20, fontFamily: F.ui, fontSize: 14 }}>
+            {loadError}
           </div>
-        ))}
+        )}
+
+        {/* Controls */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
+            <div style={{ width: 280 }}>
+              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
+            </div>
+            {(["all", "active", "idle", "maintenance"] as const).map(st => (
+              <button
+                key={st}
+                onClick={() => setSf(st)}
+                style={{
+                  padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                  fontFamily: F.ui, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
+                  background: sf === st ? T.royalBurgundy : "#FFFFFF",
+                  color: sf === st ? "#FFFDF9" : T.taupe,
+                  boxShadow: sf === st ? "0 2px 8px rgba(110,15,45,0.20)" : "none",
+                }}
+              >
+                {st} ({st === "all" ? looms.length : looms.filter(l => l.status === st).length})
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: 3 }}>
+            <button onClick={() => setView("card")} style={{ border: "none", background: view === "card" ? "rgba(110,15,45,0.08)" : "transparent", color: view === "card" ? T.royalBurgundy : T.taupe, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>
+              <LayoutGrid size={15} /> Card View
+            </button>
+            <button onClick={() => setView("table")} style={{ border: "none", background: view === "table" ? "rgba(110,15,45,0.08)" : "transparent", color: view === "table" ? T.royalBurgundy : T.taupe, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>
+              <LayoutList size={15} /> Table View
+            </button>
+          </div>
+        </div>
+
+        {/* Looms Listing */}
+        {loading ? (
+          <div style={{ padding: "60px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading factory looms…</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 48, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            {looms.length === 0
+              ? "No power looms registered in the database yet. Click '+ Register New Power Loom' above to add one."
+              : "No power looms match your search criteria."}
+          </div>
+        ) : view === "card" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+            {filtered.map(l => (
+              <LoomCard
+                key={l.id}
+                loom={l}
+                batches={batches}
+                sarees={sarees}
+                onView={() => setSelected(l)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left", fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
+                  <th style={{ padding: "14px 20px" }}>Loom #</th>
+                  <th style={{ padding: "14px 20px" }}>Operator</th>
+                  <th style={{ padding: "14px 20px" }}>Location</th>
+                  <th style={{ padding: "14px 20px" }}>Status</th>
+                  <th style={{ padding: "14px 20px", textAlign: "right" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(l => (
+                  <tr key={l.id} style={{ borderBottom: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }}>
+                    <td style={{ padding: "14px 20px", fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</td>
+                    <td style={{ padding: "14px 20px", color: T.luxuryBrown }}>{l.operatorName || "—"}</td>
+                    <td style={{ padding: "14px 20px", color: T.taupe }}>{l.location || "—"}</td>
+                    <td style={{ padding: "14px 20px" }}>
+                      <span style={{ padding: "4px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: STATUS_CFG[l.status].bg, color: STATUS_CFG[l.status].color }}>
+                        {STATUS_CFG[l.status].label}
+                      </span>
+                    </td>
+                    <td style={{ padding: "14px 20px", textAlign: "right" }}>
+                      <button onClick={() => setSelected(l)} style={{ border: "none", background: "none", color: T.royalBurgundy, cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13, marginRight: 12 }}>View Details</button>
+                      <button onClick={() => { setEditLoom(l); setShowModal(true); }} style={{ border: "none", background: "none", color: T.taupe, cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13 }}><Edit2 size={14} /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />
 
-      <div style={{ padding: "26px 56px 0" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 22 }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            {(["all", "active", "idle", "maintenance"] as const).map(f => (
-              <Button key={f} onClick={() => setSf(f)} variant={sf === f ? "primary" : "tertiary"} size="sm">
-                {f === "all" ? "All Looms" : f.charAt(0).toUpperCase() + f.slice(1)}
-              </Button>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom or operator..." className="w-[200px]" />
-            <div style={{ display: "flex", gap: 5 }}>
-              {([["card", LayoutGrid, "Card"], ["table", LayoutList, "Table"]] as const).map(([v, Icon, label]) => (
-                <Button key={v} onClick={() => setView(v as any)} variant={view === v ? "primary" : "secondary"} size="sm">
-                  <Icon size={13} />{label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {filtered.length === 0
-          ? <div style={{ textAlign: "center" as const, padding: "80px 0", fontFamily: F.ui, color: T.taupe }}>No looms found.</div>
-          : view === "card"
-          ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20, paddingBottom: 60 }}>
-              {filtered.map((l, i) => <FadeUp key={l.id} delay={i * 0.05}><LoomCard loom={l} batches={batches} sarees={sarees} onView={() => setSelected(l)} /></FadeUp>)}
-            </div>
-          ) : (
-            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 60 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr>{["ID","Loom","Location","Operator","Status","Active Batches","Sarees Done","Actions"].map(h => <th key={h} style={TH}>{h}</th>)}</tr></thead>
-                <tbody>
-                  {filtered.map((l, i) => {
-                    const sc = STATUS_CFG[l.status];
-                    const ab = batches.filter(b => b.loomId === l.id && b.status === "active").length;
-                    const done = sarees.filter(s => s.loomId === l.id && s.status === "complete").length;
-                    return (
-                      <tr key={l.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory }}>
-                        <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{l.id}</td>
-                        <td style={{ ...TD, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</td>
-                        <td style={{ ...TD, fontSize: 13, color: T.taupe }}>{l.location}</td>
-                        <td style={{ ...TD }}>{l.operatorName}</td>
-                        <td style={TD}><span style={{ background: sc.bg, color: sc.color, borderRadius: 7, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>{sc.icon}{sc.label}</span></td>
-                        <td style={{ ...TD, textAlign: "center" as const, fontWeight: 700, color: T.royalBurgundy }}>{ab}</td>
-                        <td style={{ ...TD, textAlign: "center" as const, fontWeight: 700, color: T.green }}>{done}</td>
-                        <td style={TD}>
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <Button onClick={() => setSelected(l)} variant="secondary" size="sm"><FileText size={13} /> View</Button>
-                            <Button onClick={() => handleEdit(l)} variant="tertiary" size="sm"><Edit2 size={13} /> Edit</Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )
-        }
-      </div>
-      <AddLoomModal open={showModal} onClose={() => { setShowModal(false); setEditLoom(null); }} onAdd={handleAddOrEdit} editLoom={editLoom} />
+      <AddLoomModal
+        open={showModal}
+        onClose={() => { setShowModal(false); setEditLoom(null); setSaveError(null); }}
+        onAdd={handleAddOrEdit}
+        editLoom={editLoom}
+      />
     </div>
   );
 }

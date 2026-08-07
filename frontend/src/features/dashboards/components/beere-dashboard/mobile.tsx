@@ -134,8 +134,8 @@ function MobileHero() {
 // MOBILE — METRICS
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobileMetrics() {
-  const { metrics, isLoading } = useDashboardMetrics();
-  const displayMetrics = metrics.map((m, i) => ({ ...m, val: isLoading ? "—" : m.val, ico: METRIC_ICONS[i] }));
+  const { metrics, isLoading, isError } = useDashboardMetrics();
+  const displayMetrics = metrics.map((m, i) => ({ ...m, val: isError ? "Error" : isLoading ? "—" : m.val, sub: isError ? "Failed to load" : m.sub, ico: METRIC_ICONS[i] }));
   const normal = displayMetrics.filter(m => !m.hi);
   const highlighted = displayMetrics.find(m => m.hi) ?? displayMetrics[0];
   const top2 = normal.slice(0, 2);

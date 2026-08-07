@@ -39,7 +39,7 @@ export function Pill({ active, children, onClick }: { active: boolean, children:
   );
 }
 
-export function SectionTitle({ title, sub, action, onAction }: { title: string, sub: string, action: string, onAction?: () => void }) {
+export function SectionTitle({ title, sub, action, onAction }: { title: string, sub: string, action?: string, onAction?: () => void }) {
   // Section actions on this page are all downloads/exports, so they follow the
   // portal's download permission.
   const dlAllowed = useDownloadsAllowed();

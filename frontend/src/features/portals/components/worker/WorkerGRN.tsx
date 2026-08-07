@@ -20,11 +20,7 @@ function generateGrnId(seq: number): string {
   return `GRN-${y}-${m}-${String(seq).padStart(3, "0")}`;
 }
 
-export const INITIAL_HISTORY: ReceiptRecord[] = [
-  { grnId: "GRN-2026-MAY-014", poRef: "PO-2026-020", vendor: "Surat Zari Works",         firmName: "Beere Kesava Silks (Head Firm)", dateReceived: "20 May 2026", materialsSummary: "Jari - Polyester 2G Gold (6 Buns)", receivedBy: "Worker Staff (RS)", status: "Match" },
-  { grnId: "GRN-2026-MAY-011", poRef: "PO-2026-021", vendor: "Kanchipuram Silks",        firmName: "Beere Kesava Silks (Head Firm)", dateReceived: "17 May 2026", materialsSummary: "Resham - Red (30 kg), Resham - Gold (24 kg)", receivedBy: "Worker Staff (RS)", status: "Short" },
-  { grnId: "GRN-2026-MAY-006", poRef: "PO-2026-022", vendor: "Sri Venkateswara Textiles", firmName: "Beere Kesava Silks (Head Firm)", dateReceived: "12 May 2026", materialsSummary: "Warp - Cotton (52 kg)", receivedBy: "Worker Staff (MK)", status: "Excess" },
-];
+export const INITIAL_HISTORY: ReceiptRecord[] = [];
 
 function StepBar({ current }: { current: number }) {
   return (

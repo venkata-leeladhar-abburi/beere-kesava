@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { customersApi } from '../../../../shared/api/customers';
 import { 
   IndianRupee, Plus, Wallet, CreditCard, Check,
 } from 'lucide-react';
@@ -42,13 +44,26 @@ export function NewSaleFlow() {
   const priceDiscount = originalPrice - soldPrice;
   const fmtPrice = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
-  const prevCustomers: Customer[] = [
-    { name: "Smt. Annapurna Devi", phone: "98765 43210", purchases: 18, total: "₹1,84,000", lastPurchase: "3 days ago", initials: "AD" },
-    { name: "Smt. Meenakshi Rao", phone: "87654 32109", purchases: 7, total: "₹68,500", lastPurchase: "2 weeks ago", initials: "MR" },
-    { name: "Smt. Lakshmi Prasad", phone: "76543 21098", purchases: 12, total: "₹1,12,000", lastPurchase: "1 month ago", initials: "LP" },
-    { name: "Smt. Savitri Devi", phone: "65432 10987", purchases: 3, total: "₹24,000", lastPurchase: "3 months ago", initials: "SD" },
-    { name: "Smt. Radha Krishnan", phone: "54321 09876", purchases: 22, total: "₹2,40,000", lastPurchase: "1 week ago", initials: "RK" },
-  ];
+  const { data: customersRes } = useQuery({
+    queryKey: ["customers-list-newsale"],
+    queryFn: () => customersApi.list(100),
+  });
+
+  const prevCustomers: Customer[] = useMemo(() => {
+    return (customersRes?.items ?? []).map(c => {
+      const parts = c.name.split(" ").filter(Boolean);
+      const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : c.name.slice(0, 2).toUpperCase();
+      return {
+        id: c.id,
+        name: c.name,
+        phone: c.phone ?? "—",
+        purchases: 1,
+        total: "₹12,500",
+        lastPurchase: new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        initials,
+      };
+    });
+  }, [customersRes]);
 
   const filteredCustomers = custSearch.length >= 2
     ? prevCustomers.filter(c =>

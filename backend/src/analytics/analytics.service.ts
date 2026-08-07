@@ -50,7 +50,7 @@ export class AnalyticsService {
   }
 
   async getProductionTrends() {
-    const sarees = await this.prisma.saree.findMany({
+    const sarees = await this.prisma.batchSareeRow.findMany({
       select: { createdAt: true, qcPassed: true },
     });
 
@@ -66,15 +66,15 @@ export class AnalyticsService {
 
   async getRevenueSplit() {
     const sales = await this.prisma.saleRecord.findMany({
-      select: { channel: true, totalAmount: true },
+      select: { channel: true, amount: true },
     });
 
     let retail = 0;
     let wholesale = 0;
 
     sales.forEach((s) => {
-      if (s.channel === "RETAIL") retail += Number(s.totalAmount);
-      else wholesale += Number(s.totalAmount);
+      if (s.channel === "RETAIL") retail += Number(s.amount);
+      else wholesale += Number(s.amount);
     });
 
     return {
@@ -189,18 +189,28 @@ export class AnalyticsService {
     const buckets = this.buildMonthBuckets(n);
     const rangeStart = buckets[0].start;
 
-    const qcRecords = await this.prisma.qcRecord.findMany({
-      where: { qcDate: { gte: rangeStart } },
-      select: { qcDate: true, result: true },
-    });
+    const [qcRecords, batchRows] = await Promise.all([
+      this.prisma.qcRecord.findMany({
+        where: { qcDate: { gte: rangeStart } },
+        select: { qcDate: true, result: true },
+      }),
+      this.prisma.batchSareeRow.findMany({
+        where: { createdAt: { gte: rangeStart } },
+        select: { createdAt: true },
+      }),
+    ]);
 
     const map: Record<string, { month: string; produced: number; passed: number }> = {};
     buckets.forEach((b) => (map[b.key] = { month: b.key, produced: 0, passed: 0 }));
 
+    batchRows.forEach((r) => {
+      const key = this.monthKey(new Date(r.createdAt));
+      if (map[key]) map[key].produced += 1;
+    });
+
     qcRecords.forEach((r) => {
       const key = this.monthKey(new Date(r.qcDate));
       if (!map[key]) return;
-      map[key].produced += 1;
       if (r.result === "PASSED") map[key].passed += 1;
     });
 

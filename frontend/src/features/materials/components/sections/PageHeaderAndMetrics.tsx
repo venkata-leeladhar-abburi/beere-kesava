@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
 import { imgWarp } from "../../../../shared/constants/imageData";
 import { T, F, EASE, G_CARD, NUM, MobileCtx } from "../theme";
-import { MATERIAL_METRICS } from "../data";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { AnimatedNumber } from "../common/primitives";
 
 export function PageHeader() {
@@ -34,6 +35,61 @@ export function PageHeader() {
 
 export function MetricsBar() {
   const { px } = useContext(MobileCtx);
+  const { data: stockRes, isLoading: stockLoading } = useQuery({
+    queryKey: ["raw-material-stock-list"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const stockItems = stockRes?.items ?? [];
+
+  const warpItems = stockItems.filter(i => i.materialType === "WARP");
+  const warpKg = warpItems.reduce((s, i) => s + Number(i.currentStock), 0);
+  const warpSarees = Math.floor(warpKg * 2.5);
+
+  const reshamItems = stockItems.filter(i => i.materialType === "RESHAM");
+  const reshamKg = reshamItems.reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamColors = new Set(reshamItems.map(i => i.color).filter(Boolean)).size;
+
+  const jariItems = stockItems.filter(i => i.materialType === "JARI");
+  const jariBuns = jariItems
+    .filter(i => (i.unit ?? "").toLowerCase().includes("bun"))
+    .reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariReels = jariItems
+    .filter(i => (i.unit ?? "").toLowerCase().includes("reel"))
+    .reduce((s, i) => s + Number(i.currentStock), 0);
+
+  const totalJariStock = jariItems.reduce((s, i) => s + Number(i.currentStock), 0);
+  const displayJariBuns = jariBuns > 0 ? jariBuns : totalJariStock;
+  const displayJariReels = jariReels > 0 ? jariReels : totalJariStock * 4;
+
+  const totalStockKg = Math.round(warpKg + reshamKg);
+
+  const materialMetrics = [
+    {
+      label: "Total In Stock",
+      val: stockLoading ? "0" : String(totalStockKg),
+      sub: "kg Warp & Resham",
+      hi: false,
+    },
+    {
+      label: "Warp Available",
+      val: stockLoading ? "0" : String(Math.round(warpKg)),
+      sub: `${warpSarees} sarees`,
+      hi: false,
+    },
+    {
+      label: "Resham Available",
+      val: stockLoading ? "0" : String(Math.round(reshamKg)),
+      sub: `${reshamColors} colors`,
+      hi: false,
+    },
+    {
+      label: "Jari Alerts",
+      val: stockLoading ? "0 Buns" : `${Math.round(displayJariBuns)} Buns`,
+      sub: `${Math.round(displayJariReels)} Reels`,
+      hi: true,
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -42,7 +98,7 @@ export function MetricsBar() {
       style={{ padding: `0 ${px}px`, marginTop: -72, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: G_CARD, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {MATERIAL_METRICS.map((m, i) => (
+        {materialMetrics.map((m, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20, backgroundColor: "rgba(0,0,0,0)" }}

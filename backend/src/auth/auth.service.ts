@@ -18,6 +18,7 @@ export class AuthService {
   }
 
   private readonly otpTtlMs = 5 * 60 * 1000;
+  private readonly maxOtpAttempts = 5;
 
   async requestOtp(dto: RequestOtpDto) {
     const phone = this.cleanPhone(dto.phone);
@@ -79,6 +80,12 @@ export class AuthService {
       throw new UnauthorizedException("OTP has expired. Please request a new one.");
     }
 
+    if (otpRow.attempts >= this.maxOtpAttempts) {
+      throw new UnauthorizedException(
+        "Too many incorrect attempts. Please request a new OTP.",
+      );
+    }
+
     // OTP validation - fixed to 123456
     if (dto.code !== "123456" || dto.code !== otpRow.code) {
       await this.prisma.otpCode.update({
@@ -103,6 +110,15 @@ export class AuthService {
     let userId = user?.id;
     let name = user ? `${user.firstName} ${user.lastName}` : "";
     let email = user?.email || "";
+    let accessLevel: AccessLevel = user?.accessLevel || AccessLevel.FULL_ACCESS;
+    let empId = user?.empId ?? null;
+    let dateAdded: Date | null = user?.dateAdded ?? null;
+    // Distinct from `userId`: the real Weaver.id for WEAVER-role sessions,
+    // used by weaver-portal pages to scope data (batches/payments/etc are
+    // FK'd to Weaver.id, not User.id). `userId`/JWT `sub` stays the actual
+    // User.id so permission overrides/audit trail keep working correctly —
+    // never overload it with the Weaver id.
+    let weaverId: string | null = user?.linkedWeaverId ?? null;
 
     if (!user) {
       const weaver = await this.prisma.weaver.findFirst({
@@ -113,6 +129,12 @@ export class AuthService {
         userId = weaver.id;
         name = weaver.name;
         email = weaver.email;
+        accessLevel = AccessLevel.FULL_ACCESS;
+        empId = weaver.code;
+        dateAdded = weaver.createdAt;
+        // No User row at all in this fallback path — the Weaver's own id
+        // doubles as both the session identity and the weaver-portal id.
+        weaverId = weaver.id;
       } else {
         // Fallback: If unknown phone number, auto-create a standard Admin or return SuperAdmin
         if (phone === "9999999999") {
@@ -131,6 +153,9 @@ export class AuthService {
           userId = user.id;
           name = `${user.firstName} ${user.lastName}`;
           email = user.email || "";
+          accessLevel = user.accessLevel;
+          empId = user.empId;
+          dateAdded = user.dateAdded;
         }
       }
     }
@@ -140,6 +165,7 @@ export class AuthService {
       mobile: phone,
       role,
       name,
+      accessLevel,
     };
 
     const token = this.jwtService.sign(payload);
@@ -148,10 +174,14 @@ export class AuthService {
       token,
       user: {
         id: userId,
+        weaverId,
+        empId,
         name,
         email,
         mobile: phone,
         role,
+        accessLevel,
+        dateAdded,
       },
     };
   }

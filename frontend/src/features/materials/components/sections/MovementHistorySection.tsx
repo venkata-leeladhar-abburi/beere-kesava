@@ -1,14 +1,119 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Download } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, EASE, MobileCtx } from "../theme";
-import { MOVEMENT_ENTRIES, MOVE_CHART_DATA } from "../data";
 import { SectionHeader, FadeUp } from "../common/primitives";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { materialIssuesApi } from "../../../../shared/api/material-issues";
+
+function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
+  const q = Number(quantity || 0);
+  if (!unit) return q;
+  const u = unit.trim().toLowerCase();
+  if (u === "g" || u === "gram" || u === "grams") return q / 1000;
+  return q;
+}
 
 export function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMovementReport: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+
+  const { data: rawGrns } = useQuery({
+    queryKey: ["grn-receipts"],
+    queryFn: () => rawMaterialsApi.listGrns(),
+  });
+
+  const { data: rawIssues } = useQuery({
+    queryKey: ["material-issues"],
+    queryFn: () => materialIssuesApi.list(100),
+  });
+
+  const { data: rawStock } = useQuery({
+    queryKey: ["raw-material-stock"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+
+  const stats = useMemo(() => {
+    const grns = rawGrns?.items ?? [];
+    const issues = rawIssues?.items ?? [];
+    const stockItems = rawStock?.items ?? [];
+
+    let receivedKg = 0;
+    grns.forEach(g => {
+      g.items.forEach(i => {
+        receivedKg += parseKg(i.quantity, (i as any).unit || "KG");
+      });
+    });
+
+    let issuedKg = 0;
+    issues.forEach(iss => {
+      iss.items.forEach(i => {
+        issuedKg += parseKg(i.quantity, i.unit);
+      });
+    });
+
+    const currentStockKg = stockItems.reduce((sum, s) => sum + parseKg(s.currentStock, s.unit), 0);
+    const inFactoryKg = currentStockKg > 0 ? currentStockKg : Math.max(0, receivedKg - issuedKg);
+
+    // Timeline entries
+    const grnEntries = grns.map(g => {
+      const totalQtyKg = g.items.reduce((s, i) => s + parseKg(i.quantity, (i as any).unit || "KG"), 0);
+      return {
+        type: "in" as const,
+        desc: `${g.supplierName ?? "Vendor"} — ${g.items.map(i => `${i.name} (${i.quantity} ${i.unitPrice ? "kg" : "Buns"})`).join(", ")}`,
+        time: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+        ref: g.id,
+        date: g.receivedDate ? new Date(g.receivedDate).getTime() : Date.now(),
+        qty: Math.round(totalQtyKg * 10) / 10,
+        monthLabel: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { month: "short", year: "2-digit" }) : "Recent",
+      };
+    });
+
+    const issueEntries = issues.map(iss => {
+      const totalQtyKg = iss.items.reduce((s, i) => s + parseKg(i.quantity, i.unit), 0);
+      return {
+        type: "out" as const,
+        desc: `Issued to Weaver/Loom — ${iss.items.map(i => `${i.materialType} ${i.quantity} ${i.unit}`).join(", ")}`,
+        time: new Date(iss.issuedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        ref: iss.id,
+        date: new Date(iss.issuedAt).getTime(),
+        qty: Math.round(totalQtyKg * 10) / 10,
+        monthLabel: new Date(iss.issuedAt).toLocaleDateString("en-GB", { month: "short", year: "2-digit" }),
+      };
+    });
+
+    const entries = [...grnEntries, ...issueEntries].sort((a, b) => b.date - a.date);
+
+    // Dynamic Chart Data aggregated by month
+    const chartMap = new Map<string, { label: string; received: number; given: number; timestamp: number }>();
+
+    grnEntries.forEach(g => {
+      const existing = chartMap.get(g.monthLabel) ?? { label: g.monthLabel, received: 0, given: 0, timestamp: g.date };
+      existing.received += g.qty;
+      chartMap.set(g.monthLabel, existing);
+    });
+
+    issueEntries.forEach(i => {
+      const existing = chartMap.get(i.monthLabel) ?? { label: i.monthLabel, received: 0, given: 0, timestamp: i.date };
+      existing.given += i.qty;
+      chartMap.set(i.monthLabel, existing);
+    });
+
+    const chartData = Array.from(chartMap.values()).sort((a, b) => a.timestamp - b.timestamp);
+    const finalChartData = chartData.length > 0 ? chartData : [
+      { label: "Current", received: Math.round(receivedKg), given: Math.round(issuedKg), timestamp: Date.now() }
+    ];
+
+    return {
+      receivedKg: Math.round(receivedKg),
+      issuedKg: Math.round(issuedKg),
+      inFactoryKg: Math.round(inFactoryKg),
+      entries,
+      chartData: finalChartData,
+    };
+  }, [rawGrns, rawIssues, rawStock]);
 
   return (
     <section id="mat-movement" style={{ padding: `44px ${px}px 0` }}>
@@ -39,10 +144,10 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
           <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: isMobile ? "column" : "row", gap: 32, alignItems: "stretch" }}>
             <div style={{ flex: "0 0 58%", display: "flex", flexDirection: "column" }}>
               {(() => {
-                const maxVal = Math.max(...MOVE_CHART_DATA.flatMap(d => [d.received, d.given]));
+                const maxVal = Math.max(1, ...stats.chartData.flatMap(d => [d.received, d.given]));
                 return (
                   <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 10, minHeight: 220 }}>
-                    {MOVE_CHART_DATA.map(d => (
+                    {stats.chartData.map(d => (
                       <div key={d.label} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
                         <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 5, width: "100%", justifyContent: "center" }}>
                           <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, ease: EASE }} style={{ width: 18, height: `${(d.received / maxVal) * 100}%`, background: T.royalBurgundy, borderRadius: "5px 5px 0 0", minHeight: 4, transformOrigin: "bottom" }} />
@@ -66,9 +171,9 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
               {[
-                { label: "Total received from vendors", value: "412 kg", sub: "Across all deliveries in this period",  color: T.royalBurgundy, bg: "rgba(110,15,45,0.05)",  border: "rgba(110,15,45,0.14)"  },
-                { label: "Total given to weavers",      value: "157 kg", sub: "Across all issue slips in this period", color: T.antiqueGold,   bg: "rgba(200,155,71,0.06)", border: "rgba(200,155,71,0.20)" },
-                { label: "Currently still in factory",  value: "255 kg", sub: "Net stock remaining in the store",      color: T.green,         bg: "rgba(30,102,64,0.06)",  border: "rgba(30,102,64,0.20)"  },
+                { label: "Total received from vendors", value: `${stats.receivedKg} kg`, sub: "Across all deliveries in this period",  color: T.royalBurgundy, bg: "rgba(110,15,45,0.05)",  border: "rgba(110,15,45,0.14)"  },
+                { label: "Total given to weavers",      value: `${stats.issuedKg} kg`, sub: "Across all issue slips in this period", color: T.antiqueGold,   bg: "rgba(200,155,71,0.06)", border: "rgba(200,155,71,0.20)" },
+                { label: "Currently still in factory",  value: `${stats.inFactoryKg} kg`, sub: "Net stock remaining in the store",      color: T.green,         bg: "rgba(30,102,64,0.06)",  border: "rgba(30,102,64,0.20)"  },
               ].map(row => (
                 <div key={row.label} style={{ flex: 1, background: row.bg, border: `1px solid ${row.border}`, borderRadius: 14, padding: "22px 22px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.taupe, marginBottom: 8 }}>{row.label}</div>
@@ -89,7 +194,11 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
           </div>
 
           <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 0 }}>
-            {MOVEMENT_ENTRIES.map((entry, i) => (
+            {stats.entries.length === 0 ? (
+              <div style={{ padding: "28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                No material movement entries recorded yet.
+              </div>
+            ) : stats.entries.map((entry, i) => (
               <motion.div
                 key={entry.ref}
                 initial={{ opacity: 0, y: 5 }}
@@ -98,7 +207,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 transition={{ duration: 0.3, delay: i * 0.03, ease: EASE }}
                 style={{
                   display: "flex", alignItems: "center", gap: 16, padding: "12px 16px",
-                  borderBottom: i < MOVEMENT_ENTRIES.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                  borderBottom: i < stats.entries.length - 1 ? `1px solid ${T.borderDef}` : "none",
                   background: i % 2 === 0 ? "transparent" : T.silkCream,
                 }}
               >

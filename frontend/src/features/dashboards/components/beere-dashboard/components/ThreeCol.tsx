@@ -14,15 +14,15 @@ function formatMonthLabel(month: string): string {
 }
 
 export function ProductionProgress() {
-  const { qcPassRate, paymentsCollectedPct, isLoading } = useDashboardAnalytics();
+  const { qcPassRate, paymentsCollectedPct, isLoading, isError } = useDashboardAnalytics();
 
   // "Inventory" has no backend source — raw-material stock tracking is not
   // implemented (same documented gap as the Materials feature). Left as a
   // fixed placeholder rather than inventing a number.
   const progBars = [
-    { label: "Production (QC Pass)", pct: isLoading ? 0 : qcPassRate, color: "#6B1A2A" },
-    { label: "Inventory", pct: 0, color: "#845E04" },
-    { label: "Payments Collected", pct: isLoading ? 0 : paymentsCollectedPct, color: "#A0506A" },
+    { label: "Production (QC Pass)", pct: isLoading ? 0 : qcPassRate, color: "#6B1A2A", err: isError },
+    { label: "Inventory", pct: 0, color: "#845E04", err: false },
+    { label: "Payments Collected", pct: isLoading ? 0 : paymentsCollectedPct, color: "#A0506A", err: isError },
   ];
 
   return (
@@ -44,8 +44,8 @@ export function ProductionProgress() {
             <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>
               {b.label}
             </div>
-            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: b.color, ...NUM }}>
-              {b.pct}%
+            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 16, color: b.err ? "#C0392B" : b.color, ...NUM }}>
+              {b.err ? "Error" : `${b.pct}%`}
             </div>
           </div>
         ))}
@@ -56,7 +56,7 @@ export function ProductionProgress() {
 
 export function SareesProduced({ compact }: { compact?: boolean }) {
   const [period, setPeriod] = useState("Month");
-  const { totalSareesProduced, activeBatchesCount, weaversWorkingCount, isLoading } = useDashboardAnalytics();
+  const { totalSareesProduced, activeBatchesCount, weaversWorkingCount, inStockSareesCount, isLoading, isError } = useDashboardAnalytics();
   const { data: productionTrendRes } = useQuery({
     queryKey: ["analytics-production-trend-monthly", "dashboard"],
     queryFn: () => analyticsApi.getProductionTrendMonthly(4),
@@ -88,7 +88,7 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
       </div>
       <div style={{ marginBottom: 4 }}>
         <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 48 : 60, color: T.luxuryBrown, lineHeight: 1.0, ...NUM }}>
-          <AnimatedNumber raw={String(isLoading ? 0 : totalSareesProduced)} />
+          {isError ? <span style={{ fontSize: compact ? 28 : 34, color: "#C0392B" }}>Error</span> : <AnimatedNumber raw={String(isLoading ? 0 : totalSareesProduced)} />}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
           <TrendingUp size={12} color={T.green} />
@@ -106,9 +106,9 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
       </div>
       <div style={{ display: "flex", borderTop: `1px solid ${T.borderDef}`, paddingTop: 20, paddingBottom: 28 }}>
         {[
-          { num: String(isLoading ? 0 : activeBatchesCount), label: "Active Batches" },
-          { num: String(isLoading ? 0 : weaversWorkingCount), label: "Weavers Working" },
-          { num: "—", label: "In Stock" }, // no raw-material/finished-stock backend — documented gap
+          { num: isError ? "Err" : String(isLoading ? 0 : activeBatchesCount), label: "Active Batches" },
+          { num: isError ? "Err" : String(isLoading ? 0 : weaversWorkingCount), label: "Weavers Working" },
+          { num: isError ? "Err" : String(isLoading ? 0 : inStockSareesCount), label: "In Stock" },
         ].map((s, i) => (
           <div key={s.label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
             <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>
@@ -123,8 +123,8 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
 }
 
 export function FeaturedProduct({ compact }: { compact?: boolean }) {
-  const { weaversWorkingCount, designCodesCount, qcPassRate, overdueInvoicesCount, isLoading } = useDashboardAnalytics();
-  const v = (n: number) => (isLoading ? "—" : String(n));
+  const { weaversWorkingCount, designCodesCount, qcPassRate, overdueInvoicesCount, inStockSareesCount, isLoading, isError } = useDashboardAnalytics();
+  const v = (n: number) => (isError ? "Error" : isLoading ? "—" : String(n));
   return (
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
@@ -133,8 +133,8 @@ export function FeaturedProduct({ compact }: { compact?: boolean }) {
           { label: "Saree Codes", val: `${v(designCodesCount)} codes`, vc: T.luxuryBrown, rb: false, bb: true },
           { label: "QC Pass", val: `${v(qcPassRate)}%`, vc: T.green, rb: true, bb: true },
           { label: "Overdue", val: `${v(overdueInvoicesCount)} invoices`, vc: "#C0392B", rb: false, bb: true, alert: overdueInvoicesCount > 0 },
-          { label: "Inventory", val: "No data", vc: T.taupe, rb: true, bb: false }, // no raw-material stock backend
-          { label: "Dispatch", val: "No data", vc: T.taupe, rb: false, bb: false }, // no per-day dispatch tracking backend
+          { label: "Inventory", val: `${v(inStockSareesCount)} in stock`, vc: T.luxuryBrown, rb: true, bb: false },
+          { label: "Dispatch", val: "No data", vc: T.taupe, rb: false, bb: false },
         ].map((s, idx) => (
           <div key={s.label} style={{
             display: "flex", flexDirection: "column", justifyContent: "center",

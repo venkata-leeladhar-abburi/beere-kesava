@@ -29,6 +29,7 @@ function useRealTableRows() {
     const s: BackendWeaverStats | undefined = statsById.get(w.id);
     return {
       id: w.id,
+      code: w.code,
       name: w.name,
       village: w.village || "—",
       mobile: w.phone || "—",
@@ -95,7 +96,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   transition={{ duration: 0.38, delay: i * 0.04 }}
                   style={{ background: i % 2 === 1 ? "rgba(247,242,234,0.50)" : "#FFFFFF" }}
                 >
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.id}</span></td>
+                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span></td>
                   <td style={TD}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

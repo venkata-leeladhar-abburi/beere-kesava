@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateVendorBillDto } from "./dto/create-vendor-bill.dto";
@@ -13,6 +14,7 @@ export class VendorBillsController {
   constructor(private readonly vendorBillsService: VendorBillsService) {}
 
   @Post()
+  @RequirePermissions("vendor_bills.create")
   create(@Body() dto: CreateVendorBillDto) {
     return this.vendorBillsService.create(dto);
   }

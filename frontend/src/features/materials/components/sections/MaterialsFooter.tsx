@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { motion } from "motion/react";
 import { T, F, MobileCtx } from "../theme";
-import { FOOTER_LINKS } from "../data";
+import { FOOTER_LINKS } from "../materialConfig";
 import { Button, Input } from "../../../../shared/ui/primitives";
 
 export function MaterialsFooter() {

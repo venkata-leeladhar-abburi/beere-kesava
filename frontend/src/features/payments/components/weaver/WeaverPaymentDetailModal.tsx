@@ -25,7 +25,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   // Real saree-type rate card from GET /rates. Falls back to the static
   // RATE_ROWS demo rates only if the backend has no rates configured yet.
-  const { data: ratesRes } = useQuery({
+  const { data: ratesRes, isError: ratesError } = useQuery({
     queryKey: ["rates-for-weaver-payment-detail"],
     queryFn: () => ratesApi.list(),
   });
@@ -87,6 +87,11 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
           {/* Section 1 — Making Charges Breakdown */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 10 }}>Making Charges Breakdown</div>
+            {ratesError && (
+              <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
+                Failed to load rates — charges below use fallback rates and may not reflect current pricing.
+              </div>
+            )}
             <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>

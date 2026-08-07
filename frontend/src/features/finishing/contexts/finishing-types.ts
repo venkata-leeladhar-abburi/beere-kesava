@@ -150,4 +150,6 @@ export interface FinishingContextValue {
   assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
   receiveQuotationSarees: (quotationId: string, sareeIds: string[], receivedBy: string) => void;
   markQuotationDispatched: (quotationId: string, dispatchId: string) => void;
+  isError: boolean;
+  error: unknown;
 }

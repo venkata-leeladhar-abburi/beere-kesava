@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import {
   Hash, ImageSquare, Swatches, Stack, Graph, CheckCircle,
@@ -9,6 +10,7 @@ import {
 
 import { useDesignLibrary, DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { weaversApi } from "../../../shared/api/weavers";
 
 import { T, F, G } from "./theme";
 import {
@@ -19,16 +21,6 @@ import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shar
 
 export { DesignCodeCard };
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE
-// ═══════════════════════════════════════════════════════════════════════════════
-const WEAVERS_LIST = [
-  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni", initials: "PV", looms: 3 },
-  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar", initials: "RK", looms: 5 },
-  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", initials: "SM", looms: 2 },
-];
-
 export function DesignLibraryPage() {
   const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch } = useDesignLibrary();
   const [search, setSearch]   = useState("");
@@ -37,11 +29,25 @@ export function DesignLibraryPage() {
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [slipDesign, setSlipDesign] = useState<DesignEntry | null>(null);
 
+  const { data: weaversRes } = useQuery({
+    queryKey: ["weavers-list"],
+    queryFn: () => weaversApi.list(100),
+  });
+
+  const weaversList = (weaversRes?.items ?? []).map(w => ({
+    id: w.id,
+    name: w.name,
+    initials: w.initials,
+    looms: w.looms || 1,
+  }));
+
   const [dispRecipientType, setDispRecipientType] = useState<"weaver" | "loom">("weaver");
-  const [dispWeaverId, setDispWeaverId] = useState(WEAVERS_LIST[0].id);
+  const [dispWeaverId, setDispWeaverId] = useState("");
   const [dispLoomNum, setDispLoomNum] = useState<number>(1);
   const [dispInstructions, setDispInstructions] = useState("");
-  
+
+  const activeWeaverId = dispWeaverId || (weaversList[0]?.id ?? "");
+
   // Custom file upload previews (mock states)
   const [uploadedSlip, setUploadedSlip] = useState<string | null>(null);
   const [uploadedGraph, setUploadedGraph] = useState<string | null>(null);
@@ -53,11 +59,11 @@ export function DesignLibraryPage() {
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
 
-  const selectedWeaver = WEAVERS_LIST.find(w => w.id === dispWeaverId);
+  const selectedWeaver = weaversList.find(w => w.id === activeWeaverId);
 
   const handleSendDispatch = () => {
     const rName = dispRecipientType === "weaver" ? (selectedWeaver?.name || "Weaver") : `Loom ${dispLoomNum}`;
-    const rId = dispRecipientType === "weaver" ? dispWeaverId : `Loom ${dispLoomNum}`;
+    const rId = dispRecipientType === "weaver" ? activeWeaverId : `Loom ${dispLoomNum}`;
 
     addDispatch({
       recipientType: dispRecipientType,
@@ -163,8 +169,8 @@ export function DesignLibraryPage() {
                     {dispRecipientType === "weaver" ? (
                       <div>
                         <label style={labelStyle} htmlFor="assign-weaver">Assign Weaver</label>
-                        <Select value={dispWeaverId} onValueChange={setDispWeaverId}>
-                          {WEAVERS_LIST.map(w => <SelectItem key={w.id} value={w.id}>{w.name} ({w.initials})</SelectItem>)}
+                        <Select value={activeWeaverId} onValueChange={setDispWeaverId}>
+                          {weaversList.map(w => <SelectItem key={w.id} value={w.id}>{w.name} ({w.initials})</SelectItem>)}
                         </Select>
                         {selectedWeaver && (
                           <div style={{ marginTop: 16 }}>
@@ -228,70 +234,75 @@ export function DesignLibraryPage() {
                   <DateFilterBar filter={historyDateFilter} onChange={setHistoryDateFilter} />
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 14, maxHeight: "calc(100dvh - 360px)", overflowY: "auto", paddingRight: 4 }}>
-                    {dispatchHistory.filter(h => {
-                      if (!matchesDateFilter(h.sentAt, historyDateFilter)) return false;
-                      if (!historySearch) return true;
-                      const q = historySearch.toLowerCase();
-                      return h.recipientName.toLowerCase().includes(q) || h.instructions.toLowerCase().includes(q);
-                    }).map(h => (
-                      <div key={h.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${h.recipientType === "weaver" ? T.royalBurgundy : T.antiqueGold}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 10 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Dispatch to {h.recipientName}</span>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                              <CalendarCheck size={12} /> Sent on {h.sentAt}
-                            </div>
+                    {(() => {
+                      const filtered = dispatchHistory.filter(h => {
+                        if (!matchesDateFilter(h.sentAt, historyDateFilter)) return false;
+                        if (!historySearch) return true;
+                        const q = historySearch.toLowerCase();
+                        return h.recipientName.toLowerCase().includes(q) || h.instructions.toLowerCase().includes(q);
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches recorded yet. Use the control center to send design specs.</div>
                           </div>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
-                            {h.recipientType === "weaver" ? <User size={11} weight="bold" /> : <Buildings size={11} weight="bold" />}
-                            {h.recipientName}
-                          </span>
-                        </div>
+                        );
+                      }
 
-
-
-                        <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
-                          <strong>Instructions:</strong> {h.instructions}
-                        </div>
-
-                        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
-                          {h.colorSlipImage && (
-                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
-                              <img
-                                src={h.colorSlipImage}
-                                alt="Color slip"
-                                onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
-                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
-                              />
+                      return filtered.map(h => (
+                        <div key={h.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${h.recipientType === "weaver" ? T.royalBurgundy : T.antiqueGold}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 10 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Dispatch to {h.recipientName}</span>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                                <CalendarCheck size={12} /> Sent on {h.sentAt}
+                              </div>
                             </div>
-                          )}
-                          {h.designGraphImage && (
-                            <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
-                              <img
-                                src={h.designGraphImage}
-                                alt="Design graph"
-                                onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
-                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
-                              />
-                            </div>
-                          )}
-                          {!h.colorSlipImage && !h.designGraphImage && (
-                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
-                              No files attached
+                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                              {h.recipientType === "weaver" ? <User size={11} weight="bold" /> : <Buildings size={11} weight="bold" />}
+                              {h.recipientName}
                             </span>
-                          )}
+                          </div>
+
+                          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
+                            <strong>Instructions:</strong> {h.instructions}
+                          </div>
+
+                          <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
+                            {h.colorSlipImage && (
+                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                                <img
+                                  src={h.colorSlipImage}
+                                  alt="Color slip"
+                                  onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
+                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
+                                />
+                              </div>
+                            )}
+                            {h.designGraphImage && (
+                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                                <img
+                                  src={h.designGraphImage}
+                                  alt="Design graph"
+                                  onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
+                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
+                                />
+                              </div>
+                            )}
+                            {!h.colorSlipImage && !h.designGraphImage && (
+                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
+                                No files attached
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {dispatchHistory.length === 0 && (
-                      <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches recorded yet. Use the control center to send design specs.</div>
-                      </div>
-                    )}
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>

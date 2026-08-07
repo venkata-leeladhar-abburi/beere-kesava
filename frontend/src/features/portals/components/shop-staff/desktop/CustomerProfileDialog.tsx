@@ -1,15 +1,33 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShoppingBag, Star, X } from "lucide-react";
-import { C, F, CUSTOMER_PURCHASES } from "../theme";
+import { useQuery } from "@tanstack/react-query";
+import { C, F } from "../theme";
 import type { ShopCustomer } from "./CustomersSection";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
+import { salesApi } from "../../../../../shared/api/sales";
 
 export function CustomerProfileDialog({
   customer, onClose, canSeePrices, isTablet,
 }: {
   customer: ShopCustomer | null; onClose: () => void; canSeePrices: boolean; isTablet: boolean;
 }) {
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-customer-dialog", customer?.id],
+    queryFn: () => salesApi.list(100),
+    enabled: !!customer,
+  });
+
+  const customerPurchases = (salesRes?.items ?? [])
+    .filter(s => s.customerId === customer?.id || s.sareeId === customer?.id)
+    .map(s => ({
+      id: s.sareeId,
+      design: s.channel === "WHOLESALE" ? "Wholesale Purchase" : "Retail Purchase",
+      date: new Date(s.saleDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
+      pay: "Counter",
+      amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    }));
+
   return (
     <AnimatePresence>
       {customer && (
@@ -62,21 +80,24 @@ export function CustomerProfileDialog({
               </div>
               <div style={{ marginBottom: 24 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({(CUSTOMER_PURCHASES[customer!.name] || []).length})
+                  <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({customerPurchases.length})
                 </div>
-                {(CUSTOMER_PURCHASES[customer!.name] || []).map((p, i, arr) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <ShoppingBag size={18} color={C.burg} />
+                {customerPurchases.length === 0 ? (
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No purchase history recorded for this customer.</div>
+                ) : (
+                  customerPurchases.map((p, i, arr) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <ShoppingBag size={18} color={C.burg} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 3 }}>{p.id}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{p.design}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.date} · {p.pay}</div>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 3 }}>{p.id}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{p.design}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.date} · {p.pay}</div>
-                    </div>
-                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{p.amt}</div>}
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>

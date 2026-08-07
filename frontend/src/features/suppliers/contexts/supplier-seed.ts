@@ -49,11 +49,7 @@ const SEED_PURCHASE_RAW = [
   { id: "EXT-2026-0008", supplierId: "SUP-003", supplier: "Chennai Silks",           location: "Chennai, TN",     date: "02 Mar 2026", seedType: "Kanjivaram",  sareeCount: 10, gstNumber: "33CHNSK9012L1Z8", invoiceNumber: "INV-CS-2026-018", billAmount: "₹1,10,000", status: "Paid",    notes: "Festive season stock", addedBy: "Superadmin" },
 ];
 
-export const SEED_PURCHASES: Purchase[] = SEED_PURCHASE_RAW.map(({ seedType, sareeCount, ...p }) => ({
-  ...p,
-  sareeCount,
-  sarees: generateSarees(sareeCount, p.date, seedType, p.supplier, p.invoiceNumber),
-}));
+export const SEED_PURCHASES: Purchase[] = [];
 
 export const SEED_PAYMENTS: SupplierPayment[] = [
   { id: "SPY-001", supplierId: "SUP-001", date: "03 Jun 2026", amount: 34000,  mode: "Bank Transfer", reference: "UTR-882910", purchaseId: "EXT-2026-0001", notes: "Full settlement" },

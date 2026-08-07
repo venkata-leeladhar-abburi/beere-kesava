@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
@@ -12,20 +12,40 @@ import {
 
 import { C, F, TEAL, Card, Btn, Chip, CUSTOMER_PURCHASES, useCanSeePrices } from './theme';
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { useQuery } from '@tanstack/react-query';
+import { customersApi } from '../../../../shared/api/customers';
+
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("All");
   const [selected, setSelected] = useState<number | null>(null);
 
-  const customers = [
-    { name: "Smt. Annapurna Devi", phone: "×××× 7823", purchases: 18, total: "₹1,84,000", last: "3 days ago", regular: true, initials: "AD" },
-    { name: "Smt. Lakshmi Bai", phone: "×××× 3412", purchases: 12, total: "₹1,62,000", last: "1 week ago", regular: true, initials: "LB" },
-    { name: "Sri Ramesh K.", phone: "×××× 4421", purchases: 4, total: "₹48,000", last: "2 weeks ago", regular: false, initials: "RK" },
-    { name: "Smt. Padmavathi", phone: "×××× 9981", purchases: 1, total: "₹12,500", last: "Today", regular: false, initials: "PD" },
-    { name: "Smt. Saraswathi", phone: "×××× 6634", purchases: 7, total: "₹84,000", last: "5 days ago", regular: true, initials: "SD" },
-    { name: "Smt. Rajeshwari", phone: "×××× 2218", purchases: 2, total: "₹28,000", last: "6 months ago", regular: false, initials: "RD" },
-  ];
+  const { data: customersRes } = useQuery({
+    queryKey: ["shop-customers-list"],
+    queryFn: () => customersApi.list(100),
+  });
+
+  const customers = useMemo(() => {
+    const raw = customersRes?.items ?? [];
+    if (raw.length === 0) return [];
+    return raw.map(c => {
+      const parts = c.name.split(" ").filter(Boolean);
+      const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : c.name.slice(0, 2).toUpperCase();
+      return {
+        id: c.id,
+        name: c.name,
+        phone: c.phone ?? "—",
+        city: c.city ?? "Dharmavaram",
+        type: c.type,
+        purchases: 1,
+        total: "₹12,500",
+        last: new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        regular: c.type === "WHOLESALE",
+        initials,
+      };
+    });
+  }, [customersRes]);
 
   const filtered = customers.filter(c =>
     !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search)

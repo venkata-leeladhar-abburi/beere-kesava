@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
@@ -7,24 +7,13 @@ import { Button } from "../../../../shared/ui/primitives";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { bulkOrdersApi } from "../../../../shared/api/bulk-orders";
 import { customersApi } from "../../../../shared/api/customers";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { batchesApi } from "../../../../shared/api/batches";
+import { weaversApi } from "../../../../shared/api/weavers";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
 }
-
-// MOCK: no backend endpoint tracks raw-material stock levels/minimums (see
-// RawMaterialReport for the same gap) or a weaver's expected-completion date
-// vs actual progress — GET /batches only has a single batch-level dueDate,
-// not per-weaver-assignment tracking. Both stay on static demo data.
-const lowStockMaterials = [
-  { type: "Resham", sub: "Blue",   batch: "RSH-B-022", current: 0, minimum: 5, shortage: 5, lastOrder: "Natraj Traders" },
-  { type: "Resham", sub: "Maroon", batch: "RSH-M-018", current: 0, minimum: 5, shortage: 5, lastOrder: "Natraj Traders" },
-  { type: "Resham", sub: "Cream",  batch: "RSH-C-019", current: 0, minimum: 4, shortage: 4, lastOrder: "Kumar Silks"    },
-];
-const lateWeavers = [
-  { name: "Anand K.",  code: "71413724-378d-4336-93dd-1db33cba3510", batch: "BK-2026-03", expected: "20 May 2026", days: 11, done: 5, remaining: 2 },
-  { name: "Meena R.",  code: "95cc89ea-6cf3-418c-bf9b-299e59f47389", batch: "BK-2026-05", expected: "22 May 2026", days: 9,  done: 4, remaining: 1 },
-];
 
 export function SubAlert({ label, color }: { label: string; color: string }) {
   return (
@@ -36,21 +25,81 @@ export function SubAlert({ label, color }: { label: string; color: string }) {
 }
 
 export function OverdueAlertsReport() {
-  const { data: invoicesRes, isLoading: invoicesLoading } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: ["reports", "invoices"],
     queryFn: () => invoicesApi.list(),
   });
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isError: customersError } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
-  const { data: bulkOrdersRes, isLoading: bulkOrdersLoading } = useQuery({
+  const { data: bulkOrdersRes, isLoading: bulkOrdersLoading, isError: bulkOrdersError } = useQuery({
     queryKey: ["reports", "bulk-orders"],
     queryFn: () => bulkOrdersApi.list(),
   });
+  const { data: stockRes } = useQuery({
+    queryKey: ["reports", "raw-stock-low"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const { data: batchesRes } = useQuery({
+    queryKey: ["reports", "batches-overdue"],
+    queryFn: () => batchesApi.list(),
+  });
+  const { data: weaversRes } = useQuery({
+    queryKey: ["reports", "weavers-overdue"],
+    queryFn: () => weaversApi.list(),
+  });
 
-  const customerNameById = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+  const invoicesTableError = invoicesError || customersError;
+  const bulkOrdersTableError = bulkOrdersError || customersError;
+
+  const customerNameById = useMemo(() => new Map((customersRes?.items ?? []).map(c => [c.id, c.name])), [customersRes]);
+  const weaverMap = useMemo(() => new Map((weaversRes?.items ?? []).map(w => [w.id, w])), [weaversRes]);
   const now = new Date();
+
+  // Dynamic low stock materials from rawMaterialsApi
+  const lowStockMaterials = useMemo(() => {
+    const items = stockRes?.items ?? [];
+    return items
+      .filter(item => item.currentStock <= item.reorderLevel)
+      .map(item => ({
+        type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+        sub: [item.name, item.color, item.grade].filter(Boolean).join(" - "),
+        batch: `RM-${item.id.slice(-6).toUpperCase()}`,
+        current: item.currentStock,
+        minimum: item.reorderLevel,
+        shortage: Math.max(0, item.reorderLevel - item.currentStock),
+        lastOrder: item.vendor?.name ?? "Vendor",
+      }));
+  }, [stockRes]);
+
+  // Dynamic late weavers from active batches with overdue dueDates
+  const lateWeavers = useMemo(() => {
+    const batches = batchesRes?.items ?? [];
+    const lateList: { name: string; code: string; batch: string; expected: string; days: number; done: number; remaining: number }[] = [];
+
+    for (const b of batches) {
+      if (b.status === "ACTIVE" && new Date(b.dueDate).getTime() < now.getTime()) {
+        for (const r of b.rows) {
+          if (r.weaverId && r.recipientType === "WEAVER") {
+            const weaver = weaverMap.get(r.weaverId);
+            const name = weaver?.name ?? "Weaver";
+            const days = daysBetween(now, new Date(b.dueDate));
+            lateList.push({
+              name,
+              code: r.weaverId,
+              batch: b.id,
+              expected: new Date(b.dueDate).toLocaleDateString("en-IN"),
+              days,
+              done: r.qcPassed ? 1 : 0,
+              remaining: r.qcPassed ? 0 : 1,
+            });
+          }
+        }
+      }
+    }
+    return lateList.slice(0, 10);
+  }, [batchesRes, weaverMap, now]);
 
   const overdueCustomers = (invoicesRes?.items ?? [])
     .filter(inv => inv.status === "OVERDUE")
@@ -115,10 +164,13 @@ export function OverdueAlertsReport() {
                 {invoicesLoading && (
                   <tr><td style={TD} colSpan={9}>Loading…</td></tr>
                 )}
-                {!invoicesLoading && overdueCustomers.length === 0 && (
+                {!invoicesLoading && invoicesTableError && (
+                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={9}>Failed to load overdue invoices.</td></tr>
+                )}
+                {!invoicesLoading && !invoicesTableError && overdueCustomers.length === 0 && (
                   <tr><td style={TD} colSpan={9}>No overdue invoices — everything is on track.</td></tr>
                 )}
-                {overdueCustomers.map((r, i) => (
+                {!invoicesLoading && !invoicesTableError && overdueCustomers.map((r, i) => (
                   <tr key={r.inv} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                     <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span></td>
@@ -158,6 +210,9 @@ export function OverdueAlertsReport() {
                 </tr>
               </thead>
               <tbody>
+                {lowStockMaterials.length === 0 && (
+                  <tr><td style={TD} colSpan={8}>No materials currently low in stock.</td></tr>
+                )}
                 {lowStockMaterials.map((r, i) => (
                   <tr key={r.batch} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
@@ -194,8 +249,11 @@ export function OverdueAlertsReport() {
               </tr>
             </thead>
             <tbody>
+              {lateWeavers.length === 0 && (
+                <tr><td style={TD} colSpan={8}>No weavers running behind schedule.</td></tr>
+              )}
               {lateWeavers.map((r, i) => (
-                <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
+                <tr key={r.code + r.batch} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.code}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span></td>
@@ -233,10 +291,13 @@ export function OverdueAlertsReport() {
               {bulkOrdersLoading && (
                 <tr><td style={TD} colSpan={9}>Loading…</td></tr>
               )}
-              {!bulkOrdersLoading && atRiskOrders.length === 0 && (
+              {!bulkOrdersLoading && bulkOrdersTableError && (
+                <tr><td style={{ ...TD, color: T.crimson }} colSpan={9}>Failed to load bulk orders at risk.</td></tr>
+              )}
+              {!bulkOrdersLoading && !bulkOrdersTableError && atRiskOrders.length === 0 && (
                 <tr><td style={TD} colSpan={9}>No bulk orders at risk right now.</td></tr>
               )}
-              {atRiskOrders.map((r, i) => (
+              {!bulkOrdersLoading && !bulkOrdersTableError && atRiskOrders.map((r, i) => (
                 <tr key={r.order} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
                   <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span></td>
@@ -262,4 +323,3 @@ export function OverdueAlertsReport() {
     </div>
   );
 }
-
