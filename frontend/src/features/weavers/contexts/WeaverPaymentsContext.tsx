@@ -26,6 +26,8 @@ interface WeaverPaymentsContextValue {
   payments: WeaverPaymentRecord[];
   addPayments: (records: WeaverPaymentRecord[]) => void;
   getPaymentsForWeaver: (weaverId: string) => WeaverPaymentRecord[];
+  isError: boolean;
+  error: unknown;
 }
 
 const WeaverPaymentsContext = createContext<WeaverPaymentsContextValue | null>(null);
@@ -56,7 +58,7 @@ function backendPaymentToFrontend(
 export function WeaverPaymentsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: payments = [] } = useQuery({
+  const { data: payments = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
@@ -114,7 +116,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   }, [payments]);
 
   return (
-    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver }}>
+    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, isError, error }}>
       {children}
     </WeaverPaymentsContext.Provider>
   );

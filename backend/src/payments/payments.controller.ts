@@ -13,6 +13,10 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Queue } from "bullmq";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { UserRole } from "../generated/prisma/client";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
 import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
@@ -22,9 +26,12 @@ import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto
 import { ImportResult, PaymentsService } from "./payments.service";
 import { WEAVER_PAYMENTS_IMPORT_QUEUE } from "./weaver-payments-import.processor";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Financial module — ACCOUNTANT access by default. The one exception is
+// GET /payments/weavers, which a WEAVER may also call to see their own
+// payment history (self-scoped below) — everything else here (creating
+// payments, vendor/supplier payments) stays ACCOUNTANT/ADMIN-only.
 @Controller("payments")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
@@ -42,8 +49,16 @@ export class PaymentsController {
   }
 
   @Get("weavers")
-  findAllWeaverPayments(@Query() query: ListWeaverPaymentsQueryDto) {
-    return this.paymentsService.findAllWeaverPayments(query);
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.WEAVER)
+  findAllWeaverPayments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListWeaverPaymentsQueryDto,
+  ) {
+    // A WEAVER token must never see another weaver's payments — ignore any
+    // client-supplied weaverId and force it to the caller's own id.
+    const scopedQuery =
+      user.role === UserRole.WEAVER ? { ...query, weaverId: user.id } : query;
+    return this.paymentsService.findAllWeaverPayments(scopedQuery);
   }
 
   @Post("weavers/import")

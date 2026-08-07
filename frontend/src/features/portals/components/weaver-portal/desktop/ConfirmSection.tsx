@@ -4,6 +4,7 @@ import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMater
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
+import { useAuth } from "../../../../../contexts/AuthContext";
 
 function DSectionHeader({ label }: { label: string }) {
   return (
@@ -35,6 +36,10 @@ export function ConfirmSection({
   setHasSig: (v: boolean) => void;
   setRequestSent: (v: boolean) => void;
 }) {
+  const { user } = useAuth();
+  const name = user?.name || "—";
+  const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
   return (
     <>
       <DesktopHero
@@ -78,10 +83,10 @@ export function ConfirmSection({
           <div style={{ background: "rgba(196,146,58,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>RK</span>
+                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{initials}</span>
               </div>
               <div>
-                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Ravi Kumar, your materials are ready</div>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{name}, your materials are ready</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
                   <span style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{pendingMaterialRecord.id}</span>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.muted, display: "inline-block" }} />

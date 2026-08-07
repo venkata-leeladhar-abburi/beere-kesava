@@ -7,14 +7,17 @@ import {
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
-import { Vendor } from "./types";
-import { PAY_MODE_FILL, BILL_STATUS_CFG, buildVendorLedger } from "./data";
+import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
+import { PAY_MODE_FILL, BILL_STATUS_CFG } from "./data";
 import { StatusPill, StarRating } from "./SharedBits";
 import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { Button } from "../../../../shared/ui/primitives";
+import { vendorBillsApi, VendorBillStatus } from "../../../../shared/api/vendor-bills";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -28,23 +31,89 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   const [orderDateFilter, setOrderDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [payFilter, setPayFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
-  const ledger = React.useMemo(() => buildVendorLedger(vendor), [vendor]);
-  const { data: poRes } = useQuery({
+  const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
     queryKey: ["vendor-pos", vendor.id],
     queryFn: () => purchaseOrdersApi.list(),
   });
-  const orders = React.useMemo(() => {
-    if (!poRes?.items || poRes.items.length === 0) return ledger.orders;
-    const vendorPos = poRes.items.filter(p => p.vendorId === vendor.id || p.vendor?.id === vendor.id);
-    if (vendorPos.length === 0) return ledger.orders;
-    return vendorPos.map(p => ({
-      id: p.poNumber || p.id,
-      date: p.createdAt ? p.createdAt.split("T")[0] : "2026-05-01",
-      sareesCount: 1,
-      amount: `₹${Number(p.totalValue || 0).toLocaleString("en-IN")}`,
-      status: (p.status === "APPROVED" ? "Approved" : p.status === "RECEIVED" ? "Fulfilled" : p.status === "REJECTED" ? "Cancelled" : "Pending") as any,
+  const { data: billsRes, isLoading: billsLoading, isError: billsError } = useQuery({
+    queryKey: ["vendor-bills", vendor.id],
+    queryFn: () => vendorBillsApi.list(vendor.id),
+  });
+  const { data: paymentsRes, isLoading: paymentsLoading, isError: paymentsError } = useQuery({
+    queryKey: ["vendor-payments", vendor.id],
+    queryFn: () => vendorPaymentsApi.list(vendor.id),
+  });
+  const ledgerLoading = billsLoading || paymentsLoading;
+  const ledgerError = billsError || paymentsError;
+
+  const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
+    PAID: "Paid", PARTIAL: "Partial", PENDING: "Pending", OVERDUE: "Overdue",
+  };
+
+  const ledger = React.useMemo(() => {
+    const rawBills = billsRes?.items ?? [];
+    const rawPayments = paymentsRes?.items ?? [];
+    const today = new Date();
+
+    const bills: VendorBill[] = rawBills.map(b => {
+      const paid = rawPayments
+        .filter(p => p.billId === b.id)
+        .reduce((a, p) => a + Number(p.amount), 0);
+      const amount = Number(b.amount);
+      const balance = Math.max(0, amount - paid);
+      const dueDateObj = b.dueDate ? new Date(b.dueDate) : null;
+      const daysOverdue = b.status === "OVERDUE" && dueDateObj
+        ? Math.max(0, Math.ceil((today.getTime() - dueDateObj.getTime()) / 86400000))
+        : 0;
+      return {
+        id: b.id.slice(0, 8).toUpperCase(),
+        invoiceNo: b.poId ? `PO ${b.poId.slice(0, 8).toUpperCase()}` : (b.description || "—"),
+        date: b.createdAt ? b.createdAt.split("T")[0] : "",
+        dueDate: b.dueDate ? b.dueDate.split("T")[0] : "—",
+        amount, paid, balance,
+        status: BILL_STATUS_LABEL[b.status],
+        daysOverdue,
+      };
+    });
+
+    const txns: VendorPaymentTxn[] = rawPayments.map(p => ({
+      id: p.id.slice(0, 8).toUpperCase(),
+      billId: p.billId ? p.billId.slice(0, 8).toUpperCase() : "General",
+      date: p.date ? p.date.split("T")[0] : "",
+      amount: Number(p.amount),
+      mode: p.method || "—",
+      reference: p.utr || "—",
+      firm: p.firmId || "Beere Kesava Silks (Head Firm)",
+      notes: "",
     }));
-  }, [poRes, vendor.id, ledger.orders]);
+
+    const totalBilled = bills.reduce((a, b) => a + b.amount, 0);
+    const totalPaid = rawPayments.reduce((a, p) => a + Number(p.amount), 0);
+    const outstanding = bills.reduce((a, b) => a + b.balance, 0);
+
+    return { bills, txns, totalBilled, totalPaid, outstanding };
+  }, [billsRes, paymentsRes]);
+  const vendorPos = React.useMemo(
+    () => (poRes?.items ?? []).filter(p => p.vendorId === vendor.id || p.vendor?.id === vendor.id),
+    [poRes, vendor.id]
+  );
+  const orders = React.useMemo(() => vendorPos.map(p => ({
+    id: p.poNumber || p.id,
+    date: p.createdAt ? p.createdAt.split("T")[0] : "",
+    materials: [] as any[],
+    totalAmount: `₹${Number(p.totalValue || 0).toLocaleString("en-IN")}`,
+    amount: Number(p.totalValue || 0),
+    grnId: p.grnId || undefined,
+    firmName: p.grnId ? "Beere Kesava Silks (Head Firm)" : undefined,
+    receivedDate: undefined as string | undefined,
+    status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as any,
+    receiveStatus: undefined as string | undefined,
+  })), [vendorPos]);
+  const realTotalSpend = React.useMemo(() => vendorPos.reduce((a, p) => a + Number(p.totalValue || 0), 0), [vendorPos]);
+  const lastOrderDate = React.useMemo(() => {
+    if (!vendorPos.length) return null;
+    return vendorPos.reduce((latest, p) => (!latest || p.createdAt > latest ? p.createdAt : latest), "" as string);
+  }, [vendorPos]);
 
   const filteredBills = React.useMemo(
     () => ledger.bills.filter(b => matchesDateFilter(b.date, payFilter)),
@@ -61,7 +130,8 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     filteredTxns.forEach(t => m.set(t.mode, (m.get(t.mode) || 0) + t.amount));
     return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
   }, [filteredTxns]);
-  const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+  const moneyVisible = useMoneyVisible();
+  const inr = (n: number) => (moneyVisible ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
 
   return (
     <div style={{ padding: "40px 56px" }}>
@@ -93,11 +163,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
           <div style={{ display: "flex", gap: 48, alignItems: "center" }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>TOTAL SPEND</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>₹{vendor.totalSpend}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{moneyVisible ? `₹${realTotalSpend.toLocaleString("en-IN")}` : "—"}</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{!moneyVisible ? "—" : vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`}</div>
             </div>
           </div>
         </div>
@@ -128,7 +198,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
                 {[
                   { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
-                  { label: "Total Orders", value: orders.length, sub: "All time", color: T.luxuryBrown },
+                  { label: "Total Orders", value: orders.length, sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time", color: T.luxuryBrown },
                   { label: "Pending Bills", value: inr(ledger.outstanding), sub: `${overdueBills.length} overdue`, color: ledger.outstanding > 0 ? T.crimson : T.green },
                   { label: "Rating", value: `${vendor.rating} ★`, sub: "Vendor score", color: T.antiqueGold },
                 ].map(s => (
@@ -143,7 +213,15 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Recent Purchase Orders</div>
                 </div>
-                <PurchaseOrderHistoryTable orders={orders.slice(0, 2)} />
+                {posLoading ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
+                ) : posError ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
+                ) : orders.length === 0 ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
+                ) : (
+                  <PurchaseOrderHistoryTable orders={orders.slice(0, 2)} />
+                )}
               </div>
             </div>
           )}
@@ -153,7 +231,15 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 12 }}>Full Purchase Order History</div>
                 <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
               </div>
-              <PurchaseOrderHistoryTable orders={orders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
+              {posLoading ? (
+                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
+              ) : posError ? (
+                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
+              ) : orders.length === 0 ? (
+                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
+              ) : (
+                <PurchaseOrderHistoryTable orders={orders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
+              )}
             </div>
           )}
           {tab === "payments" && (
@@ -209,7 +295,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Invoice-wise Settlement</div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Due dates from payment terms · {vendor.terms}</span>
                 </div>
-                {filteredBills.length === 0 ? (
+                {ledgerLoading ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading bills…</div>
+                ) : ledgerError ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load bills. Please try again.</div>
+                ) : filteredBills.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -253,7 +343,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Payments Made</div>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.greenMid }}>{inr(paidInRange)}</span>
                 </div>
-                {filteredTxns.length === 0 ? (
+                {ledgerLoading ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading payments…</div>
+                ) : ledgerError ? (
+                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load payments. Please try again.</div>
+                ) : filteredTxns.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>

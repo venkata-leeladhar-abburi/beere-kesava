@@ -3,7 +3,6 @@ import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet } from 
 import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
-import { COMING_IN, GOING_OUT, IF_ALL, NET, TOTAL_IN, TOTAL_OUT } from "../data/summary";
 import { F, T } from "../theme";
 import { formatINR } from "../utils/format";
 import { AnimBar, FadeUp } from "./common/motion";
@@ -25,14 +24,14 @@ import { paymentsApi } from "../../../shared/api/payments";
 export function FinancialSummarySection() {
   const [downloadModal, setDownloadModal] = useState(false);
 
-  const { data: summary } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useQuery({
     queryKey: ["payments-summary"],
     queryFn: () => paymentsApi.getSummary(),
   });
 
-  const totalIn = summary?.totalRevenue ?? TOTAL_IN;
-  const totalOut = summary?.totalExpenses ?? TOTAL_OUT;
-  const netCash = summary?.netCashFlow ?? NET;
+  const totalIn = summary?.totalRevenue ?? 0;
+  const totalOut = summary?.totalExpenses ?? 0;
+  const netCash = summary?.netCashFlow ?? 0;
 
   const weaverTotal = summary?.weaverTotal ?? 0;
   const vendorTotal = summary?.vendorTotal ?? 0;
@@ -73,6 +72,16 @@ export function FinancialSummarySection() {
           </DownloadGate>
         </div>
 
+        {summaryLoading ? (
+          <div style={{ marginTop: 24, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Loading financial summary…
+          </div>
+        ) : summaryError ? (
+          <div style={{ marginTop: 24, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>
+            Failed to load financial summary. Please retry.
+          </div>
+        ) : (
+        <>
         {/* Compact info-card grid — 4 stat cards side by side */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
@@ -168,13 +177,15 @@ export function FinancialSummarySection() {
                 <CalendarClock size={15} color={T.antiqueGold} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(IF_ALL)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalIn + (summary?.outstandingAmount ?? 0))}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>
           </motion.div>
 
         </div>
+        </>
+        )}
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Financial Report" desc="Generate and download the financial summary report for this month." actionLabel="Download" icon={Download} />
       </FadeUp>
     </div>

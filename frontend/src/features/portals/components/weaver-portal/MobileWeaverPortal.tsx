@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useMaterialIssue } from '../../../materials/contexts/MaterialIssueContext';
 import {
-  C, F, CURRENT_WEAVER_ID, Tab5
+  C, F, Tab5
 } from './theme';
+import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 
 import { MyBatchesPage } from './MyBatchesPage';
@@ -17,13 +18,16 @@ import { PaymentLedgerPage } from './PaymentLedgerPage';
 import { NotificationsPage } from './NotificationsPage';
 
 export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
-  const { selectRole } = useAuth();
+  const { selectRole, user } = useAuth();
+  const name = user?.name || "—";
+  const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const navigate = useNavigate();
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
   const { getRecordsForWeaver } = useMaterialIssue();
-  const pendingConfirmCount = getRecordsForWeaver(CURRENT_WEAVER_ID).filter(r => r.status === 'pending-signature').length;
+  const { weaverId } = useCurrentWeaver();
+  const pendingConfirmCount = weaverId ? getRecordsForWeaver(weaverId).filter(r => r.status === 'pending-signature').length : 0;
 
   const TABS: { id: Tab5; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'batches',   label: 'My Batches', icon: <ClipboardList size={20} />, },
@@ -65,13 +69,13 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
           </div>
           <div style={{ position: 'relative' as const }}>
             <Button onClick={() => { setShowProfile(v => !v); setShowNotifs(false); }} className="w-[30px] h-[30px] p-0 rounded-[9px] border border-white/30 bg-white/12 flex-shrink-0">
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>RK</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>{initials}</span>
             </Button>
             {showProfile && (
               <div style={{ position: 'absolute' as const, top: 'calc(100% + 8px)', right: 0, zIndex: 300, background: '#FFFDF9', borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: '0 8px 32px rgba(44,24,16,0.18)', minWidth: 200, overflow: 'hidden' }}>
                 <div style={{ padding: '14px 16px', background: 'rgba(107,26,42,0.04)', borderBottom: `1px solid ${C.bdr}` }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Ravi Kumar</div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WVR-014 · Handloom Weaver</div>
+                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
                 </div>
                 <div style={{ padding: '6px 0' }}>
                   <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#1A0A0F]">

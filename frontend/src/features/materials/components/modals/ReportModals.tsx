@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Package, BarChart2, FileText, AlertTriangle, Download, Check, X } from "lucide-react";
 import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { T, F } from "../theme";
-import { HISTORY_ENTRIES, RECENT_DATA, PO_STATUS_CFG } from "../data";
+import { PO_STATUS_CFG } from "../materialConfig";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { materialIssuesApi } from "../../../../shared/api/material-issues";
 
 // ─── FULL REPORTS MODAL ───────────────────────────────────────────────────────
 export function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -44,34 +46,52 @@ export function FullReportsModal({ open, onClose }: { open: boolean; onClose: ()
 
 // ─── FULL ISSUE HISTORY MODAL ─────────────────────────────────────────────────
 export function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const statusColors: Record<string, string> = { Active: T.green, "Quality Check": "#7A5E1C", Overdue: T.crimson, Completed: T.taupe };
+  const { data: issueRes } = useQuery({
+    queryKey: ["material-issues-full"],
+    queryFn: () => materialIssuesApi.list(100),
+    enabled: open,
+  });
+
+  const issues = issueRes?.items ?? [];
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
       <ModalHeader title="Full Issue History" subtitle="All material issues to weavers — complete record" onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
-          {HISTORY_ENTRIES.map((entry, i) => (
-            <motion.div
-              key={entry.ref}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 18px" }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>{entry.weaver}</div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{entry.weaverId}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.batch}</span>
+        {issues.length === 0 ? (
+          <div style={{ padding: "28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+            No material issue records found.
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22, maxHeight: 400, overflowY: "auto" }}>
+            {issues.map((entry, i) => (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 18px" }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>
+                      {entry.weaver?.name ?? (entry.weaverId ? `Weaver ${entry.weaverId}` : "Factory Loom")}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {entry.weaverId && <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{entry.weaverId}</span>}
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.id}</span>
+                    </div>
                   </div>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green, background: "rgba(30,102,64,0.1)", padding: "4px 10px", borderRadius: 20 }}>Issued</span>
                 </div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: statusColors[entry.status] || T.taupe, background: `${statusColors[entry.status] || T.silkCream}18`, padding: "4px 10px", borderRadius: 20 }}>{entry.status}</span>
-              </div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 6 }}>{entry.materials}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.date}</div>
-            </motion.div>
-          ))}
-        </div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 6 }}>
+                  {entry.items.map(item => `${item.materialType} ${item.quantity} ${item.unit}`).join(" · ")}
+                </div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                  {new Date(entry.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
         <Button onClick={onClose} variant="primary" size="md" fullWidth>
           Close
         </Button>
@@ -334,7 +354,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
 }
 
 // ─── RECENT RECEIVED DETAIL MODAL ─────────────────────────────────────────────
-export function RecentReceivedDetailModal({ item, onClose }: { item: typeof RECENT_DATA[0] | null; onClose: () => void }) {
+export function RecentReceivedDetailModal({ item, onClose }: { item: any | null; onClose: () => void }) {
   if (!item) return null;
   return (
     <ModalOverlay open={!!item} onClose={onClose}>

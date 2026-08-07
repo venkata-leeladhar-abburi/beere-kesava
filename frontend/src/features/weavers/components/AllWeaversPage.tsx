@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Rows } from "@phosphor-icons/react";
 import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
+import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ const STATUS_CFG: Record<Status, { label: string; color: string; bg: string; bor
 };
 
 interface Weaver {
-  id: string; name: string; village: string; mobile: string;
+  id: string; code: string; name: string; village: string; mobile: string;
   photo: string | null; initials: string; avatarBg: string;
   status: Status; accentColor: string;
   thisMonth: number; passRate: number; totalSarees: number;
@@ -73,10 +74,11 @@ function statusFromStats(stats: BackendWeaverStats | undefined): Status {
 function toDisplayWeaver(w: BackendWeaver, index: number, stats: BackendWeaverStats | undefined): Weaver {
   return {
     id: w.id,
+    code: w.code,
     name: w.name,
     village: w.village || "—",
     mobile: w.phone || "—",
-    photo: w.photoUrl || null,
+    photo: resolveAssetUrl(w.photoUrl),
     initials: w.initials,
     looms: w.looms,
     avatarBg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
@@ -338,7 +340,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
                     <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                      {w.id}
+                      {w.code}
                     </div>
 
                     <div style={{ position: "absolute", bottom: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px" }}>

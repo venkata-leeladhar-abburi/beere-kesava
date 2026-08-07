@@ -29,6 +29,7 @@ export interface BackendMaterialIssueItem {
 export interface BackendMaterialIssueRecord {
   id: string;
   weaverId: string | null;
+  weaver?: { id: string; name: string } | null;
   factoryLoomId: string | null;
   loomNumber: string | null;
   batchId: string | null;

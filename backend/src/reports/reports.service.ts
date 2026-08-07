@@ -1,12 +1,23 @@
-import { Injectable } from "@nestjs/common";
-import { DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { ActiveStatus, DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditLogService } from "../audit-log/audit-log.service";
 
 export interface CreateScheduleDto {
   reportName: string;
   frequency: ReportFrequency;
   format?: string;
   recipientEmail: string;
+  actorId?: string;
+}
+
+export interface UpdateScheduleDto {
+  reportName?: string;
+  frequency?: ReportFrequency;
+  format?: string;
+  recipientEmail?: string;
+  active?: boolean;
+  actorId?: string;
 }
 
 export interface RecordDownloadDto {
@@ -19,7 +30,10 @@ export interface RecordDownloadDto {
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async getOutstandingPayments() {
     const [invoices, bulkOrders] = await Promise.all([
@@ -117,7 +131,95 @@ export class ReportsService {
     };
   }
 
-  // Scheduled Reports
+  async getDashboardMetrics() {
+    const [
+      activeWeavers,
+      totalSareesProduced,
+      invoiceTotals,
+      overdueCount,
+      readyForSale,
+      dispatchedCount,
+    ] = await Promise.all([
+      this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.count({ where: { sareeId: { not: null } } }),
+      this.prisma.invoice.aggregate({
+        where: { status: { in: [InvoiceStatus.PENDING, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE] } },
+        _sum: { total: true, paid: true },
+      }),
+      this.prisma.invoice.count({ where: { status: InvoiceStatus.OVERDUE } }),
+      this.prisma.batchSareeRow.count({ where: { qcPassed: true } }),
+      this.prisma.dispatchRecord.count(),
+    ]);
+
+    const totalInvoiced = Number(invoiceTotals._sum.total ?? 0);
+    const totalPaid = Number(invoiceTotals._sum.paid ?? 0);
+
+    return {
+      activeWeavers,
+      totalSareesProduced,
+      totalOutstanding: Math.max(0, totalInvoiced - totalPaid),
+      overdueCount,
+      readyForSale,
+      dispatchedCount,
+    };
+  }
+
+  async getProductionAnalytics() {
+    const [
+      activeBatchCount,
+      activeBatchWeavers,
+      activeWeaversTotal,
+      activeBatchDesigns,
+      designLibraryTotal,
+      overdueInvoiceCount,
+      invoiceTotals,
+      invoicePaymentTotals,
+      rawMaterialStockTotal,
+      dispatchTotal,
+      inStockSareesTotal,
+    ] = await Promise.all([
+      this.prisma.batch.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.findMany({
+        where: { batch: { status: "ACTIVE" }, weaverId: { not: null } },
+        select: { weaverId: true },
+        distinct: ["weaverId"],
+      }),
+      this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
+      this.prisma.batchSareeRow.findMany({
+        where: { designCode: { not: null } },
+        select: { designCode: true },
+        distinct: ["designCode"],
+      }),
+      this.prisma.designLibrary.count(),
+      this.prisma.invoice.count({ where: { status: InvoiceStatus.OVERDUE } }),
+      this.prisma.invoice.aggregate({ _sum: { total: true, paid: true } }),
+      this.prisma.invoicePayment.aggregate({ _sum: { amount: true } }),
+      this.prisma.rawMaterialStock.aggregate({ _sum: { currentStock: true } }),
+      this.prisma.dispatchRecord.count(),
+      this.prisma.batchSareeRow.count({ where: { qcPassed: true } }),
+    ]);
+
+    const totalInvoiced = Number(invoiceTotals._sum.total ?? 0);
+    const totalPaid = Number(invoicePaymentTotals._sum.amount ?? 0);
+    const paymentsCollectedPct =
+      totalInvoiced > 0 ? Math.round((totalPaid / totalInvoiced) * 100) : 0;
+
+    const weaversWorking = Math.max(activeBatchWeavers.length, activeWeaversTotal);
+    const designCodes = Math.max(activeBatchDesigns.length, designLibraryTotal);
+    const rawMaterialStockKg = Number(rawMaterialStockTotal._sum.currentStock ?? 0);
+
+    return {
+      activeBatchesCount: activeBatchCount,
+      weaversWorkingCount: weaversWorking,
+      designCodesCount: designCodes,
+      overdueInvoicesCount: overdueInvoiceCount,
+      paymentsCollectedPct,
+      rawMaterialStockKg,
+      dispatchCount: dispatchTotal,
+      inStockSareesCount: inStockSareesTotal,
+    };
+  }
+
   async listSchedules() {
     const items = await this.prisma.scheduledReport.findMany({
       orderBy: { createdAt: "desc" },
@@ -134,16 +236,89 @@ export class ReportsService {
         recipientEmail: dto.recipientEmail,
       },
     });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "REPORTS",
+      action: `Created scheduled report "${item.reportName}" (${item.frequency})`,
+      entityType: "ScheduledReport",
+      entityId: item.id,
+      recordLabel: item.reportName,
+    });
+
     return item;
   }
 
-  // Report Download History
-  async listHistory() {
-    const items = await this.prisma.reportDownloadHistory.findMany({
-      include: { downloadedBy: true },
-      orderBy: { downloadedAt: "desc" },
+  async updateSchedule(id: string, dto: UpdateScheduleDto) {
+    const existing = await this.prisma.scheduledReport.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Scheduled report ${id} not found`);
+    }
+
+    const item = await this.prisma.scheduledReport.update({
+      where: { id },
+      data: {
+        reportName: dto.reportName ?? undefined,
+        frequency: dto.frequency ?? undefined,
+        format: dto.format ?? undefined,
+        recipientEmail: dto.recipientEmail ?? undefined,
+        active: dto.active ?? undefined,
+      },
     });
-    return { items };
+
+    const action =
+      dto.active !== undefined && dto.active !== existing.active
+        ? `${dto.active ? "Resumed" : "Paused"} scheduled report "${item.reportName}"`
+        : `Updated scheduled report "${item.reportName}"`;
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "REPORTS",
+      action,
+      entityType: "ScheduledReport",
+      entityId: item.id,
+      recordLabel: item.reportName,
+      oldValue: String(existing.active),
+      newValue: String(item.active),
+    });
+
+    return item;
+  }
+
+  async deleteSchedule(id: string, actorId?: string) {
+    const existing = await this.prisma.scheduledReport.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Scheduled report ${id} not found`);
+    }
+
+    await this.prisma.scheduledReport.delete({ where: { id } });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "REPORTS",
+      action: `Deleted scheduled report "${existing.reportName}"`,
+      entityType: "ScheduledReport",
+      entityId: existing.id,
+      recordLabel: existing.reportName,
+      oldValue: existing.reportName,
+      newValue: null,
+    });
+
+    return { success: true };
+  }
+
+  // Report Download History
+  async listHistory(take?: number, skip?: number) {
+    const [items, total] = await Promise.all([
+      this.prisma.reportDownloadHistory.findMany({
+        include: { downloadedBy: true },
+        orderBy: { downloadedAt: "desc" },
+        take: take ?? undefined,
+        skip: skip ?? undefined,
+      }),
+      this.prisma.reportDownloadHistory.count(),
+    ]);
+    return { items, total };
   }
 
   async recordDownload(dto: RecordDownloadDto) {

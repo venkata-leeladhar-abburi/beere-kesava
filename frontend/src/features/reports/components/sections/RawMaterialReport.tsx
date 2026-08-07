@@ -1,48 +1,21 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Package, Scissors, BarChart2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut, TH, TD } from "../common/primitives";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { materialIssuesApi } from "../../../../shared/api/material-issues";
 
-// MOCK: this entire report has no backend source. GET /material-issues only
-// records what was issued *to* weavers (no "received from vendor" side, no
-// running stock balance), and there is no inventory/stock endpoint anywhere
-// that tracks opening/closing quantities of Warp, Resham, or Jari by
-// sub-type/color/grade. Wiring this properly needs a real stock-ledger
-// backend module (GRN receipts + issues -> running balance) that doesn't
-// exist yet — everything below stays on static demo data until it does.
-const rawReceivedData = [
-  { material: "Warp",   may: 50, apr: 40 },
-  { material: "Resham", may: 75, apr: 58 },
-  { material: "Jari",   may: 47, apr: 36 },
-];
-const rawGivenData = [
-  { material: "Warp",   may: 22, apr: 18 },
-  { material: "Resham", may: 51, apr: 40 },
-  { material: "Jari",   may: 31, apr: 25 },
-];
 const REELS_PER_BUN = 4;
 const bunsAndReels = (reels: number) => {
   const buns = Math.floor(reels / REELS_PER_BUN);
   const rem = reels % REELS_PER_BUN;
   return rem > 0 ? `${buns} Buns ${rem} Reel${rem > 1 ? "s" : ""}` : `${buns} Buns`;
 };
-const rawMaterialRows = [
-  { type: "WARP",   sub: "Cotton / Silk",         open: 92,  recv: 50,  given: 22, close: 120, change: "↑ 30%",  oos: false, unit: "kg" },
-  { type: "RESHAM", sub: "Red",                   open: 18,  recv: 30,  given: 8,  close: 40,  change: "↑ 122%", oos: false, unit: "kg" },
-  { type: "RESHAM", sub: "Gold",                  open: 12,  recv: 25,  given: 10, close: 27,  change: "↑ 125%", oos: false, unit: "kg" },
-  { type: "RESHAM", sub: "Green",                 open: 8,   recv: 20,  given: 18, close: 10,  change: "↑ 25%",  oos: false, unit: "kg" },
-  { type: "RESHAM", sub: "Blue",                  open: 5,   recv: 0,   given: 5,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
-  { type: "RESHAM", sub: "Maroon",                open: 6,   recv: 0,   given: 6,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
-  { type: "RESHAM", sub: "Cream",                 open: 4,   recv: 0,   given: 4,  close: 0,   change: "— Out of Stock", oos: true, unit: "kg" },
-  { type: "JARI",   sub: "Polyester 2G Gold",     open: 8,   recv: 15,  given: 6,  close: 17,  change: "↑ 112%", oos: false, unit: "reels" },
-  { type: "JARI",   sub: "Polyester 1G Silver",   open: 3,   recv: 12,  given: 11, close: 4,   change: "↑ 33%",  oos: false, unit: "reels" },
-  { type: "JARI",   sub: "Silk Fast 3G Gold",     open: 10,  recv: 20,  given: 14, close: 16,  change: "↑ 60%",  oos: false, unit: "reels" },
-];
 
-// Receipt-log rows — one row per GRN batch received against a PO (matches WorkerGRN + MaterialsPage "Recently Received")
 interface RawMaterialReceiptRow {
   batchId: string;
   dateReceived: string;
@@ -55,15 +28,139 @@ interface RawMaterialReceiptRow {
   poReference: string;
   notes: string;
 }
-const rawReceiptRows: RawMaterialReceiptRow[] = [
-  { batchId: "GRN-2026-MAY-014", dateReceived: "20 May 2026", vendor: "Surat Zari Works",          firmName: "Beere Kesava Silks (Head Firm)", materialType: "Jari",   description: "Polyester 2G Gold",  quantity: "6 Buns (24 Reels)", unit: "Buns", poReference: "PO-2026-020", notes: "" },
-  { batchId: "GRN-2026-MAY-011", dateReceived: "17 May 2026", vendor: "Kanchipuram Silks",         firmName: "Beere Kesava Silks (Head Firm)", materialType: "Resham", description: "Red",                quantity: "30",                unit: "kg",   poReference: "PO-2026-021", notes: "Delivered in 2 lots" },
-  { batchId: "GRN-2026-MAY-011", dateReceived: "17 May 2026", vendor: "Kanchipuram Silks",         firmName: "Beere Kesava Silks (Head Firm)", materialType: "Resham", description: "Gold",               quantity: "25",                unit: "kg",   poReference: "PO-2026-021", notes: "" },
-  { batchId: "GRN-2026-MAY-006", dateReceived: "12 May 2026", vendor: "Sri Venkateswara Textiles", firmName: "Beere Kesava Silks (Head Firm)", materialType: "Warp",   description: "Cotton/Silk",        quantity: "50",                unit: "kg",   poReference: "PO-2026-022", notes: "" },
-  { batchId: "GRN-2026-APR-028", dateReceived: "28 Apr 2026", vendor: "Ratan Zari Works",          firmName: "Beere Kesava Silks (Head Firm)", materialType: "Jari",   description: "Silk Fast 3G Gold",  quantity: "5 Buns (20 Reels)", unit: "Buns", poReference: "PO-2026-031", notes: "Short by 1 bun vs PO" },
-];
 
 export function RawMaterialReport() {
+  const { data: rawGrns, isLoading: grnLoading, isError: grnError } = useQuery({
+    queryKey: ["grn-receipts"],
+    queryFn: () => rawMaterialsApi.listGrns(),
+  });
+
+  const { data: issuesRes, isLoading: issuesLoading, isError: issuesError } = useQuery({
+    queryKey: ["reports", "material-issues"],
+    queryFn: () => materialIssuesApi.list(200),
+  });
+
+  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
+    queryKey: ["reports", "raw-materials-stock"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+
+  const receiptRows = useMemo<RawMaterialReceiptRow[]>(() => {
+    if (!rawGrns?.items || rawGrns.items.length === 0) return [];
+    return rawGrns.items.flatMap(g =>
+      g.items.map(item => ({
+        batchId: g.id,
+        dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+        vendor: g.supplierName ?? "Vendor",
+        firmName: g.firm?.firmName ?? "—",
+        materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
+        description: item.name,
+        quantity: String(item.quantity),
+        unit: item.quantity > 10 ? "kg" : "Buns",
+        poReference: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+        notes: g.notes ?? "",
+      }))
+    );
+  }, [rawGrns]);
+
+  // Dynamic calculation for Received from Vendors chart (by Material Type)
+  const rawReceivedData = useMemo(() => {
+    const totals: Record<string, { current: number; prior: number }> = {
+      Warp: { current: 0, prior: 0 },
+      Resham: { current: 0, prior: 0 },
+      Jari: { current: 0, prior: 0 },
+    };
+
+    if (rawGrns?.items) {
+      for (const grn of rawGrns.items) {
+        for (const item of grn.items) {
+          const type = item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari";
+          totals[type].current += Number(item.quantity || 0);
+        }
+      }
+    }
+
+    return [
+      { material: "Warp", current: totals.Warp.current, prior: totals.Warp.prior },
+      { material: "Resham", current: totals.Resham.current, prior: totals.Resham.prior },
+      { material: "Jari", current: totals.Jari.current, prior: totals.Jari.prior },
+    ];
+  }, [rawGrns]);
+
+  // Dynamic calculation for Material Given to Weavers chart
+  const rawGivenData = useMemo(() => {
+    const totals: Record<string, { current: number; prior: number }> = {
+      Warp: { current: 0, prior: 0 },
+      Resham: { current: 0, prior: 0 },
+      Jari: { current: 0, prior: 0 },
+    };
+
+    if (issuesRes?.items) {
+      for (const issue of issuesRes.items) {
+        for (const item of issue.items) {
+          const type = item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari";
+          totals[type].current += Number(item.quantity || 0);
+        }
+      }
+    }
+
+    return [
+      { material: "Warp", current: totals.Warp.current, prior: totals.Warp.prior },
+      { material: "Resham", current: totals.Resham.current, prior: totals.Resham.prior },
+      { material: "Jari", current: totals.Jari.current, prior: totals.Jari.prior },
+    ];
+  }, [issuesRes]);
+
+  // Dynamic calculation for Stock Items & Mini Donut cards
+  const stockItems = stockRes?.items ?? [];
+  const stockByType = useMemo(() => {
+    const map: Record<string, { stock: number; outOfStockCount: number; totalCount: number; unit: string }> = {
+      WARP: { stock: 0, outOfStockCount: 0, totalCount: 0, unit: "kg" },
+      RESHAM: { stock: 0, outOfStockCount: 0, totalCount: 0, unit: "kg" },
+      JARI: { stock: 0, outOfStockCount: 0, totalCount: 0, unit: "reels" },
+    };
+
+    for (const item of stockItems) {
+      const type = item.materialType;
+      if (map[type]) {
+        map[type].stock += item.currentStock;
+        map[type].totalCount++;
+        if (item.currentStock <= 0) map[type].outOfStockCount++;
+      }
+    }
+
+    return map;
+  }, [stockItems]);
+
+  const rawMaterialRows = useMemo(() => {
+    if (stockItems.length === 0) return [];
+    return stockItems.map(item => {
+      const sub = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
+      const close = item.currentStock;
+      const oos = close <= 0;
+      return {
+        type: item.materialType,
+        sub,
+        open: Math.max(0, close), // derived stock
+        recv: 0,
+        given: 0,
+        close,
+        change: oos ? "— Out of Stock" : "Healthy",
+        oos,
+        unit: item.unit.toLowerCase(),
+      };
+    });
+  }, [stockItems]);
+
+  const totalsSummary = useMemo(() => {
+    const recvTotal = rawReceivedData.reduce((s, r) => s + r.current, 0);
+    const givenTotal = rawGivenData.reduce((s, r) => s + r.current, 0);
+    const closeTotal = stockItems.reduce((s, item) => s + item.currentStock, 0);
+    return { recvTotal, givenTotal, closeTotal };
+  }, [rawReceivedData, rawGivenData, stockItems]);
+
+  const isLoading = grnLoading || issuesLoading || stockLoading;
+
   return (
     <div id="rep-raw-materials" style={{ padding: "32px 40px" }}>
       <TabTitle title="Raw Material Report"
@@ -72,53 +169,70 @@ export function RawMaterialReport() {
 
       {/* Charts row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 28, alignItems: "stretch" }}>
-        <ChartCard title="Raw Material Received from Vendors" sub="May 2026 vs April 2026" icon={<Package size={22} color={T.royalBurgundy} />}>
+        <ChartCard title="Raw Material Received from Vendors" sub="Current Period" icon={<Package size={22} color={T.royalBurgundy} />}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawReceivedData} barGap={4}>
               <CartesianGrid key="rm-recv-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
               <XAxis key="rm-recv-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
               <YAxis key="rm-recv-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-recv-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="rm-recv-may" dataKey="may" name="May 2026" fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
-              <Bar key="rm-recv-apr" dataKey="apr" name="April 2026" fill={T.antiqueGold} radius={[4,4,0,0] as any} opacity={0.6} />
+              <Bar key="rm-recv-cur" dataKey="current" name="Received" fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
-            {[{ c: T.royalBurgundy, l: "May 2026" }, { c: T.antiqueGold, l: "April 2026" }].map(x => (
-              <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{ width: 9, height: 9, borderRadius: 2, background: x.c }} />
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{x.l}</span>
-              </div>
-            ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 9, height: 9, borderRadius: 2, background: T.royalBurgundy }} />
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Received</span>
+            </div>
           </div>
         </ChartCard>
 
-        <ChartCard title="Material Given to Weavers" sub="May 2026 vs April 2026" icon={<Scissors size={22} color={T.green} />}>
+        <ChartCard title="Material Given to Weavers" sub="Current Period" icon={<Scissors size={22} color={T.green} />}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawGivenData} barGap={4}>
               <CartesianGrid key="rm-gvn-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
               <XAxis key="rm-gvn-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
               <YAxis key="rm-gvn-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-gvn-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="rm-gvn-may" dataKey="may" name="May 2026" fill={T.green} radius={[4,4,0,0] as any} />
-              <Bar key="rm-gvn-apr" dataKey="apr" name="April 2026" fill={T.green} radius={[4,4,0,0] as any} opacity={0.4} />
+              <Bar key="rm-gvn-cur" dataKey="current" name="Given to Weavers" fill={T.green} radius={[4,4,0,0] as any} />
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
-            {[{ c: T.green, l: "May 2026" }, { c: "rgba(30,102,64,0.4)", l: "April 2026" }].map(x => (
-              <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{ width: 9, height: 9, borderRadius: 2, background: x.c }} />
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{x.l}</span>
-              </div>
-            ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 9, height: 9, borderRadius: 2, background: T.green }} />
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Given</span>
+            </div>
           </div>
         </ChartCard>
 
         <ChartCard title="What Is In Stock Right Now" sub="Current closing stock levels" icon={<BarChart2 size={22} color={T.antiqueGold} />}>
           <div style={{ display: "flex", justifyContent: "space-around", alignItems: "flex-start", padding: "12px 0 8px" }}>
-            <MiniDonut value={120} max={200} color={T.royalBurgundy} label="Warp" badge="Healthy" badgeType="ok" />
-            <MiniDonut value={77}  max={150} color={T.antiqueGold}    label="Resham" badge="3 Out of Stock" badgeType="low" />
-            <MiniDonut value={37}  max={80}  color={T.green}          label="Jari" unit="reels" footNote="9 Buns · 1 Reel" badge="Healthy" badgeType="ok" />
+            <MiniDonut
+              value={stockByType.WARP.stock}
+              max={Math.max(200, stockByType.WARP.stock)}
+              color={T.royalBurgundy}
+              label="Warp"
+              badge={stockByType.WARP.outOfStockCount > 0 ? `${stockByType.WARP.outOfStockCount} Out of Stock` : "Healthy"}
+              badgeType={stockByType.WARP.outOfStockCount > 0 ? "low" : "ok"}
+            />
+            <MiniDonut
+              value={stockByType.RESHAM.stock}
+              max={Math.max(150, stockByType.RESHAM.stock)}
+              color={T.antiqueGold}
+              label="Resham"
+              badge={stockByType.RESHAM.outOfStockCount > 0 ? `${stockByType.RESHAM.outOfStockCount} Out of Stock` : "Healthy"}
+              badgeType={stockByType.RESHAM.outOfStockCount > 0 ? "low" : "ok"}
+            />
+            <MiniDonut
+              value={stockByType.JARI.stock}
+              max={Math.max(80, stockByType.JARI.stock)}
+              color={T.green}
+              label="Jari"
+              unit="reels"
+              footNote={bunsAndReels(stockByType.JARI.stock)}
+              badge={stockByType.JARI.outOfStockCount > 0 ? `${stockByType.JARI.outOfStockCount} Out of Stock` : "Healthy"}
+              badgeType={stockByType.JARI.outOfStockCount > 0 ? "low" : "ok"}
+            />
           </div>
         </ChartCard>
       </div>
@@ -132,21 +246,21 @@ export function RawMaterialReport() {
                 <tr>
                   <th style={TH}>Material Type</th>
                   <th style={TH}>Sub-type / Color / Grade</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Opening Stock</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Received This Period</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Given to Weavers</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Closing Stock</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Change vs Last Period</th>
+                  <th style={{ ...TH, textAlign: "right" }}>Stock Level</th>
+                  <th style={{ ...TH, textAlign: "center" }}>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {rawMaterialRows.map((r, i) => (
+                {isLoading && (
+                  <tr><td style={TD} colSpan={4}>Loading…</td></tr>
+                )}
+                {!isLoading && rawMaterialRows.length === 0 && (
+                  <tr><td style={TD} colSpan={4}>No raw material items in stock database yet.</td></tr>
+                )}
+                {!isLoading && rawMaterialRows.map((r, i) => (
                   <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.type === "WARP" ? T.royalBurgundy : r.type === "RESHAM" ? T.antiqueGold : T.green}` }}>
                     <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
                     <td style={TD}>{r.sub}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.open} {r.unit}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{r.recv > 0 ? `${r.recv} ${r.unit}` : "—"}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson }}>{r.given > 0 ? `${r.given} ${r.unit}` : "—"}</td>
                     <td style={{ ...TD, textAlign: "right" }}>
                       <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
                       {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
@@ -157,22 +271,21 @@ export function RawMaterialReport() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
-                <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-                  <td colSpan={2} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, background: T.warmCream }}>Total across all materials</td>
-                  <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, background: T.warmCream }}>166 kg</td>
-                  <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.green, background: T.warmCream }}>172 kg</td>
-                  <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson, background: T.warmCream }}>104 kg</td>
-                  <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>234 kg</td>
-                  <td style={{ ...TD, background: T.warmCream }} />
-                </tr>
-              </tfoot>
+              {rawMaterialRows.length > 0 && (
+                <tfoot>
+                  <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
+                    <td colSpan={2} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, background: T.warmCream }}>Total Closing Stock</td>
+                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>{totalsSummary.closeTotal} kg / reels</td>
+                    <td style={{ ...TD, background: T.warmCream }} />
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>
       </FadeUp>
 
-      {/* Materials Received — Batch Log (per-GRN receipt log, matches WorkerGRN / MaterialsPage) */}
+      {/* Materials Received — Batch Log */}
       <FadeUp>
         <div style={{ marginTop: 28 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 4 }}>Materials Received — Batch Log</div>
@@ -195,7 +308,16 @@ export function RawMaterialReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rawReceiptRows.map((r, i) => (
+                  {grnLoading && (
+                    <tr><td style={TD} colSpan={10}>Loading…</td></tr>
+                  )}
+                  {grnError && (
+                    <tr><td style={{ ...TD, color: T.crimson }} colSpan={10}>Failed to load material receipts.</td></tr>
+                  )}
+                  {!grnLoading && !grnError && receiptRows.length === 0 && (
+                    <tr><td style={TD} colSpan={10}>No material receipts recorded yet.</td></tr>
+                  )}
+                  {!grnLoading && !grnError && receiptRows.map((r, i) => (
                     <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.materialType === "Warp" ? T.royalBurgundy : r.materialType === "Resham" ? T.antiqueGold : T.green}` }}>
                       <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span></td>
                       <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</td>

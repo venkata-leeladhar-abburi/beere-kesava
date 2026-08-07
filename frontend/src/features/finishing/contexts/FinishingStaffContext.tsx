@@ -24,6 +24,7 @@ interface FinishingStaffContextValue {
   addMember: (m: Omit<FinishingStaffMember, "id" | "dateAdded">) => void;
   updateMember: (id: string, updates: Partial<FinishingStaffMember>) => void;
   toggleStatus: (id: string) => void;
+  deleteMember: (id: string) => Promise<void>;
   activeMembers: FinishingStaffMember[];
 }
 
@@ -104,14 +105,22 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
     },
   });
 
+  const deleteMemberMutation = useMutation({
+    mutationFn: (id: string) => finishingStaffApi.remove(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+
   const addMember = (m: Omit<FinishingStaffMember, "id" | "dateAdded">) => addMemberMutation.mutate(m);
   const updateMember = (id: string, updates: Partial<FinishingStaffMember>) => updateMemberMutation.mutate({ id, updates });
   const toggleStatus = (id: string) => toggleStatusMutation.mutate(id);
+  const deleteMember = (id: string) => deleteMemberMutation.mutateAsync(id);
 
   const activeMembers = useMemo(() => members.filter(m => m.status === "Active"), [members]);
 
   return (
-    <FinishingStaffContext.Provider value={{ members, addMember, updateMember, toggleStatus, activeMembers }}>
+    <FinishingStaffContext.Provider value={{ members, addMember, updateMember, toggleStatus, deleteMember, activeMembers }}>
       {children}
     </FinishingStaffContext.Provider>
   );

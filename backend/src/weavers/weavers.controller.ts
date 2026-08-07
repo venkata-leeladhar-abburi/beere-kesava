@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CreateWeaverDto } from "./dto/create-weaver.dto";
 import { ListWeaversQueryDto } from "./dto/list-weavers-query.dto";
 import { UpdateWeaverDto } from "./dto/update-weaver.dto";
@@ -31,6 +31,20 @@ export class WeaversController {
     return this.weaversService.getLeaderboard();
   }
 
+  /**
+   * Returns the top-5 weaver leaderboard ranked by production volume (QC
+   * records recorded) within the trailing `months` window (default 6).
+   * NOTE: This route MUST be declared before @Get(':id') so NestJS does not
+   * attempt to resolve the literal string "production-leaderboard" as a UUID param.
+   */
+  @Get("production-leaderboard")
+  getProductionLeaderboard(@Query("months") months?: string) {
+    const parsed = months ? Number(months) : undefined;
+    return this.weaversService.getProductionLeaderboard(
+      parsed && !Number.isNaN(parsed) ? parsed : undefined,
+    );
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.weaversService.findOne(id);
@@ -45,5 +59,10 @@ export class WeaversController {
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateWeaverDto) {
     return this.weaversService.update(id, dto);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.weaversService.remove(id);
   }
 }

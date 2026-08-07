@@ -428,6 +428,8 @@ export const ModelName = {
   Vendor: 'Vendor',
   Purchase: 'Purchase',
   PurchaseOrder: 'PurchaseOrder',
+  VendorBill: 'VendorBill',
+  PurchaseOrderItem: 'PurchaseOrderItem',
   PurchaseRequest: 'PurchaseRequest',
   Firm: 'Firm',
   FirmFinancialEntry: 'FirmFinancialEntry',
@@ -462,7 +464,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "vendorBill" | "purchaseOrderItem" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2760,6 +2762,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VendorBill: {
+      payload: Prisma.$VendorBillPayload<ExtArgs>
+      fields: Prisma.VendorBillFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VendorBillFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VendorBillFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        findFirst: {
+          args: Prisma.VendorBillFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VendorBillFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        findMany: {
+          args: Prisma.VendorBillFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>[]
+        }
+        create: {
+          args: Prisma.VendorBillCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        createMany: {
+          args: Prisma.VendorBillCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VendorBillCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>[]
+        }
+        delete: {
+          args: Prisma.VendorBillDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        update: {
+          args: Prisma.VendorBillUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        deleteMany: {
+          args: Prisma.VendorBillDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VendorBillUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VendorBillUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>[]
+        }
+        upsert: {
+          args: Prisma.VendorBillUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorBillPayload>
+        }
+        aggregate: {
+          args: Prisma.VendorBillAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVendorBill>
+        }
+        groupBy: {
+          args: Prisma.VendorBillGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VendorBillGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VendorBillCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VendorBillCountAggregateOutputType> | number
+        }
+      }
+    }
+    PurchaseOrderItem: {
+      payload: Prisma.$PurchaseOrderItemPayload<ExtArgs>
+      fields: Prisma.PurchaseOrderItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PurchaseOrderItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PurchaseOrderItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        findFirst: {
+          args: Prisma.PurchaseOrderItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PurchaseOrderItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        findMany: {
+          args: Prisma.PurchaseOrderItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>[]
+        }
+        create: {
+          args: Prisma.PurchaseOrderItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        createMany: {
+          args: Prisma.PurchaseOrderItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PurchaseOrderItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>[]
+        }
+        delete: {
+          args: Prisma.PurchaseOrderItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        update: {
+          args: Prisma.PurchaseOrderItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.PurchaseOrderItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PurchaseOrderItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PurchaseOrderItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.PurchaseOrderItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseOrderItemPayload>
+        }
+        aggregate: {
+          args: Prisma.PurchaseOrderItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePurchaseOrderItem>
+        }
+        groupBy: {
+          args: Prisma.PurchaseOrderItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PurchaseOrderItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PurchaseOrderItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PurchaseOrderItemCountAggregateOutputType> | number
+        }
+      }
+    }
     PurchaseRequest: {
       payload: Prisma.$PurchaseRequestPayload<ExtArgs>
       fields: Prisma.PurchaseRequestFieldRefs
@@ -4253,7 +4403,8 @@ export const UserScalarFieldEnum = {
   accessLevel: 'accessLevel',
   status: 'status',
   dateAdded: 'dateAdded',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  linkedWeaverId: 'linkedWeaverId'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -4274,6 +4425,7 @@ export type OtpCodeScalarFieldEnum = (typeof OtpCodeScalarFieldEnum)[keyof typeo
 
 export const WeaverScalarFieldEnum = {
   id: 'id',
+  code: 'code',
   name: 'name',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -4700,11 +4852,41 @@ export const PurchaseOrderScalarFieldEnum = {
   urgency: 'urgency',
   status: 'status',
   grnId: 'grnId',
+  grnReceiptId: 'grnReceiptId',
+  actualReceivedDate: 'actualReceivedDate',
   rejectionReason: 'rejectionReason',
   createdAt: 'createdAt'
 } as const
 
 export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]
+
+
+export const VendorBillScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  poId: 'poId',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  status: 'status',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type VendorBillScalarFieldEnum = (typeof VendorBillScalarFieldEnum)[keyof typeof VendorBillScalarFieldEnum]
+
+
+export const PurchaseOrderItemScalarFieldEnum = {
+  id: 'id',
+  purchaseOrderId: 'purchaseOrderId',
+  materialType: 'materialType',
+  name: 'name',
+  quantity: 'quantity',
+  unit: 'unit',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice'
+} as const
+
+export type PurchaseOrderItemScalarFieldEnum = (typeof PurchaseOrderItemScalarFieldEnum)[keyof typeof PurchaseOrderItemScalarFieldEnum]
 
 
 export const PurchaseRequestScalarFieldEnum = {
@@ -4781,7 +4963,8 @@ export const VendorPaymentScalarFieldEnum = {
   date: 'date',
   utr: 'utr',
   method: 'method',
-  firmId: 'firmId'
+  firmId: 'firmId',
+  billId: 'billId'
 } as const
 
 export type VendorPaymentScalarFieldEnum = (typeof VendorPaymentScalarFieldEnum)[keyof typeof VendorPaymentScalarFieldEnum]
@@ -4917,6 +5100,7 @@ export type RawMaterialStockScalarFieldEnum = (typeof RawMaterialStockScalarFiel
 export const GrnReceiptScalarFieldEnum = {
   id: 'id',
   vendorId: 'vendorId',
+  firmId: 'firmId',
   supplierName: 'supplierName',
   invoiceNo: 'invoiceNo',
   invoiceDate: 'invoiceDate',
@@ -4938,7 +5122,8 @@ export const GrnItemScalarFieldEnum = {
   quantity: 'quantity',
   unit: 'unit',
   unitPrice: 'unitPrice',
-  totalPrice: 'totalPrice'
+  totalPrice: 'totalPrice',
+  rejectedQuantity: 'rejectedQuantity'
 } as const
 
 export type GrnItemScalarFieldEnum = (typeof GrnItemScalarFieldEnum)[keyof typeof GrnItemScalarFieldEnum]
@@ -5526,6 +5711,20 @@ export type ListEnumPurchaseOrderStatusFieldRefInput<$PrismaModel> = FieldRefInp
 
 
 /**
+ * Reference to a field of type 'VendorBillStatus'
+ */
+export type EnumVendorBillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VendorBillStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'VendorBillStatus[]'
+ */
+export type ListEnumVendorBillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VendorBillStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'PurchaseRequestStatus'
  */
 export type EnumPurchaseRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PurchaseRequestStatus'>
@@ -5860,6 +6059,8 @@ export type GlobalOmitConfig = {
   vendor?: Prisma.VendorOmit
   purchase?: Prisma.PurchaseOmit
   purchaseOrder?: Prisma.PurchaseOrderOmit
+  vendorBill?: Prisma.VendorBillOmit
+  purchaseOrderItem?: Prisma.PurchaseOrderItemOmit
   purchaseRequest?: Prisma.PurchaseRequestOmit
   firm?: Prisma.FirmOmit
   firmFinancialEntry?: Prisma.FirmFinancialEntryOmit

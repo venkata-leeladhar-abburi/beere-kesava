@@ -21,9 +21,12 @@ export class WarpRequestsService {
     private readonly auditLog: AuditLogService,
   ) {}
 
-  async list(status?: WarpRequestStatus) {
+  async list(status?: WarpRequestStatus, weaverId?: string) {
     const items = await this.prisma.warpRequest.findMany({
-      where: status ? { status } : undefined,
+      where: {
+        ...(status ? { status } : {}),
+        ...(weaverId ? { weaverId } : {}),
+      },
       include: { weaver: true, decidedBy: true },
       orderBy: { requestedAt: "desc" },
     });

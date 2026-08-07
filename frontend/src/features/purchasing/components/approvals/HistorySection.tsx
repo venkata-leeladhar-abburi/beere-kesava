@@ -1,12 +1,32 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, X, Download } from "lucide-react";
 import { T, F } from "./tokens";
-import { HISTORY_ROWS } from "./data";
 import { TypePill } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
+import { auditLogApi } from "../../../../shared/api/audit-log";
 
 const HIST_FILTERS = ["All History", "Purchase Orders", "Warp Requests", "Rate Changes", "Approved Only", "Rejected Only"];
 const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];
+
+// GAP: only Purchase Order approve/reject actions currently write to the
+// audit log with module "APPROVALS" (see backend/src/purchase-orders/
+// purchase-orders.service.ts). Warp Requests and Rate Changes have no
+// equivalent audit trail yet, so those filters will always show "no history"
+// until that logging is added — this is a real gap, not a bug in this view.
+type HistoryRow = {
+  date: string;
+  type: "Purchase Order";
+  by: string;
+  details: string;
+  decision: "Approved" | "Rejected";
+};
+
+function monthsAgo(n: number): Date {
+  const d = new Date();
+  d.setMonth(d.getMonth() - n);
+  return d;
+}
 
 // ─── 5. APPROVAL HISTORY ─────────────────────────────────────────────────────
 export function HistorySection({
@@ -20,6 +40,39 @@ export function HistorySection({
   histPeriod: string;
   setHistPeriod: (v: string) => void;
 }) {
+  const { data: actionsRes, isLoading, isError } = useQuery({
+    queryKey: ["approval-history"],
+    queryFn: () => auditLogApi.listActions({ module: "APPROVALS", pageSize: 200 }),
+  });
+
+  const rows: HistoryRow[] = React.useMemo(() => {
+    const items = actionsRes?.items ?? [];
+    return items
+      .filter(a => a.entityType === "PurchaseOrder")
+      .map(a => ({
+        date: new Date(a.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+        type: "Purchase Order" as const,
+        by: a.user ? `${a.user.firstName} ${a.user.lastName}` : "System",
+        details: a.action,
+        decision: (a.newValue === "APPROVED" ? "Approved" : "Rejected") as "Approved" | "Rejected",
+        _createdAt: a.createdAt,
+      }));
+  }, [actionsRes]);
+
+  const filteredRows = React.useMemo(() => {
+    let out = rows;
+    if (histFilter === "Purchase Orders") out = out.filter(r => r.type === "Purchase Order");
+    else if (histFilter === "Warp Requests" || histFilter === "Rate Changes") out = [];
+    else if (histFilter === "Approved Only") out = out.filter(r => r.decision === "Approved");
+    else if (histFilter === "Rejected Only") out = out.filter(r => r.decision === "Rejected");
+
+    if (histPeriod !== "All Time") {
+      const cutoff = histPeriod === "This Month" ? monthsAgo(1) : monthsAgo(3);
+      out = out.filter(r => new Date((r as any)._createdAt) >= cutoff);
+    }
+    return out;
+  }, [rows, histFilter, histPeriod]);
+
   return (
     <div style={{ padding: "48px 56px" }}>
       {/* Section title row */}
@@ -90,39 +143,52 @@ export function HistorySection({
           ))}
         </div>
 
-        {/* Rows */}
-        {HISTORY_ROWS.map((row, i) => (
-          <div
-            key={i}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "200px 140px 130px 1fr 120px 90px",
-              padding: "13px 20px",
-              gap: 8,
-              borderBottom: i < HISTORY_ROWS.length - 1 ? "1px solid " + T.borderDef : "none",
-              background: i % 2 === 0 ? "#FFF" : T.warmIvory,
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>
-            <TypePill type={row.type} typeColor={row.typeColor} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>
-            <span style={{
-              background: row.decision === "Approved" ? T.greenBg : T.crimsonBg,
-              color: row.decision === "Approved" ? T.green : T.crimson,
-              borderRadius: 6, padding: "3px 10px",
-              fontFamily: F.ui, fontSize: 12, fontWeight: 600,
-              display: "inline-flex", alignItems: "center", gap: 4,
-            }}>
-              {row.decision === "Approved" ? <Check size={11} /> : <X size={11} />}
-              {row.decision}
-            </span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
-              <Check size={11} /> Sent
-            </span>
+        {isLoading ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Loading approval history…
           </div>
-        ))}
+        ) : isError ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+            Failed to load approval history. Please try again.
+          </div>
+        ) : filteredRows.length === 0 ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            No approval decisions recorded for this filter yet.
+          </div>
+        ) : (
+          filteredRows.map((row, i) => (
+            <div
+              key={i}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "200px 140px 130px 1fr 120px 90px",
+                padding: "13px 20px",
+                gap: 8,
+                borderBottom: i < filteredRows.length - 1 ? "1px solid " + T.borderDef : "none",
+                background: i % 2 === 0 ? "#FFF" : T.warmIvory,
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>
+              <TypePill type={row.type} typeColor={T.royalBurgundy} />
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>
+              <span style={{
+                background: row.decision === "Approved" ? T.greenBg : T.crimsonBg,
+                color: row.decision === "Approved" ? T.green : T.crimson,
+                borderRadius: 6, padding: "3px 10px",
+                fontFamily: F.ui, fontSize: 12, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                {row.decision === "Approved" ? <Check size={11} /> : <X size={11} />}
+                {row.decision}
+              </span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
+                <Check size={11} /> Sent
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Permanent record note */}

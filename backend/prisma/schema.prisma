@@ -190,6 +190,13 @@ enum PurchaseOrderStatus {
   RECEIVED
 }
 
+enum VendorBillStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
 enum PurchaseRequestStatus {
   PENDING
   APPROVED
@@ -305,6 +312,12 @@ model User {
   dateAdded   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  // Set when this User's role is WEAVER — links to the actual Weaver record
+  // auto-created alongside it, so the roster shows up in the Weavers module
+  // instead of only existing as an invisible User row.
+  linkedWeaverId String? @unique
+  linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
+
   permissionOverrides  UserPermissionOverride[]
   auditLogs            AuditLog[]
   actionLogs           ActionLog[]
@@ -341,6 +354,11 @@ model OtpCode {
 
 model Weaver {
   id        String       @id @default(uuid())
+  // Human-facing weaver ID (e.g. "Wea-001") — gap-filled against the count of
+  // existing weavers, not a monotonic counter: deleting a weaver frees its
+  // number for the next one created. Distinct from `id` (UUID), which is the
+  // real FK target everywhere else and never changes.
+  code      String       @unique
   name      String
   firstName String
   lastName  String
@@ -365,6 +383,7 @@ model Weaver {
   sarees         Saree[]
   payments       WeaverPayment[]
   warpRequests   WarpRequest[]
+  linkedUser     User?
 
   @@index([status])
 }
@@ -845,6 +864,7 @@ model Vendor {
 
   purchaseOrders PurchaseOrder[]
   vendorPayments VendorPayment[]
+  vendorBills    VendorBill[]
   rawStock       RawMaterialStock[]
   grnReceipts    GrnReceipt[]
 }
@@ -866,20 +886,64 @@ model Purchase {
 }
 
 model PurchaseOrder {
-  id           String              @id @default(uuid())
-  poNumber     String              @unique // PO-2026-NNN
-  vendorId     String
-  vendor       Vendor              @relation(fields: [vendorId], references: [id])
-  deliveryDate DateTime?
-  totalValue   Decimal             @db.Decimal(12, 2)
-  urgency      String?
-  status       PurchaseOrderStatus @default(PENDING)
-  grnId        String?
-  rejectionReason String?
-  createdAt    DateTime            @default(now())
+  id                String              @id @default(uuid())
+  poNumber          String              @unique // PO-2026-NNN
+  vendorId          String
+  vendor            Vendor              @relation(fields: [vendorId], references: [id])
+  deliveryDate      DateTime?
+  totalValue        Decimal             @db.Decimal(12, 2)
+  urgency           String?
+  status            PurchaseOrderStatus @default(PENDING)
+  grnId             String? // display code, kept for backward compatibility
+  grnReceiptId      String? // real FK to GrnReceipt.id, once GRN is received
+  grnReceipt        GrnReceipt?         @relation(fields: [grnReceiptId], references: [id])
+  actualReceivedDate DateTime? // stamped on receiveGrn(); compare against deliveryDate for on-time-delivery
+  rejectionReason   String?
+  createdAt         DateTime            @default(now())
+
+  items PurchaseOrderItem[]
+  vendorBills VendorBill[]
 
   @@index([vendorId])
   @@index([status])
+  @@index([grnReceiptId])
+}
+
+// Amount owed to a vendor — generated from a received PO/GRN, or entered
+// manually for recurring items (rent, services, etc.). VendorPayment rows
+// optionally settle against a bill (partial or full); status is derived
+// from the sum of linked payments vs amount, recomputed on each payment.
+model VendorBill {
+  id            String           @id @default(uuid())
+  vendorId      String
+  vendor        Vendor           @relation(fields: [vendorId], references: [id])
+  poId          String?
+  purchaseOrder PurchaseOrder?   @relation(fields: [poId], references: [id])
+  amount        Decimal          @db.Decimal(12, 2)
+  dueDate       DateTime?
+  status        VendorBillStatus @default(PENDING)
+  description   String?
+  createdAt     DateTime         @default(now())
+
+  payments VendorPayment[]
+
+  @@index([vendorId])
+  @@index([poId])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  materialType    MaterialType
+  name            String
+  quantity        Decimal       @db.Decimal(12, 3)
+  unit            String        @default("KG")
+  unitPrice       Decimal?      @db.Decimal(12, 2)
+  totalPrice      Decimal?      @db.Decimal(12, 2)
+
+  @@index([purchaseOrderId])
 }
 
 model PurchaseRequest {
@@ -927,6 +991,7 @@ model Firm {
   invoicePayments  InvoicePayment[]
   quotations       Quotation[]
   dispatchRecords  DispatchRecord[]
+  grnReceipts      GrnReceipt[]
 }
 
 model FirmFinancialEntry {
@@ -963,17 +1028,23 @@ model WeaverPayment {
 }
 
 model VendorPayment {
-  id       String   @id @default(uuid())
+  id       String      @id @default(uuid())
   vendorId String
-  vendor   Vendor   @relation(fields: [vendorId], references: [id])
-  amount   Decimal  @db.Decimal(12, 2)
-  date     DateTime @default(now())
+  vendor   Vendor      @relation(fields: [vendorId], references: [id])
+  amount   Decimal     @db.Decimal(12, 2)
+  date     DateTime    @default(now())
   utr      String?
   method   String?
   firmId   String?
-  firm     Firm?    @relation(fields: [firmId], references: [id])
+  firm     Firm?       @relation(fields: [firmId], references: [id])
+  // Optional: links this payment to a specific bill it settles (partial or
+  // full). When absent, the payment is a "general" vendor payment not tied
+  // to any bill — existing behavior is unaffected.
+  billId   String?
+  bill     VendorBill? @relation(fields: [billId], references: [id])
 
   @@index([vendorId])
+  @@index([billId])
 }
 
 model Invoice {
@@ -1131,6 +1202,11 @@ model GrnReceipt {
   id           String    @id // GRN-2026-NNN
   vendorId     String?
   vendor       Vendor?   @relation(fields: [vendorId], references: [id])
+  // Which of the company's legal firms this material was purchased for/by —
+  // was previously always displayed as a hardcoded "Beere Kesava Silks
+  // (Head Firm)" placeholder on the frontend with no real backing data.
+  firmId       String?
+  firm         Firm?     @relation(fields: [firmId], references: [id])
   supplierName String
   invoiceNo    String?
   invoiceDate  DateTime?
@@ -1138,21 +1214,23 @@ model GrnReceipt {
   notes        String?
   createdAt    DateTime  @default(now())
 
-  items GrnItem[]
+  items          GrnItem[]
+  purchaseOrders PurchaseOrder[]
 }
 
 model GrnItem {
-  id           String       @id @default(uuid())
-  grnId        String
-  grn          GrnReceipt   @relation(fields: [grnId], references: [id], onDelete: Cascade)
-  materialType MaterialType
-  name         String
-  grade        String?
-  color        String?
-  quantity     Decimal      @db.Decimal(12, 3)
-  unit         String       @default("KG")
-  unitPrice    Decimal      @db.Decimal(12, 2)
-  totalPrice   Decimal      @db.Decimal(12, 2)
+  id               String       @id @default(uuid())
+  grnId            String
+  grn              GrnReceipt   @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  materialType     MaterialType
+  name             String
+  grade            String?
+  color            String?
+  quantity         Decimal      @db.Decimal(12, 3)
+  unit             String       @default("KG")
+  unitPrice        Decimal      @db.Decimal(12, 2)
+  totalPrice       Decimal      @db.Decimal(12, 2)
+  rejectedQuantity Decimal      @default(0) @db.Decimal(12, 3)
 
   @@index([grnId])
 }

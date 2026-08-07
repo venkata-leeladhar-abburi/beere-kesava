@@ -11,10 +11,17 @@ export interface VerifyOtpResponse {
   token: string;
   user: {
     id: string;
+    /** Real Weaver.id for WEAVER-role sessions — distinct from `id` (the User.id), since batches/payments/etc are FK'd to Weaver.id. Null for every other role. */
+    weaverId: string | null;
+    /** Human-facing ID (e.g. "ADMIN-001", "WEA-003") — null only in unreachable fallback paths. */
+    empId: string | null;
     name: string;
     email: string;
     mobile: string;
     role: string;
+    accessLevel: string;
+    /** ISO date string — when this User/Weaver record was created. */
+    dateAdded: string | null;
   };
 }
 

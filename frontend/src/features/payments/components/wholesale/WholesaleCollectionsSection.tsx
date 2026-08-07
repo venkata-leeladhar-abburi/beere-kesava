@@ -53,7 +53,7 @@ export function WholesaleCollectionsSection() {
   const { addIncomeEntry } = useFirms();
   const queryClient = useQueryClient();
 
-  const { data: invoices = [] } = useQuery({
+  const { data: invoices = [], isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: INVOICES_QUERY_KEY,
     queryFn: async () => (await invoicesApi.list()).items.map(backendInvoiceToFrontend),
   });
@@ -181,6 +181,16 @@ export function WholesaleCollectionsSection() {
           </DownloadGate>
         </div>
 
+        {invoicesLoading ? (
+          <div style={{ marginTop: 24, marginBottom: 22, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Loading wholesale collections…
+          </div>
+        ) : invoicesError ? (
+          <div style={{ marginTop: 24, marginBottom: 22, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>
+            Failed to load wholesale collections. Please retry.
+          </div>
+        ) : (
+        <>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
@@ -294,6 +304,8 @@ export function WholesaleCollectionsSection() {
             setViewInvoice={setViewInvoice}
             setRecordPayment={setRecordPayment}
           />
+        )}
+        </>
         )}
 
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Collections Report" desc="Generate and download the wholesale customer collections report." actionLabel="Download" icon={Download} />

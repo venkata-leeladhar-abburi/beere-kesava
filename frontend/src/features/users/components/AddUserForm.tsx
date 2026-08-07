@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   UserPlus, CheckCircle2, Shield, Phone, Mail,
-  Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X
+  Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers
 } from "lucide-react";
 import {
   T, F, EASE, cardStyle,
@@ -10,12 +10,23 @@ import {
 } from "./theme";
 import { SectionTitle, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
+
+export interface WeaverFieldsState {
+  photoUrl: string;
+  village: string;
+  looms: string;
+  bankName: string;
+  accountNo: string;
+  ifsc: string;
+}
 
 interface AddUserFormProps {
   showSuccess: boolean;
   setShowSuccess: (s: boolean) => void;
   createdUser: { name: string; role: string; mobile: string; empId: string; accessLevel?: AccessLevel } | null;
   isFinishing: boolean;
+  isWeaver: boolean;
   isAdmin: boolean;
   firstName: string;
   setFirstName: (v: string) => void;
@@ -35,18 +46,23 @@ interface AddUserFormProps {
   setSpecialisation: (v: string) => void;
   notes: string;
   setNotes: (v: string) => void;
+  weaverFields: WeaverFieldsState;
+  setWeaverFields: (updater: (prev: WeaverFieldsState) => WeaverFieldsState) => void;
   canSubmit: boolean;
   handleSubmit: () => void;
   handleCancel: () => void;
 }
 
 export function AddUserForm({
-  showSuccess, setShowSuccess, createdUser, isFinishing, isAdmin,
+  showSuccess, setShowSuccess, createdUser, isFinishing, isWeaver, isAdmin,
   firstName, setFirstName, lastName, setLastName, mobile, setMobile,
   email, setEmail, role, setRole, portal, autoEmpId, accessLevel,
   setAccessLevel, specialisation, setSpecialisation, notes, setNotes,
+  weaverFields, setWeaverFields,
   canSubmit, handleSubmit, handleCancel
 }: AddUserFormProps) {
+  const setWeaverField = (key: keyof WeaverFieldsState) => (v: string) =>
+    setWeaverFields(prev => ({ ...prev, [key]: v }));
   return (
     <div style={{ ...cardStyle, borderRadius: 20 }}>
       <div style={{ padding: "22px 28px 0" }}>
@@ -101,6 +117,26 @@ export function AddUserForm({
                       <Sparkles size={15} color={T.blue} style={{ flexShrink: 0 }} />
                       <span style={{ fontFamily: F.ui, fontSize: 13, color: T.blue }}>
                         Finishing Staff — extra fields (Specialisation) appear below. These are saved to the shared staff directory and visible in the Worker Staff portal for assignment.
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Weaver extra-fields callout banner */}
+              <AnimatePresence>
+                {isWeaver && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    transition={{ duration: 0.25, ease: EASE }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                      <Layers size={15} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy }}>
+                        Weaver — this creates a linked Weaver record too, visible in the Weavers module. Fill in the photo, village, looms and bank details below.
                       </span>
                     </div>
                   </motion.div>
@@ -207,6 +243,51 @@ export function AddUserForm({
                   </Field>
                 </div>
               </div>
+
+              {/* Weaver-specific fields — photo, village/looms, bank details */}
+              <AnimatePresence>
+                {isWeaver && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: EASE }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ height: 1, background: T.borderDef, margin: "24px 0" }} />
+                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 18 }}>
+                      Weaver Details
+                    </div>
+
+                    <div style={{ marginBottom: 24 }}>
+                      <PhotoUploadField
+                        labelText="Photo of Weaver"
+                        helpText="Optional — appears on profile and batch records."
+                        photoUrl={weaverFields.photoUrl || null}
+                        onChange={setWeaverField("photoUrl")}
+                      />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px", marginBottom: 8 }}>
+                      <Field label="Village / Area" hint="Optional">
+                        <Input value={weaverFields.village} onChange={e => setWeaverField("village")(e.target.value)} placeholder="e.g. Dharmavaram, AP" />
+                      </Field>
+                      <Field label="Number of Looms" hint="Optional">
+                        <Input type="number" min={0} value={weaverFields.looms} onChange={e => setWeaverField("looms")(e.target.value)} placeholder="Total active looms" />
+                      </Field>
+                      <Field label="Bank Name" hint="Optional">
+                        <Input value={weaverFields.bankName} onChange={e => setWeaverField("bankName")(e.target.value)} placeholder="e.g. State Bank of India" />
+                      </Field>
+                      <Field label="Account Number" hint="Optional">
+                        <Input value={weaverFields.accountNo} onChange={e => setWeaverField("accountNo")(e.target.value)} placeholder="Account number" />
+                      </Field>
+                      <Field label="IFSC Code" hint="Optional">
+                        <Input value={weaverFields.ifsc} onChange={e => setWeaverField("ifsc")(e.target.value)} placeholder="11-character IFSC code" />
+                      </Field>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div style={{ height: 1, background: T.borderDef, margin: "24px 0" }} />
 

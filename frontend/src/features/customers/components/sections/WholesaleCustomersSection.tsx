@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ChevronDown, Download, Eye, Edit, Plus,
   LayoutGrid, AlignJustify, Table as TableIcon, MapPin,
@@ -8,6 +9,37 @@ import { T, F } from "../theme";
 import { SectionTitle, Pill, FadeUp } from "../common/primitives";
 import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { useCustomers } from "../../contexts/CustomersContext";
+
+interface WholesaleFormState {
+  name: string;
+  contactName: string;
+  phone: string;
+  whatsapp: string;
+  city: string;
+  state: string;
+  address: string;
+  paymentTerms: string;
+  bankName: string;
+  accountNumber: string;
+  gstNumber: string;
+  notes: string;
+}
+
+const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
+  name: "",
+  contactName: "",
+  phone: "",
+  whatsapp: "",
+  city: "",
+  state: "Andhra Pradesh",
+  address: "",
+  paymentTerms: "30 days",
+  bankName: "",
+  accountNumber: "",
+  gstNumber: "",
+  notes: "",
+};
 
 export interface WholesaleCustomersSectionProps {
   wholesaleList: WholesaleCustomer[];
@@ -23,6 +55,44 @@ export interface WholesaleCustomersSectionProps {
 export function WholesaleCustomersSection({
   wholesaleList, wholesaleView, setWholesaleView, showAddWholesale, setShowAddWholesale, onView, onEdit,
 }: WholesaleCustomersSectionProps) {
+  const { addCustomer } = useCustomers();
+  const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateField = <K extends keyof WholesaleFormState>(key: K, value: WholesaleFormState[K]) =>
+    setForm(f => ({ ...f, [key]: value }));
+
+  const closeAddWholesale = () => {
+    setShowAddWholesale(false);
+    setForm(EMPTY_WHOLESALE_FORM);
+    setError(null);
+  };
+
+  const handleSaveWholesale = async () => {
+    setError(null);
+    if (!form.name.trim() || !form.phone.trim()) {
+      setError("Business Name and Phone Number are required.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await addCustomer({
+        name: form.name.trim(),
+        type: "WHOLESALE",
+        phone: form.phone.trim(),
+        city: form.city.trim() || undefined,
+        address: form.address.trim() || undefined,
+        gstCode: form.gstNumber.trim() || undefined,
+      });
+      closeAddWholesale();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save customer. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div id="customers-wholesale-section" style={{ padding: "0 56px 64px 56px" }}>
       <SectionTitle
@@ -31,7 +101,7 @@ export function WholesaleCustomersSection({
         action=""
       />
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -60, marginBottom: 24 }}>
-        <Button onClick={() => setShowAddWholesale(!showAddWholesale)} variant="primary" iconLeft={Plus}>
+        <Button onClick={() => (showAddWholesale ? closeAddWholesale() : setShowAddWholesale(true))} variant="primary" iconLeft={Plus}>
           Add New Wholesale Customer →
         </Button>
       </div>
@@ -48,16 +118,16 @@ export function WholesaleCustomersSection({
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <Field label="Business Name *"><Input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" /></Field>
-                <Field label="Owner / Contact Name *"><Input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" /></Field>
+                <Field label="Business Name *"><Input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" value={form.name} onChange={e => updateField("name", e.target.value)} /></Field>
+                <Field label="Owner / Contact Name *"><Input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" value={form.contactName} onChange={e => updateField("contactName", e.target.value)} /></Field>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" /></Field>
-                  <Field label="WhatsApp Number"><Input aria-label="If different" type="text" placeholder="If different" /></Field>
+                  <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" value={form.phone} onChange={e => updateField("phone", e.target.value)} /></Field>
+                  <Field label="WhatsApp Number"><Input aria-label="If different" type="text" placeholder="If different" value={form.whatsapp} onChange={e => updateField("whatsapp", e.target.value)} /></Field>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <Field label="City *"><Input aria-label="City" type="text" placeholder="City" /></Field>
+                  <Field label="City *"><Input aria-label="City" type="text" placeholder="City" value={form.city} onChange={e => updateField("city", e.target.value)} /></Field>
                   <Field label="State *">
-                    <Select defaultValue="Andhra Pradesh">
+                    <Select value={form.state} onValueChange={v => updateField("state", v)}>
                       <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
                       <SelectItem value="Telangana">Telangana</SelectItem>
                       <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
@@ -67,9 +137,9 @@ export function WholesaleCustomersSection({
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <Field label="Business Address"><Textarea placeholder="Full address for delivery and billing" rows={2} /></Field>
+                <Field label="Business Address"><Textarea placeholder="Full address for delivery and billing" rows={2} value={form.address} onChange={e => updateField("address", e.target.value)} /></Field>
                 <Field label="Payment Terms *">
-                  <Select defaultValue="30 days">
+                  <Select value={form.paymentTerms} onValueChange={v => updateField("paymentTerms", v)}>
                     <SelectItem value="30 days">30 days</SelectItem>
                     <SelectItem value="45 days">45 days</SelectItem>
                     <SelectItem value="60 days">60 days</SelectItem>
@@ -78,19 +148,22 @@ export function WholesaleCustomersSection({
                   </Select>
                 </Field>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <Field label="Bank Name"><Input aria-label="For any refunds" type="text" placeholder="For any refunds" /></Field>
-                  <Field label="Account Number"><Input aria-label="Account No." type="password" placeholder="Account No." /></Field>
+                  <Field label="Bank Name"><Input aria-label="For any refunds" type="text" placeholder="For any refunds" value={form.bankName} onChange={e => updateField("bankName", e.target.value)} /></Field>
+                  <Field label="Account Number"><Input aria-label="Account No." type="password" placeholder="Account No." value={form.accountNumber} onChange={e => updateField("accountNumber", e.target.value)} /></Field>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" /></Field>
+                  <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                   <Field label="Visiting Card Photo"><input type="file" accept="image/*" style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, backgroundColor: "#FFF" }} /></Field>
                 </div>
-                <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." /></Field>
+                <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>
               </div>
             </div>
+            {error && (
+              <div style={{ marginTop: 20, padding: "10px 14px", background: T.crimsonBg, color: T.crimson, borderRadius: 8, fontFamily: F.ui, fontSize: 13 }}>{error}</div>
+            )}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid ${T.borderDef}` }}>
-              <Button onClick={() => setShowAddWholesale(false)} variant="tertiary">Cancel</Button>
-              <Button onClick={() => setShowAddWholesale(false)} variant="primary">✓ Save Customer</Button>
+              <Button onClick={closeAddWholesale} variant="tertiary" disabled={submitting}>Cancel</Button>
+              <Button onClick={handleSaveWholesale} variant="primary" disabled={submitting}>{submitting ? "Saving…" : "✓ Save Customer"}</Button>
             </div>
           </div>
         </FadeUp>

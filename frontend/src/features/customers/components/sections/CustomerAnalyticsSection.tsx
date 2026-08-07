@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Download, Star, IndianRupee, Users, Calendar, AlertTriangle, MapPin,
 } from "lucide-react";
@@ -11,12 +12,30 @@ import { T, F } from "../theme";
 import { SectionTitle } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { downloadDataAsCSV } from "../utils";
-import {
-  top10Customers, revenueSplit, newVsReturning, frequentBuyers, inactiveAlerts,
-} from "../data";
 
 import { useQuery } from "@tanstack/react-query";
 import { analyticsApi } from "../../../../shared/api/analytics";
+import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
+import { invoicesApi } from "../../../../shared/api/invoices";
+import { salesApi } from "../../../../shared/api/sales";
+
+const LOC_PALETTE = [T.royalBurgundy, T.antiqueGold, T.greenMid, "#845E04", "#69635E"];
+
+function formatMonthLabel(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  if (!year || !m) return month;
+  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+}
+
+interface CustRow {
+  id: string;
+  name: string;
+  type: "Wholesale" | "Retail";
+  city: string;
+  purchases: number;
+  spend: number;
+  dates: string[];
+}
 
 export interface CustomerAnalyticsSectionProps {
   analyticsDateFilter: DateFilterState;
@@ -25,16 +44,146 @@ export interface CustomerAnalyticsSectionProps {
 
 // ── SECTION 3: CUSTOMER ANALYTICS ───────────────────────────────────────────
 export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDateFilter }: CustomerAnalyticsSectionProps) {
-  const { data: revSplitRes } = useQuery({
+  const { data: revSplitRes, isLoading: revSplitLoading, isError: revSplitError } = useQuery({
     queryKey: ["analytics-revenue-split"],
     queryFn: () => analyticsApi.getRevenueSplit(),
   });
+  const { data: customersRes, isLoading: customersLoading, isError: customersError } = useQuery({
+    queryKey: ["customer-analytics-customers"],
+    queryFn: () => customersApi.list(),
+  });
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
+    queryKey: ["customer-analytics-invoices"],
+    queryFn: () => invoicesApi.list(),
+  });
+  const { data: salesRes, isLoading: salesLoading, isError: salesError } = useQuery({
+    queryKey: ["customer-analytics-sales"],
+    queryFn: () => salesApi.list(),
+  });
+  // custRows (Top 10 Customers, Frequent Buyers, Inactive, Locations charts)
+  // is a join of customers + invoices + sales — a failure in any of those
+  // three real-backend queries makes the derived rows wrong/incomplete.
+  const custDataLoading = customersLoading || invoicesLoading || salesLoading;
+  const custDataError = customersError || invoicesError || salesError;
+  const {
+    data: newVsReturningRes,
+    isLoading: newVsReturningLoading,
+    isError: newVsReturningError,
+  } = useQuery({
+    queryKey: ["analytics-customers-new-vs-returning-monthly"],
+    queryFn: () => analyticsApi.getCustomersNewVsReturningMonthly(6),
+  });
+  const newVsReturning = (newVsReturningRes?.items ?? []).map(d => ({
+    month: formatMonthLabel(d.month),
+    new: d.newCustomers,
+    returning: d.returningCustomers,
+  }));
 
   const liveRevSplit = [
     { name: "Retail Store", value: revSplitRes?.retail ?? 0, fill: T.greenMid },
     { name: "Wholesale Sales", value: revSplitRes?.wholesale ?? 0, fill: T.royalBurgundy },
   ];
   const totalRevLakhs = ((revSplitRes?.total ?? 0) / 100000).toFixed(1);
+
+  // Same aggregation approach as CustomerReport.tsx (reports feature): join
+  // customers with invoices (wholesale) or sales (retail) to get per-customer
+  // purchase count, total spend, and purchase dates.
+  const custRows: CustRow[] = useMemo(() => {
+    const customers = customersRes?.items ?? [];
+    const invoices = invoicesRes?.items ?? [];
+    const sales = (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
+
+    return customers.map((c: BackendCustomer) => {
+      if (c.type === "WHOLESALE") {
+        const custInvoices = invoices.filter(i => i.customerId === c.id);
+        const spend = custInvoices.reduce((s, i) => s + Number(i.paid), 0);
+        return {
+          id: c.id, name: c.name, type: "Wholesale" as const, city: c.city ?? "Unknown",
+          purchases: custInvoices.length, spend,
+          dates: custInvoices.map(i => i.invoiceDate).sort(),
+        };
+      }
+      const custSales = sales.filter(s => s.customerId === c.id);
+      const spend = custSales.reduce((s, sale) => s + Number(sale.amount), 0);
+      return {
+        id: c.id, name: c.name, type: "Retail" as const, city: c.city ?? "Unknown",
+        purchases: custSales.length, spend,
+        dates: custSales.map(s => s.saleDate).sort(),
+      };
+    });
+  }, [customersRes, invoicesRes, salesRes]);
+
+  // Top 10 customers by total spend.
+  const top10Customers = useMemo(
+    () => [...custRows].filter(c => c.spend > 0).sort((a, b) => b.spend - a.spend).slice(0, 10)
+      .map(c => ({ name: c.name, spend: c.spend })),
+    [custRows],
+  );
+  const topSpend = top10Customers[0]?.spend ?? 0;
+  const combinedTop10 = top10Customers.reduce((s, c) => s + c.spend, 0);
+  const avgTop10 = top10Customers.length > 0 ? Math.round(combinedTop10 / top10Customers.length) : 0;
+
+  // Customers who buy most often — ranked by purchase count, with an
+  // approximate cadence derived from the span between first and last
+  // purchase (real dates, not a mock).
+  const frequentBuyers = useMemo(() => {
+    return [...custRows]
+      .filter(c => c.purchases > 0)
+      .sort((a, b) => b.purchases - a.purchases)
+      .slice(0, 8)
+      .map(c => {
+        let freq = "Single purchase";
+        if (c.purchases > 1) {
+          const first = new Date(c.dates[0]).getTime();
+          const last = new Date(c.dates[c.dates.length - 1]).getTime();
+          const spanDays = Math.max(1, Math.round((last - first) / 86400000));
+          const avgGap = Math.round(spanDays / (c.purchases - 1));
+          freq = avgGap <= 1 ? "Daily" : `Every ~${avgGap} days`;
+        }
+        return { name: c.name, count: c.purchases, freq };
+      });
+  }, [custRows]);
+  const maxFreqCount = frequentBuyers[0]?.count || 1;
+
+  // Customers with no purchase in the last 6 months (but at least one
+  // purchase on record — never-purchased customers aren't "inactive",
+  // they're just new).
+  const inactiveAlerts = useMemo(() => {
+    const sixMonthsAgo = Date.now() - 1000 * 60 * 60 * 24 * 182;
+    return custRows
+      .filter(c => c.purchases > 0)
+      .filter(c => new Date(c.dates[c.dates.length - 1]).getTime() < sixMonthsAgo)
+      .map(c => ({
+        name: c.name,
+        type: c.type,
+        time: new Date(c.dates[c.dates.length - 1]).toLocaleDateString("en-IN"),
+      }))
+      .slice(0, 10);
+  }, [custRows]);
+
+  // Location distribution — grouped by city, since the Customer model has
+  // no separate state field (see backend/prisma/schema.prisma model
+  // Customer: only `city` exists).
+  const locationData = useMemo(() => {
+    const byCity = new Map<string, number>();
+    for (const c of custRows) {
+      byCity.set(c.city, (byCity.get(c.city) ?? 0) + 1);
+    }
+    const total = custRows.length;
+    return Array.from(byCity.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([city, count], i) => ({
+        state: city,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+        color: LOC_PALETTE[i % LOC_PALETTE.length],
+        size: 14,
+      }));
+  }, [custRows]);
+  const totalCustomers = custRows.length;
+  const totalCities = new Set(custRows.map(c => c.city)).size;
+
   return (
     <div style={{ padding: "96px 56px 48px" }}>
       <SectionTitle
@@ -76,9 +225,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           {/* Summary strip */}
           <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
             {[
-              { label: "Top Spender", val: "₹0", color: T.royalBurgundy },
-              { label: "Combined Value", val: "₹0", color: T.antiqueGold },
-              { label: "Avg Spend", val: "₹0", color: T.greenMid },
+              { label: "Top Spender", val: `₹${topSpend.toLocaleString("en-IN")}`, color: T.royalBurgundy },
+              { label: "Combined Value", val: `₹${combinedTop10.toLocaleString("en-IN")}`, color: T.antiqueGold },
+              { label: "Avg Spend", val: `₹${avgTop10.toLocaleString("en-IN")}`, color: T.greenMid },
             ].map((s, i) => (
               <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
@@ -88,7 +237,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
           {/* Custom ranked bar rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-            {top10Customers.map((c, i) => {
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>Loading top customers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600, padding: "8px 0" }}>Failed to load top customers.</div>
+            ) : top10Customers.length === 0 ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>No customer purchases recorded yet.</div>
+            ) : null}
+            {!custDataLoading && !custDataError && top10Customers.map((c, i) => {
               const maxSpend = top10Customers[0]?.spend || 1;
               const pct = Math.round((c.spend / maxSpend) * 100);
               const isTop = i === 0;
@@ -133,7 +289,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             <DownloadGate><IconButton
               icon={Download}
               label="Download CSV"
-              onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], revenueSplit.map(item => [item.name, item.value]))}
+              onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], liveRevSplit.map(item => [item.name, item.value]))}
               title="Download CSV"
               variant="ghost"
               shape="circle"
@@ -141,6 +297,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               className="self-start"
             /></DownloadGate>
           </div>
+          {revSplitLoading ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 240 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading revenue split…</span>
+            </div>
+          ) : revSplitError ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 240 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load revenue split.</span>
+            </div>
+          ) : (
+          <>
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
               <PieChart key="pie-chart" id="revenue-pie-chart">
@@ -164,6 +330,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
 
         {/* Chart 3: New vs Returning */}
@@ -189,7 +357,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               className="self-start"
             /></DownloadGate>
           </div>
-          <div style={{ flex: 1, minHeight: 280 }}>
+          <div style={{ flex: 1, minHeight: 280, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {newVsReturningLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading customer trend…</div>
+            ) : newVsReturningError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load customer trend.</div>
+            ) : newVsReturning.length === 0 ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customer data yet.</div>
+            ) : (
             <ResponsiveContainer key="rc-3" width="100%" height="100%">
               <BarChart key="bar-chart-new" id="new-vs-returning-chart" data={newVsReturning} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid key="grid" strokeDasharray="3 3" vertical={false} stroke={T.borderDef} />
@@ -201,6 +376,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <Bar key="bar-returning" id="bar-returning" dataKey="returning" name="Returning" fill={T.antiqueGold} radius={[5, 5, 0, 0]} barSize={14} />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -232,7 +408,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
-            {frequentBuyers.map((fb, i) => (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading frequent buyers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load frequent buyers.</div>
+            ) : frequentBuyers.length === 0 ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customer purchases recorded yet.</div>
+            ) : null}
+            {!custDataLoading && !custDataError && frequentBuyers.map((fb, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
@@ -240,7 +423,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <div style={{ flex: 1, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
                 <div style={{ flex: 2 }}>
                   <div style={{ height: 10, background: "rgba(200,155,71,0.13)", borderRadius: 5 }}>
-                    <div style={{ width: `${(fb.count/25)*100}%`, height: "100%", background: i === 0 ? T.royalBurgundy : T.antiqueGold, borderRadius: 5 }} />
+                    <div style={{ width: `${Math.round((fb.count/maxFreqCount)*100)}%`, height: "100%", background: i === 0 ? T.royalBurgundy : T.antiqueGold, borderRadius: 5 }} />
                   </div>
                 </div>
                 <div style={{ width: 120, textAlign: "right" }}>
@@ -276,7 +459,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             /></DownloadGate>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-            {inactiveAlerts.map((al, i) => (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading inactive customers…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load inactive customers.</div>
+            ) : inactiveAlerts.length === 0 ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No inactive customers — everyone has purchased recently.</div>
+            ) : null}
+            {!custDataLoading && !custDataError && inactiveAlerts.map((al, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
@@ -300,7 +490,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
         </div>
       </div>
 
-      {/* Charts Row 3 — Geographic */}
+      {/* Charts Row 3 — Geographic (grouped by city — the Customer model has
+          no separate state field, see backend/prisma/schema.prisma) */}
       <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px 36px", display: "flex", gap: 48, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 26 }}>
@@ -309,14 +500,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <MapPin size={24} color={T.greenMid} />
               </div>
               <div>
-                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — State-wise Distribution</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which states your wholesale and retail customers are from</p>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — City-wise Distribution</h3>
+                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which cities your wholesale and retail customers are from</p>
               </div>
             </div>
             <DownloadGate><IconButton
               icon={Download}
               label="Download CSV"
-              onClick={() => downloadDataAsCSV("customer_locations.csv", ["State", "Customers Count", "Percentage Share"], [["Andhra Pradesh", 18, "37%"], ["Telangana", 14, "29%"], ["Tamil Nadu", 8, "17%"], ["Karnataka", 5, "10%"], ["Others", 3, "6%"]])}
+              onClick={() => downloadDataAsCSV("customer_locations.csv", ["City", "Customers Count", "Percentage Share"], locationData.map(l => [l.state, l.count, `${l.pct}%`]))}
               title="Download CSV"
               variant="ghost"
               shape="circle"
@@ -326,7 +517,14 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {([].map as any)((loc: any, i: number) => (
+            {custDataLoading ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading customer locations…</div>
+            ) : custDataError ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 600 }}>Failed to load customer locations.</div>
+            ) : locationData.length === 0 ? (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customers on record yet.</div>
+            ) : null}
+            {!custDataLoading && !custDataError && locationData.map((loc, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 28, display: "flex", justifyContent: "center" }}>
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />
@@ -351,32 +549,34 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
         </div>
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "28px 24px", minHeight: 300 }}>
-          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>State-wise Share</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20 }}>0 customers across 0 states</div>
+          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>City-wise Share</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20 }}>{totalCustomers} customers across {totalCities} cities</div>
           <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[]}
+                  data={locationData.map(l => ({ name: l.state, value: l.count, fill: l.color }))}
                   innerRadius={60}
                   outerRadius={85}
                   paddingAngle={3}
                   dataKey="value"
                   nameKey="name"
                   stroke="none"
-                />
+                >
+                  {locationData.map((l, i) => <Cell key={`loc-cell-${i}`} fill={l.color} />)}
+                </Pie>
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-              <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>0</span>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>States</span>
+              <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown }}>{totalCities}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Cities</span>
             </div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "10px 18px", marginTop: 22, justifyContent: "center" }}>
-            {([].map as any)((s: any, i: number) => (
+            {locationData.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{s.name}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{s.state}</span>
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{s.pct}%</span>
               </div>
             ))}

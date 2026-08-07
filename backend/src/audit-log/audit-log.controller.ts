@@ -1,16 +1,15 @@
 import { Controller, Get, Query } from "@nestjs/common";
+import { AdminOnly } from "../auth/decorators/require-roles.decorator";
 import { AuditLogService } from "./audit-log.service";
 import { ListActionLogQueryDto } from "./dto/list-action-log-query.dto";
 import { ListAuditLogQueryDto } from "./dto/list-audit-log-query.dto";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. This should be SUPERADMIN-only once auth lands.
+// Admin/superadmin-only.
 //
 // NOTE: there is no write endpoint here on purpose — AuditLog rows are only
-// ever produced by the login/logout flow itself (AuditLogService.record()),
-// which doesn't exist yet because JWT/OTP auth is still deferred project-wide.
-// This module is read-side-ready for when that lands.
+// ever produced by other modules via AuditLogService.record()/recordAction().
 @Controller("audit-log")
+@AdminOnly()
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 

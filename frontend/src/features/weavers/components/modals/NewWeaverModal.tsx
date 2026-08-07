@@ -1,19 +1,17 @@
 // ── New weaver registration modal/form ──────────────────────────────────────
 // Wired to the real backend: submitting this form calls POST /weavers
-// (weaversApi.create) and invalidates the "weavers-directory" query used by
-// AllWeaversPage.tsx so the new weaver shows up there. Note: WeaversPage.tsx's
-// own card/list/table directory still renders the static mock roster in
-// data.ts (see comment there) — that migration is out of scope here — so a
-// weaver registered from this modal will appear on AllWeaversPage but not
-// yet in the WeaversPage directory views.
+// (weaversApi.create) and invalidates every roster query key used across
+// AllWeaversPage.tsx and WeaversPage.tsx's card/list/table directory (both
+// read the real API) so the new weaver shows up everywhere immediately.
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Plus, Camera } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
 import { weaversApi, CreateWeaverPayload } from "../../../../shared/api/weavers";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
+import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 
 interface FormState {
   firstName: string;
@@ -25,11 +23,12 @@ interface FormState {
   bankName: string;
   accountNo: string;
   ifsc: string;
+  photoUrl: string;
 }
 
 const EMPTY_FORM: FormState = {
   firstName: "", lastName: "", email: "", phone: "", village: "", looms: "",
-  bankName: "", accountNo: "", ifsc: "",
+  bankName: "", accountNo: "", ifsc: "", photoUrl: "",
 };
 
 export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; setExpanded: (v: boolean) => void }) {
@@ -75,7 +74,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       phone: form.phone.trim(),
       village: form.village.trim() || undefined,
       looms,
-      photoUrl: "",
+      photoUrl: form.photoUrl,
       bankName: form.bankName.trim() || undefined,
       accountNo: form.accountNo.trim() || undefined,
       ifsc: form.ifsc.trim() || undefined,
@@ -110,26 +109,12 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
 
               {/* ── Photo Upload ── */}
               <div style={{ marginBottom: 32 }}>
-                <label style={labelStyle}>Photo of Weaver</label>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14, marginTop: -4 }}>
-                  Upload a clear photo for easy identification. Appears on profile and batch records.
-                  {" "}(Photo upload isn't wired yet — the weaver will be saved without a photo.)
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                  <div style={{
-                    width: 120, height: 120, borderRadius: "50%",
-                    border: "2px dashed rgba(110,15,45,0.25)",
-                    background: "rgba(110,15,45,0.04)",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                    cursor: "not-allowed", flexShrink: 0,
-                  }}>
-                    <Camera size={28} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 8, fontWeight: 600 }}>Upload Photo</span>
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
-                    JPG or PNG · Max 5MB
-                  </div>
-                </div>
+                <PhotoUploadField
+                  labelText="Photo of Weaver"
+                  helpText="Upload a clear photo for easy identification. Appears on profile and batch records."
+                  photoUrl={form.photoUrl || null}
+                  onChange={url => setForm(prev => ({ ...prev, photoUrl: url }))}
+                />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>

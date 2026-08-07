@@ -1,49 +1,68 @@
-import React, { useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line, Legend,
+  Tooltip as RechartsTooltip, ResponsiveContainer,
   RadialBarChart, RadialBar,
 } from "recharts";
 import { ChartBar, Gauge, Yarn, CheckCircle } from "@phosphor-icons/react";
 import { T, F } from "../theme";
 import { Status } from "../types";
-import { ANALYTICS_WEAVERS, PRODUCTION_LEDGER, STATUS_MIX_META, CLUSTER_FILLS, WA_MONTH_ABBR } from "../data";
+import { STATUS_MIX_META, CLUSTER_FILLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
+import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { resolveAssetUrl } from "../../../../shared/api/uploads";
 
+const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
+
+// Real aggregate weaver analytics from GET /weavers + GET /weavers/:id/stats.
+// The backend has no dated production-ledger endpoint yet (no per-month
+// breakdown, no per-saree payout), so this view shows all-time totals only —
+// the monthly trend chart that used to exist here was fabricated mock data
+// and has been replaced with a documented gap notice below.
 export function WeaverAnalytics() {
-  const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const periodLabel = "All time";
 
-  const rows = React.useMemo(
-    () => PRODUCTION_LEDGER.filter(r => matchesDateFilter(r.date, filter)),
-    [filter]
-  );
+  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
+    queryKey: ["weaver-analytics-roster"],
+    queryFn: () => weaversApi.list(),
+  });
+  const roster = weaversRes?.items ?? [];
 
-  const periodLabel = React.useMemo(() => {
-    if (filter.mode === "day" && filter.day) return new Date(filter.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-    if (filter.mode === "range") return `${filter.from || "start"} → ${filter.to || "today"}`;
-    if (filter.mode === "month" && filter.month) { const [y, m] = filter.month.split("-"); return `${WA_MONTH_ABBR[+m - 1]} ${y}`; }
-    if (filter.mode === "year" && filter.year) return filter.year;
-    return "All time";
-  }, [filter]);
+  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
+    queryKey: ["weaver-analytics-stats", roster.map(w => w.id)],
+    queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
+    enabled: roster.length > 0,
+  });
+  const isLoading = rosterLoading || (roster.length > 0 && statsLoading);
+  const isError = rosterError || statsError;
+  const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
 
   const perWeaver = React.useMemo(() => {
-    const m = new Map<string, { produced: number; passed: number; payout: number }>();
-    rows.forEach(r => {
-      const e = m.get(r.weaverId) || { produced: 0, passed: 0, payout: 0 };
-      e.produced += r.produced; e.passed += r.passed; e.payout += r.payout;
-      m.set(r.weaverId, e);
-    });
-    return ANALYTICS_WEAVERS.map(w => {
-      const agg = m.get(w.id) || { produced: 0, passed: 0, payout: 0 };
+    return roster.map((w, i) => {
+      const s: BackendWeaverStats | undefined = statsById.get(w.id);
+      const produced = s?.totalSareesWoven ?? 0;
+      const passed = s?.qcPassCount ?? 0;
+      const status: Status = (s && s.activeBatchRowsCount > 0) ? "active" : "idle";
       return {
-        ...w, ...agg,
-        periodPassRate: agg.produced ? Math.round((agg.passed / agg.produced) * 100) : 0,
-        perLoom: w.looms ? agg.produced / w.looms : 0,
+        id: w.id,
+        name: w.name,
+        village: w.village || "—",
+        cluster: (w.cluster || w.village || "—").split(",")[0].trim(),
+        looms: w.looms,
+        status,
+        photo: resolveAssetUrl(w.photoUrl),
+        initials: w.initials,
+        bg: AVATAR_PALETTE[i % AVATAR_PALETTE.length],
+        produced, passed,
+        payout: 0, // Not tracked by the backend yet
+        periodPassRate: s?.qcPassRate ?? 0,
+        perLoom: w.looms ? produced / w.looms : 0,
       };
     }).filter(w => w.produced > 0);
-  }, [rows]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster, statsList]);
 
   const totalProduced = perWeaver.reduce((a, w) => a + w.produced, 0);
   const totalPassed = perWeaver.reduce((a, w) => a + w.passed, 0);
@@ -56,28 +75,6 @@ export function WeaverAnalytics() {
       .map(w => ({ ...w, short: w.name.length > 16 ? w.name.slice(0, 15) + "…" : w.name })),
     [perWeaver]
   );
-
-  const monthly = React.useMemo(() => {
-    const m = new Map<string, { produced: number; passed: number }>();
-    rows.forEach(r => {
-      const key = r.date.slice(0, 7);
-      const e = m.get(key) || { produced: 0, passed: 0 };
-      e.produced += r.produced; e.passed += r.passed;
-      m.set(key, e);
-    });
-    const all = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([key, v]) => ({
-      month: `${WA_MONTH_ABBR[+key.slice(5) - 1]} ${key.slice(2, 4)}`,
-      ...v,
-      rate: v.produced ? Math.round((v.passed / v.produced) * 100) : 0,
-    }));
-    return all.length > 12 ? all.slice(-12) : all;
-  }, [rows]);
-
-  const trendDelta = React.useMemo(() => {
-    if (monthly.length < 2) return null;
-    const a = monthly[monthly.length - 1].produced, b = monthly[monthly.length - 2].produced;
-    return b ? Math.round(((a - b) / b) * 100) : null;
-  }, [monthly]);
 
   const statusMix = React.useMemo(() => (["active", "qc", "idle"] as Status[])
     .map(s => ({
@@ -121,8 +118,6 @@ export function WeaverAnalytics() {
   const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown };
   const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
-  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
-
   return (
     <div style={{ padding: "36px 48px 0" }}>
       <FadeUp>
@@ -132,13 +127,12 @@ export function WeaverAnalytics() {
           <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
-          <DateFilterBar filter={filter} onChange={setFilter} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, flexWrap: "wrap" as const }}>
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
             {[
               { label: "SAREES WOVEN", value: totalProduced.toLocaleString("en-IN"), color: T.royalBurgundy },
               { label: "QC PASS RATE", value: `${overallPassRate}%`, color: qcColor(overallPassRate) },
-              { label: "MAKING CHARGES", value: L(totalPayout), color: T.luxuryBrown },
+              { label: "MAKING CHARGES", value: "—", color: T.luxuryBrown },
             ].map(k => (
               <div key={k.label}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
@@ -149,11 +143,19 @@ export function WeaverAnalytics() {
         </div>
       </FadeUp>
 
-      {perWeaver.length === 0 ? (
+      {isLoading ? (
+        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading weaver analytics…</div>
+        </div>
+      ) : isError ? (
+        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.crimson }}>Couldn't load weaver analytics.</div>
+        </div>
+      ) : perWeaver.length === 0 ? (
         <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
           <ChartBar size={40} color={T.taupe} />
-          <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, marginTop: 12 }}>No weaving recorded in this period.</div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
+          <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, marginTop: 12 }}>No weaving recorded yet.</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Analytics will appear once weavers have production/QC history.</div>
         </div>
       ) : (
         <>
@@ -163,31 +165,18 @@ export function WeaverAnalytics() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                   <div>
                     <div style={cardTitle}>Sarees Produced vs Passed</div>
-                    <div style={cardSub}>Monthly output against quality-check outcomes</div>
+                    <div style={cardSub}>All-time output against quality-check outcomes</div>
                   </div>
-                  {trendDelta !== null && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: trendDelta >= 0 ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", padding: "5px 11px", borderRadius: 20 }}>
-                      <ChartBar size={13} color={trendDelta >= 0 ? T.green : T.crimson} weight="fill" />
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: trendDelta >= 0 ? T.green : T.crimson }}>{trendDelta >= 0 ? "+" : ""}{trendDelta}% vs prev month</span>
-                    </div>
-                  )}
                 </div>
                 <div style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "10px 0 4px" }}>
                   {totalProduced.toLocaleString("en-IN")}
                 </div>
-                <ResponsiveContainer width="100%" height={230}>
-                  <ComposedChart data={monthly} barSize={18}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} />
-                    <YAxis yAxisId="r" orientation="right" domain={[60, 100]} hide />
-                    <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
-                    <Bar name="Produced" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-                    <Bar name="Passed QC" dataKey="passed" fill={T.goldLight} radius={[5, 5, 0, 0]} />
-                    <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                <div style={{ ...card, background: T.silkCream, border: `1px dashed ${T.borderDef}`, padding: "18px 20px", textAlign: "center" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    Monthly production trend is not tracked by the backend yet — GET /weavers/:id/stats
+                    only exposes all-time totals, not a dated production ledger.
+                  </div>
+                </div>
               </div>
 
               <div style={card}>
@@ -317,7 +306,7 @@ export function WeaverAnalytics() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
                   {[
                     { label: "Rejected", value: `${(totalProduced - totalPassed).toLocaleString("en-IN")} pcs` },
-                    { label: "Making Charges", value: L(totalPayout) },
+                    { label: "Making Charges", value: "—" },
                     { label: "Avg / Weaver", value: `${perWeaver.length ? Math.round(totalProduced / perWeaver.length) : 0} pcs` },
                     { label: "Cost / Saree", value: totalPassed ? `₹${Math.round(totalPayout / totalPassed).toLocaleString("en-IN")}` : "—" },
                   ].map(k => (

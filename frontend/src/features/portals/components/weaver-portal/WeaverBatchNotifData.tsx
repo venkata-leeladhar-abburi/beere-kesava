@@ -22,7 +22,7 @@ export type WNCategory = "batch" | "payment" | "warp";
 export type WNFilter = "all" | WNPriority;
 
 export interface WeaverNotif {
-  id: number; priority: WNPriority; category: WNCategory;
+  id: string; priority: WNPriority; category: WNCategory;
   title: string; body: string; time: string; date: string; read: boolean; action?: string;
 }
 

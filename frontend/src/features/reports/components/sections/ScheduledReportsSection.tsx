@@ -1,25 +1,59 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pencil, Pause, Play, X } from "lucide-react";
+import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pause, Play, Trash2, X } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionHeader } from "../common/primitives";
 import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "../../../../shared/ui/primitives";
 
-// MOCK: no backend module for scheduled/automated report delivery exists
-// (no /reports/schedules endpoint, no cron/queue job for WhatsApp delivery).
-// This whole section — cards, toggle state, and the "Add New Schedule" form
-// — is local UI state with nothing persisted or actually scheduled server-side.
-import { useQuery } from "@tanstack/react-query";
+// Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id.
+// Record-keeping only — creating a schedule here persists the record for the
+// admin UI, it does not itself trigger any cron/queue job or WhatsApp delivery.
+// The actual scheduled-delivery executor is a separate, not-yet-built system.
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { reportsApi } from "../../../../shared/api/reports";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 export function ScheduledReportsSection() {
   const [showForm, setShowForm] = useState(false);
+  const [reportType, setReportType] = useState("Raw Material Report");
+  const [frequency, setFrequency] = useState<"Daily" | "Weekly" | "Monthly" | "Quarterly">("Daily");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const { data: schedRes } = useQuery({
+  const { data: schedRes, isLoading, isError } = useQuery({
     queryKey: ["reports-schedules-list"],
     queryFn: () => reportsApi.listSchedules(),
   });
   const schedules = schedRes?.items ?? [];
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["reports-schedules-list"] });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      reportsApi.createSchedule({
+        reportName: reportType,
+        frequency: (frequency.toUpperCase() as "DAILY" | "WEEKLY" | "MONTHLY") || "DAILY",
+        recipientEmail: recipientEmail || "admin@example.com",
+        actorId: user?.id,
+      }),
+    onSuccess: () => {
+      invalidate();
+      setShowForm(false);
+      setRecipientEmail("");
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (vars: { id: string; active: boolean }) =>
+      reportsApi.updateSchedule(vars.id, { active: vars.active, actorId: user?.id }),
+    onSuccess: invalidate,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => reportsApi.deleteSchedule(id),
+    onSuccess: invalidate,
+  });
 
   const scheduleIcons: React.ReactNode[] = [
     <Users key="users" size={26} color={T.antiqueGold} />,
@@ -46,7 +80,15 @@ export function ScheduledReportsSection() {
 
         {/* Schedule cards grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, marginBottom: 20, alignItems: "stretch" }}>
-          {schedules.length === 0 ? (
+          {isLoading ? (
+            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
+              Loading scheduled reports…
+            </div>
+          ) : isError ? (
+            <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.royalBurgundy, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
+              Failed to load scheduled reports.
+            </div>
+          ) : schedules.length === 0 ? (
             <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
               No automated report schedules configured yet. Click "Add New Schedule" to create one.
             </div>
@@ -82,6 +124,30 @@ export function ScheduledReportsSection() {
                       <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
                     </div>
                   </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
+                      icon={s.active ? Pause : Play}
+                      label={s.active ? "Pause" : "Resume"}
+                      disabled={toggleMutation.isPending}
+                      onClick={() => toggleMutation.mutate({ id: s.id, active: !s.active })}
+                    />
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
+                      icon={Trash2}
+                      label="Delete"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => {
+                        if (window.confirm(`Delete scheduled report "${s.reportName}"?`)) {
+                          deleteMutation.mutate(s.id);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             ))
@@ -97,35 +163,48 @@ export function ScheduledReportsSection() {
               <IconButton variant="ghost" size="sm" icon={X} label="Close" onClick={() => setShowForm(false)} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
-              {[
-                { label: "Select Report Type", type: "select", opts: ["Raw Material Report","Saree Production Report","Weaver Payment Report","Retail Sales Report","Wholesale Sales Report","Profit & Loss Report","Customer Report","Overdue & Alerts Report"] },
-                { label: "Frequency",          type: "select", opts: ["Daily","Weekly","Monthly","Quarterly"] },
-                { label: "Send On",            type: "select", opts: ["1st of month","2nd of month","Every Monday","Every week-start","Every day"] },
-                { label: "Send Time",          type: "time" },
-                { label: "Format",             type: "checks" },
-                { label: "Period to Include",  type: "select", opts: ["Last 7 days","Last 30 days","This month","This quarter"] },
-              ].map((f: any) => (
-                <div key={f.label}>
-                  <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>{f.label}</label>
-                  {f.type === "select" ? (
-                    <Select size="sm" defaultValue={f.opts[0]}>
-                      {f.opts.map((o: string) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                    </Select>
-                  ) : f.type === "time" ? (
-                    <Input type="time" size="sm" defaultValue="09:00" />
-                  ) : (
-                    <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
-                      {["PDF","Excel"].map(fmt => (
-                        <CheckboxField key={fmt} label={fmt} defaultChecked />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Select Report Type</label>
+                <Select size="sm" value={reportType} onValueChange={setReportType}>
+                  {["Raw Material Report","Saree Production Report","Weaver Payment Report","Retail Sales Report","Wholesale Sales Report","Profit & Loss Report","Customer Report","Overdue & Alerts Report"].map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Frequency</label>
+                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as any)}>
+                  {["Daily","Weekly","Monthly","Quarterly"].map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Recipient Email</label>
+                <Input
+                  size="sm"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={recipientEmail}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRecipientEmail(e.target.value)}
+                />
+              </div>
             </div>
+            {createMutation.isError && (
+              <div style={{ marginTop: 12, fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy }}>
+                Failed to save schedule. Please try again.
+              </div>
+            )}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16 }}>
               <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button variant="primary" size="sm">💾 Save Schedule</Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={createMutation.isPending || !recipientEmail}
+                onClick={() => createMutation.mutate()}
+              >
+                {createMutation.isPending ? "Saving…" : "💾 Save Schedule"}
+              </Button>
             </div>
           </motion.div>
         )}

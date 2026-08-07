@@ -39,7 +39,7 @@ import {
   MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
 } from "../../../shared/ui/SectionNavigator";
 import { AnimatePresence } from "motion/react";
-import { UserProfileModal } from "./UserProfileModal";
+import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -69,7 +69,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   };
 
   // Map path to active tab
-  let nav = "Materials";
+  let nav = "Overview";
   if (tab === "materials") nav = "Materials";
   else if (tab === "weavers") nav = "Weavers";
   else if (tab === "all-weavers") nav = "AllWeavers";
@@ -376,13 +376,9 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       {dashboardContent}
       <AnimatePresence>
         {showProfileModal && (
-          <UserProfileModal onClose={() => setShowProfileModal(false)} role="admin" />
+          <UserProfileModal onClose={() => setShowProfileModal(false)} />
         )}
       </AnimatePresence>
     </>
   );
 }
-
-
-
-export { UserProfileModal } from './UserProfileModal';

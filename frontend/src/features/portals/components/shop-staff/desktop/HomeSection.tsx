@@ -1,18 +1,24 @@
 import React from "react";
 import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { salesApi } from "../../../../../shared/api/sales";
+import { inventoryApi } from "../../../../../shared/api/inventory";
+import { customersApi } from "../../../../../shared/api/customers";
+import { useAuth } from "../../../../../contexts/AuthContext";
 import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
-const recentSales = [
-  { id: "PADMA-L1-004", customer: "Smt. Annapurna", design: "BKB-045 · Cream Zari Border", amt: "₹8,500", time: "11:42 AM", color: "#E8D5B0", pay: "UPI", ext: false },
-  { id: "RAVI-L2-008", customer: "Sri Ramesh K.", design: "BKB-031 · Red Silk Kanjivaram", amt: "₹12,000", time: "10:30 AM", color: "#8B2020", pay: "Card", ext: false },
-  { id: "BKB-L3-002", customer: "Smt. Lakshmi", design: "BKB-022 · Green Peacock", amt: "₹5,500", time: "9:45 AM", color: "#1E6640", pay: "Cash", ext: false },
-  { id: "EXT-RAVI-001", customer: "Smt. Padmavathi", design: "External Silk · Checks", amt: "₹6,200", time: "9:20 AM", color: "#C9A86C", pay: "UPI", ext: true },
-  { id: "PADMA-L1-003", customer: "Smt. Saraswathi", design: "BKB-045 · Cream Zari Border", amt: "₹8,500", time: "Yesterday 4:30 PM", color: "#E8D5B0", pay: "Cash", ext: false },
-];
+function dateLabel(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+  }
+  return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+}
 
 export function HomeSection({
   bp, isTablet, canSeePrices, setActive, setShowReturn, invLowStockSent, setShowInvLowStockDialog,
@@ -21,6 +27,51 @@ export function HomeSection({
   setActive: (tab: TabId) => void; setShowReturn: (v: boolean) => void;
   invLowStockSent: boolean; setShowInvLowStockDialog: (v: boolean) => void;
 }) {
+  const { user } = useAuth();
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-homesection"],
+    queryFn: () => salesApi.list(100),
+  });
+
+  const { data: inventoryRes } = useQuery({
+    queryKey: ["inventory-list-homesection"],
+    queryFn: () => inventoryApi.list(),
+  });
+
+  const { data: returnsRes } = useQuery({
+    queryKey: ["returns-list-homesection"],
+    queryFn: () => salesApi.listReturns(100),
+  });
+
+  const { data: customersRes } = useQuery({
+    queryKey: ["customers-homesection"],
+    queryFn: () => customersApi.list(100),
+  });
+
+  const salesList = salesRes?.items ?? [];
+  const inventoryList = inventoryRes ?? [];
+  const returnsList = returnsRes?.items ?? [];
+  const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+
+  const todayStr = new Date().toDateString();
+  const todaySales = salesList.filter(s => new Date(s.saleDate).toDateString() === todayStr);
+  const todayRevenue = todaySales.reduce((sum, s) => sum + Number(s.amount), 0);
+  const todayReturns = returnsList.filter(r => new Date(r.returnDate).toDateString() === todayStr);
+
+  const recentSales = salesList.slice(0, 5).map(s => ({
+    id: s.sareeId,
+    customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
+    design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
+    pay: "Counter",
+    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    time: dateLabel(s.saleDate),
+    color: "#6B1A2A",
+    ext: false,
+  }));
+
+  const latestReturn = returnsList[0];
+  const staffName = user?.name || "Shop Staff";
+
   return (
     <>
       <ShopDesktopHero
@@ -29,13 +80,13 @@ export function HomeSection({
         titleMain="Shop Home"
         titleSub="& Today's Overview"
         description="Today's sales, current inventory, and quick actions for the shop counter. Track every transaction and customer in real time."
-        pills={[{ text: "12 Sales Today", color: C.gold }, ...(canSeePrices ? [{ text: "₹1,04,000 Revenue" }] : []), { text: "84 Sarees in Stock" }, { text: "1 Return Processed" }]}
-        alertBadge="Priya Sharma · Shop Staff"
+        pills={[{ text: `${todaySales.length} Sales Today`, color: C.gold }, ...(canSeePrices ? [{ text: `₹${todayRevenue.toLocaleString("en-IN")} Revenue` }] : []), { text: `${inventoryList.length} Sarees in Stock` }, { text: `${todayReturns.length} Return${todayReturns.length !== 1 ? "s" : ""} Processed` }]}
+        alertBadge={`${staffName} · Shop Staff`}
         stats={[
-          { label: "TODAY'S SALES", val: "12", sub: "↑ 3 more than yesterday" },
-          ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: "₹1,04,000", sub: "From 12 sales", highlight: true }] : []),
-          { label: "SHOP INVENTORY", val: "84", sub: "Sarees currently in stock" },
-          { label: "RETURNS TODAY", val: "1", sub: "Processed and recorded", crimson: true },
+          { label: "TODAY'S SALES", val: String(todaySales.length), sub: "Recorded today" },
+          ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: `₹${todayRevenue.toLocaleString("en-IN")}`, sub: `From ${todaySales.length} sales`, highlight: true }] : []),
+          { label: "SHOP INVENTORY", val: String(inventoryList.length), sub: "Sarees currently in stock" },
+          { label: "RETURNS TODAY", val: String(todayReturns.length), sub: "Processed and recorded", crimson: true },
         ]}
         bgUrl={SHOP_BG}
       />
@@ -66,40 +117,53 @@ export function HomeSection({
                     <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                   ))}
                 </div>
-                {recentSales.map((s, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                        {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
-                      </div>
-                    </div>
-                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design.split("·")[0]?.trim()}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
+                {recentSales.length === 0 ? (
+                  <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
+                    No sales recorded today yet.
                   </div>
-                ))}
+                ) : (
+                  recentSales.map((s, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
+                          {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                        </div>
+                      </div>
+                      <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
+                      {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
             {/* Returns Today */}
             <DSH label="Returns Today" />
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.crim}`, borderRadius: 16, padding: "22px 26px", boxShadow: "0 3px 16px rgba(44,24,16,0.07)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <RotateCcw size={22} color={C.crim} />
+              {latestReturn ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <RotateCcw size={22} color={C.crim} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{latestReturn.sareeId}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
+                      {latestReturn.reason}
+                      {canSeePrices && latestReturn.refundAmount ? ` · ₹${Number(latestReturn.refundAmount).toLocaleString("en-IN")}` : ""}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>{dateLabel(latestReturn.returnDate)}</div>
+                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, background: "rgba(192,57,43,0.10)", padding: "3px 12px", borderRadius: 999 }}>Return</span>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>RAVI-L2-007</div>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Wrong Design · Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>9:10 AM</div>
-                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, background: "rgba(192,57,43,0.10)", padding: "3px 12px", borderRadius: 999 }}>Return</span>
-                </div>
-              </div>
+              ) : (
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No returns recorded today.</div>
+              )}
             </div>
           </div>
 

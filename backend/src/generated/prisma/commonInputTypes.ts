@@ -762,6 +762,23 @@ export type EnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel = never> = 
   _max?: Prisma.NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
 }
 
+export type EnumVendorBillStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.VendorBillStatus | Prisma.EnumVendorBillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel> | $Enums.VendorBillStatus
+}
+
+export type EnumVendorBillStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VendorBillStatus | Prisma.EnumVendorBillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVendorBillStatusWithAggregatesFilter<$PrismaModel> | $Enums.VendorBillStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel>
+}
+
 export type EnumPurchaseRequestStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.PurchaseRequestStatus | Prisma.EnumPurchaseRequestStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PurchaseRequestStatus[] | Prisma.ListEnumPurchaseRequestStatusFieldRefInput<$PrismaModel>
@@ -1742,6 +1759,23 @@ export type NestedEnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel = nev
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumVendorBillStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.VendorBillStatus | Prisma.EnumVendorBillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel> | $Enums.VendorBillStatus
+}
+
+export type NestedEnumVendorBillStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VendorBillStatus | Prisma.EnumVendorBillStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VendorBillStatus[] | Prisma.ListEnumVendorBillStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVendorBillStatusWithAggregatesFilter<$PrismaModel> | $Enums.VendorBillStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVendorBillStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumPurchaseRequestStatusFilter<$PrismaModel = never> = {

@@ -271,6 +271,7 @@ export type FirmWhereInput = {
   invoicePayments?: Prisma.InvoicePaymentListRelationFilter
   quotations?: Prisma.QuotationListRelationFilter
   dispatchRecords?: Prisma.DispatchRecordListRelationFilter
+  grnReceipts?: Prisma.GrnReceiptListRelationFilter
 }
 
 export type FirmOrderByWithRelationInput = {
@@ -292,6 +293,7 @@ export type FirmOrderByWithRelationInput = {
   invoicePayments?: Prisma.InvoicePaymentOrderByRelationAggregateInput
   quotations?: Prisma.QuotationOrderByRelationAggregateInput
   dispatchRecords?: Prisma.DispatchRecordOrderByRelationAggregateInput
+  grnReceipts?: Prisma.GrnReceiptOrderByRelationAggregateInput
 }
 
 export type FirmWhereUniqueInput = Prisma.AtLeast<{
@@ -316,6 +318,7 @@ export type FirmWhereUniqueInput = Prisma.AtLeast<{
   invoicePayments?: Prisma.InvoicePaymentListRelationFilter
   quotations?: Prisma.QuotationListRelationFilter
   dispatchRecords?: Prisma.DispatchRecordListRelationFilter
+  grnReceipts?: Prisma.GrnReceiptListRelationFilter
 }, "id">
 
 export type FirmOrderByWithAggregationInput = {
@@ -373,6 +376,7 @@ export type FirmCreateInput = {
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateInput = {
@@ -394,6 +398,7 @@ export type FirmUncheckedCreateInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUpdateInput = {
@@ -415,6 +420,7 @@ export type FirmUpdateInput = {
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateInput = {
@@ -436,6 +442,7 @@ export type FirmUncheckedUpdateInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateManyInput = {
@@ -650,6 +657,22 @@ export type FirmUpdateOneWithoutInvoicePaymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FirmUpdateToOneWithWhereWithoutInvoicePaymentsInput, Prisma.FirmUpdateWithoutInvoicePaymentsInput>, Prisma.FirmUncheckedUpdateWithoutInvoicePaymentsInput>
 }
 
+export type FirmCreateNestedOneWithoutGrnReceiptsInput = {
+  create?: Prisma.XOR<Prisma.FirmCreateWithoutGrnReceiptsInput, Prisma.FirmUncheckedCreateWithoutGrnReceiptsInput>
+  connectOrCreate?: Prisma.FirmCreateOrConnectWithoutGrnReceiptsInput
+  connect?: Prisma.FirmWhereUniqueInput
+}
+
+export type FirmUpdateOneWithoutGrnReceiptsNestedInput = {
+  create?: Prisma.XOR<Prisma.FirmCreateWithoutGrnReceiptsInput, Prisma.FirmUncheckedCreateWithoutGrnReceiptsInput>
+  connectOrCreate?: Prisma.FirmCreateOrConnectWithoutGrnReceiptsInput
+  upsert?: Prisma.FirmUpsertWithoutGrnReceiptsInput
+  disconnect?: Prisma.FirmWhereInput | boolean
+  delete?: Prisma.FirmWhereInput | boolean
+  connect?: Prisma.FirmWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FirmUpdateToOneWithWhereWithoutGrnReceiptsInput, Prisma.FirmUpdateWithoutGrnReceiptsInput>, Prisma.FirmUncheckedUpdateWithoutGrnReceiptsInput>
+}
+
 export type FirmCreateWithoutQuotationsInput = {
   id?: string
   firmName: string
@@ -668,6 +691,7 @@ export type FirmCreateWithoutQuotationsInput = {
   supplierPayments?: Prisma.SupplierPaymentCreateNestedManyWithoutFirmInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutQuotationsInput = {
@@ -688,6 +712,7 @@ export type FirmUncheckedCreateWithoutQuotationsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedCreateNestedManyWithoutFirmInput
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutQuotationsInput = {
@@ -724,6 +749,7 @@ export type FirmUpdateWithoutQuotationsInput = {
   supplierPayments?: Prisma.SupplierPaymentUpdateManyWithoutFirmNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutQuotationsInput = {
@@ -744,6 +770,7 @@ export type FirmUncheckedUpdateWithoutQuotationsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedUpdateManyWithoutFirmNestedInput
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutDispatchRecordsInput = {
@@ -764,6 +791,7 @@ export type FirmCreateWithoutDispatchRecordsInput = {
   supplierPayments?: Prisma.SupplierPaymentCreateNestedManyWithoutFirmInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutDispatchRecordsInput = {
@@ -784,6 +812,7 @@ export type FirmUncheckedCreateWithoutDispatchRecordsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedCreateNestedManyWithoutFirmInput
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutDispatchRecordsInput = {
@@ -820,6 +849,7 @@ export type FirmUpdateWithoutDispatchRecordsInput = {
   supplierPayments?: Prisma.SupplierPaymentUpdateManyWithoutFirmNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutDispatchRecordsInput = {
@@ -840,6 +870,7 @@ export type FirmUncheckedUpdateWithoutDispatchRecordsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedUpdateManyWithoutFirmNestedInput
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutSupplierPaymentsInput = {
@@ -860,6 +891,7 @@ export type FirmCreateWithoutSupplierPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutSupplierPaymentsInput = {
@@ -880,6 +912,7 @@ export type FirmUncheckedCreateWithoutSupplierPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutSupplierPaymentsInput = {
@@ -916,6 +949,7 @@ export type FirmUpdateWithoutSupplierPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutSupplierPaymentsInput = {
@@ -936,6 +970,7 @@ export type FirmUncheckedUpdateWithoutSupplierPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutFinancialEntriesInput = {
@@ -956,6 +991,7 @@ export type FirmCreateWithoutFinancialEntriesInput = {
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutFinancialEntriesInput = {
@@ -976,6 +1012,7 @@ export type FirmUncheckedCreateWithoutFinancialEntriesInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutFinancialEntriesInput = {
@@ -1012,6 +1049,7 @@ export type FirmUpdateWithoutFinancialEntriesInput = {
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutFinancialEntriesInput = {
@@ -1032,6 +1070,7 @@ export type FirmUncheckedUpdateWithoutFinancialEntriesInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutWeaverPaymentsInput = {
@@ -1052,6 +1091,7 @@ export type FirmCreateWithoutWeaverPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutWeaverPaymentsInput = {
@@ -1072,6 +1112,7 @@ export type FirmUncheckedCreateWithoutWeaverPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutWeaverPaymentsInput = {
@@ -1108,6 +1149,7 @@ export type FirmUpdateWithoutWeaverPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutWeaverPaymentsInput = {
@@ -1128,6 +1170,7 @@ export type FirmUncheckedUpdateWithoutWeaverPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutVendorPaymentsInput = {
@@ -1148,6 +1191,7 @@ export type FirmCreateWithoutVendorPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutVendorPaymentsInput = {
@@ -1168,6 +1212,7 @@ export type FirmUncheckedCreateWithoutVendorPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutVendorPaymentsInput = {
@@ -1204,6 +1249,7 @@ export type FirmUpdateWithoutVendorPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutVendorPaymentsInput = {
@@ -1224,6 +1270,7 @@ export type FirmUncheckedUpdateWithoutVendorPaymentsInput = {
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmCreateWithoutInvoicePaymentsInput = {
@@ -1244,6 +1291,7 @@ export type FirmCreateWithoutInvoicePaymentsInput = {
   supplierPayments?: Prisma.SupplierPaymentCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptCreateNestedManyWithoutFirmInput
 }
 
 export type FirmUncheckedCreateWithoutInvoicePaymentsInput = {
@@ -1264,6 +1312,7 @@ export type FirmUncheckedCreateWithoutInvoicePaymentsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedCreateNestedManyWithoutFirmInput
   quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedCreateNestedManyWithoutFirmInput
 }
 
 export type FirmCreateOrConnectWithoutInvoicePaymentsInput = {
@@ -1300,6 +1349,7 @@ export type FirmUpdateWithoutInvoicePaymentsInput = {
   supplierPayments?: Prisma.SupplierPaymentUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUpdateManyWithoutFirmNestedInput
 }
 
 export type FirmUncheckedUpdateWithoutInvoicePaymentsInput = {
@@ -1320,6 +1370,107 @@ export type FirmUncheckedUpdateWithoutInvoicePaymentsInput = {
   supplierPayments?: Prisma.SupplierPaymentUncheckedUpdateManyWithoutFirmNestedInput
   quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
   dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
+  grnReceipts?: Prisma.GrnReceiptUncheckedUpdateManyWithoutFirmNestedInput
+}
+
+export type FirmCreateWithoutGrnReceiptsInput = {
+  id?: string
+  firmName: string
+  gstNumber?: string | null
+  address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  accountNumber?: string | null
+  ifscCode?: string | null
+  bankName?: string | null
+  contactPersonName?: string | null
+  contactPersonPhone?: string | null
+  createdAt?: Date | string
+  financialEntries?: Prisma.FirmFinancialEntryCreateNestedManyWithoutFirmInput
+  weaverPayments?: Prisma.WeaverPaymentCreateNestedManyWithoutFirmInput
+  vendorPayments?: Prisma.VendorPaymentCreateNestedManyWithoutFirmInput
+  supplierPayments?: Prisma.SupplierPaymentCreateNestedManyWithoutFirmInput
+  invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutFirmInput
+  quotations?: Prisma.QuotationCreateNestedManyWithoutFirmInput
+  dispatchRecords?: Prisma.DispatchRecordCreateNestedManyWithoutFirmInput
+}
+
+export type FirmUncheckedCreateWithoutGrnReceiptsInput = {
+  id?: string
+  firmName: string
+  gstNumber?: string | null
+  address?: string | null
+  purchaseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  accountNumber?: string | null
+  ifscCode?: string | null
+  bankName?: string | null
+  contactPersonName?: string | null
+  contactPersonPhone?: string | null
+  createdAt?: Date | string
+  financialEntries?: Prisma.FirmFinancialEntryUncheckedCreateNestedManyWithoutFirmInput
+  weaverPayments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutFirmInput
+  vendorPayments?: Prisma.VendorPaymentUncheckedCreateNestedManyWithoutFirmInput
+  supplierPayments?: Prisma.SupplierPaymentUncheckedCreateNestedManyWithoutFirmInput
+  invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutFirmInput
+  quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutFirmInput
+  dispatchRecords?: Prisma.DispatchRecordUncheckedCreateNestedManyWithoutFirmInput
+}
+
+export type FirmCreateOrConnectWithoutGrnReceiptsInput = {
+  where: Prisma.FirmWhereUniqueInput
+  create: Prisma.XOR<Prisma.FirmCreateWithoutGrnReceiptsInput, Prisma.FirmUncheckedCreateWithoutGrnReceiptsInput>
+}
+
+export type FirmUpsertWithoutGrnReceiptsInput = {
+  update: Prisma.XOR<Prisma.FirmUpdateWithoutGrnReceiptsInput, Prisma.FirmUncheckedUpdateWithoutGrnReceiptsInput>
+  create: Prisma.XOR<Prisma.FirmCreateWithoutGrnReceiptsInput, Prisma.FirmUncheckedCreateWithoutGrnReceiptsInput>
+  where?: Prisma.FirmWhereInput
+}
+
+export type FirmUpdateToOneWithWhereWithoutGrnReceiptsInput = {
+  where?: Prisma.FirmWhereInput
+  data: Prisma.XOR<Prisma.FirmUpdateWithoutGrnReceiptsInput, Prisma.FirmUncheckedUpdateWithoutGrnReceiptsInput>
+}
+
+export type FirmUpdateWithoutGrnReceiptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firmName?: Prisma.StringFieldUpdateOperationsInput | string
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPersonName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPersonPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  financialEntries?: Prisma.FirmFinancialEntryUpdateManyWithoutFirmNestedInput
+  weaverPayments?: Prisma.WeaverPaymentUpdateManyWithoutFirmNestedInput
+  vendorPayments?: Prisma.VendorPaymentUpdateManyWithoutFirmNestedInput
+  supplierPayments?: Prisma.SupplierPaymentUpdateManyWithoutFirmNestedInput
+  invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutFirmNestedInput
+  quotations?: Prisma.QuotationUpdateManyWithoutFirmNestedInput
+  dispatchRecords?: Prisma.DispatchRecordUpdateManyWithoutFirmNestedInput
+}
+
+export type FirmUncheckedUpdateWithoutGrnReceiptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firmName?: Prisma.StringFieldUpdateOperationsInput | string
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ifscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPersonName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPersonPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  financialEntries?: Prisma.FirmFinancialEntryUncheckedUpdateManyWithoutFirmNestedInput
+  weaverPayments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutFirmNestedInput
+  vendorPayments?: Prisma.VendorPaymentUncheckedUpdateManyWithoutFirmNestedInput
+  supplierPayments?: Prisma.SupplierPaymentUncheckedUpdateManyWithoutFirmNestedInput
+  invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutFirmNestedInput
+  quotations?: Prisma.QuotationUncheckedUpdateManyWithoutFirmNestedInput
+  dispatchRecords?: Prisma.DispatchRecordUncheckedUpdateManyWithoutFirmNestedInput
 }
 
 
@@ -1335,6 +1486,7 @@ export type FirmCountOutputType = {
   invoicePayments: number
   quotations: number
   dispatchRecords: number
+  grnReceipts: number
 }
 
 export type FirmCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1345,6 +1497,7 @@ export type FirmCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   invoicePayments?: boolean | FirmCountOutputTypeCountInvoicePaymentsArgs
   quotations?: boolean | FirmCountOutputTypeCountQuotationsArgs
   dispatchRecords?: boolean | FirmCountOutputTypeCountDispatchRecordsArgs
+  grnReceipts?: boolean | FirmCountOutputTypeCountGrnReceiptsArgs
 }
 
 /**
@@ -1406,6 +1559,13 @@ export type FirmCountOutputTypeCountDispatchRecordsArgs<ExtArgs extends runtime.
   where?: Prisma.DispatchRecordWhereInput
 }
 
+/**
+ * FirmCountOutputType without action
+ */
+export type FirmCountOutputTypeCountGrnReceiptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GrnReceiptWhereInput
+}
+
 
 export type FirmSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1426,6 +1586,7 @@ export type FirmSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   invoicePayments?: boolean | Prisma.Firm$invoicePaymentsArgs<ExtArgs>
   quotations?: boolean | Prisma.Firm$quotationsArgs<ExtArgs>
   dispatchRecords?: boolean | Prisma.Firm$dispatchRecordsArgs<ExtArgs>
+  grnReceipts?: boolean | Prisma.Firm$grnReceiptsArgs<ExtArgs>
   _count?: boolean | Prisma.FirmCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["firm"]>
 
@@ -1480,6 +1641,7 @@ export type FirmInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   invoicePayments?: boolean | Prisma.Firm$invoicePaymentsArgs<ExtArgs>
   quotations?: boolean | Prisma.Firm$quotationsArgs<ExtArgs>
   dispatchRecords?: boolean | Prisma.Firm$dispatchRecordsArgs<ExtArgs>
+  grnReceipts?: boolean | Prisma.Firm$grnReceiptsArgs<ExtArgs>
   _count?: boolean | Prisma.FirmCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type FirmIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1495,6 +1657,7 @@ export type $FirmPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     invoicePayments: Prisma.$InvoicePaymentPayload<ExtArgs>[]
     quotations: Prisma.$QuotationPayload<ExtArgs>[]
     dispatchRecords: Prisma.$DispatchRecordPayload<ExtArgs>[]
+    grnReceipts: Prisma.$GrnReceiptPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1909,6 +2072,7 @@ export interface Prisma__FirmClient<T, Null = never, ExtArgs extends runtime.Typ
   invoicePayments<T extends Prisma.Firm$invoicePaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Firm$invoicePaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   quotations<T extends Prisma.Firm$quotationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Firm$quotationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dispatchRecords<T extends Prisma.Firm$dispatchRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Firm$dispatchRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DispatchRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  grnReceipts<T extends Prisma.Firm$grnReceiptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Firm$grnReceiptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrnReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2507,6 +2671,30 @@ export type Firm$dispatchRecordsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.DispatchRecordScalarFieldEnum | Prisma.DispatchRecordScalarFieldEnum[]
+}
+
+/**
+ * Firm.grnReceipts
+ */
+export type Firm$grnReceiptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GrnReceipt
+   */
+  select?: Prisma.GrnReceiptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GrnReceipt
+   */
+  omit?: Prisma.GrnReceiptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GrnReceiptInclude<ExtArgs> | null
+  where?: Prisma.GrnReceiptWhereInput
+  orderBy?: Prisma.GrnReceiptOrderByWithRelationInput | Prisma.GrnReceiptOrderByWithRelationInput[]
+  cursor?: Prisma.GrnReceiptWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GrnReceiptScalarFieldEnum | Prisma.GrnReceiptScalarFieldEnum[]
 }
 
 /**

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Check, Plus, Printer, Package, ArrowRight, CheckCircle2 } from "lucide-react";
 import { T, F } from "../theme";
-import { STATUS_CFG, MAT_TAG } from "../data";
+import { STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";

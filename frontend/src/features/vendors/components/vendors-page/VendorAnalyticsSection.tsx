@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Building2, AlertTriangle, CheckCircle2,
   TrendingUp, Trophy, Timer, Percent, MapPin,
@@ -11,8 +12,15 @@ import {
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MONTH_ABBR } from "./theme";
 import { Vendor } from "./types";
-import { buildLedger, MATERIAL_FILL, DELIVERY_PERF } from "./data";
 import { FadeUp } from "./FadeUp";
+import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
+
+// Material type is not carried on the backend PurchaseOrder (see
+// shared/api/purchase-orders.ts — line items live client-side only, no
+// backend model), so per-material spend cannot be derived from real data.
+// Every PO is bucketed under this single label until that model exists.
+const UNSPECIFIED_MATERIAL = "Unspecified";
+const MATERIAL_FILL: Record<string, string> = { Warp: T.royalBurgundy, Resham: T.antiqueGold, Jari: T.green, [UNSPECIFIED_MATERIAL]: T.taupe };
 
 export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   const [analyticsFilter, setAnalyticsFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -20,8 +28,23 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   // ---- Derived analytics -------------------------------------------------
   const num = (s: string) => parseFloat(s.replace(/,/g, "")) || 0;
 
-  // Every chart below reads `rows`, so one timeline control drives them all.
-  const ledger = React.useMemo(() => buildLedger(vendors), [vendors]);
+  const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
+    queryKey: ["all-vendor-pos"],
+    queryFn: () => purchaseOrdersApi.list(),
+  });
+
+  // Real spend ledger built from actual purchase orders — vendor.totalSpend /
+  // totalOrders are hardcoded to 0 on the backend today (no aggregate column
+  // yet), so we derive everything here from the PO list instead.
+  const ledger = React.useMemo(() => {
+    const items = poRes?.items ?? [];
+    return items.map(p => ({
+      vendorId: p.vendorId || p.vendor?.id || "",
+      date: p.createdAt ? p.createdAt.split("T")[0] : "",
+      amount: Number(p.totalValue || 0),
+      material: UNSPECIFIED_MATERIAL,
+    }));
+  }, [poRes]);
   const rows = React.useMemo(
     () => ledger.filter(r => matchesDateFilter(r.date, analyticsFilter)),
     [ledger, analyticsFilter]
@@ -64,8 +87,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   const spendByType = React.useMemo(() => {
     const m = new Map<string, number>();
     rows.forEach(r => m.set(r.material, (m.get(r.material) || 0) + r.amount));
-    return ["Warp", "Resham", "Jari"]
-      .map(name => ({ name, value: m.get(name) || 0, fill: MATERIAL_FILL[name] }))
+    return [...m.entries()]
+      .map(([name, value]) => ({ name, value, fill: MATERIAL_FILL[name] ?? T.taupe }))
       .filter(d => d.value > 0);
   }, [rows]);
 
@@ -114,25 +137,25 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
       .sort((a, b) => b.spend - a.spend);
   }, [rows, vendors]);
 
-  // Vendors that actually transacted in the selected period.
-  const reliability = React.useMemo(() => {
+  // Vendors that actually transacted in the selected period. On-time-delivery
+  // % and quality-reject % are NOT computed here — see the gap comment above
+  // the (now-removed) DELIVERY_PERF export in ./data.ts for why: PurchaseOrder
+  // has no actual-received timestamp joinable to a GRN, and no backend model
+  // tracks quality rejects at all.
+  const activeVendors = React.useMemo(() => {
     const active = new Set(rows.map(r => r.vendorId));
     return vendors
       .filter(v => active.has(v.id))
       .map(v => {
-        const p = DELIVERY_PERF[v.id] ?? { onTime: 85, qualityRejects: 3 };
         const own = rows.filter(r => r.vendorId === v.id);
-        return { ...v, ...p, periodOrders: own.length, avgOrder: own.length ? own.reduce((a, r) => a + r.amount, 0) / own.length : 0 };
+        return { ...v, periodOrders: own.length, avgOrder: own.length ? own.reduce((a, r) => a + r.amount, 0) / own.length : 0 };
       })
-      .sort((a, b) => b.onTime - a.onTime);
+      .sort((a, b) => b.rating - a.rating);
   }, [rows, vendors]);
 
-  const avgOnTime = reliability.length
-    ? Math.round(reliability.reduce((a, v) => a + v.onTime, 0) / reliability.length)
-    : 0;
   const avgOrderValue = totalOrdersInPeriod ? totalSpendRaw / totalOrdersInPeriod : 0;
-  const avgRating = reliability.length
-    ? reliability.reduce((a, v) => a + v.rating, 0) / reliability.length
+  const avgRating = activeVendors.length
+    ? activeVendors.reduce((a, v) => a + v.rating, 0) / activeVendors.length
     : 0;
 
   const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
@@ -172,7 +195,21 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           </div>
         </div>
 
-        {rows.length === 0 && (
+        {posLoading && (
+          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading vendor purchase orders…</div>
+          </div>
+        )}
+
+        {!posLoading && posError && (
+          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+            <AlertTriangle size={40} color={T.crimson} style={{ marginBottom: 12 }} />
+            <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>Failed to load vendor purchase orders.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
+          </div>
+        )}
+
+        {!posLoading && !posError && rows.length === 0 && (
           <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
             <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
             <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No vendor purchases recorded in this period.</div>
@@ -180,7 +217,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           </div>
         )}
 
-        {rows.length > 0 && <>
+        {!posLoading && !posError && rows.length > 0 && <>
         {/* Row 1 — spend trend + material mix */}
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
           <div style={cardStyle}>
@@ -321,22 +358,14 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               <Timer size={16} color={T.royalBurgundy} />
               <div style={cardTitle}>Delivery Reliability</div>
             </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>On-time GRN receipts · fleet avg {avgOnTime}%</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {reliability.slice(0, 6).map(v => {
-                const col = v.onTime >= 90 ? T.greenMid : v.onTime >= 80 ? T.antiqueGold : T.crimson;
-                return (
-                  <div key={v.id}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{v.name}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: col }}>{v.onTime}%</span>
-                    </div>
-                    <div style={{ height: 6, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
-                      <div style={{ width: `${v.onTime}%`, height: "100%", borderRadius: 4, background: col }} />
-                    </div>
-                  </div>
-                );
-              })}
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>On-time GRN receipts, vendor by vendor</div>
+            <div style={{ textAlign: "center" as const, padding: "24px 8px" }}>
+              <Timer size={28} color={T.taupe} style={{ marginBottom: 10, opacity: 0.6 }} />
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.5 }}>
+                Not tracked yet. Purchase orders don't record an actual-received
+                date joinable back to a GRN, so on-time delivery % can't be
+                calculated from real data.
+              </div>
             </div>
           </div>
 
@@ -370,10 +399,10 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>Efficiency snapshot across all vendors</div>
             <ResponsiveContainer width="100%" height={132}>
               <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-                data={[{ name: "On-time", value: avgOnTime, fill: avgOnTime >= 90 ? T.greenMid : avgOnTime >= 80 ? T.antiqueGold : T.crimson }]}>
+                data={[{ name: "Rating", value: (avgRating / 5) * 100, fill: avgRating >= 4 ? T.greenMid : avgRating >= 3 ? T.antiqueGold : T.crimson }]}>
                 <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-                <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgOnTime}%</text>
-                <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>ON-TIME DELIVERY</text>
+                <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgRating.toFixed(1)}</text>
+                <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>AVG VENDOR RATING</text>
               </RadialBarChart>
             </ResponsiveContainer>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
@@ -381,7 +410,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 { label: "Avg Order Value", value: L(avgOrderValue) },
                 { label: "POs in Period", value: String(totalOrdersInPeriod) },
                 { label: "Avg Rating", value: `${avgRating.toFixed(1)} / 5` },
-                { label: "At-Risk Vendors", value: String(reliability.filter(v => v.onTime < 80).length) },
+                { label: "Active Vendors", value: String(activeVendors.length) },
               ].map(k => (
                 <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4 }}>{k.label.toUpperCase()}</div>

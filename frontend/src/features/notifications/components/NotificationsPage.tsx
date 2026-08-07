@@ -125,11 +125,18 @@ export function NotificationsPage() {
   const [filter, setFilter]                 = useState<Filter>("all");
   const [selected, setSelected]             = useState<UnifiedNotif | null>(null);
   const [dateFilter, setDateFilter]         = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [isLoading, setIsLoading]           = useState(true);
+  const [isError, setIsError]               = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
+    setIsError(false);
     notificationsApi.list({ role: backendRole }).then(res => {
       setNotifications(res.items.map(toUnifiedNotif));
-    }).catch(() => setNotifications([]));
+    }).catch(() => {
+      setNotifications([]);
+      setIsError(true);
+    }).finally(() => setIsLoading(false));
   }, [backendRole]);
 
   // Live push — backend gateway emits to `role:<ROLE>` rooms (no per-user
@@ -401,7 +408,23 @@ export function NotificationsPage() {
             );
           })}
 
-          {filtered.length === 0 && (
+          {isLoading && (
+            <div style={{ textAlign: "center", padding: "80px 40px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+              Loading notifications…
+            </div>
+          )}
+
+          {!isLoading && isError && (
+            <div style={{ textAlign: "center", padding: "80px 40px" }}>
+              <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+                <Inbox size={28} color="#C0392B" />
+              </div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Failed to load notifications</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
+            </div>
+          )}
+
+          {!isLoading && !isError && filtered.length === 0 && (
             <div style={{ textAlign: "center", padding: "80px 40px" }}>
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                 <Inbox size={28} color={T.taupe} />

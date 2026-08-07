@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
 import { ListPurchasesQueryDto } from "./dto/list-purchases-query.dto";
 import { UpdatePurchaseDto } from "./dto/update-purchase.dto";
@@ -10,9 +12,9 @@ import { PurchasesService } from "./purchases.service";
 // generating the individual Saree rows for each piece purchased is a
 // separate, deliberately out-of-scope concern for now.
 //
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Financial module (resale purchases) — ACCOUNTANT access only.
 @Controller("purchases")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
 

@@ -1,12 +1,15 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { BulkOrdersService } from "./bulk-orders.service";
 import { CreateBulkOrderDto } from "./dto/create-bulk-order.dto";
 import { ListBulkOrdersQueryDto } from "./dto/list-bulk-orders-query.dto";
 import { UpdateBulkOrderDto } from "./dto/update-bulk-order.dto";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Wholesale orders — taken by retail (SHOP) and fulfilled by production
+// (WORKER, assigning rows against the order).
 @Controller("bulk-orders")
+@RequireRoles(UserRole.SHOP, UserRole.WORKER)
 export class BulkOrdersController {
   constructor(private readonly bulkOrdersService: BulkOrdersService) {}
 

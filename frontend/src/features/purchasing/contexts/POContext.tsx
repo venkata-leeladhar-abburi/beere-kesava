@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
+import { vendorsApi } from "../../../shared/api/vendors";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface POItem {
@@ -64,6 +65,8 @@ interface POContextValue {
   rejectPO: (id: string, reason?: string) => void;
   setMaterialInvoiceAmount: (poId: string, materialIndex: number, amount: number) => void;
   nextPONumber: string;
+  isError: boolean;
+  error: unknown;
 }
 
 const POContext = createContext<POContextValue | null>(null);
@@ -73,7 +76,7 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: pos = [] } = useQuery({
+  const { data: pos = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await purchaseOrdersApi.list()).items.map(po => toPurchaseOrder(po)),
   });
@@ -83,8 +86,29 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addPOMutation = useMutation({
-    mutationFn: (po: PurchaseOrder) => Promise.resolve(po),
-    onSuccess: (po) => setPos(prev => [po, ...prev]),
+    mutationFn: async (po: PurchaseOrder) => {
+      try {
+        let vendorId = (po as any).vendorId;
+        if (!vendorId) {
+          const vendorsRes = await vendorsApi.list(100);
+          const match = vendorsRes.items.find(v => v.name.toLowerCase() === po.vendor.toLowerCase());
+          vendorId = match?.id ?? vendorsRes.items[0]?.id;
+        }
+        if (vendorId) {
+          const created = await purchaseOrdersApi.create({
+            vendorId,
+            deliveryDate: po.deliveryDate || undefined,
+            totalValue: po.totalValue || 0,
+            urgency: po.urgency,
+          });
+          return toPurchaseOrder(created, po.materials);
+        }
+      } catch (err) {
+        console.error("Failed to persist PO to backend:", err);
+      }
+      return po;
+    },
+    onSuccess: (po) => setPos(prev => [po, ...prev.filter(p => p.id !== po.id)]),
   });
 
   const approvePOMutation = useMutation({
@@ -142,7 +166,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   }, [pos]);
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, setMaterialInvoiceAmount, nextPONumber }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, setMaterialInvoiceAmount, nextPONumber, isError, error }}>
       {children}
     </POContext.Provider>
   );

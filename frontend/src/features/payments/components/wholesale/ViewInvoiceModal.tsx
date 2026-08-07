@@ -9,7 +9,7 @@ import { IconButton } from "../../../../shared/ui/primitives";
 
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
-  const { dispatches } = useFinishing();
+  const { dispatches, isError: dispatchesError } = useFinishing();
   const dispatch = dispatches.find(d => d.invoiceNumber === inv.id);
   const firmName = dispatch?.firmName ?? "Beere Kesava & Brothers Silks";
   
@@ -31,6 +31,11 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
         </div>
         {/* Invoice Body */}
         <div style={{ padding: "18px 24px" }}>
+          {dispatchesError && (
+            <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
+              Failed to load dispatch details — some fields below may be showing fallback values.
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>TAX INVOICE</div>

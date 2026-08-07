@@ -60,7 +60,7 @@ export function OutstandingPaymentsReport() {
                 {!isLoading && !isError && items.length === 0 && (
                   <tr><td style={TD} colSpan={8}>Nothing outstanding — every invoice and bulk order is fully paid.</td></tr>
                 )}
-                {items.map((r, i) => (
+                {!isLoading && !isError && items.map((r, i) => (
                   <tr key={`${r.source}-${r.id}`} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
                     <td style={TD}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>

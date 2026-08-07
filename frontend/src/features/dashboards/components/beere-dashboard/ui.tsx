@@ -196,20 +196,27 @@ function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
   );
 }
 
-const BARS = [
-  { w: "W1", p: 155, d: 90  },
-  { w: "W2", p: 225, d: 185 },
-  { w: "W3", p: 265, d: 200 },
-  { w: "W4", p: 210, d: 160 },
-];
+export interface BarChartPoint {
+  w: string;
+  p: number;
+  d: number;
+}
 
-function BarChart() {
+function BarChart({ data }: { data?: BarChartPoint[] }) {
+  const BARS = data && data.length > 0 ? data : [];
   const W = 380, H = 148, PB = 26, PT = 10, PL = 30;
   const iW = W - PL, iH = H - PB - PT;
-  const maxV = 300;
-  const yTicks = [0, 100, 200, 300];
+  const maxV = Math.max(100, ...BARS.map(b => Math.max(b.p, b.d)));
+  const yTicks = [0, Math.round(maxV / 3), Math.round((maxV / 3) * 2), maxV];
   const wrapRef = useRef<HTMLDivElement>(null);
   const inView = useInView(wrapRef, { once: true, margin: "-40px 0px" });
+  if (BARS.length === 0) {
+    return (
+      <div ref={wrapRef} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 148, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+        No production data yet.
+      </div>
+    );
+  }
   return (
     <div ref={wrapRef}>
       <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>

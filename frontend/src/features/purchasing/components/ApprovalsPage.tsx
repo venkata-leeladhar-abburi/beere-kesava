@@ -23,19 +23,20 @@ export function ApprovalsPage() {
   const [histPeriod, setHistPeriod] = useState("This Month");
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
 
-  const { data: warpRes } = useQuery({
+  const { data: warpRes, isError: warpError } = useQuery({
     queryKey: ["warp-requests-pending"],
     queryFn: () => warpRequestsApi.list("PENDING"),
   });
   const warpList = warpRes?.items ?? [];
 
-  const { data: rateRes } = useQuery({
+  const { data: rateRes, isError: rateError } = useQuery({
     queryKey: ["rate-requests-pending"],
     queryFn: () => rateRequestsApi.list("PENDING"),
   });
   const rateList = rateRes?.items ?? [];
 
-  const { pos, approvePO, rejectPO } = usePO();
+  const { pos, approvePO, rejectPO, isError: poError } = usePO();
+  const hasApprovalsError = warpError || rateError || poError;
   const { requests, decideRequest } = useSuppliers();
   const pendingRequests = requests.filter(r => r.status === "pending");
 
@@ -102,6 +103,12 @@ export function ApprovalsPage() {
       />
 
       <TabsNav tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {hasApprovalsError && (
+        <div style={{ margin: "0 56px", padding: "14px 20px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.30)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B" }}>
+          Failed to load some approvals data. Counts and lists shown below may be incomplete — please try refreshing the page.
+        </div>
+      )}
 
       <TabContent
         activeTab={activeTab}

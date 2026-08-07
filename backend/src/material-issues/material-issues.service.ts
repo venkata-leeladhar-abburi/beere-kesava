@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { signatureFileToUrl } from "../common/storage/upload.config";
+import { fromGrams, toGrams } from "../common/weight-units.util";
 import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -70,7 +71,13 @@ export class MaterialIssuesService {
         where: { materialType: item.materialType },
       });
       if (stock) {
-        const newStock = Math.max(0, Number(stock.currentStock) - Number(item.quantity));
+        // Stock and issue-item quantities can be entered in different units
+        // (e.g. Jari stock in KG, issued in grams) — always convert through
+        // grams before subtracting, never raw quantities.
+        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
+        const issuedGrams = toGrams(Number(item.quantity), item.unit);
+        const newStockGrams = Math.max(0, stockGrams - issuedGrams);
+        const newStock = fromGrams(newStockGrams, stock.unit);
         await this.prisma.rawMaterialStock.update({
           where: { id: stock.id },
           data: { currentStock: newStock },

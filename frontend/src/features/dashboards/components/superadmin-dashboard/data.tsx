@@ -1,33 +1,19 @@
 import React from "react";
 import {
-  Users, Layers, IndianRupee, CheckCircle2, Truck, Clock,
+  Users, IndianRupee,
   LayoutDashboard, Factory, Package, Settings2,
 } from "lucide-react";
 import type { IconComponent } from "../../../../lib/icon";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
 import { imgWarp, imgResham, imgJari } from "../../../../shared/constants/imageData";
 import { T } from "./theme";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SA METRICS DATA
-// ═══════════════════════════════════════════════════════════════════════════════
-export const SA_METRICS = [
-  { ico: <Users size={22} color={T.warmCream} />, label: "Active Weavers", val: "9", sub: "↑ 12% vs last month", hi: false },
-  { ico: <Layers size={22} color={T.warmCream} />, label: "Sarees Produced", val: "248", sub: "↑ 14% vs last month", hi: false },
-  { ico: <IndianRupee size={22} color={T.warmCream} />, label: "Pending Payments", val: "₹2.4L", sub: "2 overdue", hi: true },
-  { ico: <CheckCircle2 size={22} color={T.warmCream} />, label: "Ready for Sale", val: "84", sub: "Sarees", hi: false },
-  { ico: <Truck size={22} color={T.warmCream} />, label: "Dispatched", val: "32", sub: "Sarees this week", hi: false },
-  { ico: <Clock size={22} color={T.warmCream} />, label: "Pending Approvals", val: "3", sub: "Require review", hi: false, crimsonHi: true },
-];
-
-export const WEAVERS: any[] = [];
-
-export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "8937070a-ea63-43f3-9cb4-dcbcfd362ff7": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "11278a51-a26d-4eaa-adbf-bedbfa7fdf46": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "71413724-378d-4336-93dd-1db33cba3510": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
-};
+// NOTE: the SA_METRICS, WEAVERS, and WEAVER_RATES exports that used to live
+// here (hardcoded "9 active weavers"/"248 sarees"/fake per-weaver rate
+// lookup) have been removed as dead mock data — nothing in this dashboard
+// imported them (the real overview metrics come from the shared
+// useDashboardMetrics/useDashboardWeavers hooks used elsewhere in this
+// sweep). MATS below stays static mock data — see the documented gap note
+// in SAOverviewPage.tsx: raw-material stock has no backend module yet.
 
 export const MATS = [
   {

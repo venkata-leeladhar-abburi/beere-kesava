@@ -29,7 +29,7 @@ function TabLoadingFallback() {
     </div>
   );
 }
-import { UserProfileModal } from "./BeereDashboard";
+import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../lib/icon";
 
@@ -232,7 +232,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
       </DownloadAccessProvider>
 
       {showProfileModal && (
-        <UserProfileModal onClose={() => setShowProfileModal(false)} role="admin" />
+        <UserProfileModal onClose={() => setShowProfileModal(false)} />
       )}
     </div>
   );

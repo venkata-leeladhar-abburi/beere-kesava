@@ -272,6 +272,16 @@ export const PurchaseOrderStatus = {
 export type PurchaseOrderStatus = (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus]
 
 
+export const VendorBillStatus = {
+  PENDING: 'PENDING',
+  PARTIAL: 'PARTIAL',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE'
+} as const
+
+export type VendorBillStatus = (typeof VendorBillStatus)[keyof typeof VendorBillStatus]
+
+
 export const PurchaseRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',

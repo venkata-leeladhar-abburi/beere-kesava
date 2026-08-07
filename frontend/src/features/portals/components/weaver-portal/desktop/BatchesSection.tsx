@@ -6,6 +6,7 @@ import { DesktopHero } from "./DesktopHero";
 import { DesktopActiveBatchCard } from "./DesktopActiveBatchCard";
 import { DesktopCompletedBatchCard } from "./DesktopCompletedBatchCard";
 import { Button } from "../../../../../shared/ui/primitives";
+import { useAuth } from "../../../../../contexts/AuthContext";
 
 type DefectiveSaree = {
   sareeId: string; batchId: string; designCode?: string;
@@ -24,6 +25,9 @@ export function BatchesSection({
   completedBatches: MyBatchEntry[];
   setActive: (t: Tab5) => void;
 }) {
+  const { user } = useAuth();
+  const identityBadge = user?.name ? (user.empId ? `${user.name} · ${user.empId}` : user.name) : "—";
+
   if (batchesSubPage === "history") {
     return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="all" />;
   }
@@ -45,7 +49,7 @@ export function BatchesSection({
           { text: "97% QC Pass Rate" },
           { text: "₹8,100 Earned" },
         ]}
-        alertBadge="Ravi Kumar · WVR-014"
+        alertBadge={identityBadge}
         stats={[
           { label: "Sarees Produced This Month", val: "18", sub: "↑ 3 more than last month" },
           { label: "Quality Check Pass Rate", val: "97%", sub: "Only 2 rejected this month", highlight: true },

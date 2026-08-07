@@ -1,20 +1,21 @@
 // ── Cross-section mock data ────────────────────────────────────────────────
-// MOCK-BACKED: every export in this file (WEAVERS, TABLE_ROWS, LEADERBOARD,
-// ACTIVITIES, BATCH_HISTORY, WARP_REQUESTS, ANALYTICS_WEAVERS,
-// PRODUCTION_LEDGER, HEADER_CHIPS, STATS, WEAVER_RATES) remains static mock
-// data. It mixes WV-XXX-style ids with production/QC/payments numbers that
-// have no backend endpoint yet, and WeaversPage.tsx's directory/analytics/
-// leaderboard sections read it directly — untangling identity from
-// production here would mean either the WV-XXX-id migration or faking
-// production stats for real weavers, both explicitly out of scope for the
-// identity/roster wiring done in AllWeaversPage.tsx and NewWeaverModal.tsx.
-// Leave this file mock until batches/QC/payments are wired to real weaver
-// ids.
+// MOCK-BACKED (partial): WEAVERS, TABLE_ROWS, LEADERBOARD, ACTIVITIES,
+// BATCH_HISTORY, WARP_REQUESTS, HEADER_CHIPS, STATS, WEAVER_RATES remain
+// static/empty mock scaffolding. They mix WV-XXX-style ids with
+// production/QC/payments numbers that have no backend endpoint yet.
+// WeaverDirectory (WeaverTableAndDirectory.tsx), PerformancePanel
+// (leaderboard/PerformancePanel.tsx) and WeaverAnalytics.tsx have all been
+// rewired to read live data from weaversApi (GET /weavers, GET
+// /weavers/:id/stats, GET /weavers/leaderboard) instead of the arrays below
+// — untangling identity from historical production/payments data here would
+// still need either the WV-XXX-id migration or a real dated production
+// ledger endpoint, both out of scope. Leave the remaining exports mock until
+// batches/QC/payments are wired to real weaver ids.
 import type React from "react";
 import { Package, CheckCircle, WarningCircle, Medal, ChartBar, SquaresFour, List as PhList, Table as PhTable } from "@phosphor-icons/react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 import { T } from "./theme";
-import type { Status, AnalyticsWeaver, ProductionRow } from "./types";
+import type { Status } from "./types";
 
 export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
   "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
@@ -68,56 +69,13 @@ export const VIEW_OPTIONS = [
 
 export const TABLE_COLS = ["Weaver Code", "Full Name", "Village / Area", "Mobile", "Looms", "Status", "Sarees This Month", "QC Pass Rate", "Total Sarees", "Total Paid", "Last Active", "Action"];
 
-export const ANALYTICS_WEAVERS: AnalyticsWeaver[] = (() => {
-  const toNum = (s: string | number) => typeof s === "number" ? s : parseFloat(String(s).replace(/[₹,]/g, "")) || 0;
-  const byId = new Map<string, AnalyticsWeaver>();
-  const add = (w: any) => {
-    if (byId.has(w.id)) return;
-    const village: string = w.village;
-    byId.set(w.id, {
-      id: w.id, name: w.name, village,
-      cluster: village.split(",")[0].trim(),
-      looms: w.looms, status: w.status, thisMonth: w.thisMonth, passRate: w.passRate,
-      totalEver: toNum(w.totalEver), totalPaid: toNum(w.totalPaid),
-      photo: w.photo ?? null,
-      initials: w.initials ?? w.name.split(" ").map((p: string) => p[0]).join("").slice(0, 2).toUpperCase(),
-      bg: w.bg ?? "#5A3E6B",
-    });
-  };
-  WEAVERS.forEach(add);
-  TABLE_ROWS.forEach(add);
-  return [...byId.values()];
-})();
-
-export const WA_MONTHS = 18;
-export const WA_END = new Date(2026, 4, 31); // May 2026 — the "this month" the page reports on
-export const WA_MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// Monthly production history, seeded per weaver so the numbers are stable
-// across renders and the current month matches the weaver's `thisMonth`.
-export const PRODUCTION_LEDGER: ProductionRow[] = (() => {
-  const rows: ProductionRow[] = [];
-  ANALYTICS_WEAVERS.forEach(w => {
-    const seed = w.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-    const base = w.thisMonth > 0 ? w.thisMonth : Math.max(3, Math.round(w.totalEver / 300));
-    const ratePerSaree = w.totalEver ? w.totalPaid / w.totalEver : 450;
-    for (let i = 0; i < WA_MONTHS; i++) {
-      const d = new Date(WA_END.getFullYear(), WA_END.getMonth() - i, 15);
-      // i === 0 is the current month: report the weaver's actual figure.
-      const wobble = 0.65 + (Math.sin((i + 1) * 7.233 + seed) * 0.5 + 0.5) * 0.7;
-      const produced = i === 0 ? w.thisMonth : Math.max(0, Math.round(base * wobble));
-      const passed = Math.round(produced * (w.passRate / 100));
-      rows.push({
-        weaverId: w.id,
-        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-15`,
-        produced, passed,
-        payout: Math.round(passed * ratePerSaree),
-      });
-    }
-  });
-  return rows;
-})();
-
+// NOTE: the old ANALYTICS_WEAVERS / PRODUCTION_LEDGER fabricated-history
+// exports (which derived a fake monthly production ledger by seeding random
+// wobble values off WEAVERS/TABLE_ROWS) have been removed. WeaverAnalytics.tsx
+// now computes its aggregates directly from weaversApi (GET /weavers, GET
+// /weavers/:id/stats) — see that file. A dated production ledger isn't
+// exposed by the backend yet, so month-by-month trend charts are shown as a
+// documented gap there instead of being invented.
 
 export const STATUS_MIX_META: Record<Status, { label: string; color: string }> = {
   active: { label: "Currently Weaving", color: T.green },

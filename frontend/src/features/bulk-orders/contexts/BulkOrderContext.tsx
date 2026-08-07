@@ -114,6 +114,8 @@ interface BulkOrderContextValue {
   markDispatched: (ref: string, invoiceId?: string) => void;
   recordPayment: (ref: string, amount: number) => void;
   tallyOrder: (ref: string, by: string) => void;
+  isError: boolean;
+  error: unknown;
 }
 
 const BulkOrderContext = createContext<BulkOrderContextValue | null>(null);
@@ -123,7 +125,7 @@ const QUERY_KEY = ["bulkOrders"] as const;
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: bulkOrders = [] } = useQuery({
+  const { data: bulkOrders = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
@@ -250,7 +252,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   }, [bulkOrders]);
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder }}>
+    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, isError, error }}>
       {children}
     </BulkOrderContext.Provider>
   );

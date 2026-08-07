@@ -82,6 +82,13 @@ export function MakingChargesSection({
             </tr>
           </thead>
           <tbody>
+            {rates.length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ ...tdStyle, textAlign: "center", padding: "40px 16px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>
+                  No rates configured yet. Use "Add New Saree Type" below to create the first entry.
+                </td>
+              </tr>
+            )}
             {rates.map((row, i) => (
               <React.Fragment key={row.code}>
                 <tr style={{ background: editRow === i ? "rgba(110,15,45,0.03)" : "transparent" }}>

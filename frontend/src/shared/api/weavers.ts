@@ -4,6 +4,8 @@ export type BackendWeaverStatus = "ACTIVE" | "INACTIVE";
 
 export interface BackendWeaver {
   id: string;
+  /** Human-facing weaver ID (e.g. "Wea-001") — gap-filled against current weaver count, reused after a delete. Distinct from `id`. */
+  code: string;
   name: string;
   firstName: string;
   lastName: string;
@@ -18,6 +20,7 @@ export interface BackendWeaver {
   bankName: string | null;
   accountNo: string | null;
   ifsc: string | null;
+  createdAt: string;
 }
 
 /** Live performance metrics returned by GET /weavers/:id/stats */
@@ -40,6 +43,16 @@ export interface BackendWeaverLeaderboardEntry {
   village: string | null;
   totalSareesWoven: number;
   qcPassRate: number;
+}
+
+/** Entry in the GET /weavers/production-leaderboard response */
+export interface BackendWeaverProductionLeaderboardEntry {
+  weaverId: string;
+  name: string;
+  initials: string;
+  photoUrl: string;
+  village: string | null;
+  sareesProduced: number;
 }
 
 interface PaginatedResponse<T> {
@@ -79,6 +92,8 @@ export const weaversApi = {
   update: (id: string, payload: UpdateWeaverPayload) =>
     apiClient.patch<BackendWeaver>(`/weavers/${id}`, payload),
 
+  remove: (id: string) => apiClient.delete<void>(`/weavers/${id}`),
+
   /** Live stats: QC pass rate, active batch row count, material issue count, total sarees woven. */
   getStats: (id: string) =>
     apiClient.get<BackendWeaverStats>(`/weavers/${id}/stats`),
@@ -86,4 +101,10 @@ export const weaversApi = {
   /** Top-10 leaderboard of active weavers ranked by QC pass rate. */
   getLeaderboard: () =>
     apiClient.get<BackendWeaverLeaderboardEntry[]>(`/weavers/leaderboard`),
+
+  /** Top-5 leaderboard of weavers ranked by production volume within a trailing window (default 6 months). */
+  getProductionLeaderboard: (months?: number) =>
+    apiClient.get<BackendWeaverProductionLeaderboardEntry[]>(
+      `/weavers/production-leaderboard${months ? `?months=${months}` : ""}`,
+    ),
 };

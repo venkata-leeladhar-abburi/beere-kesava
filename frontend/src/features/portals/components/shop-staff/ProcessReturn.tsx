@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { salesApi } from "../../../../shared/api/sales";
 import { 
   AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag
 } from 'lucide-react';
@@ -16,11 +18,21 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   const canSeePrices = useCanSeePrices();
   const [returnType, setReturnType] = useState<MyReturnType>(null);
   const [step, setStep] = useState<ReturnStep>("type");
-  const [returnLog, setReturnLog] = useState<ReturnRecord[]>([
-    { id: "RTN-2026-0039", type: "retail", date: "10 Jun 2026", customer: "Smt. Meenakshi", originalSaleId: "RAVI-L2-007", reason: "Wrong Design", amount: "₹12,000" },
-    { id: "RTN-2026-0038", type: "retail", date: "05 Jun 2026", customer: "Smt. Kalpana", originalSaleId: "PADMA-L1-001", reason: "Defective", amount: "₹8,500" },
-    { id: "RTN-WS-2026-021", type: "wholesale", date: "02 Jun 2026", vendor: "Ravi Silks", design: "BKB-031", color: "Maroon", weight: "920g", wsReason: "Quality Issue" },
-  ]);
+
+  const { data: returnsRes, refetch } = useQuery({
+    queryKey: ["returns-list-processreturn"],
+    queryFn: () => salesApi.listReturns(100),
+  });
+
+  const returnLog: ReturnRecord[] = (returnsRes?.items ?? []).map(r => ({
+    id: r.ref,
+    type: "retail",
+    date: new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
+    customer: "Retail Customer",
+    originalSaleId: r.saleRef ?? r.sareeId,
+    reason: r.reason,
+    amount: r.refundAmount ? `₹${Number(r.refundAmount).toLocaleString("en-IN")}` : "₹0",
+  }));
 
   // Retail state
   const [saleFound, setSaleFound] = useState(false);
@@ -145,8 +157,17 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           setOtherReason={setOtherReason}
           returnReasons={returnReasons}
           canSeePrices={canSeePrices}
-          onConfirm={() => {
-            setReturnLog(prev => [{ id: `RTN-2026-${String(Date.now()).slice(-4)}`, type: "retail", date: "13 Jun 2026", customer: "Smt. Meenakshi", originalSaleId: "PADMA-L1-004", reason: returnReasons.find(r => r.id === reason)?.label ?? reason ?? "Other", amount: "₹8,500" }, ...prev]);
+          onConfirm={async () => {
+            try {
+              await salesApi.createReturn({
+                saleRef: retailManualId || "PADMA-L1-004",
+                reason: returnReasons.find(r => r.id === reason)?.label ?? reason ?? "Other",
+                refundAmount: 8500,
+              });
+              refetch();
+            } catch (err) {
+              console.error("Failed to record return", err);
+            }
             setStep("success");
           }}
         />
@@ -183,8 +204,17 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         canSeePrices={canSeePrices}
         canProceedWsStep1={canProceedWsStep1}
         setReturnType={setReturnType}
-        onConfirm={() => {
-          setReturnLog(prev => [{ id: wsNewId, type: "wholesale", date: "13 Jun 2026", vendor: wsVendor, design: wsDesign, color: wsColor, weight: wsWeight ? `${wsWeight}g` : "—", wsReason: wsReason ?? "—", newSareeId: wsNewId }, ...prev]);
+        onConfirm={async () => {
+          try {
+            await salesApi.createReturn({
+              saleRef: wsNewId || "WS-RET-001",
+              reason: wsReason ?? "Wholesale Return",
+              refundAmount: Number(wsPrice) || 0,
+            });
+            refetch();
+          } catch (err) {
+            console.error("Failed to record wholesale return", err);
+          }
           setStep("success");
         }}
       />

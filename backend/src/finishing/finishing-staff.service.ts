@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
+import { nextSequenceId } from "../common/sequence-id.util";
 import { Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFinishingStaffDto } from "./dto/create-finishing-staff.dto";
 import { ListFinishingStaffQueryDto } from "./dto/list-finishing-staff-query.dto";
@@ -14,12 +14,14 @@ const FINISHING_STAFF_ID_PREFIX = "FIN";
 export class FinishingStaffService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreateFinishingStaffDto) {
-    const empId = await this.idGenerator.nextFormatted(FINISHING_STAFF_ID_PREFIX);
+    // Gap-filled against current row count, same as Users/Weavers — deleting
+    // a finishing staff member frees their number for reuse.
+    const existing = await this.prisma.finishingStaff.findMany({ select: { empId: true } });
+    const empId = nextSequenceId(existing.map((s) => s.empId), FINISHING_STAFF_ID_PREFIX);
     const name = `${dto.firstName} ${dto.lastName}`.trim();
     const staff = await this.prisma.finishingStaff.create({
       data: {
@@ -98,5 +100,28 @@ export class FinishingStaffService {
     });
 
     return updated;
+  }
+
+  async remove(id: string) {
+    const staff = await this.findOne(id);
+
+    try {
+      await this.prisma.finishingStaff.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ConflictException(
+          "This finishing staff member has existing assignments and can't be deleted. Deactivate them instead.",
+        );
+      }
+      throw error;
+    }
+
+    await this.auditLog.recordAction({
+      module: "FINISHING",
+      action: `Deleted finishing staff ${staff.firstName} ${staff.lastName}`,
+      entityType: "FinishingStaff",
+      entityId: id,
+      recordLabel: `${staff.firstName} ${staff.lastName}`,
+    });
   }
 }

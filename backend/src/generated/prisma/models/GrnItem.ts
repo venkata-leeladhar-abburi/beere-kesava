@@ -30,12 +30,14 @@ export type GrnItemAvgAggregateOutputType = {
   quantity: runtime.Decimal | null
   unitPrice: runtime.Decimal | null
   totalPrice: runtime.Decimal | null
+  rejectedQuantity: runtime.Decimal | null
 }
 
 export type GrnItemSumAggregateOutputType = {
   quantity: runtime.Decimal | null
   unitPrice: runtime.Decimal | null
   totalPrice: runtime.Decimal | null
+  rejectedQuantity: runtime.Decimal | null
 }
 
 export type GrnItemMinAggregateOutputType = {
@@ -49,6 +51,7 @@ export type GrnItemMinAggregateOutputType = {
   unit: string | null
   unitPrice: runtime.Decimal | null
   totalPrice: runtime.Decimal | null
+  rejectedQuantity: runtime.Decimal | null
 }
 
 export type GrnItemMaxAggregateOutputType = {
@@ -62,6 +65,7 @@ export type GrnItemMaxAggregateOutputType = {
   unit: string | null
   unitPrice: runtime.Decimal | null
   totalPrice: runtime.Decimal | null
+  rejectedQuantity: runtime.Decimal | null
 }
 
 export type GrnItemCountAggregateOutputType = {
@@ -75,6 +79,7 @@ export type GrnItemCountAggregateOutputType = {
   unit: number
   unitPrice: number
   totalPrice: number
+  rejectedQuantity: number
   _all: number
 }
 
@@ -83,12 +88,14 @@ export type GrnItemAvgAggregateInputType = {
   quantity?: true
   unitPrice?: true
   totalPrice?: true
+  rejectedQuantity?: true
 }
 
 export type GrnItemSumAggregateInputType = {
   quantity?: true
   unitPrice?: true
   totalPrice?: true
+  rejectedQuantity?: true
 }
 
 export type GrnItemMinAggregateInputType = {
@@ -102,6 +109,7 @@ export type GrnItemMinAggregateInputType = {
   unit?: true
   unitPrice?: true
   totalPrice?: true
+  rejectedQuantity?: true
 }
 
 export type GrnItemMaxAggregateInputType = {
@@ -115,6 +123,7 @@ export type GrnItemMaxAggregateInputType = {
   unit?: true
   unitPrice?: true
   totalPrice?: true
+  rejectedQuantity?: true
 }
 
 export type GrnItemCountAggregateInputType = {
@@ -128,6 +137,7 @@ export type GrnItemCountAggregateInputType = {
   unit?: true
   unitPrice?: true
   totalPrice?: true
+  rejectedQuantity?: true
   _all?: true
 }
 
@@ -228,6 +238,7 @@ export type GrnItemGroupByOutputType = {
   unit: string
   unitPrice: runtime.Decimal
   totalPrice: runtime.Decimal
+  rejectedQuantity: runtime.Decimal
   _count: GrnItemCountAggregateOutputType | null
   _avg: GrnItemAvgAggregateOutputType | null
   _sum: GrnItemSumAggregateOutputType | null
@@ -264,6 +275,7 @@ export type GrnItemWhereInput = {
   unit?: Prisma.StringFilter<"GrnItem"> | string
   unitPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   grn?: Prisma.XOR<Prisma.GrnReceiptScalarRelationFilter, Prisma.GrnReceiptWhereInput>
 }
 
@@ -278,6 +290,7 @@ export type GrnItemOrderByWithRelationInput = {
   unit?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
   grn?: Prisma.GrnReceiptOrderByWithRelationInput
 }
 
@@ -295,6 +308,7 @@ export type GrnItemWhereUniqueInput = Prisma.AtLeast<{
   unit?: Prisma.StringFilter<"GrnItem"> | string
   unitPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   grn?: Prisma.XOR<Prisma.GrnReceiptScalarRelationFilter, Prisma.GrnReceiptWhereInput>
 }, "id">
 
@@ -309,6 +323,7 @@ export type GrnItemOrderByWithAggregationInput = {
   unit?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
   _count?: Prisma.GrnItemCountOrderByAggregateInput
   _avg?: Prisma.GrnItemAvgOrderByAggregateInput
   _max?: Prisma.GrnItemMaxOrderByAggregateInput
@@ -330,6 +345,7 @@ export type GrnItemScalarWhereWithAggregatesInput = {
   unit?: Prisma.StringWithAggregatesFilter<"GrnItem"> | string
   unitPrice?: Prisma.DecimalWithAggregatesFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalWithAggregatesFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalWithAggregatesFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemCreateInput = {
@@ -342,6 +358,7 @@ export type GrnItemCreateInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   grn: Prisma.GrnReceiptCreateNestedOneWithoutItemsInput
 }
 
@@ -356,6 +373,7 @@ export type GrnItemUncheckedCreateInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUpdateInput = {
@@ -368,6 +386,7 @@ export type GrnItemUpdateInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   grn?: Prisma.GrnReceiptUpdateOneRequiredWithoutItemsNestedInput
 }
 
@@ -382,6 +401,7 @@ export type GrnItemUncheckedUpdateInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemCreateManyInput = {
@@ -395,6 +415,7 @@ export type GrnItemCreateManyInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUpdateManyMutationInput = {
@@ -407,6 +428,7 @@ export type GrnItemUpdateManyMutationInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUncheckedUpdateManyInput = {
@@ -420,6 +442,7 @@ export type GrnItemUncheckedUpdateManyInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemListRelationFilter = {
@@ -443,12 +466,14 @@ export type GrnItemCountOrderByAggregateInput = {
   unit?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
 }
 
 export type GrnItemAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
 }
 
 export type GrnItemMaxOrderByAggregateInput = {
@@ -462,6 +487,7 @@ export type GrnItemMaxOrderByAggregateInput = {
   unit?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
 }
 
 export type GrnItemMinOrderByAggregateInput = {
@@ -475,12 +501,14 @@ export type GrnItemMinOrderByAggregateInput = {
   unit?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
 }
 
 export type GrnItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  rejectedQuantity?: Prisma.SortOrder
 }
 
 export type GrnItemCreateNestedManyWithoutGrnInput = {
@@ -535,6 +563,7 @@ export type GrnItemCreateWithoutGrnInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUncheckedCreateWithoutGrnInput = {
@@ -547,6 +576,7 @@ export type GrnItemUncheckedCreateWithoutGrnInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemCreateOrConnectWithoutGrnInput = {
@@ -589,6 +619,7 @@ export type GrnItemScalarWhereInput = {
   unit?: Prisma.StringFilter<"GrnItem"> | string
   unitPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFilter<"GrnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemCreateManyGrnInput = {
@@ -601,6 +632,7 @@ export type GrnItemCreateManyGrnInput = {
   unit?: string
   unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUpdateWithoutGrnInput = {
@@ -613,6 +645,7 @@ export type GrnItemUpdateWithoutGrnInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUncheckedUpdateWithoutGrnInput = {
@@ -625,6 +658,7 @@ export type GrnItemUncheckedUpdateWithoutGrnInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type GrnItemUncheckedUpdateManyWithoutGrnInput = {
@@ -637,6 +671,7 @@ export type GrnItemUncheckedUpdateManyWithoutGrnInput = {
   unit?: Prisma.StringFieldUpdateOperationsInput | string
   unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  rejectedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 
@@ -652,6 +687,7 @@ export type GrnItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   unit?: boolean
   unitPrice?: boolean
   totalPrice?: boolean
+  rejectedQuantity?: boolean
   grn?: boolean | Prisma.GrnReceiptDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["grnItem"]>
 
@@ -666,6 +702,7 @@ export type GrnItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   unit?: boolean
   unitPrice?: boolean
   totalPrice?: boolean
+  rejectedQuantity?: boolean
   grn?: boolean | Prisma.GrnReceiptDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["grnItem"]>
 
@@ -680,6 +717,7 @@ export type GrnItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   unit?: boolean
   unitPrice?: boolean
   totalPrice?: boolean
+  rejectedQuantity?: boolean
   grn?: boolean | Prisma.GrnReceiptDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["grnItem"]>
 
@@ -694,9 +732,10 @@ export type GrnItemSelectScalar = {
   unit?: boolean
   unitPrice?: boolean
   totalPrice?: boolean
+  rejectedQuantity?: boolean
 }
 
-export type GrnItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "grnId" | "materialType" | "name" | "grade" | "color" | "quantity" | "unit" | "unitPrice" | "totalPrice", ExtArgs["result"]["grnItem"]>
+export type GrnItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "grnId" | "materialType" | "name" | "grade" | "color" | "quantity" | "unit" | "unitPrice" | "totalPrice" | "rejectedQuantity", ExtArgs["result"]["grnItem"]>
 export type GrnItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   grn?: boolean | Prisma.GrnReceiptDefaultArgs<ExtArgs>
 }
@@ -723,6 +762,7 @@ export type $GrnItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     unit: string
     unitPrice: runtime.Decimal
     totalPrice: runtime.Decimal
+    rejectedQuantity: runtime.Decimal
   }, ExtArgs["result"]["grnItem"]>
   composites: {}
 }
@@ -1157,6 +1197,7 @@ export interface GrnItemFieldRefs {
   readonly unit: Prisma.FieldRef<"GrnItem", 'String'>
   readonly unitPrice: Prisma.FieldRef<"GrnItem", 'Decimal'>
   readonly totalPrice: Prisma.FieldRef<"GrnItem", 'Decimal'>
+  readonly rejectedQuantity: Prisma.FieldRef<"GrnItem", 'Decimal'>
 }
     
 

@@ -5,10 +5,6 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-// MOCK: no backend endpoint for monthly income/expense cash-flow time-series
-// aggregation exists anywhere (payments module, reports, or invoices) — this
-// chart alone stays on static demo data. Every other stat/chart below is
-// computed live. See data/analytics.ts for the fuller note.
 import { analyticsApi } from "../../../../shared/api/analytics";
 import { EASE, F, T } from "../../theme";
 import { AnimCount, FadeUp } from "../common/motion";
@@ -20,14 +16,23 @@ import { Button } from "../../../../shared/ui/primitives";
 
 const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
 
+function formatMonthLabel(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  if (!year || !m) return month;
+  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+}
+
 export function PaymentAnalyticsSection() {
   const [exportModal, setExportModal] = useState(false);
 
-  const { data: cashFlowRes } = useQuery({
-    queryKey: ["analytics-cash-flow"],
-    queryFn: () => analyticsApi.getCashFlow(),
+  const { data: cashFlowRes, isLoading: cashFlowLoading, isError: cashFlowError } = useQuery({
+    queryKey: ["analytics-cash-flow-monthly"],
+    queryFn: () => analyticsApi.getCashFlowMonthly(6),
   });
-  const cashFlowData = cashFlowRes?.items ?? [];
+  const cashFlowData = (cashFlowRes?.items ?? []).map(d => ({
+    ...d,
+    month: formatMonthLabel(d.month),
+  }));
 
   // Top-5 weaver making-charges distribution, computed live from
   // GET /payments/weavers grouped by weaverId + GET /weavers for names.
@@ -225,17 +230,31 @@ export function PaymentAnalyticsSection() {
                 </div>
                 <div>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Cash Flow Overview</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Income vs. expenses · ₹ Lakhs</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Income vs. expenses · Last 6 months</div>
                 </div>
               </div>
             </div>
             {/* Chart body */}
             <div style={{ flex: 1, padding: "18px 10px 14px" }}>
+              {cashFlowLoading ? (
+                <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  Loading cash flow…
+                </div>
+              ) : cashFlowError ? (
+                <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
+                  Failed to load cash flow data.
+                </div>
+              ) : cashFlowData.length === 0 ? (
+                <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  No cash flow data yet.
+                </div>
+              ) : (
+              <>
               <ResponsiveContainer width="100%" height={210}>
                 <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
                   <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                   <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}L`} width={46} />
+                  <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}`} width={46} />
                   <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
                   <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
                   <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
@@ -249,6 +268,8 @@ export function PaymentAnalyticsSection() {
                   </div>
                 ))}
               </div>
+              </>
+              )}
             </div>
           </div>
 

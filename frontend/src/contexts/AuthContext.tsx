@@ -9,10 +9,14 @@ interface AuthState {
   token?: string | null;
   user?: {
     id: string;
+    weaverId?: string | null;
+    empId?: string | null;
     name: string;
     email: string;
     mobile: string;
     role: string;
+    accessLevel?: string;
+    dateAdded?: string | null;
   } | null;
 }
 

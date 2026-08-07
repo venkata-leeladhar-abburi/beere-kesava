@@ -36,6 +36,7 @@ export type UserMinAggregateOutputType = {
   status: $Enums.ActiveStatus | null
   dateAdded: Date | null
   updatedAt: Date | null
+  linkedWeaverId: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -50,6 +51,7 @@ export type UserMaxAggregateOutputType = {
   status: $Enums.ActiveStatus | null
   dateAdded: Date | null
   updatedAt: Date | null
+  linkedWeaverId: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -64,6 +66,7 @@ export type UserCountAggregateOutputType = {
   status: number
   dateAdded: number
   updatedAt: number
+  linkedWeaverId: number
   _all: number
 }
 
@@ -80,6 +83,7 @@ export type UserMinAggregateInputType = {
   status?: true
   dateAdded?: true
   updatedAt?: true
+  linkedWeaverId?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -94,6 +98,7 @@ export type UserMaxAggregateInputType = {
   status?: true
   dateAdded?: true
   updatedAt?: true
+  linkedWeaverId?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -108,6 +113,7 @@ export type UserCountAggregateInputType = {
   status?: true
   dateAdded?: true
   updatedAt?: true
+  linkedWeaverId?: true
   _all?: true
 }
 
@@ -195,6 +201,7 @@ export type UserGroupByOutputType = {
   status: $Enums.ActiveStatus
   dateAdded: Date
   updatedAt: Date
+  linkedWeaverId: string | null
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -230,6 +237,8 @@ export type UserWhereInput = {
   status?: Prisma.EnumActiveStatusFilter<"User"> | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  linkedWeaverId?: Prisma.StringNullableFilter<"User"> | string | null
+  linkedWeaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   permissionOverrides?: Prisma.UserPermissionOverrideListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   actionLogs?: Prisma.ActionLogListRelationFilter
@@ -258,6 +267,8 @@ export type UserOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   dateAdded?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  linkedWeaverId?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedWeaver?: Prisma.WeaverOrderByWithRelationInput
   permissionOverrides?: Prisma.UserPermissionOverrideOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   actionLogs?: Prisma.ActionLogOrderByRelationAggregateInput
@@ -278,6 +289,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   empId?: string
   mobile?: string
+  linkedWeaverId?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -289,6 +301,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumActiveStatusFilter<"User"> | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  linkedWeaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   permissionOverrides?: Prisma.UserPermissionOverrideListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   actionLogs?: Prisma.ActionLogListRelationFilter
@@ -303,7 +316,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   requestedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   decidedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   reportDownloads?: Prisma.ReportDownloadHistoryListRelationFilter
-}, "id" | "empId" | "mobile">
+}, "id" | "empId" | "mobile" | "linkedWeaverId">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -317,6 +330,7 @@ export type UserOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   dateAdded?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  linkedWeaverId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -337,6 +351,7 @@ export type UserScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumActiveStatusWithAggregatesFilter<"User"> | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  linkedWeaverId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
@@ -351,6 +366,7 @@ export type UserCreateInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -379,6 +395,7 @@ export type UserUncheckedCreateInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -407,6 +424,7 @@ export type UserUpdateInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -435,6 +453,7 @@ export type UserUncheckedUpdateInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -463,6 +482,7 @@ export type UserCreateManyInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -491,6 +511,7 @@ export type UserUncheckedUpdateManyInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserScalarRelationFilter = {
@@ -510,6 +531,7 @@ export type UserCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   dateAdded?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  linkedWeaverId?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -524,6 +546,7 @@ export type UserMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   dateAdded?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  linkedWeaverId?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -538,6 +561,7 @@ export type UserMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   dateAdded?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  linkedWeaverId?: Prisma.SortOrder
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -569,6 +593,38 @@ export type EnumAccessLevelFieldUpdateOperationsInput = {
 
 export type EnumActiveStatusFieldUpdateOperationsInput = {
   set?: $Enums.ActiveStatus
+}
+
+export type UserCreateNestedOneWithoutLinkedWeaverInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLinkedWeaverInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUncheckedCreateNestedOneWithoutLinkedWeaverInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLinkedWeaverInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutLinkedWeaverNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLinkedWeaverInput
+  upsert?: Prisma.UserUpsertWithoutLinkedWeaverInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLinkedWeaverInput, Prisma.UserUpdateWithoutLinkedWeaverInput>, Prisma.UserUncheckedUpdateWithoutLinkedWeaverInput>
+}
+
+export type UserUncheckedUpdateOneWithoutLinkedWeaverNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLinkedWeaverInput
+  upsert?: Prisma.UserUpsertWithoutLinkedWeaverInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLinkedWeaverInput, Prisma.UserUpdateWithoutLinkedWeaverInput>, Prisma.UserUncheckedUpdateWithoutLinkedWeaverInput>
 }
 
 export type UserCreateNestedOneWithoutIssuedMaterialIssuesInput = {
@@ -779,6 +835,7 @@ export type UserCreateWithoutPermissionOverridesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
@@ -806,6 +863,7 @@ export type UserUncheckedCreateWithoutPermissionOverridesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -849,6 +907,7 @@ export type UserUpdateWithoutPermissionOverridesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
@@ -876,6 +935,135 @@ export type UserUncheckedUpdateWithoutPermissionOverridesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserCreateWithoutLinkedWeaverInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserUncheckedCreateWithoutLinkedWeaverInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserCreateOrConnectWithoutLinkedWeaverInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+}
+
+export type UserUpsertWithoutLinkedWeaverInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLinkedWeaverInput, Prisma.UserUncheckedUpdateWithoutLinkedWeaverInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLinkedWeaverInput, Prisma.UserUncheckedCreateWithoutLinkedWeaverInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLinkedWeaverInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLinkedWeaverInput, Prisma.UserUncheckedUpdateWithoutLinkedWeaverInput>
+}
+
+export type UserUpdateWithoutLinkedWeaverInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLinkedWeaverInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -903,6 +1091,7 @@ export type UserCreateWithoutIssuedMaterialIssuesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -930,6 +1119,7 @@ export type UserUncheckedCreateWithoutIssuedMaterialIssuesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -973,6 +1163,7 @@ export type UserUpdateWithoutIssuedMaterialIssuesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1000,6 +1191,7 @@ export type UserUncheckedUpdateWithoutIssuedMaterialIssuesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1027,6 +1219,7 @@ export type UserCreateWithoutInspectedQcRecordsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1054,6 +1247,7 @@ export type UserUncheckedCreateWithoutInspectedQcRecordsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1097,6 +1291,7 @@ export type UserUpdateWithoutInspectedQcRecordsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1124,6 +1319,7 @@ export type UserUncheckedUpdateWithoutInspectedQcRecordsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1151,6 +1347,7 @@ export type UserCreateWithoutAssignedFinishingsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1178,6 +1375,7 @@ export type UserUncheckedCreateWithoutAssignedFinishingsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1221,6 +1419,7 @@ export type UserUpdateWithoutAssignedFinishingsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1248,6 +1447,7 @@ export type UserUncheckedUpdateWithoutAssignedFinishingsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1275,6 +1475,7 @@ export type UserCreateWithoutRaisedQuotationsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1302,6 +1503,7 @@ export type UserUncheckedCreateWithoutRaisedQuotationsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1345,6 +1547,7 @@ export type UserUpdateWithoutRaisedQuotationsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1372,6 +1575,7 @@ export type UserUncheckedUpdateWithoutRaisedQuotationsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1399,6 +1603,7 @@ export type UserCreateWithoutRequestedPurchasesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1426,6 +1631,7 @@ export type UserUncheckedCreateWithoutRequestedPurchasesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1458,6 +1664,7 @@ export type UserCreateWithoutDecidedPurchasesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1485,6 +1692,7 @@ export type UserUncheckedCreateWithoutDecidedPurchasesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1528,6 +1736,7 @@ export type UserUpdateWithoutRequestedPurchasesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1555,6 +1764,7 @@ export type UserUncheckedUpdateWithoutRequestedPurchasesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1593,6 +1803,7 @@ export type UserUpdateWithoutDecidedPurchasesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1620,6 +1831,7 @@ export type UserUncheckedUpdateWithoutDecidedPurchasesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1647,6 +1859,7 @@ export type UserCreateWithoutAuditLogsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
@@ -1674,6 +1887,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -1717,6 +1931,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
@@ -1744,6 +1959,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -1771,6 +1987,7 @@ export type UserCreateWithoutActionLogsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
@@ -1798,6 +2015,7 @@ export type UserUncheckedCreateWithoutActionLogsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -1841,6 +2059,7 @@ export type UserUpdateWithoutActionLogsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
@@ -1868,6 +2087,7 @@ export type UserUncheckedUpdateWithoutActionLogsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -1895,6 +2115,7 @@ export type UserCreateWithoutNotificationsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -1922,6 +2143,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -1965,6 +2187,7 @@ export type UserUpdateWithoutNotificationsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -1992,6 +2215,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -2019,6 +2243,7 @@ export type UserCreateWithoutDecidedWarpRequestsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -2046,6 +2271,7 @@ export type UserUncheckedCreateWithoutDecidedWarpRequestsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -2089,6 +2315,7 @@ export type UserUpdateWithoutDecidedWarpRequestsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -2116,6 +2343,7 @@ export type UserUncheckedUpdateWithoutDecidedWarpRequestsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -2143,6 +2371,7 @@ export type UserCreateWithoutRequestedRateChangesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -2170,6 +2399,7 @@ export type UserUncheckedCreateWithoutRequestedRateChangesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -2202,6 +2432,7 @@ export type UserCreateWithoutDecidedRateChangesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -2229,6 +2460,7 @@ export type UserUncheckedCreateWithoutDecidedRateChangesInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -2272,6 +2504,7 @@ export type UserUpdateWithoutRequestedRateChangesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -2299,6 +2532,7 @@ export type UserUncheckedUpdateWithoutRequestedRateChangesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -2337,6 +2571,7 @@ export type UserUpdateWithoutDecidedRateChangesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -2364,6 +2599,7 @@ export type UserUncheckedUpdateWithoutDecidedRateChangesInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -2391,6 +2627,7 @@ export type UserCreateWithoutReportDownloadsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
   permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
@@ -2418,6 +2655,7 @@ export type UserUncheckedCreateWithoutReportDownloadsInput = {
   status?: $Enums.ActiveStatus
   dateAdded?: Date | string
   updatedAt?: Date | string
+  linkedWeaverId?: string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
@@ -2461,6 +2699,7 @@ export type UserUpdateWithoutReportDownloadsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
   permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
@@ -2488,6 +2727,7 @@ export type UserUncheckedUpdateWithoutReportDownloadsInput = {
   status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
   dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
@@ -2663,6 +2903,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   status?: boolean
   dateAdded?: boolean
   updatedAt?: boolean
+  linkedWeaverId?: boolean
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
   permissionOverrides?: boolean | Prisma.User$permissionOverridesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
@@ -2692,6 +2934,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   dateAdded?: boolean
   updatedAt?: boolean
+  linkedWeaverId?: boolean
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2706,6 +2950,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   dateAdded?: boolean
   updatedAt?: boolean
+  linkedWeaverId?: boolean
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -2720,10 +2966,12 @@ export type UserSelectScalar = {
   status?: boolean
   dateAdded?: boolean
   updatedAt?: boolean
+  linkedWeaverId?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empId" | "firstName" | "lastName" | "mobile" | "email" | "role" | "accessLevel" | "status" | "dateAdded" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empId" | "firstName" | "lastName" | "mobile" | "email" | "role" | "accessLevel" | "status" | "dateAdded" | "updatedAt" | "linkedWeaverId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
   permissionOverrides?: boolean | Prisma.User$permissionOverridesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
@@ -2740,12 +2988,17 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   reportDownloads?: boolean | Prisma.User$reportDownloadsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
+}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  linkedWeaver?: boolean | Prisma.User$linkedWeaverArgs<ExtArgs>
+}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
+    linkedWeaver: Prisma.$WeaverPayload<ExtArgs> | null
     permissionOverrides: Prisma.$UserPermissionOverridePayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     actionLogs: Prisma.$ActionLogPayload<ExtArgs>[]
@@ -2773,6 +3026,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     status: $Enums.ActiveStatus
     dateAdded: Date
     updatedAt: Date
+    linkedWeaverId: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -3167,6 +3421,7 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  linkedWeaver<T extends Prisma.User$linkedWeaverArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$linkedWeaverArgs<ExtArgs>>): Prisma.Prisma__WeaverClient<runtime.Types.Result.GetResult<Prisma.$WeaverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   permissionOverrides<T extends Prisma.User$permissionOverridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$permissionOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPermissionOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   actionLogs<T extends Prisma.User$actionLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$actionLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ActionLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3221,6 +3476,7 @@ export interface UserFieldRefs {
   readonly status: Prisma.FieldRef<"User", 'ActiveStatus'>
   readonly dateAdded: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly linkedWeaverId: Prisma.FieldRef<"User", 'String'>
 }
     
 
@@ -3475,6 +3731,10 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -3545,6 +3805,10 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -3611,6 +3875,25 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Users to delete.
    */
   limit?: number
+}
+
+/**
+ * User.linkedWeaver
+ */
+export type User$linkedWeaverArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Weaver
+   */
+  select?: Prisma.WeaverSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Weaver
+   */
+  omit?: Prisma.WeaverOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WeaverInclude<ExtArgs> | null
+  where?: Prisma.WeaverWhereInput
 }
 
 /**

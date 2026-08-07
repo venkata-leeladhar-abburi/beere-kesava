@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import {
   Shield, Settings, ClipboardList, ChevronRight,
@@ -12,6 +13,7 @@ import { SAWeaverSection } from "./SAWeaverSection";
 import { Button } from "../../../../shared/ui/primitives";
 import { useDashboardMetrics } from "../beere-dashboard/hooks/useDashboardMetrics";
 import { useDashboardAnalytics } from "../beere-dashboard/hooks/useDashboardAnalytics";
+import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import {
   Users, Layers, IndianRupee as IcoIndianRupee, Truck, Clock,
 } from "lucide-react";
@@ -87,18 +89,23 @@ const SA_ICONS = [
 ];
 
 function SAMetricsBar() {
-  const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
-  const { pendingApprovalsCount, isLoading: analyticsLoading } = useDashboardAnalytics();
+  const { metrics, isLoading: metricsLoading, isError: metricsError } = useDashboardMetrics();
+  const { pendingApprovalsCount, isLoading: analyticsLoading, isError: analyticsError } = useDashboardAnalytics();
 
   const saMetrics = [
-    ...metrics.map((m, i) => ({ ...m, ico: SA_ICONS[i], val: metricsLoading ? "—" : m.val })),
+    ...metrics.map((m, i) => ({
+      ...m,
+      ico: SA_ICONS[i],
+      val: metricsError ? "Error" : metricsLoading ? "—" : m.val,
+      sub: metricsError ? "Failed to load" : m.sub,
+    })),
     {
       ico: <Clock size={22} color={T.warmCream} />,
       label: "Pending Approvals",
-      val: analyticsLoading ? "—" : String(pendingApprovalsCount),
-      sub: "Require review",
+      val: analyticsError ? "Error" : analyticsLoading ? "—" : String(pendingApprovalsCount),
+      sub: analyticsError ? "Failed to load" : "Require review",
       hi: false,
-      crimsonHi: pendingApprovalsCount > 0,
+      crimsonHi: !analyticsError && pendingApprovalsCount > 0,
     },
   ];
 
@@ -157,9 +164,10 @@ function SAAlertStrip() {
 }
 
 function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
+  const { pendingApprovalsCount } = useDashboardAnalytics();
   const actions = [
     { icon: <Settings size={22} color={T.antiqueGold} />, label: "Edit Rates & Pricing", sub: "Update making charge rates", nav: "Rates", color: T.antiqueGold, bg: "rgba(200,155,71,0.08)", border: "rgba(200,155,71,0.22)" },
-    { icon: <CheckCircle2 size={22} color={T.royalBurgundy} />, label: "Review Approvals", sub: "3 pending require action", nav: "Approvals", color: T.royalBurgundy, bg: "rgba(110,15,45,0.06)", border: T.borderDef, badge: "3" },
+    { icon: <CheckCircle2 size={22} color={T.royalBurgundy} />, label: "Review Approvals", sub: pendingApprovalsCount > 0 ? `${pendingApprovalsCount} pending require action` : "All caught up", nav: "Approvals", color: T.royalBurgundy, bg: "rgba(110,15,45,0.06)", border: T.borderDef, badge: pendingApprovalsCount > 0 ? String(pendingApprovalsCount) : undefined },
     { icon: <ClipboardList size={22} color={T.luxuryBrown} />, label: "View Audit Log", sub: "Full system activity trail", nav: "AuditLog", color: T.luxuryBrown, bg: "rgba(59,35,20,0.06)", border: "rgba(59,35,20,0.12)" },
     { icon: <Building2 size={22} color={T.green} />, label: "Manage Firms", sub: "Payments & vendor records", nav: "Payments", color: T.green, bg: "rgba(30,102,64,0.06)", border: "rgba(30,102,64,0.14)" },
   ];
@@ -210,11 +218,28 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
 // backend module — same documented gap as the Materials feature elsewhere
 // in this sweep. MATS below stays static mock data; do not invent numbers.
 function SARawMaterial() {
+  const { data: stockRes } = useQuery({
+    queryKey: ["raw-material-stock-list"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const stockItems = stockRes?.items ?? [];
+
+  const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+
+  const mats = MATS.map(m => {
+    if (m.name === "Warp") return { ...m, stock: `${warpStock} kg` };
+    if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg` };
+    if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns` };
+    return m;
+  });
+
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-        {MATS.map((m, i) => (
+        {mats.map((m, i) => (
           <motion.div key={m.name}
             initial={{ opacity: 0, scale: 0.88, y: 36, filter: "blur(8px)" }}
             whileInView={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
@@ -232,7 +257,7 @@ function SARawMaterial() {
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 24, color: T.luxuryBrown, letterSpacing: "-0.2px", lineHeight: 1.1, marginBottom: 3 }}>{m.name}</div>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, marginBottom: 20, letterSpacing: "0.1px" }}>{m.sub}</div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: m.accent, lineHeight: 1.0, marginBottom: 4, ...NUM }}>
-                <AnimatedNumber raw={m.stock.replace(" kg", "")} />{m.stock.includes("kg") ? " kg" : ""}
+                <AnimatedNumber raw={m.stock.replace(" kg", "").replace(" Buns", "")} />{m.stock.includes("kg") ? " kg" : m.stock.includes("Buns") ? " Buns" : ""}
               </div>
             </div>
           </motion.div>

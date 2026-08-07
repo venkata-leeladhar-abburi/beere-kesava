@@ -16,7 +16,7 @@ const ICONS = [
 ];
 
 export function MetricsBar() {
-  const { metrics, isLoading } = useDashboardMetrics();
+  const { metrics, isLoading, isError } = useDashboardMetrics();
 
   return (
     <motion.div
@@ -54,15 +54,17 @@ export function MetricsBar() {
                 {m.label}
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
-                {isLoading ? (
+                {isError ? (
+                  <span style={{ fontSize: 22, opacity: 0.85, color: "#e57373" }}>Error</span>
+                ) : isLoading ? (
                   <span style={{ fontSize: 28, opacity: 0.45 }}>—</span>
                 ) : (
                   <AnimatedNumber raw={m.val} />
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
-                  {m.sub}
+                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: isError ? "#e57373" : m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+                  {isError ? "Failed to load" : m.sub}
                 </span>
                 {m.hi && (
                   <motion.div

@@ -59,6 +59,8 @@ interface DesignLibraryContextValue {
   dispatches: DispatchRecord[];
   addDispatch: (d: Omit<DispatchRecord, "id" | "sentAt">) => DispatchRecord;
   getDispatchesForWeaver: (weaverId: string) => DispatchRecord[];
+  isError: boolean;
+  error: unknown;
 }
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
@@ -77,74 +79,7 @@ const INITIAL_DESIGNS: DesignEntry[] = [
   { code: "BKB-012", name: "Green Checks",              typeCode: "SB-001", typeName: "Self Brocade",   color: "Green",  desc: "Green with small gold checks throughout",                      weaverName: "",             notesForWeaver: "",                                                 colorSlipPhoto: null,        designGraph: null,     batches: 0, total: 220, hasColorSlip: false, hasGraph: false },
 ];
 
-const INITIAL_DISPATCHES: DispatchRecord[] = [
-  {
-    id: "DISP-001",
-    recipientType: "weaver",
-    recipientId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7",
-    recipientName: "Padma Veni",
-    batches: ["BATCH-086"],
-    instructions: "Maintain light warp tension in the borders. Ensure Resham thread transition is smooth in pallu section.",
-    colorSlipImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    designGraphImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    sentAt: "15 Jul 2026, 09:30 AM",
-  },
-  {
-    id: "DISP-002",
-    recipientType: "loom",
-    recipientId: "Loom 3",
-    recipientName: "Loom 3",
-    batches: ["BATCH-OWN"],
-    instructions: "Run at standard speed. Check for any zari threads snapping before finalizing the border weave.",
-    colorSlipImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-    designGraphImage: null,
-    sentAt: "14 Jul 2026, 04:15 PM",
-  },
-  {
-    id: "DISP-005",
-    recipientType: "loom",
-    recipientId: "Loom F-01",
-    recipientName: "Loom F-01",
-    batches: ["BATCH-090"],
-    instructions: "Keep the pallu motif centred — this run is for general stock, so match the BKB-045 reference slip exactly.",
-    colorSlipImage: "https://images.unsplash.com/photo-1542044211-723ee4dada2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    designGraphImage: null,
-    sentAt: "24 Jun 2026, 10:05 AM",
-  },
-  {
-    id: "DISP-006",
-    recipientType: "loom",
-    recipientId: "Loom F-01",
-    recipientName: "Loom F-01",
-    batches: ["BATCH-088"],
-    instructions: "Heavy Zari piece in this batch needs a 6cm border. Other two stay on the standard Self Brocade setting.",
-    colorSlipImage: "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    designGraphImage: "https://images.unsplash.com/photo-1643766882273-335aae5a9309?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    sentAt: "20 Jun 2026, 09:20 AM",
-  },
-  {
-    id: "DISP-003",
-    recipientType: "weaver",
-    recipientId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
-    recipientName: "Ravi Kumar",
-    batches: ["BATCH-094"],
-    instructions: "Keep border width consistent at 5cm. Lotus motif on pallu only — double-check alignment before starting each saree.",
-    colorSlipImage: "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    designGraphImage: null,
-    sentAt: "01 Jul 2026, 08:45 AM",
-  },
-  {
-    id: "DISP-004",
-    recipientType: "weaver",
-    recipientId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a",
-    recipientName: "Ravi Kumar",
-    batches: ["BATCH-078"],
-    instructions: "Check spacing: 2cm x 2cm throughout body. Keep zari check pattern even across all four sarees.",
-    colorSlipImage: "https://images.unsplash.com/photo-1643766882273-335aae5a9309?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
-    designGraphImage: null,
-    sentAt: "10 May 2026, 09:10 AM",
-  },
-];
+const INITIAL_DISPATCHES: DispatchRecord[] = [];
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const DesignLibraryContext = createContext<DesignLibraryContextValue | null>(null);
@@ -155,7 +90,7 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: designs = [] } = useQuery({
+  const { data: designs = [], isError, error } = useQuery({
     queryKey: DESIGNS_KEY,
     queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
   });
@@ -239,7 +174,7 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   );
 
   return (
-    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver }}>
+    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error }}>
       {children}
     </DesignLibraryContext.Provider>
   );

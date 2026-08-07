@@ -1,13 +1,15 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { AdminOnly, RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreatePurchaseRequestDto } from "./dto/create-purchase-request.dto";
 import { DecidePurchaseRequestDto } from "./dto/decide-purchase-request.dto";
 import { ListPurchaseRequestsQueryDto } from "./dto/list-purchase-requests-query.dto";
 import { PurchaseRequestsService } from "./purchase-requests.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts. decide should require
-// "procurement.purchase_requests.decide" once auth exists.
+// Procurement/financial module — ACCOUNTANT access for create/list; decide
+// (approve/reject) is an admin-level sign-off.
 @Controller("purchase-requests")
+@RequireRoles(UserRole.ACCOUNTANT)
 export class PurchaseRequestsController {
   constructor(private readonly purchaseRequestsService: PurchaseRequestsService) {}
 
@@ -27,6 +29,7 @@ export class PurchaseRequestsController {
   }
 
   @Post(":id/decide")
+  @AdminOnly()
   decide(@Param("id") id: string, @Body() dto: DecidePurchaseRequestDto) {
     return this.purchaseRequestsService.decide(id, dto);
   }

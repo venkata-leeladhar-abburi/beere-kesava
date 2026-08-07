@@ -16,7 +16,7 @@ import { OutstandingCard, BillStatusEntry } from "./analytics/OutstandingCard";
 import { RatingCard, PaymentModeCard, SettlementHealthCard } from "./analytics/RatingAndModeCards";
 
 export function SupplierAnalytics() {
-  const { suppliers, purchases, payments } = useSuppliers();
+  const { suppliers, purchases, payments, isError } = useSuppliers();
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const buys = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
@@ -176,7 +176,13 @@ export function SupplierAnalytics() {
         </div>
       </FadeUp>
 
-      {buys.length === 0 ? (
+      {isError ? (
+        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+          <Building2 size={40} color={T.crimson} style={{ marginBottom: 12 }} />
+          <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>Failed to load supplier analytics.</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
+        </div>
+      ) : buys.length === 0 ? (
         <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
           <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No supplier purchases recorded in this period.</div>

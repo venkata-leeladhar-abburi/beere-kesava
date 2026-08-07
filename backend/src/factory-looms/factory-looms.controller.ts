@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateFactoryLoomDto } from "./dto/create-factory-loom.dto";
 import { ListFactoryLoomsQueryDto } from "./dto/list-factory-looms-query.dto";
 import { UpdateFactoryLoomDto } from "./dto/update-factory-loom.dto";
 import { FactoryLoomsService } from "./factory-looms.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Production/operational module — WORKER access only.
 @Controller("factory-looms")
+@RequireRoles(UserRole.WORKER)
 export class FactoryLoomsController {
   constructor(private readonly factoryLoomsService: FactoryLoomsService) {}
 

@@ -4,35 +4,66 @@ import { IndianRupee, TrendingDown, CheckCircle2, Users, BarChart2 } from "lucid
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, TH, TD } from "../common/primitives";
 
-// MOCK: no backend endpoint aggregates weaver making-charges by month, and
-// GET /payments/weavers carries no deduction *reason* (advance vs defective
-// saree) — only a single numeric `deduction` per payment. Both charts below
-// stay on static demo data; everything else on this page (summary cards +
-// table) is computed live from GET /weavers + GET /payments/weavers.
-const weaverPayMonthly = [
-  { month: "Dec", amt: 380000 },
-  { month: "Jan", amt: 395000 },
-  { month: "Feb", amt: 410000 },
-  { month: "Mar", amt: 400000 },
-  { month: "Apr", amt: 405000 },
-  { month: "May", amt: 420000 },
-];
-const deductionDonut = [
-  { name: "No Deductions",         value: 65, color: T.green },
-  { name: "Advance Deductions",    value: 17, color: T.antiqueGold },
-  { name: "Defective Sarees",      value: 2,  color: T.crimson },
-];
-
 export function WeaverPaymentReport() {
   const { payments } = useWeaverPayments();
-  const { data: weaversRes, isLoading, isError } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError } = useQuery({
     queryKey: ["reports", "weavers-roster"],
     queryFn: () => weaversApi.list(),
   });
+  const { data: qcRes } = useQuery({
+    queryKey: ["reports", "qc-deductions"],
+    queryFn: () => qcApi.list(200),
+  });
+
   const weavers = weaversRes?.items ?? [];
+  const qcItems = qcRes?.items ?? [];
+
+  // Monthly making charges calculated dynamically from live payments
+  const weaverPayMonthly = useMemo(() => {
+    const monthlyMap: Record<string, number> = {};
+    for (const p of payments) {
+      const d = new Date(p.paymentDate || p.uploadedAt);
+      if (isNaN(d.getTime())) continue;
+      const monthLabel = d.toLocaleString("en-US", { month: "short" });
+      monthlyMap[monthLabel] = (monthlyMap[monthLabel] || 0) + (p.amountPaid + (p.deduction || 0));
+    }
+
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const activeMonths = months.filter(m => monthlyMap[m] !== undefined);
+    
+    // Fallback if no payment dates or only current month
+    if (activeMonths.length === 0) return [];
+    return activeMonths.map(m => ({ month: m, amt: monthlyMap[m] || 0 }));
+  }, [payments]);
+
+  // Deduction breakdown dynamically calculated from real QC records & payments
+  const deductionBreakdown = useMemo(() => {
+    let noDeductionCount = 0;
+    let qcDeductionCount = 0;
+    let otherDeductionCount = 0;
+
+    for (const p of payments) {
+      if (!p.deduction || p.deduction === 0) {
+        noDeductionCount++;
+      } else {
+        // check if weaver has defective / semi QC records
+        const hasQcDefect = qcItems.some(q => q.weaverId === p.weaverId && (q.result === "DEFECTIVE" || q.result === "SEMI"));
+        if (hasQcDefect) qcDeductionCount++;
+        else otherDeductionCount++;
+      }
+    }
+
+    const total = payments.length || 1;
+    return [
+      { name: "No Deductions", value: noDeductionCount, color: T.green },
+      { name: "Advance / Other Deductions", value: otherDeductionCount, color: T.antiqueGold },
+      { name: "Defective Sarees (QC)", value: qcDeductionCount, color: T.crimson },
+    ].filter(d => d.value > 0);
+  }, [payments, qcItems]);
 
   const weaverPayRows = useMemo(() => {
     const byWeaver = new Map<string, typeof payments>();
@@ -67,52 +98,64 @@ export function WeaverPaymentReport() {
       <ReportDLBar />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
-        <ChartCard title="Total Making Charges Paid Each Month" sub="Last 6 months — gold bars" icon={<IndianRupee size={22} color={T.antiqueGold} />}>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weaverPayMonthly}>
-              <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(1)}L`} width={44} />
-              <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
-              <Bar key="wp-amt" dataKey="amt" name="Making Charges">
-                {weaverPayMonthly.map((e, i) => (
-                  <Cell key={`wp-cell-${e.month}`} fill={e.month === "May" ? T.antiqueGold : "rgba(200,155,71,0.40)"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <ChartCard title="Total Making Charges Paid Each Month" sub="Monthly breakdown from live payments" icon={<IndianRupee size={22} color={T.antiqueGold} />}>
+          {weaverPayMonthly.length === 0 ? (
+            <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No payments recorded yet.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={weaverPayMonthly}>
+                <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
+                <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
+                <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
+                <Bar key="wp-amt" dataKey="amt" name="Making Charges">
+                  {weaverPayMonthly.map((e, i) => (
+                    <Cell key={`wp-cell-${e.month}`} fill={i === weaverPayMonthly.length - 1 ? T.antiqueGold : "rgba(200,155,71,0.40)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </ChartCard>
 
-        <ChartCard title="What Caused Deductions This Period" sub="May 2026 deduction breakdown" icon={<TrendingDown size={22} color={T.crimson} />}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <PieChart width={160} height={160}>
-                <Pie key="ded-pie" data={deductionDonut} cx="50%" cy="50%" innerRadius={48} outerRadius={68} dataKey="value" stroke="none" paddingAngle={3}>
-                  {deductionDonut.map(e => <Cell key={`ded-cell-${e.name}`} fill={e.color} />)}
-                </Pie>
-                <Tooltip key="ded-tip" formatter={(v: any, n: any) => [`${v} weavers`, n]}
-                  contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
-              </PieChart>
-              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.crimson }}>₹18,400</div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
+        <ChartCard title="What Caused Deductions This Period" sub="Live deduction breakdown" icon={<TrendingDown size={22} color={T.crimson} />}>
+          {payments.length === 0 ? (
+            <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No payments recorded yet.
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <PieChart width={160} height={160}>
+                  <Pie key="ded-pie" data={deductionBreakdown} cx="50%" cy="50%" innerRadius={48} outerRadius={68} dataKey="value" stroke="none" paddingAngle={3}>
+                    {deductionBreakdown.map(e => <Cell key={`ded-cell-${e.name}`} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip key="ded-tip" formatter={(v: any, n: any) => [`${v} payments`, n]}
+                    contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                </PieChart>
+                <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{totalDeductions.toLocaleString("en-IN")}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>TOTAL DEDUCTIONS</div>
+                </div>
+              </div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+                {deductionBreakdown.map(d => (
+                  <div key={d.name}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
+                      </div>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
+                    </div>
+                    <AnimBar pct={Math.round((d.value / (payments.length || 1)) * 100)} color={d.color} height={5} />
+                  </div>
+                ))}
               </div>
             </div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-              {deductionDonut.map(d => (
-                <div key={d.name}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{d.name}</span>
-                    </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: d.color }}>{d.value}</span>
-                  </div>
-                  <AnimBar pct={Math.round((d.value / 84) * 100)} color={d.color} height={5} />
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </ChartCard>
       </div>
 
@@ -144,16 +187,16 @@ export function WeaverPaymentReport() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading && (
+                {weaversLoading && (
                   <tr><td style={TD} colSpan={7}>Loading…</td></tr>
                 )}
-                {isError && (
+                {weaversError && (
                   <tr><td style={{ ...TD, color: T.crimson }} colSpan={7}>Failed to load the weaver roster.</td></tr>
                 )}
-                {!isLoading && !isError && weaverPayRows.length === 0 && (
+                {!weaversLoading && !weaversError && weaverPayRows.length === 0 && (
                   <tr><td style={TD} colSpan={7}>No weavers on record yet.</td></tr>
                 )}
-                {weaverPayRows.map((r, i) => {
+                {!weaversLoading && !weaversError && weaverPayRows.map((r, i) => {
                   const latest = r.latest;
                   const amountPaid = latest?.amountPaid;
                   const utr = latest?.utrNumber || "—";
@@ -180,4 +223,3 @@ export function WeaverPaymentReport() {
     </div>
   );
 }
-

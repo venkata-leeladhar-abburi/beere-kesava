@@ -59,7 +59,7 @@ export interface VendorPayment {
   id: string; vendor: string; poNumber: string;
   invoiceAmt: number; paidAmt: number;
   dueDate: string; status: VendorStatus; daysOverdue?: number;
-  utr?: string;
+  utr?: string; vendorId?: string;
 }
 
 // ── Vendor payment Excel upload types ─────────────────────────────────────────

@@ -1,13 +1,15 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { CreateDesignDto } from "./dto/create-design.dto";
 import { DispatchDesignDto } from "./dto/dispatch-design.dto";
 import { ListDesignsQueryDto } from "./dto/list-designs-query.dto";
 import { UpdateDesignDto } from "./dto/update-design.dto";
 import { DesignLibraryService } from "./design-library.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Production/operational module — WORKER access only.
 @Controller("design-library")
+@RequireRoles(UserRole.WORKER)
 export class DesignLibraryController {
   constructor(private readonly designLibraryService: DesignLibraryService) {}
 

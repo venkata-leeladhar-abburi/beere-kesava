@@ -1,7 +1,9 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { ApprovalsModule } from "./approvals/approvals.module";
 import { AppController } from "./app.controller";
 import { AuditLogModule } from "./audit-log/audit-log.module";
@@ -33,6 +35,7 @@ import { ReportsModule } from "./reports/reports.module";
 import { SalesModule } from "./sales/sales.module";
 import { ScanModule } from "./scan/scan.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
+import { UploadsModule } from "./uploads/uploads.module";
 import { UsersModule } from "./users/users.module";
 import { WeaversModule } from "./weavers/weavers.module";
 import { VendorsModule } from "./vendors/vendors.module";
@@ -40,6 +43,7 @@ import { RawMaterialsModule } from "./raw-materials/raw-materials.module";
 import { WarpRequestsModule } from "./warp-requests/warp-requests.module";
 import { RateRequestsModule } from "./rate-requests/rate-requests.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
+import { VendorBillsModule } from "./vendor-bills/vendor-bills.module";
 
 import { AuthModule } from "./auth/auth.module";
 
@@ -51,6 +55,13 @@ import { AuthModule } from "./auth/auth.module";
       validate: validateEnv,
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        name: "default",
+        ttl: 60_000,
+        limit: 20,
+      },
+    ]),
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -61,6 +72,7 @@ import { AuthModule } from "./auth/auth.module";
     IdGeneratorModule,
     UsersModule,
     WeaversModule,
+    UploadsModule,
     SuppliersModule,
     VendorsModule,
     DesignLibraryModule,
@@ -88,6 +100,7 @@ import { AuthModule } from "./auth/auth.module";
     FirmsModule,
     ReportsModule,
     PaymentsModule,
+    VendorBillsModule,
     FinanceJobsModule,
     NotificationsModule,
     LabelsModule,
@@ -95,5 +108,11 @@ import { AuthModule } from "./auth/auth.module";
     AuditLogModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

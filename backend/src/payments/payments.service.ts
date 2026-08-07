@@ -4,6 +4,7 @@ import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
 import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
@@ -27,6 +28,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly vendorBillsService: VendorBillsService,
   ) {}
 
   async createWeaverPayment(dto: CreateWeaverPaymentDto) {
@@ -133,6 +135,19 @@ export class PaymentsService {
     if (!vendor) {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
+
+    if (dto.billId) {
+      // Validates existence and vendor ownership up front so a payment is
+      // never recorded against a bill that doesn't belong to this vendor.
+      const bill = await this.prisma.vendorBill.findUnique({ where: { id: dto.billId } });
+      if (!bill) {
+        throw new NotFoundException(`Vendor bill ${dto.billId} not found`);
+      }
+      if (bill.vendorId !== dto.vendorId) {
+        throw new NotFoundException(`Vendor bill ${dto.billId} does not belong to this vendor`);
+      }
+    }
+
     const payment = await this.prisma.vendorPayment.create({
       data: {
         vendorId: dto.vendorId,
@@ -141,13 +156,20 @@ export class PaymentsService {
         utr: dto.utr,
         method: dto.method,
         firmId: dto.firmId,
+        billId: dto.billId,
       },
     });
+
+    if (dto.billId) {
+      await this.vendorBillsService.recomputeStatus(dto.billId);
+    }
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "PAYMENTS",
-      action: `Recorded payment of ${dto.amount} to vendor ${vendor.name}`,
+      action: dto.billId
+        ? `Recorded payment of ${dto.amount} to vendor ${vendor.name} against bill ${dto.billId}`
+        : `Recorded payment of ${dto.amount} to vendor ${vendor.name}`,
       entityType: "VendorPayment",
       entityId: payment.id,
       recordLabel: vendor.name,

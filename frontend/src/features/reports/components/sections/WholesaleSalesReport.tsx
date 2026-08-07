@@ -1,31 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ReceiptText, Banknote, CheckCircle2, BellRing } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
 
-// MOCK: no backend endpoint aggregates wholesale revenue by calendar month
-// or by week — GET /bulk-orders returns the current snapshot of each order
-// (amountDue/amountPaid/dueDate) with no historical monthly rollup. This
-// trend chart stays on static demo data; the outstanding-by-customer bar,
-// invoice-status donut, summary cards, and table below are all computed
-// live from useBulkOrders (GET /bulk-orders).
-const wsMonthlyRev = [
-  { month: "Dec", rev: 2100000 },
-  { month: "Jan", rev: 2350000 },
-  { month: "Feb", rev: 2600000 },
-  { month: "Mar", rev: 2450000 },
-  { month: "Apr", rev: 2680000 },
-  { month: "May", rev: 2840000 },
-];
-// Same gap as above — no weekly dispatch-count aggregation on the backend.
-const wholesaleWeeklyData = [
-  { week: "Week 1", sarees: 20, revenue: 900000 },
-  { week: "Week 2", sarees: 12, revenue: 600000 },
-  { week: "Week 3", sarees: 8,  revenue: 280000 },
-  { week: "Week 4", sarees: 18, revenue: 1060000 },
-];
 function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
@@ -39,7 +18,64 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
 }
 
 export function WholesaleSalesReport() {
-  const { bulkOrders } = useBulkOrders();
+  const { bulkOrders, isError } = useBulkOrders();
+
+  // Dynamic calculation for wholesale weekly breakdown
+  const wholesaleWeeklyData = useMemo(() => {
+    const weeks = [
+      { week: "Week 1", from: 1, to: 7 },
+      { week: "Week 2", from: 8, to: 15 },
+      { week: "Week 3", from: 16, to: 22 },
+      { week: "Week 4", from: 23, to: 31 },
+    ];
+
+    return weeks.map(w => {
+      let sarees = 0;
+      let revenue = 0;
+
+      for (const order of bulkOrders) {
+        const d = new Date(order.createdDate);
+        if (!isNaN(d.getTime())) {
+          const day = d.getDate();
+          if (day >= w.from && day <= w.to) {
+            sarees += order.done || order.total || 0;
+            revenue += order.amountDue || 0;
+          }
+        }
+      }
+
+      return { week: w.week, sarees, revenue };
+    });
+  }, [bulkOrders]);
+
+  // Dynamic calculation for wholesale monthly revenue (last 6 months)
+  const wsMonthlyRev = useMemo(() => {
+    const monthsMap: Record<string, number> = {};
+    const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    for (const order of bulkOrders) {
+      const d = new Date(order.createdDate);
+      if (!isNaN(d.getTime())) {
+        const mLabel = d.toLocaleString("en-US", { month: "short" });
+        monthsMap[mLabel] = (monthsMap[mLabel] || 0) + (order.amountDue || 0);
+      }
+    }
+
+    const activeMonths = monthsOrder.filter(m => monthsMap[m] !== undefined);
+    if (activeMonths.length === 0) return [];
+    return activeMonths.map(m => ({ month: m, rev: monthsMap[m] || 0 }));
+  }, [bulkOrders]);
+
+  if (isError) {
+    return (
+      <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
+        <TabTitle title="Wholesale Sales Report" sub="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer." />
+        <div style={{ padding: "24px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", color: T.crimson, fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>
+          Failed to load wholesale sales data. Please try again.
+        </div>
+      </div>
+    );
+  }
 
   const maxOutstanding = Math.max(1, ...bulkOrders.map(o => (o.amountDue ?? 0) - (o.amountPaid ?? 0)));
   const wsOutstanding = bulkOrders.map(o => {
@@ -63,13 +99,13 @@ export function WholesaleSalesReport() {
         sub="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer." />
       <ReportDLBar />
 
-      {/* Weekly sarees dispatched — summary strip + bar chart (same pattern as Retail) */}
+      {/* Weekly sarees dispatched — summary strip + bar chart */}
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>Wholesale Sarees Dispatched Each Week</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>May 2026 — weekly breakdown</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Current Month — weekly breakdown</div>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
@@ -95,18 +131,24 @@ export function WholesaleSalesReport() {
       </FadeUp>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
-        <ChartCard title="Wholesale Revenue — Last 6 Months" sub="Monthly invoiced amount">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={wsMonthlyRev}>
-              <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} width={42} />
-              <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
-              <Bar key="ws-rev" dataKey="rev" name="Revenue">
-                {wsMonthlyRev.map(e => <Cell key={`ws-cell-${e.month}`} fill={e.month === "May" ? T.antiqueGold : "rgba(200,155,71,0.38)"} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <ChartCard title="Wholesale Revenue — Last Months" sub="Monthly invoiced amount">
+          {wsMonthlyRev.length === 0 ? (
+            <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              No wholesale orders recorded yet.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={wsMonthlyRev}>
+                <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
+                <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
+                <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
+                <Bar key="ws-rev" dataKey="rev" name="Revenue">
+                  {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? T.antiqueGold : "rgba(200,155,71,0.38)"} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </ChartCard>
 
         <ChartCard title="How Much Each Customer Still Owes" sub="Outstanding balance per customer">
@@ -128,7 +170,7 @@ export function WholesaleSalesReport() {
 
         <ChartCard title="Invoice Status — All Bulk Orders" sub="Live payment status breakdown">
           {wsInvStatus.length === 0 ? (
-            <div style={{ padding: "20px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
+            <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
           ) : (
           <>
           <ResponsiveContainer width="100%" height={150}>
@@ -176,6 +218,9 @@ export function WholesaleSalesReport() {
                 </tr>
               </thead>
               <tbody>
+                {bulkOrders.length === 0 && (
+                  <tr><td style={TD} colSpan={8}>No bulk orders recorded yet.</td></tr>
+                )}
                 {bulkOrders.map((o, i) => {
                   const invoiceAmt = o.amountDue ?? 0;
                   const collected = o.amountPaid ?? 0;
@@ -205,4 +250,3 @@ export function WholesaleSalesReport() {
     </div>
   );
 }
-

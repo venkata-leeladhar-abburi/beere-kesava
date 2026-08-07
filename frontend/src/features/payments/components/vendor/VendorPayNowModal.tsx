@@ -6,6 +6,7 @@ import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
 import { EASE, F, T, useFirms } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
@@ -18,15 +19,33 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
-    if (!amount || !utr || !firmId) return;
+  const handleSave = async () => {
+    const numericAmount = parseFloat(amount);
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0 || !utr || !firmId) return;
     setSaving(true);
-    setTimeout(() => {
-      onSave(parseFloat(amount), firmId, utr);
+    setSaveError(null);
+    const targetVendorId = vp.vendorId || vp.id;
+    try {
+      if (targetVendorId) {
+        await vendorPaymentsApi.create({
+          vendorId: targetVendorId,
+          amount: numericAmount,
+          utr: utr.trim() || undefined,
+          method: method.trim() || undefined,
+          firmId: firmId.trim() || undefined,
+          date: date || undefined,
+        });
+      }
+      onSave(numericAmount, firmId, utr);
+    } catch (err) {
+      console.error("Failed to record vendor payment:", err);
+      setSaveError(err instanceof Error ? err.message : "Failed to record payment. Please try again.");
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   return (
@@ -119,6 +138,11 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         </div>
 
+        {saveError && (
+          <div style={{ margin: "0 28px", padding: "10px 14px", borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 600 }}>
+            {saveError}
+          </div>
+        )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}` }}>
           <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">

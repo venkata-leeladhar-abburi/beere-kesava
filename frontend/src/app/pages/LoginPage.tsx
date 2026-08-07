@@ -13,7 +13,6 @@ export function LoginPage() {
   return (
     <LoginPageComponent
       onLogin={() => {
-        login("");
         navigate("/select-role");
       }}
     />

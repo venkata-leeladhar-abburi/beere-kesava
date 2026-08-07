@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, Matches } from "class-validator";
+import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Length, Matches, Min } from "class-validator";
 import { AccessLevel, UserRole } from "../../generated/prisma/client";
 
 export class CreateUserDto {
@@ -24,4 +24,38 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(AccessLevel)
   accessLevel?: AccessLevel;
+
+  // Only used when role === WEAVER — populates the linked Weaver record
+  // created alongside this User (see users.service.ts's create()). Ignored
+  // for every other role.
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  village?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  cluster?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  looms?: number;
+
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNo?: string;
+
+  @IsOptional()
+  @IsString()
+  ifsc?: string;
 }

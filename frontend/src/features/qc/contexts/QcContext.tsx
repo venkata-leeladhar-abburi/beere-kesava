@@ -126,6 +126,8 @@ interface QcContextValue {
   getQcForSaree: (sareeId: string) => QcRecord | undefined;
   getQcForWeaver: (weaverId: string) => QcRecord[];
   getQcForLoom: (factoryLoomId: string) => QcRecord[];
+  isError: boolean;
+  error: unknown;
 }
 
 const QcContext = createContext<QcContextValue | null>(null);
@@ -166,7 +168,7 @@ function backendRecordToFrontend(
 export function QcProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: qcRecords = [] } = useQuery({
+  const { data: qcRecords = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [qcRes, weaversRes, loomsRes, batchesRes] = await Promise.all([
@@ -226,7 +228,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom }}>
+    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error }}>
       {children}
     </QcContext.Provider>
   );
@@ -238,6 +240,8 @@ const FALLBACK: QcContextValue = {
   getQcForSaree: () => undefined,
   getQcForWeaver: () => [],
   getQcForLoom: () => [],
+  isError: false,
+  error: null,
 };
 
 export function useQc(): QcContextValue {

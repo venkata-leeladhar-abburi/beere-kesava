@@ -69,6 +69,9 @@ interface SupplierContextValue {
     sareeCount: number;
     lastPurchaseDate: string;
   };
+
+  isError: boolean;
+  error: unknown;
 }
 
 const SupplierContext = createContext<SupplierContextValue | null>(null);
@@ -106,14 +109,14 @@ function toPurchaseRequest(r: BackendPurchaseRequest, supplierName: string): Pur
 export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
 
-  const { data: suppliers = [] } = useQuery({
+  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
   });
   const { data: purchases = SEED_PURCHASES } = useQuery({
     queryKey: PURCHASES_KEY, queryFn: () => Promise.resolve(SEED_PURCHASES), initialData: SEED_PURCHASES,
   });
-  const { data: payments = [] } = useQuery({
+  const { data: payments = [], isError: isPaymentsError, error: paymentsError } = useQuery({
     queryKey: PAYMENTS_KEY,
     queryFn: async () => {
       const res = await supplierPaymentsApi.list();
@@ -127,10 +130,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       }));
     },
   });
-  const { data: rawRequests = [] } = useQuery({
+  const { data: rawRequests = [], isError: isRequestsError, error: requestsError } = useQuery({
     queryKey: REQUESTS_KEY,
     queryFn: async () => (await purchaseRequestsApi.list()).items,
   });
+
+  const isError = isSuppliersError || isPaymentsError || isRequestsError;
+  const error = suppliersError ?? paymentsError ?? requestsError ?? null;
   const requests = rawRequests.map((r) =>
     toPurchaseRequest(r, suppliers.find((s) => s.id === r.supplierId)?.name ?? "")
   );
@@ -299,6 +305,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     addSupplier, updateSupplier, getSupplier, nextSupplierId,
     addPurchase, updatePurchase, deletePurchase,
     addPayment, raiseRequest, decideRequest, statsFor,
+    isError, error,
   };
 
   return <SupplierContext.Provider value={value}>{children}</SupplierContext.Provider>;

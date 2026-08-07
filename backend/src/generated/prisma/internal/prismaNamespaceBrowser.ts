@@ -82,6 +82,8 @@ export const ModelName = {
   Vendor: 'Vendor',
   Purchase: 'Purchase',
   PurchaseOrder: 'PurchaseOrder',
+  VendorBill: 'VendorBill',
+  PurchaseOrderItem: 'PurchaseOrderItem',
   PurchaseRequest: 'PurchaseRequest',
   Firm: 'Firm',
   FirmFinancialEntry: 'FirmFinancialEntry',
@@ -167,7 +169,8 @@ export const UserScalarFieldEnum = {
   accessLevel: 'accessLevel',
   status: 'status',
   dateAdded: 'dateAdded',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  linkedWeaverId: 'linkedWeaverId'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -188,6 +191,7 @@ export type OtpCodeScalarFieldEnum = (typeof OtpCodeScalarFieldEnum)[keyof typeo
 
 export const WeaverScalarFieldEnum = {
   id: 'id',
+  code: 'code',
   name: 'name',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -614,11 +618,41 @@ export const PurchaseOrderScalarFieldEnum = {
   urgency: 'urgency',
   status: 'status',
   grnId: 'grnId',
+  grnReceiptId: 'grnReceiptId',
+  actualReceivedDate: 'actualReceivedDate',
   rejectionReason: 'rejectionReason',
   createdAt: 'createdAt'
 } as const
 
 export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]
+
+
+export const VendorBillScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  poId: 'poId',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  status: 'status',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type VendorBillScalarFieldEnum = (typeof VendorBillScalarFieldEnum)[keyof typeof VendorBillScalarFieldEnum]
+
+
+export const PurchaseOrderItemScalarFieldEnum = {
+  id: 'id',
+  purchaseOrderId: 'purchaseOrderId',
+  materialType: 'materialType',
+  name: 'name',
+  quantity: 'quantity',
+  unit: 'unit',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice'
+} as const
+
+export type PurchaseOrderItemScalarFieldEnum = (typeof PurchaseOrderItemScalarFieldEnum)[keyof typeof PurchaseOrderItemScalarFieldEnum]
 
 
 export const PurchaseRequestScalarFieldEnum = {
@@ -695,7 +729,8 @@ export const VendorPaymentScalarFieldEnum = {
   date: 'date',
   utr: 'utr',
   method: 'method',
-  firmId: 'firmId'
+  firmId: 'firmId',
+  billId: 'billId'
 } as const
 
 export type VendorPaymentScalarFieldEnum = (typeof VendorPaymentScalarFieldEnum)[keyof typeof VendorPaymentScalarFieldEnum]
@@ -831,6 +866,7 @@ export type RawMaterialStockScalarFieldEnum = (typeof RawMaterialStockScalarFiel
 export const GrnReceiptScalarFieldEnum = {
   id: 'id',
   vendorId: 'vendorId',
+  firmId: 'firmId',
   supplierName: 'supplierName',
   invoiceNo: 'invoiceNo',
   invoiceDate: 'invoiceDate',
@@ -852,7 +888,8 @@ export const GrnItemScalarFieldEnum = {
   quantity: 'quantity',
   unit: 'unit',
   unitPrice: 'unitPrice',
-  totalPrice: 'totalPrice'
+  totalPrice: 'totalPrice',
+  rejectedQuantity: 'rejectedQuantity'
 } as const
 
 export type GrnItemScalarFieldEnum = (typeof GrnItemScalarFieldEnum)[keyof typeof GrnItemScalarFieldEnum]

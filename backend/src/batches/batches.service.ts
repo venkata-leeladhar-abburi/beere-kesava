@@ -49,10 +49,18 @@ export class BatchesService {
     return batch;
   }
 
+  // `weaverId` is passed by the controller only when the caller's role is
+  // WEAVER, forcing results down to batches that have at least one row
+  // assigned to that weaver — a WEAVER token must never see other weavers'
+  // batch data.
   async findAll(
     query: ListBatchesQueryDto,
+    weaverId?: string,
   ): Promise<PaginatedResult<Prisma.BatchGetPayload<{ include: { rows: true } }>>> {
-    const where: Prisma.BatchWhereInput = { status: query.status };
+    const where: Prisma.BatchWhereInput = {
+      status: query.status,
+      ...(weaverId ? { rows: { some: { weaverId } } } : {}),
+    };
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.batch.findMany({
@@ -68,12 +76,17 @@ export class BatchesService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, weaverId?: string) {
     const batch = await this.prisma.batch.findUnique({
       where: { id },
       include: { rows: { orderBy: { serial: "asc" } } },
     });
     if (!batch) {
+      throw new NotFoundException(`Batch ${id} not found`);
+    }
+    if (weaverId && !batch.rows.some((row) => row.weaverId === weaverId)) {
+      // A WEAVER token requested a batch with no rows of theirs in it —
+      // treat it the same as not found rather than leaking its existence.
       throw new NotFoundException(`Batch ${id} not found`);
     }
     return batch;

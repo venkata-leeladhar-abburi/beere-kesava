@@ -152,7 +152,7 @@ function backendQuotationToFrontend(
 export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
 
-  const { data: readySarees = [] } = useQuery({
+  const { data: readySarees = [], isError: isReadyError, error: readyError } = useQuery({
     queryKey: READY_KEY,
     queryFn: async () => {
       const records = await qcApi.readyForFinishing();
@@ -169,15 +169,15 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       }));
     },
   });
-  const { data: backendAssignments = [] } = useQuery({
+  const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError } = useQuery({
     queryKey: ASSIGNMENTS_KEY,
     queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
-  const { data: dispatches = [] } = useQuery({
+  const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError } = useQuery({
     queryKey: DISPATCHES_KEY,
     queryFn: async () => (await dispatchApi.list()).items.map(backendDispatchToFrontend),
   });
-  const { data: quotations = [] } = useQuery({
+  const { data: quotations = [], isError: isQuotationsError, error: quotationsError } = useQuery({
     queryKey: QUOTATIONS_KEY,
     queryFn: async () => {
       const [quotationsRes, batchesRes, weaversRes] = await Promise.all([
@@ -192,6 +192,9 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       return quotationsRes.items.map(q => backendQuotationToFrontend(q, rowLookup, weaverLookup));
     },
   });
+  const isError = isReadyError || isAssignmentsError || isDispatchesError || isQuotationsError;
+  const error = readyError ?? assignmentsError ?? dispatchesError ?? quotationsError ?? null;
+
   const assignments = useMemo(
     () => backendAssignments.map(backendAssignmentToFrontend),
     [backendAssignments],
@@ -385,7 +388,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const markQuotationDispatched = (quotationId: string, _dispatchId: string) => markQuotationDispatchedMutation.mutate(quotationId);
 
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched }}>
+    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error }}>
       {children}
     </FinishingContext.Provider>
   );
