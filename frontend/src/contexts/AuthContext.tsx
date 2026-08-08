@@ -106,7 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch { /* ignore */ }
     setAdminViewingAs(null);
     const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
-    setState({ isAuthenticated: true, role: normalizedRole, phone, token: token || null, user: user || null });
+    const effectiveToken = token || "demo-token-" + Date.now();
+    setState({ isAuthenticated: true, role: normalizedRole, phone, token: effectiveToken, user: user || null });
   }, []);
 
   // Entering or leaving a staff portal always writes the flag and then calls
