@@ -32,6 +32,7 @@ function TabLoadingFallback() {
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../lib/icon";
+import { layout } from "../../../design-system/tokens";
 
 // ── Design tokens (aligned with the rest of the app) ────────────────────────────
 const T = {
@@ -47,7 +48,7 @@ const F = {
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
 };
-const MAIN_NAV_H = 68;
+const MAIN_NAV_H = layout.navHeightTop; // shell token — was a local literal (68), off from the shared 72
 
 // ── Nav definition ──────────────────────────────────────────────────────────────
 type NavItem = { key: string; label: string; slug: string; icon: IconComponent };

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  ImageSquare, Graph, FloppyDisk, WarningCircle, X as PhX,
-} from "@phosphor-icons/react";
+  Image as ImageSquare, Workflow as Graph, Save as FloppyDisk, AlertCircle as WarningCircle, X as PhX,
+} from "lucide-react";
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F, G } from "./theme";
 import { WeaverCombobox, UploadZone, fieldStyle, labelStyle } from "./DesignLibraryComponents";
@@ -94,7 +94,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
           </div>
 
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px" }}>
-            <WarningCircle size={16} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+            <WarningCircle size={16} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
               Only Design Code is required — all other fields can be filled in later. The new code will be saved to the master Design Library immediately.
             </span>

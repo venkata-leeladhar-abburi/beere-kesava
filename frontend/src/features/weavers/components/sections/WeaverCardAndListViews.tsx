@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, MapPin, Phone, Edit3, Layers3, Activity, AlertTriangle } from "lucide-react";
-import { Clock, Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
+import { Clock, Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
@@ -183,7 +183,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                        <Rows size={14} color={T.royalBurgundy} />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
@@ -301,7 +301,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
             </div>
             {/* Village */}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <PhMapPin size={15} color={T.taupe} weight="fill" />
+              <PhMapPin size={15} color={T.taupe} />
               <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{w.village}</span>
             </div>
             {/* Status */}
@@ -316,7 +316,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>
             {/* Looms */}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <Rows size={16} color={T.taupe} weight="regular" />
+              <Rows size={16} color={T.taupe} />
               <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{w.looms}</span>
             </div>
             {/* Action */}
@@ -327,7 +327,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
                 size="sm"
                 className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
               >
-                <PhEye size={18} weight="regular" /> View
+                <PhEye size={18} /> View
               </Button>
             </div>
           </motion.div>

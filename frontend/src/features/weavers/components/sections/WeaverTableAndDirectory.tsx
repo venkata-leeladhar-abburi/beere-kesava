@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
+import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG, Status } from "../types";
 import { WEAVERS, TABLE_COLS } from "../data";
@@ -101,14 +101,14 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span></td>
                   <td style={TD}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <PhMapPin size={14} color={T.taupe} weight="fill" />
+                      <PhMapPin size={14} color={T.taupe} />
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.village}</span>
                     </div>
                   </td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span></td>
                   <td style={{ ...TD, textAlign: "center" }}>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      <Rows size={15} color={T.taupe} weight="regular" />
+                      <Rows size={15} color={T.taupe} />
                       <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{r.looms}</span>
                     </div>
                   </td>
@@ -129,7 +129,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                       size="sm"
                       className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
                     >
-                      <PhEye size={18} weight="regular" /> View
+                      <PhEye size={18} /> View
                     </Button>
                   </td>
                 </motion.tr>

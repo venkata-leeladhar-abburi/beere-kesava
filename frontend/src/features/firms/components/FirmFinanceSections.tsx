@@ -150,7 +150,7 @@ export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<Finan
   }
   return (
     <>
-      <input type="file" accept=".xlsx,.xls,.csv" ref={ref} onChange={handleFile} style={{ display: "none" }} />
+      <Input type="file" accept=".xlsx,.xls,.csv" ref={ref} onChange={handleFile} containerClassName="hidden" />
       <Button onClick={() => ref.current?.click()} variant="tertiary" size="sm" iconLeft={FileSpreadsheet}>
         Import Excel
       </Button>

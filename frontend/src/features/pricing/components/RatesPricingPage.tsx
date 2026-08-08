@@ -9,6 +9,7 @@ import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 import { INITIAL_RATES, type SareeTypeRecord } from "./rates-pricing/sareeTypeData";
 import { ratesApi, type BackendRate } from "../../../shared/api/rates";
+import { Button } from "../../../shared/ui/primitives";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -211,15 +212,9 @@ export function RatesPricingPage() {
             justifyContent: "space-between", gap: 16,
           }}>
             <span>Failed to load the rate catalog. Please check your connection and try again.</span>
-            <button
-              onClick={loadRates}
-              style={{
-                background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 999,
-                padding: "8px 18px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}
-            >
+            <Button onClick={loadRates} variant="primary" size="sm">
               Retry
-            </button>
+            </Button>
           </div>
         </div>
       ) : (

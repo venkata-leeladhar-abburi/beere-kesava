@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Palette, ArrowRight } from "@phosphor-icons/react";
+import { Palette, ArrowRight } from "lucide-react";
 import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
 import type { BatchRecord, SareeRow } from "../../../contexts/BatchContext";
 import { T, F } from "../../theme";
@@ -87,7 +87,7 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
       <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
         {firstRow && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "8px 12px" }}>
-            <Palette size={14} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
+            <Palette size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {firstRow.sareeTypeName} · <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{firstRow.designCode}</span>
             </span>

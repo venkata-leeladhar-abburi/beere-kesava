@@ -292,7 +292,7 @@ export function SectionNavigator({
         maxWidth: "100%",
       }}
     >
-      <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 11, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>
+      <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 12, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>
         Jump to
       </span>
       <div ref={stripRef} className="section-nav-scroll" style={{ position: "relative", display: "flex", alignItems: "center", gap: 24, overflowX: "auto", minWidth: 0, flex: 1, paddingTop: 6, paddingBottom: 6 }}>

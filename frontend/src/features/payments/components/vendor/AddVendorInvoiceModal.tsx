@@ -57,7 +57,7 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
                 {file ? file.name : "Click to upload invoice"}
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
-              <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             </div>
           </div>
           <Field label="Vendor Invoice Number" id="vendor-invoice-number">

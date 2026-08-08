@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack, ArrowRight } from "@phosphor-icons/react";
+import { Layers as Stack, ArrowRight } from "lucide-react";
 import { BatchRecord } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, rowComplete } from "./constants";
@@ -18,7 +18,7 @@ export function DraftsTab({
     <div style={{ padding: "28px 56px 64px" }}>
       {batches.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>
-          <Stack size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12 }} />
+          <Stack size={40} color={T.taupe} style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No batches yet.</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 6 }}>Create a batch to get started.</div>
           <Button onClick={() => setTab("new")} variant="primary" size="lg" className="mt-5 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
@@ -57,7 +57,7 @@ export function DraftsTab({
                 </div>
                 {!isCompleted && (
                   <Button onClick={() => openDraft(b)} variant="primary" size="md" className="shrink-0 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
-                    {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} weight="bold" />
+                    {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} />
                   </Button>
                 )}
               </div>

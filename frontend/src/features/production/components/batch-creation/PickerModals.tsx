@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Factory, ShoppingBag, WarningCircle, Package,
-} from "@phosphor-icons/react";
+  Factory, ShoppingBag, AlertCircle as WarningCircle, Package,
+} from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
 import { T, F, SAREE_TYPES_BRIEF, lbl } from "./constants";
@@ -13,7 +13,7 @@ import { Button, IconButton, Input, SearchInput, Textarea } from "../../../../sh
 // Deterministic pip colour from a stable palette, keyed by id, so real
 // weavers (fetched from the backend) still get a consistent avatar colour
 // without needing a "bg" field the backend doesn't have.
-const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#8B7060", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
+const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#69635E", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
 export function pipColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -77,7 +77,7 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
         <Button onClick={() => setSel("general")} variant="ghost" fullWidth
           className={`h-auto justify-start gap-3 p-[13px_16px] rounded-xl border-2 ${sel === "general" ? "border-[#1E6640] bg-[rgba(30,102,64,0.06)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(30,102,64,0.06)]`}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Package size={18} color="#fff" weight="duotone" />
+            <Package size={18} color="#fff" />
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>General Stock</div>
@@ -89,7 +89,7 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
           <Button key={o.ref} onClick={() => setSel(o.ref)} variant="ghost" fullWidth
             className={`h-auto justify-start gap-3 p-[12px_16px] rounded-xl border-2 ${sel === o.ref ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ShoppingBag size={16} color={T.royalBurgundy} weight="duotone" />
+              <ShoppingBag size={16} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</div>
@@ -203,7 +203,7 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
             <Textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…" />
           </div>
           <div style={{ background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <WarningCircle size={15} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+            <WarningCircle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
               This design code will be saved to the master Design Library immediately and will appear there with full detail.
             </span>
@@ -294,7 +294,7 @@ export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: Lo
           <Button key={l.id} onClick={() => setSel(l.id)} variant="ghost" fullWidth
             className={`h-auto justify-start gap-3 p-[12px_14px] rounded-xl border-2 ${sel === l.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Factory size={17} color={T.royalBurgundy} weight="duotone" />
+              <Factory size={17} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>

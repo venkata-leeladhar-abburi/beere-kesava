@@ -88,16 +88,15 @@ export function SupplierFormFields({
             <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
               className="font-mono text-[13px]" />
           </Field>
-          <div>
-            <label style={lbl} htmlFor="visiting-card-photo">Visiting Card Photo</label>
-            <input id="visiting-card-photo" type="file" accept="image/*" onChange={e => {
+          <Field label="Visiting Card Photo" id="visiting-card-photo">
+            <Input type="file" accept="image/*" onChange={e => {
               const file = e.target.files?.[0];
               if (!file) return;
               const reader = new FileReader();
               reader.onload = ev => onCardChange(ev.target?.result as string);
               reader.readAsDataURL(file);
-            }} style={{ ...inp, padding: "8px 12px", cursor: "pointer" }} />
-          </div>
+            }} />
+          </Field>
         </div>
         {cardPreview && (
           <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}`, position: "relative" }}>

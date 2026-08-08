@@ -1,5 +1,5 @@
 import React from "react";
-import { WarningCircle } from "@phosphor-icons/react";
+import { AlertCircle as WarningCircle } from "lucide-react";
 import { T, F, fld, lbl } from "./batch-creation/constants";
 import { SareeRow } from "../contexts/BatchContext";
 import { Button, NumberInput, Input } from "../../../shared/ui/primitives";
@@ -61,7 +61,7 @@ export function BatchSetupStep({
 
       {generated && incompleteRows.length > 0 && (
         <div style={{ background: "rgba(183,121,31,0.08)", border: "1px solid rgba(183,121,31,0.28)", borderRadius: 12, padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <WarningCircle size={17} color={T.amber} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+          <WarningCircle size={17} color={T.amber} style={{ flexShrink: 0, marginTop: 1 }} />
           <div style={{ fontFamily: F.ui, fontSize: 13, color: "#7A5A10", lineHeight: 1.6 }}>
             <strong>{incompleteRows.length} row(s) are incomplete</strong> — missing weaver or saree type.
             {" "}Rows {incompleteRows.slice(0, 8).map(r => r.serial).join(", ")}{incompleteRows.length > 8 ? "…" : ""} need attention.

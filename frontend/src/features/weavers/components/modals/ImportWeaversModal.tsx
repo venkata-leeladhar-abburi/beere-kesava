@@ -2,11 +2,11 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
-import { UploadSimple } from "@phosphor-icons/react";
+import { Upload as UploadSimple } from "lucide-react";
 import { T, F } from "../theme";
 import { Status, ParsedWeaverRow } from "../types";
 import type { ImportedWeaver } from "../data";
-import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 
 export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
   open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
@@ -132,8 +132,8 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
             {fileName ? fileName : "Click to choose a file"}
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>.xlsx, .xls, or .csv</div>
-          <input
-            ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
+          <Input
+            ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" containerClassName="hidden"
             onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f); }}
           />
         </div>

@@ -5,7 +5,7 @@ import {
   ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, Camera, FileText, Save, ClipboardList,
   Smartphone, Landmark, Home, CreditCard, Activity, Edit3, PackageCheck,
 } from "lucide-react";
-import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";

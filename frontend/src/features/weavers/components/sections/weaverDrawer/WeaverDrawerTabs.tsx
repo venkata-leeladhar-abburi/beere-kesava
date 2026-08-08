@@ -1,7 +1,7 @@
 // ── Non-overview tabs for the weaver profile drawer (batches / dispatches / payments / materials) ─
 import React from "react";
 import { Calendar, Check, Clock } from "lucide-react";
-import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../../theme";
 import { SectionPill } from "../../common/primitives";
 import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
@@ -113,7 +113,7 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                                       <Button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
                                         variant="ghost" size="sm"
                                         className="h-auto rounded-md bg-[rgba(110,15,45,0.08)] text-[#6E0F2D] px-[9px] py-[3px] text-[12px] font-bold">
-                                        <PaperPlaneTilt size={11} weight="bold" /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
+                                        <PaperPlaneTilt size={11} /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
                                       </Button>
                                     ) : (
                                       <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>

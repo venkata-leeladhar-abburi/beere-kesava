@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 import { EASE, F, T } from "../../theme";
 import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, VendorUploadResult } from "../../types";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Input } from "../../../../shared/ui/primitives";
 
 // ── Vendor Payment Excel Upload Panel ─────────────────────────────────────────
 export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayments: VendorPayment[]; onMatched: (matched: VendorMatchedRow[]) => void }) {
@@ -110,7 +110,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
             </Button>
           )}
           {/* Native file input — no design-system primitive covers file uploads; kept raw and visually hidden, triggered via the Button below. */}
-          <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} style={{ display: "none" }} />
+          <Input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} containerClassName="hidden" />
           <Button variant="primary" size="md" iconLeft={UploadCloud} onClick={() => fileInputRef.current?.click()} disabled={parsing} loading={parsing}
             className="whitespace-nowrap rounded-[9px] bg-[#6E0F2D]">
             {result ? "Upload New File" : "Upload Vendor Payment File"}

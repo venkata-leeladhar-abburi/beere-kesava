@@ -1,6 +1,6 @@
 // ── Search / filter / view-toggle controls for the weaver directory ────────
 import { UserPlus } from "lucide-react";
-import { UploadSimple, MagnifyingGlass, CaretDown, MapPin as PhMapPin, Users } from "@phosphor-icons/react";
+import { Upload as UploadSimple, Search as MagnifyingGlass, ChevronDown as CaretDown, MapPin as PhMapPin, Users } from "lucide-react";
 import { T, F } from "../theme";
 import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
 import { FadeUp } from "../common/primitives";
@@ -16,7 +16,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.royalBurgundy}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(110,15,45,0.28)" }}>
-              <Users size={26} color="#FFFDF9" weight="fill" />
+              <Users size={26} color="#FFFDF9" />
             </div>
             <div>
               <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0, lineHeight: 1.1 }}>All Weavers</h2>
@@ -59,7 +59,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
         <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 280, position: "relative" }}>
             <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-              <MagnifyingGlass size={22} color={T.taupe} weight="regular" />
+              <MagnifyingGlass size={22} color={T.taupe} />
             </div>
             <Input
               value={search} onChange={e => setSearch(e.target.value)}
@@ -78,7 +78,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
                     : "rounded-none border-none bg-white text-[var(--text-tertiary)] transition-colors duration-[180ms]"
                 }
               >
-                <PhIcon size={18} weight={view === key ? "fill" : "regular"} /> {label}
+                <PhIcon size={18} /> {label}
               </Button>
             ))}
           </div>
@@ -101,10 +101,10 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
             </Button>
           ))}
           <Button variant="secondary" size="sm" className="rounded-full bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
-            <PhMapPin size={16} weight="regular" /> Filter by Village <CaretDown size={14} weight="bold" />
+            <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
           </Button>
           <Button variant="secondary" size="sm" className="rounded-full bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
-            Sort: Most Sarees This Month <CaretDown size={14} weight="bold" />
+            Sort: Most Sarees This Month <CaretDown size={14} />
           </Button>
         </div>
       </FadeUp>

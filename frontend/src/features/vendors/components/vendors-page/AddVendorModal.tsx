@@ -160,18 +160,16 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
               <Field label="GST Number" id="gst-number">
                 <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
               </Field>
-              <div>
-                {/* No primitive exists for file inputs — left as a raw <input type="file"> (justified exception per migration convention). */}
-                <label style={lbl} htmlFor="visiting-card-photo">Visiting Card Photo</label>
-                <input id="visiting-card-photo" type="file" accept="image/*" onChange={e => {
+              <Field label="Visiting Card Photo" id="visiting-card-photo">
+                <Input type="file" accept="image/*" onChange={e => {
                   const file = e.target.files?.[0];
                   if (file) {
                     const reader = new FileReader();
                     reader.onload = ev => setCardPreview(ev.target?.result as string);
                     reader.readAsDataURL(file);
                   }
-                }} style={{ ...inp, padding: "8px 12px", backgroundColor: "#FFF", cursor: "pointer" }} />
-              </div>
+                }} />
+              </Field>
             </div>
             {cardPreview && (
               <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>

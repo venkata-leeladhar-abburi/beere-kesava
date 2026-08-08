@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from 'lucide-react';
-import { Rows } from "@phosphor-icons/react";
+import { Rows3 as Rows } from "lucide-react";
 import { T, F, G, EASE } from './theme';
 import { MATS } from './data';
 import { AnimatedBar } from './ui';
@@ -123,7 +123,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               <div style={{ marginBottom: 12 }}>
                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                    <Rows size={14} color={T.royalBurgundy} />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>

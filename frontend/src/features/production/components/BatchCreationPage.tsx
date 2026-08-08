@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { FloppyDisk, CheckCircle } from "@phosphor-icons/react";
+import { Save as FloppyDisk, CheckCircle2 as CheckCircle } from "lucide-react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
@@ -290,10 +290,10 @@ export function BatchCreationPage() {
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
               <Button onClick={handleSaveDraft} variant="secondary" size="lg">
-                <FloppyDisk size={17} weight="bold" /> Save as Draft
+                <FloppyDisk size={17} /> Save as Draft
               </Button>
               <Button onClick={handleFinalize} disabled={!canFinalize} variant="primary" size="lg">
-                <CheckCircle size={17} weight="bold" /> Finalize Batch
+                <CheckCircle size={17} /> Finalize Batch
               </Button>
               {savedMsg && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}

@@ -100,8 +100,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>Click to upload invoice</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
-                {/* Native file input — no design-system primitive covers file uploads; kept raw and visually hidden, triggered via the surrounding clickable card. */}
-                <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" />
+                <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" />
               </div>
             </div>
           </div>

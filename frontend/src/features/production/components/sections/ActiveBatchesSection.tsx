@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { CaretDown as PhCaretDown, Plus as PhPlus } from "@phosphor-icons/react";
+import { ChevronDown as PhCaretDown, Plus as PhPlus } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
@@ -149,7 +149,7 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
             {VIEW_OPTIONS.map(({ key, label, Icon }) => (
               <Button key={key} onClick={() => setView(key)} variant="ghost"
                 className={`h-auto rounded-none gap-1.5 py-2.5 px-4 text-[13px] font-bold ${view === key ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]" : "bg-white text-[var(--text-tertiary)]"}`}>
-                <Icon size={16} weight={view === key ? "bold" : "regular"} /> {label}
+                <Icon size={16} /> {label}
               </Button>
             ))}
           </div>

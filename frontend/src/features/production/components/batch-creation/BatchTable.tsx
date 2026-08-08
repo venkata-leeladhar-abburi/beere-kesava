@@ -1,8 +1,8 @@
 import React from "react";
 import {
-  Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
-  PaperPlaneTilt,
-} from "@phosphor-icons/react";
+  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending,
+  Send as PaperPlaneTilt,
+} from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
@@ -102,7 +102,7 @@ export function BatchTable({
             </span>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
-            <SortAscending size={14} color={T.taupe} weight="bold" />
+            <SortAscending size={14} color={T.taupe} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sort by</span>
             <Select value={sortBy} onValueChange={v => setSortBy(v as typeof sortBy)} size="sm" className="h-[30px] w-auto min-w-[130px]">
               <SelectItem value="serial">Default (#)</SelectItem>
@@ -206,7 +206,7 @@ export function BatchTable({
                       }}
                         variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline">
                         <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Factory size={12} color={T.royalBurgundy} weight="fill" />
+                          <Factory size={12} color={T.royalBurgundy} />
                         </div>
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
                       </Button>
@@ -222,7 +222,7 @@ export function BatchTable({
                     {rowDispatches.length > 0 ? (
                       <Button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
                         variant="link" className="font-sans text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                        <PaperPlaneTilt size={12} weight="bold" /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
+                        <PaperPlaneTilt size={12} /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
                       </Button>
                     ) : <EmptyCell />}
                   </td>

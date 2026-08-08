@@ -208,12 +208,12 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   <div style={{ gridColumn: "1 / -1" }}>
                     <label style={labelStyle}>Order Photos (Multiple allowed)</label>
                     <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", background: T.warmIvory, display: "flex", flexDirection: "column", gap: 12 }}>
-                      <input
+                      <Input
                         type="file"
                         multiple
                         accept="image/*"
                         id="bulk-order-photos-upload"
-                        style={{ display: "none" }}
+                        containerClassName="hidden"
                         onChange={e => {
                           const files = Array.from(e.target.files || []);
                           setPhotos(prev => [...prev, ...files]);

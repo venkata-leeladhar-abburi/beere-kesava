@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle2 as CheckCircle } from "lucide-react";
 import { X } from "lucide-react";
 import { StockSaree, STATUS_CFG } from "./StockCard";
 import { Button, IconButton } from "../../../shared/ui/primitives";
@@ -48,7 +48,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
         <div style={{ padding: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 11, padding: "12px 16px", marginBottom: 20 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: `${cfg.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <CheckCircle size={20} color={cfg.color} weight="fill" />
+              <CheckCircle size={20} color={cfg.color} />
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.color }}>{cfg.label}</div>

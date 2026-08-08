@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, XOctagon } from "lucide-react";
-import { Package, CheckCircle, XCircle, Clock, WarningCircle, ChartBar } from "@phosphor-icons/react";
+import { Package, CheckCircle2 as CheckCircle, XCircle, Clock, AlertCircle as WarningCircle, BarChart3 as ChartBar } from "lucide-react";
 import { T, F } from "../theme";
 import { WARP_REQUESTS } from "../data";
 import { FadeUp, ActionDialog } from "../common/primitives";
@@ -47,7 +47,7 @@ export function WarpRequestsSection() {
           <div style={{ background: `linear-gradient(100deg, #3D0E1A 0%, #6E0F2D 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <WarningCircle size={26} color="#FFFDF9" weight="fill" />
+                <WarningCircle size={26} color="#FFFDF9" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Warp Requests Waiting for Approval</div>
@@ -55,7 +55,7 @@ export function WarpRequestsSection() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
-              <Clock size={18} color="#F4A6A6" weight="fill" />
+              <Clock size={18} color="#F4A6A6" />
               <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>3 requests pending</span>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function WarpRequestsSection() {
                   {/* Raised */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Clock size={20} color={T.royalBurgundy} weight="regular" />
+                      <Clock size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
@@ -107,7 +107,7 @@ export function WarpRequestsSection() {
                   {/* Material */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Package size={20} color={T.royalBurgundy} weight="regular" />
+                      <Package size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
@@ -119,7 +119,7 @@ export function WarpRequestsSection() {
                   {/* Progress */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <ChartBar size={20} color={T.royalBurgundy} weight="regular" />
+                      <ChartBar size={20} color={T.royalBurgundy} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 6 }}>Batch progress</div>
@@ -152,7 +152,7 @@ export function WarpRequestsSection() {
                     variant="primary"
                     className="flex-1 rounded-xl bg-[#1F774E] hover:bg-[#15603D] shadow-none"
                   >
-                    <CheckCircle size={22} weight="fill" />
+                    <CheckCircle size={22} />
                     Approve
                   </Button>
                   <Button
@@ -160,7 +160,7 @@ export function WarpRequestsSection() {
                     variant="danger-subtle"
                     className="flex-1 rounded-xl"
                   >
-                    <XCircle size={22} weight="fill" />
+                    <XCircle size={22} />
                     Reject
                   </Button>
                 </div>

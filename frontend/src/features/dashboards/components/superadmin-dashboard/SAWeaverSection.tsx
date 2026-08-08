@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Rows, Clock as PhClock } from "@phosphor-icons/react";
+import { Rows3 as Rows, Clock as PhClock } from "lucide-react";
 import { ChevronRight, Edit3, Layers3, Eye, Activity, MapPin, Phone, AlertTriangle } from "lucide-react";
 import { T, F } from "./theme";
 import { SectionHeader } from "./atoms";
@@ -125,7 +125,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                    <Rows size={14} color={T.royalBurgundy} />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>

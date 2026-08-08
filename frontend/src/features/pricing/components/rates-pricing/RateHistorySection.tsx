@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../shared/ui/primitives";
@@ -38,6 +38,7 @@ export function RateHistorySection() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [histPage, setHistPage] = useState(1);
 
   function loadHistory() {
     setIsLoading(true);
@@ -83,15 +84,9 @@ export function RateHistorySection() {
           justifyContent: "space-between", gap: 16, borderLeft: `4px solid ${T.crimson}`,
         }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load rate change history.</span>
-          <button
-            onClick={loadHistory}
-            style={{
-              background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 999,
-              padding: "7px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
-            }}
-          >
+          <Button onClick={loadHistory} variant="primary" size="sm">
             Retry
-          </button>
+          </Button>
         </div>
       ) : (
       <div style={cardStyle}>

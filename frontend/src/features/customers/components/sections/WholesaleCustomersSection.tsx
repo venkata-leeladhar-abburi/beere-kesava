@@ -153,7 +153,7 @@ export function WholesaleCustomersSection({
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
-                  <Field label="Visiting Card Photo"><input type="file" accept="image/*" style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, backgroundColor: "#FFF" }} /></Field>
+                  <Field label="Visiting Card Photo"><Input type="file" accept="image/*" /></Field>
                 </div>
                 <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>
               </div>
