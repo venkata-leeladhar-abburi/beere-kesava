@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2, Mail, Package, Phone, X } from "lucide-react";
-import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { VENDOR_CONTACTS } from "../../data/vendors";
-import { EASE, F, T } from "../../theme";
+import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
@@ -63,25 +64,23 @@ Please advise on payment status at your earliest convenience.
 Thank you.`;
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.60)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(6px)" }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.24, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 24, width: 640, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 32px 90px rgba(44,6,27,0.35)", border: `1px solid ${T.borderDef}` }}
-      >
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
+      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         {/* Header */}
-        <div style={{ background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "26px 28px", position: "relative", borderRadius: "24px 24px 0 0" }}>
+        <div style={{ background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "26px 28px", position: "relative", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 6 }}>
             <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Phone size={22} color="#FFFDF9" />
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>Contact Vendor</div>
+              <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>Contact Vendor</Dialog.Title>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div>
             </div>
           </div>
-          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
-            className="absolute right-[18px] top-[18px] rounded-[9px] bg-[rgba(255,255,255,0.14)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.22)]" />
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+              className="absolute right-[18px] top-[18px] rounded-[9px] bg-[rgba(255,255,255,0.14)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.22)]" />
+          </Dialog.Close>
         </div>
 
         <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
@@ -181,7 +180,7 @@ Thank you.`;
             {sent ? "Reminder Sent Successfully!" : `Send Reminder via ${CHANNELS.find(c => c.key === msgType)?.label}`}
           </Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }
