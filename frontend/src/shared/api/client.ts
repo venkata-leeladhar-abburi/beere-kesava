@@ -28,13 +28,26 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 /**
- * Called on any 401 response. Clears whatever auth state exists in storage
- * and bounces to /login so a stale/missing token doesn't leave the user
- * staring at a page full of failed requests. Kept dependency-free (no
- * useAuth import) since this module is used outside React component trees.
+ * Called on a 401 response. Only wipes auth state and bounces to /login when
+ * there is genuinely no token to speak of — a session that was never
+ * established or has already been cleared elsewhere.
+ *
+ * Deliberately does NOT nuke the session just because *a* request 401'd
+ * while a token IS present. A hard refresh fires a dozen queries in
+ * parallel (weavers, batches, payments, QC, …); a single transient 401 on
+ * any one of them (backend cold-start reconnecting to the DB, a brief race,
+ * a role-scoped endpoint) used to clear localStorage and redirect
+ * immediately, logging the user out and wiping every other query's data
+ * with it — indistinguishable from "my details got erased on refresh".
+ * With a token present, that one request is left to fail as an ApiError
+ * (the caller's own error/retry UI handles it) instead of tearing down the
+ * whole session. Kept dependency-free (no useAuth import) since this
+ * module is used outside React component trees.
  */
 function handleUnauthorized() {
   if (typeof window === "undefined") return;
+  const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
+  if (hasToken) return;
   try {
     localStorage.removeItem("token");
     localStorage.removeItem("bk_auth_state");
