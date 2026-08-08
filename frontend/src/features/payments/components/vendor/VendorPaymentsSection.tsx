@@ -22,6 +22,7 @@ import { VendorPayNowModal } from "./VendorPayNowModal";
 import { VendorUploadPanel } from "./VendorUploadPanel";
 import { RecordVendorPaymentSidebar } from "./RecordVendorPaymentSidebar";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -100,8 +101,77 @@ export function VendorPaymentsSection() {
     { key: "table", Icon: AlignJustify, label: "Table View" },
   ] as const;
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const vendorTableColumns: ColumnDef<VendorPayment>[] = [
+    {
+      id: "vendor", header: "Vendor Name", accessor: vp => vp.vendor,
+      cell: (_v, vp) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <FileText size={15} color={T.royalBurgundy} />
+          </div>
+          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{vp.vendor}</span>
+        </div>
+      ),
+    },
+    {
+      id: "po", header: "PO Number", accessor: vp => vp.poNumber,
+      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{vp.poNumber}</span>,
+    },
+    {
+      id: "invoiceAmt", header: "Invoice Amt", accessor: vp => vp.invoiceAmt, type: "number",
+      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "paidAmt", header: "Paid Amt", accessor: vp => vp.paidAmt, type: "number",
+      cell: (_v, vp) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "balance", header: "Balance Due", accessor: vp => vp.invoiceAmt - vp.paidAmt, type: "number",
+      cell: (_v, vp) => {
+        const balance = vp.invoiceAmt - vp.paidAmt;
+        return (
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+            {balance === 0 ? "Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+          </span>
+        );
+      },
+    },
+    {
+      id: "dueDate", header: "Due Date", accessor: vp => vp.dueDate,
+      cell: (_v, vp) => (
+        <span style={{ color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
+          {vp.dueDate}
+          {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4 }}>{vp.daysOverdue}d late</span>}
+        </span>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: vp => vp.status, type: "status",
+      cell: (_v, vp) => <VendorBadge status={vp.status} />,
+    },
+    {
+      id: "utr", header: "UTR", accessor: vp => vp.utr,
+      cell: (_v, vp) => vp.utr
+        ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{vp.utr}</span>
+        : <span style={{ color: T.taupe }}>—</span>,
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions",
+      cell: (_v, vp) => (
+        vp.status === "Paid" ? (
+          <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
+            className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100">
+            Paid
+          </Button>
+        ) : (
+          <Button variant={selVendor === vp.id ? "primary" : "secondary"} size="sm" onClick={() => setSelVendor(vp.id)}
+            className={selVendor === vp.id ? "rounded-[7px] border-[#6E0F2D] bg-[#6E0F2D]" : "rounded-[7px] border-[#6E0F2D] text-[#6E0F2D]"}>
+            Pay Now
+          </Button>
+        )
+      ),
+    },
+  ];
 
   return (
     <div id="pay-vendor" style={{ padding: "36px 40px 0" }}>
@@ -260,67 +330,12 @@ export function VendorPaymentsSection() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-                    <thead>
-                      <tr>
-                        <th style={TH}>Vendor Name</th>
-                        <th style={TH}>PO Number</th>
-                        <th style={{ ...TH, textAlign: "right" as const }}>Invoice Amt</th>
-                        <th style={{ ...TH, textAlign: "right" as const }}>Paid Amt</th>
-                        <th style={{ ...TH, textAlign: "right" as const }}>Balance Due</th>
-                        <th style={TH}>Due Date</th>
-                        <th style={{ ...TH, textAlign: "center" as const }}>Status</th>
-                        <th style={TH}>UTR</th>
-                        <th style={{ ...TH, textAlign: "center" as const }}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((vp, i) => {
-                        const balance = vp.invoiceAmt - vp.paidAmt;
-                        return (
-                          <tr key={vp.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${VENDOR_STATUS_CFG[vp.status].color}` }}>
-                            <td style={TD}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                  <FileText size={15} color={T.royalBurgundy} />
-                                </div>
-                                <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{vp.vendor}</span>
-                              </div>
-                            </td>
-                            <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{vp.poNumber}</span></td>
-                            <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</td>
-                            <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{vp.paidAmt.toLocaleString("en-IN")}</td>
-                            <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                              {balance === 0 ? "Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
-                            </td>
-                            <td style={{ ...TD, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
-                              {vp.dueDate}
-                              {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4 }}>{vp.daysOverdue}d late</span>}
-                            </td>
-                            <td style={{ ...TD, textAlign: "center" as const }}><VendorBadge status={vp.status} /></td>
-                            <td style={TD}>
-                              {vp.utr
-                                ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{vp.utr}</span>
-                                : <span style={{ color: T.taupe }}>—</span>}
-                            </td>
-                            <td style={{ ...TD, textAlign: "center" as const }}>
-                              {vp.status === "Paid" ? (
-                                <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
-                                  className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100">
-                                  Paid
-                                </Button>
-                              ) : (
-                                <Button variant={selVendor === vp.id ? "primary" : "secondary"} size="sm" onClick={() => setSelVendor(vp.id)}
-                                  className={selVendor === vp.id ? "rounded-[7px] border-[#6E0F2D] bg-[#6E0F2D]" : "rounded-[7px] border-[#6E0F2D] text-[#6E0F2D]"}>
-                                  Pay Now
-                                </Button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <DataTable
+                    columns={vendorTableColumns}
+                    data={filtered}
+                    getRowId={vp => vp.id}
+                    emptyTitle="No vendor bills match your filters"
+                  />
                 </div>
                 <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {vendorPayments.length} vendor bills</span>

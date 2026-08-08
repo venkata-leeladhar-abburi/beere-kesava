@@ -14,6 +14,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -137,8 +138,59 @@ export function PaymentHistorySection() {
 
   const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); };
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+  const tableColumns: ColumnDef<PayHistRecord>[] = [
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span> },
+    {
+      id: "type", header: "Payment Type", accessor: r => r.type,
+      cell: (_v, r) => {
+        const typeCfg = HIST_TYPE_CFG[r.type];
+        return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color, whiteSpace: "nowrap" as const }}>{r.type}</span>;
+      },
+    },
+    { id: "party", header: "Party Name", accessor: r => r.party, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span> },
+    { id: "refNo", header: "Reference No", accessor: r => r.refNo, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.refNo}</span> },
+    {
+      id: "description", header: "Description", accessor: r => r.description,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", display: "block", maxWidth: 200 }}>{r.description}</span>,
+    },
+    {
+      id: "invoicePO", header: "Invoice / PO No", accessor: r => r.invoicePO,
+      cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
+    },
+    {
+      id: "amount", header: "Amount (₹)", accessor: r => r.amount, align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
+          {r.type !== "Customer Receipt" && "−"}₹{r.amount.toLocaleString("en-IN")}
+        </span>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
+      cell: (_v, r) => {
+        const stsCfg = HIST_STATUS_CFG[r.status];
+        return (
+          <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color }}>
+            {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
+          </span>
+        );
+      },
+    },
+    { id: "mode", header: "Payment Mode", accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
+    {
+      id: "utr", header: "UTR / Ref No", accessor: r => r.utr,
+      cell: (_v, r) => r.utr ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{r.utr}</span> : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>,
+    },
+    { id: "recordedBy", header: "Recorded By", accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions", align: "center",
+      cell: () => (
+        <Button variant="secondary" size="sm" iconLeft={Eye} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+          View
+        </Button>
+      ),
+    },
+  ];
 
   const viewOptions = [
     { key: "card"  as const, Icon: LayoutGrid,   label: "Card View"  },
@@ -359,93 +411,20 @@ export function PaymentHistorySection() {
         {/* ── TABLE VIEW ──────────────────────────────────────── */}
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1200 }}>
-                <thead>
-                  <tr>
-                    <th style={TH}>Date</th>
-                    <th style={TH}>Payment Type</th>
-                    <th style={TH}>Party Name</th>
-                    <th style={TH}>Reference No</th>
-                    <th style={{ ...TH, maxWidth: 200 }}>Description</th>
-                    <th style={TH}>Invoice / PO No</th>
-                    <th style={{ ...TH, textAlign: "right" as const }}>Amount (₹)</th>
-                    <th style={{ ...TH, textAlign: "center" as const }}>Status</th>
-                    <th style={TH}>Payment Mode</th>
-                    <th style={TH}>UTR / Ref No</th>
-                    <th style={TH}>Recorded By</th>
-                    <th style={{ ...TH, textAlign: "center" as const }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((r, i) => {
-                    const typeCfg = HIST_TYPE_CFG[r.type];
-                    const stsCfg  = HIST_STATUS_CFG[r.status];
-                    return (
-                      <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${typeCfg.border}` }}>
-                        <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span></td>
-                        <td style={TD}>
-                          <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color, whiteSpace: "nowrap" as const }}>{r.type}</span>
-                        </td>
-                        <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span></td>
-                        <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.refNo}</span></td>
-                        <td style={{ ...TD, maxWidth: 200 }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", display: "block", maxWidth: 200 }}>{r.description}</span>
-                        </td>
-                        <td style={TD}>
-                          {r.invoicePO
-                            ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span>
-                            : <span style={{ color: T.borderDef }}>—</span>
-                          }
-                        </td>
-                        <td style={{ ...TD, textAlign: "right" as const }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
-                            {r.type !== "Customer Receipt" && "−"}₹{r.amount.toLocaleString("en-IN")}
-                          </span>
-                        </td>
-                        <td style={{ ...TD, textAlign: "center" as const }}>
-                          <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color }}>
-                            {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
-                          </span>
-                        </td>
-                        <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span></td>
-                        <td style={TD}>
-                          {r.utr
-                            ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{r.utr}</span>
-                            : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>
-                          }
-                        </td>
-                        <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span></td>
-                        <td style={{ ...TD, textAlign: "center" as const }}>
-                          <Button variant="secondary" size="sm" iconLeft={Eye}
-                            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
-                            View
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr style={{ background: T.darkBurgundy }}>
-                    <td colSpan={5} style={{ ...TD, background: T.darkBurgundy, fontSize: 13, fontWeight: 700, color: "#FFFDF9", padding: "14px 14px", borderBottom: "none" }}>
-                      TOTALS FOR SELECTED PERIOD
-                    </td>
-                    <td style={{ ...TD, background: T.darkBurgundy, borderBottom: "none" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
-                    </td>
-                    <td style={{ ...TD, textAlign: "right" as const, background: T.darkBurgundy, borderBottom: "none" }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight }}>+₹{totalIn.toLocaleString("en-IN")}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: "#F47B72"  }}>−₹{totalOut.toLocaleString("en-IN")}</span>
-                        <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}>₹{totalAmt.toLocaleString("en-IN")}</span>
-                      </div>
-                    </td>
-                    <td colSpan={5} style={{ ...TD, background: T.darkBurgundy, borderBottom: "none" }} />
-                  </tr>
-                </tfoot>
-              </table>
+            <div style={{ overflowX: "auto", minWidth: 1200 }}>
+              <DataTable columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
             </div>
+            {filtered.length > 0 && (
+              <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>TOTALS FOR SELECTED PERIOD</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight }}>+₹{totalIn.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "#F47B72"  }}>−₹{totalOut.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}>₹{totalAmt.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+            )}
             {/* Pagination */}
             <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmIvory }}>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>

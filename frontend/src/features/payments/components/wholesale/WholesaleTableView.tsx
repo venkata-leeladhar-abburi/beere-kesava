@@ -4,6 +4,7 @@ import { F, T } from "../../theme";
 import { Invoice } from "../../types";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface WholesaleTableViewProps {
   view: "list" | "table";
@@ -69,87 +70,103 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
     );
   }
 
+  const columns: ColumnDef<Invoice>[] = [
+    {
+      id: "id", header: "Invoice ID", accessor: inv => inv.id,
+      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>,
+    },
+    {
+      id: "customer", header: "Customer", accessor: inv => inv.customer,
+      cell: (_v, inv) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</span>,
+    },
+    {
+      id: "city", header: "City", accessor: inv => inv.city,
+      cell: (_v, inv) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.taupe, fontSize: 13 }}>
+          <MapPin size={12} />{inv.city}
+        </div>
+      ),
+    },
+    {
+      id: "invoiceDate", header: "Invoice Date", accessor: inv => inv.invoiceDate,
+      cell: (_v, inv) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{inv.invoiceDate}</span>,
+    },
+    {
+      id: "dueDate", header: "Due Date", accessor: inv => inv.dueDate,
+      cell: (_v, inv) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 400 }}>
+          {inv.dueDate}
+          {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
+        </span>
+      ),
+    },
+    {
+      id: "total", header: "Total Amount", accessor: inv => inv.total, align: "end",
+      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "paid", header: "Paid Amount", accessor: inv => inv.paid, align: "end",
+      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "remaining", header: "Remaining Due", accessor: inv => inv.total - inv.paid, align: "end",
+      cell: (_v, inv) => {
+        const rem = inv.total - inv.paid;
+        return (
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+            {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
+          </span>
+        );
+      },
+    },
+    {
+      id: "status", header: "Status", accessor: inv => inv.status, align: "center", type: "status",
+      cell: (_v, inv) => <InvBadge status={inv.status} />,
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, align: "center", type: "actions",
+      cell: (_v, inv) => (
+        <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+          <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewInvoice(inv)}
+            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+            View
+          </Button>
+          {inv.status !== "Paid" && (
+            <Button variant="primary" size="sm" onClick={() => setRecordPayment(inv)}
+              className="rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D]">
+              Pay
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-          <thead>
-            <tr>
-              <th style={TH}>Invoice ID</th>
-              <th style={TH}>Customer</th>
-              <th style={TH}>City</th>
-              <th style={TH}>Invoice Date</th>
-              <th style={TH}>Due Date</th>
-              <th style={{ ...TH, textAlign: "right" as const }}>Total Amount</th>
-              <th style={{ ...TH, textAlign: "right" as const }}>Paid Amount</th>
-              <th style={{ ...TH, textAlign: "right" as const }}>Remaining Due</th>
-              <th style={{ ...TH, textAlign: "center" as const }}>Status</th>
-              <th style={{ ...TH, textAlign: "center" as const }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((inv, i) => {
-              const rem = inv.total - inv.paid;
-              return (
-                <tr key={inv.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${INV_STATUS_CFG[inv.status].color}` }}>
-                  <td style={TD}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>
-                  </td>
-                  <td style={TD}>
-                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</span>
-                  </td>
-                  <td style={TD}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.taupe, fontSize: 13 }}>
-                      <MapPin size={12} />{inv.city}
-                    </div>
-                  </td>
-                  <td style={TD}>{inv.invoiceDate}</td>
-                  <td style={{ ...TD, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 400 }}>
-                    {inv.dueDate}
-                    {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
-                  </td>
-                  <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{inv.total.toLocaleString("en-IN")}</td>
-                  <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</td>
-                  <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                    {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" as const }}><InvBadge status={inv.status} /></td>
-                  <td style={{ ...TD, textAlign: "center" as const }}>
-                    <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                      <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewInvoice(inv)}
-                        className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
-                        View
-                      </Button>
-                      {inv.status !== "Paid" && (
-                        <Button variant="primary" size="sm" onClick={() => setRecordPayment(inv)}
-                          className="rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D]">
-                          Pay
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-              <td colSpan={5} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, fontSize: 13 }}>
-                Totals — {filtered.length} invoice{filtered.length !== 1 ? "s" : ""}
-              </td>
-              <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
-                ₹{filtered.reduce((s, inv) => s + inv.total, 0).toLocaleString("en-IN")}
-              </td>
-              <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.green }}>
-                ₹{filtered.reduce((s, inv) => s + inv.paid, 0).toLocaleString("en-IN")}
-              </td>
-              <td style={{ ...TD, textAlign: "right" as const, fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.crimson }}>
-                ₹{filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0).toLocaleString("en-IN")}
-              </td>
-              <td colSpan={2} />
-            </tr>
-          </tfoot>
-        </table>
+      <div style={{ overflowX: "auto", minWidth: 860 }}>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          getRowId={inv => inv.id}
+          emptyTitle="No invoices match your filters"
+        />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: T.warmCream, borderTop: `2px solid ${T.borderDef}`, padding: "13px 16px", flexWrap: "wrap" as const, gap: 8 }}>
+        <span style={{ fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, fontSize: 13 }}>
+          Totals — {filtered.length} invoice{filtered.length !== 1 ? "s" : ""}
+        </span>
+        <div style={{ display: "flex", gap: 20 }}>
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
+            ₹{filtered.reduce((s, inv) => s + inv.total, 0).toLocaleString("en-IN")}
+          </span>
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.green }}>
+            ₹{filtered.reduce((s, inv) => s + inv.paid, 0).toLocaleString("en-IN")}
+          </span>
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.crimson }}>
+            ₹{filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0).toLocaleString("en-IN")}
+          </span>
+        </div>
       </div>
     </div>
   );

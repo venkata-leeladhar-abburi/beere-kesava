@@ -2,6 +2,13 @@ import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../s
 import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+interface RetailPurchaseRow {
+  date: string;
+  items: { id: string; type: string }[];
+  price: string;
+}
 
 export interface RetailDetailSectionProps {
   customer: RetailCustomer;
@@ -16,6 +23,42 @@ export interface RetailDetailSectionProps {
 export function RetailDetailSection({
   customer, retailModalTab, setRetailModalTab, onBack, retailPurchaseDateFilter, setRetailPurchaseDateFilter,
 }: RetailDetailSectionProps) {
+  const purchaseColumns: ColumnDef<RetailPurchaseRow>[] = [
+    {
+      id: "date", header: "Sale Date", accessor: r => r.date,
+      cell: (_v, r) => <span style={{ color: T.taupe }}>{r.date}</span>,
+    },
+    {
+      id: "items", header: "Sarees (ID & Type)", accessor: r => r.items,
+      cell: (_v, r) => (
+        <>
+          {r.items.map((item, idx) => (
+            <div key={idx} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
+              <span style={{ color: T.luxuryBrown, fontSize: 12 }}>{item.type}</span>
+            </div>
+          ))}
+        </>
+      ),
+    },
+    {
+      id: "price", header: "Price Paid", accessor: r => r.price,
+      cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{r.price}</span>,
+    },
+    {
+      id: "return", header: "Return", accessor: () => "—",
+      cell: () => <span style={{ color: T.taupe }}>—</span>,
+    },
+  ];
+
+  const retailPurchaseRows: RetailPurchaseRow[] = [
+    { date: customer.lastVisit, items: [{ id: "RAVI-L2-008", type: "Heavy Zari" }], price: "₹14,500" },
+    { date: "12 Feb 2026", items: [{ id: "PADMA-L1-012", type: "Plain Silk" }, { id: "PADMA-L1-013", type: "Plain Silk" }], price: "₹44,000" },
+    { date: "08 Jan 2026", items: [{ id: "BKB-L3-004", type: "Self Brocade" }], price: "₹9,800" },
+    { date: "14 Dec 2025", items: [{ id: "SURESH-L2-007", type: "Bridal Special" }], price: "₹38,500" },
+    { date: "02 Nov 2025", items: [{ id: "RAVI-L2-003", type: "Heavy Zari" }], price: "₹16,200" },
+  ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter));
+
   return (
     <div style={{ padding: "48px 56px" }}>
       {/* Header row with Back button */}
@@ -66,39 +109,13 @@ export function RetailDetailSection({
           </div>
 
           <DateFilterBar filter={retailPurchaseDateFilter} onChange={setRetailPurchaseDateFilter} />
-          <div style={{ background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                  {["Sale Date", "Sarees (ID & Type)", "Price Paid", "Return"].map(h => (
-                    <th key={h} style={{ padding: "12px 14px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { date: customer.lastVisit, items: [{id: "RAVI-L2-008", type: "Heavy Zari"}], price: "₹14,500" },
-                  { date: "12 Feb 2026",         items: [{id: "PADMA-L1-012", type: "Plain Silk"}, {id: "PADMA-L1-013", type: "Plain Silk"}], price: "₹44,000" },
-                  { date: "08 Jan 2026",         items: [{id: "BKB-L3-004", type: "Self Brocade"}], price: "₹9,800" },
-                  { date: "14 Dec 2025",         items: [{id: "SURESH-L2-007", type: "Bridal Special"}], price: "₹38,500" },
-                  { date: "02 Nov 2025",         items: [{id: "RAVI-L2-003", type: "Heavy Zari"}], price: "₹16,200" },
-                ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter)).map((row, i) => (
-                  <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                    <td style={{ padding: "14px 14px", color: T.taupe }}>{row.date}</td>
-                    <td style={{ padding: "14px 14px" }}>
-                      {row.items.map((item, idx) => (
-                        <div key={idx} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
-                          <span style={{ color: T.luxuryBrown, fontSize: 12 }}>{item.type}</span>
-                        </div>
-                      ))}
-                    </td>
-                    <td style={{ padding: "14px 14px", color: T.antiqueGold, fontWeight: 600 }}>{row.price}</td>
-                    <td style={{ padding: "14px 14px", color: T.taupe }}>—</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", fontFamily: F.ui, fontSize: 13 }}>
+            <DataTable
+              columns={purchaseColumns}
+              data={retailPurchaseRows}
+              getRowId={r => r.date + r.items.map(i => i.id).join(",")}
+              emptyTitle="No purchases in this period"
+            />
           </div>
         </>
       ) : (

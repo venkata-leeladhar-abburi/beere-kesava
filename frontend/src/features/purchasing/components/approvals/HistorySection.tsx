@@ -5,6 +5,7 @@ import { T, F } from "./tokens";
 import { TypePill } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi } from "../../../../shared/api/audit-log";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const HIST_FILTERS = ["All History", "Purchase Orders", "Warp Requests", "Rate Changes", "Approved Only", "Rejected Only"];
 const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];

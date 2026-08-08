@@ -16,6 +16,7 @@ import { T, F } from "./theme";
 import { STATUS_CFG } from "./types";
 import { LoomMaterialsTab } from "./LoomMaterialsTab";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -237,47 +238,50 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                     <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }} />
                   </div>
 
-                  <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" as const, minWidth: 560 }}>
-                      <thead>
-                        <tr style={{ background: T.warmCream }}>
-                          {["Saree ID", "Saree Type", "Bulk Order", "Design Dispatch", "QC Status"].map(h => (
-                            <th key={h} style={{ padding: "8px 10px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rowsInBatch.map((row, idx) => {
-                          let qcLabel = "In Production", qcBg = "rgba(139,112,96,0.08)", qcColorVal: string = T.taupe;
-                          if (row.qcPassed === true) { qcLabel = "QC Passed"; qcBg = "rgba(30,102,64,0.08)"; qcColorVal = T.green; }
-                          else if (row.qcPassed === false) { qcLabel = "QC Failed"; qcBg = "rgba(192,57,43,0.08)"; qcColorVal = T.crimson; }
-                          return (
-                            <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
-                              <td style={{ padding: "9px 10px" }}>
-                                {row.sareeId
-                                  ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
-                                  : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>}
-                              </td>
-                              <td style={{ padding: "9px 10px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</td>
-                              <td style={{ padding: "9px 10px", fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</td>
-                              <td style={{ padding: "9px 10px" }}>
-                                {idx === 0 && batchDispatches.length > 0
-                                  ? <Button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })} variant="link"
-                                      className="text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                                      {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
-                                    </Button>
-                                  : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>}
-                              </td>
-                              <td style={{ padding: "9px 10px" }}>
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" as const }}>
-                                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />{qcLabel}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 560 }}>
+                    <DataTable
+                      columns={[
+                        {
+                          id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId,
+                          cell: (_v, row) => row.sareeId
+                            ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
+                            : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
+                        },
+                        {
+                          id: "sareeTypeCode", header: "Saree Type", accessor: row => row.sareeTypeCode,
+                          cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</span>,
+                        },
+                        {
+                          id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel,
+                          cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</span>,
+                        },
+                        {
+                          id: "dispatch", header: "Design Dispatch", accessor: () => null,
+                          cell: (_v, row) => (rowsInBatch.indexOf(row) === 0 && batchDispatches.length > 0)
+                            ? <Button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })} variant="link"
+                                className="text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
+                                {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
+                              </Button>
+                            : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>,
+                        },
+                        {
+                          id: "qc", header: "QC Status", accessor: row => row.qcPassed,
+                          cell: (_v, row) => {
+                            let qcLabel = "In Production", qcBg = "rgba(139,112,96,0.08)", qcColorVal: string = T.taupe;
+                            if (row.qcPassed === true) { qcLabel = "QC Passed"; qcBg = "rgba(30,102,64,0.08)"; qcColorVal = T.green; }
+                            else if (row.qcPassed === false) { qcLabel = "QC Failed"; qcBg = "rgba(192,57,43,0.08)"; qcColorVal = T.crimson; }
+                            return (
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" as const }}>
+                                <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />{qcLabel}
+                              </span>
+                            );
+                          },
+                        },
+                      ] as ColumnDef<typeof rowsInBatch[number]>[]}
+                      data={rowsInBatch}
+                      getRowId={row => row.sareeId || String(rowsInBatch.indexOf(row))}
+                      emptyTitle="No sarees in this batch"
+                    />
                   </div>
                 </div>
               );

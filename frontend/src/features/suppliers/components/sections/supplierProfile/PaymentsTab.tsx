@@ -4,6 +4,34 @@ import React from "react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import { SupplierPayment, formatINR } from "../../../contexts/SupplierContext";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+
+const paymentColumns: ColumnDef<SupplierPayment>[] = [
+  {
+    id: "id", header: "Payment Ref", accessor: p => p.id,
+    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{p.id}</span>,
+  },
+  {
+    id: "date", header: "Date", accessor: p => p.date,
+    cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
+  },
+  {
+    id: "purchaseId", header: "Against Purchase", accessor: p => p.purchaseId,
+    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.purchaseId || "—"}</span>,
+  },
+  {
+    id: "mode", header: "Mode", accessor: p => p.mode,
+    cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.mode}</span>,
+  },
+  {
+    id: "reference", header: "Reference", accessor: p => p.reference,
+    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span>,
+  },
+  {
+    id: "amount", header: "Amount", accessor: p => p.amount,
+    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>{formatINR(p.amount)}</span>,
+  },
+];
 
 export function PaymentsTab({
   card, filteredPaidSum, totalPaid, outstanding, payFilter, setPayFilter, filteredPayments,
@@ -39,27 +67,11 @@ export function PaymentsTab({
         {filteredPayments.length === 0 ? (
           <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: T.silkCream }}>
-                {["Payment Ref", "Date", "Against Purchase", "Mode", "Reference", "Amount"].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPayments.map((p, i) => (
-                <tr key={p.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{p.id}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.purchaseId || "—"}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.mode}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>{formatINR(p.amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={paymentColumns}
+            data={filteredPayments}
+            getRowId={p => p.id}
+          />
         )}
       </div>
     </div>

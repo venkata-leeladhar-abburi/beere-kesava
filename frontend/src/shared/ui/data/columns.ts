@@ -25,7 +25,9 @@ const DEFAULT_ALIGN: Partial<Record<ColumnType, ColumnAlign>> = {
 
 export interface ColumnDef<T> {
   id: string;
-  header: string;
+  /** Usually a string; a ReactNode is accepted for the rare header that
+   *  needs interactive content (e.g. a select-all checkbox). */
+  header: React.ReactNode;
   accessor: (row: T) => unknown;
 
   type?: ColumnType;

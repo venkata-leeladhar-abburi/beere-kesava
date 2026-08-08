@@ -10,6 +10,7 @@ import { STAGE_CFG } from "../../data";
 import type { Batch } from "../../types";
 import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
   if (tallied) {
@@ -240,101 +241,164 @@ export function BatchCardGrid({ batches, onView, onSlip, onEdit }: { batches: Ba
 }
 
 export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
-  const cols = ["Batch Number", "Stage", "Weavers", "Design", "Saree Type", "Progress", "Started", "Expected End", "Making Charges", "Action"];
-  return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 140px 150px 140px 150px 120px 120px 130px 90px", padding: "12px 20px", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-        {cols.map(h => <div key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>{h}</div>)}
-      </div>
-      {batches.map((b, i) => {
+  const columns: ColumnDef<Batch>[] = [
+    {
+      id: "id", header: "Batch Number", accessor: b => b.id,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</span>,
+    },
+    {
+      id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
+      cell: (_v, b) => {
+        const cfg = STAGE_CFG[b.stage];
+        return <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span>;
+      },
+    },
+    {
+      id: "weavers", header: "Weavers", accessor: b => b.weavers,
+      cell: (_v, b) => <div style={{ display: "flex", gap: 6 }}>{b.weavers.map(w => <Pip key={w.id} initials={w.initials} bg={w.bg} size={28} />)}</div>,
+    },
+    {
+      id: "design", header: "Design", accessor: b => b.design,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></span>,
+    },
+    {
+      id: "sareeCode", header: "Saree Type", accessor: b => b.sareeCode,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.sareeTypeName}</div></span>,
+    },
+    {
+      id: "progress", header: "Progress", accessor: b => b.done,
+      cell: (_v, b) => {
         const cfg = STAGE_CFG[b.stage];
         const pct = Math.round((b.done / b.total) * 100);
-        const est = b.total * b.rate;
         return (
-          <div key={b.id} style={{ display: "grid", gridTemplateColumns: "140px 1fr 140px 150px 140px 150px 120px 120px 130px 90px", alignItems: "center", padding: "14px 20px", background: i % 2 === 1 ? "rgba(247,242,234,0.55)" : "#FFFFFF", borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.border}`, minHeight: 64 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
-            <div><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></div>
-            <div style={{ display: "flex", gap: 6 }}>{b.weavers.map(w => <Pip key={w.id} initials={w.initials} bg={w.bg} size={28} />)}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.sareeTypeName}</div></div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5 }}>{b.done}/{b.total}</div>
-              <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", width: 110 }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: cfg.border, borderRadius: 99 }} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} /> {b.late}d late</div>}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
-            <div>
-              <div style={{ display: "flex", gap: 6 }}>
-                <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-                  <PhEye size={14} /> View
-                </Button>
-                {b.isLive && onEdit && (
-                  <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
-                    <PencilSimple size={14} /> Edit
-                  </Button>
-                )}
-              </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5 }}>{b.done}/{b.total}</div>
+            <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", width: 110 }}>
+              <div style={{ height: "100%", width: `${pct}%`, background: cfg.border, borderRadius: 99 }} />
             </div>
           </div>
         );
-      })}
+      },
+    },
+    {
+      id: "started", header: "Started", accessor: b => b.started,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</span>,
+    },
+    {
+      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>
+          {b.submitted ?? b.expected}
+          {b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} /> {b.late}d late</div>}
+        </span>
+      ),
+    },
+    {
+      id: "charges", header: "Making Charges", accessor: b => b.total * b.rate,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{(b.total * b.rate).toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions",
+      cell: (_v, b) => (
+        <div style={{ display: "flex", gap: 6 }}>
+          <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
+            <PhEye size={14} /> View
+          </Button>
+          {b.isLive && onEdit && (
+            <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
+              <PencilSimple size={14} /> Edit
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
+      <DataTable columns={columns} data={batches} getRowId={b => b.id} />
     </div>
   );
 }
 
 export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
-  const headers = ["Batch No.", "Stage", "Weaver(s)", "Saree Type", "Materials Given", "Started", "Expected End", "Target", "Done", "QC Passed", "Rate/Saree", "Est. Charges", "Action"];
+  const columns: ColumnDef<Batch>[] = [
+    {
+      id: "id", header: "Batch No.", accessor: b => b.id,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700, whiteSpace: "nowrap" }}>{b.id}</span>,
+    },
+    {
+      id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
+      cell: (_v, b) => {
+        const cfg = STAGE_CFG[b.stage];
+        return <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span>;
+      },
+    },
+    {
+      id: "weavers", header: "Weaver(s)", accessor: b => b.weavers,
+      cell: (_v, b) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} <span style={{ color: T.taupe }}>({w.id})</span></div>)}
+        </div>
+      ),
+    },
+    {
+      id: "sareeCode", header: "Saree Type", accessor: b => b.sareeCode,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</span>,
+    },
+    {
+      id: "materials", header: "Materials Given", accessor: b => b.materials,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200, lineHeight: 1.5, display: "inline-block" }}>{b.materials}</span>,
+    },
+    {
+      id: "started", header: "Started", accessor: b => b.started,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>{b.started}</span>,
+    },
+    {
+      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: b.late ? T.crimson : T.taupe, whiteSpace: "nowrap", fontWeight: b.late ? 600 : 400 }}>{b.submitted ?? b.expected}</span>,
+    },
+    {
+      id: "total", header: "Target", accessor: b => b.total, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.luxuryBrown }}>{b.total}</span>,
+    },
+    {
+      id: "done", header: "Done", accessor: b => b.done, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.antiqueGold }}>{b.done}</span>,
+    },
+    {
+      id: "qcPassed", header: "QC Passed", accessor: b => b.qcPassed, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.green }}>{b.qcPassed ?? "—"}</span>,
+    },
+    {
+      id: "rate", header: "Rate/Saree", accessor: b => b.rate,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{b.rate}</span>,
+    },
+    {
+      id: "est", header: "Est. Charges", accessor: b => b.total * b.rate,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{(b.total * b.rate).toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions",
+      cell: (_v, b) => (
+        <div style={{ display: "flex", gap: 6 }}>
+          <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
+            <PhEye size={14} /> View
+          </Button>
+          {b.isLive && onEdit && (
+            <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
+              <PencilSimple size={14} /> Edit
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1400 }}>
-          <thead>
-            <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-              {headers.map(h => <th key={h} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {batches.map((b, i) => {
-              const cfg = STAGE_CFG[b.stage];
-              const est = b.total * b.rate;
-              return (
-                <tr key={b.id} style={{ background: i % 2 === 1 ? "rgba(247,242,234,0.50)" : "#FFFFFF", borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.border}` }}>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700, whiteSpace: "nowrap" }}>{b.id}</td>
-                  <td style={{ padding: "14px 16px" }}><span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span></td>
-                  <td style={{ padding: "14px 16px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {b.weavers.map(w => <div key={w.id} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, whiteSpace: "nowrap", fontWeight: 500 }}>{w.name} <span style={{ color: T.taupe }}>({w.id})</span></div>)}
-                    </div>
-                  </td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200, lineHeight: 1.5 }}>{b.materials}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>{b.started}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 13, color: b.late ? T.crimson : T.taupe, whiteSpace: "nowrap", fontWeight: b.late ? 600 : 400 }}>{b.submitted ?? b.expected}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.luxuryBrown, textAlign: "center" }}>{b.total}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.antiqueGold, textAlign: "center" }}>{b.done}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.display, fontSize: 16, color: T.green, textAlign: "center" }}>{b.qcPassed ?? "—"}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{b.rate}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</td>
-                  <td style={{ padding: "14px 16px" }}>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-                        <PhEye size={14} /> View
-                      </Button>
-                      {b.isLive && onEdit && (
-                        <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
-                          <PencilSimple size={14} /> Edit
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <DataTable columns={columns} data={batches} getRowId={b => b.id} />
       </div>
       <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {batches.length} batches</div>
     </div>

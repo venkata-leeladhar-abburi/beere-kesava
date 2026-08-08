@@ -6,6 +6,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface HistoryRow {
   date: string;
@@ -61,6 +62,35 @@ export function RateHistorySection() {
     loadHistory();
   }, []);
 
+  const filteredHistory = history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter));
+
+  const historyColumns: ColumnDef<HistoryRow>[] = [
+    {
+      id: "date", header: "Date & Time", accessor: r => r.date,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
+    },
+    {
+      id: "by", header: "Changed By", accessor: r => r.by,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{r.by}</span>,
+    },
+    {
+      id: "what", header: "What Was Changed", accessor: r => r.what,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{r.what}</span>,
+    },
+    {
+      id: "old", header: "Old Value", accessor: r => r.old,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson }}>{r.old}</span>,
+    },
+    {
+      id: "next", header: "New Value", accessor: r => r.next,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>{r.next}</span>,
+    },
+    {
+      id: "reason", header: "Reason", accessor: r => r.reason,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe }}>{r.reason}</span>,
+    },
+  ];
+
   return (
     <div style={{ padding: "48px 56px" }}>
       <SectionTitle link={
@@ -90,34 +120,12 @@ export function RateHistorySection() {
         </div>
       ) : (
       <div style={cardStyle}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              {["Date & Time", "Changed By", "What Was Changed", "Old Value", "New Value", "Reason"].map(h => (
-                <th key={h} style={thStyle}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).length === 0 && (
-              <tr>
-                <td colSpan={6} style={{ ...tdStyle, textAlign: "center", padding: "32px 16px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>
-                  No rate changes recorded yet.
-                </td>
-              </tr>
-            )}
-            {history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter)).map((row, i) => (
-              <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(110,15,45,0.015)" }}>
-                <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{row.date}</td>
-                <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{row.by}</td>
-                <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{row.what}</td>
-                <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson }}>{row.old}</td>
-                <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>{row.next}</td>
-                <td style={{ ...tdStyle, fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe }}>{row.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={historyColumns}
+          data={filteredHistory}
+          getRowId={r => String(filteredHistory.indexOf(r))}
+          emptyTitle="No rate changes recorded yet."
+        />
 
         {/* Table footer */}
         <div style={{

@@ -1,15 +1,30 @@
 // ── Table view + directory container that switches between card/list/table ─
 import React, { useState } from "react";
-import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG, Status } from "../types";
-import { WEAVERS, TABLE_COLS } from "../data";
+import { WEAVERS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndListViews";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+interface WeaverTableRow {
+  id: string;
+  code?: string;
+  name: string;
+  village: string;
+  mobile: string;
+  looms: number;
+  status: Status;
+  thisMonth: number;
+  passRate: number;
+  totalEver: string;
+  totalPaid: string;
+  lastActive: string;
+}
 
 // Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
 // The stats endpoint has no monthly breakdown, total-paid, or last-active
@@ -54,7 +69,84 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   const [showAll, setShowAll] = useState(true);
   const { rows: TABLE_ROWS, isLoading, isError } = useRealTableRows();
   const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
-  const TD: React.CSSProperties = { padding: "16px 18px", borderBottom: "1px solid rgba(110,15,45,0.06)", verticalAlign: "middle" };
+
+  const columns: ColumnDef<WeaverTableRow>[] = [
+    {
+      id: "code", header: "Weaver Code", accessor: r => r.code ?? r.id,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span>,
+    },
+    {
+      id: "name", header: "Name", accessor: r => r.name,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span>,
+    },
+    {
+      id: "village", header: "Village", accessor: r => r.village,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <PhMapPin size={14} color={T.taupe} />
+          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.village}</span>
+        </div>
+      ),
+    },
+    {
+      id: "mobile", header: "Mobile", accessor: r => r.mobile,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span>,
+    },
+    {
+      id: "looms", header: "Looms", accessor: r => r.looms, type: "number", align: "center", sortable: true,
+      cell: (_v, r) => (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Rows size={15} color={T.taupe} />
+          <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{r.looms}</span>
+        </div>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status",
+      cell: (_v, r) => {
+        const cfg = STATUS_CFG[r.status];
+        return (
+          <span style={{ display: "inline-flex", alignItems: "center", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
+            {r.status === "active" ? "● Weaving" : r.status === "qc" ? "● QC Check" : "○ Idle"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "thisMonth", header: "This Month", accessor: r => r.thisMonth, type: "number", sortable: true,
+      cell: (_v, r) => <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{r.thisMonth}</span>,
+    },
+    {
+      id: "passRate", header: "Pass Rate", accessor: r => r.passRate, type: "number", sortable: true,
+      cell: (_v, r) => <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(r.passRate) }}>{r.passRate}%</span>,
+    },
+    {
+      id: "totalEver", header: "Total Ever", accessor: r => r.totalEver,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown }}>{r.totalEver}</span>,
+    },
+    {
+      id: "totalPaid", header: "Total Paid", accessor: r => r.totalPaid,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span>,
+    },
+    {
+      id: "lastActive", header: "Last Active", accessor: r => r.lastActive,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span>,
+    },
+    {
+      id: "actions", header: "", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <Button
+          onClick={() => onSelect(r.id)}
+          variant="secondary"
+          size="sm"
+          className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
+        >
+          <PhEye size={18} /> View
+        </Button>
+      ),
+    },
+  ];
+
   if (isLoading) {
     return (
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
@@ -79,64 +171,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1240 }}>
-          <thead>
-            <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-              {TABLE_COLS.map(c => (
-                <th key={c} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((r, i) => {
-              const cfg = STATUS_CFG[r.status];
-              return (
-                <motion.tr
-                  key={r.id}
-                  initial={{ opacity: 0, x: -6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-                  transition={{ duration: 0.38, delay: i * 0.04 }}
-                  style={{ background: i % 2 === 1 ? "rgba(247,242,234,0.50)" : "#FFFFFF" }}
-                >
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span></td>
-                  <td style={TD}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <PhMapPin size={14} color={T.taupe} />
-                      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.village}</span>
-                    </div>
-                  </td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span></td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      <Rows size={15} color={T.taupe} />
-                      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{r.looms}</span>
-                    </div>
-                  </td>
-                  <td style={TD}>
-                    <span style={{ display: "inline-flex", alignItems: "center", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
-                      {r.status === "active" ? "● Weaving" : r.status === "qc" ? "● QC Check" : "○ Idle"}
-                    </span>
-                  </td>
-                  <td style={TD}><span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{r.thisMonth}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(r.passRate) }}>{r.passRate}%</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown }}>{r.totalEver}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span></td>
-                  <td style={TD}>
-                    <Button
-                      onClick={() => onSelect(r.id)}
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
-                    >
-                      <PhEye size={18} /> View
-                    </Button>
-                  </td>
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <DataTable columns={columns} data={visible} getRowId={r => r.id} />
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>

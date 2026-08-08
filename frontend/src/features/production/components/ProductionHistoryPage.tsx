@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { ProductionHistoryFooter } from "./ProductionHistoryFooter";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useBatches } from "../contexts/BatchContext";
 import { qcApi } from "../../../shared/api/qc";
 import type { HistoryBatch } from "./types";
@@ -230,132 +231,105 @@ function StatsBar({ batches }: { batches: HistoryBatch[] }) {
 }
 
 // ── Section 4: Table ──────────────────────────────────────────────────────────
-const TH: React.CSSProperties = {
-  fontFamily: F.ui,
-  fontSize: 12,
-  fontWeight: 700,
-  color: T.taupe,
-  textTransform: "uppercase",
-  letterSpacing: "0.6px",
-  padding: "10px 14px",
-  textAlign: "left",
-  background: "#F3EEE8",
-  borderBottom: `2px solid ${T.borderDef}`,
-  whiteSpace: "nowrap",
-};
-
-const TD: React.CSSProperties = {
-  fontFamily: F.ui,
-  fontSize: 12,
-  color: T.luxuryBrown,
-  padding: "11px 14px",
-  verticalAlign: "middle",
-  whiteSpace: "nowrap",
-};
-
 function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoading: boolean }) {
+  const columns: ColumnDef<HistoryBatch>[] = [
+    {
+      id: "id", header: "Batch Number", accessor: b => b.id,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
+          {b.id}
+        </span>
+      ),
+    },
+    {
+      id: "designCode", header: "Design Code", accessor: b => b.designCode,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.designCode}</span>,
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: b => b.sareeType,
+      cell: (_v, b) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke={T.antiqueGold} strokeWidth="1.2" fill="none" />
+            <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={T.antiqueGold} strokeWidth="0.8" />
+            <line x1="1" y1="8.5" x2="13" y2="8.5" stroke={T.antiqueGold} strokeWidth="0.8" />
+          </svg>
+          <span style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</span>
+        </div>
+      ),
+    },
+    {
+      id: "batchSize", header: "Batch Size", accessor: b => b.batchSize, align: "center",
+      cell: (_v, b) => <div style={{ display: "flex", justifyContent: "center" }}><BatchSquares size={b.batchSize} /></div>,
+    },
+    {
+      id: "weavers", header: "Weavers", accessor: b => b.weavers,
+      cell: (_v, b) => (
+        <div style={{ display: "flex", gap: -4 }}>
+          {b.weavers.map((w, wi) => (
+            <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
+              <Pip initials={w.initials} bg={w.bg} />
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "completion", header: "Completion", accessor: b => b.completion, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>,
+    },
+    {
+      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
+    },
+    {
+      id: "okFound", header: "OK / Found", accessor: b => b.okPieces, align: "center",
+      cell: (_v, b) => b.okPieces !== null ? (
+        <span style={{ fontFamily: F.mono, fontSize: 12 }}>
+          <span style={{ color: T.green, fontWeight: 600 }}>{b.okPieces}</span>
+          <span style={{ color: T.taupe }}> / </span>
+          <span style={{ color: T.amber, fontWeight: 600 }}>{b.found}</span>
+        </span>
+      ) : (
+        <span style={{ color: T.taupe, fontSize: 12 }}>—</span>
+      ),
+    },
+    {
+      id: "status", header: "Printing / Embossing", accessor: b => b.status, type: "status",
+      cell: (_v, b) => <StatusBadge status={b.status} />,
+    },
+    {
+      id: "makingCharges", header: "Making Charges", accessor: b => b.makingCharges, align: "end",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>,
+    },
+    {
+      id: "completedOn", header: "Completed On", accessor: b => b.completedOn,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
+    },
+    {
+      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center",
+      cell: (_v, b) => b.bulkOrder ? (
+        <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+      ) : (
+        <span style={{ color: "#D1C5BC", fontSize: 12 }}>—</span>
+      ),
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", align: "center",
+      cell: () => <IconButton variant="secondary" size="sm" label="View batch" icon={Eye} />,
+    },
+  ];
+
   return (
     <div style={{ padding: "0 40px", background: T.warmIvory }}>
       <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", marginTop: 20 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1050 }}>
-          <thead>
-            <tr>
-              <th style={TH}>Batch Number</th>
-              <th style={TH}>Design Code</th>
-              <th style={TH}>Saree Type</th>
-              <th style={{ ...TH, textAlign: "center" }}>Batch Size</th>
-              <th style={TH}>Weavers</th>
-              <th style={{ ...TH, textAlign: "center" }}>Completion</th>
-              <th style={{ ...TH, textAlign: "center" }}>All Pieces</th>
-              <th style={{ ...TH, textAlign: "center" }}>OK / Found</th>
-              <th style={TH}>Printing / Embossing</th>
-              <th style={{ ...TH, textAlign: "right" }}>Making Charges</th>
-              <th style={TH}>Completed On</th>
-              <th style={{ ...TH, textAlign: "center" }}>Bulk Order</th>
-              <th style={{ ...TH, textAlign: "center" }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr><td colSpan={13} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading production history…</td></tr>
-            )}
-            {!isLoading && batches.length === 0 && (
-              <tr><td colSpan={13} style={{ ...TD, textAlign: "center", color: T.taupe }}>No completed batches yet.</td></tr>
-            )}
-            {batches.map((b, i) => (
-              <tr key={b.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#F8F4EF" }}>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
-                    {b.id}
-                  </span>
-                </td>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.designCode}</span>
-                </td>
-                <td style={TD}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <rect x="1" y="3" width="12" height="8" rx="1.5" stroke={T.antiqueGold} strokeWidth="1.2" fill="none" />
-                      <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={T.antiqueGold} strokeWidth="0.8" />
-                      <line x1="1" y1="8.5" x2="13" y2="8.5" stroke={T.antiqueGold} strokeWidth="0.8" />
-                    </svg>
-                    <span style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</span>
-                  </div>
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <BatchSquares size={b.batchSize} />
-                  </div>
-                </td>
-                <td style={TD}>
-                  <div style={{ display: "flex", gap: -4 }}>
-                    {b.weavers.map((w, wi) => (
-                      <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
-                        <Pip initials={w.initials} bg={w.bg} />
-                      </div>
-                    ))}
-                  </div>
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  {b.okPieces !== null ? (
-                    <span style={{ fontFamily: F.mono, fontSize: 12 }}>
-                      <span style={{ color: T.green, fontWeight: 600 }}>{b.okPieces}</span>
-                      <span style={{ color: T.taupe }}> / </span>
-                      <span style={{ color: T.amber, fontWeight: 600 }}>{b.found}</span>
-                    </span>
-                  ) : (
-                    <span style={{ color: T.taupe, fontSize: 12 }}>—</span>
-                  )}
-                </td>
-                <td style={TD}>
-                  <StatusBadge status={b.status} />
-                </td>
-                <td style={{ ...TD, textAlign: "right" }}>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>
-                </td>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  {b.bulkOrder ? (
-                    <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
-                  ) : (
-                    <span style={{ color: "#D1C5BC", fontSize: 12 }}>—</span>
-                  )}
-                </td>
-                <td style={{ ...TD, textAlign: "center" }}>
-                  <IconButton variant="secondary" size="sm" label="View batch" icon={Eye} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={columns}
+          data={batches}
+          getRowId={b => b.id}
+          loading={isLoading}
+          emptyTitle="No completed batches yet"
+        />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0 24px" }}>

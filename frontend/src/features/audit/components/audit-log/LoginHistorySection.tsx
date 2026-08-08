@@ -8,6 +8,7 @@ import { LoginEvent } from "./data";
 import { PaginationBtn } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, BackendAuditLog } from "../../../../shared/api/audit-log";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -47,6 +48,64 @@ export function LoginHistorySection() {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
   const [entries, setEntries] = useState<LoginEvent[]>([]);
   const [total, setTotal] = useState(0);
+
+  const columns: ColumnDef<LoginEvent>[] = [
+    {
+      id: "time", header: "Timestamp", accessor: e => e.time,
+      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
+    },
+    {
+      id: "user", header: "User", accessor: e => e.user,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{e.user}</span>,
+    },
+    {
+      id: "role", header: "Role", accessor: e => e.role,
+      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.role}</span>,
+    },
+    {
+      id: "event", header: "Event", accessor: e => e.status,
+      cell: (_v, e) => (
+        <span style={{
+          background: e.status === "login" ? "rgba(30,102,64,0.10)" : e.status === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
+          color: e.status === "login" ? T.green : e.status === "logout" ? T.taupe : T.crimson,
+          fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
+        }}>
+          {e.status === "login" ? "✓ Login" : e.status === "logout" ? "→ Logout" : "✗ Failed Login"}
+        </span>
+      ),
+    },
+    {
+      id: "device", header: "Device", accessor: e => e.device,
+      cell: (_v, e) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>
+          {e.device.toLowerCase().includes("mobile") ? <Smartphone size={12} color={T.taupe} /> : <Monitor size={12} color={T.taupe} />}
+          {e.device}
+        </div>
+      ),
+    },
+    {
+      id: "duration", header: "Session Duration", accessor: e => e.duration,
+      cell: (_v, e) => e.duration ? (
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.duration}</span>
+      ) : e.status === "login" ? (
+        <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 12 }}>Ongoing</span>
+      ) : (
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: e => e.status, type: "status",
+      cell: (_v, e) => (
+        <span style={{
+          background: e.status === "login" ? "rgba(30,102,64,0.10)" : e.status === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
+          color: e.status === "login" ? T.green : e.status === "logout" ? T.taupe : T.crimson,
+          fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
+        }}>
+          {e.status === "login" ? "Active" : e.status === "logout" ? "Ended" : "Failed"}
+        </span>
+      ),
+    },
+  ];
 
   useEffect(() => {
     auditLogApi.list().then(res => {
@@ -218,105 +277,12 @@ export function LoginHistorySection() {
               boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
               overflowX: "auto",
             }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ background: T.silkCream }}>
-                    {["Timestamp", "User", "Role", "Event", "Device", "Session Duration", "Status"].map(h => (
-                      <th key={h} style={{
-                        fontFamily: F.mono,
-                        fontSize: 12,
-                        textTransform: "uppercase",
-                        color: T.taupe,
-                        padding: "12px 14px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        letterSpacing: "0.5px",
-                        whiteSpace: "nowrap",
-                        borderBottom: `1px solid ${T.borderDef}`,
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry, i) => {
-                    const sessionDisplay = entry.duration
-                      ? entry.duration
-                      : entry.status === "login"
-                      ? <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 12 }}>Ongoing</span>
-                      : "—";
-
-                    return (
-                      <tr
-                        key={entry.id}
-                        style={{
-                          background: i % 2 === 0 ? "#fff" : T.warmIvory,
-                          transition: "background 0.12s",
-                          cursor: "default",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = T.cream)}
-                        onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : T.warmIvory)}
-                      >
-                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                          {entry.time}
-                        </td>
-                        <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                          {entry.user}
-                        </td>
-                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                          {entry.role}
-                        </td>
-                        <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                          <span style={{
-                            background: entry.status === "login"
-                              ? "rgba(30,102,64,0.10)"
-                              : entry.status === "logout"
-                              ? "rgba(139,112,96,0.10)"
-                              : "rgba(192,57,43,0.08)",
-                            color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
-                            fontFamily: F.ui,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            padding: "2px 9px",
-                            borderRadius: 999,
-                            whiteSpace: "nowrap",
-                          }}>
-                            {entry.status === "login" ? "✓ Login" : entry.status === "logout" ? "→ Logout" : "✗ Failed Login"}
-                          </span>
-                        </td>
-                        <td style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            {entry.device.toLowerCase().includes("mobile") ? <Smartphone size={12} color={T.taupe} /> : <Monitor size={12} color={T.taupe} />}
-                            {entry.device}
-                          </div>
-                        </td>
-                        <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                          {sessionDisplay}
-                        </td>
-                        <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                          <span style={{
-                            background: entry.status === "login"
-                              ? "rgba(30,102,64,0.10)"
-                              : entry.status === "logout"
-                              ? "rgba(139,112,96,0.10)"
-                              : "rgba(192,57,43,0.08)",
-                            color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
-                            fontFamily: F.ui,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            padding: "2px 9px",
-                            borderRadius: 999,
-                            whiteSpace: "nowrap",
-                          }}>
-                            {entry.status === "login" ? "Active" : entry.status === "logout" ? "Ended" : "Failed"}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <DataTable
+                columns={columns}
+                data={entries}
+                getRowId={entry => String(entry.id)}
+                emptyTitle="No login history yet"
+              />
 
               {/* Pagination */}
               <div style={{

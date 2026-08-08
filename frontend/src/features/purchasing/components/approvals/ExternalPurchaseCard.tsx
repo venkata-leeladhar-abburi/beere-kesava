@@ -8,6 +8,7 @@ import {
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ─── External purchase request card ───────────────────────────────────────────
 // Shows the whole purchase the admin filled in — supplier, invoice, and every
@@ -27,6 +28,53 @@ export function ExternalPurchaseCard({
   const totals = purchaseTotals(sarees);
   const pieces = expandSareePieces(sarees);
   const urgent = req.urgency === "Urgent";
+
+  const pieceColumns: ColumnDef<(typeof pieces)[number]>[] = [
+    {
+      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
+    },
+    {
+      id: "id", header: "Saree Code", accessor: s => s.id,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{s.id}</span>,
+    },
+    {
+      id: "lineCode", header: "Line Serial", accessor: s => s.lineCode,
+      cell: (_v, s) => (
+        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
+          {s.lineCode} <span style={{ fontSize: 12 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
+        </span>
+      ),
+    },
+    {
+      id: "sareeType", header: "Type", accessor: s => s.sareeType,
+      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{s.sareeType || "—"}</span>,
+    },
+    {
+      id: "color", header: "Colour", accessor: s => s.color,
+      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</span>,
+    },
+    {
+      id: "weight", header: "Weight", accessor: s => s.weight,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.weight || "—"}</span>,
+    },
+    {
+      id: "price", header: "Buying Price", accessor: s => s.price,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</span>,
+    },
+    {
+      id: "sellPercent", header: "Sell %", accessor: s => s.sellPercent,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</span>,
+    },
+    {
+      id: "finalAmount", header: "Selling Price", accessor: s => s.finalAmount,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(s.finalAmount)}</span>,
+    },
+    {
+      id: "profit", header: "Profit", accessor: s => lineProfit(s),
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</span>,
+    },
+  ];
 
   const meta: { label: string; value: string }[] = [
     { label: "Supplier ID", value: req.supplierId || "—" },
@@ -139,46 +187,17 @@ export function ExternalPurchaseCard({
           </Button>
           {open && (
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-                <thead>
-                  <tr style={{ background: T.warmIvory }}>
-                    {["S.No", "Saree Code", "Line Serial", "Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
-                      <th key={h} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: 0.7, whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {h.toUpperCase()}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {pieces.map((s, i) => (
-                    <tr key={s.id} style={{ background: i % 2 === 0 ? "#FFF" : T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{i + 1}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{s.id}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
-                        {s.lineCode} <span style={{ fontSize: 12 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
-                      </td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{s.sareeType || "—"}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.weight || "—"}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(s.finalAmount)}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr style={{ background: T.silkCream }}>
-                    <td colSpan={6} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
-                      Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
-                    </td>
-                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{formatINR(totals.buying)}</td>
-                    <td />
-                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(totals.selling)}</td>
-                    <td style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(totals.profit)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+              <DataTable columns={pieceColumns} data={pieces} getRowId={s => s.id} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: T.silkCream, padding: "9px 12px", minWidth: 760 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+                  Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{formatINR(totals.buying)}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(totals.selling)}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(totals.profit)}</span>
+                </div>
+              </div>
             </div>
           )}
         </div>

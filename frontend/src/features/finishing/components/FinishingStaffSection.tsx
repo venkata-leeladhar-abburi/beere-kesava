@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Package, Camera } from "lucide-react";
 import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
 import { Button } from "../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -23,23 +24,26 @@ function Pill({ label, color, bg }: { label: string; color: string; bg: string }
   return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
 }
 
-const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
 const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
-function AssignmentRow({ a, ret }: { a: FinishingAssignment; ret: FinishingReturn | undefined }) {
-  return (
-    <tr>
-      <td style={tdMono}>{a.sareeId}</td>
-      <td style={td}>
-        {a.quotationRef ? <Pill label={a.quotationRef} color="#8B6018" bg="rgba(200,146,58,0.14)" /> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-      <td style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</td>
-      <td style={td}>{a.weaverName}</td>
-      <td style={td}>{a.assignedDate}</td>
-      <td style={td}>{a.assignedBy}</td>
-      <td style={td}>
-        {!ret ? (
+function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<FinishingAssignment>[] {
+  const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
+  return [
+    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, cell: (_v, a) => <span style={tdMono}>{a.sareeId}</span> },
+    {
+      id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
+      cell: (_v, a) => a.quotationRef ? <Pill label={a.quotationRef} color="#8B6018" bg="rgba(200,146,58,0.14)" /> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
+    },
+    { id: "sareeType", header: "Saree Type", accessor: a => a.sareeType, cell: (_v, a) => <span style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</span> },
+    { id: "weaver", header: "Weaver", accessor: a => a.weaverName, cell: (_v, a) => <span style={td}>{a.weaverName}</span> },
+    { id: "assignedOn", header: "Assigned On", accessor: a => a.assignedDate, cell: (_v, a) => <span style={td}>{a.assignedDate}</span> },
+    { id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, cell: (_v, a) => <span style={td}>{a.assignedBy}</span> },
+    {
+      id: "returnStatus", header: "Return Status", accessor: a => findRet(a)?.condition,
+      cell: (_v, a) => {
+        const ret = findRet(a);
+        return !ret ? (
           <Pill label="Awaiting Return" color={T.orange} bg="rgba(230,126,34,0.12)" />
         ) : (
           <div>
@@ -53,22 +57,31 @@ function AssignmentRow({ a, ret }: { a: FinishingAssignment; ret: FinishingRetur
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, marginTop: 2 }}>{ret.damageType || "Damage"}: {ret.damageNotes}</div>
             )}
           </div>
-        )}
-      </td>
-      <td style={td}>
-        {ret?.damagePhotoUrl ? (
+        );
+      },
+    },
+    {
+      id: "photo", header: "Photo", accessor: a => findRet(a)?.damagePhotoUrl,
+      cell: (_v, a) => {
+        const ret = findRet(a);
+        return ret?.damagePhotoUrl ? (
           <div style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Camera size={12} color="rgba(255,255,255,0.85)" />
           </div>
-        ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-      <td style={td}>
-        {ret ? <Pill label={ret.inventoryStatus} color={ret.inventoryStatus === "Dispatched" ? T.green : ret.inventoryStatus.startsWith("Damaged") ? T.crimson : T.royalBurgundy}
-          bg={ret.inventoryStatus === "Dispatched" ? "rgba(30,102,64,0.09)" : ret.inventoryStatus.startsWith("Damaged") ? "rgba(192,57,43,0.10)" : "rgba(110,15,45,0.06)"} />
-          : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-      </td>
-    </tr>
-  );
+        ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>;
+      },
+    },
+    {
+      id: "inventoryStatus", header: "Inventory Status", accessor: a => findRet(a)?.inventoryStatus,
+      cell: (_v, a) => {
+        const ret = findRet(a);
+        return ret ? (
+          <Pill label={ret.inventoryStatus} color={ret.inventoryStatus === "Dispatched" ? T.green : ret.inventoryStatus.startsWith("Damaged") ? T.crimson : T.royalBurgundy}
+            bg={ret.inventoryStatus === "Dispatched" ? "rgba(30,102,64,0.09)" : ret.inventoryStatus.startsWith("Damaged") ? "rgba(192,57,43,0.10)" : "rgba(110,15,45,0.06)"} />
+        ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>;
+      },
+    },
+  ];
 }
 
 export interface StaffRow {
@@ -142,27 +155,12 @@ export function FinishingStaffSection({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
                       <div style={{ padding: "6px 18px 16px" }}>
-                        <div style={{ overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
-                            <thead>
-                              <tr>
-                                <th style={th}>Saree Code</th>
-                                <th style={th}>Quotation</th>
-                                <th style={th}>Saree Type</th>
-                                <th style={th}>Weaver</th>
-                                <th style={th}>Assigned On</th>
-                                <th style={th}>Assigned By</th>
-                                <th style={th}>Return Status</th>
-                                <th style={th}>Photo</th>
-                                <th style={th}>Inventory Status</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {r.visibleAssignments.map(a => (
-                                <AssignmentRow key={a.id} a={a} ret={returns.find(rt => rt.sareeId === a.sareeId)} />
-                              ))}
-                            </tbody>
-                          </table>
+                        <div style={{ overflowX: "auto", minWidth: 680 }}>
+                          <DataTable
+                            columns={buildAssignmentColumns(returns)}
+                            data={r.visibleAssignments}
+                            getRowId={a => a.id}
+                          />
                         </div>
                       </div>
                     </motion.div>

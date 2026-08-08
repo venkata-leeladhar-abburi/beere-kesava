@@ -14,6 +14,7 @@ import { RetailCustomer } from "../types";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { salesApi } from "../../../../shared/api/sales";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface RetailFormState {
   name: string;
@@ -113,6 +114,57 @@ export function RetailCustomersSection({
   const inactiveCount = useMemo(() => {
     return filteredRetail.filter(r => r.inactive).length;
   }, [filteredRetail]);
+
+  const retailColumns: ColumnDef<RetailCustomer>[] = [
+    {
+      id: "name", header: "Customer Name", accessor: r => r.name,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
+          {r.name}
+          {r.regular && <Star size={12} color={T.antiqueGold} fill={T.antiqueGold} />}
+        </div>
+      ),
+    },
+    {
+      id: "city", header: "City", accessor: r => r.city,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.city}</span>,
+    },
+    {
+      id: "phone", header: "Phone", accessor: r => r.phone,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.phone}</span>,
+    },
+    {
+      id: "totalSpend", header: "Total Spend", accessor: r => r.totalSpend ?? 0, type: "number", sortable: true,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>₹{(r.totalSpend ?? 0).toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "purchases", header: "Purchases", accessor: r => r.totalPurchases, type: "number", sortable: true,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.totalPurchases} sarees</span>,
+    },
+    {
+      id: "lastVisit", header: "Last Visit", accessor: r => r.lastVisit,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.lastVisit}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.inactive, type: "status",
+      cell: (_v, r) => r.inactive ? (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "2px 6px", borderRadius: 4 }}>Inactive</span>
+      ) : (
+        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.greenMid, background: T.greenBg, padding: "2px 6px", borderRadius: 4 }}>Active</span>
+      ),
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+          <Button variant="secondary" size="sm" onClick={() => onViewHistory(r)}>History</Button>
+          <DownloadGate>
+            <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
+          </DownloadGate>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -288,52 +340,11 @@ export function RetailCustomersSection({
         </div>
       ) : (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>
-                <th style={{ padding: "14px 18px" }}>Customer Name</th>
-                <th style={{ padding: "14px 18px" }}>City</th>
-                <th style={{ padding: "14px 18px" }}>Phone</th>
-                <th style={{ padding: "14px 18px" }}>Total Spend</th>
-                <th style={{ padding: "14px 18px" }}>Purchases</th>
-                <th style={{ padding: "14px 18px" }}>Last Visit</th>
-                <th style={{ padding: "14px 18px" }}>Status</th>
-                <th style={{ padding: "14px 18px", textAlign: "right" as const }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRetail.map((r, i) => (
-                <tr key={r.id} style={{ borderBottom: i < filteredRetail.length - 1 ? `1px solid ${T.borderDef}` : "none", fontFamily: F.ui, fontSize: 14 }}>
-                  <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      {r.name}
-                      {r.regular && <Star size={12} color={T.antiqueGold} fill={T.antiqueGold} />}
-                    </div>
-                  </td>
-                  <td style={{ padding: "14px 18px", color: T.taupe }}>{r.city}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.taupe }}>{r.phone}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{(r.totalSpend ?? 0).toLocaleString("en-IN")}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono }}>{r.totalPurchases} sarees</td>
-                  <td style={{ padding: "14px 18px", color: T.taupe }}>{r.lastVisit}</td>
-                  <td style={{ padding: "14px 18px" }}>
-                    {r.inactive ? (
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "2px 6px", borderRadius: 4 }}>Inactive</span>
-                    ) : (
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.greenMid, background: T.greenBg, padding: "2px 6px", borderRadius: 4 }}>Active</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "14px 18px", textAlign: "right" as const }}>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
-                      <Button variant="secondary" size="sm" onClick={() => onViewHistory(r)}>History</Button>
-                      <DownloadGate>
-                        <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
-                      </DownloadGate>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={retailColumns}
+            data={filteredRetail}
+            getRowId={r => r.id}
+          />
         </div>
       )}
     </div>

@@ -19,6 +19,7 @@ import { batchesApi } from "../../../shared/api/batches";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
@@ -295,35 +296,41 @@ export function FactoryLoomPage() {
           </div>
         ) : (
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left", fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>
-                  <th style={{ padding: "14px 20px" }}>Loom #</th>
-                  <th style={{ padding: "14px 20px" }}>Operator</th>
-                  <th style={{ padding: "14px 20px" }}>Location</th>
-                  <th style={{ padding: "14px 20px" }}>Status</th>
-                  <th style={{ padding: "14px 20px", textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(l => (
-                  <tr key={l.id} style={{ borderBottom: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 14 }}>
-                    <td style={{ padding: "14px 20px", fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</td>
-                    <td style={{ padding: "14px 20px", color: T.luxuryBrown }}>{l.operatorName || "—"}</td>
-                    <td style={{ padding: "14px 20px", color: T.taupe }}>{l.location || "—"}</td>
-                    <td style={{ padding: "14px 20px" }}>
-                      <span style={{ padding: "4px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: STATUS_CFG[l.status].bg, color: STATUS_CFG[l.status].color }}>
-                        {STATUS_CFG[l.status].label}
-                      </span>
-                    </td>
-                    <td style={{ padding: "14px 20px", textAlign: "right" }}>
+            <DataTable
+              columns={[
+                {
+                  id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber,
+                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
+                },
+                {
+                  id: "operator", header: "Operator", accessor: l => l.operatorName,
+                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
+                },
+                {
+                  id: "location", header: "Location", accessor: l => l.location,
+                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
+                },
+                {
+                  id: "status", header: "Status", accessor: l => l.status, type: "status",
+                  cell: (_v, l) => (
+                    <span style={{ padding: "4px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: STATUS_CFG[l.status].bg, color: STATUS_CFG[l.status].color }}>
+                      {STATUS_CFG[l.status].label}
+                    </span>
+                  ),
+                },
+                {
+                  id: "actions", header: "Actions", accessor: () => null, type: "actions",
+                  cell: (_v, l) => (
+                    <>
                       <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
                       <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </>
+                  ),
+                },
+              ] as ColumnDef<FactoryLoom>[]}
+              data={filtered}
+              getRowId={l => l.id}
+            />
           </div>
         )}
       </div>

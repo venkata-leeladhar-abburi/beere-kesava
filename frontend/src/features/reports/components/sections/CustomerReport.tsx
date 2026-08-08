@@ -10,6 +10,7 @@ import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { salesApi } from "../../../../shared/api/sales";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface CustomerRow {
   id: string;
@@ -140,6 +141,41 @@ export function CustomerReport() {
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   }).length;
 
+  const customerColumns: ColumnDef<CustomerRow>[] = [
+    {
+      id: "name", header: "Customer Name", accessor: r => r.name,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span>,
+    },
+    {
+      id: "type", header: "Type", accessor: r => r.type, align: "center",
+      cell: (_v, r) => <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />,
+    },
+    {
+      id: "phone", header: "Phone", accessor: r => r.phone,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span>,
+    },
+    {
+      id: "purchases", header: "Total Purchases", accessor: r => r.purchases, align: "center",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.purchases}</span>,
+    },
+    {
+      id: "spend", header: "Total Spend", accessor: r => r.spend, align: "end",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.spend.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "due", header: "Outstanding Due", accessor: r => r.due, align: "end",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? `₹${r.due.toLocaleString("en-IN")}` : "— Nil"}</span>,
+    },
+    {
+      id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.status, align: "center", type: "status",
+      cell: (_v, r) => <StatusPill label={r.status} type={r.status === "Active" ? "ok" : "bad"} />,
+    },
+  ];
+
   return (
     <div id="rep-customers" style={{ padding: "32px 40px" }}>
       <TabTitle title="Customer Report"
@@ -238,50 +274,15 @@ export function CustomerReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Customer Name</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Type</th>
-                  <th style={TH}>Phone</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Total Purchases</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Total Spend</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Outstanding Due</th>
-                  <th style={TH}>Last Purchase</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td style={TD} colSpan={8}>Loading…</td></tr>
-                )}
-                {isError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={8}>Failed to load customers.</td></tr>
-                )}
-                {!isLoading && !isError && custRows.length === 0 && (
-                  <tr><td style={TD} colSpan={8}>No customers on record yet.</td></tr>
-                )}
-                {custRows.map((r, i) => (
-                  <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream }}>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span></td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
-                    </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span></td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.purchases}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.spend.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>
-                      {r.due > 0 ? `₹${r.due.toLocaleString("en-IN")}` : "— Nil"}
-                    </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span></td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <StatusPill label={r.status} type={r.status === "Active" ? "ok" : "bad"} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 900 }}>
+            <DataTable
+              columns={customerColumns}
+              data={custRows}
+              getRowId={r => r.id}
+              loading={isLoading}
+              error={!!isError}
+              emptyTitle="No customers on record yet."
+            />
           </div>
           <TablePager total={custRows.length} showing={custRows.length} />
         </div>

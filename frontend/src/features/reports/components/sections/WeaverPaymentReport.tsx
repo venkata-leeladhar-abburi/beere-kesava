@@ -6,7 +6,8 @@ import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsConte
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function WeaverPaymentReport() {
   const { payments } = useWeaverPayments();
@@ -174,48 +175,28 @@ export function WeaverPaymentReport() {
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1000 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Weaver ID</th>
-                  <th style={TH}>Weaver Name</th>
-                  <th style={TH}>Sarees Produced</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Amount Paid</th>
-                  <th style={TH}>UTR Number</th>
-                  <th style={TH}>Firm Name</th>
-                  <th style={TH}>Payment Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weaversLoading && (
-                  <tr><td style={TD} colSpan={7}>Loading…</td></tr>
-                )}
-                {weaversError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={7}>Failed to load the weaver roster.</td></tr>
-                )}
-                {!weaversLoading && !weaversError && weaverPayRows.length === 0 && (
-                  <tr><td style={TD} colSpan={7}>No weavers on record yet.</td></tr>
-                )}
-                {!weaversLoading && !weaversError && weaverPayRows.map((r, i) => {
-                  const latest = r.latest;
-                  const amountPaid = latest?.amountPaid;
-                  const utr = latest?.utrNumber || "—";
-                  const firmName = latest?.firmName || "—";
-                  const paymentDate = latest?.paymentDate ?? "—";
-                  return (
-                    <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${latest ? T.green : T.antiqueGold}` }}>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.totalSarees > 0 ? `${r.totalSarees} sarees` : "—"}</span></td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: latest ? T.green : T.taupe }}>{amountPaid !== undefined ? `₹${amountPaid.toLocaleString("en-IN")}` : "—"}</td>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: latest ? T.green : T.taupe }}>{utr}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{firmName}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{paymentDate}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <DataTable<(typeof weaverPayRows)[number]>
+              columns={[
+                { id: "code", header: "Weaver ID", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+                { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span> },
+                { id: "totalSarees", header: "Sarees Produced", accessor: r => r.totalSarees, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.totalSarees > 0 ? `${r.totalSarees} sarees` : "—"}</span> },
+                {
+                  id: "amountPaid", header: "Amount Paid", accessor: r => r.latest?.amountPaid, align: "end",
+                  cell: (_v, r) => {
+                    const amountPaid = r.latest?.amountPaid;
+                    return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid !== undefined ? `₹${amountPaid.toLocaleString("en-IN")}` : "—"}</span>;
+                  },
+                },
+                { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },
+                { id: "firmName", header: "Firm Name", accessor: r => r.latest?.firmName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.firmName || "—"}</span> },
+                { id: "paymentDate", header: "Payment Date", accessor: r => r.latest?.paymentDate, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.paymentDate ?? "—"}</span> },
+              ]}
+              data={weaverPayRows}
+              getRowId={r => r.code}
+              loading={weaversLoading}
+              error={!!weaversError}
+              emptyTitle="No weavers on record yet."
+            />
           </div>
           <TablePager total={weaverPayRows.length} showing={weaverPayRows.length} />
         </div>

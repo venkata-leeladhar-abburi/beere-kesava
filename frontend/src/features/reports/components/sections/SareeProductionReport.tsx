@@ -11,13 +11,14 @@ import {
 import { T, F } from "../theme";
 import {
   FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar,
-  TablePager, StatusPill, TH, TD,
+  TablePager, StatusPill,
 } from "../common/primitives";
 import { batchesApi } from "../../../../shared/api/batches";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { reportsApi } from "../../../../shared/api/reports";
-import { purchasesApi } from "../../../../shared/api/purchases";
+import { purchasesApi, BackendPurchase } from "../../../../shared/api/purchases";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // Helper: week label for a Date (e.g. "W1", "W2"...)
 function getISOWeekLabel(d: Date): string {
@@ -42,6 +43,23 @@ export function ExternalPurchasesSection() {
   const totalSarees = rows.reduce((s, r) => s + r.sareeCount, 0);
   const totalBill = rows.reduce((s, r) => s + Number(r.billAmount), 0);
 
+  const purchaseColumns: ColumnDef<BackendPurchase>[] = [
+    { id: "vendor", header: "Vendor / Supplier", accessor: r => r.supplier.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span> },
+    {
+      id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "),
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}</span>,
+    },
+    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
+    { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
+    { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{Number(r.billAmount).toLocaleString("en-IN")}</span> },
+    { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status",
+      cell: (_v, r) => <StatusPill label={r.status} type={r.status === "PAID" ? "ok" : r.status === "PARTIAL" ? "warn" : "bad"} />,
+    },
+  ];
+
   return (
     <FadeUp>
       <div style={{ marginTop: 28 }}>
@@ -54,56 +72,16 @@ export function ExternalPurchasesSection() {
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Vendor / Supplier</th>
-                  <th style={TH}>Location</th>
-                  <th style={TH}>GST Number</th>
-                  <th style={TH}>Invoice Number</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Bill Amount</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Sarees</th>
-                  <th style={TH}>Date</th>
-                  <th style={TH}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td style={TD} colSpan={8}>Loading…</td></tr>
-                )}
-                {isError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={8}>Failed to load external purchases.</td></tr>
-                )}
-                {!isLoading && !isError && rows.length === 0 && (
-                  <tr>
-                    <td colSpan={8} style={{ ...TD, textAlign: "center", color: T.taupe, padding: "32px 16px" }}>
-                      No external purchases recorded yet. Add them from the{" "}
-                      <a href="/superadmin/external-purchases" style={{ color: T.royalBurgundy, textDecoration: "underline" }}>External Purchases</a> page.
-                    </td>
-                  </tr>
-                )}
-                {!isLoading && !isError && rows.map((r, i) => (
-                  <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span></td>
-                    <td style={{ ...TD, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                      {[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}
-                    </td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{Number(r.billAmount).toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</td>
-                    <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</td>
-                    <td style={TD}>
-                      <StatusPill
-                        label={r.status}
-                        type={r.status === "PAID" ? "ok" : r.status === "PARTIAL" ? "warn" : "bad"}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 900 }}>
+            <DataTable
+              columns={purchaseColumns}
+              data={rows}
+              getRowId={r => r.id}
+              loading={isLoading}
+              error={!!isError}
+              emptyTitle="No external purchases recorded yet."
+              emptyDescription="Add them from the External Purchases page."
+            />
           </div>
         </div>
       </div>
@@ -220,6 +198,26 @@ export function SareeProductionReport() {
   }, [batchesRes, qcRes, production]);
 
   const totalPipelineCount = Math.max(1, prodStageData.reduce((s, d) => s + d.count, 0));
+
+  interface ProdTableRow {
+    code: string; name: string; batches: number; produced: number;
+    passed: number; rejected: number; passRate: number; designs: string; charges: number;
+  }
+
+  const prodColumns: ColumnDef<ProdTableRow>[] = [
+    { id: "code", header: "Weaver Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+    { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
+    { id: "batches", header: "Batches", accessor: r => r.batches, align: "center" },
+    { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.produced}</span> },
+    { id: "passed", header: "QC Passed", accessor: r => r.passed, align: "center", cell: (_v, r) => <span style={{ color: T.green, fontFamily: F.mono, fontWeight: 700 }}>{r.passed}</span> },
+    { id: "rejected", header: "QC Rejected", accessor: r => r.rejected, align: "center", cell: (_v, r) => <span style={{ color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: F.mono, fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</span> },
+    {
+      id: "passRate", header: "Pass Rate", accessor: r => r.passRate, align: "center",
+      cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
+    },
+    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
+    { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.charges.toLocaleString("en-IN")}</span> },
+  ];
 
   // Compute weekly production trend from batch createdAt (last 4 weeks vs prior 4 weeks)
   const prodWeeklyData = useMemo(() => {
@@ -421,62 +419,25 @@ export function SareeProductionReport() {
       {/* Production table — per-weaver, computed from live batch + QC data */}
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 960 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Weaver Code</th>
-                  <th style={TH}>Weaver Name</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Batches</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Sarees Produced</th>
-                  <th style={{ ...TH, textAlign: "center" }}>QC Passed</th>
-                  <th style={{ ...TH, textAlign: "center" }}>QC Rejected</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Pass Rate</th>
-                  <th style={TH}>Designs Worked On</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Making Charges</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td style={TD} colSpan={9}>Loading…</td></tr>
-                )}
-                {isError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={9}>Failed to load production data.</td></tr>
-                )}
-                {!isLoading && !isError && prodTableRows.length === 0 && (
-                  <tr><td style={TD} colSpan={9}>No sarees assigned to weavers yet.</td></tr>
-                )}
-                {!isLoading && !isError && prodTableRows.map((r, i) => (
-                  <tr key={r.code} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span></td>
-                    <td style={{ ...TD, textAlign: "center" }}>{r.batches}</td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.produced}</td>
-                    <td style={{ ...TD, textAlign: "center", color: T.green, fontFamily: F.mono, fontWeight: 700 }}>{r.passed}</td>
-                    <td style={{ ...TD, textAlign: "center", color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: F.mono, fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />
-                    </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.charges.toLocaleString("en-IN")}</td>
-                  </tr>
-                ))}
-              </tbody>
-              {prodTableRows.length > 0 && (
-                <tfoot>
-                  <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-                    <td colSpan={3} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, background: T.warmCream }}>Totals ({prodTableRows.length} weavers)</td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</td>
-                    <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson, background: T.warmCream }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</td>
-                    <td style={{ ...TD, background: T.warmCream }} />
-                    <td style={{ ...TD, background: T.warmCream }} />
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>₹{prodTableRows.reduce((s, r) => s + r.charges, 0).toLocaleString("en-IN")}</td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 960 }}>
+            <DataTable
+              columns={prodColumns}
+              data={prodTableRows}
+              getRowId={r => r.code}
+              loading={isLoading}
+              error={!!isError}
+              emptyTitle="No sarees assigned to weavers yet."
+            />
           </div>
+          {prodTableRows.length > 0 && (
+            <div style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}`, display: "flex", alignItems: "center", padding: "13px 14px", gap: 14 }}>
+              <span style={{ fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, flex: 1 }}>Totals ({prodTableRows.length} weavers)</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{prodTableRows.reduce((s, r) => s + r.charges, 0).toLocaleString("en-IN")}</span>
+            </div>
+          )}
           <TablePager total={prodTableRows.length} showing={prodTableRows.length} />
         </div>
       </FadeUp>

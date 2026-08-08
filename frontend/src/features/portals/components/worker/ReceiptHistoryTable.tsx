@@ -6,6 +6,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export interface ReceiptRecord {
   grnId: string;
@@ -110,6 +111,23 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
   const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
   const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
 
+  const columns: ColumnDef<ReceiptRecord>[] = [
+    { id: "grnId", header: "GRN Batch ID", accessor: r => r.grnId, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</span> },
+    { id: "poRef", header: "PO Reference", accessor: r => r.poRef, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{r.poRef}</span> },
+    { id: "vendor", header: "Vendor", accessor: r => r.vendor, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor}</span> },
+    { id: "firmName", header: "Firm Name", accessor: r => r.firmName, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</span> },
+    { id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</span> },
+    { id: "materials", header: "Materials", accessor: r => r.materialsSummary, cell: (_v, r) => renderMaterialsSummary(r.materialsSummary) },
+    { id: "receivedBy", header: "Received By", accessor: r => r.receivedBy, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</span> },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status",
+      cell: (_v, r) => {
+        const sc = HIST_STATUS_CFG[r.status];
+        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>;
+      },
+    },
+  ];
+
   return (
     <div style={{ padding: compact ? 0 : "8px 0" }}>
       <div style={{ marginBottom: compact ? 10 : 12 }}>
@@ -125,37 +143,13 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
 
       <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-            <thead>
-              <tr style={{ background: C.inp }}>
-                {["GRN Batch ID", "PO Reference", "Vendor", "Firm Name", "Date Received", "Materials", "Received By", "Status"].map(h => (
-                  <th key={h} style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "left", padding: compact ? "9px 12px" : "12px 14px", whiteSpace: "nowrap" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pagedHistory.length === 0 ? (
-                <tr><td colSpan={8} style={{ padding: compact ? "20px" : "24px", textAlign: "center", fontFamily: F.u, fontSize: compact ? 12.5 : 13, color: C.muted }}>No receipts found.</td></tr>
-              ) : pagedHistory.map((r, i) => {
-                const sc = HIST_STATUS_CFG[r.status];
-                return (
-                  <tr key={i} style={{ borderTop: `1px solid ${C.bdr}`, background: compact ? "transparent" : i % 2 === 0 ? "#fff" : "rgba(247,242,234,0.3)" }}>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.m, fontSize: 12, color: C.text }}>{r.poRef}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px" }}>{renderMaterialsSummary(r.materialsSummary)}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px", fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</td>
-                    <td style={{ padding: compact ? "10px 12px" : "12px 14px" }}>
-                      <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div style={{ overflowX: "auto", minWidth: 760 }}>
+          <DataTable
+            columns={columns}
+            data={pagedHistory}
+            getRowId={r => r.grnId}
+            emptyTitle="No receipts found."
+          />
         </div>
         {totalPages > 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: compact ? "10px 14px" : "12px 16px", borderTop: `1px solid ${C.bdr}` }}>

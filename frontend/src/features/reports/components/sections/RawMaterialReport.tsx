@@ -5,12 +5,25 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const bunsAndReels = formatBunsReels;
+
+interface RawMaterialStockRow {
+  type: string;
+  sub: string;
+  open: number;
+  recv: number;
+  given: number;
+  close: number;
+  change: string;
+  oos: boolean;
+  unit: string;
+}
 
 interface RawMaterialReceiptRow {
   batchId: string;
@@ -136,7 +149,7 @@ export function RawMaterialReport() {
     return map;
   }, [stockItems]);
 
-  const rawMaterialRows = useMemo(() => {
+  const rawMaterialRows = useMemo<RawMaterialStockRow[]>(() => {
     if (stockItems.length === 0) return [];
     return stockItems.map(item => {
       const sub = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
@@ -167,6 +180,61 @@ export function RawMaterialReport() {
   }, [rawReceivedData, rawGivenData, rawMaterialRows]);
 
   const isLoading = grnLoading || issuesLoading || stockLoading;
+
+  const stockColumns: ColumnDef<RawMaterialStockRow>[] = [
+    {
+      id: "type", header: "Material Type", accessor: r => r.type,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span>,
+    },
+    { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub },
+    {
+      id: "close", header: "Stock Level", accessor: r => r.close, type: "number", align: "end", sortable: true,
+      cell: (_v, r) => (
+        <div>
+          <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
+          {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
+        </div>
+      ),
+    },
+    {
+      id: "change", header: "Status", accessor: r => r.change, align: "center",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>,
+    },
+  ];
+
+  const receiptColumns: ColumnDef<RawMaterialReceiptRow>[] = [
+    {
+      id: "batchId", header: "Batch ID", accessor: r => r.batchId,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span>,
+    },
+    {
+      id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</span>,
+    },
+    { id: "vendor", header: "Vendor", accessor: r => r.vendor },
+    { id: "firmName", header: "Firm Name", accessor: r => r.firmName },
+    {
+      id: "materialType", header: "Material Type", accessor: r => r.materialType,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{r.materialType}</span>,
+    },
+    { id: "description", header: "Description", accessor: r => r.description },
+    {
+      id: "quantity", header: "Quantity", accessor: r => r.quantity, align: "end",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{r.quantity}</span>,
+    },
+    {
+      id: "unit", header: "Unit", accessor: r => r.unit,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.unit}</span>,
+    },
+    {
+      id: "poReference", header: "PO Reference", accessor: r => r.poReference,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</span>,
+    },
+    {
+      id: "notes", header: "Notes", accessor: r => r.notes,
+      cell: (_v, r) => <span style={{ fontSize: 12, color: T.taupe }}>{r.notes || "—"}</span>,
+    },
+  ];
 
   return (
     <div id="rep-raw-materials" style={{ padding: "32px 40px" }}>
@@ -248,47 +316,20 @@ export function RawMaterialReport() {
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Material Type</th>
-                  <th style={TH}>Sub-type / Color / Grade</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Stock Level</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td style={TD} colSpan={4}>Loading…</td></tr>
-                )}
-                {!isLoading && rawMaterialRows.length === 0 && (
-                  <tr><td style={TD} colSpan={4}>No raw material items in stock database yet.</td></tr>
-                )}
-                {!isLoading && rawMaterialRows.map((r, i) => (
-                  <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.type === "WARP" ? T.royalBurgundy : r.type === "RESHAM" ? T.antiqueGold : T.green}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
-                    <td style={TD}>{r.sub}</td>
-                    <td style={{ ...TD, textAlign: "right" }}>
-                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
-                      {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
-                    </td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              {rawMaterialRows.length > 0 && (
-                <tfoot>
-                  <tr style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}` }}>
-                    <td colSpan={2} style={{ ...TD, fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, background: T.warmCream }}>Total Closing Stock</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream }}>{totalsSummary.closeTotal} kg / reels</td>
-                    <td style={{ ...TD, background: T.warmCream }} />
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+            <DataTable
+              columns={stockColumns}
+              data={rawMaterialRows}
+              getRowId={(r) => `${r.type}-${r.sub}`}
+              loading={isLoading}
+              emptyTitle="No raw material items in stock database yet."
+            />
           </div>
+          {rawMaterialRows.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: T.warmCream, borderTop: `2px solid ${T.borderDef}`, padding: "12px 16px" }}>
+              <span style={{ fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown }}>Total Closing Stock</span>
+              <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{totalsSummary.closeTotal} kg / reels</span>
+            </div>
+          )}
         </div>
       </FadeUp>
 
@@ -299,49 +340,14 @@ export function RawMaterialReport() {
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14 }}>Every material batch received from a vendor against a purchase order, with its GRN batch ID.</div>
           <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1000 }}>
-                <thead>
-                  <tr>
-                    <th style={TH}>Batch ID</th>
-                    <th style={TH}>Date Received</th>
-                    <th style={TH}>Vendor</th>
-                    <th style={TH}>Firm Name</th>
-                    <th style={TH}>Material Type</th>
-                    <th style={TH}>Description</th>
-                    <th style={{ ...TH, textAlign: "right" }}>Quantity</th>
-                    <th style={TH}>Unit</th>
-                    <th style={TH}>PO Reference</th>
-                    <th style={TH}>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grnLoading && (
-                    <tr><td style={TD} colSpan={10}>Loading…</td></tr>
-                  )}
-                  {grnError && (
-                    <tr><td style={{ ...TD, color: T.crimson }} colSpan={10}>Failed to load material receipts.</td></tr>
-                  )}
-                  {!grnLoading && !grnError && receiptRows.length === 0 && (
-                    <tr><td style={TD} colSpan={10}>No material receipts recorded yet.</td></tr>
-                  )}
-                  {!grnLoading && !grnError && receiptRows.map((r, i) => (
-                    <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.materialType === "Warp" ? T.royalBurgundy : r.materialType === "Resham" ? T.antiqueGold : T.green}` }}>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span></td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</td>
-                      <td style={TD}>{r.vendor}</td>
-                      <td style={TD}>{r.firmName}</td>
-                      <td style={TD}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{r.materialType}</span>
-                      </td>
-                      <td style={TD}>{r.description}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 600 }}>{r.quantity}</td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.unit}</td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</td>
-                      <td style={{ ...TD, fontSize: 12, color: T.taupe }}>{r.notes || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={receiptColumns}
+                data={receiptRows}
+                getRowId={(r) => `${r.batchId}-${r.description}-${r.poReference}`}
+                loading={grnLoading}
+                error={grnError}
+                emptyTitle="No material receipts recorded yet."
+              />
             </div>
           </div>
         </div>

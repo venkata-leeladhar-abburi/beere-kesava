@@ -2,6 +2,7 @@ import React from "react";
 import { Truck } from "lucide-react";
 import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -82,6 +83,47 @@ export function BulkOrderSareesTab({
   filteredSarees,
   setDispatchPanel,
 }: BulkOrderSareesTabProps) {
+  const columns: ColumnDef<LinkedSaree>[] = [
+    {
+      id: "id", header: "Saree ID", accessor: s => s.id,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</span>,
+    },
+    {
+      id: "design", header: "Design / Type", accessor: s => s.designCode,
+      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</span>,
+    },
+    {
+      id: "weaver", header: "Weaver", accessor: s => s.weaverName,
+      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</span>,
+    },
+    {
+      id: "batch", header: "Batch", accessor: s => s.batchId,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: s => s.status, type: "status",
+      cell: (_v, s) => <StatusPill status={s.status} />,
+    },
+    {
+      id: "quotation", header: "Quotation", accessor: s => s.quotationRef,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</span>,
+    },
+    {
+      id: "dispatch", header: "Dispatch", accessor: s => s.dispatch,
+      cell: (_v, s) => (
+        s.dispatch ? (
+          <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
+            <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
+              {s.dispatch.lrNumber || "View"}
+            </Button>
+          </span>
+        ) : (
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
+        )
+      ),
+    },
+  ];
+
   return (
     <div>
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
@@ -106,41 +148,12 @@ export function BulkOrderSareesTab({
       </div>
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: T.silkCream }}>
-              {["Saree ID", "Design / Type", "Weaver", "Batch", "Status", "Quotation", "Dispatch"].map(h => (
-                <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredSarees.map((s, i) => (
-              <tr key={s.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</td>
-                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</td>
-                <td style={{ padding: "13px 16px" }}><StatusPill status={s.status} /></td>
-                <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</td>
-                <td style={{ padding: "13px 16px" }}>
-                  {s.dispatch ? (
-                    <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
-                      <Button onClick={() => setDispatchPanel(s.dispatch!)} variant="tertiary" size="sm" iconLeft={Truck}>
-                        {s.dispatch.lrNumber || "View"}
-                      </Button>
-                    </span>
-                  ) : (
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not dispatched</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {filteredSarees.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: "40px 16px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</td></tr>
-            )}
-          </tbody>
-        </table>
+        <DataTable
+          columns={columns}
+          data={filteredSarees}
+          getRowId={s => s.id}
+          emptyTitle="No sarees match this filter"
+        />
       </div>
     </div>
   );

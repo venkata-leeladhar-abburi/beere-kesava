@@ -8,6 +8,16 @@ import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager,
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+interface RetailSaleRow {
+  id: string;
+  date: string;
+  customer: string;
+  phone: string;
+  sarId: string;
+  price: number;
+}
 
 function RetailWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
@@ -142,6 +152,37 @@ export function RetailSalesReport() {
 
   const maxDesignCount = Math.max(1, ...(retailDesignSales.map(d => d.count)));
 
+  const retailColumns: ColumnDef<RetailSaleRow>[] = [
+    {
+      id: "id", header: "Sale ID", accessor: r => r.id,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span>,
+    },
+    {
+      id: "date", header: "Sale Date", accessor: r => r.date,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span>,
+    },
+    {
+      id: "customer", header: "Customer Name", accessor: r => r.customer,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span>,
+    },
+    {
+      id: "phone", header: "Phone", accessor: r => r.phone,
+      cell: (_v, r) => <span style={{ color: T.taupe }}>{r.phone}</span>,
+    },
+    {
+      id: "sarId", header: "Saree ID", accessor: r => r.sarId,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sarId}</span>,
+    },
+    {
+      id: "price", header: "Retail Price", accessor: r => r.price, align: "end",
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>
+          {r.price < 0 ? `−₹${Math.abs(r.price).toLocaleString("en-IN")}` : `₹${r.price.toLocaleString("en-IN")}`}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div id="rep-retail" style={{ padding: "32px 40px" }}>
       <TabTitle title="Retail Sales Report"
@@ -240,37 +281,15 @@ export function RetailSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Sale ID</th><th style={TH}>Sale Date</th><th style={TH}>Customer Name</th>
-                  <th style={TH}>Phone</th><th style={TH}>Saree ID</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Retail Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesLoading && (
-                  <tr><td style={TD} colSpan={6}>Loading…</td></tr>
-                )}
-                {isError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={6}>Failed to load retail sales.</td></tr>
-                )}
-                {!salesLoading && !isError && retailRows.length === 0 && (
-                  <tr><td style={TD} colSpan={6}>No retail sales recorded yet.</td></tr>
-                )}
-                {!salesLoading && !isError && retailRows.map((r, i) => (
-                  <tr key={r.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${r.price < 0 ? T.crimson : T.green}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
-                    <td style={TD}><span style={{ color: T.taupe }}>{r.phone}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sarId}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>{r.price < 0 ? `−₹${Math.abs(r.price).toLocaleString("en-IN")}` : `₹${r.price.toLocaleString("en-IN")}`}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 700 }}>
+            <DataTable
+              columns={retailColumns}
+              data={retailRows}
+              getRowId={r => r.id + r.sarId}
+              loading={salesLoading}
+              error={!!isError}
+              emptyTitle="No retail sales recorded yet."
+            />
           </div>
           <TablePager total={retailRows.length} showing={retailRows.length} />
         </div>

@@ -5,8 +5,9 @@ import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, AnimBar } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function ProfitLossReport() {
   const { firms, financials } = useFirms();
@@ -38,6 +39,25 @@ export function ProfitLossReport() {
   const totalExpenses = weaverPayments + materialPurchases + shopMaintenance + factoryMaintenance + salaries + otherExpenses;
 
   const netProfit = totalIncome - totalExpenses;
+
+  const perFirmColumns: ColumnDef<{ name: string; income: number; expenses: number; net: number }>[] = [
+    {
+      id: "name", header: "Firm Name", accessor: f => f.name,
+      cell: (_v, f) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{f.name}</span>,
+    },
+    {
+      id: "income", header: "Total Income", accessor: f => f.income, type: "number",
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{f.income.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "expenses", header: "Total Expenses", accessor: f => f.expenses, type: "number",
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>₹{f.expenses.toLocaleString("en-IN")}</span>,
+    },
+    {
+      id: "net", header: "Net", accessor: f => f.net, type: "number",
+      cell: (_v, f) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{f.net >= 0 ? "₹" : "−₹"}{Math.abs(f.net).toLocaleString("en-IN")}</span>,
+    },
+  ];
 
   const perFirm = firms.map(firm => {
     const fin = financials.find(f => f.firmId === firm.id) ?? { income: [] as { amount: number }[], expenses: [] as { amount: number }[], misc: [] as { type: string; amount: number }[] };
@@ -245,26 +265,7 @@ export function ProfitLossReport() {
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Firm Name</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Total Income</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Total Expenses</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Net</th>
-                </tr>
-              </thead>
-              <tbody>
-                {perFirm.map((f, i) => (
-                  <tr key={f.name} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${f.net >= 0 ? T.green : T.crimson}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{f.name}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{f.income.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>₹{f.expenses.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{f.net >= 0 ? "₹" : "−₹"}{Math.abs(f.net).toLocaleString("en-IN")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
           </div>
         </div>
       </FadeUp>

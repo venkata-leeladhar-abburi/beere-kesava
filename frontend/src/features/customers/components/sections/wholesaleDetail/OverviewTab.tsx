@@ -4,6 +4,7 @@ import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button } from "../../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
@@ -31,6 +32,42 @@ export function OverviewTab({
   setWholesaleTab: (t: WholesaleTab) => void;
   onViewBulkOrder: (order: BulkOrder, tab: "overview" | "sarees" | "payments" | "quotations") => void;
 }) {
+  const orderColumns: ColumnDef<BulkOrder>[] = [
+    {
+      id: "ref", header: "Order Ref", accessor: o => o.ref,
+      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>,
+    },
+    {
+      id: "invoice", header: "Invoice No", accessor: o => o.invoiceId,
+      cell: (_v, o) => {
+        const m = custOrderMoney.get(o.ref)!;
+        return <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</span>;
+      },
+    },
+    {
+      id: "deadline", header: "Deadline", accessor: o => o.due,
+      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</span>,
+    },
+    {
+      id: "description", header: "Description", accessor: o => o.design,
+      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.total}× {o.sareeType} · {o.design}</span>,
+    },
+    {
+      id: "value", header: "Order Value", accessor: o => custOrderMoney.get(o.ref)!.amountDue,
+      cell: (_v, o) => {
+        const m = custOrderMoney.get(o.ref)!;
+        return <span style={{ fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{m.amountDue ? inr(m.amountDue) : "—"}</span>;
+      },
+    },
+    {
+      id: "payment", header: "Payment", accessor: o => o.paymentStatus,
+      cell: (_v, o) => {
+        const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
+        return <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>;
+      },
+    },
+  ];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
@@ -92,34 +129,12 @@ export function OverviewTab({
           </div>
         ) : (
           <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                  {["Order Ref", "Invoice No", "Deadline", "Description", "Order Value", "Payment"].map(h => (
-                    <th key={h} style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {custOrders.slice(0, 4).map(o => {
-                  const m = custOrderMoney.get(o.ref)!;
-                  const pay = PAY_STATUS_META[o.paymentStatus ?? "pending"];
-                  return (
-                    <tr key={o.ref} onClick={() => onViewBulkOrder(o, "payments")}
-                      style={{ borderBottom: `1px solid ${T.borderDef}`, cursor: "pointer" }}>
-                      <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.total}× {o.sareeType} · {o.design}</td>
-                      <td style={{ padding: "12px 14px", fontFamily: F.display, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{m.amountDue ? inr(m.amountDue) : "—"}</td>
-                      <td style={{ padding: "12px 14px" }}>
-                        <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: pay.bg, color: pay.color }}>{pay.label}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <DataTable
+              columns={orderColumns}
+              data={custOrders.slice(0, 4)}
+              getRowId={o => o.ref}
+              onRowClick={o => onViewBulkOrder(o, "payments")}
+            />
           </div>
         )}
       </div>

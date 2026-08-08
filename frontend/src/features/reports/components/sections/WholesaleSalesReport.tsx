@@ -3,7 +3,9 @@ import { ReceiptText, Banknote, CheckCircle2, BellRing } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
 
 function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
@@ -92,6 +94,52 @@ export function WholesaleSalesReport() {
   const totalInvoiced = bulkOrders.reduce((s, o) => s + (o.amountDue ?? 0), 0);
   const totalCollected = bulkOrders.reduce((s, o) => s + (o.amountPaid ?? 0), 0);
   const totalOutstanding = totalInvoiced - totalCollected;
+
+  const bulkOrderColumns: ColumnDef<BulkOrder>[] = [
+    {
+      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref,
+      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
+    },
+    {
+      id: "customer", header: "Customer Name", accessor: o => o.customer,
+      cell: (_v, o) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span>,
+    },
+    {
+      id: "sarees", header: "Sarees", accessor: o => o.total, align: "center",
+      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{o.total}</span>,
+    },
+    {
+      id: "invoiceAmt", header: "Invoice Amount", accessor: o => o.amountDue ?? 0, type: "number",
+      cell: (_v, o) => {
+        const invoiceAmt = o.amountDue ?? 0;
+        return <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? `₹${invoiceAmt.toLocaleString("en-IN")}` : "—"}</span>;
+      },
+    },
+    {
+      id: "collected", header: "Collected", accessor: o => o.amountPaid ?? 0, type: "number",
+      cell: (_v, o) => {
+        const collected = o.amountPaid ?? 0;
+        return <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? `₹${collected.toLocaleString("en-IN")}` : "—"}</span>;
+      },
+    },
+    {
+      id: "balance", header: "Balance Due", accessor: o => (o.amountDue ?? 0) - (o.amountPaid ?? 0), type: "number",
+      cell: (_v, o) => {
+        const balance = (o.amountDue ?? 0) - (o.amountPaid ?? 0);
+        return <span style={{ fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? `₹${balance.toLocaleString("en-IN")}` : "— Paid"}</span>;
+      },
+    },
+    {
+      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate,
+      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: o => o.paymentStatus, type: "status", align: "center",
+      cell: (_v, o) => (
+        <StatusPill label={o.paymentStatus === "paid" ? "✓ Paid" : o.paymentStatus === "partial" ? "◑ Partial" : "⚠ Pending"} type={o.paymentStatus === "paid" ? "ok" : o.paymentStatus === "partial" ? "warn" : "bad"} />
+      ),
+    },
+  ];
 
   return (
     <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
@@ -207,42 +255,12 @@ export function WholesaleSalesReport() {
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Bulk Order Ref</th><th style={TH}>Customer Name</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Sarees</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Invoice Amount</th><th style={{ ...TH, textAlign: "right" }}>Collected</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Balance Due</th><th style={TH}>Dispatch Date</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bulkOrders.length === 0 && (
-                  <tr><td style={TD} colSpan={8}>No bulk orders recorded yet.</td></tr>
-                )}
-                {bulkOrders.map((o, i) => {
-                  const invoiceAmt = o.amountDue ?? 0;
-                  const collected = o.amountPaid ?? 0;
-                  const balance = invoiceAmt - collected;
-                  const statusColor = o.paymentStatus === "paid" ? T.green : o.paymentStatus === "partial" ? T.antiqueGold : T.crimson;
-                  return (
-                    <tr key={o.ref} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${statusColor}` }}>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span></td>
-                      <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span></td>
-                      <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{o.total}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? `₹${invoiceAmt.toLocaleString("en-IN")}` : "—"}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? `₹${collected.toLocaleString("en-IN")}` : "—"}</td>
-                      <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? `₹${balance.toLocaleString("en-IN")}` : "— Paid"}</td>
-                      <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span></td>
-                      <td style={{ ...TD, textAlign: "center" }}>
-                        <StatusPill label={o.paymentStatus === "paid" ? "✓ Paid" : o.paymentStatus === "partial" ? "◑ Partial" : "⚠ Pending"} type={o.paymentStatus === "paid" ? "ok" : o.paymentStatus === "partial" ? "warn" : "bad"} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <DataTable
+              columns={bulkOrderColumns}
+              data={bulkOrders}
+              getRowId={o => o.ref}
+              emptyTitle="No bulk orders recorded yet"
+            />
           </div>
           <TablePager total={bulkOrders.length} showing={bulkOrders.length} />
         </div>

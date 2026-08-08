@@ -11,6 +11,7 @@ import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface DefectiveRow {
   id: string;
@@ -63,10 +64,44 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
     [qcRecords, weaverLookup],
   );
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}` };
-
   const totalDeduction = DEFECTIVE_DATA.reduce((sum, r) => sum + parseInt(r.deduction.replace(/[₹,]/g, "")), 0);
+
+  const columns: ColumnDef<DefectiveRow>[] = [
+    { id: "sareeId", header: "Saree ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
+    { id: "weaver", header: "Weaver", accessor: r => r.weaver, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.weaver}</span> },
+    { id: "batch", header: "Batch", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+    { id: "sareeType", header: "Saree Type", accessor: r => r.sareeType },
+    {
+      id: "defects", header: "Defect Type(s)", accessor: r => r.defects,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" as const }}>
+          {r.defects.map(d => (
+            <span key={d} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 999 }}>{d}</span>
+          ))}
+        </div>
+      ),
+    },
+    { id: "qcDate", header: "QC Date", accessor: r => r.qcDate, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.qcDate}</span> },
+    {
+      id: "deduction", header: "Deduction Applied", accessor: r => r.deduction,
+      cell: (_v, r) => (
+        <>
+          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.crimson, display: "block" }}>{r.deduction}</span>
+          {superadmin && (
+            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, display: "block", marginTop: 3 }}>🔒 Full deduction details visible to Superadmin only</span>
+          )}
+        </>
+      ),
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <Button onClick={() => setViewDefect(r)} variant="secondary" size="sm">
+          <Eye size={13} /> View
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <FadeUp>
@@ -142,54 +177,15 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         </div>
 
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
-            <thead>
-              <tr>
-                {["Saree ID", "Weaver", "Batch", "Saree Type", "Defect Type(s)", "QC Date", "Deduction Applied", "Action"].map(col => (
-                  <th key={col} style={TH}>{col}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {qcLoading && (
-                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading defective sarees…</td></tr>
-              )}
-              {qcError && (
-                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.crimson }}>Failed to load defective sarees.</td></tr>
-              )}
-              {!qcLoading && !qcError && DEFECTIVE_DATA.length === 0 && (
-                <tr><td colSpan={8} style={{ ...TD, textAlign: "center", color: T.taupe }}>No defective sarees recorded yet.</td></tr>
-              )}
-              {DEFECTIVE_DATA.map((row, i) => (
-                <tr key={i} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#FFF" }}>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{row.id}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{row.weaver}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.batch}</span></td>
-                  <td style={TD}>{row.sareeType}</td>
-                  <td style={TD}>
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" as const }}>
-                      {row.defects.map(d => (
-                        <span key={d} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 999 }}>{d}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.qcDate}</span></td>
-                  <td style={TD}>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.crimson, display: "block" }}>{row.deduction}</span>
-                    {superadmin && (
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, display: "block", marginTop: 3 }}>🔒 Full deduction details visible to Superadmin only</span>
-                    )}
-                  </td>
-                  <td style={TD}>
-                    <Button onClick={() => setViewDefect(row)} variant="secondary" size="sm">
-                      <Eye size={13} /> View
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{ overflowX: "auto", minWidth: 1100 }}>
+            <DataTable
+              columns={columns}
+              data={DEFECTIVE_DATA}
+              getRowId={r => r.id}
+              loading={qcLoading}
+              error={qcError}
+              emptyTitle="No defective sarees recorded yet."
+            />
           </div>
           <div style={{ background: T.warmCream, borderTop: `1px solid ${T.borderDef}`, padding: "12px 16px" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>

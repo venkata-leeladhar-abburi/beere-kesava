@@ -10,6 +10,7 @@ import { useBatches } from "../../contexts/BatchContext";
 import { qcApi } from "../../../../shared/api/qc";
 import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitives";
 import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
@@ -92,8 +93,80 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
     "Defect Analysis": false,
   });
 
-  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", padding: "10px 14px", textAlign: "left" as const, background: "#F3EEE8", borderBottom: `2px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "11px 14px", verticalAlign: "middle" as const, whiteSpace: "nowrap" as const };
+  const filteredBatches = HISTORY_BATCHES.filter(b =>
+    !search || b.id.toLowerCase().includes(search.toLowerCase()) || b.sareeType.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const columns: ColumnDef<HistoryBatch>[] = [
+    {
+      id: "batchNumber", header: "Batch Number", accessor: b => b.id,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{b.id}</span>,
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: b => b.sareeType,
+      cell: (_v, b) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke={T.antiqueGold} strokeWidth="1.2" fill="none" />
+            <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={T.antiqueGold} strokeWidth="0.8" />
+            <line x1="1" y1="8.5" x2="13" y2="8.5" stroke={T.antiqueGold} strokeWidth="0.8" />
+          </svg>
+          {(() => {
+            const rec = getSareeTypeByName(b.sareeType);
+            return (
+              <ClickableCode onClick={rec && onSareeTypeClick ? () => onSareeTypeClick(rec.code) : undefined} style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</ClickableCode>
+            );
+          })()}
+        </div>
+      ),
+    },
+    {
+      id: "batchSize", header: "Batch Size", accessor: b => b.batchSize, align: "center",
+      cell: (_v, b) => (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <HistoryBatchSquares size={b.batchSize} />
+        </div>
+      ),
+    },
+    {
+      id: "weavers", header: "Weavers", accessor: b => b.weavers.length,
+      cell: (_v, b) => (
+        <div style={{ display: "flex" }}>
+          {b.weavers.map((w, wi) => (
+            <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
+              <Pip initials={w.initials} bg={w.bg} size={26} />
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "completion", header: "Completion", accessor: b => b.completion, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>{b.completion}</span>,
+    },
+    {
+      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
+    },
+    {
+      id: "makingCharges", header: "Making Charges", accessor: b => b.makingCharges, align: "end",
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13 }}>{b.makingCharges}</span>,
+    },
+    {
+      id: "completedOn", header: "Completed On", accessor: b => b.completedOn,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
+    },
+    {
+      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center",
+      cell: (_v, b) => b.bulkOrder
+        ? <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+        : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>,
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", align: "center",
+      cell: () => <IconButton icon={Eye} label="View batch" variant="secondary" size="sm" />,
+    },
+  ];
 
   return (
     <div id="prod-history" style={{ padding: "40px 40px 0" }}>
@@ -148,88 +221,13 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
         </div>
 
         <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 12px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.07)", background: T.warmIvory }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1060 }}>
-            <thead>
-              <tr>
-                <th style={TH}>Batch Number</th>
-                <th style={TH}>Saree Type</th>
-                <th style={{ ...TH, textAlign: "center" }}>Batch Size</th>
-                <th style={TH}>Weavers</th>
-                <th style={{ ...TH, textAlign: "center" }}>Completion</th>
-                <th style={{ ...TH, textAlign: "center" }}>All Pieces</th>
-                <th style={{ ...TH, textAlign: "right" }}>Making Charges</th>
-                <th style={TH}>Completed On</th>
-                <th style={{ ...TH, textAlign: "center" }}>Bulk Order</th>
-                <th style={{ ...TH, textAlign: "center" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {qcLoading && (
-                <tr><td colSpan={10} style={{ ...TD, textAlign: "center", color: T.taupe }}>Loading production history…</td></tr>
-              )}
-              {!qcLoading && HISTORY_BATCHES.length === 0 && (
-                <tr><td colSpan={10} style={{ ...TD, textAlign: "center", color: T.taupe }}>No completed batches yet.</td></tr>
-              )}
-              {HISTORY_BATCHES.filter(b =>
-                !search || b.id.toLowerCase().includes(search.toLowerCase()) || b.sareeType.toLowerCase().includes(search.toLowerCase())
-              ).map((b, i) => (
-                <tr key={b.id} style={{ background: i % 2 === 0 ? "#FFFDF9" : "#F8F4EF", borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={TD}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{b.id}</span>
-                  </td>
-                  <td style={TD}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                        <rect x="1" y="3" width="12" height="8" rx="1.5" stroke={T.antiqueGold} strokeWidth="1.2" fill="none" />
-                        <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={T.antiqueGold} strokeWidth="0.8" />
-                        <line x1="1" y1="8.5" x2="13" y2="8.5" stroke={T.antiqueGold} strokeWidth="0.8" />
-                      </svg>
-                      {(() => {
-                        const rec = getSareeTypeByName(b.sareeType);
-                        return (
-                          <ClickableCode onClick={rec && onSareeTypeClick ? () => onSareeTypeClick(rec.code) : undefined} style={{ fontSize: 12, fontWeight: 500 }}>{b.sareeType}</ClickableCode>
-                        );
-                      })()}
-                    </div>
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <HistoryBatchSquares size={b.batchSize} />
-                    </div>
-                  </td>
-                  <td style={TD}>
-                    <div style={{ display: "flex" }}>
-                      {b.weavers.map((w, wi) => (
-                        <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
-                          <Pip initials={w.initials} bg={w.bg} size={26} />
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>{b.completion}</span>
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>
-                  </td>
-                  <td style={{ ...TD, textAlign: "right" }}>
-                    <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13 }}>{b.makingCharges}</span>
-                  </td>
-                  <td style={TD}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    {b.bulkOrder
-                      ? <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
-                      : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>}
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <IconButton icon={Eye} label="View batch" variant="secondary" size="sm" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={columns}
+            data={filteredBatches}
+            getRowId={b => b.id}
+            loading={qcLoading}
+            emptyTitle="No completed batches yet."
+          />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderTop: `1px solid ${T.borderDef}` }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing {HISTORY_BATCHES.length} of {HISTORY_BATCHES.length} entries</span>
             <div style={{ display: "flex", gap: 4 }}>

@@ -6,105 +6,102 @@ import {
   Filter, ChevronDown, ChevronUp, Check, LayoutList, LayoutGrid, QrCode,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
-import { T, F, EASE, MobileCtx } from "../theme";
+import { T, F, MobileCtx } from "../theme";
 import { STATUS_CFG, MAT_TAG, MAT_FILTERS, STATUS_FILTERS, STATUS_FILTER_MAP } from "../materialConfig";
 import type { BatchRow, StatusType } from "../types";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
-  const TH: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "0.6px", textTransform: "uppercase" as const, padding: "14px 16px", textAlign: "left" as const, whiteSpace: "nowrap" as const, borderBottom: `1px solid rgba(110,15,45,0.08)`, background: T.silkCream };
-  const TD: React.CSSProperties = { padding: "14px 16px", borderBottom: "1px solid rgba(110,15,45,0.05)", verticalAlign: "middle" as const };
+  const columns: ColumnDef<BatchRow>[] = [
+    {
+      id: "id", header: "Batch ID", accessor: r => r.id,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>,
+    },
+    {
+      id: "material", header: "Material", accessor: r => r.type,
+      cell: (_v, r) => {
+        const mt = MAT_TAG[r.type];
+        return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: mt.col, background: mt.bg, padding: "5px 11px", borderRadius: 20, letterSpacing: "0.3px" }}>{r.type}</span>;
+      },
+    },
+    {
+      id: "details", header: "Description", accessor: r => r.details,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.details}</span>,
+    },
+    {
+      id: "vendor", header: "Vendor", accessor: r => r.vendor,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span>,
+    },
+    {
+      id: "date", header: "Received On", accessor: r => r.date,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.date}</span>,
+    },
+    {
+      id: "received", header: "Received", accessor: r => r.received, type: "number", sortable: true,
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+          {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received * 4} Reels)` : "kg"}</span>
+        </span>
+      ),
+    },
+    {
+      id: "given", header: "Given", accessor: r => r.given, type: "number", sortable: true,
+      cell: (_v, r) => (
+        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.taupe }}>
+          {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given * 4} Reels)` : "kg"}</span>
+        </span>
+      ),
+    },
+    {
+      id: "remaining", header: "Remaining", accessor: r => r.remaining, type: "number", sortable: true,
+      cell: (_v, r) => {
+        const sc = STATUS_CFG[r.statusType];
+        const remPct = r.received > 0 ? Math.round((r.remaining / r.received) * 100) : 0;
+        return (
+          <div>
+            <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: sc.color }}>
+              {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining * 4} Reels)` : "kg"}</span>
+            </span>
+            <div style={{ width: 64, height: 4, background: "rgba(110,15,45,0.08)", borderRadius: 2, marginTop: 5 }}>
+              <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 2 }} />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.statusType, type: "status",
+      cell: (_v, r) => {
+        const sc = STATUS_CFG[r.statusType];
+        return (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 20, whiteSpace: "nowrap" as const }}>
+            {sc.icon} {sc.text}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <Button onClick={() => onViewDetails(r)} variant="secondary" size="sm" iconLeft={FileText}>
+            View Details
+          </Button>
+          <Button onClick={() => onPrintBarcode(r)} variant="primary" size="sm" iconLeft={QrCode}>
+            Print Barcode
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1020 }}>
-        <thead>
-          <tr>
-            {[
-              { label: "Batch ID",    icon: <Tag size={12} /> },
-              { label: "Material",    icon: <Layers size={12} /> },
-              { label: "Description", icon: <FileText size={12} /> },
-              { label: "Vendor",      icon: <Boxes size={12} /> },
-              { label: "Received On", icon: <Calendar size={12} /> },
-              { label: "Received",    icon: <Package size={12} /> },
-              { label: "Given",       icon: <ArrowRight size={12} /> },
-              { label: "Remaining",   icon: <CheckCircle2 size={12} /> },
-              { label: "Status",      icon: null },
-              { label: "Actions",     icon: null },
-            ].map(h => (
-              <th key={h.label} style={TH}>
-                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  {h.icon}<span>{h.label}</span>
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => {
-            const sc = STATUS_CFG[r.statusType];
-            const mt = MAT_TAG[r.type];
-            const remPct = r.received > 0 ? Math.round((r.remaining / r.received) * 100) : 0;
-            return (
-              <motion.tr
-                key={r.id}
-                initial={{ opacity: 0, y: 6 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: i * 0.03, ease: EASE }}
-                style={{ background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}
-              >
-                <td style={TD}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>
-                </td>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: mt.col, background: mt.bg, padding: "5px 11px", borderRadius: 20, letterSpacing: "0.3px" }}>{r.type}</span>
-                </td>
-                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.details}</span></td>
-                <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span></td>
-                <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.date}</span></td>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
-                    {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received * 4} Reels)` : "kg"}</span>
-                  </span>
-                </td>
-                <td style={TD}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.taupe }}>
-                    {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given * 4} Reels)` : "kg"}</span>
-                  </span>
-                </td>
-                <td style={TD}>
-                  <div>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: sc.color }}>
-                      {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining * 4} Reels)` : "kg"}</span>
-                    </span>
-                    <div style={{ width: 64, height: 4, background: "rgba(110,15,45,0.08)", borderRadius: 2, marginTop: 5 }}>
-                      <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 2 }} />
-                    </div>
-                  </div>
-                </td>
-                <td style={TD}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: sc.bg, color: sc.color, fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 20, whiteSpace: "nowrap" as const }}>
-                    {sc.icon} {sc.text}
-                  </span>
-                </td>
-                <td style={TD}>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    <Button onClick={() => onViewDetails(r)} variant="secondary" size="sm" iconLeft={FileText}>
-                      View Details
-                    </Button>
-                    <Button onClick={() => onPrintBarcode(r)} variant="primary" size="sm" iconLeft={QrCode}>
-                      Print Barcode
-                    </Button>
-                  </div>
-                </td>
-              </motion.tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <DataTable columns={columns} data={rows} getRowId={r => r.id} />
     </div>
   );
 }

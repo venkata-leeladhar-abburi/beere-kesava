@@ -10,6 +10,16 @@ import { SectionHeader, FadeUp, AnimatedBar } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+interface VendorRow {
+  name: string;
+  materials: { type: string; label: string }[];
+  totals: string[];
+  paid: string;
+  orders: number;
+  last: string;
+}
 
 function formatCurrency(n: number | string) {
   const val = Number(n) || 0;
@@ -194,6 +204,44 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     };
   }, [rawGrns, rawPos, rawVendors]);
 
+  const vendorColumns: ColumnDef<VendorRow>[] = [
+    {
+      id: "name", header: "Vendor Name", accessor: v => v.name,
+      cell: (_v, v) => <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{v.name}</span>,
+    },
+    {
+      id: "materials", header: "Material Supplied", accessor: v => v.materials,
+      cell: (_v, v) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+          {v.materials.map(m => {
+            const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp;
+            return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
+          })}
+        </div>
+      ),
+    },
+    {
+      id: "totals", header: "Total Purchased", accessor: v => v.totals,
+      cell: (_v, v) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {v.totals.map((t, idx) => <div key={idx} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{t}</div>)}
+        </div>
+      ),
+    },
+    {
+      id: "paid", header: "Total Paid", accessor: v => v.paid,
+      cell: (_v, v) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.antiqueGold }}>{v.paid}</span>,
+    },
+    {
+      id: "orders", header: "Orders", accessor: v => v.orders, align: "center",
+      cell: (_v, v) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{v.orders}</span>,
+    },
+    {
+      id: "last", header: "Last Purchase", accessor: v => v.last,
+      cell: (_v, v) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{v.last}</span>,
+    },
+  ];
+
   return (
     <section id="mat-purchase-history" style={{ padding: `44px ${px}px 0` }}>
       <SectionHeader
@@ -248,54 +296,17 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
           </div>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
-              <thead>
-                <tr style={{ background: T.silkCream }}>
-                  {["Vendor Name", "Material Supplied", "Total Purchased", "Total Paid", "Orders", "Last Purchase"].map(h => (
-                    <th key={h} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", padding: "14px 18px", textAlign: "left", borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {stats.vendorRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ padding: "28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                      No purchase history found across vendors.
-                    </td>
-                  </tr>
-                ) : stats.vendorRows.map((v, i) => (
-                  <motion.tr
-                    key={v.name}
-                    initial={{ opacity: 0, x: -6 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-                    transition={{ duration: 0.38, delay: i * 0.05, ease: EASE }}
-                    style={{ background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory }}
-                  >
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.name}</td>
-                    <td style={{ padding: "15px 18px", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
-                        {v.materials.map(m => {
-                          const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp;
-                          return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
-                        })}
-                      </div>
-                    </td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-                        {v.totals.map((t, idx) => <div key={idx}>{t}</div>)}
-                      </div>
-                    </td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.antiqueGold, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.paid}</td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.orders}</td>
-                    <td style={{ padding: "15px 18px", fontFamily: F.mono, fontSize: 13, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.05)`, verticalAlign: "top" }}>{v.last}</td>
-                  </motion.tr>
-                ))}
-                <tr style={{ background: T.warmCream }}>
-                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.taupe }}>Grand Total across all vendors:</td>
-                  <td colSpan={3} style={{ padding: "16px 18px", fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.antiqueGold, textAlign: "right" }}>{formatCurrency(stats.totalSpent)}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 800 }}>
+            <DataTable
+              columns={vendorColumns}
+              data={stats.vendorRows}
+              getRowId={v => v.name}
+              emptyTitle="No purchase history found across vendors."
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: T.warmCream, padding: "16px 18px", borderTop: `1px solid ${T.borderDef}` }}>
+            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.taupe }}>Grand Total across all vendors:</span>
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{formatCurrency(stats.totalSpent)}</span>
           </div>
         </div>
       </FadeUp>

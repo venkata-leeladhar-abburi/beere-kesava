@@ -6,6 +6,7 @@ import { T, F } from "../../theme";
 import { SectionPill } from "../../common/primitives";
 import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
 import { Button } from "../../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: any) {
   return (
@@ -46,90 +47,71 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                       </div>
 
                       {/* Saree Info Table */}
-                      <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
-                          <thead>
-                            <tr style={{ background: T.warmCream }}>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree ID</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Loom</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Saree Type</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Bulk Order</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>Design Dispatch</th>
-                              <th style={{ padding: "8px 10px", textAlign: "left", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${T.borderDef}` }}>QC Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {weaverSareesInBatch.map((row, idx) => {
-                              let qcLabel = "In Production";
-                              let qcBg = "rgba(139,112,96,0.08)";
-                              let qcColorVal: string = T.taupe;
-
-                              if (row.qcPassed === true) {
-                                qcLabel = "QC Passed";
-                                qcBg = "rgba(30,102,64,0.08)";
-                                qcColorVal = T.green;
-                              } else if (row.qcPassed === false) {
-                                qcLabel = "QC Failed";
-                                qcBg = "rgba(192,57,43,0.08)";
-                                qcColorVal = T.crimson;
-                              }
-
-                              return (
-                                <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)", borderBottom: `1px solid ${T.borderDef}` }}>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    {row.sareeId ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>
-                                        {row.sareeId}
-                                      </span>
-                                    ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    {row.weaverLoom ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold }}>
-                                        L{row.weaverLoom}
-                                      </span>
-                                    ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    {row.sareeTypeCode ? (
-                                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>
-                                        {row.sareeTypeCode}
-                                      </span>
-                                    ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
-                                      {row.bulkOrderLabel || "General Stock"}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    {idx === 0 && batchDispatches.length > 0 ? (
-                                      <Button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
-                                        variant="ghost" size="sm"
-                                        className="h-auto rounded-md bg-[rgba(110,15,45,0.08)] text-[#6E0F2D] px-[9px] py-[3px] text-[12px] font-bold">
-                                        <PaperPlaneTilt size={11} /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
-                                      </Button>
-                                    ) : (
-                                      <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ padding: "9px 10px" }}>
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
-                                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />
-                                      {qcLabel}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                      <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 500 }}>
+                        <DataTable
+                          columns={[
+                            {
+                              id: "sareeId", header: "Saree ID", accessor: (row: any) => row.sareeId,
+                              cell: (_v, row: any) => row.sareeId
+                                ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
+                                : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
+                            },
+                            {
+                              id: "loom", header: "Loom", accessor: (row: any) => row.weaverLoom,
+                              cell: (_v, row: any) => row.weaverLoom
+                                ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold }}>L{row.weaverLoom}</span>
+                                : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>,
+                            },
+                            {
+                              id: "sareeTypeCode", header: "Saree Type", accessor: (row: any) => row.sareeTypeCode,
+                              cell: (_v, row: any) => row.sareeTypeCode
+                                ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode}</span>
+                                : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>,
+                            },
+                            {
+                              id: "bulkOrder", header: "Bulk Order", accessor: (row: any) => row.bulkOrderLabel,
+                              cell: (_v, row: any) => (
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
+                                  {row.bulkOrderLabel || "General Stock"}
+                                </span>
+                              ),
+                            },
+                            {
+                              id: "dispatch", header: "Design Dispatch", accessor: () => null,
+                              cell: (_v, row: any) => (weaverSareesInBatch.indexOf(row) === 0 && batchDispatches.length > 0) ? (
+                                <Button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
+                                  variant="ghost" size="sm"
+                                  className="h-auto rounded-md bg-[rgba(110,15,45,0.08)] text-[#6E0F2D] px-[9px] py-[3px] text-[12px] font-bold">
+                                  <PaperPlaneTilt size={11} /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
+                                </Button>
+                              ) : (
+                                <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
+                              ),
+                            },
+                            {
+                              id: "qc", header: "QC Status", accessor: (row: any) => row.qcPassed,
+                              cell: (_v, row: any) => {
+                                let qcLabel = "In Production";
+                                let qcBg = "rgba(139,112,96,0.08)";
+                                let qcColorVal: string = T.taupe;
+                                if (row.qcPassed === true) {
+                                  qcLabel = "QC Passed"; qcBg = "rgba(30,102,64,0.08)"; qcColorVal = T.green;
+                                } else if (row.qcPassed === false) {
+                                  qcLabel = "QC Failed"; qcBg = "rgba(192,57,43,0.08)"; qcColorVal = T.crimson;
+                                }
+                                return (
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: qcColorVal, background: qcBg, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: qcColorVal }} />
+                                    {qcLabel}
+                                  </span>
+                                );
+                              },
+                            },
+                          ] as ColumnDef<any>[]}
+                          data={weaverSareesInBatch}
+                          getRowId={(row: any) => row.sareeId || String(weaverSareesInBatch.indexOf(row))}
+                          emptyTitle="No sarees in this batch"
+                        />
                       </div>
                     </div>
                   );

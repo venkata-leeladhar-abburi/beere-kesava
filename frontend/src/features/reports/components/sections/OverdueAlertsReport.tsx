@@ -2,8 +2,9 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, TabTitle, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, SumCard, TabTitle, StatusPill } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { bulkOrdersApi } from "../../../../shared/api/bulk-orders";
 import { customersApi } from "../../../../shared/api/customers";
@@ -150,47 +151,24 @@ export function OverdueAlertsReport() {
         <SubAlert label="Overdue Customer Payments — Act Now" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Customer Name</th><th style={TH}>Invoice No.</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Invoice Amount</th><th style={{ ...TH, textAlign: "right" }}>Amount Paid</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Amount Overdue</th><th style={TH}>Due Date</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Days Overdue</th><th style={TH}>Last Reminder Sent</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoicesLoading && (
-                  <tr><td style={TD} colSpan={9}>Loading…</td></tr>
-                )}
-                {!invoicesLoading && invoicesTableError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={9}>Failed to load overdue invoices.</td></tr>
-                )}
-                {!invoicesLoading && !invoicesTableError && overdueCustomers.length === 0 && (
-                  <tr><td style={TD} colSpan={9}>No overdue invoices — everything is on track.</td></tr>
-                )}
-                {!invoicesLoading && !invoicesTableError && overdueCustomers.map((r, i) => (
-                  <tr key={r.inv} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.overdue.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, color: T.crimson, fontWeight: 600 }}>{r.dueDate}</td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span>
-                    </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span></td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <Button variant="primary" size="sm" iconLeft={MessageSquare}>
-                        Send WhatsApp Reminder
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable<(typeof overdueCustomers)[number]>
+              columns={[
+                { id: "customer", header: "Customer Name", accessor: r => r.customer, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span> },
+                { id: "inv", header: "Invoice No.", accessor: r => r.inv, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span> },
+                { id: "total", header: "Invoice Amount", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</span> },
+                { id: "paid", header: "Amount Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</span> },
+                { id: "overdue", header: "Amount Overdue", accessor: r => r.overdue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.overdue.toLocaleString("en-IN")}</span> },
+                { id: "dueDate", header: "Due Date", accessor: r => r.dueDate, cell: (_v, r) => <span style={{ color: T.crimson, fontWeight: 600 }}>{r.dueDate}</span> },
+                { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span> },
+                { id: "reminder", header: "Last Reminder Sent", accessor: () => "—", cell: () => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span> },
+                { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={MessageSquare}>Send WhatsApp Reminder</Button> },
+              ]}
+              data={overdueCustomers}
+              getRowId={r => r.inv}
+              loading={invoicesLoading}
+              error={!invoicesLoading && !!invoicesTableError}
+              emptyTitle="No overdue invoices — everything is on track."
+            />
           </div>
         </div>
       </FadeUp>
@@ -200,37 +178,21 @@ export function OverdueAlertsReport() {
         <SubAlert label="Materials Running Low — Order Soon" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Material Type</th><th style={TH}>Sub-type / Color / Grade</th>
-                  <th style={TH}>Batch No.</th><th style={{ ...TH, textAlign: "right" }}>Current Stock</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Minimum Required</th><th style={{ ...TH, textAlign: "right" }}>Shortage</th>
-                  <th style={TH}>Last Ordered From</th><th style={{ ...TH, textAlign: "center" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lowStockMaterials.length === 0 && (
-                  <tr><td style={TD} colSpan={8}>No materials currently low in stock.</td></tr>
-                )}
-                {lowStockMaterials.map((r, i) => (
-                  <tr key={r.batch} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span></td>
-                    <td style={TD}>{r.sub}</td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.current} kg</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono }}>{r.minimum} kg</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage} kg</td>
-                    <td style={TD}><span style={{ color: T.taupe }}>{r.lastOrder}</span></td>
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <Button variant="primary" size="sm" iconLeft={Package}>
-                        Create Purchase Order
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable<(typeof lowStockMaterials)[number]>
+              columns={[
+                { id: "type", header: "Material Type", accessor: r => r.type, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span> },
+                { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub },
+                { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+                { id: "current", header: "Current Stock", accessor: r => r.current, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.current} kg</span> },
+                { id: "minimum", header: "Minimum Required", accessor: r => r.minimum, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono }}>{r.minimum} kg</span> },
+                { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage} kg</span> },
+                { id: "lastOrder", header: "Last Ordered From", accessor: r => r.lastOrder, cell: (_v, r) => <span style={{ color: T.taupe }}>{r.lastOrder}</span> },
+                { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={Package}>Create Purchase Order</Button> },
+              ]}
+              data={lowStockMaterials}
+              getRowId={r => r.batch}
+              emptyTitle="No materials currently low in stock."
+            />
           </div>
         </div>
       </FadeUp>
@@ -239,37 +201,21 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Weavers Behind Schedule — Follow Up" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={TH}>Weaver Name</th><th style={TH}>Code</th><th style={TH}>Batch No.</th>
-                <th style={TH}>Expected End Date</th><th style={{ ...TH, textAlign: "center" }}>Days Overdue</th>
-                <th style={{ ...TH, textAlign: "center" }}>Sarees Done</th><th style={{ ...TH, textAlign: "center" }}>Sarees Remaining</th>
-                <th style={{ ...TH, textAlign: "center" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lateWeavers.length === 0 && (
-                <tr><td style={TD} colSpan={8}>No weavers running behind schedule.</td></tr>
-              )}
-              {lateWeavers.map((r, i) => (
-                <tr key={r.code + r.batch} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.code}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span></td>
-                  <td style={{ ...TD, color: T.crimson, fontWeight: 600 }}>{r.expected}</td>
-                  <td style={{ ...TD, textAlign: "center" }}><span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d late</span></td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.done}</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.remaining}</td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <Button variant="primary" size="sm" iconLeft={MessageSquare}>
-                      Send Message
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable<(typeof lateWeavers)[number]>
+            columns={[
+              { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span> },
+              { id: "code", header: "Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.code}</span> },
+              { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+              { id: "expected", header: "Expected End Date", accessor: r => r.expected, cell: (_v, r) => <span style={{ color: T.crimson, fontWeight: 600 }}>{r.expected}</span> },
+              { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d late</span> },
+              { id: "done", header: "Sarees Done", accessor: r => r.done, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.done}</span> },
+              { id: "remaining", header: "Sarees Remaining", accessor: r => r.remaining, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.remaining}</span> },
+              { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={MessageSquare}>Send Message</Button> },
+            ]}
+            data={lateWeavers}
+            getRowId={r => r.code + r.batch}
+            emptyTitle="No weavers running behind schedule."
+          />
         </div>
       </FadeUp>
 
@@ -277,47 +223,24 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Bulk Orders That May Miss Deadline" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={TH}>Customer Name</th><th style={TH}>Order No.</th>
-                <th style={{ ...TH, textAlign: "center" }}>Sarees Ordered</th><th style={{ ...TH, textAlign: "center" }}>Sarees Produced</th>
-                <th style={{ ...TH, textAlign: "center" }}>Shortage</th><th style={TH}>Deadline</th>
-                <th style={{ ...TH, textAlign: "center" }}>Days Remaining</th>
-                <th style={{ ...TH, textAlign: "center" }}>Status</th><th style={{ ...TH, textAlign: "center" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bulkOrdersLoading && (
-                <tr><td style={TD} colSpan={9}>Loading…</td></tr>
-              )}
-              {!bulkOrdersLoading && bulkOrdersTableError && (
-                <tr><td style={{ ...TD, color: T.crimson }} colSpan={9}>Failed to load bulk orders at risk.</td></tr>
-              )}
-              {!bulkOrdersLoading && !bulkOrdersTableError && atRiskOrders.length === 0 && (
-                <tr><td style={TD} colSpan={9}>No bulk orders at risk right now.</td></tr>
-              )}
-              {!bulkOrdersLoading && !bulkOrdersTableError && atRiskOrders.map((r, i) => (
-                <tr key={r.order} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.antiqueGold}` }}>
-                  <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span></td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span></td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700 }}>{r.ordered}</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.produced}</td>
-                  <td style={{ ...TD, textAlign: "center", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage}</td>
-                  <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.deadline}</span></td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span>
-                  </td>
-                  <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.status} type="bad" /></td>
-                  <td style={{ ...TD, textAlign: "center" }}>
-                    <Button variant="secondary" size="sm" iconLeft={Eye}>
-                      View Order
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable<(typeof atRiskOrders)[number]>
+            columns={[
+              { id: "customer", header: "Customer Name", accessor: r => r.customer, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span> },
+              { id: "order", header: "Order No.", accessor: r => r.order, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span> },
+              { id: "ordered", header: "Sarees Ordered", accessor: r => r.ordered, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.ordered}</span> },
+              { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.produced}</span> },
+              { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage}</span> },
+              { id: "deadline", header: "Deadline", accessor: r => r.deadline, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.deadline}</span> },
+              { id: "daysLeft", header: "Days Remaining", accessor: r => r.daysLeft, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span> },
+              { id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center", cell: (_v, r) => <StatusPill label={r.status} type="bad" /> },
+              { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="secondary" size="sm" iconLeft={Eye}>View Order</Button> },
+            ]}
+            data={atRiskOrders}
+            getRowId={r => r.order}
+            loading={bulkOrdersLoading}
+            error={!bulkOrdersLoading && !!bulkOrdersTableError}
+            emptyTitle="No bulk orders at risk right now."
+          />
         </div>
       </FadeUp>
     </div>

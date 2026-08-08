@@ -2,8 +2,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, TabTitle, StatusPill, TH, TD } from "../common/primitives";
-import { reportsApi } from "../../../../shared/api/reports";
+import { FadeUp, SumCard, TabTitle, StatusPill } from "../common/primitives";
+import { reportsApi, OutstandingPaymentItem } from "../../../../shared/api/reports";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const SOURCE_LABEL: Record<string, string> = { invoice: "Invoice", bulk_order: "Bulk Order" };
 
@@ -21,6 +22,31 @@ export function OutstandingPaymentsReport() {
   const invoiceCount = items.filter(i => i.source === "invoice").length;
   const bulkOrderCount = items.filter(i => i.source === "bulk_order").length;
 
+  const columns: ColumnDef<OutstandingPaymentItem>[] = [
+    {
+      id: "source", header: "Source", accessor: r => r.source,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{SOURCE_LABEL[r.source] ?? r.source}</span>,
+    },
+    { id: "reference", header: "Reference", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span> },
+    { id: "customer", header: "Customer", accessor: r => r.customerName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customerName}</span> },
+    { id: "total", header: "Total", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</span> },
+    { id: "paid", header: "Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.outstanding.toLocaleString("en-IN")}</span> },
+    {
+      id: "dueDate", header: "Due Date", accessor: r => r.dueDate,
+      cell: (_v, r) => r.dueDate ? (
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <Clock size={12} color={T.taupe} />
+          {new Date(r.dueDate).toLocaleDateString("en-IN")}
+        </span>
+      ) : "—",
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
+      cell: (_v, r) => <StatusPill label={r.status} type={statusTone(r.status)} />,
+    },
+  ];
+
   return (
     <div id="rep-outstanding-payments" style={{ padding: "32px 40px" }}>
       <TabTitle
@@ -36,55 +62,15 @@ export function OutstandingPaymentsReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Source</th>
-                  <th style={TH}>Reference</th>
-                  <th style={TH}>Customer</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Total</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Paid</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Outstanding</th>
-                  <th style={TH}>Due Date</th>
-                  <th style={{ ...TH, textAlign: "center" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td style={TD} colSpan={8}>Loading…</td></tr>
-                )}
-                {isError && (
-                  <tr><td style={{ ...TD, color: T.crimson }} colSpan={8}>Failed to load the outstanding-payments report.</td></tr>
-                )}
-                {!isLoading && !isError && items.length === 0 && (
-                  <tr><td style={TD} colSpan={8}>Nothing outstanding — every invoice and bulk order is fully paid.</td></tr>
-                )}
-                {!isLoading && !isError && items.map((r, i) => (
-                  <tr key={`${r.source}-${r.id}`} style={{ background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderLeft: `3px solid ${T.crimson}` }}>
-                    <td style={TD}>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>
-                        {SOURCE_LABEL[r.source] ?? r.source}
-                      </span>
-                    </td>
-                    <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span></td>
-                    <td style={TD}><span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customerName}</span></td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</td>
-                    <td style={{ ...TD, textAlign: "right", fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.outstanding.toLocaleString("en-IN")}</td>
-                    <td style={TD}>
-                      {r.dueDate ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <Clock size={12} color={T.taupe} />
-                          {new Date(r.dueDate).toLocaleDateString("en-IN")}
-                        </span>
-                      ) : "—"}
-                    </td>
-                    <td style={{ ...TD, textAlign: "center" }}><StatusPill label={r.status} type={statusTone(r.status)} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ overflowX: "auto", minWidth: 900 }}>
+            <DataTable
+              columns={columns}
+              data={items}
+              getRowId={r => `${r.source}-${r.id}`}
+              loading={isLoading}
+              error={!!isError}
+              emptyTitle="Nothing outstanding — every invoice and bulk order is fully paid."
+            />
           </div>
         </div>
       </FadeUp>

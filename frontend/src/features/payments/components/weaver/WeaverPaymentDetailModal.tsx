@@ -11,6 +11,8 @@ import { WeaverRecord } from "../../types";
 import { calcCharges } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import type { WeaverEarningsBreakdown } from "../../../../shared/api/payments";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
 export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | null; onClose: () => void }) {
@@ -36,8 +38,31 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", padding: "10px 12px", textAlign: "left", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "10px 12px", borderBottom: `1px solid ${T.borderDef}` };
+  const chargeColumns: ColumnDef<WeaverEarningsBreakdown>[] = [
+    {
+      id: "sareeTypeCode", header: "Saree Type Code", accessor: r => r.sareeTypeCode,
+      cell: (_v, r) => (
+        <span
+          onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
+          onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
+          onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
+          style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}
+        >
+          {r.sareeTypeCode}
+        </span>
+      ),
+    },
+    { id: "sareeTypeName", header: "Saree Type Name", accessor: r => r.sareeTypeName },
+    { id: "completedCount", header: "Count", accessor: r => r.completedCount, type: "number" },
+    {
+      id: "ratePerSaree", header: "Rate", accessor: r => r.ratePerSaree,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono }}>₹{r.ratePerSaree}</span>,
+    },
+    {
+      id: "amount", header: "Subtotal", accessor: r => r.amount,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}>₹{r.amount.toLocaleString("en-IN")}</span>,
+    },
+  ];
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
@@ -78,33 +103,11 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               </div>
             )}
             <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    {["Saree Type Code", "Saree Type Name", "Count", "Rate", "Subtotal"].map(h => <th key={h} style={TH}>{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {chargeRows.map(r => (
-                    <tr key={r.sareeTypeCode}>
-                      <td style={TD}>
-                        <span onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
-                          onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
-                          onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
-                          style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>{r.sareeTypeCode}</span>
-                      </td>
-                      <td style={TD}>{r.sareeTypeName}</td>
-                      <td style={TD}>{r.completedCount}</td>
-                      <td style={{ ...TD, fontFamily: F.mono }}>₹{r.ratePerSaree}</td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontWeight: 600 }}>₹{r.amount.toLocaleString("en-IN")}</td>
-                    </tr>
-                  ))}
-                  <tr style={{ background: T.warmCream }}>
-                    <td colSpan={4} style={{ ...TD, fontWeight: 700, borderBottom: "none" }}>Total Making Charges</td>
-                    <td style={{ ...TD, fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy, borderBottom: "none" }}>₹{totalCharges.toLocaleString("en-IN")}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <DataTable columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: T.warmCream, borderTop: `1px solid ${T.borderDef}` }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700 }}>Total Making Charges</span>
+                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy }}>₹{totalCharges.toLocaleString("en-IN")}</span>
+              </div>
             </div>
           </div>
 

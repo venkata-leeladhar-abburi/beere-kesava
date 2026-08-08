@@ -8,6 +8,7 @@ import { F, T, ROLE_COLORS } from "./tokens";
 import { PaginationBtn } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, ActionLogEntry } from "../../../../shared/api/audit-log";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 type ActionEntry = {
   id: string;
@@ -106,6 +107,67 @@ export function ActionLogSection({
     return true;
   });
   const total = data?.total ?? 0;
+
+  const actionColumns: ColumnDef<ActionEntry>[] = [
+    {
+      id: "time", header: "Timestamp", accessor: e => e.time,
+      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
+    },
+    {
+      id: "role", header: "Role", accessor: e => e.role,
+      cell: (_v, e) => (
+        <span style={{
+          background: ROLE_COLORS[e.role]?.badge,
+          color: ROLE_COLORS[e.role]?.text,
+          fontFamily: F.mono,
+          fontSize: 12,
+          fontWeight: 600,
+          padding: "2px 7px",
+          borderRadius: 999,
+          whiteSpace: "nowrap",
+        }}>
+          {e.role}
+        </span>
+      ),
+    },
+    {
+      id: "user", header: "User", accessor: e => e.user,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{e.user}</span>,
+    },
+    {
+      id: "module", header: "Module", accessor: e => e.module,
+      cell: (_v, e) => (
+        <span style={{
+          background: T.cream,
+          border: `1px solid ${T.borderDef}`,
+          borderRadius: 6,
+          padding: "2px 7px",
+          fontFamily: F.mono,
+          fontSize: 12,
+          color: T.royalBurgundy,
+          whiteSpace: "nowrap",
+        }}>
+          {e.module}
+        </span>
+      ),
+    },
+    {
+      id: "action", header: "Action", accessor: e => e.action,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, maxWidth: 300, display: "inline-block" }}>{e.action}</span>,
+    },
+    {
+      id: "record", header: "Record", accessor: e => e.record,
+      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{e.record}</span>,
+    },
+    {
+      id: "oldVal", header: "Old Value", accessor: e => e.oldVal,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: e.oldVal ? T.crimson : T.taupe }}>{e.oldVal ?? "—"}</span>,
+    },
+    {
+      id: "newVal", header: "New Value", accessor: e => e.newVal,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: e.newVal ? T.green : T.taupe }}>{e.newVal ?? "—"}</span>,
+    },
+  ];
 
   return (
     <div style={{ padding: "48px 56px 0" }}>
@@ -294,107 +356,14 @@ export function ActionLogSection({
               boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
               overflowX: "auto",
             }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ background: T.silkCream }}>
-                    {["Timestamp", "Role", "User", "Module", "Action", "Record", "Old Value", "New Value"].map(h => (
-                      <th key={h} style={{
-                        fontFamily: F.mono,
-                        fontSize: 12,
-                        textTransform: "uppercase",
-                        color: T.taupe,
-                        padding: "12px 14px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        letterSpacing: "0.5px",
-                        whiteSpace: "nowrap",
-                        borderBottom: `1px solid ${T.borderDef}`,
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.length === 0 && !isLoading && (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        style={{
-                          fontFamily: F.ui,
-                          fontSize: 13,
-                          color: T.taupe,
-                          padding: "24px 14px",
-                          textAlign: "center",
-                        }}
-                      >
-                        {isError
-                          ? "Could not load the action log. Please try again later."
-                          : "No actions recorded yet."}
-                      </td>
-                    </tr>
-                  )}
-                  {entries.map((entry, i) => (
-                    <tr
-                      key={entry.id}
-                      style={{
-                        background: i % 2 === 0 ? "#fff" : T.warmIvory,
-                        transition: "background 0.12s",
-                        cursor: "default",
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = T.cream)}
-                      onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : T.warmIvory)}
-                    >
-                      <td style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.time}
-                      </td>
-                      <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                        <span style={{
-                          background: ROLE_COLORS[entry.role]?.badge,
-                          color: ROLE_COLORS[entry.role]?.text,
-                          fontFamily: F.mono,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: "2px 7px",
-                          borderRadius: 999,
-                          whiteSpace: "nowrap",
-                        }}>
-                          {entry.role}
-                        </span>
-                      </td>
-                      <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.user}
-                      </td>
-                      <td style={{ padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                        <span style={{
-                          background: T.cream,
-                          border: `1px solid ${T.borderDef}`,
-                          borderRadius: 6,
-                          padding: "2px 7px",
-                          fontFamily: F.mono,
-                          fontSize: 12,
-                          color: T.royalBurgundy,
-                          whiteSpace: "nowrap",
-                        }}>
-                          {entry.module}
-                        </span>
-                      </td>
-                      <td style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, padding: "11px 14px", maxWidth: 300, borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.action}
-                      </td>
-                      <td style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, padding: "11px 14px", whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.record}
-                      </td>
-                      <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: entry.oldVal ? T.crimson : T.taupe, padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.oldVal ?? "—"}
-                      </td>
-                      <td style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: entry.newVal ? T.green : T.taupe, padding: "11px 14px", borderBottom: `1px solid ${T.borderDef}` }}>
-                        {entry.newVal ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={actionColumns}
+                data={entries}
+                getRowId={e => e.id}
+                loading={isLoading && entries.length === 0}
+                error={isError && entries.length === 0}
+                emptyTitle="No actions recorded yet."
+              />
 
               {/* Pagination */}
               <div style={{

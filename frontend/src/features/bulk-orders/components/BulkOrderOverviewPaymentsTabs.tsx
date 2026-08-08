@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -124,6 +125,33 @@ export function BulkOrderPaymentsTab({
   inr,
 }: PaymentsTabProps) {
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" };
+
+  type PayRow = any & { __idx: number };
+  const rows: PayRow[] = payments.map((p, i) => ({ ...p, __idx: i }));
+
+  const columns: ColumnDef<PayRow>[] = [
+    {
+      id: "amount", header: "Amount", accessor: p => p.amount,
+      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span>,
+    },
+    {
+      id: "date", header: "Date", accessor: p => p.date,
+      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
+    },
+    {
+      id: "method", header: "Method", accessor: p => p.method,
+      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.method}</span>,
+    },
+    {
+      id: "utr", header: "UTR / Reference", accessor: p => p.utr,
+      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.utr}</span>,
+    },
+    {
+      id: "firm", header: "Firm", accessor: p => p.firmName,
+      cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firmName || "—"}</span>,
+    },
+  ];
+
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
@@ -145,26 +173,7 @@ export function BulkOrderPaymentsTab({
         {payments.length === 0 ? (
           <div style={{ padding: "36px 20px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments recorded against this order yet.</div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: T.silkCream }}>
-                {["Amount", "Date", "Method", "UTR / Reference", "Firm"].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((p, i) => (
-                <tr key={i} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.method}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.utr}</td>
-                  <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firmName || "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable columns={columns} data={rows} getRowId={p => String(p.__idx)} />
         )}
       </div>
     </div>

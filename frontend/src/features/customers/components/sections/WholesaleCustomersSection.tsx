@@ -10,6 +10,7 @@ import { SectionTitle, Pill, FadeUp } from "../common/primitives";
 import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface WholesaleFormState {
   name: string;
@@ -59,6 +60,35 @@ export function WholesaleCustomersSection({
   const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const listColumns: ColumnDef<WholesaleCustomer>[] = [
+    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</span> },
+    {
+      id: "status", header: "Status", accessor: w => w.status, type: "status",
+      cell: (_v, w) => <span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span>,
+    },
+    { id: "action", header: "Action", accessor: () => null, type: "actions", cell: (_v, w) => <Button onClick={() => onView(w)} variant="link" size="sm">View</Button> },
+  ];
+
+  const tableColumns: ColumnDef<WholesaleCustomer>[] = [
+    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
+    { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>₹{w.spend}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</span> },
+    { id: "terms", header: "Terms", accessor: w => w.terms, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
+    { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
+    {
+      id: "status", header: "Status", accessor: w => w.status, type: "status",
+      cell: (_v, w) => <span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span>,
+    },
+    { id: "action", header: "Action", accessor: () => null, type: "actions", cell: (_v, w) => <Button onClick={() => onView(w)} variant="link" size="sm">View Profile</Button> },
+  ];
 
   const updateField = <K extends keyof WholesaleFormState>(key: K, value: WholesaleFormState[K]) =>
     setForm(f => ({ ...f, [key]: value }));
@@ -308,59 +338,14 @@ export function WholesaleCustomersSection({
       {/* Wholesale List View */}
       {wholesaleView === "list" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 14 }}>
-            <thead>
-              <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                {["Code", "Business Name", "City", "Orders", "Outstanding", "Status", "Action"].map(h => (
-                  <th key={h} style={{ padding: "14px 18px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {wholesaleList.map((w, i) => (
-                <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</td>
-                  <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{w.name}</td>
-                  <td style={{ padding: "14px 18px", color: T.taupe }}>{w.city}</td>
-                  <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.orders}</td>
-                  <td style={{ padding: "14px 18px", color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</td>
-                  <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onView(w)} variant="link" size="sm">View</Button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
         </div>
       )}
 
       {/* Wholesale Table View */}
       {wholesaleView === "table" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F.ui, fontSize: 14, whiteSpace: "nowrap" as const }}>
-            <thead>
-              <tr style={{ background: T.silkCream, borderBottom: `1px solid ${T.borderDef}`, textAlign: "left" }}>
-                {["Code", "Business Name", "City", "Total Orders", "Total Spend", "Outstanding", "Terms", "Last Order", "Status", "Action"].map(h => (
-                  <th key={h} style={{ padding: "14px 18px", color: T.taupe, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {wholesaleList.map((w, i) => (
-                <tr key={i} style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</td>
-                  <td style={{ padding: "14px 18px", fontWeight: 600, color: T.luxuryBrown }}>{w.name}</td>
-                  <td style={{ padding: "14px 18px", color: T.taupe }}>{w.city}</td>
-                  <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.orders}</td>
-                  <td style={{ padding: "14px 18px", color: T.antiqueGold, fontWeight: 600 }}>₹{w.spend}</td>
-                  <td style={{ padding: "14px 18px", color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</td>
-                  <td style={{ padding: "14px 18px", color: T.luxuryBrown }}>{w.terms}</td>
-                  <td style={{ padding: "14px 18px", color: T.taupe }}>{w.lastOrder}</td>
-                  <td style={{ padding: "14px 18px" }}><span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span></td>
-                  <td style={{ padding: "14px 18px" }}><Button onClick={() => onView(w)} variant="link" size="sm">View Profile</Button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
         </div>
       )}
     </div>

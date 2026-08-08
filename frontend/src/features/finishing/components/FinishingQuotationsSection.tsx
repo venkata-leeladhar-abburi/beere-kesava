@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Building2, UserRound, Package } from "lucide-react";
 import { Quotation } from "../contexts/FinishingContext";
 import { Button } from "../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -44,6 +45,37 @@ interface FinishingQuotationsSectionProps {
   openQuotation: string | null;
   setOpenQuotation: (id: string | null) => void;
 }
+
+type QuotationSaree = Quotation["sarees"][number];
+
+const sareeColumns: ColumnDef<QuotationSaree>[] = [
+  {
+    id: "sareeId", header: "Saree Code", accessor: s => s.sareeId,
+    cell: (_v, s) => <span style={tdMono}>{s.sareeId}</span>,
+  },
+  {
+    id: "sareeType", header: "Saree Type", accessor: s => s.sareeType,
+    cell: (_v, s) => <span style={td}>{s.sareeTypeCode ? `${s.sareeTypeCode} · ` : ""}{s.sareeType}</span>,
+  },
+  {
+    id: "weaverName", header: "Weaver", accessor: s => s.weaverName,
+    cell: (_v, s) => <span style={td}>{s.weaverName}</span>,
+  },
+  {
+    id: "finishingStatus", header: "Finishing Status", accessor: s => s.finishingStatus,
+    cell: (_v, s) => (
+      <Pill
+        label={s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
+        color={s.finishingStatus === "received" ? T.green : s.finishingStatus === "in-finishing" ? T.orange : T.taupe}
+        bg={s.finishingStatus === "received" ? "rgba(30,102,64,0.09)" : s.finishingStatus === "in-finishing" ? "rgba(230,126,34,0.12)" : "rgba(139,112,96,0.10)"}
+      />
+    ),
+  },
+  {
+    id: "finishingStaffName", header: "Finishing Staff", accessor: s => s.finishingStaffName,
+    cell: (_v, s) => s.finishingStaffName ? <span style={td}>{s.finishingStaffName}</span> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
+  },
+];
 
 export function FinishingQuotationsSection({
   filteredQuotations,
@@ -96,35 +128,13 @@ export function FinishingQuotationsSection({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
                       <div style={{ padding: "6px 18px 16px" }}>
-                        <div style={{ overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
-                            <thead>
-                              <tr>
-                                <th style={th}>Saree Code</th>
-                                <th style={th}>Saree Type</th>
-                                <th style={th}>Weaver</th>
-                                <th style={th}>Finishing Status</th>
-                                <th style={th}>Finishing Staff</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {qt.sarees.map(s => (
-                                <tr key={s.sareeId}>
-                                  <td style={tdMono}>{s.sareeId}</td>
-                                  <td style={td}>{s.sareeTypeCode ? `${s.sareeTypeCode} · ` : ""}{s.sareeType}</td>
-                                  <td style={td}>{s.weaverName}</td>
-                                  <td style={td}>
-                                    <Pill
-                                      label={s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
-                                      color={s.finishingStatus === "received" ? T.green : s.finishingStatus === "in-finishing" ? T.orange : T.taupe}
-                                      bg={s.finishingStatus === "received" ? "rgba(30,102,64,0.09)" : s.finishingStatus === "in-finishing" ? "rgba(230,126,34,0.12)" : "rgba(139,112,96,0.10)"}
-                                    />
-                                  </td>
-                                  <td style={td}>{s.finishingStaffName || <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                        <div style={{ overflowX: "auto", minWidth: 680 }}>
+                          <DataTable
+                            columns={sareeColumns}
+                            data={qt.sarees}
+                            getRowId={s => s.sareeId}
+                            emptyTitle="No sarees on this quotation"
+                          />
                         </div>
                       </div>
                     </motion.div>

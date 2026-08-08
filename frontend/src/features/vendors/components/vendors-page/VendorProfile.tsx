@@ -18,6 +18,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { vendorBillsApi, VendorBillStatus } from "../../../../shared/api/vendor-bills";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -132,6 +133,55 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   }, [filteredTxns]);
   const moneyVisible = useMoneyVisible();
   const inr = (n: number) => (moneyVisible ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
+
+  const billColumns: ColumnDef<VendorBill>[] = [
+    {
+      id: "poInvoice", header: "PO / Invoice", accessor: b => b.id,
+      cell: (_v, b) => (
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
+        </div>
+      ),
+    },
+    { id: "billDate", header: "Bill Date", accessor: b => b.date, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</span> },
+    {
+      id: "dueDate", header: "Due Date", accessor: b => b.dueDate,
+      cell: (_v, b) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: b.daysOverdue > 0 ? T.crimson : T.taupe, fontWeight: b.daysOverdue > 0 ? 700 : 400 }}>
+          {b.dueDate}
+          {b.daysOverdue > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{b.daysOverdue}d overdue</div>}
+        </span>
+      ),
+    },
+    { id: "amount", header: "Invoice Amount", accessor: b => b.amount, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</span> },
+    { id: "paid", header: "Paid", accessor: b => b.paid, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
+    { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
+    {
+      id: "status", header: "Status", accessor: b => b.status, type: "status",
+      cell: (_v, b) => {
+        const cfg = BILL_STATUS_CFG[b.status];
+        return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "4px 11px", borderRadius: 20, background: cfg.bg, color: cfg.color, whiteSpace: "nowrap" as const }}>{b.status}</span>;
+      },
+    },
+  ];
+
+  const txnColumns: ColumnDef<VendorPaymentTxn>[] = [
+    { id: "ref", header: "Payment Ref", accessor: p => p.id, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
+    { id: "date", header: "Date", accessor: p => p.date, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span> },
+    { id: "billId", header: "Against PO", accessor: p => p.billId, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.billId}</span> },
+    {
+      id: "mode", header: "Mode", accessor: p => p.mode,
+      cell: (_v, p) => (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          <span style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[p.mode] ?? T.taupe }} />{p.mode}
+        </span>
+      ),
+    },
+    { id: "reference", header: "UTR / Reference", accessor: p => p.reference, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span> },
+    { id: "firm", header: "Paying Firm", accessor: p => p.firm, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</span> },
+    { id: "amount", header: "Amount", accessor: p => p.amount, align: "end", cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span> },
+  ];
 
   return (
     <div style={{ padding: "40px 56px" }}>
@@ -302,39 +352,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 ) : filteredBills.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
                 ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr style={{ background: T.silkCream }}>
-                        {["PO / Invoice", "Bill Date", "Due Date", "Invoice Amount", "Paid", "Balance", "Status"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredBills.map((b, i) => {
-                        const cfg = BILL_STATUS_CFG[b.status];
-                        return (
-                          <tr key={b.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                            <td style={{ padding: "13px 16px" }}>
-                              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
-                              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
-                            </td>
-                            <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</td>
-                            <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: b.daysOverdue > 0 ? T.crimson : T.taupe, fontWeight: b.daysOverdue > 0 ? 700 : 400 }}>
-                              {b.dueDate}
-                              {b.daysOverdue > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{b.daysOverdue}d overdue</div>}
-                            </td>
-                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</td>
-                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</td>
-                            <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</td>
-                            <td style={{ padding: "13px 16px" }}>
-                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "4px 11px", borderRadius: 20, background: cfg.bg, color: cfg.color, whiteSpace: "nowrap" as const }}>{b.status}</span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <DataTable columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
                 )}
               </div>
 
@@ -350,32 +368,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                 ) : filteredTxns.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
                 ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr style={{ background: T.silkCream }}>
-                        {["Payment Ref", "Date", "Against PO", "Mode", "UTR / Reference", "Paying Firm", "Amount"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTxns.map((p, i) => (
-                        <tr key={p.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
-                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</td>
-                          <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</td>
-                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.billId}</td>
-                          <td style={{ padding: "13px 16px" }}>
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-                              <span style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[p.mode] ?? T.taupe }} />{p.mode}
-                            </span>
-                          </td>
-                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</td>
-                          <td style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</td>
-                          <td style={{ padding: "13px 16px", fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <DataTable columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
                 )}
               </div>
 

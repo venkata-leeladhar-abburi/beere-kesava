@@ -7,9 +7,35 @@ import { EASE, F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { materialIcon } from "./materialFormatters";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+type MaterialLine = MaterialIssueRecord["materials"][number];
 
 // ── View Details Modal ────────────────────────────────────────────────────────
 export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; onClose: () => void }) {
+  const materialColumns: ColumnDef<MaterialLine>[] = [
+    {
+      id: "type", header: "Type", accessor: m => m.materialType,
+      cell: (_v, m) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>{materialIcon(m.materialType)} {m.materialType}</span>,
+    },
+    {
+      id: "details", header: "Details", accessor: m => m.description,
+      cell: (_v, m) => (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+          {m.materialType === "Warp" ? m.warpSubtype : m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || m.jariColor || "—")}
+        </span>
+      ),
+    },
+    {
+      id: "qty", header: "Qty", accessor: m => m.quantity,
+      cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
+    },
+    {
+      id: "grn", header: "GRN Batch", accessor: m => m.grnBatchId,
+      cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.grnBatchId}</span>,
+    },
+  ];
+
   return (
     <div onClick={onClose} style={{ position: "fixed" as const, inset: 0, zIndex: 1000, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div onClick={e => e.stopPropagation()} initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2, ease: EASE }}
@@ -46,27 +72,11 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
           <div>
             <SectionPill label="Material Breakdown" />
             <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                <thead style={{ background: T.warmCream }}>
-                  <tr>
-                    {["Type", "Details", "Qty", "GRN Batch"].map(h => (
-                      <th key={h} style={{ padding: "9px 14px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {record.materials.map((m, i) => (
-                    <tr key={i} style={{ borderTop: `1px solid ${T.borderDef}` }}>
-                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>{materialIcon(m.materialType)} {m.materialType}</td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                        {m.materialType === "Warp" ? m.warpSubtype : m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || m.jariColor || "—")}
-                      </td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</td>
-                      <td style={{ padding: "10px 14px", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.grnBatchId}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={materialColumns}
+                data={record.materials}
+                getRowId={m => `${m.grnBatchId}-${m.materialType}-${record.materials.indexOf(m)}`}
+              />
             </div>
           </div>
 

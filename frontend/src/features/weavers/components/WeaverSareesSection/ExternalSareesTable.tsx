@@ -1,8 +1,9 @@
 import React from "react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
-import { T, F, th, td, tdMono } from "./theme";
+import { T, F } from "./theme";
 import { WeaverSareeRow } from "./types";
 import { inr, fmtDate, externalSerialOf } from "./utils";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
@@ -11,59 +12,54 @@ interface ExternalSareesTableProps {
 }
 
 export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSareesTableProps) {
+  const columns: ColumnDef<WeaverSareeRow>[] = [
+    {
+      id: "sareeId", header: "Saree ID", accessor: r => r.sareeId, type: "code",
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{r.sareeId}</span>,
+    },
+    {
+      id: "serialNo", header: "Serial No.", accessor: r => externalSerialOf(r.sareeId),
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{externalSerialOf(r.sareeId) || "—"}</span>,
+    },
+    {
+      id: "supplier", header: "Supplier", accessor: r => r.stock?.supplier,
+      cell: (_v, r) => <span style={{ fontWeight: 600, color: T.royalBurgundy }}>{r.stock?.supplier || "—"}</span>,
+    },
+    {
+      id: "purchaseOrder", header: "Purchase Order", accessor: r => r.stock?.purchaseId,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock?.purchaseId || "—"}</span>,
+    },
+    { id: "location", header: "Location", accessor: r => r.stock?.supplierLocation ?? "—" },
+    { id: "sareeType", header: "Saree Type", accessor: r => r.sareeTypeName ?? "—" },
+    {
+      id: "colour", header: "Colour", accessor: r => r.color,
+      cell: (_v, r) => r.color ? <>{r.color}</> : <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>,
+    },
+    { id: "weight", header: "Weight", accessor: r => r.stock?.weight ?? "—" },
+    {
+      id: "purchaseDate", header: "Purchase Date", accessor: r => r.stock?.purchaseDate,
+      cell: (_v, r) => <>{fmtDate(r.stock?.purchaseDate)}</>,
+    },
+    ...(canSeeMoney ? [
+      {
+        id: "costPrice", header: "Cost Price", accessor: r => r.stock?.costPrice, align: "end",
+        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock ? inr(r.stock.costPrice) : "—"}</span>,
+      } as ColumnDef<WeaverSareeRow>,
+      {
+        id: "sellPercent", header: "Sell %", accessor: r => r.stock?.sellPercent, align: "end",
+        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock ? `${r.stock.sellPercent}%` : "—"}</span>,
+      } as ColumnDef<WeaverSareeRow>,
+      {
+        id: "finalAmount", header: "Final Amount", accessor: r => r.stock?.finalAmount, align: "end",
+        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.stock ? inr(r.stock.finalAmount) : "—"}</span>,
+      } as ColumnDef<WeaverSareeRow>,
+    ] : []),
+  ];
+
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1080 }}>
-          <thead>
-            <tr style={{ background: T.warmCream }}>
-              <th style={th}>Saree ID</th>
-              <th style={th}>Serial No.</th>
-              <th style={th}>Supplier</th>
-              <th style={th}>Purchase Order</th>
-              <th style={th}>Location</th>
-              <th style={th}>Saree Type</th>
-              <th style={th}>Colour</th>
-              <th style={th}>Weight</th>
-              <th style={th}>Purchase Date</th>
-              {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Cost Price</th>}
-              {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Sell %</th>}
-              {canSeeMoney && <th style={{ ...th, textAlign: "right" }}>Final Amount</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {pageRows.map((r, idx) => (
-              <tr key={r.sareeId} style={{ background: idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.4)" }}>
-                <td style={tdMono}>{r.sareeId}</td>
-                <td style={{ ...td, fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>
-                  {externalSerialOf(r.sareeId) || "—"}
-                </td>
-                <td style={{ ...td, fontWeight: 600, color: T.royalBurgundy }}>{r.stock?.supplier || "—"}</td>
-                <td style={{ ...td, fontFamily: F.mono, fontSize: 12 }}>{r.stock?.purchaseId || "—"}</td>
-                <td style={td}>{r.stock?.supplierLocation || "—"}</td>
-                <td style={td}>{r.sareeTypeName || "—"}</td>
-                <td style={td}>{r.color || <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}</td>
-                <td style={td}>{r.stock?.weight || "—"}</td>
-                <td style={td}>{fmtDate(r.stock?.purchaseDate)}</td>
-                {canSeeMoney && (
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
-                    {r.stock ? inr(r.stock.costPrice) : "—"}
-                  </td>
-                )}
-                {canSeeMoney && (
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>
-                    {r.stock ? `${r.stock.sellPercent}%` : "—"}
-                  </td>
-                )}
-                {canSeeMoney && (
-                  <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
-                    {r.stock ? inr(r.stock.finalAmount) : "—"}
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable columns={columns} data={pageRows} getRowId={r => r.sareeId} />
       </div>
       <div style={{ padding: "0 14px" }}>
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
