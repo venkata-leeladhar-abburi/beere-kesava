@@ -260,7 +260,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <Bar dataKey="value" radius={[0, 6, 6, 0]}
                     label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                     {topCustomers.map((c, i) => (
-                      <Cell key={c.customer} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+                      <Cell key={c.customer} fill={semantic.chart.series[i % semantic.chart.series.length]} />
                     ))}
                   </Bar>
                 </BarChart>

@@ -298,7 +298,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
                 <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                   {topVendors.map((v, i) => (
-                    <Cell key={v.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+                    <Cell key={v.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
                   ))}
                 </Bar>
               </BarChart>

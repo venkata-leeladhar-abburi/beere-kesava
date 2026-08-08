@@ -4,6 +4,7 @@ import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 import { Trophy } from "lucide-react";
 import { T, F } from "../../theme";
+import { semantic } from "../../../../../design-system/tokens";
 import { formatINR } from "../../../contexts/SupplierContext";
 
 export interface PerSupplierEntry {
@@ -48,7 +49,7 @@ export function TopSuppliersCard({
           <Bar dataKey="billed" radius={[0, 6, 6, 0]}
             label={{ position: "right", formatter: (v: any) => formatINR(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
             {topSuppliers.map((s, i) => (
-              <Cell key={s.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+              <Cell key={s.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
             ))}
           </Bar>
         </BarChart>

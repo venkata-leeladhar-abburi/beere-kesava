@@ -69,7 +69,7 @@ export function RetailChartsRow1() {
   // Category split (Revenue by saree type)
   const retailCategorySplit = useMemo(() => {
     const split: Record<string, number> = {};
-    const colors = [T.royalBurgundy, T.antiqueGold, T.greenMid, T.taupe, "#5A3E6B"];
+    const colors = semantic.chart.series;
 
     for (const sale of retailSales) {
       const type = sareeInfoMap.get(sale.sareeId) ?? "Silk Saree";
