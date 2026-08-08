@@ -109,7 +109,7 @@ export function ModalOverlay({ open, onClose, children }: { open: boolean; onClo
           onClick={onClose}
           style={{
             position: "fixed", inset: 0, background: "rgba(61,14,26,0.60)", backdropFilter: "blur(4px)",
-            zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
+            zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
           }}
         >
           <motion.div

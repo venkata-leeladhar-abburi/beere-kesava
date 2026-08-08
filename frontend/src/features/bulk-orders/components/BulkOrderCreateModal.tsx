@@ -143,8 +143,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
           exit={{ opacity: 0 }}
           onClick={onClose}
           style={{
-            position: "fixed", inset: 0, zIndex: 1500,
-            background: "rgba(0,0,0,0.7)",
+            position: "fixed", inset: 0, zIndex: "var(--z-modal)",
+            background: "var(--surface-scrim)",
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: 24, overflowY: "auto",
           }}

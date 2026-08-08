@@ -171,8 +171,8 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
           transition={{ duration: 0.22 }}
           onClick={onClose}
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.60)", backdropFilter: "blur(4px)",
-            zIndex: 9100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+            position: "fixed", inset: 0, background: "var(--surface-scrim)", backdropFilter: "blur(4px)",
+            zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
           }}
         >
           <motion.div

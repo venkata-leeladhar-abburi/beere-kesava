@@ -17,6 +17,7 @@ const SharedContexts = composeProviders([
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "../shared/ui/sonner";
 import { SkipLink } from "../shared/ui/SkipLink";
+import { ConfirmProvider } from "../shared/ui/overlay";
 import { RouteLoadingFallback } from "./RouteLoadingFallback";
 
 // Layouts (for Context scope and Auth guards) — each is its own portal bundle so
@@ -51,6 +52,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SharedContexts>
+      <ConfirmProvider>
       <BrowserRouter>
         <SkipLink />
         <ErrorBoundary>
@@ -108,8 +110,9 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
+      </ConfirmProvider>
       </SharedContexts>
-      <Toaster position="top-right" richColors />
+      <Toaster position="bottom-right" richColors closeButton expand={false} visibleToasts={3} gap={8} duration={4000} />
     </AuthProvider>
     </QueryClientProvider>
   );

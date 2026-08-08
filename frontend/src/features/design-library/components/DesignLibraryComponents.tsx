@@ -123,7 +123,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
   return (
     <div
       onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
+      style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
     >
       <motion.div
         onClick={e => e.stopPropagation()}

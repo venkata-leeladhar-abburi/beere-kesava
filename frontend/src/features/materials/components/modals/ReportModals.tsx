@@ -281,7 +281,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
         key="po-overlay"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: 1800, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "flex-end" }}
+        style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "flex-end" }}
       >
         <motion.div
           key="po-panel"

@@ -108,7 +108,7 @@ export function PurchaseFormModal({
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 2100,
+          zIndex: "var(--z-modal)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

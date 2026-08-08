@@ -11,7 +11,7 @@ import type { SareeTypeRecord } from "./sareeTypeData";
 export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeRecord; onClose: () => void }) {
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
+      position: "fixed", inset: 0, zIndex: "var(--z-modal)",
       background: "rgba(30,10,20,0.55)",
       display: "flex", alignItems: "center", justifyContent: "center",
       backdropFilter: "blur(4px)",

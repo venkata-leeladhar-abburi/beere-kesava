@@ -37,7 +37,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         transition: { duration: 1.1, ease: [0.4, 0, 0.2, 1] },
       }}
       style={{
-        position: "fixed", inset: 0, zIndex: 9999,
+        position: "fixed", inset: 0, zIndex: "var(--z-tooltip)",
         background: "linear-gradient(160deg, #050107 0%, #140408 18%, #2C0913 45%, #4A061B 72%, #6E0F2D 100%)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         overflow: "hidden",

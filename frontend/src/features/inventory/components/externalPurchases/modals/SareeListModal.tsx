@@ -93,7 +93,7 @@ export function SareeListModal({
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 2050,
+          zIndex: "var(--z-modal)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

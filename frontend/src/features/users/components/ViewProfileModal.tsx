@@ -12,7 +12,7 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
   onEdit: () => void;
 }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 16 }}

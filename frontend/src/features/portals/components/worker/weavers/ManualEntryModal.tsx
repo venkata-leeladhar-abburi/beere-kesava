@@ -14,7 +14,7 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
 
   if (saved) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-overlay)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ background: "#FFF", borderRadius: 20, padding: 28, width: "min(94vw,380px)", textAlign: "center" }}>
           <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <CheckCircle2 size={28} color={C.green} />
@@ -30,7 +30,7 @@ export function ManualEntryModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} onClick={onClose} />
+      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)" }} onClick={onClose} />
       <div style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 36px", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)", maxHeight: "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: C.text }}>Add Manually</span>

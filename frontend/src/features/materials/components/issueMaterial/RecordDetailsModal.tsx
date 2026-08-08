@@ -37,7 +37,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
   ];
 
   return (
-    <div onClick={onClose} style={{ position: "fixed" as const, inset: 0, zIndex: 1000, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+    <div onClick={onClose} style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div onClick={e => e.stopPropagation()} initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2, ease: EASE }}
         style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "calc(100vw - 48px)", maxHeight: "88vh", overflowY: "auto" as const, boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ background: T.darkBurgundy, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>

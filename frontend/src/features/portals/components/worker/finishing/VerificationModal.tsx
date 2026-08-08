@@ -81,7 +81,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} onClick={onClose} />
+      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)" }} onClick={onClose} />
       <motion.div
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ duration: 0.28, ease: EASE }}

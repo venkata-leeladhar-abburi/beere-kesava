@@ -27,7 +27,7 @@ export function DetailDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 400 }}
+            style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: "var(--z-overlay)" }}
           />
           <motion.div
             initial={{ x: 480 }}

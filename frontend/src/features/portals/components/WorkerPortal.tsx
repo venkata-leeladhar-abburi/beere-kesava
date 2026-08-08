@@ -188,7 +188,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
               onClick={() => setShowMenu(false)}
-              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 190 }} />
+              style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: "var(--z-overlay)" }} />
             <HamburgerMenu onClose={() => setShowMenu(false)} onProfile={() => setShowProfile(true)} onBack={onBack} />
           </>
         )}
