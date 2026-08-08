@@ -3,8 +3,6 @@ import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardCheck, CreditCard, H
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
 import { BatchHistoryPage } from "../BatchHistoryPage";
 import { DesktopHero } from "./DesktopHero";
-import { WeaverHero } from "./WeaverHero";
-import { WeaverMetricsBar } from "./WeaverMetricsBar";
 import { DesktopActiveBatchCard } from "./DesktopActiveBatchCard";
 import { DesktopCompletedBatchCard } from "./DesktopCompletedBatchCard";
 import { GeneralDispatchInstructionsBlock } from "./batchCardHelpers";
@@ -71,38 +69,27 @@ export function BatchesSection({
 
   return (
     <>
-      {isTablet ? (
-        <DesktopHero
-          bp={bp}
-          breadcrumb="SINCE 1999 · WEAVER PORTAL"
-          titleMain="My Batches"
-          titleSub="& Active Work"
-          description={`Track your active and completed batches, view design references, and manage your materials. You have ${myActiveBatches.length} active ${myActiveBatches.length === 1 ? "batch" : "batches"} currently in progress.`}
-          pills={[
-            { text: `${myActiveBatches.length} Active ${myActiveBatches.length === 1 ? "Batch" : "Batches"}`, color: C.gold },
-            { text: `${sareesThisMonth} Sarees This Month` },
-            { text: `${qcPassPct}% QC Pass Rate` },
-            { text: `₹${earnedThisMonth.toLocaleString("en-IN")} Earned` },
-          ]}
-          alertBadge={identityBadge}
-          stats={[
-            { label: "Sarees Produced This Month", val: `${sareesThisMonth}`, sub: "Recorded from QC entries" },
-            { label: "Quality Check Pass Rate", val: `${qcPassPct}%`, sub: qcPassSub, highlight: true },
-            { label: "Total Earned This Month", val: `₹${earnedThisMonth.toLocaleString("en-IN")}`, sub: "After all deductions" },
-            { label: "Active Batches", val: `${myActiveBatches.length}`, sub: `Maximum allowed — ${myActiveBatches.length} of ${MAX_ACTIVE_BATCHES}` },
-          ]}
-          bgUrl={BG_IMAGE}
-        />
-      ) : (
-        <>
-          <WeaverHero
-            weaverName={user?.name ?? "Weaver"}
-            onExploreBatches={() => document.getElementById("weaver-active-batches")?.scrollIntoView({ behavior: "smooth" })}
-            onGoToPayments={() => setActive("payments")}
-          />
-          <WeaverMetricsBar />
-        </>
-      )}
+      <DesktopHero
+        bp={bp}
+        breadcrumb="SINCE 1999 · WEAVER PORTAL"
+        titleMain="My Batches"
+        titleSub="& Active Work"
+        description={`Track your active and completed batches, view design references, and manage your materials. You have ${myActiveBatches.length} active ${myActiveBatches.length === 1 ? "batch" : "batches"} currently in progress.`}
+        pills={[
+          { text: `${myActiveBatches.length} Active ${myActiveBatches.length === 1 ? "Batch" : "Batches"}`, color: C.gold },
+          { text: `${sareesThisMonth} Sarees This Month` },
+          { text: `${qcPassPct}% QC Pass Rate` },
+          { text: `₹${earnedThisMonth.toLocaleString("en-IN")} Earned` },
+        ]}
+        alertBadge={identityBadge}
+        stats={[
+          { label: "Sarees Produced This Month", val: `${sareesThisMonth}`, sub: "Recorded from QC entries" },
+          { label: "Quality Check Pass Rate", val: `${qcPassPct}%`, sub: qcPassSub, highlight: true },
+          { label: "Total Earned This Month", val: `₹${earnedThisMonth.toLocaleString("en-IN")}`, sub: "After all deductions" },
+          { label: "Active Batches", val: `${myActiveBatches.length}`, sub: `Maximum allowed — ${myActiveBatches.length} of ${MAX_ACTIVE_BATCHES}` },
+        ]}
+        bgUrl={BG_IMAGE}
+      />
       <div id="weaver-active-batches" style={{ padding: isTablet ? "24px 28px 40px" : "64px 48px 56px" }}>
         {/* Defective Saree Warning Alerts */}
         {myDefectiveSarees.map(ds => (
