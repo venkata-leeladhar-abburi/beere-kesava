@@ -122,6 +122,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     const po: PurchaseOrder = {
       id: created.id,
       poNumber: created.poNumber,
+      vendorId: vendor!.id,
       vendor: vendor!.name,
       vendorCity: vendor!.city,
       vendorContact: vendorContact || undefined,
