@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
 import { BatchRecord, useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
