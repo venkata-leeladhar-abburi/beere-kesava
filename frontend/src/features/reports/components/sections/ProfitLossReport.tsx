@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { FileText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useFirms } from "../../../firms/contexts/FirmsContext";
@@ -13,8 +13,6 @@ export function ProfitLossReport() {
   const { firms, financials } = useFirms();
   const moneyVisible = useMoneyVisible();
   const inr = (n: number) => (moneyVisible ? `₹${n.toLocaleString("en-IN")}` : "—");
-  const ledgerLabelStyle: React.CSSProperties = { fontFamily: F.ui, fontSize: 14, color: T.taupe, padding: "11px 20px" };
-  const ledgerAmtStyle: React.CSSProperties = { fontFamily: F.mono, fontSize: 14, fontWeight: 700, padding: "11px 20px", textAlign: "right" as const };
 
   const hasData = financials.some(f => f.income.length > 0 || f.expenses.length > 0 || f.misc.length > 0);
 
@@ -39,6 +37,56 @@ export function ProfitLossReport() {
   const totalExpenses = weaverPayments + materialPurchases + shopMaintenance + factoryMaintenance + salaries + otherExpenses;
 
   const netProfit = totalIncome - totalExpenses;
+
+  type LedgerRow = { id: string; label: string; amount: number | null; kind: "section" | "item" | "subtotal" | "net"; color: string; bg: string };
+
+  const ledgerRows: LedgerRow[] = [
+    { id: "income-section", label: "▼ INCOME", amount: null, kind: "section", color: T.green, bg: T.greenBg },
+    { id: "wholesale", label: "Wholesale Sales", amount: wholesaleSales, kind: "item", color: T.green, bg: "transparent" },
+    { id: "retail", label: "Retail Sales", amount: retailSales, kind: "item", color: T.green, bg: "transparent" },
+    { id: "other-income", label: "Other Income", amount: otherIncome, kind: "item", color: T.green, bg: "transparent" },
+    { id: "total-income", label: "Total Income", amount: totalIncome, kind: "subtotal", color: T.green, bg: T.greenBg },
+    { id: "expenses-section", label: "▼ EXPENSES", amount: null, kind: "section", color: T.crimson, bg: T.crimsonBg },
+    { id: "weaver-payments", label: "Weaver Payments", amount: weaverPayments, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "material-purchases", label: "Material Purchases", amount: materialPurchases, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "shop-maintenance", label: "Shop Maintenance", amount: shopMaintenance, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "factory-maintenance", label: "Factory Maintenance", amount: factoryMaintenance, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "salaries", label: "Salaries", amount: salaries, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "other-expenses", label: "Other Expenses", amount: otherExpenses, kind: "item", color: T.crimson, bg: "transparent" },
+    { id: "total-expenses", label: "Total Expenses", amount: totalExpenses, kind: "subtotal", color: T.crimson, bg: T.crimsonBg },
+    {
+      id: "net", label: netProfit >= 0 ? "Net Profit" : "Net Loss", amount: Math.abs(netProfit), kind: "net",
+      color: netProfit >= 0 ? T.antiqueGold : T.crimson, bg: "rgba(200,155,71,0.12)",
+    },
+  ];
+
+  const ledgerColumns: ColumnDef<LedgerRow>[] = [
+    {
+      id: "label", header: "", accessor: r => r.label,
+      cell: (_v, r) => {
+        if (r.kind === "section") return <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "1.5px" }}>{r.label}</span>;
+        if (r.kind === "subtotal") return <span style={{ fontFamily: F.ui, fontWeight: 700, color: r.color }}>{r.label}</span>;
+        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: r.color }}>{r.label}</span>;
+        return <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.label}</span>;
+      },
+    },
+    {
+      id: "amount", header: "", type: "currency", align: "end", accessor: r => r.amount,
+      cell: (_v, r) => {
+        if (r.amount == null) return null;
+        if (r.kind === "subtotal") return <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        return <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+      },
+    },
+  ];
+
+  function ledgerRowClassName(r: LedgerRow): string | undefined {
+    if (r.bg === T.greenBg) return "bg-[rgba(30,102,64,0.09)]";
+    if (r.bg === T.crimsonBg) return "bg-[rgba(192,57,43,0.08)]";
+    if (r.kind === "net") return "bg-[rgba(200,155,71,0.12)]";
+    return undefined;
+  }
 
   const perFirmColumns: ColumnDef<{ name: string; income: number; expenses: number; net: number }>[] = [
     {
@@ -186,69 +234,13 @@ export function ProfitLossReport() {
             </div>
           )}
 
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            {/* INCOME */}
-            <tbody>
-              <tr style={{ background: T.greenBg }}>
-                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ INCOME</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(30,102,64,0.10)` }}>
-                <td style={ledgerLabelStyle}>Wholesale Sales</td>
-                <td style={{ ...ledgerAmtStyle, color: T.green }}>{inr(wholesaleSales)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(30,102,64,0.10)` }}>
-                <td style={ledgerLabelStyle}>Retail Sales</td>
-                <td style={{ ...ledgerAmtStyle, color: T.green }}>{inr(retailSales)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(30,102,64,0.10)` }}>
-                <td style={ledgerLabelStyle}>Other Income</td>
-                <td style={{ ...ledgerAmtStyle, color: T.green }}>{inr(otherIncome)}</td>
-              </tr>
-              <tr style={{ background: T.greenBg, borderBottom: `2px solid rgba(30,102,64,0.20)` }}>
-                <td style={{ ...ledgerLabelStyle, fontFamily: F.ui, fontWeight: 700, color: T.green }}>Total Income</td>
-                <td style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.green, padding: "12px 20px", textAlign: "right" }}>{inr(totalIncome)}</td>
-              </tr>
-
-              {/* EXPENSES */}
-              <tr style={{ background: T.crimsonBg }}>
-                <td colSpan={2} style={{ padding: "10px 20px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textTransform: "uppercase", letterSpacing: "1.5px" }}>▼ EXPENSES</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Weaver Payments</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(weaverPayments)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Material Purchases</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(materialPurchases)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Shop Maintenance</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(shopMaintenance)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Factory Maintenance</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(factoryMaintenance)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Salaries</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(salaries)}</td>
-              </tr>
-              <tr style={{ borderBottom: `1px solid rgba(192,57,43,0.10)` }}>
-                <td style={ledgerLabelStyle}>Other Expenses</td>
-                <td style={{ ...ledgerAmtStyle, color: T.crimson }}>{inr(otherExpenses)}</td>
-              </tr>
-              <tr style={{ background: T.crimsonBg, borderBottom: `2px solid rgba(192,57,43,0.20)` }}>
-                <td style={{ ...ledgerLabelStyle, fontFamily: F.ui, fontWeight: 700, color: T.crimson }}>Total Expenses</td>
-                <td style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.crimson, padding: "12px 20px", textAlign: "right" }}>{inr(totalExpenses)}</td>
-              </tr>
-
-              {/* NET PROFIT / LOSS */}
-              <tr style={{ background: "rgba(200,155,71,0.12)", borderBottom: `2px solid rgba(200,155,71,0.30)` }}>
-                <td style={{ ...ledgerLabelStyle, fontFamily: F.display, fontSize: 20, fontWeight: 700, color: netProfit >= 0 ? T.antiqueGold : T.crimson }}>{netProfit >= 0 ? "Net Profit" : "Net Loss"}</td>
-                <td style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: netProfit >= 0 ? T.antiqueGold : T.crimson, padding: "16px 20px", textAlign: "right" }}>{inr(Math.abs(netProfit))}</td>
-              </tr>
-            </tbody>
-          </table>
+          <DataTable
+            columns={ledgerColumns}
+            data={ledgerRows}
+            getRowId={r => r.id}
+            caption="Profit & Loss Summary — All Firms"
+            rowClassName={ledgerRowClassName}
+          />
 
           <DownloadGate>
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
