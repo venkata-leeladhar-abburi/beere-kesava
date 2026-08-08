@@ -1,12 +1,13 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FileText, X } from "lucide-react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
-import { EASE, F, T, useFirms } from "../../theme";
-import { Invoice, VendorPayment } from "../../types";
+import { F, T, useFirms } from "../../theme";
+import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
@@ -20,7 +21,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     const numericAmount = parseFloat(amount);
@@ -49,19 +50,18 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 840, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column" }}
-      >
+    <Modal open onOpenChange={o => !o && onClose()} size="lg">
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
-          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
-          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
-            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+          <Dialog.Title asChild>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
+          </Dialog.Title>
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm"
+              className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+          </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
+        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start", overflowY: "auto" }}>
           {/* Left Column: Payment History & Invoice Upload */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div>
@@ -142,13 +142,12 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
             {saveError}
           </div>
         )}
-        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}` }}>
+        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
           <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
             Confirm Payment
           </Button>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

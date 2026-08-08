@@ -11,8 +11,8 @@ import type { SareeTypeRecord } from "./sareeTypeData";
 export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeRecord; onClose: () => void }) {
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: "var(--z-modal)",
-      background: "rgba(30,10,20,0.55)",
+      position: "fixed", inset: 0, zIndex: "var(--z-popover)",
+      background: "var(--surface-scrim)",
       display: "flex", alignItems: "center", justifyContent: "center",
       backdropFilter: "blur(4px)",
     }} onClick={onClose}>
