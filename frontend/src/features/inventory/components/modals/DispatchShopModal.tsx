@@ -1,16 +1,17 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
+import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   ShoppingBag, X, CheckCircle2, Upload, ArrowRight, Package, Zap,
 } from "lucide-react";
 import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
-import { T, F, EASE } from "../theme";
+import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { TransportData } from "../types";
 import { StatusBadge } from "../common/primitives";
 import { TransportForm } from "./shared/TransportForm";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
+import { Modal } from "../../../../shared/ui/overlay";
 
 // ── Dispatch to Shop modal ────────────────────────────────────────────────────
 export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
@@ -22,7 +23,6 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(1);
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
-  const [browsing, setBrowsing] = useState(false);
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "" });
 
   const canNext2 = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
@@ -32,25 +32,24 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
   const STEPS = ["Sarees", "Transport & LR", "Upload Receipt", "Confirm"];
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: step === 1 && browsing ? 1180 : 620, maxWidth: "96vw", maxHeight: "88vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
-
+    <Modal open onOpenChange={o => !o && onClose()} size="xl">
         {/* Header */}
         <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <ShoppingBag size={20} color={T.antiqueGold} />
-              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
+              <Dialog.Title asChild>
+                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
+              </Dialog.Title>
             </div>
-            <IconButton
-              icon={X}
-              label="Close"
-              onClick={onClose}
-              size="sm"
-              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
-            />
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
+                size="sm"
+                className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+              />
+            </Dialog.Close>
           </div>
           {/* Step progress */}
           <div style={{ display: "flex", gap: 0 }}>
@@ -75,7 +74,6 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
                 available={available}
                 picked={picked}
                 onChange={setPicked}
-                onBrowseChange={setBrowsing}
                 label="Sarees going to the shop"
               />
               {noSarees ? (
@@ -186,7 +184,6 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
             </Button>
           )}
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }
