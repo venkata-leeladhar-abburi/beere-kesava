@@ -1,10 +1,11 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Edit2 } from "lucide-react";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
-import { T, F, EASE } from "./theme";
+import { T, F } from "./theme";
 import { StatusBadge } from "./UserBadges";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 export function ViewProfileModal({ member, onClose, onEdit }: {
   member: FinishingStaffMember;
@@ -12,15 +13,9 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
   onEdit: () => void;
 }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: 480, background: "#fff", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden" }}
-      >
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="sm">
+      <Dialog.Title className="sr-only">{member.firstName} {member.lastName} — profile</Dialog.Title>
+      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         {/* Header band */}
         <div style={{ background: T.darkBurgundy, padding: "22px 28px 20px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -38,8 +33,10 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
               </div>
             </div>
           </div>
-          <IconButton label="Close" icon={X} size="sm" variant="ghost" onClick={onClose}
-            className="bg-white/10 text-white hover:bg-white/20 hover:text-white" />
+          <Dialog.Close asChild>
+            <IconButton label="Close" icon={X} size="sm" variant="ghost" onClick={onClose}
+              className="bg-white/10 text-white hover:bg-white/20 hover:text-white" />
+          </Dialog.Close>
         </div>
 
         {/* Body */}
@@ -80,7 +77,7 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
             </Button>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }

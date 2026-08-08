@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { X } from "lucide-react";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
-import { T, F, EASE } from "./theme";
-import { Button, IconButton, Field, Input, Textarea } from "../../../shared/ui/primitives";
+import { Button, Field, Input, Textarea } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 export function EditModal({ member, onClose, onSave }: {
   member: FinishingStaffMember;
@@ -21,26 +19,10 @@ export function EditModal({ member, onClose, onSave }: {
   const canSave = firstName.trim() && lastName.trim() && mobile.trim();
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.25, ease: EASE }}
-        style={{ position: "relative", width: 580, maxHeight: "90vh", overflowY: "auto", background: "#fff", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden" }}
-      >
-        {/* Header */}
-        <div style={{ background: T.darkBurgundy, padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#fff" }}>
-            Edit Finishing Staff Profile
-          </div>
-          <IconButton label="Close" icon={X} size="sm" variant="ghost" onClick={onClose}
-            className="bg-white/10 text-white hover:bg-white/20 hover:text-white" />
-        </div>
-
-        {/* Form */}
-        <div style={{ padding: "24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px 24px" }}>
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
+      <Modal.Header title="Edit Finishing Staff Profile" />
+      <Modal.Body>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px 24px", paddingBottom: 24 }}>
           <Field label="First Name" required>
             <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
           </Field>
@@ -65,22 +47,19 @@ export function EditModal({ member, onClose, onSave }: {
             </Field>
           </div>
         </div>
-
-        {/* Footer buttons */}
-        <div style={{ padding: "0 24px 24px", display: "flex", gap: 10 }}>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email, empId, specialisation, notes }); }}
-            disabled={!canSave}
-          >
-            Save Changes
-          </Button>
-          <Button variant="secondary" fullWidth onClick={onClose}>
-            Cancel
-          </Button>
-        </div>
-      </motion.div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="tertiary" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => { if (canSave) onSave({ firstName, lastName, mobile, email, empId, specialisation, notes }); }}
+          disabled={!canSave}
+        >
+          Save Changes
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
