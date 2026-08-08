@@ -1,13 +1,13 @@
-import React from "react";
 import {
   Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending,
 } from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
-import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
+import { T, F, rowComplete, Pip, EmptyCell } from "./constants";
 import type { ActivePicker } from "./types";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { pipColor } from "./PickerModals";
-import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ── Status dot per row ────────────────────────────────────────────────────────
 function StatusDot({ row }: { row: SareeRow }) {
@@ -19,7 +19,7 @@ function StatusDot({ row }: { row: SareeRow }) {
 }
 
 export function BatchTable({
-  rows, displayRows, selected, toggleAll, toggleRow, allSelected,
+  rows, displayRows, selected, toggleAll: _toggleAll, toggleRow, allSelected: _allSelected,
   sortBy, setSortBy, searchFilter, setSearchFilter, weaverFilter, setWeaverFilter,
   sareeTypeFilter, setSareeTypeFilter, orderFilter, setOrderFilter,
   weaverOptions, orderOptions, sareeTypeOptions,
@@ -63,22 +63,135 @@ export function BatchTable({
   setLoomPickerRow: (r: SareeRow) => void;
   openSareeTypeCard: (code: string) => void;
 }) {
-  // ── Merge "Materials Given" cell across consecutive rows for the same weaver/factory loom
-  const materialsCellSpan: Record<number, number> = {}; // serial -> rowSpan (only set for the first row of a run)
-  {
-    let i = 0;
-    while (i < displayRows.length) {
-      const key = displayRows[i].weaverId || displayRows[i].factoryLoomId || null;
-      let span = 1;
-      if (key) {
-        while (i + span < displayRows.length && (displayRows[i + span].weaverId || displayRows[i + span].factoryLoomId) === key) {
-          span++;
-        }
-      }
-      materialsCellSpan[displayRows[i].serial] = span;
-      i += span;
-    }
+  function handleSelectionChange(next: Set<string>) {
+    displayRows.forEach(row => {
+      const now = next.has(String(row.serial));
+      const was = selected.has(row.serial);
+      if (now !== was) toggleRow(row.serial);
+    });
   }
+
+  const columns: ColumnDef<SareeRow>[] = [
+    { id: "serial", header: "#", accessor: r => r.serial, cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40, display: "inline-block" }}>{v as number}</span> },
+    {
+      id: "sareeId", header: "Saree ID", accessor: r => r.sareeId,
+      cell: (_v, row) => (
+        <div style={{ minWidth: 120 }}>
+          {row.sareeId ? (
+            <Button onClick={() => setViewSareeRow(row)} variant="link"
+              className="font-code text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
+              {row.sareeId}
+            </Button>
+          ) : (
+            <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>— assign weaver</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "weaverLoom", header: "Weaver / Factory Loom", accessor: r => r.weaverId || r.factoryLoomId,
+      cell: (_v, row) => {
+        const weaverForRow = row.weaverId ? weavers.find(x => x.id === row.weaverId) : undefined;
+        return (
+          <div style={{ minWidth: 150 }}>
+            {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
+              <Button onClick={() => {
+                const l = looms.find(x => x.id === row.factoryLoomId);
+                if (l) setViewFactoryLoom(l);
+              }}
+                variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline">
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Factory size={12} color={T.royalBurgundy} />
+                </div>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
+              </Button>
+            ) : row.weaverId ? (
+              <Button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
+                variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline" disabled={!weaverForRow}>
+                <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={22} />
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: weaverForRow ? "underline" : "none", textDecorationColor: "rgba(110,15,45,0.2)" }}>
+                  {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
+                </span>
+              </Button>
+            ) : <EmptyCell />}
+          </div>
+        );
+      },
+    },
+    {
+      id: "loomNo", header: "Loom No.", accessor: r => r.weaverLoom,
+      cell: (_v, row) => (
+        <div style={{ minWidth: 90 }}>
+          {row.recipientType === "factoryLoom" ? (
+            <EmptyCell />
+          ) : row.weaverId ? (
+            <Button onClick={() => setLoomPickerRow(row)}
+              variant="link" className="font-code text-xs font-bold text-[#C89B47] bg-[rgba(200,155,71,0.08)] border border-[rgba(200,155,71,0.22)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
+              {row.weaverLoom ? `Loom ${row.weaverLoom}` : "— select loom"}
+            </Button>
+          ) : <EmptyCell />}
+        </div>
+      ),
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: r => r.sareeTypeCode,
+      cell: (_v, row) => (
+        <div style={{ minWidth: 110 }}>
+          {row.sareeTypeCode ? (
+            <Button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
+              variant="link" className="font-code text-xs font-bold text-[#8B6018] bg-[rgba(200,155,71,0.12)] border border-[rgba(200,155,71,0.30)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
+              {row.sareeTypeCode}
+            </Button>
+          ) : <EmptyCell />}
+        </div>
+      ),
+    },
+    {
+      id: "bulkOrder", header: "Bulk Order", accessor: r => r.bulkOrderLabel,
+      cell: (_v, row) => (
+        <div style={{ minWidth: 140 }}>
+          {row.bulkOrderLabel ? (
+            <Button onClick={() => {
+              const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
+              if (bo) setViewBulkOrder(bo);
+            }}
+              variant="link" className={`p-0 text-xs font-semibold ${row.bulkOrderRef ? "text-[#6E0F2D]" : "text-[#1E6640]"}`}>
+              {row.bulkOrderLabel}
+            </Button>
+          ) : <EmptyCell />}
+        </div>
+      ),
+    },
+    {
+      id: "materials", header: "Materials Given", accessor: () => null,
+      mergeKey: row => row.weaverId || row.factoryLoomId || null,
+      cell: (_v, row) => {
+        const materialsSummary = (row.weaverId || row.factoryLoomId)
+          ? issueRecords
+              .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
+                row.weaverId ? r.weaverId === row.weaverId : r.factoryLoomId === row.factoryLoomId
+              ))
+              .flatMap(r => r.materials)
+              .reduce((acc: Record<string, { qty: number; unit: string }>, m: any) => {
+                if (!acc[m.materialType]) acc[m.materialType] = { qty: 0, unit: m.unit };
+                acc[m.materialType].qty += m.quantity;
+                return acc;
+              }, {})
+          : null;
+        const materialsText = materialsSummary && Object.keys(materialsSummary).length > 0
+          ? Object.entries(materialsSummary).map(([type, v]: [string, any]) => `${type}: ${v.qty}${v.unit}`).join(", ")
+          : null;
+        return (
+          <div style={{ minWidth: 170 }}>
+            {materialsText ? (
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{materialsText}</span>
+            ) : <EmptyCell />}
+          </div>
+        );
+      },
+    },
+    { id: "status", header: "", align: "end", accessor: () => null, cell: (_v, row) => <StatusDot row={row} /> },
+  ];
 
   return (
     <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,6,27,0.05)", marginBottom: 20 }}>
@@ -143,125 +256,16 @@ export function BatchTable({
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
-          <thead>
-            <tr style={{ background: T.warmCream }}>
-              <th style={th}>
-                <Checkbox checked={allSelected} onCheckedChange={() => toggleAll()} aria-label="Select all rows" />
-              </th>
-              {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
-                <th key={h} style={th}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {displayRows.map((row, idx) => {
-              const isSelected = selected.has(row.serial);
-              const weaverForRow = row.weaverId ? weavers.find(x => x.id === row.weaverId) : undefined;
-              const materialsSummary = (row.weaverId || row.factoryLoomId)
-                ? issueRecords
-                    .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
-                      row.weaverId ? r.weaverId === row.weaverId : r.factoryLoomId === row.factoryLoomId
-                    ))
-                    .flatMap(r => r.materials)
-                    .reduce((acc: Record<string, { qty: number; unit: string }>, m: any) => {
-                      if (!acc[m.materialType]) acc[m.materialType] = { qty: 0, unit: m.unit };
-                      acc[m.materialType].qty += m.quantity;
-                      return acc;
-                    }, {})
-                : null;
-              const materialsText = materialsSummary && Object.keys(materialsSummary).length > 0
-                ? Object.entries(materialsSummary).map(([type, v]: [string, any]) => `${type}: ${v.qty}${v.unit}`).join(", ")
-                : null;
-              return (
-                <tr key={row.serial}
-                  style={{ background: isSelected ? "rgba(110,15,45,0.04)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.5)", borderBottom: `1px solid ${T.borderDef}` }}>
-                  <td style={td}>
-                    <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(row.serial)} aria-label={`Select row ${row.serial}`} />
-                  </td>
-                  <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
-                  <td style={{ ...td, minWidth: 120 }}>
-                    {row.sareeId ? (
-                      <Button onClick={() => setViewSareeRow(row)} variant="link"
-                        className="font-code text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                        {row.sareeId}
-                      </Button>
-                    ) : (
-                      <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>— assign weaver</span>
-                    )}
-                  </td>
-                  <td style={{ ...td, minWidth: 150 }}>
-                    {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
-                      <Button onClick={() => {
-                        const l = looms.find(x => x.id === row.factoryLoomId);
-                        if (l) setViewFactoryLoom(l);
-                      }}
-                        variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline">
-                        <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Factory size={12} color={T.royalBurgundy} />
-                        </div>
-                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
-                      </Button>
-                    ) : row.weaverId ? (
-                      <Button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
-                        variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline" disabled={!weaverForRow}>
-                        <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={22} />
-                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: weaverForRow ? "underline" : "none", textDecorationColor: "rgba(110,15,45,0.2)" }}>
-                          {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
-                        </span>
-                      </Button>
-                    ) : <EmptyCell />}
-                  </td>
-                  <td style={{ ...td, minWidth: 130 }}>
-                    <EmptyCell />
-                  </td>
-                  <td style={{ ...td, minWidth: 90 }}>
-                    {row.recipientType === "factoryLoom" ? (
-                      <EmptyCell />
-                    ) : row.weaverId ? (
-                      <Button onClick={() => setLoomPickerRow(row)}
-                        variant="link" className="font-code text-xs font-bold text-[#C89B47] bg-[rgba(200,155,71,0.08)] border border-[rgba(200,155,71,0.22)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                        {row.weaverLoom ? `Loom ${row.weaverLoom}` : "— select loom"}
-                      </Button>
-                    ) : <EmptyCell />}
-                  </td>
-
-                  <td style={{ ...td, minWidth: 110 }}>
-                    {row.sareeTypeCode ? (
-                      <Button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
-                        variant="link" className="font-code text-xs font-bold text-[#8B6018] bg-[rgba(200,155,71,0.12)] border border-[rgba(200,155,71,0.30)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                        {row.sareeTypeCode}
-                      </Button>
-                    ) : <EmptyCell />}
-                  </td>
-                  <td style={{ ...td, minWidth: 140 }}>
-                    {row.bulkOrderLabel ? (
-                      <Button onClick={() => {
-                        const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
-                        if (bo) setViewBulkOrder(bo);
-                      }}
-                        variant="link" className={`p-0 text-xs font-semibold ${row.bulkOrderRef ? "text-[#6E0F2D]" : "text-[#1E6640]"}`}>
-                        {row.bulkOrderLabel}
-                      </Button>
-                    ) : <EmptyCell />}
-                  </td>
-                  {materialsCellSpan[row.serial] !== undefined && (
-                    <td style={{ ...td, minWidth: 170, verticalAlign: "middle" }} rowSpan={materialsCellSpan[row.serial]}>
-                      {materialsText ? (
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{materialsText}</span>
-                      ) : <EmptyCell />}
-                    </td>
-                  )}
-                  <td style={{ ...td, width: 24 }}>
-                    <StatusDot row={row} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={displayRows}
+        getRowId={row => String(row.serial)}
+        selectedIds={new Set(Array.from(selected).map(String))}
+        onSelectionChange={handleSelectionChange}
+        rowClassName={row => selected.has(row.serial)
+          ? "bg-[rgba(110,15,45,0.04)]"
+          : displayRows.indexOf(row) % 2 === 0 ? "bg-white" : "bg-[rgba(247,242,234,0.5)]"}
+      />
     </div>
   );
 }
