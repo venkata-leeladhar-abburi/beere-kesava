@@ -1,11 +1,12 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ShoppingBag, Star, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { C, F } from "../theme";
 import type { ShopCustomer } from "./CustomersSection";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { salesApi } from "../../../../../shared/api/sales";
+import { Modal } from "../../../../../shared/ui/overlay";
 
 export function CustomerProfileDialog({
   customer, onClose, canSeePrices, isTablet,
@@ -29,37 +30,33 @@ export function CustomerProfileDialog({
     }));
 
   return (
-    <AnimatePresence>
+    <Modal open={!!customer} onOpenChange={o => { if (!o) onClose(); }} size={isTablet ? "lg" : "sm"}>
       {customer && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "rgba(20,8,12,0.60)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
-          onClick={onClose}>
-          <motion.div initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 20 }}
-            transition={{ type: "spring", stiffness: 340, damping: 28 }}
-            onClick={e => e.stopPropagation()}
-            style={{ background: "#FFF", borderRadius: 24, width: "100%", maxWidth: isTablet ? "80vw" : 520, boxShadow: "0 24px 80px rgba(44,24,16,0.22)", overflow: "hidden", maxHeight: "90vh", display: "flex", flexDirection: "column" as const }}>
+        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", maxHeight: "calc(100dvh - 96px)", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
             {/* Header */}
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "32px 32px 28px", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.burg, border: "3px solid rgba(196,146,58,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(107,26,42,0.40)" }}>
-                  <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{customer!.initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{customer.initials}</span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: "#FFF", lineHeight: 1.1 }}>{customer!.name}</div>
-                    {customer!.regular && <Star size={18} fill={C.gold} color={C.gold} />}
+                    <Dialog.Title style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: "#FFF", lineHeight: 1.1, margin: 0 }}>{customer.name}</Dialog.Title>
+                    {customer.regular && <Star size={18} fill={C.gold} color={C.gold} />}
                   </div>
-                  <div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer!.phone}</div>
-                  {customer!.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,146,58,0.20)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
+                  <div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer.phone}</div>
+                  {customer.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,146,58,0.20)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
                 </div>
-                <IconButton
-                  icon={X}
-                  label="Close"
-                  onClick={onClose}
-                  variant="ghost"
-                  shape="circle"
-                  className="bg-white/10 text-white/70 w-[38px] h-[38px] shrink-0"
-                />
+                <Dialog.Close asChild>
+                  <IconButton
+                    icon={X}
+                    label="Close"
+                    onClick={onClose}
+                    variant="ghost"
+                    shape="circle"
+                    className="bg-white/10 text-white/70 w-[38px] h-[38px] shrink-0"
+                  />
+                </Dialog.Close>
               </div>
             </div>
             {/* Body */}
@@ -107,9 +104,8 @@ export function CustomerProfileDialog({
                 </Button>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </Modal>
   );
 }
