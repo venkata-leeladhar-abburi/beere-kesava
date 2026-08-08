@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -179,7 +180,7 @@ export function CustomerReport() {
                 <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip key="cust-tip" content={<ChartTip suffix=" customers" />} />
                 <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
-                <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={T.antiqueGold}   radius={[4,4,0,0] as any} opacity={0.7} />
+                <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={semantic.chart.series[1]}   radius={[4,4,0,0] as any} opacity={0.7} />
               </BarChart>
             </ResponsiveContainer>
           )}

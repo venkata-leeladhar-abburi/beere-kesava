@@ -48,7 +48,7 @@ export function IssuanceHistorySection({
           <thead style={{ background: T.warmCream }}>
             <tr>
               {["MIR ID", "Date", "Weaver Name", "Weaver ID", "Materials Summary", "GRN Batch IDs", "Issued By", "Signature", "Status", ""].map(h => (
-                <th key={h} style={{ padding: "12px 14px", textAlign: "left" as const, fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", whiteSpace: "nowrap" as const }}>{h}</th>
+                <th key={h} style={{ padding: "12px 14px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", whiteSpace: "nowrap" as const }}>{h}</th>
               ))}
             </tr>
           </thead>

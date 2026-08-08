@@ -50,7 +50,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
                 <thead style={{ background: T.warmCream }}>
                   <tr>
                     {["Type", "Details", "Qty", "GRN Batch"].map(h => (
-                      <th key={h} style={{ padding: "9px 14px", textAlign: "left" as const, fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
+                      <th key={h} style={{ padding: "9px 14px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>

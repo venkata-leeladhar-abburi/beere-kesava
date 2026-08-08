@@ -293,7 +293,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1400 }}>
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-              {headers.map(h => <th key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
+              {headers.map(h => <th key={h} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>

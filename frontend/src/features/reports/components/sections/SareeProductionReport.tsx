@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp, Factory, CheckCircle2, Boxes, Package, AlertTriangle, Truck, IndianRupee,
@@ -289,7 +290,7 @@ export function SareeProductionReport() {
                 <YAxis key="prod-wk-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip key="prod-wk-tip" content={<ChartTip suffix=" sarees" />} />
                 <Line key="prod-wk-cur" type="monotone" dataKey="current" name="Current" stroke={T.royalBurgundy} strokeWidth={2.5} dot={{ fill: T.royalBurgundy, r: 4 }} />
-                <Line key="prod-wk-pri" type="monotone" dataKey="prior" name="Prior" stroke={T.antiqueGold} strokeWidth={2} strokeDasharray="5 4" dot={{ fill: T.antiqueGold, r: 3 }} />
+                <Line key="prod-wk-pri" type="monotone" dataKey="prior" name="Prior" stroke={semantic.chart.series[1]} strokeWidth={2} strokeDasharray="5 4" dot={{ fill: semantic.chart.series[1], r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           )}

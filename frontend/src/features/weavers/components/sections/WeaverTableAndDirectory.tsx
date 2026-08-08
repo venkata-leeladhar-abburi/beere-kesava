@@ -83,7 +83,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
               {TABLE_COLS.map(c => (
-                <th key={c} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
+                <th key={c} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
               ))}
             </tr>
           </thead>

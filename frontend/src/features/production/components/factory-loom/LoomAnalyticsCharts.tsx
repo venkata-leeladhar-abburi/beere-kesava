@@ -1,4 +1,5 @@
 import React from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { Factory, TrendingUp, Layers, Package, Percent } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -68,7 +69,7 @@ export function LoomThroughputAndAvailability({
               <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
               <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-              <Bar name="Passed QC" dataKey="passed" fill={T.goldLight} radius={[5, 5, 0, 0]} />
+              <Bar name="Passed QC" dataKey="passed" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
               <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
             </ComposedChart>
           </ResponsiveContainer>

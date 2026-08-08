@@ -143,7 +143,7 @@ export function ExternalPurchaseCard({
                 <thead>
                   <tr style={{ background: T.warmIvory }}>
                     {["S.No", "Saree Code", "Line Serial", "Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
-                      <th key={h} style={{ padding: "9px 12px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: 0.7, whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
+                      <th key={h} style={{ padding: "9px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: 0.7, whiteSpace: "nowrap", borderBottom: `1px solid ${T.borderDef}` }}>
                         {h.toUpperCase()}
                       </th>
                     ))}

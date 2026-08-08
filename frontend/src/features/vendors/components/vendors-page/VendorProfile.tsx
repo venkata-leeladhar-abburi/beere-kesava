@@ -306,7 +306,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                     <thead>
                       <tr style={{ background: T.silkCream }}>
                         {["PO / Invoice", "Bill Date", "Due Date", "Invoice Amount", "Paid", "Balance", "Status"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                         ))}
                       </tr>
                     </thead>
@@ -354,7 +354,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                     <thead>
                       <tr style={{ background: T.silkCream }}>
                         {["Payment Ref", "Date", "Against PO", "Mode", "UTR / Reference", "Paying Firm", "Amount"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                         ))}
                       </tr>
                     </thead>

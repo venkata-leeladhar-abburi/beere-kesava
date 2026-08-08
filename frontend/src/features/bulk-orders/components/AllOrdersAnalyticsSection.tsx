@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { semantic } from "../../../design-system/tokens";
 import {
   ShoppingBag, TrendingUp, Trophy, Timer, Percent, IndianRupee, Layers,
 } from "lucide-react";
@@ -196,7 +197,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                   <Bar name="Ordered" dataKey="ordered" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-                  <Bar name="Completed" dataKey="done" fill={T.antiqueGold} radius={[5, 5, 0, 0]} />
+                  <Bar name="Completed" dataKey="done" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
                   <Line yAxisId="r" name="Completion" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
                 </ComposedChart>
               </ResponsiveContainer>
