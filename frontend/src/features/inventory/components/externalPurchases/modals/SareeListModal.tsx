@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Printer } from "lucide-react";
 import {
   Purchase, SareeTag,
@@ -8,6 +8,7 @@ import {
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { Modal } from "../../../../../shared/ui/overlay";
 
 /** Full saree/barcode breakdown for one purchase — one row per physical piece. */
 export function SareeListModal({
@@ -88,41 +89,18 @@ export function SareeListModal({
   const totals = purchaseTotals(purchase.sarees);
 
   return (
-    <AnimatePresence>
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="xl">
       <div
         style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: "var(--z-modal)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
+          overflow: "hidden",
+          maxHeight: "calc(100dvh - 96px)",
+          background: "#FFF",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
         }}
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{ position: "absolute", inset: 0, background: "rgba(27,12,8,0.55)" }}
-        />
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          style={{
-            position: "relative",
-            zIndex: 1,
-            width: "min(94vw, 1040px)",
-            maxHeight: "82vh",
-            background: "#FFF",
-            borderRadius: 18,
-            overflow: "hidden",
-            boxShadow: "0 32px 80px rgba(27,12,8,0.28)",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
           <div
             style={{
               background: T.darkBurgundy,
@@ -134,20 +112,22 @@ export function SareeListModal({
             }}
           >
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>
+              <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF", margin: 0 }}>
                 {purchase.id} — Saree Details
-              </div>
+              </Dialog.Title>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
                 {purchase.supplier}
               </div>
             </div>
-            <IconButton
-              icon={X}
-              label="Close"
-              onClick={onClose}
-              size="sm"
-              className="rounded-full bg-white/12 text-white hover:bg-white/20"
-            />
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
+                onClick={onClose}
+                size="sm"
+                className="rounded-full bg-white/12 text-white hover:bg-white/20"
+              />
+            </Dialog.Close>
           </div>
 
           <div style={{ overflow: "auto", flex: 1 }}>
@@ -199,8 +179,7 @@ export function SareeListModal({
               Close
             </Button>
           </div>
-        </motion.div>
       </div>
-    </AnimatePresence>
+    </Modal>
   );
 }
