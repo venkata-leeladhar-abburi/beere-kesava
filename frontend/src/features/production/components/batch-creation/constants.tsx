@@ -1,6 +1,5 @@
 import React from "react";
 import type { SareeRow } from "../../contexts/BatchContext";
-import type { SareeTypeRecord } from "../../../pricing/components/RatesPricingPage";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 export const T = {
@@ -43,24 +42,6 @@ export const WEAVERS = [
   { id: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    initials: "KB", loom: 1, bg: "#3D0E1A" },
 ];
 
-// ─── Saree types (mirrors RatesPricingPage seed) ─────────────────────────────
-export const SAREE_TYPES_BRIEF: { code: string; name: string }[] = [
-  { code: "HZ-003", name: "Heavy Zari"     },
-  { code: "SB-001", name: "Self Brocade"   },
-  { code: "PS-002", name: "Plain Silk"     },
-  { code: "BS-004", name: "Bridal Special" },
-  { code: "LC-005", name: "Light Cotton"   },
-];
-
-// Minimal SareeTypeRecord for card view
-export const SAREE_TYPE_RECORDS: SareeTypeRecord[] = [
-  { code:"HZ-003", type:"Heavy Zari",     description:"Heavy gold zari woven silk, traditional motifs",        charge:"680",  retail:"4800", wholesale:"3600", stdWeight:"720", warpWeight:"380", reshamWeight:"180", jariWeight:"160", changed:"01 Jun 2026" },
-  { code:"SB-001", type:"Self Brocade",   description:"Self-coloured brocade weave, intricate self patterns",  charge:"450",  retail:"3200", wholesale:"2400", stdWeight:"640", warpWeight:"320", reshamWeight:"200", jariWeight:"120", changed:"28 May 2026" },
-  { code:"PS-002", type:"Plain Silk",     description:"Lightweight plain silk, minimal embellishment",         charge:"280",  retail:"2200", wholesale:"1600", stdWeight:"520", warpWeight:"340", reshamWeight:"120", jariWeight:"60",  changed:"20 May 2026" },
-  { code:"BS-004", type:"Bridal Special", description:"Premium bridal saree with heavy zari and stone work",   charge:"1200", retail:"9500", wholesale:"7200", stdWeight:"900", warpWeight:"460", reshamWeight:"240", jariWeight:"200", changed:"15 Jun 2026" },
-  { code:"LC-005", type:"Light Cotton",   description:"Everyday lightweight cotton, summer collection",        charge:"180",  retail:"1400", wholesale:"1000", stdWeight:"420", warpWeight:"280", reshamWeight:"80",  jariWeight:"60",  changed:"10 May 2026" },
-];
-
 // ─── Helper: field style ──────────────────────────────────────────────────────
 export const fld: React.CSSProperties = {
   width: "100%", height: 44, padding: "0 14px",
@@ -83,6 +64,8 @@ export const td: React.CSSProperties = {
 };
 
 // ─── Row completeness ─────────────────────────────────────────────────────────
+// designCode is optional (BatchSareeRow.designCode is a nullable FK) — a row
+// is complete without one.
 export function rowComplete(r: SareeRow) {
   return !!((r.weaverId || r.factoryLoomId) && r.sareeId && r.sareeTypeCode);
 }

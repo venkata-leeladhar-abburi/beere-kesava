@@ -85,6 +85,11 @@ export type FactoryLoom = Prisma.FactoryLoomModel
  */
 export type DesignLibrary = Prisma.DesignLibraryModel
 /**
+ * Model DesignDispatch
+ * 
+ */
+export type DesignDispatch = Prisma.DesignDispatchModel
+/**
  * Model SareeTypeRate
  * 
  */

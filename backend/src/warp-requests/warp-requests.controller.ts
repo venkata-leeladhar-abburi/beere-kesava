@@ -3,6 +3,7 @@ import { RequirePermissions } from "../auth/decorators/require-permissions.decor
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { requireWeaverId, resolveWeaverScope } from "../auth/weaver-scope";
 import { WarpRequestsService, CreateWarpRequestDto } from "./warp-requests.service";
 import { UserRole, WarpRequestStatus } from "../generated/prisma/client";
 
@@ -19,7 +20,7 @@ export class WarpRequestsController {
     // A WEAVER token only ever sees their own requests — never trust a
     // client-supplied filter for that, there isn't one to begin with here,
     // so we force it at the service layer via weaverId.
-    const weaverId = user.role === UserRole.WEAVER ? user.id : undefined;
+    const weaverId = resolveWeaverScope(user);
     return this.warpRequestsService.list(status, weaverId);
   }
 
@@ -28,7 +29,7 @@ export class WarpRequestsController {
     // Force the weaverId to the caller's own id when the caller is a WEAVER,
     // so a WEAVER token can never submit a request on behalf of another weaver.
     if (user.role === UserRole.WEAVER) {
-      return this.warpRequestsService.create({ ...dto, weaverId: user.id ?? dto.weaverId });
+      return this.warpRequestsService.create({ ...dto, weaverId: requireWeaverId(user) });
     }
     return this.warpRequestsService.create(dto);
   }

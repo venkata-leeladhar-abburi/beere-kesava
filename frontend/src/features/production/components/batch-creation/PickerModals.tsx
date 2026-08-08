@@ -5,7 +5,7 @@ import {
 } from "@phosphor-icons/react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { T, F, SAREE_TYPES_BRIEF, fld, lbl } from "./constants";
+import { T, F, fld, lbl } from "./constants";
 import { Pip } from "./constants";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 
@@ -228,26 +228,38 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
 }
 
 // ── Saree Type Picker ─────────────────────────────────────────────────────────
-export function SareeTypePickerModal({ onClose, onSelect }: { onClose: () => void; onSelect: (code: string, name: string) => void }) {
+// `sareeTypes` comes from the real backend rate catalog (ratesApi) — never a
+// hardcoded list, so the making charge shown here always matches Rates & Pricing.
+export interface SareeTypeBrief { code: string; name: string; charge: number }
+
+export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
+  sareeTypes: SareeTypeBrief[]; onClose: () => void; onSelect: (code: string, name: string) => void;
+}) {
   const [sel, setSel] = useState<string | null>(null);
   return (
     <PickerShell title="Assign Saree Type" onClose={onClose}>
       <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {SAREE_TYPES_BRIEF.map(t => (
+        {sareeTypes.length === 0 && (
+          <div style={{ padding: "13px 16px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            No saree types configured yet — add one in Rates &amp; Pricing first.
+          </div>
+        )}
+        {sareeTypes.map(t => (
           <button key={t.code} onClick={() => setSel(t.code)}
             style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", border: `2px solid ${sel === t.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === t.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{t.code}</div>
             </div>
+            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>₹{t.charge.toLocaleString("en-IN")}</div>
           </button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const t = SAREE_TYPES_BRIEF.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
+        <motion.button onClick={() => { const t = sareeTypes.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
           style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
           Assign Saree Type
         </motion.button>

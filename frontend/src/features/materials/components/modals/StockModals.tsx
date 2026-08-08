@@ -261,8 +261,8 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
 
           <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: mt.col, background: mt.bg, padding: "4px 12px", borderRadius: 6, letterSpacing: "1px" }}>{batch.type}</span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Received: {batch.received} kg</span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Remaining: {batch.remaining} kg</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Received: {batch.received} {batch.type === "Jari" ? "Reels" : "kg"}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Remaining: {batch.remaining} {batch.type === "Jari" ? "Reels" : "kg"}</span>
           </div>
         </div>
 

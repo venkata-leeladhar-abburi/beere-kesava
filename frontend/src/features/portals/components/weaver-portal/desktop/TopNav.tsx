@@ -5,6 +5,8 @@ import { C, F, Tab5 } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
 
+import { useCurrentWeaver } from "../useCurrentWeaver";
+
 function initialsOf(name: string): string {
   return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
 }
@@ -30,12 +32,14 @@ export function TopNav({
   navigate: (path: string) => void;
 }) {
   const { user } = useAuth();
-  const name = user?.name || "—";
+  const { weaver } = useCurrentWeaver();
+  const name = weaver?.name || user?.name || "—";
+  const code = weaver?.code || user?.empId || "Handloom";
   const initials = initialsOf(name);
-  const subtitle = user?.empId ? `${user.empId} · Handloom` : "Handloom";
+  const subtitle = `${code} · Handloom`;
 
   return (
-    <div style={{ background: "#FFF", borderBottom: `1px solid ${C.bdr}`, position: "sticky" as const, top: 0, zIndex: 200, boxShadow: "0 1px 10px rgba(107,26,42,0.07)" }}>
+    <div style={{ background: "#FFF", borderBottom: `1px solid ${C.bdr}`, position: "sticky" as const, top: 0, zIndex: 200, boxShadow: "0 1px 10px rgba(110,15,45,0.07)" }}>
       <div style={{ maxWidth: 1440, margin: "0 auto", padding: isTablet ? "0 24px" : "0 48px", display: "flex", alignItems: "center", height: 64, gap: isTablet ? 16 : 28 }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(0,0,0,0.08)", flexShrink: 0 }}>
@@ -60,7 +64,7 @@ export function TopNav({
                 className={
                   "flex items-center gap-1.5 shrink-0 h-16 border-none bg-transparent rounded-none whitespace-nowrap border-b-2 " +
                   (isTablet ? "px-2.5 " : "px-[18px] ") +
-                  (isActive ? "border-b-[#6B1A2A] font-semibold text-[#1A0A0F] hover:bg-transparent hover:text-[#1A0A0F]" : "border-b-transparent font-normal text-[#69635E] hover:bg-transparent hover:text-[#1A0A0F]")
+                  (isActive ? "border-b-[#6E0F2D] font-semibold text-[#3B2314] hover:bg-transparent hover:text-[#3B2314]" : "border-b-transparent font-normal text-[#69635E] hover:bg-transparent hover:text-[#3B2314]")
                 }
               >
                 {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
@@ -83,7 +87,7 @@ export function TopNav({
               label="Notifications"
               onClick={() => setShowNotifs(v => !v)}
               variant="ghost"
-              className={"rounded-lg " + (showNotifs ? "bg-[rgba(107,26,42,0.08)]" : "")}
+              className={"rounded-lg " + (showNotifs ? "bg-[rgba(110,15,45,0.08)]" : "")}
             />
             <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF", pointerEvents: "none" as const }} />
           </div>
@@ -93,7 +97,7 @@ export function TopNav({
               variant="ghost"
               className={
                 "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
-                (showProfile ? "bg-[rgba(107,26,42,0.10)] border-[#6B1A2A]" : "bg-[rgba(107,26,42,0.06)] border-[rgba(139,26,46,0.12)]")
+                (showProfile ? "bg-[rgba(110,15,45,0.10)] border-[#6E0F2D]" : "bg-[rgba(110,15,45,0.06)] border-[rgba(110,15,45,0.10)]")
               }
             >
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -107,8 +111,8 @@ export function TopNav({
             </Button>
             {showProfile && (
               <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFF", borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
-                <div style={{ padding: "16px 18px", background: "rgba(107,26,42,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(107,26,42,0.28)" }}>
+                <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.28)" }}>
                     <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
                   </div>
                   <div>
@@ -117,7 +121,7 @@ export function TopNav({
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
+                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
                     <UserRound size={15} color={C.muted} /> View Profile
                   </Button>
                   <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
@@ -130,11 +134,11 @@ export function TopNav({
                         selectRole(origAdminRole as any);
                         navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                       }
-                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
+                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
                       <ChevronLeft size={15} color={C.muted} /> My Portal
                     </Button>
                   ) : (
-                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(107,26,42,0.04)]">
+                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
                       <ChevronLeft size={15} color={C.muted} /> Switch Portal
                     </Button>
                   )}

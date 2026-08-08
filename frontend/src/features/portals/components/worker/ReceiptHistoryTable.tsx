@@ -5,6 +5,7 @@ import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { jariToReels } from "../../../../shared/lib/weightUnits";
 
 export interface ReceiptRecord {
   grnId: string;
@@ -83,7 +84,12 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
           vendor: g.supplierName ?? "Vendor",
           firmName: g.firm?.firmName ?? "—",
           dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
-          materialsSummary: g.items.map(i => `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${i.quantity} ${i.quantity > 10 ? "kg" : "Buns"})`).join(", "),
+          materialsSummary: g.items.map(i => {
+            const isJari = i.materialType === "JARI";
+            const qty = isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity;
+            const unit = isJari ? "Reels" : "kg";
+            return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
+          }).join(", "),
           receivedBy: "—",
           status: (anyRejected ? "Short" : "Match") as ReceiptRecord["status"],
         };

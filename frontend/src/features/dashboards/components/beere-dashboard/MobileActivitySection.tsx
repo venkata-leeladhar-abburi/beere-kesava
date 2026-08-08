@@ -54,7 +54,7 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
           <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold }} />
           <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.1px" }}>Recent Activity</span>
         </div>
-        <button onClick={() => onNavigate("Notifications")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
+        <button onClick={() => onNavigate("AuditLog")} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.royalBurgundy, cursor: "pointer", letterSpacing: "0.1px", background: "none", border: "none", padding: 0 }}>View All →</button>
       </motion.div>
       <div style={{ background: G.card, borderRadius: 20, overflow: "hidden", boxShadow: "0 10px 32px rgba(74,6,27,0.16)", border: "1px solid rgba(200,155,71,0.12)" }}>
         {liveActions.map((a, i) => (

@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ApiError } from "../../../shared/api/client";
 import { BackendBatch, batchesApi } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
-import { SAREE_TYPES_BRIEF } from "../components/batch-creation/constants";
+import { ratesApi } from "../../../shared/api/rates";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -46,9 +47,20 @@ export function generateSareeId(weaverName: string, loom: number, seq: number): 
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface BatchContextValue {
   batches: BatchRecord[];
-  saveDraft: (batch: BatchRecord) => void;
+  // Resolves with the *real* backend batch id — on the first save of a new
+  // batch this differs from the caller's client-guessed batchId (the
+  // server's IdCounter is authoritative), so callers must adopt the
+  // returned id rather than assuming their local batchId was persisted.
+  saveDraft: (batch: BatchRecord) => Promise<string>;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
-  finalizeBatch: (batchId: string) => void;
+  finalizeBatch: (batchId: string) => Promise<void>;
+  // Rejects with the backend's message when the batch has existing records
+  // (materials issued, QC, finishing) attached — deletion is blocked, not
+  // silently ignored.
+  deleteBatch: (batchId: string) => Promise<void>;
+  /** True when the batch list failed to load — distinct from "no batches". */
+  isError: boolean;
+  error: unknown;
   nextBatchId: string;
   // Cross-page navigation: set to open a specific batch in BatchCreationPage
   pendingOpenBatchId: string | null;
@@ -59,14 +71,11 @@ const BatchContext = createContext<BatchContextValue | null>(null);
 
 const QUERY_KEY = ["batches"] as const;
 
-const SAREE_TYPE_NAME: Record<string, string> = Object.fromEntries(
-  SAREE_TYPES_BRIEF.map(t => [t.code, t.name]),
-);
-
 function backendBatchToRecord(
   b: BackendBatch,
   weaverLookup: Map<string, { name: string; initials: string }>,
   loomLookup: Map<string, string>,
+  sareeTypeNameLookup: Map<string, string>,
 ): BatchRecord {
   return {
     batchId: b.id,
@@ -89,7 +98,7 @@ function backendBatchToRecord(
         factoryLoomNumber: r.factoryLoomId ? (loomLookup.get(r.factoryLoomId) ?? null) : null,
         designCode: r.designCode,
         sareeTypeCode: r.sareeTypeCode,
-        sareeTypeName: r.sareeTypeCode ? (SAREE_TYPE_NAME[r.sareeTypeCode] ?? r.sareeTypeCode) : null,
+        sareeTypeName: r.sareeTypeCode ? (sareeTypeNameLookup.get(r.sareeTypeCode) ?? r.sareeTypeCode) : null,
         bulkOrderRef: r.bulkOrderRef,
         bulkOrderLabel: r.bulkOrderRef,
         qcPassed: r.qcPassed ?? undefined,
@@ -102,28 +111,42 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [pendingOpenBatchId, setPendingOpenBatchId] = useState<string | null>(null);
 
-  const { data: batches = [] } = useQuery({
+  const { data: batches = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
+    // Retry transient failures (429 burst on a hard refresh, network blip)
+    // a couple of times before surfacing an error — but never retry an auth
+    // failure (401/403), which won't resolve itself no matter how many
+    // times it's retried.
+    retry: (failureCount, err) =>
+      failureCount < 2 && !(err instanceof ApiError && (err.statusCode === 401 || err.statusCode === 403)),
     queryFn: async () => {
-      const [batchesRes, weaversRes, loomsRes] = await Promise.all([
-        batchesApi.list(),
-        weaversApi.list(),
-        factoryLoomsApi.list(),
+      // The batch list itself is NOT swallowed: if it fails, the query must
+      // fail so consumers can tell "you have no batches" apart from "we
+      // couldn't load your batches" (e.g. a 403 from a stale weaver token,
+      // which otherwise renders as a silently empty portal).
+      const batchesRes = await batchesApi.list();
+      // The three lookups only decorate rows with display names, so a
+      // failure there degrades labels rather than hiding real batches.
+      const [weaversRes, loomsRes, ratesRes] = await Promise.all([
+        weaversApi.list().catch(() => ({ items: [] })),
+        factoryLoomsApi.list().catch(() => ({ items: [] })),
+        ratesApi.list().catch(() => ({ items: [] })),
       ]);
       const weaverLookup = new Map(
-        weaversRes.items.map(w => [w.id, { name: w.name, initials: w.initials }]),
+        (weaversRes?.items || []).map(w => [w.id, { name: w.name, initials: w.initials }]),
       );
-      const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.loomNumber]));
-      return batchesRes.items.map(b => backendBatchToRecord(b, weaverLookup, loomLookup));
+      const loomLookup = new Map((loomsRes?.items || []).map(l => [l.id, l.loomNumber]));
+      const sareeTypeNameLookup = new Map((ratesRes?.items || []).map(r => [r.code, r.type]));
+      return (batchesRes?.items || []).map(b => backendBatchToRecord(b, weaverLookup, loomLookup, sareeTypeNameLookup));
     },
   });
 
   // Persists a full BatchRecord: creates the batch server-side if it doesn't
   // exist yet (the client-guessed batchId is only a display preview — the
   // real id comes back from POST /batches), then assigns every row that has
-  // a recipient + design + saree type set. Re-running this on an already
-  // assigned row is safe: saree-id generation is deterministic given the
-  // same inputs, so it's idempotent.
+  // a recipient + saree type set (designCode is optional — see assignRow).
+  // Re-running this on an already assigned row is safe: saree-id generation
+  // is deterministic given the same inputs, so it's idempotent.
   const saveDraftMutation = useMutation({
     mutationFn: async (batch: BatchRecord) => {
       const existing = queryClient
@@ -136,13 +159,13 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
       for (const row of batch.rows) {
         const recipientType = row.weaverId ? "WEAVER" : row.factoryLoomId ? "FACTORY_LOOM" : null;
-        if (!recipientType || !row.designCode || !row.sareeTypeCode) continue;
+        if (!recipientType || !row.sareeTypeCode) continue;
 
         await batchesApi.assignRow(realBatchId, row.serial, {
           recipientType,
           weaverId: row.weaverId ?? undefined,
           factoryLoomId: row.factoryLoomId ?? undefined,
-          designCode: row.designCode,
+          designCode: row.designCode ?? undefined,
           sareeTypeCode: row.sareeTypeCode,
           loomNumber: row.weaverLoom ?? undefined,
         });
@@ -181,20 +204,44 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutate(batch);
+  const deleteBatchMutation = useMutation({
+    mutationFn: (batchId: string) => batchesApi.remove(batchId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+
+  const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutateAsync(batch);
   const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
-  const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutate(batchId);
+  const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
+  // A 404 here means the batch is already gone (another tab deleted it, or
+  // it's a stale entry) — that's the caller's desired end state either way,
+  // so resolve instead of rejecting; just make sure the stale list clears.
+  const deleteBatch = (batchId: string) =>
+    deleteBatchMutation.mutateAsync(batchId).then(
+      () => undefined,
+      (err: unknown) => {
+        if (err instanceof ApiError && err.statusCode === 404) {
+          void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+          return undefined;
+        }
+        throw err;
+      },
+    );
 
   const nextBatchId = useMemo(() => {
-    const allNums = batches
-      .map(b => { const m = b.batchId.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
+    const batchList = Array.isArray(batches) ? batches : [];
+    const allNums = batchList
+      .map(b => { const m = b.batchId?.match(/BATCH-(\d+)/); return m ? parseInt(m[1] ?? "0", 10) : 0; })
       .filter(n => n > 0);
     const maxNum = allNums.length > 0 ? Math.max(...allNums) : 0;
     return `BATCH-${String(maxNum + 1).padStart(3, "0")}`;
   }, [batches]);
 
+  const safeBatches = Array.isArray(batches) ? batches : [];
+
   return (
-    <BatchContext.Provider value={{ batches, saveDraft, updateBatch, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
       {children}
     </BatchContext.Provider>
   );

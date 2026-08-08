@@ -8,13 +8,9 @@ import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut, TH, TD } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
+import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 
-const REELS_PER_BUN = 4;
-const bunsAndReels = (reels: number) => {
-  const buns = Math.floor(reels / REELS_PER_BUN);
-  const rem = reels % REELS_PER_BUN;
-  return rem > 0 ? `${buns} Buns ${rem} Reel${rem > 1 ? "s" : ""}` : `${buns} Buns`;
-};
+const bunsAndReels = formatBunsReels;
 
 interface RawMaterialReceiptRow {
   batchId: string;
@@ -48,18 +44,22 @@ export function RawMaterialReport() {
   const receiptRows = useMemo<RawMaterialReceiptRow[]>(() => {
     if (!rawGrns?.items || rawGrns.items.length === 0) return [];
     return rawGrns.items.flatMap(g =>
-      g.items.map(item => ({
-        batchId: g.id,
-        dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
-        vendor: g.supplierName ?? "Vendor",
-        firmName: g.firm?.firmName ?? "—",
-        materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
-        description: item.name,
-        quantity: String(item.quantity),
-        unit: item.quantity > 10 ? "kg" : "Buns",
-        poReference: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
-        notes: g.notes ?? "",
-      }))
+      g.items.map(item => {
+        const isJari = item.materialType === "JARI";
+        const reels = isJari ? jariToReels(item.quantity, item.unit ?? "KG") : null;
+        return {
+          batchId: g.id,
+          dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+          vendor: g.supplierName ?? "Vendor",
+          firmName: g.firm?.firmName ?? "—",
+          materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
+          description: item.name,
+          quantity: isJari ? String(reels) : String(item.quantity),
+          unit: isJari ? "Reels" : (item.unit ?? "kg").toLowerCase(),
+          poReference: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+          notes: g.notes ?? "",
+        };
+      })
     );
   }, [rawGrns]);
 
@@ -123,9 +123,13 @@ export function RawMaterialReport() {
     for (const item of stockItems) {
       const type = item.materialType;
       if (map[type]) {
-        map[type].stock += item.currentStock;
+        // Jari is always tallied in Reels regardless of the unit it was
+        // recorded in (a GRN/stock row might store it as KG) — never sum
+        // raw quantities of mismatched units.
+        const qty = type === "JARI" ? jariToReels(item.currentStock, item.unit) : item.currentStock;
+        map[type].stock += qty;
         map[type].totalCount++;
-        if (item.currentStock <= 0) map[type].outOfStockCount++;
+        if (qty <= 0) map[type].outOfStockCount++;
       }
     }
 
@@ -136,7 +140,8 @@ export function RawMaterialReport() {
     if (stockItems.length === 0) return [];
     return stockItems.map(item => {
       const sub = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
-      const close = item.currentStock;
+      const isJari = item.materialType === "JARI";
+      const close = isJari ? jariToReels(item.currentStock, item.unit) : item.currentStock;
       const oos = close <= 0;
       return {
         type: item.materialType,
@@ -147,7 +152,7 @@ export function RawMaterialReport() {
         close,
         change: oos ? "— Out of Stock" : "Healthy",
         oos,
-        unit: item.unit.toLowerCase(),
+        unit: isJari ? "reels" : item.unit.toLowerCase(),
       };
     });
   }, [stockItems]);
@@ -155,9 +160,11 @@ export function RawMaterialReport() {
   const totalsSummary = useMemo(() => {
     const recvTotal = rawReceivedData.reduce((s, r) => s + r.current, 0);
     const givenTotal = rawGivenData.reduce((s, r) => s + r.current, 0);
-    const closeTotal = stockItems.reduce((s, item) => s + item.currentStock, 0);
+    // Uses the already-converted `close` values (Jari in Reels, Warp/Resham
+    // in kg) rather than summing raw stock quantities of mismatched units.
+    const closeTotal = rawMaterialRows.reduce((s, r) => s + r.close, 0);
     return { recvTotal, givenTotal, closeTotal };
-  }, [rawReceivedData, rawGivenData, stockItems]);
+  }, [rawReceivedData, rawGivenData, rawMaterialRows]);
 
   const isLoading = grnLoading || issuesLoading || stockLoading;
 

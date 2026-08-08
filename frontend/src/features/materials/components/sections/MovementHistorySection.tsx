@@ -62,7 +62,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       const totalQtyKg = g.items.reduce((s, i) => s + parseKg(i.quantity, (i as any).unit || "KG"), 0);
       return {
         type: "in" as const,
-        desc: `${g.supplierName ?? "Vendor"} — ${g.items.map(i => `${i.name} (${i.quantity} ${i.unitPrice ? "kg" : "Buns"})`).join(", ")}`,
+        desc: `${g.supplierName ?? "Vendor"} — ${g.items.map(i => `${i.name} (${i.quantity} ${i.materialType === "JARI" ? (i.unit || "Reels") : (i.unit || "kg")})`).join(", ")}`,
         time: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
         ref: g.id,
         date: g.receivedDate ? new Date(g.receivedDate).getTime() : Date.now(),

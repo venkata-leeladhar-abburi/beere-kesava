@@ -8,36 +8,9 @@ import { JariSettingsSection } from "./rates-pricing/JariSettingsSection";
 import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 import { INITIAL_RATES, type SareeTypeRecord } from "./rates-pricing/sareeTypeData";
-import { ratesApi, type BackendRate } from "../../../shared/api/rates";
+import { ratesApi, backendRateToDisplayRecord } from "../../../shared/api/rates";
 
-function timeAgo(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "Today";
-  if (days === 1) return "1 day ago";
-  if (days < 7) return `${days} days ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks === 1) return "1 week ago";
-  if (weeks < 5) return `${weeks} weeks ago`;
-  const months = Math.floor(days / 30);
-  return months <= 1 ? "1 month ago" : `${months} months ago`;
-}
-
-function toRecord(backend: BackendRate): SareeTypeRecord {
-  return {
-    code: backend.code,
-    type: backend.type,
-    description: backend.description ?? "",
-    charge: String(Math.round(Number(backend.makingCharge))),
-    retail: String(Math.round(Number(backend.retailPrice))),
-    wholesale: String(Math.round(Number(backend.wholesalePrice))),
-    stdWeight: String(Math.round(Number(backend.stdWeightG))),
-    warpWeight: String(Math.round(Number(backend.warpWeightG))),
-    reshamWeight: String(Math.round(Number(backend.reshamWeightG))),
-    jariWeight: String(Math.round(Number(backend.jariWeightG))),
-    changed: timeAgo(backend.updatedAt),
-  };
-}
+const toRecord = backendRateToDisplayRecord;
 
 const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 

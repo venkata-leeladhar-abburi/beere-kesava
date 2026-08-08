@@ -16,6 +16,7 @@ import { Queue } from "bullmq";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
@@ -23,6 +24,7 @@ import { CreateWeaverPaymentDto } from "./dto/create-weaver-payment.dto";
 import { ListSupplierPaymentsQueryDto } from "./dto/list-supplier-payments-query.dto";
 import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
 import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
+import { WeaverEarningsQueryDto } from "./dto/weaver-earnings-query.dto";
 import { ImportResult, PaymentsService } from "./payments.service";
 import { WEAVER_PAYMENTS_IMPORT_QUEUE } from "./weaver-payments-import.processor";
 
@@ -57,8 +59,21 @@ export class PaymentsController {
     // A WEAVER token must never see another weaver's payments — ignore any
     // client-supplied weaverId and force it to the caller's own id.
     const scopedQuery =
-      user.role === UserRole.WEAVER ? { ...query, weaverId: user.id } : query;
+      user.role === UserRole.WEAVER ? { ...query, weaverId: resolveWeaverScope(user) } : query;
     return this.paymentsService.findAllWeaverPayments(scopedQuery);
+  }
+
+  // Amount owed per weaver, derived from QC-passed sarees x that saree
+  // type's real making charge — not from manually-entered WeaverPayment
+  // rows, which only record what's already been paid.
+  @Get("weavers/earnings")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.WEAVER)
+  getWeaverEarnings(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: WeaverEarningsQueryDto,
+  ) {
+    const weaverId = user.role === UserRole.WEAVER ? resolveWeaverScope(user) : query.weaverId;
+    return this.paymentsService.getWeaverEarnings(weaverId);
   }
 
   @Post("weavers/import")

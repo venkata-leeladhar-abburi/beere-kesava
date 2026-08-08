@@ -20,8 +20,9 @@ export class AssignBatchRowDto {
   @IsUUID()
   factoryLoomId?: string;
 
+  @IsOptional()
   @IsString()
-  designCode!: string;
+  designCode?: string;
 
   @IsString()
   sareeTypeCode!: string;

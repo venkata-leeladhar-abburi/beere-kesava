@@ -8,10 +8,10 @@ import { useBatches } from "../../../production/contexts/BatchContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
-import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
+import { weaverPaymentsApi, BackendWeaverPayment, WeaverEarnings } from "../../../../shared/api/payments";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { RATES, calcCharges, calcNet } from "../../utils/charges";
+import { RATES, calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
@@ -30,7 +30,12 @@ const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "
  * noOfSarees field (shown via the uploadedNoOfSarees override, same as the
  * Excel-upload flow already did).
  */
-function toWeaverRecord(w: BackendWeaver, index: number, latestPayment: BackendWeaverPayment | undefined): WeaverRecord {
+function toWeaverRecord(
+  w: BackendWeaver,
+  index: number,
+  latestPayment: BackendWeaverPayment | undefined,
+  earnings: WeaverEarnings | undefined,
+): WeaverRecord {
   return {
     id: w.id,
     name: w.name,
@@ -45,6 +50,8 @@ function toWeaverRecord(w: BackendWeaver, index: number, latestPayment: BackendW
     uploadedNoOfSarees: latestPayment?.noOfSarees ?? undefined,
     uploadedBatchNo: latestPayment?.batchNo ?? undefined,
     uploadedLoomNumber: latestPayment?.loomNumber ?? undefined,
+    earnedAmount: earnings?.totalEarned,
+    completedSarees: earnings?.totalCompletedSarees,
   };
 }
 
@@ -57,9 +64,14 @@ export function WeaverMakingChargesSection() {
     queryKey: ["payments-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
   });
+  const { data: earningsRes, isLoading: earningsLoading, isError: earningsError } = useQuery({
+    queryKey: ["payments-weaver-earnings"],
+    queryFn: () => weaverPaymentsApi.earnings(),
+  });
 
   const roster = weaversRes?.items ?? [];
   const payments = paymentsRes?.items ?? [];
+  const earningsList = earningsRes ?? [];
 
   const weaversList: WeaverRecord[] = useMemo(() => {
     const latestByWeaver = new Map<string, BackendWeaverPayment>();
@@ -69,11 +81,12 @@ export function WeaverMakingChargesSection() {
         latestByWeaver.set(p.weaverId, p);
       }
     }
-    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id)));
-  }, [roster, payments]);
+    const earningsByWeaver = new Map(earningsList.map(e => [e.weaverId, e]));
+    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), earningsByWeaver.get(w.id)));
+  }, [roster, payments, earningsList]);
 
-  const isLoading = weaversLoading || paymentsLoading;
-  const isError = weaversError || paymentsError;
+  const isLoading = weaversLoading || paymentsLoading || earningsLoading;
+  const isError = weaversError || paymentsError || earningsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
@@ -128,7 +141,7 @@ export function WeaverMakingChargesSection() {
       const activeRow = activeBatches[0]?.rows.find(r => r.weaverId === w.id);
       
       const loomNumber = activeRow?.weaverLoom?.toString() || "1";
-      const noOfSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st || 1);
+      const noOfSarees = calcCompletedSarees(w) || 1;
       const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
       const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
       const netAmount = grossAmount - deduction;
@@ -372,7 +385,7 @@ export function WeaverMakingChargesSection() {
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
             {filtered.map((w, i) => {
               const charges = calcCharges(w); const net = calcNet(w);
-              const completedSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st);
+              const completedSarees = calcCompletedSarees(w);
               const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
               return (
                 <div

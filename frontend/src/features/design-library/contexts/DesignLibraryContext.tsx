@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BackendDesign, designLibraryApi } from "../../../shared/api/design-library";
+import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
 
 function backendDesignToEntry(d: BackendDesign): DesignEntry {
   return {
@@ -18,6 +19,22 @@ function backendDesignToEntry(d: BackendDesign): DesignEntry {
     total: 0,
     hasColorSlip: Boolean(d.colorSlipPhotoUrl),
     hasGraph: Boolean(d.designGraphUrl),
+  };
+}
+
+function backendDispatchToRecord(d: BackendDesignDispatch): DispatchRecord {
+  return {
+    id: d.id,
+    recipientType: d.recipientType === "WEAVER" ? "weaver" : "loom",
+    recipientId: d.recipientId,
+    recipientName: d.recipientName,
+    batches: d.batches,
+    instructions: d.instructions,
+    colorSlipImage: d.colorSlipImageUrl,
+    designGraphImage: d.designGraphImageUrl,
+    sentAt: new Date(d.sentAt).toLocaleString("en-US", {
+      day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+    }),
   };
 }
 
@@ -95,10 +112,9 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
   });
 
-  const { data: dispatches = INITIAL_DISPATCHES } = useQuery({
+  const { data: dispatches = [] } = useQuery({
     queryKey: DISPATCHES_KEY,
-    queryFn: () => Promise.resolve(INITIAL_DISPATCHES),
-    initialData: INITIAL_DISPATCHES,
+    queryFn: async () => (await designDispatchesApi.list()).items.map(backendDispatchToRecord),
   });
 
   // Real backend create — the design library is a real Phase 2 module, so
@@ -137,18 +153,20 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   });
 
   const addDispatchMutation = useMutation({
-    mutationFn: (d: Omit<DispatchRecord, "id" | "sentAt">) => Promise.resolve(d),
-    onSuccess: (d) =>
+    mutationFn: (d: Omit<DispatchRecord, "id" | "sentAt">) =>
+      designDispatchesApi.create({
+        recipientType: d.recipientType === "weaver" ? "WEAVER" : "FACTORY_LOOM",
+        recipientId: d.recipientId,
+        recipientName: d.recipientName,
+        instructions: d.instructions,
+        colorSlipImageUrl: d.colorSlipImage,
+        designGraphImageUrl: d.designGraphImage,
+        batches: d.batches,
+      }),
+    onSuccess: (created: BackendDesignDispatch) =>
       queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => {
         const list = prev ?? [];
-        const created: DispatchRecord = {
-          ...d,
-          id: `DISP-${String(list.length + 1).padStart(3, "0")}`,
-          sentAt: new Date().toLocaleString("en-US", {
-            day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
-          }),
-        };
-        return [created, ...list];
+        return [backendDispatchToRecord(created), ...list];
       }),
   });
 

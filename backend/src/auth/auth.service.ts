@@ -160,12 +160,16 @@ export class AuthService {
       }
     }
 
+    // weaverId must travel in the token, not just the response body: every
+    // weaver-scoped backend query (batches, payments, ...) filters on
+    // Weaver.id, which is NOT the same value as `sub` (User.id).
     const payload = {
       sub: userId,
       mobile: phone,
       role,
       name,
       accessLevel,
+      weaverId,
     };
 
     const token = this.jwtService.sign(payload);

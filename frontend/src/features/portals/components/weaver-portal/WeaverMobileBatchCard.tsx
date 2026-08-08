@@ -4,12 +4,13 @@ import { Flower2, Clock, Layers, Package } from "lucide-react";
 import { SareeRow } from "../../../production/contexts/BatchContext";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { DispatchInstructionsBlock } from "./desktop/batchCardHelpers";
 
 // Shared tokens
 const C = {
-  burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
-  bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", white: "#FFFFFF",
+  burg: "#6E0F2D", dark: "#3D0E1A", gold: "#C89B47", green: "#1E6640",
+  crim: "#C0392B", text: "#3B2314", muted: "#69635E",
+  bdr: "rgba(110,15,45,0.10)", cream: "#F7F2EA", white: "#FFFFFF",
 };
 const F = {
   d: "'Plus Jakarta Sans', sans-serif",
@@ -79,7 +80,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
                   className={
                     expandedType === code
                       ? "inline-flex items-center gap-1.5 bg-[#3D0E1A] border-[1.5px] border-[#3D0E1A] rounded-lg px-3 py-1 h-auto text-white"
-                      : "inline-flex items-center gap-1.5 bg-[rgba(61,14,26,0.04)] border-[1.5px] border-[rgba(139,26,46,0.12)] rounded-lg px-3 py-1 h-auto text-[#1A0A0F]"
+                      : "inline-flex items-center gap-1.5 bg-[rgba(61,14,26,0.04)] border-[1.5px] border-[rgba(110,15,45,0.10)] rounded-lg px-3 py-1 h-auto text-[#3B2314]"
                   }
                 >
                   <Layers size={11} color={expandedType === code ? "#FFF" : C.text} />
@@ -126,6 +127,10 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
             <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></span>
           </div>
         )}
+
+        <div style={{ marginTop: 16 }}>
+          <DispatchInstructionsBlock batchId={b.batchId} />
+        </div>
       </Card>
     </div>
   );
@@ -167,6 +172,10 @@ export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></span>
           </div>
         )}
+
+        <div style={{ marginTop: 16 }}>
+          <DispatchInstructionsBlock batchId={b.batchId} />
+        </div>
       </div>
     </div>
   );
@@ -195,8 +204,8 @@ export function BatchQuickFilterPills({ value, onChange }: { value: BatchQuickFi
               size="sm"
               className={
                 isActive
-                  ? "flex-shrink-0 rounded-full px-4 py-2 h-auto border-none bg-[#6B1A2A] text-white font-semibold whitespace-nowrap"
-                  : "flex-shrink-0 rounded-full px-4 py-2 h-auto border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] font-normal whitespace-nowrap"
+                  ? "flex-shrink-0 rounded-full px-4 py-2 h-auto border-none bg-[#6E0F2D] text-white font-semibold whitespace-nowrap"
+                  : "flex-shrink-0 rounded-full px-4 py-2 h-auto border border-[rgba(110,15,45,0.10)] bg-white text-[#3B2314] font-normal whitespace-nowrap"
               }
             >
               {f.label}

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { BatchStatus, Prisma, RecipientType } from "../generated/prisma/client";
@@ -114,9 +114,11 @@ export class BatchesService {
       );
     }
 
-    const design = await this.prisma.designLibrary.findUnique({ where: { code: dto.designCode } });
-    if (!design) {
-      throw new NotFoundException(`Design ${dto.designCode} not found`);
+    if (dto.designCode) {
+      const design = await this.prisma.designLibrary.findUnique({ where: { code: dto.designCode } });
+      if (!design) {
+        throw new NotFoundException(`Design ${dto.designCode} not found`);
+      }
     }
     const sareeType = await this.prisma.sareeTypeRate.findUnique({
       where: { code: dto.sareeTypeCode },
@@ -177,6 +179,37 @@ export class BatchesService {
     });
 
     return updated;
+  }
+
+  async remove(id: string, dto?: ActorOnlyDto) {
+    const batch = await this.prisma.batch.findUnique({ where: { id } });
+    if (!batch) {
+      throw new NotFoundException(`Batch ${id} not found`);
+    }
+
+    try {
+      // BatchSareeRow cascades with the batch; MaterialIssueRecord and other
+      // batchId references don't (Prisma default onDelete: Restrict), so a
+      // batch with issued materials/QC/finishing records against it throws
+      // P2003 below rather than silently orphaning or cascading through them.
+      await this.prisma.batch.delete({ where: { id } });
+
+      await this.auditLog.recordAction({
+        actorId: dto?.actorId,
+        module: "BATCHES",
+        action: `Deleted batch ${id}`,
+        entityType: "Batch",
+        entityId: id,
+        recordLabel: id,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ConflictException(
+          "This batch has existing records (materials issued, QC entries, finishing assignments, etc.) and can't be deleted.",
+        );
+      }
+      throw error;
+    }
   }
 
   // Matches the frontend's generateSareeId(weaverName, loom, seq) convention:

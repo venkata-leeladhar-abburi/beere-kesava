@@ -149,7 +149,7 @@ export function RetailChartsRow1() {
                     <div style={{ width: `${pct}%`, height: "100%", backgroundImage: barBg, borderRadius: 4 }} />
                   </div>
                   <div style={{ width: 54, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
-                    ₹{c.spend.toLocaleString("en-IN")}
+                    ₹{(c.spend || 0).toLocaleString("en-IN")}
                   </div>
                 </div>
               );

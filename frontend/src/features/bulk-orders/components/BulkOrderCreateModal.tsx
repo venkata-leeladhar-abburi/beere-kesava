@@ -3,7 +3,7 @@ import { z } from "zod";
 import { motion, AnimatePresence } from "motion/react";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
-import { WholesaleCustomerSelectSection, WHOLESALE_CUSTOMERS } from "./WholesaleCustomerSelectSection";
+import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./WholesaleCustomerSelectSection";
 import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
@@ -54,11 +54,13 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
 
   const [photos, setPhotos] = useState<File[]>([]);
 
-  const selectedCustomer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+  const wholesaleCustomersList = useAllWholesaleCustomers();
+
+  const selectedCustomer = wholesaleCustomersList.find(c => c.id === customerId);
 
   const handleCustomerSelect = (id: string) => {
     setCustomerId(id);
-    const selected = WHOLESALE_CUSTOMERS.find(c => c.id === id);
+    const selected = wholesaleCustomersList.find(c => c.id === id);
     if (selected) {
       setAddress(selected.address || "");
       setPhone(selected.phone || "");
@@ -87,7 +89,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
 
   const handleSubmit = () => {
     if (!validate()) return;
-    const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId)!;
+    const customer = wholesaleCustomersList.find(c => c.id === customerId)!;
     const order: BulkOrder = {
       ref: nextRef,
       customer: customer.name,
@@ -118,7 +120,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   };
 
   const today = new Date();
-  const minDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const minDate = today.toISOString().split("T")[0];
 
   const labelStyle: React.CSSProperties = {
     fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6, display: "block",
@@ -199,6 +201,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 selectedCustomer={selectedCustomer}
                 onClose={onClose}
                 onAddCustomerClick={onAddCustomerClick}
+                wholesaleCustomersList={wholesaleCustomersList}
               />
 
               {/* Section 2 — Order Details */}
@@ -244,10 +247,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </div>
 
                   <Field label="Quantity (sarees)" error={errors.quantity} id="quantity-sarees">
-                    <NumberInput id="quantity-sarees"
-                      min={1}
-                      value={quantity === "" ? "" : Number(quantity)}
-                      onValueChange={v => setQuantity(v === "" ? "" : String(v))}
+                    <Input id="quantity-sarees"
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={e => setQuantity(e.target.value)}
                       placeholder="e.g. 40"
                       invalid={!!errors.quantity}
                     />
@@ -265,9 +269,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
 
                   <div style={{ gridColumn: "1 / -1" }}>
                     <Field label="Estimated Value (₹)" id="estimated-value">
-                      <NumberInput id="estimated-value"
-                        value={estimatedValue === "" ? "" : Number(estimatedValue)}
-                        onValueChange={v => setEstimatedValue(v === "" ? "" : String(v))}
+                      <Input id="estimated-value"
+                        type="number"
+                        min="0"
+                        value={estimatedValue}
+                        onChange={e => setEstimatedValue(e.target.value)}
                         placeholder="Enter estimated value"
                       />
                     </Field>

@@ -1,8 +1,12 @@
-import React from "react";
-import { Check, Info, Send } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Check, Info, Send, Shield, Package } from "lucide-react";
 import { C, F, BG_IMAGE } from "../theme";
 import { DesktopHero } from "./DesktopHero";
 import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
+import { useBatches } from "../../../../production/contexts/BatchContext";
+import { useCurrentWeaver } from "../useCurrentWeaver";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
 
 function DSectionHeader({ label }: { label: string }) {
   return (
@@ -17,17 +21,106 @@ function DSectionHeader({ label }: { label: string }) {
 
 type MaterialKey = "warp" | "resham" | "jari";
 
+const MATERIAL_TO_WARP_TYPE: Record<MaterialKey, string> = {
+  warp: "WARP", resham: "RESHAM", jari: "JARI",
+};
+
 export function WarpSection({
-  bp, isTablet, warpBatch, setWarpBatch, materials, setMaterials, amounts, setAmounts,
-  reason, setReason, warpSubmitted, setWarpSubmitted,
+  bp, isTablet,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean;
-  warpBatch: "086" | "089"; setWarpBatch: (b: "086" | "089") => void;
-  materials: Record<MaterialKey, boolean>; setMaterials: React.Dispatch<React.SetStateAction<Record<MaterialKey, boolean>>>;
-  amounts: Record<MaterialKey, string>; setAmounts: React.Dispatch<React.SetStateAction<Record<MaterialKey, string>>>;
-  reason: string; setReason: (v: string) => void;
-  warpSubmitted: boolean; setWarpSubmitted: (v: boolean) => void;
+  warpBatch?: string; setWarpBatch?: (b: string) => void;
+  materials?: Record<MaterialKey, boolean>; setMaterials?: React.Dispatch<React.SetStateAction<Record<MaterialKey, boolean>>>;
+  amounts?: Record<MaterialKey, string>; setAmounts?: React.Dispatch<React.SetStateAction<Record<MaterialKey, string>>>;
+  reason?: string; setReason?: (v: string) => void;
+  warpSubmitted?: boolean; setWarpSubmitted?: (v: boolean) => void;
 }) {
+  const { batches } = useBatches();
+  const { weaver, weaverId } = useCurrentWeaver();
+  const queryClient = useQueryClient();
+
+  const isMyRow = (r: { weaverId?: string | null }) => {
+    if (!r.weaverId) return false;
+    return r.weaverId === weaverId || (weaver && (r.weaverId === weaver.id || r.weaverId === weaver.code));
+  };
+
+  const myBatches = useMemo(() => {
+    return batches
+      .filter(b => b.status !== "draft")
+      .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
+      .filter(b => b.myRows.length > 0 && b.status !== "completed");
+  }, [batches, weaverId, weaver]);
+
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const activeBatchId = selectedBatchId ?? myBatches[0]?.batchId ?? null;
+  const activeBatch = myBatches.find(b => b.batchId === activeBatchId) ?? null;
+
+  const [materials, setMaterials] = useState<Record<MaterialKey, boolean>>({ warp: false, resham: false, jari: false });
+  const [amounts, setAmounts] = useState<Record<MaterialKey, string>>({ warp: "", resham: "", jari: "" });
+  const [reason, setReason] = useState("");
+  const [warpSubmitted, setWarpSubmitted] = useState(false);
+
+  const batchProgress = useMemo(() => {
+    if (!activeBatch) return { total: 0, done: 0, pct: 0 };
+    const total = activeBatch.myRows.length;
+    const done = activeBatch.myRows.filter(r => r.qcPassed === true || r.sareeId).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { total, done, pct };
+  }, [activeBatch]);
+
+  const isLocked = batchProgress.pct < 50;
+
+  const { data: warpRequestsData } = useQuery({
+    queryKey: ["warpRequests"],
+    queryFn: () => warpRequestsApi.list(),
+  });
+
+  const myPrevRequests: BackendWarpRequest[] = useMemo(() => {
+    return (warpRequestsData?.items ?? [])
+      .filter(r => r.weaverId === weaverId)
+      .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
+  }, [warpRequestsData, weaverId]);
+
+  const approvedCount = myPrevRequests.filter(r => r.status === "APPROVED").length;
+  const rejectedCount = myPrevRequests.filter(r => r.status === "REJECTED").length;
+  const totalRequests = myPrevRequests.length;
+  const approvalRate = totalRequests > 0 ? Math.round((approvedCount / totalRequests) * 100) : 0;
+
+  const createRequestMutation = useMutation({
+    mutationFn: async () => {
+      if (!weaverId) throw new Error("No weaver profile resolved.");
+      const selectedMaterials = (["warp", "resham", "jari"] as const).filter(m => materials[m]);
+      await Promise.all(selectedMaterials.map(mat =>
+        warpRequestsApi.create({
+          weaverId,
+          warpType: MATERIAL_TO_WARP_TYPE[mat],
+          lengthMeters: parseFloat(amounts[mat]) || 0,
+          notes: reason || undefined,
+        }),
+      ));
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["warpRequests"] });
+      setWarpSubmitted(true);
+    },
+  });
+
+  const pills = [
+    ...(myBatches.slice(0, 2).map(b => {
+      const done = b.myRows.filter(r => r.qcPassed === true || r.sareeId).length;
+      const total = b.myRows.length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      return { text: `${b.batchId} · ${pct}% Complete · ${pct >= 50 ? "Unlocked" : "Locked"}`, color: C.gold };
+    })),
+    { text: `${approvedCount} of ${totalRequests} Requests Approved` },
+  ];
+
+  const heroStats = [
+    { label: `${activeBatchId ?? "No Active Batch"} Progress`, val: activeBatch ? `${batchProgress.done}/${batchProgress.total}` : "0/0", sub: `${batchProgress.pct}% complete — ${isLocked ? "warp locked" : "warp unlocked"}` },
+    { label: "Total Requests Raised", val: `${totalRequests}`, sub: "This month" },
+    { label: "Approval Rate", val: `${approvalRate}%`, sub: `${approvedCount} approved, ${rejectedCount} rejected`, highlight: true },
+  ];
+
   return (
     <>
       <DesktopHero
@@ -36,35 +129,34 @@ export function WarpSection({
         titleMain="Warp Request"
         titleSub="& Additional Materials"
         description="Request additional raw materials for your active batches. Warp requests are unlocked after submitting 50% of your batch."
-        pills={[
-          { text: "BATCH-086 · 60% Complete · Unlocked", color: C.gold },
-          { text: "BATCH-089 · 50% Complete · Unlocked", color: C.gold },
-          { text: "2 of 3 Requests Approved" },
-        ]}
-        stats={[
-          { label: "BATCH-086 Progress", val: "3/5", sub: "60% complete — warp unlocked" },
-          { label: "BATCH-089 Progress", val: "4/8", sub: "50% complete — warp unlocked", highlight: true },
-          { label: "Total Requests Raised", val: "3", sub: "This month" },
-          { label: "Approval Rate", val: "67%", sub: "2 approved, 1 rejected" },
-        ]}
+        pills={pills}
+        stats={heroStats}
         bgUrl={BG_IMAGE}
       />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         {/* Batch selector */}
-        <div style={{ display: "flex", gap: 14, marginBottom: 36 }}>
-          {(["086", "089"] as const).map(b => (
-            <Button
-              key={b}
-              onClick={() => setWarpBatch(b)}
-              className={
-                "rounded-full px-8 py-3 h-auto border-2 border-[#6B1A2A] font-mono text-sm font-bold transition-all " +
-                (warpBatch === b ? "bg-[#6B1A2A] text-white" : "bg-transparent text-[#6B1A2A]")
-              }
-            >
-              BATCH-{b}
-            </Button>
-          ))}
-        </div>
+        {myBatches.length > 0 ? (
+          <div style={{ display: "flex", gap: 14, marginBottom: 36, flexWrap: "wrap" }}>
+            {myBatches.map(b => (
+              <Button
+                key={b.batchId}
+                onClick={() => setSelectedBatchId(b.batchId)}
+                className={
+                  "rounded-full px-8 py-3 h-auto border-2 border-[#6E0F2D] font-mono text-sm font-bold transition-all " +
+                  (activeBatchId === b.batchId ? "bg-[#6E0F2D] text-white" : "bg-transparent text-[#6E0F2D]")
+                }
+              >
+                {b.batchId}
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "28px 24px", marginBottom: 32, textAlign: "center" as const }}>
+            <Package size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
+            <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.text }}>No active batches assigned</div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>Warp requests can only be submitted against active batches assigned to you.</div>
+          </div>
+        )}
 
         {warpSubmitted ? (
           <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
@@ -73,7 +165,7 @@ export function WarpSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Warp Request Sent!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 36 }}>Your request has been sent to worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-            <Button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="block h-[60px] bg-[#6B1A2A] border-none rounded-full font-bold text-lg text-white">
+            <Button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="block h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white">
               ← Back to Warp Requests
             </Button>
           </div>
@@ -82,21 +174,35 @@ export function WarpSection({
             {/* Left: Form */}
             <div>
               {/* Unlock status */}
-              <div style={{ background: "rgba(30,102,64,0.08)", border: `2px solid ${C.green}`, borderRadius: 18, padding: "22px 28px", marginBottom: 32, display: "flex", alignItems: "center", gap: 18 }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Check size={28} color="#FFF" />
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.green }}>Warp Request Unlocked for BATCH-{warpBatch}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>
-                    You have submitted {warpBatch === "086" ? "3 of 5 (60%)" : "4 of 8 (50%)"} sarees — warp request is now available.
+              {isLocked ? (
+                <div style={{ background: "rgba(192,57,43,0.06)", border: `2px solid ${C.crim}`, borderRadius: 18, padding: "22px 28px", marginBottom: 32, display: "flex", alignItems: "center", gap: 18 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.crim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Shield size={28} color="#FFF" />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.crim }}>Warp Request Locked for {activeBatchId ?? "No Batch"}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>
+                      You have submitted {batchProgress.done} of {batchProgress.total} ({batchProgress.pct}%) sarees — 50% required to unlock warp requests.
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ background: "rgba(30,102,64,0.08)", border: `2px solid ${C.green}`, borderRadius: 18, padding: "22px 28px", marginBottom: 32, display: "flex", alignItems: "center", gap: 18 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Check size={28} color="#FFF" />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.green }}>Warp Request Unlocked for {activeBatchId}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>
+                      You have submitted {batchProgress.done} of {batchProgress.total} ({batchProgress.pct}%) sarees — warp request is now available.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <DSectionHeader label="Request Additional Materials" />
               <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, padding: "32px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 24 }}>
-                <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "8px 20px", fontFamily: F.m, fontSize: 16, marginBottom: 28 }}>BATCH-{warpBatch}</div>
+                <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "8px 20px", fontFamily: F.m, fontSize: 16, marginBottom: 28 }}>{activeBatchId ?? "N/A"}</div>
 
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.text, marginBottom: 20 }}>What material do you need?</div>
                 <div style={{ marginBottom: 28 }}>
@@ -129,10 +235,12 @@ export function WarpSection({
                 </div>
               </div>
 
-              <Button onClick={() => (materials.warp || materials.resham || materials.jari) ? setWarpSubmitted(true) : undefined}
+              <Button
+                onClick={() => (!isLocked && (materials.warp || materials.resham || materials.jari)) ? createRequestMutation.mutate() : undefined}
+                disabled={isLocked || createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
                 fullWidth
-                className="h-[60px] bg-[#6B1A2A] border-none rounded-full font-bold text-lg text-white gap-3 shadow-[0_4px_20px_rgba(107,26,42,0.35)]">
-                <Send size={22} /> Send Warp Request
+                className="h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white gap-3 shadow-[0_4px_20px_rgba(110,15,45,0.35)] disabled:opacity-50">
+                <Send size={22} /> {createRequestMutation.isPending ? "Sending Request…" : isLocked ? "Warp Request Locked" : "Send Warp Request"}
               </Button>
             </div>
 
@@ -153,20 +261,31 @@ export function WarpSection({
                     <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Previous Requests</span>
                   </div>
                 </div>
-                {[
-                  { date: "10 Jun 2026", mat: "3 kg Warp", status: "Approved", ok: true },
-                  { date: "05 Jun 2026", mat: "Resham Red 500g", status: "Rejected", ok: false },
-                  { date: "01 Jun 2026", mat: "2 kg Warp", status: "Approved", ok: true },
-                ].map((r, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 26px", borderBottom: i < 2 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: r.ok ? C.green : C.crim, flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginBottom: 3 }}>{r.date}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 16, fontWeight: 500, color: C.text }}>{r.mat}</div>
-                    </div>
-                    <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: r.ok ? C.green : C.crim }}>{r.ok ? "✓ Approved" : "✗ Rejected"}</span>
+
+                {myPrevRequests.length === 0 ? (
+                  <div style={{ padding: "28px 24px", textAlign: "center" as const }}>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No previous warp requests recorded.</div>
                   </div>
-                ))}
+                ) : (
+                  myPrevRequests.map((r, i) => {
+                    const isApproved = r.status === "APPROVED";
+                    const isRejected = r.status === "REJECTED";
+                    const dateStr = new Date(r.requestedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+                    const matStr = `${r.lengthMeters}m ${r.warpType}${r.color ? ` (${r.color})` : ""}`;
+                    return (
+                      <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 26px", borderBottom: i < myPrevRequests.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: isApproved ? C.green : isRejected ? C.crim : C.gold, flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginBottom: 3 }}>{dateStr}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 16, fontWeight: 500, color: C.text }}>{matStr}</div>
+                        </div>
+                        <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: isApproved ? C.green : isRejected ? C.crim : C.gold }}>
+                          {isApproved ? "✓ Approved" : isRejected ? "✗ Rejected" : "⏳ Pending"}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -175,3 +294,4 @@ export function WarpSection({
     </>
   );
 }
+

@@ -25,59 +25,78 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
 
+
+import { useQc } from "../../../qc/contexts/QcContext";
 
 export function PaymentLedgerPage() {
   const { isMobile } = useResponsive();
   const { getPaymentsForWeaver } = useWeaverPayments();
+  const { getQcForWeaver } = useQc();
   const { batches } = useBatches();
-  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
   const myPayments = weaverId ? getPaymentsForWeaver(weaverId) : [];
+  const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
 
-  const myWeaverRows = useMemo(() => {
-    return batches.flatMap(b => b.rows.map(r => ({ ...r, batchId: b.batchId })).filter(r => r.weaverId === weaverId));
-  }, [batches, weaverId]);
+  const now = useMemo(() => new Date(), []);
+  const currentMonthLabel = now.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
-  const passedSarees = useMemo(() => {
-    return myWeaverRows.filter(r => r.qcPassed === true);
-  }, [myWeaverRows]);
+  const thisMonthQcRecords = useMemo(() => {
+    return weaverQcRecords.filter(q => {
+      const d = new Date(q.qcDate);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+  }, [weaverQcRecords, now]);
 
+  const passedSarees = useMemo(() => thisMonthQcRecords.filter(q => q.result === "passed"), [thisMonthQcRecords]);
   const failedSarees = useMemo(() => {
-    return myWeaverRows.filter(r => r.qcPassed === false).map(r => ({
-      sareeId: r.sareeId,
-      batchId: r.batchId,
-      sareeTypeName: r.sareeTypeName,
-      date: "10 Jun 2026",
-      defect: "Thread Break",
-      deduction: 450
+    return thisMonthQcRecords.filter(q => q.result === "defective" || q.deduction > 0).map(q => ({
+      sareeId: q.sareeId,
+      batchId: q.batchId || "—",
+      sareeTypeName: q.sareeTypeName || "Saree",
+      date: new Date(q.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      defect: q.defects?.join(", ") || "QC Deduction",
+      deduction: Number(q.deduction || 0),
     }));
-  }, [myWeaverRows]);
+  }, [thisMonthQcRecords]);
 
   const grossChargesVal = useMemo(() => {
-    return passedSarees.reduce((sum, r) => {
-      const chargeStr = SAREE_TYPE_RATES[r.sareeTypeCode || '']?.charge || "450";
-      return sum + parseInt(chargeStr, 10);
-    }, 0);
-  }, [passedSarees]);
+    return thisMonthQcRecords.reduce((sum, q) => sum + (Number(q.makingCharge) || 0), 0);
+  }, [thisMonthQcRecords]);
 
   const deductionsVal = useMemo(() => {
-    return failedSarees.length * 450;
-  }, [failedSarees]);
+    return thisMonthQcRecords.reduce((sum, q) => sum + (Number(q.deduction) || 0), 0);
+  }, [thisMonthQcRecords]);
 
-  const netAmountVal = grossChargesVal - deductionsVal;
+  const netAmountVal = Math.max(0, grossChargesVal - deductionsVal);
+  const totalSareesCount = thisMonthQcRecords.length;
 
-  const totalSareesCount = passedSarees.length + failedSarees.length;
-
-  // Determine if the current month has a matched payment
-  // A payment is "current month" if its paymentDate or uploadedAt references May/Jun 2026
-  // (we treat any record NOT in the seed past-months UTRs as a current-month upload)
-  const seedUtrs = new Set(PAST_MONTHS.map(p => p.utrFallback));
-  const currentPayment = myPayments.find(p => !seedUtrs.has(p.utrNumber)) ?? null;
-
+  const currentPayment = myPayments[0] ?? null;
   const isPaid = currentPayment !== null;
+
+  // Last 6 months of this weaver's real payments, bar-scaled to the biggest.
+  const earningTrend = useMemo(() => {
+    const byMonth = new Map<string, number>();
+    for (const p of myPayments) {
+      const d = new Date(p.paymentDate || p.uploadedAt);
+      if (Number.isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      byMonth.set(key, (byMonth.get(key) ?? 0) + p.amountPaid);
+    }
+    const rows = Array.from(byMonth.entries()).sort(([a], [b]) => a.localeCompare(b)).slice(-6);
+    const max = Math.max(...rows.map(([, amt]) => amt), 1);
+    return rows.map(([key, amt]) => {
+      const [y, m] = key.split("-");
+      return {
+        month: new Date(Number(y), Number(m) - 1).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
+        amt,
+        pct: Math.round((amt / max) * 100),
+      };
+    });
+  }, [myPayments]);
 
   const fmtAmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
@@ -110,7 +129,7 @@ export function PaymentLedgerPage() {
       {/* This Month Summary */}
       <div style={{ margin: "16px 20px" }}>
         <Card style={{ padding: 22 }}>
-          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "center" as const, marginBottom: 16 }}>{CURRENT_MONTH_LABEL}</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, textAlign: "center" as const, marginBottom: 16 }}>{currentMonthLabel}</div>
           {[
             { label: "Sarees Produced:", value: `${totalSareesCount} sarees · ${passedSarees.length} passed QC`, color: C.text, size: 18, fw: 600 },
             { label: "Gross Making Charges:", value: fmtAmt(grossChargesVal), color: C.gold, size: 26, fw: 700 },
@@ -173,7 +192,7 @@ export function PaymentLedgerPage() {
         <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.gold, lineHeight: 1, marginBottom: 8 }}>{fmtAmt(netAmountVal)}</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", marginBottom: 16 }}>Net amount after deductions</div>
         <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.m, fontSize: 12, color: C.gold }}>
-          Payment by end of June 2026
+          Payment by end of {currentMonthLabel}
         </div>
       </div>
 
@@ -201,18 +220,15 @@ export function PaymentLedgerPage() {
         </div>
       )}
 
-      {/* Earning Trend — same 4-month data shown on desktop */}
+      {/* Earning Trend — last 6 months of real payments for this weaver */}
       <SectionTitle title="Earning Trend" />
       <Card style={{ margin: "0 20px 12px", padding: "20px 20px" }}>
-        {[
-          { month: "Feb 2026", amt: 7560, pct: 95 },
-          { month: "Mar 2026", amt: 5040, pct: 63 },
-          { month: "Apr 2026", amt: 6300, pct: 79 },
-          { month: "May 2026", amt: 7650, pct: 96 },
-        ].map((e, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: i < 3 ? 16 : 0 }}>
+        {earningTrend.length === 0 ? (
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No payments recorded yet.</div>
+        ) : earningTrend.map((e, i) => (
+          <div key={e.month} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: i < earningTrend.length - 1 ? 16 : 0 }}>
             <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, width: 76, flexShrink: 0, whiteSpace: "nowrap" as const }}>{e.month}</span>
-            <div style={{ flex: 1, height: 12, background: "rgba(107,26,42,0.08)", borderRadius: 999, overflow: "hidden" }}>
+            <div style={{ flex: 1, height: 12, background: "rgba(110,15,45,0.08)", borderRadius: 999, overflow: "hidden" }}>
               <div style={{ width: `${e.pct}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
             </div>
             <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text, width: 52, textAlign: "right" as const, flexShrink: 0 }}>₹{(e.amt / 1000).toFixed(1)}k</span>
@@ -222,10 +238,16 @@ export function PaymentLedgerPage() {
 
       {/* Past Months History */}
       <SectionTitle title="Payment History" link="See All →" />
-      {isMobile ? (
-        PAST_MONTHS.map((p, i) => {
-          // Find matching payment record from context (seed data or future uploads)
-          const rec = myPayments.find(r => r.utrNumber === p.utrFallback);
+      {myPayments.length === 0 ? (
+        <Card style={{ margin: "0 20px 12px", padding: "20px" }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No payments recorded yet.</div>
+        </Card>
+      ) : isMobile ? (
+        myPayments.map((rec, i) => {
+          const p = {
+            month: new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
+            sarees: `${rec.noOfSarees ?? 0} sarees`,
+          };
           return (
             <div key={i} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.green}`, borderRadius: 14, padding: "16px 18px" }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
@@ -234,7 +256,7 @@ export function PaymentLedgerPage() {
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3 }}>{p.sarees}</div>
                 </div>
                 <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                  <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{rec ? fmtAmt(rec.amountPaid) : p.amtFallback}</div>
+                  <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 6, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "4px 12px" }}>
                     <Check size={12} color={C.green} />
                     <span style={{ fontFamily: F.m, fontSize: 12, color: C.green, fontWeight: 600 }}>✓ Paid</span>
@@ -246,19 +268,19 @@ export function PaymentLedgerPage() {
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.bdr}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px" }}>
                 <div>
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>UTR Number</div>
-                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.text, wordBreak: "break-all" as const }}>{rec?.utrNumber ?? p.utrFallback}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.text, wordBreak: "break-all" as const }}>{rec.utrNumber || "—"}</div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Paid By</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{rec?.firmName ?? "Beere Kesava & Brothers Silks"}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{rec.firmName || "Beere Kesava & Brothers Silks"}</div>
                 </div>
-                {rec?.paymentDate && (
+                {rec.paymentDate && (
                   <div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Payment Date</div>
                     <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{rec.paymentDate}</div>
                   </div>
                 )}
-                {rec?.batchNo && (
+                {rec.batchNo && (
                   <>
                     <div>
                       <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Batch No</div>
@@ -286,23 +308,23 @@ export function PaymentLedgerPage() {
                 <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
               ))}
             </div>
-            {PAST_MONTHS.map((p, i) => {
-              const rec = myPayments.find(r => r.utrNumber === p.utrFallback);
+            {myPayments.map((rec, i) => {
+              const monthLabel = new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
               return (
                 <React.Fragment key={i}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec?.batchNo && i < PAST_MONTHS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{p.month}</div>
-                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{rec ? fmtAmt(rec.amountPaid) : p.amtFallback}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec?.utrNumber ?? p.utrFallback}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec?.firmName ?? "Beere Kesava & Brothers Silks"}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec?.paymentDate ?? "—"}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec.batchNo && i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{monthLabel}</div>
+                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec.utrNumber || "—"}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec.firmName || "Beere Kesava & Brothers Silks"}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec.paymentDate || "—"}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "2px 10px", width: "fit-content" }}>
                       <Check size={10} color={C.green} />
                       <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>Paid</span>
                     </div>
                   </div>
-                  {rec?.batchNo && (
-                    <div style={{ display: "flex", gap: 32, padding: "8px 16px 12px", background: "rgba(30,102,64,0.02)", borderBottom: i < PAST_MONTHS.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
+                  {rec.batchNo && (
+                    <div style={{ display: "flex", gap: 32, padding: "8px 16px 12px", background: "rgba(30,102,64,0.02)", borderBottom: i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                       <div>
                         <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Batch No:</span>
                         <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, marginLeft: 6 }}>{rec.batchNo}</span>

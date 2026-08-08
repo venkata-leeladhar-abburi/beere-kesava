@@ -264,11 +264,11 @@ export function RetailCustomersSection({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}>₹{r.totalSpend.toLocaleString("en-IN")}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}>₹{(r.totalSpend ?? r.spend ?? 0).toLocaleString("en-IN")}</div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases ?? r.purchases ?? 0} sarees</div>
                 </div>
               </div>
 
@@ -312,8 +312,8 @@ export function RetailCustomersSection({
                   </td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.city}</td>
                   <td style={{ padding: "14px 18px", fontFamily: F.mono, color: T.taupe }}>{r.phone}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.totalSpend.toLocaleString("en-IN")}</td>
-                  <td style={{ padding: "14px 18px", fontFamily: F.mono }}>{r.totalPurchases} sarees</td>
+                  <td style={{ padding: "14px 18px", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{(r.totalSpend ?? r.spend ?? 0).toLocaleString("en-IN")}</td>
+                  <td style={{ padding: "14px 18px", fontFamily: F.mono }}>{r.totalPurchases ?? r.purchases ?? 0} sarees</td>
                   <td style={{ padding: "14px 18px", color: T.taupe }}>{r.lastVisit}</td>
                   <td style={{ padding: "14px 18px" }}>
                     {r.inactive ? (

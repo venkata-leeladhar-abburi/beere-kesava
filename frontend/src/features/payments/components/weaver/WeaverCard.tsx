@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 import { F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { calcCharges, calcNet } from "../../utils/charges";
+import { calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
 
@@ -21,7 +21,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
   ].filter(Boolean).join(" · ");
 
   const paid = w.status === "Paid";
-  const completedSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st);
+  const completedSarees = calcCompletedSarees(w);
 
   return (
     <motion.div

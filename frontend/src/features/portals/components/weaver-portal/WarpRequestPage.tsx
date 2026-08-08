@@ -27,7 +27,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
 import { Button, Input, Textarea, Field } from '../../../../shared/ui/primitives';
 
@@ -41,12 +41,17 @@ export function WarpRequestPage() {
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const queryClient = useQueryClient();
 
-  // Batches the logged-in weaver actually has rows in — no more fake BATCH-086/089.
+  const isMyRow = (r: { weaverId?: string | null }) => {
+    if (!r.weaverId) return false;
+    return r.weaverId === weaverId || (weaver && (r.weaverId === weaver.id || r.weaverId === weaver.code));
+  };
+
   const myBatches = useMemo(() => {
     return batches
-      .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
+      .filter(b => b.status !== "draft")
+      .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
       .filter(b => b.myRows.length > 0 && b.status !== "completed");
-  }, [batches, weaverId]);
+  }, [batches, weaverId, weaver]);
 
   const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
   const activeBatchId = selectedBatch ?? myBatches[0]?.batchId ?? null;
@@ -123,7 +128,7 @@ export function WarpRequestPage() {
         </div>
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Request Sent!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 28 }}>Your request has been sent to the worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-        <Button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="h-[52px] bg-[#6B1A2A] border-none rounded-full font-semibold text-base text-white">
+        <Button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="h-[52px] bg-[#6E0F2D] border-none rounded-full font-semibold text-base text-white">
           ← Back to Warp Requests
         </Button>
       </div>
@@ -158,8 +163,8 @@ export function WarpRequestPage() {
               size="sm"
               className={
                 activeBatchId === b.batchId
-                  ? "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-[#6B1A2A] font-semibold text-xs text-white"
-                  : "rounded-full px-5 py-2 h-auto border border-[#6B1A2A] bg-transparent font-semibold text-xs text-[#6B1A2A]"
+                  ? "rounded-full px-5 py-2 h-auto border border-[#6E0F2D] bg-[#6E0F2D] font-semibold text-xs text-white"
+                  : "rounded-full px-5 py-2 h-auto border border-[#6E0F2D] bg-transparent font-semibold text-xs text-[#6E0F2D]"
               }
             >{b.batchId}</Button>
           ))}
@@ -171,7 +176,7 @@ export function WarpRequestPage() {
         <>
           <div style={{ margin: "16px 20px" }}>
             <Card style={{ padding: 28, textAlign: "center" as const }}>
-              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(139,26,46,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                 <Shield size={32} color={C.burg} />
               </div>
               <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Warp Request Locked</div>
@@ -221,7 +226,7 @@ export function WarpRequestPage() {
               {/* Batch Reference */}
               <div style={{ marginBottom: 18 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 8 }}>Batch Reference</div>
-                <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14 }}>{activeBatchId}</div>
+                <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14 }}>{activeBatchId}</div>
               </div>
 
               {/* Material checkboxes */}
@@ -277,7 +282,7 @@ export function WarpRequestPage() {
             <Button
               onClick={() => (materials.warp || materials.resham || materials.jari) ? createRequestMutation.mutate() : undefined}
               disabled={createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
-              className={isMobile ? "w-full h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60" : "w-[200px] h-14 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60"}
+              className={isMobile ? "w-full h-14 bg-[#6E0F2D] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60" : "w-[200px] h-14 bg-[#6E0F2D] border-none rounded-full font-semibold text-sm text-white disabled:opacity-60"}
             >
               <Send size={18} /> {createRequestMutation.isPending ? "Sending…" : "Send Warp Request"}
             </Button>
@@ -326,7 +331,7 @@ export function WarpRequestPage() {
                 ))}
               </div>
               {rows.map((r, i) => (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: i < rows.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: i < rows.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.material}</div>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.batch}</div>

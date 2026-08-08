@@ -60,7 +60,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
             <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.75)", paddingLeft: 13, letterSpacing: "0.1px" }}>Live operational feed</span>
           </div>
           <motion.button
-            onClick={() => onNavigate("Notifications")}
+            onClick={() => onNavigate("AuditLog")}
             whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.14)" }}
             whileTap={{ scale: 0.97 }}
             style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.antiqueGold, cursor: "pointer", padding: "8px 20px", borderRadius: 10, border: "1px solid rgba(200,155,71,0.28)", backgroundColor: "rgba(200,155,71,0.07)", letterSpacing: "0.2px" }}

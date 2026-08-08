@@ -17,6 +17,7 @@ const CustomersPage = lazy(() => import("../../customers/components/CustomersPag
 const ProductionHistoryPage = lazy(() => import("../../production/components/ProductionHistoryPage").then(m => ({ default: m.ProductionHistoryPage })));
 const FinishingTrackingPage = lazy(() => import("../../finishing/components/FinishingTrackingPage").then(m => ({ default: m.FinishingTrackingPage })));
 const NotificationsPage = lazy(() => import("../../notifications/components/NotificationsPage").then(m => ({ default: m.NotificationsPage })));
+const AuditLogPage = lazy(() => import("../../audit/components/AuditLogPage").then(m => ({ default: m.AuditLogPage })));
 const AllWeaversPage = lazy(() => import("../../weavers/components/AllWeaversPage").then(m => ({ default: m.AllWeaversPage })));
 const AllStockPage = lazy(() => import("../../inventory/components/AllStockPage").then(m => ({ default: m.AllStockPage })));
 const AllOrdersPage = lazy(() => import("../../bulk-orders/components/AllOrdersPage").then(m => ({ default: m.AllOrdersPage })));
@@ -87,6 +88,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "factory-looms") nav = "FactoryLooms";
   else if (tab === "firms") nav = "Firms";
   else if (tab === "notifications") nav = "Notifications";
+  else if (tab === "audit-log") nav = "AuditLog";
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
@@ -129,6 +131,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       FactoryLooms: "/admin/factory-looms",
       Firms: "/admin/firms",
       Notifications: "/admin/notifications",
+      AuditLog: "/admin/audit-log",
       ReceiveStock: "/admin/receive-stock",
       AddUser: "/admin/add-user",
       ExternalPurchases: "/admin/external-purchases",
@@ -194,6 +197,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <ProductionHistoryPage />
       ) : mobileTab === "Notifications" ? (
         <NotificationsPage />
+      ) : mobileTab === "AuditLog" ? (
+        <AuditLogPage />
       ) : mobileTab === "AddUser" ? (
         <AddUserPage />
       ) : mobileTab === "ExternalPurchases" ? (
@@ -255,6 +260,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <FirmsPage />
       ) : nav === "Notifications" ? (
         <NotificationsPage />
+      ) : nav === "AuditLog" ? (
+        <AuditLogPage />
       ) : nav === "ReceiveStock" ? (
         <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
           {/* Admin-style page header — matches AuditLogPage / AddUserPage pattern exactly */}

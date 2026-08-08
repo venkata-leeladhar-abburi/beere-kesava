@@ -63,7 +63,7 @@ export function Select({ size = "md", placeholder, invalid: invalidProp, classNa
           position="popper"
           sideOffset={4}
           className={cn(
-            "z-[var(--z-dropdown)] min-w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-y-auto",
+            "z-[9999] min-w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-y-auto",
             "rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-overlay)]",
             "shadow-[var(--shadow-lg)] p-1"
           )}

@@ -9,7 +9,7 @@ import { useBulkOrders } from "../../../../bulk-orders/contexts/BulkOrderContext
 import { useBatches } from "../../../../production/contexts/BatchContext";
 import { T, F, EASE } from "../../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
-import { WHOLESALE_CUSTOMERS } from "../../data";
+import { useAllWholesaleCustomers } from "../../../../bulk-orders/components/WholesaleCustomerSelectSection";
 import { TransportData, InvoiceData } from "../../types";
 import { TransportForm } from "../shared/TransportForm";
 import { SareePicker } from "../shared/SareePicker";
@@ -45,8 +45,9 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "", expectedDelivery: "", specialInstructions: "" });
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
-  const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
-  const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
+  const wholesaleCustomersList = useAllWholesaleCustomers();
+  const filteredCustomers = wholesaleCustomersList.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
+  const selectedCustomer  = wholesaleCustomersList.find(c => c.id === customerId) ?? null;
 
   // Quotations already raised for this customer and not yet dispatched.
   const customerQuotations = useMemo(

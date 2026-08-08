@@ -10,6 +10,7 @@ import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../..
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "./useCurrentWeaver";
+import { GeneralDispatchInstructionsBlock } from "./desktop/batchCardHelpers";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -25,7 +26,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, BatchQuickFilter, MyBatchEntry
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, BatchQuickFilter, MyBatchEntry
 } from './theme';
 
 
@@ -36,14 +37,32 @@ export function MyBatchesPage() {
   const { getPaymentsForWeaver } = useWeaverPayments();
   const [quickFilter, setQuickFilter] = useState<BatchQuickFilter>("all");
 
+  const isMyRow = (r: { weaverId?: string | null }) => {
+    if (!r.weaverId) return false;
+    if (weaverId && r.weaverId.toLowerCase() === weaverId.toLowerCase()) return true;
+    if (!weaver) return false;
+    const wId = weaver.id.toLowerCase();
+    const wCode = weaver.code.toLowerCase();
+    const rId = r.weaverId.toLowerCase();
+    return rId === wId || rId === wCode;
+  };
+
+  // A batch is visible to its assigned weaver even in draft status
+  // so they can see upcoming work, and so the "Draft" quick filter works.
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
+    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
     .filter(b => b.myRows.length > 0);
 
-  // Completed: every saree row assigned to this weaver in the batch has passed QC
-  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(b => b.myRows.every(r => r.qcPassed === true));
-  // Active: anything not yet fully QC-passed stays here, with a "X of Y passed" progress indicator
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !b.myRows.every(r => r.qcPassed === true));
+  const isBatchDone = (b: MyBatchEntry) => {
+    if (b.status === "completed") return true;
+    if (b.myRows.length === 0) return false;
+    return b.myRows.every(r => r.qcPassed === true);
+  };
+
+  // Completed: batch status is completed OR every saree row assigned to this weaver has passed QC
+  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
+  // Active: anything not yet completed
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
 
   const totalMyActive = myActiveBatches.length;
 
@@ -157,6 +176,11 @@ export function MyBatchesPage() {
       </div>
         );
       })()}
+
+      {/* General Dispatch Instructions */}
+      <div style={{ padding: "0 20px" }}>
+        <GeneralDispatchInstructionsBlock />
+      </div>
 
       {/* Active Batches */}
       {showActiveSection && (

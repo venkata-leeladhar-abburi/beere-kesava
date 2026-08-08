@@ -41,7 +41,9 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const pending = pendingRecords[0] ?? null;
 
   const mySarees = useMemo(() => {
-    return batches.flatMap(b =>
+    return batches
+      .filter(b => b.status !== "draft")
+      .flatMap(b =>
       b.rows
         .filter(r => r.weaverId === weaverId)
         .map(r => ({
@@ -58,6 +60,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
 
   const myWeavingBatches = useMemo(() => {
     return batches
+      .filter(b => b.status !== "draft")
       .map(b => {
         const rows = b.rows.filter(r => r.weaverId === weaverId);
         return {
@@ -123,11 +126,11 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         </div>
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Materials Confirmed!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
-        <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14, marginBottom: 28 }}>{confirmedRecord.id}</div>
-        <Button onClick={resetToPending} fullWidth className="block h-[52px] bg-[#6B1A2A] border-none rounded-full font-semibold text-base text-white mb-2.5">
+        <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14, marginBottom: 28 }}>{confirmedRecord.id}</div>
+        <Button onClick={resetToPending} fullWidth className="block h-[52px] bg-[#6E0F2D] border-none rounded-full font-semibold text-base text-white mb-2.5">
           View More Pending Receipts
         </Button>
-        <Button onClick={onGoToBatches} fullWidth className="block h-12 bg-transparent border border-[rgba(139,26,46,0.12)] rounded-full font-semibold text-sm text-[#69635E]">
+        <Button onClick={onGoToBatches} fullWidth className="block h-12 bg-transparent border border-[rgba(110,15,45,0.10)] rounded-full font-semibold text-sm text-[#69635E]">
           ← Go to My Batches
         </Button>
       </div>
@@ -207,7 +210,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                 fullWidth
                 className={
                   "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
-                  (sigMethod === "here" ? "border border-[#6B1A2A]" : "border border-[rgba(139,26,46,0.12)]")
+                  (sigMethod === "here" ? "border border-[#6E0F2D]" : "border border-[rgba(110,15,45,0.10)]")
                 }
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -227,7 +230,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                 fullWidth
                 className={
                   "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
-                  (sigMethod === "remote" ? "border border-[#6B1A2A] mb-2.5" : "border border-[rgba(139,26,46,0.12)]")
+                  (sigMethod === "remote" ? "border border-[#6E0F2D] mb-2.5" : "border border-[rgba(110,15,45,0.10)]")
                 }
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -247,7 +250,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                         <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
                       </div>
                     ) : (
-                      <Button onClick={() => setRequestSent(true)} fullWidth className="h-12 border border-[#C4923A] bg-transparent rounded-full font-semibold text-sm text-[#C4923A]">
+                      <Button onClick={() => setRequestSent(true)} fullWidth className="h-12 border border-[#C89B47] bg-transparent rounded-full font-semibold text-sm text-[#C89B47]">
                         Send Signature Request
                       </Button>
                     )}
@@ -291,7 +294,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 10 }}>No pending material receipt</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 20 }}>All material receipts are confirmed. Nothing pending.</div>
-            <Button onClick={onGoToBatches} fullWidth className="h-12 bg-[#6B1A2A] border-none rounded-full font-semibold text-sm text-white">Go to My Batches</Button>
+            <Button onClick={onGoToBatches} fullWidth className="h-12 bg-[#6E0F2D] border-none rounded-full font-semibold text-sm text-white">Go to My Batches</Button>
           </Card>
         </div>
       )}

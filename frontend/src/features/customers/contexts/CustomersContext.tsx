@@ -20,7 +20,7 @@ interface CustomersContextValue {
   updateCustomer: (id: string, payload: UpdateCustomerPayload) => void;
 }
 
-const CustomersContext = createContext<CustomersContextValue | null>(null);
+export const CustomersContext = createContext<CustomersContextValue | null>(null);
 
 const QUERY_KEY = ["customers"] as const;
 

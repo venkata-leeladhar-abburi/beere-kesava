@@ -1,14 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useQuery } from "@tanstack/react-query";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
 import { SareeTypeCard, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { ratesApi } from "../../../../shared/api/rates";
-import { RATE_ROWS } from "../../data/weavers";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { calcCharges } from "../../utils/charges";
@@ -17,31 +14,19 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
 export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | null; onClose: () => void }) {
-  const { getPaymentsForWeaver } = useWeaverPayments();
+  const { getPaymentsForWeaver, getEarningsForWeaver } = useWeaverPayments();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
 
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
 
-  // Real saree-type rate card from GET /rates. Falls back to the static
-  // RATE_ROWS demo rates only if the backend has no rates configured yet.
-  const { data: ratesRes, isError: ratesError } = useQuery({
-    queryKey: ["rates-for-weaver-payment-detail"],
-    queryFn: () => ratesApi.list(),
-  });
-  const rateRows = useMemo(() => {
-    const items = ratesRes?.items ?? [];
-    if (items.length === 0) return RATE_ROWS;
-    return items.map(r => ({ code: r.code, name: r.description || r.type, rate: Number(r.makingCharge) }));
-  }, [ratesRes]);
-
   if (!weaver) return null;
 
-  const chargeRows = [
-    { key: "sb", count: weaver.sb }, { key: "hz", count: weaver.hz }, { key: "ps", count: weaver.ps },
-    { key: "bs", count: weaver.bs }, { key: "st", count: weaver.st },
-  ].map(r => ({ ...r, rate: rateRows.find(rr => rr.code.slice(0, 2).toLowerCase() === r.key) }))
-    .filter((r): r is typeof r & { rate: NonNullable<typeof r.rate> } => r.count > 0 && !!r.rate);
+  // Real per-saree-type breakdown: QC-passed count x SareeTypeRate making
+  // charge, computed server-side (GET /payments/weavers/earnings) — never a
+  // hardcoded rate table.
+  const earnings = getEarningsForWeaver(weaver.id);
+  const chargeRows = earnings?.breakdown ?? [];
   const totalCharges = calcCharges(weaver);
 
   const payments = getPaymentsForWeaver(weaver.id);
@@ -87,9 +72,9 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
           {/* Section 1 — Making Charges Breakdown */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 10 }}>Making Charges Breakdown</div>
-            {ratesError && (
-              <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
-                Failed to load rates — charges below use fallback rates and may not reflect current pricing.
+            {chargeRows.length === 0 && (
+              <div style={{ background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
+                No QC-passed sarees on record for this weaver yet.
               </div>
             )}
             <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
@@ -101,17 +86,17 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                 </thead>
                 <tbody>
                   {chargeRows.map(r => (
-                    <tr key={r.key}>
+                    <tr key={r.sareeTypeCode}>
                       <td style={TD}>
-                        <span onClick={() => setOpenSareeTypeCode(r.rate.code)}
+                        <span onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
                           onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
                           onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
-                          style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>{r.rate.code}</span>
+                          style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}>{r.sareeTypeCode}</span>
                       </td>
-                      <td style={TD}>{r.rate.name}</td>
-                      <td style={TD}>{r.count}</td>
-                      <td style={{ ...TD, fontFamily: F.mono }}>₹{r.rate.rate}</td>
-                      <td style={{ ...TD, fontFamily: F.mono, fontWeight: 600 }}>₹{(r.count * r.rate.rate).toLocaleString("en-IN")}</td>
+                      <td style={TD}>{r.sareeTypeName}</td>
+                      <td style={TD}>{r.completedCount}</td>
+                      <td style={{ ...TD, fontFamily: F.mono }}>₹{r.ratePerSaree}</td>
+                      <td style={{ ...TD, fontFamily: F.mono, fontWeight: 600 }}>₹{r.amount.toLocaleString("en-IN")}</td>
                     </tr>
                   ))}
                   <tr style={{ background: T.warmCream }}>

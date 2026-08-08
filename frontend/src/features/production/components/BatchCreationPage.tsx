@@ -3,19 +3,17 @@ import { AnimatePresence, motion } from "motion/react";
 import { FloppyDisk, CheckCircle } from "@phosphor-icons/react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
-import { DispatchDetailsModal } from "./DispatchDetailsModal";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { ratesApi, backendRateToDisplayRecord, type BackendRate } from "../../../shared/api/rates";
 import { Button } from "../../../shared/ui/primitives";
 
-import { T, F, G, SAREE_TYPE_RECORDS, rowComplete } from "./batch-creation/constants";
+import { T, F, G, rowComplete } from "./batch-creation/constants";
 import {
-  WeaverPickerModal, BulkOrderPickerModal, DesignCodePickerModal,
+  WeaverPickerModal, BulkOrderPickerModal,
   SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
 } from "./batch-creation/PickerModals";
 import {
@@ -29,7 +27,6 @@ import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHa
 
 export function BatchCreationPage() {
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
-  const { dispatches } = useDesignLibrary();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
 
@@ -39,20 +36,27 @@ export function BatchCreationPage() {
   // validate server-side).
   const [weavers, setWeavers] = useState<WeaverOption[]>([]);
   const [looms, setLooms] = useState<LoomOption[]>([]);
+  // Real saree-type rate catalog (Rates & Pricing) — the picker and the card
+  // view both read from this instead of the old hardcoded SAREE_TYPES_BRIEF
+  // list, so the making charge shown always matches what's configured there.
+  const [rates, setRates] = useState<BackendRate[]>([]);
   const [directoryError, setDirectoryError] = useState<string | null>(null);
 
   const loadDirectories = useCallback(async () => {
     try {
-      const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
+      const [weaversRes, loomsRes, ratesRes] = await Promise.all([
+        weaversApi.list(), factoryLoomsApi.list(), ratesApi.list(),
+      ]);
       setWeavers(weaversRes.items.map(w => ({ id: w.id, name: w.name, initials: w.initials, looms: w.looms })));
       setLooms(loomsRes.items.map(l => ({
         id: l.id, loomNumber: l.loomNumber, location: l.location ?? "", status: l.status,
         operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
         installedYear: l.installedYear, notes: l.notes ?? "",
       })));
+      setRates(ratesRes.items);
       setDirectoryError(null);
     } catch (err) {
-      setDirectoryError(err instanceof Error ? err.message : "Could not load weavers/looms.");
+      setDirectoryError(err instanceof Error ? err.message : "Could not load weavers/looms/rates.");
     }
   }, []);
 
@@ -74,18 +78,16 @@ export function BatchCreationPage() {
   const {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
     loomPickerRow, setLoomPickerRow, generateRows, allSelected, toggleAll, toggleRow,
-    applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder, applyDesign,
+    applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
     applySareeType, removeSelected,
   } = useBatchFormHandlers(bulkOrders);
 
   // ── Card view modals
-  const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
   const [viewWeaver, setViewWeaver] = useState<WeaverOption | null>(null);
   const [viewFactoryLoom, setViewFactoryLoom] = useState<LoomOption | null>(null);
   const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
-  const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: any[] } | null>(null);
 
   // ── Sort control
   const [sortBy, setSortBy] = useState<"serial" | "weaver" | "factoryLoom">("serial");
@@ -104,18 +106,31 @@ export function BatchCreationPage() {
     if (!editingBatchId) setBatchId(nextBatchId);
   }, [nextBatchId, editingBatchId]);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   // ── Save as draft
-  function handleSaveDraft() {
+  // Awaits the real backend id and adopts it locally — the id shown before
+  // the first save is only a client-side guess (see nextBatchId), and the
+  // server's IdCounter may assign something different. Without this sync,
+  // every later save/finalize call would target a batchId the backend has
+  // never heard of, silently spawning a new empty batch each time.
+  async function handleSaveDraft() {
     const record: BatchRecord = {
       batchId, totalCount: rows.length, dueDate, rows,
       status: "draft",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    saveDraft(record);
-    setEditingBatchId(batchId);
-    setSavedMsg("Saved as draft.");
-    setTimeout(() => setSavedMsg(null), 3000);
+    setSaveError(null);
+    try {
+      const realId = await saveDraft(record);
+      setBatchId(realId);
+      setEditingBatchId(realId);
+      setSavedMsg("Saved as draft.");
+      setTimeout(() => setSavedMsg(null), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Could not save the draft. Please try again.");
+    }
   }
 
   // ── Finalize
@@ -123,31 +138,49 @@ export function BatchCreationPage() {
   const incompleteRows = rows.filter(r => !rowComplete(r));
   const canFinalize = rows.length > 0 && incompleteRows.length === 0;
 
-  function handleFinalize() {
+  async function handleFinalize() {
     if (!canFinalize) return;
     const record: BatchRecord = {
       batchId, totalCount: rows.length, dueDate, rows,
-      status: "active",
+      status: "draft",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    saveDraft(record);
-    finalizeBatch(batchId);
-    setSavedMsg(`Batch ${batchId} finalized and active!`);
+    setSaveError(null);
+    try {
+      // Save must land (and its real id be known) before finalize can target
+      // the right batch — finalizing the stale local id would 404 silently.
+      const realId = await saveDraft(record);
+      // The backend only allows finalize on a DRAFT batch (400 otherwise).
+      // Editing an already-ACTIVE batch is allowed at any time — that edit
+      // is just persisted via saveDraft's row assignments above; there's
+      // nothing left to "finalize" a second time.
+      const currentStatus = batches.find(b => b.batchId === realId)?.status;
+      if (currentStatus === "draft" || currentStatus === undefined) {
+        await finalizeBatch(realId);
+        setSavedMsg(`Batch ${realId} finalized and active!`);
+      } else {
+        setSavedMsg(`Batch ${realId} updated.`);
+      }
+      setBatchId(realId);
+      setEditingBatchId(realId);
 
-    setTimeout(() => {
-      setSavedMsg(null);
-      setRows([]);
-      setTotalCount("");
-      setDueDate("");
-      setGenerated(false);
-      setSelected(new Set());
-      setEditingBatchId(null);
-    }, 2000);
+      setTimeout(() => {
+        setSavedMsg(null);
+        setRows([]);
+        setTotalCount("");
+        setDueDate("");
+        setGenerated(false);
+        setSelected(new Set());
+        setEditingBatchId(null);
+      }, 2000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Could not finalize the batch. Please try again.");
+    }
   }
 
   const weaverOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.weaverName || r.factoryLoomNumber).filter(Boolean)))].sort(), [rows]);
-  const orderOptions = React.useMemo(() => ["All", "General Stock", ...Array.from(new Set(rows.map(r => r.bulkOrderLabel).filter(Boolean)))].sort(), [rows]);
+  const orderOptions = React.useMemo(() => ["All", "General Stock", ...Array.from(new Set(rows.map(r => r.bulkOrderLabel).filter(l => l && l !== "General Stock")))].sort(), [rows]);
   const sareeTypeOptions = React.useMemo(() => ["All", ...Array.from(new Set(rows.map(r => r.sareeTypeCode).filter(Boolean)))].sort(), [rows]);
 
   const displayRows = [...rows].filter(r => {
@@ -193,8 +226,8 @@ export function BatchCreationPage() {
   }, [pendingOpenBatchId]);
 
   function openSareeTypeCard(code: string) {
-    const r = SAREE_TYPE_RECORDS.find(x => x.code === code);
-    if (r) setViewSareeType(r);
+    const r = rates.find(x => x.code === code);
+    if (r) setViewSareeType(backendRateToDisplayRecord(r));
   }
 
   const drafts = batches.filter(b => b.status === "draft");
@@ -273,13 +306,11 @@ export function BatchCreationPage() {
               setPicker={setPicker}
               removeSelected={removeSelected}
               batchId={batchId}
-              dispatches={dispatches}
               issueRecords={issueRecords}
               bulkOrders={bulkOrders}
               setViewSareeRow={setViewSareeRow}
               setViewFactoryLoom={setViewFactoryLoom}
               setViewWeaver={setViewWeaver}
-              setViewDispatches={setViewDispatches}
               setViewBulkOrder={setViewBulkOrder}
               setLoomPickerRow={setLoomPickerRow}
               openSareeTypeCard={openSareeTypeCard}
@@ -289,16 +320,22 @@ export function BatchCreationPage() {
           {/* Step 5: Save buttons */}
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Button onClick={handleSaveDraft} variant="secondary" size="lg">
+              <Button onClick={() => void handleSaveDraft()} variant="secondary" size="lg">
                 <FloppyDisk size={17} weight="bold" /> Save as Draft
               </Button>
-              <Button onClick={handleFinalize} disabled={!canFinalize} variant="primary" size="lg">
+              <Button onClick={() => void handleFinalize()} disabled={!canFinalize} variant="primary" size="lg">
                 <CheckCircle size={17} weight="bold" /> Finalize Batch
               </Button>
               {savedMsg && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
                   style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>
                   ✓ {savedMsg}
+                </motion.div>
+              )}
+              {saveError && (
+                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                  style={{ fontFamily: F.ui, fontSize: 13, color: T.red, fontWeight: 600 }}>
+                  {saveError}
                 </motion.div>
               )}
             </div>
@@ -322,8 +359,14 @@ export function BatchCreationPage() {
         {picker === "weaver"     && <WeaverPickerModal     key="wp" weavers={weavers} onClose={() => setPicker(null)} onSelect={applyWeaver} />}
         {picker === "bulkorder"  && <BulkOrderPickerModal  key="bp" onClose={() => setPicker(null)} onSelect={applyBulkOrder} />}
         {picker === "factoryloom" && <FactoryLoomPickerModal key="flp" looms={looms} onClose={() => setPicker(null)} onSelect={applyFactoryLoom} />}
-        {picker === "design"     && <DesignCodePickerModal key="dp" onClose={() => setPicker(null)} onSelect={applyDesign} />}
-        {picker === "saretype"   && <SareeTypePickerModal  key="sp" onClose={() => setPicker(null)} onSelect={applySareeType} />}
+        {picker === "saretype"   && (
+          <SareeTypePickerModal
+            key="sp"
+            sareeTypes={rates.map(r => ({ code: r.code, name: r.type, charge: Number(r.makingCharge) }))}
+            onClose={() => setPicker(null)}
+            onSelect={applySareeType}
+          />
+        )}
         {loomPickerRow && loomPickerRow.weaverId && (() => {
           const w = weavers.find(x => x.id === loomPickerRow.weaverId);
           return w ? (
@@ -332,13 +375,11 @@ export function BatchCreationPage() {
               onSelect={(loomNum) => applyWeaverLoomToRow(loomPickerRow, loomNum)} />
           ) : null;
         })()}
-        {viewDesign    && <DesignCodeCard  key="dc" design={viewDesign}    onClose={() => setViewDesign(null)} />}
         {viewSareeType && <SareeTypeCard   key="sc" sareeType={viewSareeType} onClose={() => setViewSareeType(null)} />}
         {viewWeaver    && <WeaverDetailsModal key="wv" weaver={viewWeaver} onClose={() => setViewWeaver(null)} />}
         {viewFactoryLoom && <FactoryLoomDetailsModal key="fld" loom={viewFactoryLoom} onClose={() => setViewFactoryLoom(null)} />}
         {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
         {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
-        {viewDispatches && <DispatchDetailsModal key="dd" weaverName={viewDispatches.weaverName} records={viewDispatches.records} onClose={() => setViewDispatches(null)} />}
       </AnimatePresence>
     </div>
   );

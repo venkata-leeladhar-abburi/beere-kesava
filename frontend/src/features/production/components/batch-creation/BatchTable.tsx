@@ -2,10 +2,9 @@ import React from "react";
 import { motion } from "motion/react";
 import {
   Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
-  CheckSquare, Square, MagnifyingGlass, PaperPlaneTilt,
+  CheckSquare, Square, MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { SareeRow } from "../../contexts/BatchContext";
-import { DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
 import type { ActivePicker } from "./types";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
@@ -26,8 +25,8 @@ export function BatchTable({
   sareeTypeFilter, setSareeTypeFilter, orderFilter, setOrderFilter,
   weaverOptions, orderOptions, sareeTypeOptions,
   completeRows, incompleteRows, setPicker, removeSelected, batchId,
-  dispatches, issueRecords, bulkOrders,
-  setViewSareeRow, setViewFactoryLoom, setViewWeaver, setViewDispatches, setViewBulkOrder,
+  issueRecords, bulkOrders,
+  setViewSareeRow, setViewFactoryLoom, setViewWeaver, setViewBulkOrder,
   setLoomPickerRow, openSareeTypeCard, weavers, looms,
 }: {
   weavers: WeaverOption[];
@@ -56,13 +55,11 @@ export function BatchTable({
   setPicker: (p: ActivePicker) => void;
   removeSelected: () => void;
   batchId: string;
-  dispatches: DispatchRecord[];
   issueRecords: any[];
   bulkOrders: any[];
   setViewSareeRow: (r: SareeRow) => void;
   setViewFactoryLoom: (l: LoomOption) => void;
   setViewWeaver: (w: WeaverOption) => void;
-  setViewDispatches: (v: { weaverName: string; records: DispatchRecord[] } | null) => void;
   setViewBulkOrder: (o: any) => void;
   setLoomPickerRow: (r: SareeRow) => void;
   openSareeTypeCard: (code: string) => void;
@@ -119,7 +116,6 @@ export function BatchTable({
               { key: "weaver",     icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
               { key: "bulkorder",  icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
               { key: "factoryloom", icon: <Factory size={14} weight="bold" />,     label: "Assign Factory Loom" },
-              { key: "design",     icon: <Tag size={14} weight="bold" />,          label: "Assign Design Code" },
               { key: "saretype",   icon: <Tag size={14} weight="bold" />,          label: "Assign Saree Type" },
             ] as const).map(a => (
               <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
@@ -163,7 +159,7 @@ export function BatchTable({
                   {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
                 </button>
               </th>
-              {["#", "Saree ID", "Weaver / Factory Loom", "Design Dispatch", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
+              {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
@@ -172,9 +168,6 @@ export function BatchTable({
             {displayRows.map((row, idx) => {
               const isSelected = selected.has(row.serial);
               const weaverForRow = row.weaverId ? weavers.find(x => x.id === row.weaverId) : undefined;
-              const rowDispatches = row.weaverId
-                ? dispatches.filter(d => d.recipientType === "weaver" && d.recipientId === row.weaverId && d.batches.includes(batchId))
-                : [];
               const materialsSummary = (row.weaverId || row.factoryLoomId)
                 ? issueRecords
                     .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
@@ -221,19 +214,19 @@ export function BatchTable({
                         </div>
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
                       </button>
-                    ) : row.weaverName ? (
+                    ) : row.weaverId ? (
+                      // Prefer the live directory lookup (weaverForRow, from
+                      // the weavers prop) over row.weaverName/weaverInitials
+                      // — those are baked in once wherever this batch's data
+                      // was fetched and can be stale/missing even though the
+                      // real weaverId is correctly stored server-side. Never
+                      // treat a missing display name as "unassigned".
                       <button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
-                        style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
-                        <Pip initials={row.weaverInitials!} bg={row.weaverId ? pipColor(row.weaverId) : T.taupe} size={22} />
-                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.weaverName}</span>
-                      </button>
-                    ) : <EmptyCell />}
-                  </td>
-                  <td style={{ ...td, minWidth: 130 }}>
-                    {rowDispatches.length > 0 ? (
-                      <button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
-                        style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                        <PaperPlaneTilt size={12} weight="bold" /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
+                        style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: weaverForRow ? "pointer" : "default", padding: 0 }}>
+                        <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={22} />
+                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: weaverForRow ? "underline" : "none", textDecorationColor: "rgba(110,15,45,0.2)" }}>
+                          {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
+                        </span>
                       </button>
                     ) : <EmptyCell />}
                   </td>
