@@ -8,6 +8,7 @@ import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { semantic } from "../../../../design-system/tokens";
 
 export function WeaverPaymentReport() {
   const { payments } = useWeaverPayments();
@@ -113,7 +114,7 @@ export function WeaverPaymentReport() {
                 <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
                 <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                   {weaverPayMonthly.map((e, i) => (
-                    <Cell key={`wp-cell-${e.month}`} fill={i === weaverPayMonthly.length - 1 ? T.antiqueGold : "rgba(200,155,71,0.40)"} />
+                    <Cell key={`wp-cell-${e.month}`} fill={i === weaverPayMonthly.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />
                   ))}
                 </Bar>
               </BarChart>

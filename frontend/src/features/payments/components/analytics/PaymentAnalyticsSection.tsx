@@ -13,6 +13,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button } from "../../../../shared/ui/primitives";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
 
@@ -250,16 +251,18 @@ export function PaymentAnalyticsSection() {
                 </div>
               ) : (
               <>
-              <ResponsiveContainer width="100%" height={210}>
-                <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
-                  <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                  <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}`} width={46} />
-                  <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-                  <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
-                  <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Cash Flow Overview" summary={`Income vs. expenses across the last ${cashFlowData.length} months.`}>
+                <ResponsiveContainer width="100%" height={210}>
+                  <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
+                    <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
+                    <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}`} width={46} />
+                    <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
+                    <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
+                    <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 8 }}>
                 {[{ color: T.green, label: "Income" }, { color: T.crimson, label: "Expenses" }].map(l => (
                   <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -295,18 +298,20 @@ export function PaymentAnalyticsSection() {
                 </div>
               ) : (
               <>
-              <ResponsiveContainer width="100%" height={170}>
-                <PieChart>
-                  <Pie key="compliance-pie" data={complianceData} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
-                    dataKey="value" stroke="none" paddingAngle={4}>
-                    {complianceData.map((entry) => (
-                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip key="compliance-tooltip" formatter={(val: any, name: any) => [`${val} invoice${val > 1 ? "s" : ""}`, name]}
-                    contentStyle={{ fontFamily: F.ui, fontSize: 13, borderRadius: 9, border: `1px solid ${T.borderDef}` }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Payment Compliance" summary={`${invoiceCount} invoices: ${complianceData.map(d => `${d.name} ${d.value}`).join(", ")}.`}>
+                <ResponsiveContainer width="100%" height={170}>
+                  <PieChart>
+                    <Pie key="compliance-pie" data={complianceData} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
+                      dataKey="value" stroke="none" paddingAngle={4}>
+                      {complianceData.map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip key="compliance-tooltip" formatter={(val: any, name: any) => [`${val} invoice${val > 1 ? "s" : ""}`, name]}
+                      contentStyle={{ fontFamily: F.ui, fontSize: 13, borderRadius: 9, border: `1px solid ${T.borderDef}` }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", padding: "0 18px", marginTop: 4 }}>
                 {complianceData.map(d => {
                   const pct = invoiceCount > 0 ? Math.round((d.value / invoiceCount) * 100) : 0;

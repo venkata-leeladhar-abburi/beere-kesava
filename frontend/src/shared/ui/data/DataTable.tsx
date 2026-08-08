@@ -15,6 +15,7 @@
 import { useMemo, useState, type AriaAttributes } from "react";
 import { cn } from "../utils";
 import { Icon } from "../primitives/Icon";
+import { Checkbox } from "../primitives/Checkbox";
 import type { ColumnDef, SortDirection } from "./columns";
 import { columnAlign, defaultSort } from "./columns";
 import { defaultCell } from "./formatCell";
@@ -45,6 +46,16 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   rowClassName?: (row: T) => string | undefined;
 
+  /** Row selection (Part E.3). Fully opt-in — omitting both props renders
+   *  no checkbox column at all, identical to today's markup. */
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
+
+  /** Card-mode fallback below `md` (Part H.2), driven by each column's
+   *  `priority`. Opt-in — omitting it keeps the table-only markup every
+   *  existing consumer already renders, so nothing else is affected. */
+  responsive?: boolean;
+
   className?: string;
 }
 
@@ -65,10 +76,14 @@ export function DataTable<T>({
   loading, error, onRetry,
   isFiltered, onClearFilters, emptyTitle = "Nothing here yet", emptyDescription,
   sort, onSortChange,
-  onRowClick, rowClassName, className,
+  onRowClick, rowClassName,
+  selectedIds, onSelectionChange,
+  responsive,
+  className,
 }: DataTableProps<T>) {
   const [internalSort, setInternalSort] = useState<{ columnId: string; direction: SortDirection } | undefined>(sort);
   const activeSort = sort ?? internalSort;
+  const selectable = !!onSelectionChange;
 
   const sortedData = useMemo(() => {
     if (!activeSort || activeSort.direction === "none") return data;
@@ -87,14 +102,61 @@ export function DataTable<T>({
     else setInternalSort(next);
   }
 
-  const rowHeight = ROW_HEIGHT[density];
+  const pageIds = useMemo(() => sortedData.map(getRowId), [sortedData, getRowId]);
+  const selectedOnPage = selectable ? pageIds.filter(id => selectedIds?.has(id)).length : 0;
+  const allOnPageSelected = selectable && pageIds.length > 0 && selectedOnPage === pageIds.length;
+  const someOnPageSelected = selectable && selectedOnPage > 0 && !allOnPageSelected;
 
-  return (
-    <div className={cn("relative w-full overflow-x-auto", className)}>
+  function toggleAllOnPage() {
+    if (!onSelectionChange) return;
+    const next = new Set(selectedIds ?? []);
+    if (allOnPageSelected) pageIds.forEach(id => next.delete(id));
+    else pageIds.forEach(id => next.add(id));
+    onSelectionChange(next);
+  }
+
+  function toggleRow(id: string) {
+    if (!onSelectionChange) return;
+    const next = new Set(selectedIds ?? []);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }
+
+  const rowHeight = ROW_HEIGHT[density];
+  const colSpan = columns.length + (selectable ? 1 : 0);
+
+  const stateBody = loading ? (
+    <tr><td colSpan={colSpan} style={{ padding: 0 }}><TableSkeleton columns={colSpan} /></td></tr>
+  ) : error ? (
+    <tr><td colSpan={colSpan}><TableError onRetry={onRetry ?? (() => {})} /></td></tr>
+  ) : sortedData.length === 0 ? (
+    <tr>
+      <td colSpan={colSpan}>
+        {isFiltered
+          ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
+          : <TableEmpty title={emptyTitle} description={emptyDescription} />}
+      </td>
+    </tr>
+  ) : null;
+
+  const table = (
+    <div className={cn("relative w-full overflow-x-auto", responsive && "hidden md:block")}>
       <table className="w-full border-collapse" style={{ fontSize: "var(--text-body-md, 14px)" }}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr>
+            {selectable && (
+              <th scope="col" style={{ width: 44, background: "var(--surface-sunken)", borderBottom: "1px solid var(--border-default)", position: "sticky", top: 0, zIndex: 10 }}>
+                <span className="flex items-center justify-center" style={{ height: 44 }}>
+                  <Checkbox
+                    checked={allOnPageSelected ? true : someOnPageSelected ? "indeterminate" : false}
+                    onCheckedChange={toggleAllOnPage}
+                    aria-label="Select all rows on this page"
+                  />
+                </span>
+              </th>
+            )}
             {columns.map(col => {
               const align = columnAlign(col);
               const isSorted = activeSort?.columnId === col.id && activeSort.direction !== "none";
@@ -148,20 +210,7 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {loading ? (
-            <tr><td colSpan={columns.length} style={{ padding: 0 }}><TableSkeleton columns={columns.length} /></td></tr>
-          ) : error ? (
-            <tr><td colSpan={columns.length}><TableError onRetry={onRetry ?? (() => {})} /></td></tr>
-          ) : sortedData.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length}>
-                {isFiltered
-                  ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
-                  : <TableEmpty title={emptyTitle} description={emptyDescription} />}
-              </td>
-            </tr>
-          ) : (
-            sortedData.map(row => {
+          {stateBody ?? sortedData.map(row => {
               const id = getRowId(row);
               return (
                 <tr
@@ -174,6 +223,17 @@ export function DataTable<T>({
                   )}
                   style={{ height: rowHeight, borderBottom: "1px solid var(--border-subtle)" }}
                 >
+                  {selectable && (
+                    <td style={{ padding: "0 var(--pad-cell-x, 16px)", verticalAlign: "middle" }} onClick={e => e.stopPropagation()}>
+                      <span className="flex items-center justify-center">
+                        <Checkbox
+                          checked={!!selectedIds?.has(id)}
+                          onCheckedChange={() => toggleRow(id)}
+                          aria-label="Select row"
+                        />
+                      </span>
+                    </td>
+                  )}
                   {columns.map(col => {
                     const value = col.accessor(row);
                     const align = columnAlign(col);
@@ -194,10 +254,103 @@ export function DataTable<T>({
                   })}
                 </tr>
               );
-            })
-          )}
+            })}
         </tbody>
       </table>
+    </div>
+  );
+
+  if (!responsive) return table;
+
+  return (
+    <>
+      {table}
+      <CardList
+        columns={columns}
+        data={sortedData}
+        getRowId={getRowId}
+        loading={loading}
+        error={error}
+        onRetry={onRetry}
+        isFiltered={isFiltered}
+        onClearFilters={onClearFilters}
+        emptyTitle={emptyTitle}
+        emptyDescription={emptyDescription}
+        onRowClick={onRowClick}
+        selectable={selectable}
+        selectedIds={selectedIds}
+        onToggleRow={toggleRow}
+        className={className}
+      />
+    </>
+  );
+}
+
+/** Card-mode fallback for `< md` (Part H.2). Rendered from the same
+ *  ColumnDef[] as the table — priority 1 becomes the card title, 2 the
+ *  body label/value pairs, 3 stays hidden. One source of truth: a column
+ *  added to the table appears on the card automatically. */
+function CardList<T>({
+  columns, data, getRowId, loading, error, onRetry,
+  isFiltered, onClearFilters, emptyTitle, emptyDescription,
+  onRowClick, selectable, selectedIds, onToggleRow,
+  className,
+}: {
+  columns: ColumnDef<T>[]; data: T[]; getRowId: (row: T) => string;
+  loading?: boolean; error?: boolean; onRetry?: () => void;
+  isFiltered?: boolean; onClearFilters?: () => void; emptyTitle?: string; emptyDescription?: string;
+  onRowClick?: (row: T) => void;
+  selectable: boolean; selectedIds?: Set<string>; onToggleRow: (id: string) => void;
+  className?: string;
+}) {
+  const titleCol = columns.find(c => c.priority === 1);
+  const bodyCols = columns.filter(c => (c.priority ?? 2) === 2 && c !== titleCol);
+
+  if (loading) return <div className="md:hidden" style={{ padding: "var(--pad-cell-y, 12px) 0" }}><TableSkeleton columns={1} /></div>;
+  if (error) return <div className="md:hidden"><TableError onRetry={onRetry ?? (() => {})} /></div>;
+  if (data.length === 0) {
+    return (
+      <div className="md:hidden">
+        {isFiltered
+          ? <TableFilteredEmpty onClearFilters={onClearFilters ?? (() => {})} />
+          : <TableEmpty title={emptyTitle} description={emptyDescription} />}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("md:hidden flex flex-col gap-3", className)}>
+      {data.map(row => {
+          const id = getRowId(row);
+          return (
+            <div
+              key={id}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer")}
+            >
+              <div className="flex items-start justify-between gap-3">
+                {selectable && (
+                  <span onClick={e => e.stopPropagation()}>
+                    <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
+                  </span>
+                )}
+                {titleCol && (
+                  <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row) : defaultCell(titleCol, titleCol.accessor(row))}
+                  </div>
+                )}
+              </div>
+              <div className="mt-2 flex flex-col gap-1.5">
+                {bodyCols.map(col => (
+                  <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
+                    <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
+                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row) : defaultCell(col, col.accessor(row))}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
     </div>
   );
 }

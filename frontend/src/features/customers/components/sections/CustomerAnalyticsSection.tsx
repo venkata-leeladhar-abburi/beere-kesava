@@ -12,6 +12,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionTitle } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { ChartFigure } from "../../../../shared/ui/data";
 import { downloadDataAsCSV } from "../utils";
 
 import { useQuery } from "@tanstack/react-query";
@@ -308,6 +309,10 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             </div>
           ) : (
           <>
+          <ChartFigure
+            title="Wholesale vs Retail Revenue Split"
+            summary={`Total revenue ₹${totalRevLakhs} lakh across ${liveRevSplit.map(i => `${i.name} ₹${(i.value / 100000).toFixed(1)} lakh`).join(", ")}.`}
+          >
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
               <PieChart key="pie-chart" id="revenue-pie-chart">
@@ -323,6 +328,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Total Revenue</span>
             </div>
           </div>
+          </ChartFigure>
           <div style={{ display: "flex", justifyContent: "center", gap: 28, marginTop: 18 }}>
             {liveRevSplit.map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -366,6 +372,11 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             ) : newVsReturning.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customer data yet.</div>
             ) : (
+            <ChartFigure
+              title="New vs Returning Customers"
+              summary={`New and returning customers by month over the last ${newVsReturning.length} months.`}
+              className="w-full h-full"
+            >
             <ResponsiveContainer key="rc-3" width="100%" height="100%">
               <BarChart key="bar-chart-new" id="new-vs-returning-chart" data={newVsReturning} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid key="grid" strokeDasharray="3 3" vertical={false} stroke={T.borderDef} />
@@ -377,6 +388,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <Bar key="bar-returning" id="bar-returning" dataKey="returning" name="Returning" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} barSize={14} />
               </BarChart>
             </ResponsiveContainer>
+            </ChartFigure>
             )}
           </div>
         </div>
@@ -552,6 +564,11 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "28px 24px", minHeight: 300 }}>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>City-wise Share</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20 }}>{totalCustomers} customers across {totalCities} cities</div>
+          <ChartFigure
+            title="Customer Locations — City-wise Distribution"
+            summary={`${totalCustomers} customers across ${totalCities} cities: ${locationData.map(l => `${l.state} ${l.count}`).join(", ")}.`}
+            className="w-full h-full"
+          >
           <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -573,6 +590,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Cities</span>
             </div>
           </div>
+          </ChartFigure>
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "10px 18px", marginTop: 22, justifyContent: "center" }}>
             {locationData.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>

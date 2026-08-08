@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } 
 import { Layers } from "lucide-react";
 import { T, F } from "../../theme";
 import { formatINR } from "../../../contexts/SupplierContext";
+import { ChartFigure } from "../../../../../shared/ui/data";
 
 export interface ByTypeEntry {
   type: string; cost: number; retail: number; qty: number;
@@ -27,20 +28,22 @@ export function TypeMixCard({
         <div style={cardTitle}>Purchase Mix by Saree Type</div>
       </div>
       <div style={cardSub}>Where the sourcing budget goes</div>
-      <div style={{ position: "relative", marginTop: 10 }}>
-        <ResponsiveContainer width="100%" height={168}>
-          <PieChart>
-            <Pie data={byType} dataKey="cost" nameKey="type" cx="50%" cy="50%" innerRadius={48} outerRadius={74} paddingAngle={3} stroke="none">
-              {byType.map((d, i) => <Cell key={i} fill={d.fill} />)}
-            </Pie>
-            <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.qty} pcs`, p.payload.type]} />
-          </PieChart>
-        </ResponsiveContainer>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-          <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{byType.length}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>types</div>
+      <ChartFigure title="Purchase Mix by Saree Type" summary={`${byType.length} saree types: ${byType.map(d => `${d.type} ${d.qty} pcs`).join(", ")}.`}>
+        <div style={{ position: "relative", marginTop: 10 }}>
+          <ResponsiveContainer width="100%" height={168}>
+            <PieChart>
+              <Pie data={byType} dataKey="cost" nameKey="type" cx="50%" cy="50%" innerRadius={48} outerRadius={74} paddingAngle={3} stroke="none">
+                {byType.map((d, i) => <Cell key={i} fill={d.fill} />)}
+              </Pie>
+              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.qty} pcs`, p.payload.type]} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{byType.length}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>types</div>
+          </div>
         </div>
-      </div>
+      </ChartFigure>
       <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
         {byType.map(d => (
           <div key={d.type} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

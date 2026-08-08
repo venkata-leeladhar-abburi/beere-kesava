@@ -12,6 +12,7 @@ import { BulkOrder } from "../../production/components/ProductionPage";
 import { DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { INVOICES } from "../../payments/data/invoices";
+import { ChartFigure } from "../../../shared/ui/data";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -188,38 +189,42 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>
                 of {totalOrdered.toLocaleString("en-IN")} sarees across {filteredOrders.length} order{filteredOrders.length === 1 ? "" : "s"}
               </div>
-              <ResponsiveContainer width="100%" height={205}>
-                <ComposedChart data={monthly} barSize={24}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
-                  <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
-                  <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
-                  <Bar name="Ordered" dataKey="ordered" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-                  <Bar name="Completed" dataKey="done" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
-                  <Line yAxisId="r" name="Completion" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
-                </ComposedChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Order Fulfilment by Deadline" summary={`${totalDone.toLocaleString("en-IN")} of ${totalOrdered.toLocaleString("en-IN")} sarees completed (${completionPct}%) across ${filteredOrders.length} orders.`}>
+                <ResponsiveContainer width="100%" height={205}>
+                  <ComposedChart data={monthly} barSize={24}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+                    <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
+                    <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
+                    <Bar name="Ordered" dataKey="ordered" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
+                    <Bar name="Completed" dataKey="done" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
+                    <Line yAxisId="r" name="Completion" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </ChartFigure>
             </div>
 
             <div style={card}>
               <div style={cardTitle}>Order Status Mix</div>
               <div style={cardSub}>Delivery risk across the queue</div>
-              <div style={{ position: "relative", marginTop: 12 }}>
-                <ResponsiveContainer width="100%" height={172}>
-                  <PieChart>
-                    <Pie data={statusMix} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                      {statusMix.map((d, i) => <Cell key={i} fill={d.color} />)}
-                    </Pie>
-                    <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} order${v === 1 ? "" : "s"}`, p.payload.name]} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{filteredOrders.length}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>orders</div>
+              <ChartFigure title="Order Status Mix" summary={`${filteredOrders.length} orders: ${statusMix.map(d => `${d.name} ${d.value}`).join(", ")}.`}>
+                <div style={{ position: "relative", marginTop: 12 }}>
+                  <ResponsiveContainer width="100%" height={172}>
+                    <PieChart>
+                      <Pie data={statusMix} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
+                        {statusMix.map((d, i) => <Cell key={i} fill={d.color} />)}
+                      </Pie>
+                      <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} order${v === 1 ? "" : "s"}`, p.payload.name]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{filteredOrders.length}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>orders</div>
+                  </div>
                 </div>
-              </div>
+              </ChartFigure>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
                 {statusMix.map(d => (
                   <div key={d.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -250,21 +255,23 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <div style={cardSub}>Where the order book is concentrated</div>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={210}>
-                <BarChart data={topCustomers} layout="vertical" barSize={20} margin={{ left: 4, right: 70 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="short" width={140} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                    formatter={(v: any, _n: any, p: any) => [`${inr(v)} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`, p.payload.customer]} />
-                  <Bar dataKey="value" radius={[0, 6, 6, 0]}
-                    label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-                    {topCustomers.map((c, i) => (
-                      <Cell key={c.customer} fill={semantic.chart.series[i % semantic.chart.series.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Top Customers by Order Value" summary={`Top ${topCustomers.length} customers, led by ${topCustomers[0]?.customer ?? "—"} at ${inr(topCustomers[0]?.value ?? 0)}.`}>
+                <ResponsiveContainer width="100%" height={210}>
+                  <BarChart data={topCustomers} layout="vertical" barSize={20} margin={{ left: 4, right: 70 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="short" width={140} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                      formatter={(v: any, _n: any, p: any) => [`${inr(v)} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`, p.payload.customer]} />
+                    <Bar dataKey="value" radius={[0, 6, 6, 0]}
+                      label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                      {topCustomers.map((c, i) => (
+                        <Cell key={c.customer} fill={semantic.chart.series[i % semantic.chart.series.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                 <span>{new Set(filteredOrders.map(o => o.customer)).size} customers in this period</span>
                 <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Order book {L(billed)}</span>
@@ -338,18 +345,20 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 <div style={cardTitle}>Demand by Saree Type</div>
               </div>
               <div style={cardSub}>Sarees ordered per product line</div>
-              <ResponsiveContainer width="100%" height={186}>
-                <BarChart data={byType} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                  <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                  <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
-                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                    formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
-                  <Bar dataKey="sarees" radius={[5, 5, 0, 0]}>
-                    {byType.map(d => <Cell key={d.type} fill={d.fill} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Demand by Saree Type" summary={`${byType.length} product lines; top line is ${byType[0]?.type ?? "—"} with ${byType[0]?.sarees ?? 0} sarees.`}>
+                <ResponsiveContainer width="100%" height={186}>
+                  <BarChart data={byType} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                    <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                      formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
+                    <Bar dataKey="sarees" radius={[5, 5, 0, 0]}>
+                      {byType.map(d => <Cell key={d.type} fill={d.fill} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                 <span>{byType.length} product line{byType.length === 1 ? "" : "s"}</span>
                 <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byType[0]?.type ?? "—"}</span>
@@ -362,14 +371,16 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 <div style={cardTitle}>Order Book Health</div>
               </div>
               <div style={cardSub}>Delivery and value snapshot</div>
-              <ResponsiveContainer width="100%" height={142}>
-                <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-                  data={[{ name: "Completion", value: completionPct, fill: completionPct >= 80 ? T.green : completionPct >= 50 ? T.antiqueGold : T.crimson }]}>
-                  <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-                  <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{completionPct}%</text>
-                  <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>COMPLETED</text>
-                </RadialBarChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Order Book Health" summary={`${completionPct}% completed, ${atRisk} at risk, ${totalShortage} sarees short.`}>
+                <ResponsiveContainer width="100%" height={142}>
+                  <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+                    data={[{ name: "Completion", value: completionPct, fill: completionPct >= 80 ? T.green : completionPct >= 50 ? T.antiqueGold : T.crimson }]}>
+                    <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+                    <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{completionPct}%</text>
+                    <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>COMPLETED</text>
+                  </RadialBarChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
                 {[
                   { label: "At Risk", value: String(atRisk) },

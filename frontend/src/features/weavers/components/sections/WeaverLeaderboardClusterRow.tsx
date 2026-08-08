@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { Medal, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { Avatar, qcColor } from "../common/primitives";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 const card: React.CSSProperties = {
   background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
@@ -47,19 +48,21 @@ export function WeaverLeaderboardClusterRow({
             ))}
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={330}>
-          <BarChart data={top10} layout="vertical" barSize={19} margin={{ left: 4, right: 62 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-            <XAxis type="number" hide />
-            <YAxis type="category" dataKey="short" width={116} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-            <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass`, p.payload.name]} />
-            <Bar dataKey="produced" radius={[0, 6, 6, 0]}
-              label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-              {top10.map(w => <Cell key={w.id} fill={qcColor(w.periodPassRate)} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <ChartFigure title="Top 10 Weavers by Output" summary={`${totalProduced} sarees woven in ${periodLabel.toLowerCase()}, led by ${top10[0]?.name ?? "—"}.`}>
+          <ResponsiveContainer width="100%" height={330}>
+            <BarChart data={top10} layout="vertical" barSize={19} margin={{ left: 4, right: 62 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+              <XAxis type="number" hide />
+              <YAxis type="category" dataKey="short" width={116} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+              <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass`, p.payload.name]} />
+              <Bar dataKey="produced" radius={[0, 6, 6, 0]}
+                label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                {top10.map(w => <Cell key={w.id} fill={qcColor(w.periodPassRate)} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartFigure>
         <div style={{ display: "flex", gap: 10, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, marginTop: 6 }}>
           {top10.slice(0, 3).map((w, i) => (
             <div key={w.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: i === 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 ? T.borderGold : T.borderDef}`, borderRadius: 14, padding: "12px 14px" }}>
@@ -80,14 +83,16 @@ export function WeaverLeaderboardClusterRow({
           <div style={cardTitle}>Output by Cluster</div>
         </div>
         <div style={cardSub}>Which weaving villages carry production</div>
-        <ResponsiveContainer width="100%" height={186}>
-          <PieChart>
-            <Pie data={byCluster} dataKey="produced" nameKey="cluster" cx="50%" cy="50%" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="none">
-              {byCluster.map((d, i) => <Cell key={i} fill={d.fill} />)}
-            </Pie>
-            <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.weavers} weavers`, p.payload.cluster]} />
-          </PieChart>
-        </ResponsiveContainer>
+        <ChartFigure title="Output by Cluster" summary={byCluster.map(c => `${c.cluster} ${c.produced} sarees`).join(", ") + "."}>
+          <ResponsiveContainer width="100%" height={186}>
+            <PieChart>
+              <Pie data={byCluster} dataKey="produced" nameKey="cluster" cx="50%" cy="50%" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="none">
+                {byCluster.map((d, i) => <Cell key={i} fill={d.fill} />)}
+              </Pie>
+              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.weavers} weavers`, p.payload.cluster]} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartFigure>
         <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 8 }}>
           {byCluster.map(c => (
             <div key={c.cluster}>

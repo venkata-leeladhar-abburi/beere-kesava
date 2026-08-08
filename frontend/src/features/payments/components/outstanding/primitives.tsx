@@ -61,22 +61,10 @@ export function SectionTitle({ title, sub, right }: { title: string; sub?: strin
   );
 }
 
-export const th: React.CSSProperties = {
-  fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase",
-  letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap",
-};
-export const td: React.CSSProperties = {
+const td: React.CSSProperties = {
   fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle",
 };
 export const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
-
-export function ScrollTable({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 780 }}>{children}</table>
-    </div>
-  );
-}
 
 export function Empty({ msg }: { msg: string }) {
   return (

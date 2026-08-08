@@ -3,8 +3,9 @@ import { motion } from "motion/react";
 import { ChevronDown, ChevronUp, Factory, Truck, Users } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SellerRank, rankSellers } from "../../../customers/contexts/SalesContext";
-import { Card, ExportBtn, ScrollTable, SectionTitle, exportCsv, inr, td, tdMono, th } from "./primitives";
+import { Card, ExportBtn, SectionTitle, exportCsv, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ── Who is selling more ──────────────────────────────────────────────────────
 const RANK_PAGE = 5;
@@ -14,6 +15,46 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
   const [shown, setShown] = useState(RANK_PAGE);
   const visible = ranks.slice(0, shown);
   const remaining = ranks.length - visible.length;
+
+  const columns: ColumnDef<SellerRank>[] = [
+    {
+      id: "rank", header: "#", width: 44,
+      accessor: () => 0,
+      cell: (_v, r) => {
+        const i = visible.indexOf(r);
+        return <span style={{ fontFamily: F.display, fontWeight: 700, color: i < 3 ? T.antiqueGold : T.taupe }}>{i + 1}</span>;
+      },
+    },
+    {
+      id: "name", header: unitLabel, accessor: r => r.name,
+      cell: (_v, r) => (
+        <>
+          <div style={{ fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.sub}</div>
+        </>
+      ),
+    },
+    {
+      id: "sold", header: "Sold", accessor: r => r.sold, width: 150,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ flex: 1, height: 7, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden", minWidth: 70 }}>
+            <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
+              style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
+          </div>
+          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
+        </div>
+      ),
+    },
+    { id: "produced", header: "Produced", accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
+    { id: "retail", header: "Retail", accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
+    { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
+    { id: "returned", header: "Returned", accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.orange }}>{r.outstanding}</span> },
+    { id: "sellThrough", header: "Sell-through", accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
+    { id: "revenue", header: "Net Revenue", accessor: r => r.revenue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</span> },
+  ];
+
   return (
     <Card>
       <SectionTitle title={title} sub={sub}
@@ -21,49 +62,13 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
           [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
            ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />}
       />
-      <ScrollTable>
-        <thead>
-          <tr>
-            <th style={{ ...th, width: 44 }}>#</th>
-            <th style={th}>{unitLabel}</th>
-            <th style={th}>Sold</th>
-            <th style={{ ...th, textAlign: "right" }}>Produced</th>
-            <th style={{ ...th, textAlign: "right" }}>Retail</th>
-            <th style={{ ...th, textAlign: "right" }}>Wholesale</th>
-            <th style={{ ...th, textAlign: "right" }}>Returned</th>
-            <th style={{ ...th, textAlign: "right" }}>Outstanding</th>
-            <th style={{ ...th, textAlign: "right" }}>Sell-through</th>
-            <th style={{ ...th, textAlign: "right" }}>Net Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visible.map((r, i) => (
-            <tr key={r.key}>
-              <td style={{ ...td, fontFamily: F.display, fontWeight: 700, color: i < 3 ? T.antiqueGold : T.taupe }}>{i + 1}</td>
-              <td style={td}>
-                <div style={{ fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.sub}</div>
-              </td>
-              <td style={{ ...td, minWidth: 150 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                  <div style={{ flex: 1, height: 7, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden", minWidth: 70 }}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
-                      style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
-                  </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
-                </div>
-              </td>
-              <td style={{ ...tdMono, textAlign: "right", color: T.luxuryBrown }}>{r.produced}</td>
-              <td style={{ ...tdMono, textAlign: "right", color: "#4A7FB5" }}>{r.retail}</td>
-              <td style={{ ...tdMono, textAlign: "right", color: "#9B4DCA" }}>{r.wholesale}</td>
-              <td style={{ ...tdMono, textAlign: "right", color: r.returned ? T.crimson : T.taupe }}>{r.returned}</td>
-              <td style={{ ...tdMono, textAlign: "right", color: T.orange }}>{r.outstanding}</td>
-              <td style={{ ...tdMono, textAlign: "right", color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</td>
-              <td style={{ ...tdMono, textAlign: "right", fontWeight: 700 }}>{inr(r.revenue)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </ScrollTable>
+      <DataTable
+        columns={columns}
+        data={visible}
+        getRowId={r => r.key}
+        caption={`${title} table`}
+        emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
+      />
 
       {/* Load more / show less */}
       {ranks.length > RANK_PAGE && (

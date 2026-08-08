@@ -11,6 +11,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { T, F, FadeUp } from "./theme";
 import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, STATUS_CFG } from "./types";
 import { LoomThroughputAndAvailability, LoomMaterialDesignRow } from "./LoomAnalyticsCharts";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 const LA_MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const UTIL_META: Record<string, { label: string; color: string }> = {
@@ -213,19 +214,21 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={215}>
-              <BarChart data={rankedLooms} layout="vertical" barSize={22} margin={{ left: 4, right: 54 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-                <XAxis type="number" hide allowDecimals={false} />
-                <YAxis type="category" dataKey="short" width={68} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-                <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                  formatter={(v: any, _n: any, p: any) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.loomNumber} — ${p.payload.operatorName}`]} />
-                <Bar dataKey="produced" radius={[0, 6, 6, 0]}
-                  label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-                  {rankedLooms.map(l => <Cell key={l.id} fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Output by Loom" summary={`${produced} sarees completed across ${rankedLooms.length} looms, ${passRate}% overall QC pass rate.`}>
+              <ResponsiveContainer width="100%" height={215}>
+                <BarChart data={rankedLooms} layout="vertical" barSize={22} margin={{ left: 4, right: 54 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                  <XAxis type="number" hide allowDecimals={false} />
+                  <YAxis type="category" dataKey="short" width={68} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                    formatter={(v: any, _n: any, p: any) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.loomNumber} — ${p.payload.operatorName}`]} />
+                  <Bar dataKey="produced" radius={[0, 6, 6, 0]}
+                    label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                    {rankedLooms.map(l => <Cell key={l.id} fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, marginTop: 6 }}>
               {rankedLooms.slice(0, 4).map((l, i) => {
                 const sc = STATUS_CFG[l.status];

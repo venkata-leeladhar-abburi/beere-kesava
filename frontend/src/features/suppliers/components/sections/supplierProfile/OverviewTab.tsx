@@ -13,6 +13,7 @@ import { T, F } from "../../theme";
 import { Purchase, SareeTag, PurchaseRequest, formatINR, purchaseTotals } from "../../../contexts/SupplierContext";
 import { SareeInventoryTable } from "../SareeInventoryTable";
 import { SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { ChartFigure } from "../../../../../shared/ui/data";
 
 type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string };
 
@@ -79,15 +80,17 @@ export function OverviewTab({
           {spendByMonth.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchases recorded yet.</div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={spendByMonth} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <RechartsTooltip formatter={(v: any) => [formatINR(Number(v)), "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
-                <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Purchase Spend by Month" summary={`Monthly spend for ${supplierName} across ${spendByMonth.length} months, totalling ${formatINR(rangeBilled)}.`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={spendByMonth} barSize={28}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <RechartsTooltip formatter={(v: any) => [formatINR(Number(v)), "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
+                  <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
           )}
         </div>
         <div style={{ ...card, padding: "24px 28px" }}>
@@ -97,14 +100,16 @@ export function OverviewTab({
             <div style={{ padding: "40px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchases recorded yet.</div>
           ) : (
             <>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie data={paymentStatusBreakdown} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
-                    {paymentStatusBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
-                  </Pie>
-                  <RechartsTooltip formatter={(v: any) => [formatINR(Number(v))]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Purchases by Payment Status" summary={paymentStatusBreakdown.map(s => `${s.name} ${formatINR(s.value)}`).join(", ") + "."}>
+                <ResponsiveContainer width="100%" height={160}>
+                  <PieChart>
+                    <Pie data={paymentStatusBreakdown} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
+                      {paymentStatusBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                    </Pie>
+                    <RechartsTooltip formatter={(v: any) => [formatINR(Number(v))]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartFigure>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
                 {paymentStatusBreakdown.map(s => (
                   <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

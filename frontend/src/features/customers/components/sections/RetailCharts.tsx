@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { ChartFigure } from "../../../../shared/ui/data";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -178,6 +179,10 @@ export function RetailChartsRow1() {
           </div>
         ) : (
           <>
+            <ChartFigure
+              title="Category Split"
+              summary={`Total retail revenue ₹${totalRetailRevenue.toLocaleString("en-IN")} across ${retailCategorySplit.map(i => i.name).join(", ")}.`}
+            >
             <div style={{ position: "relative", height: 200, flexShrink: 0 }}>
               <ResponsiveContainer key="rc-rt-2" width="100%" height="100%">
                 <PieChart key="pie-chart-rt" id="retail-category-pie-chart">
@@ -193,6 +198,7 @@ export function RetailChartsRow1() {
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Total Retail</span>
               </div>
             </div>
+            </ChartFigure>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 18, flexWrap: "wrap" as const }}>
               {retailCategorySplit.map((item, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -223,6 +229,7 @@ export function RetailChartsRow1() {
             No retail customer records yet.
           </div>
         ) : (
+          <ChartFigure title="New vs Returning" summary={`New and returning retail customers by month over ${newVsReturningRetail.length} months.`}>
           <div style={{ height: 200, flexShrink: 0 }}>
             <ResponsiveContainer key="rc-rt-3" width="100%" height="100%">
               <BarChart key="bar-chart-rt-new" id="retail-new-vs-returning-chart" data={newVsReturningRetail} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
@@ -236,6 +243,7 @@ export function RetailChartsRow1() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          </ChartFigure>
         )}
       </div>
     </div>

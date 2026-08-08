@@ -3,10 +3,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "../../../customers/contexts/SalesContext";
-import { Card, Empty, ExportBtn, Pill, ScrollTable, SectionTitle, exportCsv, inr, td, tdMono, th } from "./primitives";
+import { Card, Empty, ExportBtn, Pill, SectionTitle, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+
+interface SupplierRollup { supplier: string; purchases: number; bought: number; unsold: number; returned: number; due: number; unsoldValue: number; }
 
 // ── External purchases outstanding — purchase-wise, per supplier ─────────────
 export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
@@ -164,33 +167,24 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
       {/* Supplier roll-up */}
       <Card>
         <SectionTitle title="Supplier Roll-up" sub="Same numbers grouped by supplier across all their purchases." />
-        <ScrollTable>
-          <thead>
-            <tr>
-              <th style={th}>Supplier</th>
-              <th style={{ ...th, textAlign: "right" }}>Purchases</th>
-              <th style={{ ...th, textAlign: "right" }}>Purchased</th>
-              <th style={{ ...th, textAlign: "right" }}>Outstanding</th>
-              <th style={{ ...th, textAlign: "right" }}>Returned</th>
-              <th style={{ ...th, textAlign: "right" }}>Unsold Value</th>
-              <th style={{ ...th, textAlign: "right" }}>Bill Due</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bySupplier.map(r => (
-              <tr key={r.supplier}>
-                <td style={{ ...td, fontWeight: 600 }}>{r.supplier}</td>
-                <td style={{ ...tdMono, textAlign: "right" }}>{r.purchases}</td>
-                <td style={{ ...tdMono, textAlign: "right" }}>{r.bought}</td>
-                <td style={{ ...tdMono, textAlign: "right", color: T.crimson }}>{r.unsold}</td>
-                <td style={{ ...tdMono, textAlign: "right", color: T.orange }}>{r.returned}</td>
-                <td style={{ ...tdMono, textAlign: "right" }}>{inr(r.unsoldValue)}</td>
-                <td style={{ ...tdMono, textAlign: "right", color: r.due > 0 ? T.orange : T.green }}>{inr(r.due)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </ScrollTable>
+        <DataTable<SupplierRollup>
+          columns={supplierRollupColumns}
+          data={bySupplier}
+          getRowId={r => r.supplier}
+          caption="Supplier roll-up table"
+          emptyTitle="No supplier data yet"
+        />
       </Card>
     </div>
   );
 }
+
+const supplierRollupColumns: ColumnDef<SupplierRollup>[] = [
+  { id: "supplier", header: "Supplier", accessor: r => r.supplier, sortable: true, cell: (_v, r) => <span style={{ fontWeight: 600 }}>{r.supplier}</span> },
+  { id: "purchases", header: "Purchases", accessor: r => r.purchases, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{r.purchases}</span> },
+  { id: "bought", header: "Purchased", accessor: r => r.bought, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{r.bought}</span> },
+  { id: "unsold", header: "Outstanding", accessor: r => r.unsold, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: T.crimson }}>{r.unsold}</span> },
+  { id: "returned", header: "Returned", accessor: r => r.returned, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: T.orange }}>{r.returned}</span> },
+  { id: "unsoldValue", header: "Unsold Value", accessor: r => r.unsoldValue, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{inr(r.unsoldValue)}</span> },
+  { id: "due", header: "Bill Due", accessor: r => r.due, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: r.due > 0 ? T.orange : T.green }}>{inr(r.due)}</span> },
+];

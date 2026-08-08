@@ -9,6 +9,7 @@ import {
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
 import { MAT_TAG } from "./types";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 const FLOOR_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "#2D6B6B"];
 const laQcColor = (r: number) => (r >= 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson);
@@ -60,19 +61,21 @@ export function LoomThroughputAndAvailability({
         {monthly.length === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees completed in this period.</div>
         ) : (
-          <ResponsiveContainer width="100%" height={208}>
-            <ComposedChart data={monthly} barSize={26}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
-              <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
-              <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
-              <Bar name="Passed QC" dataKey="passed" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
-              <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <ChartFigure title="Factory Throughput" summary={`${produced} sarees completed, ${passRate}% pass rate, ${failed} rejected.`}>
+            <ResponsiveContainer width="100%" height={208}>
+              <ComposedChart data={monthly} barSize={26}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
+                <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
+                <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
+                <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
+                <Bar name="Passed QC" dataKey="passed" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
+                <Line yAxisId="r" name="Pass Rate" dataKey="rate" stroke={T.green} strokeWidth={2.5} dot={{ r: 3.5, fill: T.green, strokeWidth: 0 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartFigure>
         )}
       </div>
 
@@ -82,20 +85,22 @@ export function LoomThroughputAndAvailability({
           <div style={cardTitle}>Loom Availability</div>
         </div>
         <div style={cardSub}>Current floor state · idle looms are lost capacity</div>
-        <div style={{ position: "relative" as const, marginTop: 12 }}>
-          <ResponsiveContainer width="100%" height={172}>
-            <PieChart>
-              <Pie data={utilisation} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                {utilisation.map((d, i) => <Cell key={i} fill={d.color} />)}
-              </Pie>
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} looms`, p.payload.name]} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{utilRate}%</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>running</div>
+        <ChartFigure title="Loom Availability" summary={`${utilRate}% running: ${utilisation.map(d => `${d.name} ${d.value}`).join(", ")}.`}>
+          <div style={{ position: "relative" as const, marginTop: 12 }}>
+            <ResponsiveContainer width="100%" height={172}>
+              <PieChart>
+                <Pie data={utilisation} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
+                  {utilisation.map((d, i) => <Cell key={i} fill={d.color} />)}
+                </Pie>
+                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} looms`, p.payload.name]} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{utilRate}%</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>running</div>
+            </div>
           </div>
-        </div>
+        </ChartFigure>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
           {utilisation.map(d => (
             <div key={d.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -151,18 +156,20 @@ export function LoomMaterialDesignRow({
           <div style={{ padding: "62px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No material issued in this period.</div>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={186}>
-              <BarChart data={byMaterial} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
-                <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
-                <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                  formatter={(v: any, _n: any, p: any) => [`${v} ${p.payload.unit}`, p.payload.type]} />
-                <Bar dataKey="qty" radius={[5, 5, 0, 0]}>
-                  {byMaterial.map(d => <Cell key={d.label} fill={d.fill} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Material Consumption" summary={`Warp drawn ${warpKg.toFixed(1)} kg across ${byMaterial.length} material types.`}>
+              <ResponsiveContainer width="100%" height={186}>
+                <BarChart data={byMaterial} barSize={26} margin={{ top: 16, left: -20, right: 6 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
+                  <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                    formatter={(v: any, _n: any, p: any) => [`${v} ${p.payload.unit}`, p.payload.type]} />
+                  <Bar dataKey="qty" radius={[5, 5, 0, 0]}>
+                    {byMaterial.map(d => <Cell key={d.label} fill={d.fill} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               <span>Warp drawn {warpKg.toFixed(1)} kg</span>
               <span style={{ color: T.luxuryBrown, fontWeight: 700 }}>
@@ -179,18 +186,20 @@ export function LoomMaterialDesignRow({
           <div style={cardTitle}>Output by Design</div>
         </div>
         <div style={cardSub}>Top producing saree types</div>
-        <ResponsiveContainer width="100%" height={186}>
-          <BarChart data={byDesign} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-            <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
-            <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
-            <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
-              {byDesign.map(d => <Cell key={d.type} fill={d.fill} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <ChartFigure title="Output by Design" summary={`${byDesign.length} designs; top design is ${byDesign[0]?.type ?? "—"}.`}>
+          <ResponsiveContainer width="100%" height={186}>
+            <BarChart data={byDesign} barSize={30} margin={{ top: 16, left: -20, right: 6 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+              <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
+              <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
+              <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
+                {byDesign.map(d => <Cell key={d.type} fill={d.fill} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartFigure>
         <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           <span>{byDesign.length} designs</span>
           <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {byDesign[0]?.type ?? "—"}</span>
@@ -203,14 +212,16 @@ export function LoomMaterialDesignRow({
           <div style={cardTitle}>Factory Health</div>
         </div>
         <div style={cardSub}>Quality and capacity snapshot</div>
-        <ResponsiveContainer width="100%" height={142}>
-          <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-            data={[{ name: "Pass", value: passRate, fill: laQcColor(passRate) }]}>
-            <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-            <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{passRate}%</text>
-            <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>QC PASS RATE</text>
-          </RadialBarChart>
-        </ResponsiveContainer>
+        <ChartFigure title="Factory Health" summary={`${passRate}% QC pass rate, ${failed} rejected, ${pipeline} sarees in open pipeline.`}>
+          <ResponsiveContainer width="100%" height={142}>
+            <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+              data={[{ name: "Pass", value: passRate, fill: laQcColor(passRate) }]}>
+              <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+              <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{passRate}%</text>
+              <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>QC PASS RATE</text>
+            </RadialBarChart>
+          </ResponsiveContainer>
+        </ChartFigure>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
           {[
             { label: "Rejected", value: `${failed} pcs` },

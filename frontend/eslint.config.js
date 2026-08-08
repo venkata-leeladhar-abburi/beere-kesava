@@ -383,5 +383,36 @@ export default tseslint.config(
     },
   },
 
+  /**
+   * PHASE-4 ENFORCEMENT LAYER (design-system/04-DATA-DISPLAY.md, Part M Step 7)
+   * ═══════════════════════════════════════════════════════════════════════════
+   * `warn`, not `error` — a handful of files (financial-statement layouts,
+   * inline-edit-row tables, expandable sub-row tables) are documented,
+   * deliberate exceptions the current DataTable API can't express yet. This
+   * is a ratchet, like the Phase-1 block above: visible and countable without
+   * blocking the build. Excludes test files (fixture markup, not app UI).
+   */
+  {
+    files: ["src/features/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "JSXOpeningElement[name.name='table']",
+          message: "Use <DataTable> from shared/ui/data instead of a raw <table> — design-system/04-DATA-DISPLAY.md.",
+        },
+        {
+          selector: "JSXOpeningElement[name.name='th']",
+          message: "Columns are declared via ColumnDef, not <th> — design-system/04-DATA-DISPLAY.md Part C.",
+        },
+        {
+          selector: "JSXAttribute[name.name='fill'] MemberExpression[property.name=/^(antiqueGold|goldLight)$/]",
+          message: "Gold is decorative, never a chart data colour. Use semantic.chart.series[i] from design-system/tokens — design-system/04-DATA-DISPLAY.md Part K.1.",
+        },
+      ],
+    },
+  },
+
   prettierConfig
 );

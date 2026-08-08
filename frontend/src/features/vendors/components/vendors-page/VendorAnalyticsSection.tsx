@@ -15,6 +15,7 @@ import { T, F, MONTH_ABBR } from "./theme";
 import { Vendor } from "./types";
 import { FadeUp } from "./FadeUp";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 // Material type is not carried on the backend PurchaseOrder (see
 // shared/api/purchase-orders.ts — line items live client-side only, no
@@ -234,31 +235,35 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 </div>
               )}
             </div>
-            <ResponsiveContainer width="100%" height={210}>
-              <ComposedChart data={spendByMonth} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="l" hide />
-                <YAxis yAxisId="r" orientation="right" hide />
-                <RechartsTooltip contentStyle={tipStyle}
-                  formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
-                <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
-                <Line yAxisId="r" name="Orders" dataKey="orders" stroke={semantic.chart.series[1]} strokeWidth={2.5}
-                  dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Monthly Vendor Spend" summary={`${L(totalSpendRaw)} total spend across ${totalOrdersInPeriod} purchase orders.`}>
+              <ResponsiveContainer width="100%" height={210}>
+                <ComposedChart data={spendByMonth} barSize={28}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="l" hide />
+                  <YAxis yAxisId="r" orientation="right" hide />
+                  <RechartsTooltip contentStyle={tipStyle}
+                    formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
+                  <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                  <Line yAxisId="r" name="Orders" dataKey="orders" stroke={semantic.chart.series[1]} strokeWidth={2.5}
+                    dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </ChartFigure>
           </div>
           <div style={cardStyle}>
             <div style={{ ...cardTitle, marginBottom: 20 }}>Spend by Material Type</div>
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie data={spendByType} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
-                  {spendByType.map((e, i) => <Cell key={i} fill={e.fill} />)}
-                </Pie>
-                <RechartsTooltip formatter={(v: any) => [L(v)]} contentStyle={tipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Spend by Material Type" summary={spendByType.map(s => `${s.name} ${L(s.value)}`).join(", ") + "."}>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie data={spendByType} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
+                    {spendByType.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                  </Pie>
+                  <RechartsTooltip formatter={(v: any) => [L(v)]} contentStyle={tipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
               {spendByType.map(s => (
                 <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -289,20 +294,22 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={210}>
-              <BarChart data={topVendors} layout="vertical" barSize={20} margin={{ left: 8, right: 56 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-                <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
-                  formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
-                <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-                  {topVendors.map((v, i) => (
-                    <Cell key={v.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Top 5 Vendors by Spend" summary={`Top ${topVendors.length} vendors account for ${top5Share}% of ${L(totalSpendRaw)} spent.`}>
+              <ResponsiveContainer width="100%" height={210}>
+                <BarChart data={topVendors} layout="vertical" barSize={20} margin={{ left: 8, right: 56 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
+                    formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
+                  <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                    {topVendors.map((v, i) => (
+                      <Cell key={v.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
               {topVendors.map((v, i) => (
                 <div key={v.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
@@ -376,16 +383,18 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               <div style={cardTitle}>Sourcing by Region</div>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Geographic supply concentration</div>
-            <ResponsiveContainer width="100%" height={168}>
-              <BarChart data={spendByState} barSize={22}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
-                  formatter={(v: any, _n: any, p: any) => [L(v), p.payload.state]} />
-                <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Sourcing by Region" summary={`${spendByState.length} states supplying; top state is ${spendByState[0]?.state ?? "—"}.`}>
+              <ResponsiveContainer width="100%" height={168}>
+                <BarChart data={spendByState} barSize={22}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                  <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
+                    formatter={(v: any, _n: any, p: any) => [L(v), p.payload.state]} />
+                  <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               <span>{spendByState.length} states supplying</span>
               <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>Top: {spendByState[0]?.state ?? "—"}</span>
@@ -398,14 +407,16 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               <div style={cardTitle}>Procurement Health</div>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>Efficiency snapshot across all vendors</div>
-            <ResponsiveContainer width="100%" height={132}>
-              <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-                data={[{ name: "Rating", value: (avgRating / 5) * 100, fill: avgRating >= 4 ? T.greenMid : avgRating >= 3 ? T.antiqueGold : T.crimson }]}>
-                <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-                <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgRating.toFixed(1)}</text>
-                <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>AVG VENDOR RATING</text>
-              </RadialBarChart>
-            </ResponsiveContainer>
+            <ChartFigure title="Procurement Health" summary={`Average vendor rating ${avgRating.toFixed(1)} / 5 across ${activeVendors.length} active vendors.`}>
+              <ResponsiveContainer width="100%" height={132}>
+                <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+                  data={[{ name: "Rating", value: (avgRating / 5) * 100, fill: avgRating >= 4 ? T.greenMid : avgRating >= 3 ? T.antiqueGold : T.crimson }]}>
+                  <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+                  <text x="50%" y="62%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{avgRating.toFixed(1)}</text>
+                  <text x="50%" y="82%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>AVG VENDOR RATING</text>
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </ChartFigure>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
               {[
                 { label: "Avg Order Value", value: L(avgOrderValue) },

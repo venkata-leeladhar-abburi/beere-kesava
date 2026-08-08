@@ -61,29 +61,56 @@ export const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontW
 export const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
 // ── ChartCard ─────────────────────────────────────────────────────────────────
-export function ChartCard({ title, sub, icon, children }: { title: string; sub?: string; icon?: React.ReactNode; children: React.ReactNode }) {
+// A `<figure>` per design-system/04-DATA-DISPLAY.md Part K.7 — screen readers
+// get a labelled group + an optional prose trend summary; sighted users see
+// unchanged markup. `summary`/`viewAsTable` are additive/optional so every
+// existing call site (none pass them yet) renders byte-identical to before.
+let chartCardIdSeq = 0;
+export function ChartCard({ title, sub, icon, children, summary, viewAsTable }: {
+  title: string; sub?: string; icon?: React.ReactNode; children: React.ReactNode;
+  /** Prose description of the trend (not raw numbers) for aria-describedby. */
+  summary?: string;
+  /** "View as table" fallback — the same data rendered as a real table. */
+  viewAsTable?: React.ReactNode;
+}) {
+  const idRef = useRef<string>();
+  if (!idRef.current) idRef.current = `chart-card-${++chartCardIdSeq}`;
+  const titleId = `${idRef.current}-title`;
+  const summaryId = `${idRef.current}-summary`;
   return (
-    <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden" }}>
-      <div style={{ padding: "18px 22px 14px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+    <figure
+      role="group"
+      aria-labelledby={titleId}
+      aria-describedby={summary ? summaryId : undefined}
+      style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", margin: 0 }}
+    >
+      <figcaption style={{ padding: "18px 22px 14px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
         {icon ? (
           <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.07)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {icon}
             </div>
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+              <div id={titleId} style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
               {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
             </div>
           </div>
         ) : (
           <>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
+            <div id={titleId} style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
             {sub && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 }}>{sub}</div>}
           </>
         )}
-      </div>
+      </figcaption>
+      {summary && <p id={summaryId} className="sr-only">{summary}</p>}
       <div style={{ flex: 1, padding: "16px 18px" }}>{children}</div>
-    </div>
+      {viewAsTable && (
+        <details style={{ borderTop: `1px solid ${T.borderDef}`, padding: "10px 18px" }}>
+          <summary style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>View as table</summary>
+          <div style={{ marginTop: 10 }}>{viewAsTable}</div>
+        </details>
+      )}
+    </figure>
   );
 }
 

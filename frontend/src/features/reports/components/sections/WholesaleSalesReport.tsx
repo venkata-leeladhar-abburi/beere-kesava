@@ -5,6 +5,7 @@ import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
 
 function WholesaleWeeklyTooltip({ active, payload, label }: any) {
@@ -192,7 +193,7 @@ export function WholesaleSalesReport() {
                 <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
                 <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
                 <Bar key="ws-rev" dataKey="rev" name="Revenue">
-                  {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? T.antiqueGold : "rgba(200,155,71,0.38)"} />)}
+                  {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

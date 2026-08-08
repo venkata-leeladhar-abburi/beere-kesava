@@ -41,6 +41,11 @@ export interface ColumnDef<T> {
 
   headerTooltip?: string;
   width?: number | "auto";
+
+  /** Card-mode field importance (Part H.2): 1 = card title, 2 = card body
+   *  pairs, 3 = hidden behind "Details". Only used when DataTable's
+   *  `responsive` prop is set. Columns without a priority default to 2. */
+  priority?: 1 | 2 | 3;
 }
 
 export function columnAlign<T>(col: ColumnDef<T>): ColumnAlign {

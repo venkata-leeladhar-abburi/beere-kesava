@@ -13,6 +13,8 @@ import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
+import { semantic } from "../../../../design-system/tokens";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
@@ -271,18 +273,23 @@ export function WeaverAnalytics() {
                   <div style={cardTitle}>Loom Productivity</div>
                 </div>
                 <div style={cardSub}>Sarees per loom · avg {avgPerLoom.toFixed(1)}</div>
-                <ResponsiveContainer width="100%" height={210}>
-                  <BarChart data={loomProductivity} barSize={20} margin={{ top: 14, left: -18, right: 6 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                    <XAxis dataKey="short" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} />
-                    <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]} />
-                    <Bar dataKey="perLoomR" radius={[5, 5, 0, 0]}>
-                      {loomProductivity.map(w => <Cell key={w.id} fill={w.perLoom >= avgPerLoom ? T.royalBurgundy : T.goldLight} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <ChartFigure
+                  title="Loom Productivity"
+                  summary={`Sarees per loom, average ${avgPerLoom.toFixed(1)}. ${idleCount} of ${totalLooms} looms idle.`}
+                >
+                  <ResponsiveContainer width="100%" height={210}>
+                    <BarChart data={loomProductivity} barSize={20} margin={{ top: 14, left: -18, right: 6 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
+                      <XAxis dataKey="short" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} />
+                      <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+                        formatter={(v: any, _n: any, p: any) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]} />
+                      <Bar dataKey="perLoomR" radius={[5, 5, 0, 0]}>
+                        {loomProductivity.map(w => <Cell key={w.id} fill={w.perLoom >= avgPerLoom ? semantic.chart.series[0] : semantic.chart.series[1]} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartFigure>
                 <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderDef}`, paddingTop: 12, marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span>{totalLooms} looms engaged</span>
                   <span style={{ color: T.luxuryBrown, fontWeight: 600 }}>{idleCount} weaver{idleCount === 1 ? "" : "s"} idle</span>
@@ -295,14 +302,16 @@ export function WeaverAnalytics() {
                   <div style={cardTitle}>Weaving Health</div>
                 </div>
                 <div style={cardSub}>Quality and payout summary</div>
-                <ResponsiveContainer width="100%" height={148}>
-                  <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-                    data={[{ name: "Pass", value: overallPassRate, fill: qcColor(overallPassRate) }]}>
-                    <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-                    <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{overallPassRate}%</text>
-                    <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>QC PASS RATE</text>
-                  </RadialBarChart>
-                </ResponsiveContainer>
+                <ChartFigure title="Weaving Health" summary={`QC pass rate ${overallPassRate}%.`}>
+                  <ResponsiveContainer width="100%" height={148}>
+                    <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+                      data={[{ name: "Pass", value: overallPassRate, fill: qcColor(overallPassRate) }]}>
+                      <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+                      <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{overallPassRate}%</text>
+                      <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>QC PASS RATE</text>
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                </ChartFigure>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
                   {[
                     { label: "Rejected", value: `${(totalProduced - totalPassed).toLocaleString("en-IN")} pcs` },

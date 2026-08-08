@@ -6,6 +6,7 @@ import { Trophy } from "lucide-react";
 import { T, F } from "../../theme";
 import { semantic } from "../../../../../design-system/tokens";
 import { formatINR } from "../../../contexts/SupplierContext";
+import { ChartFigure } from "../../../../../shared/ui/data";
 
 export interface PerSupplierEntry {
   id: string; name: string; short: string; initials: string; specialty: string;
@@ -39,21 +40,23 @@ export function TopSuppliersCard({
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={210}>
-        <BarChart data={topSuppliers} layout="vertical" barSize={20} margin={{ left: 6, right: 76 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-          <XAxis type="number" hide />
-          <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
-          <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-            formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.pieces} sarees · ₹${p.payload.avgPiece.toLocaleString("en-IN")}/pc`, p.payload.name]} />
-          <Bar dataKey="billed" radius={[0, 6, 6, 0]}
-            label={{ position: "right", formatter: (v: any) => formatINR(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
-            {topSuppliers.map((s, i) => (
-              <Cell key={s.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <ChartFigure title="Top Suppliers by Purchase Value" summary={`Top ${topSuppliers.length} suppliers account for ${top5Share}% of ${formatINR(billed)} billed.`}>
+        <ResponsiveContainer width="100%" height={210}>
+          <BarChart data={topSuppliers} layout="vertical" barSize={20} margin={{ left: 6, right: 76 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+            <XAxis type="number" hide />
+            <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
+            <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+              formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.pieces} sarees · ₹${p.payload.avgPiece.toLocaleString("en-IN")}/pc`, p.payload.name]} />
+            <Bar dataKey="billed" radius={[0, 6, 6, 0]}
+              label={{ position: "right", formatter: (v: any) => formatINR(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+              {topSuppliers.map((s, i) => (
+                <Cell key={s.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartFigure>
       <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
         {topSuppliers.map((s, i) => (
           <div key={s.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>

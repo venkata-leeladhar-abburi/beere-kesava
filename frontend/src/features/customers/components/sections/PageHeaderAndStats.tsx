@@ -88,7 +88,7 @@ export function StatsStrip() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 6 }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 6, fontVariantNumeric: "tabular-nums" }}>
                 {m.val}
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>

@@ -11,6 +11,7 @@ import { Star, Wallet, Clock } from "lucide-react";
 import { T, F } from "../../theme";
 import { Supplier, formatINR } from "../../../contexts/SupplierContext";
 import { PerSupplierEntry } from "./TopSuppliersCard";
+import { ChartFigure } from "../../../../../shared/ui/data";
 
 export function RatingCard({
   card, cardTitle, cardSub, tip, suppliers,
@@ -36,16 +37,18 @@ export function RatingCard({
         <div style={cardTitle}>Suppliers by Rating</div>
       </div>
       <div style={cardSub}>Distribution of supplier quality</div>
-      <ResponsiveContainer width="100%" height={182}>
-        <BarChart data={data} layout="vertical" margin={{ top: 16, left: 10, right: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
-          <XAxis type="number" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-          <YAxis dataKey="rating" type="category" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={50} />
-          <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-            formatter={(v: any, _n: any, p: any) => [`${v} suppliers`, p.payload.rating]} />
-          <Bar dataKey="count" fill={semantic.chart.series[1]} radius={[0, 5, 5, 0]} barSize={16} />
-        </BarChart>
-      </ResponsiveContainer>
+      <ChartFigure title="Suppliers by Rating" summary={`${suppliers.length} suppliers: ${data.map(d => `${d.rating} ${d.count}`).join(", ")}.`}>
+        <ResponsiveContainer width="100%" height={182}>
+          <BarChart data={data} layout="vertical" margin={{ top: 16, left: 10, right: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" horizontal={false} />
+            <XAxis type="number" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+            <YAxis dataKey="rating" type="category" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={50} />
+            <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
+              formatter={(v: any, _n: any, p: any) => [`${v} suppliers`, p.payload.rating]} />
+            <Bar dataKey="count" fill={semantic.chart.series[1]} radius={[0, 5, 5, 0]} barSize={16} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartFigure>
       <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         <span>Total Suppliers {suppliers.length}</span>
       </div>
@@ -74,14 +77,16 @@ export function PaymentModeCard({
         <div style={{ padding: "56px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={168}>
-            <PieChart>
-              <Pie data={byMode} dataKey="amount" nameKey="mode" cx="50%" cy="50%" innerRadius={44} outerRadius={72} paddingAngle={3} stroke="none">
-                {byMode.map((d, i) => <Cell key={i} fill={d.fill} />)}
-              </Pie>
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatINR(v), p.payload.mode]} />
-            </PieChart>
-          </ResponsiveContainer>
+          <ChartFigure title="Payments by Mode" summary={`${formatINR(settled)} settled: ${byMode.map(d => `${d.mode} ${formatINR(d.amount)}`).join(", ")}.`}>
+            <ResponsiveContainer width="100%" height={168}>
+              <PieChart>
+                <Pie data={byMode} dataKey="amount" nameKey="mode" cx="50%" cy="50%" innerRadius={44} outerRadius={72} paddingAngle={3} stroke="none">
+                  {byMode.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                </Pie>
+                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatINR(v), p.payload.mode]} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartFigure>
           <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 8 }}>
             {byMode.map(d => (
               <div key={d.mode} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -120,14 +125,16 @@ export function SettlementHealthCard({
         <div style={cardTitle}>Settlement Health</div>
       </div>
       <div style={cardSub}>Sourcing efficiency snapshot</div>
-      <ResponsiveContainer width="100%" height={140}>
-        <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
-          data={[{ name: "Settled", value: settlementRate, fill: settlementRate >= 90 ? T.greenMid : settlementRate >= 70 ? T.antiqueGold : T.crimson }]}>
-          <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
-          <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{settlementRate}%</text>
-          <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>BILLS SETTLED</text>
-        </RadialBarChart>
-      </ResponsiveContainer>
+      <ChartFigure title="Settlement Health" summary={`${settlementRate}% of bills settled across ${buysCount} invoices and ${perSuppliers.length} active suppliers.`}>
+        <ResponsiveContainer width="100%" height={140}>
+          <RadialBarChart innerRadius="62%" outerRadius="100%" startAngle={210} endAngle={-30}
+            data={[{ name: "Settled", value: settlementRate, fill: settlementRate >= 90 ? T.greenMid : settlementRate >= 70 ? T.antiqueGold : T.crimson }]}>
+            <RadialBar dataKey="value" background={{ fill: T.silkCream }} cornerRadius={10} />
+            <text x="50%" y="60%" textAnchor="middle" style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, fill: T.luxuryBrown }}>{settlementRate}%</text>
+            <text x="50%" y="80%" textAnchor="middle" style={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }}>BILLS SETTLED</text>
+          </RadialBarChart>
+        </ResponsiveContainer>
+      </ChartFigure>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
         {[
           { label: "Avg Cost / Saree", value: pieces ? `₹${Math.round(billed / pieces).toLocaleString("en-IN")}` : "—" },

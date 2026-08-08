@@ -282,7 +282,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                 </div>
                 <span style={{ fontFamily: card.dark ? F.mono : F.ui, fontWeight: 600, fontSize: card.dark ? 10 : 13, color: card.dark ? "rgba(200,155,71,0.85)" : T.taupe, letterSpacing: card.dark ? "2px" : 0, textTransform: card.dark ? "uppercase" : "none", lineHeight: 1.3 }}>{card.label}</span>
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: card.dark ? 32 : 28, color: card.dark ? T.goldLight : T.luxuryBrown, lineHeight: 1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>{card.amount}</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: card.dark ? T.goldLight : T.luxuryBrown, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>{card.amount}</div>
               {card.cost && <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 16, color: T.antiqueGold, marginBottom: 8 }}>{card.cost}</div>}
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: card.dark ? "rgba(255,253,249,0.55)" : T.taupe, lineHeight: 1.5, marginTop: "auto" }}>{card.sub}</div>
             </div>

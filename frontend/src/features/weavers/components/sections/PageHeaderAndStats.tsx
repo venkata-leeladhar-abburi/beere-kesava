@@ -60,7 +60,7 @@ export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.gold ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.crimson ? "#F47B72" : m.gold ? T.goldLight : T.warmIvory, lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.crimson ? "#F47B72" : m.gold ? T.goldLight : T.warmIvory, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
                 {m.value}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

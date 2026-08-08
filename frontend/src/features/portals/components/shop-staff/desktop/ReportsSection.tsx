@@ -7,6 +7,8 @@ import { customersApi } from "../../../../../shared/api/customers";
 import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
+import { semantic } from "../../../../../design-system/tokens";
+import { ChartFigure } from "../../../../../shared/ui/data";
 
 function timeLabel(iso: string) {
   const d = new Date(iso);
@@ -175,16 +177,18 @@ export function ReportsSection({
                 <BarChart2 size={20} color={C.burg} />
                 <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Sales by Design</span>
               </div>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={designData} layout="vertical" margin={{ left: 8, right: 24, top: 0, bottom: 0 }}>
-                  <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={64} />
-                  <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
-                  <Bar dataKey="count" radius={[0, 5, 5, 0]}>
-                    {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={i === 0 ? C.burg : i === 1 ? C.gold : C.muted} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartFigure title="Sales by Design" summary={designData.map(d => `${d.design} ${d.count}`).join(", ") + "."}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={designData} layout="vertical" margin={{ left: 8, right: 24, top: 0, bottom: 0 }}>
+                    <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={64} />
+                    <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
+                    <Bar dataKey="count" radius={[0, 5, 5, 0]}>
+                      {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartFigure>
             </div>
 
             <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>

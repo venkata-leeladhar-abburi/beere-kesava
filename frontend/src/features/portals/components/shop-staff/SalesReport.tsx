@@ -4,6 +4,7 @@ const SHOP_MOBILE_HEADER_H = 60;
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { SectionTitle } from "./theme";
 import { FileText, Check } from "lucide-react";
+import { semantic } from "../../../../design-system/tokens";
 
 
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
@@ -21,6 +22,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
+import { ChartFigure } from "../../../../shared/ui/data";
 
 function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -248,19 +250,21 @@ function SalesReport() {
       {/* Design Sales Bar Chart */}
       <SectionTitle id="shoprep-by-design" title="Sales by Design" />
       <Card style={{ margin: "0 20px", padding: "18px 12px" }}>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={designData} layout="vertical" margin={{ left: 4, right: 24, top: 0, bottom: 0 }}>
-            <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
-            <Tooltip
-              contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
-              formatter={(v: number) => [`${v} sarees`, "Sold"]}
-            />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-              {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={i === 0 ? C.burg : i === 1 ? C.gold : C.muted} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <ChartFigure title="Sales by Design" summary={designData.map(d => `${d.design} ${d.count}`).join(", ") + "."}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={designData} layout="vertical" margin={{ left: 4, right: 24, top: 0, bottom: 0 }}>
+              <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
+              <Tooltip
+                contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
+                formatter={(v: number) => [`${v} sarees`, "Sold"]}
+              />
+              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartFigure>
       </Card>
 
       {/* Returns Summary */}

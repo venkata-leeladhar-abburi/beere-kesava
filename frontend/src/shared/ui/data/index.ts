@@ -1,4 +1,5 @@
 export { DataTable, type DataTableProps } from "./DataTable";
+export { ChartFigure, type ChartFigureProps } from "./ChartFigure";
 export { TableSkeleton, TableEmpty, TableFilteredEmpty, TableError } from "./TableStates";
 export { defaultCell } from "./formatCell";
 export {

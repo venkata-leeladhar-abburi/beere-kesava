@@ -177,7 +177,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
               ].map(row => (
                 <div key={row.label} style={{ flex: 1, background: row.bg, border: `1px solid ${row.border}`, borderRadius: 14, padding: "22px 22px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.taupe, marginBottom: 8 }}>{row.label}</div>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: row.color, lineHeight: 1, marginBottom: 6, fontVariantNumeric: "tabular-nums" }}>{row.value}</div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: row.color, lineHeight: 1.1, marginBottom: 6, fontVariantNumeric: "tabular-nums" }}>{row.value}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{row.sub}</div>
                 </div>
               ))}

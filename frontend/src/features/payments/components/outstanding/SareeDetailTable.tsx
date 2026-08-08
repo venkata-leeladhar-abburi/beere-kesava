@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { T, F } from "../../theme";
 import { UnifiedSaree } from "../../../customers/contexts/SalesContext";
-import { AgePill, Empty, Pill, ScrollTable, td, tdMono, th, inr } from "./primitives";
+import { AgePill, Empty, Pill, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export type TableMode = "outstanding" | "sold" | "produced";
 
@@ -35,70 +36,54 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
   if (sarees.length === 0) {
     return <Empty msg={mode === "sold" ? "No sarees sold here yet." : mode === "produced" ? "No sarees here." : "No sarees outstanding here."} />;
   }
+
+  const columns: ColumnDef<UnifiedSaree>[] = [
+    { id: "sareeId", header: "Saree Code", accessor: s => s.sareeId, type: "code" },
+    ...(showBatch ? [{ id: "batchId", header: "Batch", accessor: (s: UnifiedSaree) => s.batchId, type: "code" as const, cell: (_v: unknown, s: UnifiedSaree) => s.batchId || "—" }] : []),
+    ...(showSource ? [{
+      id: "source", header: "Made By", accessor: (s: UnifiedSaree) => sareeOriginName(s),
+      cell: (_v: unknown, s: UnifiedSaree) => (
+        <>
+          <div style={{ fontWeight: 600 }}>{sareeOriginName(s)}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{sareeOriginSub(s)}</div>
+        </>
+      ),
+    }] : []),
+    { id: "sareeType", header: "Saree Type", accessor: s => s.sareeTypeName, cell: (_v, s) => (s.sareeTypeCode !== "EX-000" ? `${s.sareeTypeCode} · ` : "") + s.sareeTypeName },
+    { id: "weight", header: "Weight", accessor: s => s.weight, cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{s.weight}</span> },
+    { id: "date", header: showReturn ? "Received" : "QC Date", accessor: s => s.qcDate },
+    ...(mode === "outstanding" ? [{ id: "ageDays", header: "Days In Stock", accessor: (s: UnifiedSaree) => s.ageDays, sortable: true, cell: (_v: unknown, s: UnifiedSaree) => <AgePill days={s.ageDays} /> }] : []),
+    ...(mode === "produced" ? [{ id: "status", header: "Status", accessor: (s: UnifiedSaree) => s.status, cell: (_v: unknown, s: UnifiedSaree) => <StatusChip s={s} /> }] : []),
+    ...(mode === "sold" ? [
+      { id: "soldOn", header: "Sold On", accessor: (s: UnifiedSaree) => s.sale?.date, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.date || "—" },
+      { id: "channel", header: "Channel", accessor: (s: UnifiedSaree) => s.sale?.channel, cell: (_v: unknown, s: UnifiedSaree) => s.sale ? <Pill label={s.sale.channel === "retail" ? "Retail" : "Wholesale"} color={s.sale.channel === "retail" ? "#4A7FB5" : "#9B4DCA"} bg={s.sale.channel === "retail" ? "rgba(74,127,181,0.12)" : "rgba(155,77,202,0.12)"} /> : "—" },
+      { id: "customer", header: "Customer", accessor: (s: UnifiedSaree) => s.sale?.customer, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.customer || "—" },
+      { id: "saleRef", header: "Sale Ref", accessor: (s: UnifiedSaree) => s.sale?.saleRef, type: "code" as const, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.saleRef || "—" },
+    ] : []),
+    { id: "cost", header: "Cost", accessor: s => s.costPrice, align: "end", cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{inr(s.costPrice)}</span> },
+    {
+      id: "amount", header: mode === "sold" ? "Sold For" : "Sell Price", accessor: s => (mode === "sold" ? s.sale?.amount || 0 : s.finalAmount), align: "end",
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>{mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}</span>,
+    },
+    ...(showReturn ? [{
+      id: "return", header: "Return", accessor: (s: UnifiedSaree) => s.ret?.returnRef,
+      cell: (_v: unknown, s: UnifiedSaree) => s.ret
+        ? <div>
+            <Pill label={s.ret.restocked ? "Returned · Restocked" : "Returned · Not restocked"} color={T.crimson} bg="rgba(192,57,43,0.10)" />
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.ret.returnRef} · {s.ret.date}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.ret.reason}</div>
+          </div>
+        : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
+    }] : []),
+  ];
+
   return (
-    <ScrollTable>
-      <thead>
-        <tr>
-          <th style={th}>Saree Code</th>
-          {showBatch  && <th style={th}>Batch</th>}
-          {showSource && <th style={th}>Made By</th>}
-          <th style={th}>Saree Type</th>
-          <th style={th}>Weight</th>
-          <th style={th}>{showReturn ? "Received" : "QC Date"}</th>
-          {mode === "outstanding" && <th style={th}>Days In Stock</th>}
-          {mode === "produced"    && <th style={th}>Status</th>}
-          {mode === "sold" && <>
-            <th style={th}>Sold On</th>
-            <th style={th}>Channel</th>
-            <th style={th}>Customer</th>
-            <th style={th}>Sale Ref</th>
-          </>}
-          <th style={{ ...th, textAlign: "right" }}>Cost</th>
-          <th style={{ ...th, textAlign: "right" }}>{mode === "sold" ? "Sold For" : "Sell Price"}</th>
-          {showReturn && <th style={th}>Return</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {sarees.map(s => (
-          <tr key={s.sareeId}>
-            <td style={tdMono}>{s.sareeId}</td>
-            {showBatch && <td style={tdMono}>{s.batchId || "—"}</td>}
-            {showSource && (
-              <td style={td}>
-                <div style={{ fontWeight: 600 }}>{sareeOriginName(s)}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{sareeOriginSub(s)}</div>
-              </td>
-            )}
-            <td style={td}>{s.sareeTypeCode !== "EX-000" ? `${s.sareeTypeCode} · ` : ""}{s.sareeTypeName}</td>
-            <td style={{ ...td, fontFamily: F.mono, fontSize: 12 }}>{s.weight}</td>
-            <td style={td}>{s.qcDate}</td>
-            {mode === "outstanding" && <td style={td}><AgePill days={s.ageDays} /></td>}
-            {mode === "produced"    && <td style={td}><StatusChip s={s} /></td>}
-            {mode === "sold" && <>
-              <td style={td}>{s.sale?.date || "—"}</td>
-              <td style={td}>{s.sale ? <Pill label={s.sale.channel === "retail" ? "Retail" : "Wholesale"} color={s.sale.channel === "retail" ? "#4A7FB5" : "#9B4DCA"} bg={s.sale.channel === "retail" ? "rgba(74,127,181,0.12)" : "rgba(155,77,202,0.12)"} /> : "—"}</td>
-              <td style={td}>{s.sale?.customer || "—"}</td>
-              <td style={tdMono}>{s.sale?.saleRef || "—"}</td>
-            </>}
-            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12 }}>{inr(s.costPrice)}</td>
-            <td style={{ ...td, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>
-              {mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}
-            </td>
-            {showReturn && (
-              <td style={td}>
-                {s.ret
-                  ? <div>
-                      <Pill label={s.ret.restocked ? "Returned · Restocked" : "Returned · Not restocked"} color={T.crimson} bg="rgba(192,57,43,0.10)" />
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.ret.returnRef} · {s.ret.date}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.ret.reason}</div>
-                    </div>
-                  : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>}
-              </td>
-            )}
-          </tr>
-        ))}
-      </tbody>
-    </ScrollTable>
+    <DataTable<UnifiedSaree>
+      columns={columns}
+      data={sarees}
+      getRowId={s => s.sareeId}
+      caption="Saree detail table"
+    />
   );
 }
 
