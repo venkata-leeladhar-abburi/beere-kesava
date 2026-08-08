@@ -173,7 +173,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
     <ModalOverlay open={!!purchase} onClose={onClose}>
       <ModalHeader title="Print GRN Receipt" subtitle={`Goods Received Note — ${purchase.grn}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
+        <div className="print-area" style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.10)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Goods Received Note (GRN)</div>

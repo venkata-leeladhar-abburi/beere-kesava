@@ -246,7 +246,7 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
     <ModalOverlay open={!!batch} onClose={onClose}>
       <ModalHeader title="Print Barcode" subtitle={`Barcode label for batch ${batch.id}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
+        <div className="print-area" style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{batch.type} — {batch.details}</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>

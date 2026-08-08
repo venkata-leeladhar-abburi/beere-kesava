@@ -1,0 +1,24 @@
+/* Print isolation (design-system/07-DOCUMENTS.md) — the fix for "printing an
+   invoice prints the entire app" (nav, topbar, modal scrim, everything).
+   Minimal version: hide the whole page except whatever carries
+   `.print-area`, which each document/invoice/receipt view opts into. This
+   is not the full Phase 7 print system (no true A4 geometry, no dedicated
+   print colour palette, no GST engine) — just the isolation fix. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  @page {
+    margin: 12mm;
+  }
+}

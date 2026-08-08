@@ -129,7 +129,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
             {/* Document body */}
             <div style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
               {/* PO Document card */}
-              <div style={{
+              <div className="print-area" style={{
                 background: "#FFFFFF",
                 border: `1.5px solid ${T.borderDef}`,
                 borderRadius: 14,

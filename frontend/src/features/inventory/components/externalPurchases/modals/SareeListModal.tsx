@@ -130,7 +130,7 @@ export function SareeListModal({
             </Dialog.Close>
           </div>
 
-          <div style={{ overflow: "auto", flex: 1 }}>
+          <div className="print-area" style={{ overflow: "auto", flex: 1 }}>
             <DataTable columns={columns} data={pieces} getRowId={s => s.id} />
             {/* DataTable has no tfoot support — totals row rendered as a matching footer bar. */}
             <div
