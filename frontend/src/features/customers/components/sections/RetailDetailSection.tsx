@@ -47,16 +47,16 @@ export function RetailDetailSection({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{customer.purchases}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{(customer as any).totalPurchases ?? customer.purchases ?? 0}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{customer.spend}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{(customer as any).totalSpend ? (customer as any).totalSpend.toLocaleString('en-IN') : (customer.spend || "0")}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
-                ₹{Math.round(parseInt(customer.spend.replace(/,/g, '')) / Math.max(customer.purchases, 1)).toLocaleString('en-IN')}
+                ₹{Math.round(parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) / Math.max((customer as any).totalPurchases ?? customer.purchases ?? 0, 1)).toLocaleString('en-IN')}
               </div>
             </div>
             <div>

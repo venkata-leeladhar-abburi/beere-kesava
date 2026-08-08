@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, Phone, Building2, FileText,
-  IndianRupee, AlertTriangle, ArrowLeft, Package,
+  IndianRupee, AlertTriangle, Package,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
@@ -14,6 +14,7 @@ import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
+import { Button } from "../../../../shared/ui/primitives";
 import { vendorBillsApi, VendorBillStatus } from "../../../../shared/api/vendor-bills";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
@@ -135,9 +136,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
   return (
     <div style={{ padding: "40px 56px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <motion.button onClick={onBack} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ background: "transparent", border: `1px solid ${T.borderDef}`, padding: "10px 20px", borderRadius: 8, color: T.royalBurgundy, fontFamily: F.ui, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-          <ArrowLeft size={14} /> Back to Vendors
-        </motion.button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
+          <Button onClick={onBack} variant="secondary" iconLeft="back" className="rounded-lg text-[#6E0F2D]">
+            Back to Vendors
+          </Button>
+        </motion.div>
         <div style={{ display: "flex", gap: 10 }}>
           <StatusPill status={vendor.status} />
           <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{vendor.id}</span>
@@ -172,9 +175,19 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
 
       <div style={{ display: "flex", borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: "14px 24px", background: "transparent", border: "none", borderBottom: tab === t.key ? `3px solid ${T.royalBurgundy}` : "3px solid transparent", color: tab === t.key ? T.royalBurgundy : T.taupe, fontFamily: F.ui, fontSize: 15, fontWeight: tab === t.key ? 700 : 500, cursor: "pointer", transition: "all 0.2s ease", marginBottom: -2 }}>
+          <Button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            variant="tertiary"
+            className={
+              "rounded-none px-6 py-3.5 mb-[-2px] " +
+              (tab === t.key
+                ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
+            }
+          >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -293,7 +306,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                     <thead>
                       <tr style={{ background: T.silkCream }}>
                         {["PO / Invoice", "Bill Date", "Due Date", "Invoice Amount", "Paid", "Balance", "Status"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                         ))}
                       </tr>
                     </thead>
@@ -341,7 +354,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
                     <thead>
                       <tr style={{ background: T.silkCream }}>
                         {["Payment Ref", "Date", "Against PO", "Mode", "UTR / Reference", "Paying Firm", "Amount"].map(h => (
-                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                          <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                         ))}
                       </tr>
                     </thead>

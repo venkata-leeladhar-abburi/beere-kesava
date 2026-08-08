@@ -9,6 +9,7 @@ export interface JwtPayload {
   role: UserRole;
   name: string;
   accessLevel?: AccessLevel;
+  weaverId?: string | null;
 }
 
 export interface AuthenticatedUser {
@@ -17,6 +18,12 @@ export interface AuthenticatedUser {
   role: UserRole;
   name: string;
   accessLevel?: AccessLevel;
+  /**
+   * Real Weaver.id for WEAVER-role sessions — distinct from `id` (the
+   * User.id). Weaver-scoped queries (batches, payments, ...) are FK'd to
+   * Weaver.id, so they must scope on this, never on `id`.
+   */
+  weaverId?: string | null;
 }
 
 @Injectable()
@@ -37,6 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: payload.role,
       name: payload.name,
       accessLevel: payload.accessLevel,
+      weaverId: payload.weaverId ?? null,
     };
   }
 }

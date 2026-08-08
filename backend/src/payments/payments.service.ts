@@ -198,6 +198,63 @@ export class PaymentsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
+  // Earnings a weaver is owed for completed work: every QC-passed
+  // BatchSareeRow assigned to them, priced at that saree type's making
+  // charge (SareeTypeRate.makingCharge) — never a hardcoded/mock figure.
+  // This is what a weaver has *earned*, distinct from WeaverPayment rows
+  // (which record what's actually been paid out so far).
+  async getWeaverEarnings(weaverId?: string) {
+    const rows = await this.prisma.batchSareeRow.findMany({
+      where: {
+        qcPassed: true,
+        weaverId: weaverId ?? { not: null },
+      },
+      select: { weaverId: true, sareeTypeCode: true },
+    });
+
+    const rates = await this.prisma.sareeTypeRate.findMany({
+      select: { code: true, type: true, makingCharge: true },
+    });
+    const rateByCode = new Map(rates.map((r) => [r.code, r]));
+
+    const weaverIds = Array.from(new Set(rows.map((r) => r.weaverId).filter((id): id is string => !!id)));
+    const weavers = await this.prisma.weaver.findMany({
+      where: { id: { in: weaverIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const weaverById = new Map(weavers.map((w) => [w.id, `${w.firstName} ${w.lastName}`.trim()]));
+
+    // weaverId -> sareeTypeCode -> count
+    const counts = new Map<string, Map<string, number>>();
+    for (const row of rows) {
+      if (!row.weaverId || !row.sareeTypeCode) continue;
+      const byType = counts.get(row.weaverId) ?? new Map<string, number>();
+      byType.set(row.sareeTypeCode, (byType.get(row.sareeTypeCode) ?? 0) + 1);
+      counts.set(row.weaverId, byType);
+    }
+
+    return Array.from(counts.entries()).map(([wId, byType]) => {
+      const breakdown = Array.from(byType.entries()).map(([code, completedCount]) => {
+        const rate = rateByCode.get(code);
+        const ratePerSaree = Number(rate?.makingCharge ?? 0);
+        return {
+          sareeTypeCode: code,
+          sareeTypeName: rate?.type ?? code,
+          completedCount,
+          ratePerSaree,
+          amount: completedCount * ratePerSaree,
+        };
+      });
+      return {
+        weaverId: wId,
+        weaverName: weaverById.get(wId) ?? wId,
+        totalCompletedSarees: breakdown.reduce((s, b) => s + b.completedCount, 0),
+        totalEarned: breakdown.reduce((s, b) => s + b.amount, 0),
+        breakdown,
+      };
+    });
+  }
+
   async getPaymentSummary() {
     const [
       weaverAggregate,

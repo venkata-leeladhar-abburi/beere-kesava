@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import {
-  Hash, ImageSquare, Swatches, Stack, Graph, CheckCircle,
-  Eye as PhEye, UploadSimple, Plus as PhPlus, FloppyDisk,
-  MagnifyingGlass, WarningCircle, Package, X as PhX,
-  PaperPlaneTilt, CalendarCheck, User, Buildings, FileText, SlidersHorizontal,
-} from "@phosphor-icons/react";
+  Hash, Image as ImageSquare, Palette as Swatches, Layers as Stack, Workflow as Graph, CheckCircle2 as CheckCircle,
+  Eye as PhEye, Upload as UploadSimple, Plus as PhPlus, Save as FloppyDisk,
+  Search as MagnifyingGlass, AlertCircle as WarningCircle, Package, X as PhX,
+  Send as PaperPlaneTilt, CalendarCheck, User, Building2 as Buildings, FileText, SlidersHorizontal,
+} from "lucide-react";
 
 import { useDesignLibrary, DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
@@ -126,7 +126,7 @@ export function DesignLibraryPage() {
           {/* Section Header */}
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.22)" }}>
-                <PaperPlaneTilt size={24} color="#FFFDF9" weight="bold" />
+                <PaperPlaneTilt size={24} color="#FFFDF9" />
               </div>
               <div>
                 <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>Weaver Dispatch Control</h2>
@@ -139,7 +139,7 @@ export function DesignLibraryPage() {
               <div>
                 <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
                   <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-                    <SlidersHorizontal size={20} color={T.royalBurgundy} weight="bold" /> Dispatch Settings
+                    <SlidersHorizontal size={20} color={T.royalBurgundy} /> Dispatch Settings
                   </h3>
                   
                   {dispatchSavedMsg && (
@@ -262,7 +262,7 @@ export function DesignLibraryPage() {
                               </div>
                             </div>
                             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
-                              {h.recipientType === "weaver" ? <User size={11} weight="bold" /> : <Buildings size={11} weight="bold" />}
+                              {h.recipientType === "weaver" ? <User size={11} /> : <Buildings size={11} />}
                               {h.recipientName}
                             </span>
                           </div>

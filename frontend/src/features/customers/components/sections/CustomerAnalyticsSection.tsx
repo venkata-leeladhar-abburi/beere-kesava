@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { semantic } from "../../../../design-system/tokens";
 import {
   Download, Star, IndianRupee, Users, Calendar, AlertTriangle, MapPin,
 } from "lucide-react";
@@ -373,7 +374,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                 <RechartsTooltip key="tooltip-2" cursor={{fill: 'rgba(110,15,45,0.04)'}} contentStyle={{fontFamily: F.ui, fontSize: 13, borderRadius: 8, border: `1px solid ${T.borderDef}`}} />
                 <Legend key="legend" iconType="circle" wrapperStyle={{ fontFamily: F.ui, fontSize: 13 }} />
                 <Bar key="bar-new" id="bar-new" dataKey="new" name="New" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} barSize={14} />
-                <Bar key="bar-returning" id="bar-returning" dataKey="returning" name="Returning" fill={T.antiqueGold} radius={[5, 5, 0, 0]} barSize={14} />
+                <Bar key="bar-returning" id="bar-returning" dataKey="returning" name="Returning" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} barSize={14} />
               </BarChart>
             </ResponsiveContainer>
             )}

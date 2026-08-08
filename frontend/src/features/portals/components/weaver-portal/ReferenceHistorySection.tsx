@@ -67,8 +67,8 @@ export function ReferenceHistorySection({
                   size="sm"
                   className={
                     historyTab === t.id
-                      ? "rounded-full px-4 py-2 h-auto border border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold"
-                      : "rounded-full px-4 py-2 h-auto border border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold"
+                      ? "rounded-full px-4 py-2 h-auto border border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold"
+                      : "rounded-full px-4 py-2 h-auto border border-[rgba(110,15,45,0.10)] bg-transparent text-[#69635E] font-semibold"
                   }
                 >{t.label}</Button>
               ))}
@@ -108,7 +108,7 @@ export function ReferenceHistorySection({
                       ))}
                     </div>
                     {signedRecords.map(r => (
-                      <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                      <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
                         <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
                         <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</div>
                         <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
@@ -158,7 +158,7 @@ export function ReferenceHistorySection({
                       ))}
                     </div>
                     {myWeavingBatches.map(b => (
-                      <div key={b.batchId} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                      <div key={b.batchId} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
                         <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</div>
                         <div style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
                           {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
@@ -208,7 +208,7 @@ export function ReferenceHistorySection({
                       ))}
                     </div>
                     {mySarees.map((s, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid rgba(107,26,42,0.06)`, alignItems: "center" }}>
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
                         <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</div>
                         <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</div>
                         <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>

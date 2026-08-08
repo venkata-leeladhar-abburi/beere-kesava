@@ -2,7 +2,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Bell } from "lucide-react";
-import { ChartBar } from "@phosphor-icons/react";
+import { BarChart3 as ChartBar } from "lucide-react";
 import { T, F } from "../../theme";
 import { ACTIVITIES, ACTIVITY_ICONS } from "../../data";
 import { FadeUp } from "../../common/primitives";
@@ -18,7 +18,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
           <div style={{ background: `linear-gradient(100deg, ${T.luxuryBrown} 0%, #5A3220 100%)`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ChartBar size={24} color="#FFFDF9" weight="fill" />
+                <ChartBar size={24} color="#FFFDF9" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>Weaver Activities</div>
@@ -63,7 +63,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   }}
                 >
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: cfg.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <PhIcon size={22} color={cfg.color} weight="fill" />
+                    <PhIcon size={22} color={cfg.color} />
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>

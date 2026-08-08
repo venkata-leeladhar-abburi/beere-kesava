@@ -270,6 +270,23 @@ export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
 }
 
+export type EnumRecipientTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecipientType | Prisma.EnumRecipientTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel> | $Enums.RecipientType
+}
+
+export type EnumRecipientTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecipientType | Prisma.EnumRecipientTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRecipientTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecipientType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel>
+}
+
 export type DecimalFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | Prisma.ListDecimalFieldRefInput<$PrismaModel>
@@ -1267,6 +1284,23 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
+}
+
+export type NestedEnumRecipientTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecipientType | Prisma.EnumRecipientTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel> | $Enums.RecipientType
+}
+
+export type NestedEnumRecipientTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RecipientType | Prisma.EnumRecipientTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RecipientType[] | Prisma.ListEnumRecipientTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRecipientTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecipientType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRecipientTypeFilter<$PrismaModel>
 }
 
 export type NestedDecimalFilter<$PrismaModel = never> = {

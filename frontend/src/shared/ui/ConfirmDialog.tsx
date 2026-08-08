@@ -59,7 +59,7 @@ export function ConfirmDialog({
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 19, color: "#3D0E1A", marginBottom: 8 }}>
             {title}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: "#8B7060", lineHeight: 1.55, marginBottom: error ? 14 : 24 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 14, color: "#69635E", lineHeight: 1.55, marginBottom: error ? 14 : 24 }}>
             {message}
           </div>
 

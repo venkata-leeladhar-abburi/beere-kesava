@@ -21,7 +21,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       <thead>
         <tr style={{ background: T.silkCream }}>
           {["Purchase Ref", "Invoice", "Sarees", "Buying Price", "Selling Price", "Profit", "Bill Amount", "Payment", ""].map(h => (
-            <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+            <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
           ))}
         </tr>
       </thead>

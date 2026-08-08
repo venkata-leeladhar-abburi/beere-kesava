@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, Menu, UserRound, ShoppingCart, Package, ChevronLeft, LogOut } from "lucide-react";
+import { ChevronRight, Menu, UserRound, ShoppingCart, Package, ChevronLeft, LogOut, X } from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, G, EASE } from "./theme";
 import { NAV_GROUPS, findNavGroup } from "./data";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SA MOBILE — MENU DRAWER + TOP NAV
@@ -51,13 +52,13 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                   <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Superadmin</div>
                 </div>
               </div>
-              <motion.button whileTap={{ scale: 0.88 }} onClick={onClose}
-                style={{ width: 32, height: 32, borderRadius: 9, border: "1px solid rgba(245,232,208,0.20)", background: "rgba(245,232,208,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                <svg width={14} height={14} viewBox="0 0 14 14" fill="none">
-                  <path d="M1 1L13 13M13 1L1 13" stroke="rgba(245,232,208,0.85)" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </motion.button>
+              <IconButton
+                icon={X}
+                label="Close menu"
+                onClick={onClose}
+                variant="ghost"
+                className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)] hover:text-[rgba(245,232,208,0.85)]"
+              />
             </div>
 
             <div style={{ flex: 1, padding: "10px 12px" }}>
@@ -75,27 +76,30 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                     {group.pages.map((page, i) => {
                       const isActive = activeTab === page.key;
                       return (
-                        <motion.button
+                        <motion.div
                           key={page.key}
                           initial={{ opacity: 0, x: -18 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.32, delay: 0.04 + (gi * 3 + i) * 0.03, ease: EASE }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => { setTab(page.key); onClose(); }}
                           style={{
-                            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-                            padding: "11px 14px 11px 30px", borderRadius: 12, marginBottom: 3,
+                            borderRadius: 12, marginBottom: 3,
                             border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
                             background: isActive ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)` : "transparent",
-                            cursor: "pointer", textAlign: "left",
                           }}
                         >
-                          <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 14, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
-                            {page.label}
-                            {page.sa && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0 }} />}
-                          </span>
-                          {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
-                        </motion.button>
+                          <Button
+                            variant="tertiary"
+                            fullWidth
+                            onClick={() => { setTab(page.key); onClose(); }}
+                            className="!justify-between !gap-3 !py-[11px] !pl-[30px] !pr-3.5 !bg-transparent !border-none"
+                          >
+                            <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 14, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
+                              {page.label}
+                              {page.sa && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0 }} />}
+                            </span>
+                            {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
+                          </Button>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -132,11 +136,13 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
       transition={{ duration: 0.6, ease: EASE }}
       style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" as any, borderBottom: `2px solid ${T.antiqueGold}`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
     >
-      <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }} onClick={onMenuOpen}
-        style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${T.borderDef}`, background: "rgba(0,0,0,0)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <Menu size={17} color={T.luxuryBrown} />
-      </motion.button>
+      <IconButton
+        icon={Menu}
+        label="Open menu"
+        onClick={onMenuOpen}
+        variant="ghost"
+        className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)]"
+      />
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.25)` }}>
           <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
@@ -147,11 +153,15 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
         </div>
       </div>
       <div style={{ position: "relative" }}>
-        <motion.button onClick={() => setShowProfile(p => !p)} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
-          style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, background: "#C4923A", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}
-        >
-          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
-        </motion.button>
+        <div style={{ borderRadius: 10, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, boxShadow: "0 3px 10px rgba(196,146,58,0.35)", display: "inline-block" }}>
+          <Button
+            onClick={() => setShowProfile(p => !p)}
+            variant="tertiary"
+            className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#C4923A] hover:!bg-[#C4923A]"
+          >
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
+          </Button>
+        </div>
         {showProfile && (
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -159,37 +169,41 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
             </div>
             <div style={{ padding: "6px 0" }}>
-              <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
+              <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <UserRound size={14} color={T.taupe} /> View Profile
-              </button>
+              </Button>
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
 
               <div style={{ padding: "4px 16px 2px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-              <button onClick={() => {
+              <Button onClick={() => {
                 setShowProfile(false);
                 localStorage.setItem("bk_original_admin_role", "superadmin");
                 selectRole("shop");
                 navigate("/shop");
-              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textAlign: "left" as const }}>
+              }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2 !px-4 !text-xs !font-normal !text-[#3B2314]">
                 <ShoppingCart size={13} color={T.taupe} /> Shop Staff Portal
-              </button>
-              <button onClick={() => {
+              </Button>
+              <Button onClick={() => {
                 setShowProfile(false);
                 localStorage.setItem("bk_original_admin_role", "superadmin");
                 selectRole("worker");
                 navigate("/worker");
-              }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "8px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, textAlign: "left" as const }}>
+              }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2 !px-4 !text-xs !font-normal !text-[#3B2314]">
                 <Package size={13} color={T.taupe} /> Worker Staff Portal
-              </button>
-
+              </Button>
 
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-              <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}>
+              <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <ChevronLeft size={14} color={T.taupe} /> Switch Portal
-              </button>
-              <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: "#C0392B", textAlign: "left" as const }}>
+              </Button>
+              <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
                 <LogOut size={14} color="#C0392B" /> Logout
-              </button>
+              </Button>
             </div>
           </div>
         )}

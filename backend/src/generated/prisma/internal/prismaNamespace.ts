@@ -406,6 +406,7 @@ export const ModelName = {
   Weaver: 'Weaver',
   FactoryLoom: 'FactoryLoom',
   DesignLibrary: 'DesignLibrary',
+  DesignDispatch: 'DesignDispatch',
   SareeTypeRate: 'SareeTypeRate',
   Batch: 'Batch',
   BatchSareeRow: 'BatchSareeRow',
@@ -464,7 +465,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "vendorBill" | "purchaseOrderItem" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "designDispatch" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "vendorBill" | "purchaseOrderItem" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1131,6 +1132,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DesignLibraryCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DesignLibraryCountAggregateOutputType> | number
+        }
+      }
+    }
+    DesignDispatch: {
+      payload: Prisma.$DesignDispatchPayload<ExtArgs>
+      fields: Prisma.DesignDispatchFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DesignDispatchFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DesignDispatchFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        findFirst: {
+          args: Prisma.DesignDispatchFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DesignDispatchFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        findMany: {
+          args: Prisma.DesignDispatchFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>[]
+        }
+        create: {
+          args: Prisma.DesignDispatchCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        createMany: {
+          args: Prisma.DesignDispatchCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DesignDispatchCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>[]
+        }
+        delete: {
+          args: Prisma.DesignDispatchDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        update: {
+          args: Prisma.DesignDispatchUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        deleteMany: {
+          args: Prisma.DesignDispatchDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DesignDispatchUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DesignDispatchUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>[]
+        }
+        upsert: {
+          args: Prisma.DesignDispatchUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DesignDispatchPayload>
+        }
+        aggregate: {
+          args: Prisma.DesignDispatchAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDesignDispatch>
+        }
+        groupBy: {
+          args: Prisma.DesignDispatchGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DesignDispatchGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DesignDispatchCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DesignDispatchCountAggregateOutputType> | number
         }
       }
     }
@@ -4481,6 +4556,21 @@ export const DesignLibraryScalarFieldEnum = {
 export type DesignLibraryScalarFieldEnum = (typeof DesignLibraryScalarFieldEnum)[keyof typeof DesignLibraryScalarFieldEnum]
 
 
+export const DesignDispatchScalarFieldEnum = {
+  id: 'id',
+  recipientType: 'recipientType',
+  recipientId: 'recipientId',
+  recipientName: 'recipientName',
+  instructions: 'instructions',
+  colorSlipImageUrl: 'colorSlipImageUrl',
+  designGraphImageUrl: 'designGraphImageUrl',
+  batches: 'batches',
+  sentAt: 'sentAt'
+} as const
+
+export type DesignDispatchScalarFieldEnum = (typeof DesignDispatchScalarFieldEnum)[keyof typeof DesignDispatchScalarFieldEnum]
+
+
 export const SareeTypeRateScalarFieldEnum = {
   code: 'code',
   type: 'type',
@@ -5347,6 +5437,20 @@ export type ListEnumLoomStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'RecipientType'
+ */
+export type EnumRecipientTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipientType'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipientType[]'
+ */
+export type ListEnumRecipientTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipientType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Decimal'
  */
 export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -5371,20 +5475,6 @@ export type EnumBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'BatchStatus[]'
  */
 export type ListEnumBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BatchStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'RecipientType'
- */
-export type EnumRecipientTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipientType'>
-    
-
-
-/**
- * Reference to a field of type 'RecipientType[]'
- */
-export type ListEnumRecipientTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipientType[]'>
     
 
 
@@ -6037,6 +6127,7 @@ export type GlobalOmitConfig = {
   weaver?: Prisma.WeaverOmit
   factoryLoom?: Prisma.FactoryLoomOmit
   designLibrary?: Prisma.DesignLibraryOmit
+  designDispatch?: Prisma.DesignDispatchOmit
   sareeTypeRate?: Prisma.SareeTypeRateOmit
   batch?: Prisma.BatchOmit
   batchSareeRow?: Prisma.BatchSareeRowOmit

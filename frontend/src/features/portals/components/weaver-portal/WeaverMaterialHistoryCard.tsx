@@ -6,9 +6,9 @@ import { Check, Clock, Pencil, Send } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
 
 const C = {
-  burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
-  bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", inp: "#FFF8E7", white: "#FFFFFF",
+  burg: "#6E0F2D", dark: "#3D0E1A", gold: "#C89B47", green: "#1E6640",
+  crim: "#C0392B", text: "#3B2314", muted: "#69635E",
+  bdr: "rgba(110,15,45,0.10)", cream: "#F7F2EA", inp: "#FFFDF9", white: "#FFFFFF",
 };
 const F = {
   d: "'Plus Jakarta Sans', sans-serif",
@@ -65,7 +65,7 @@ export function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) =>
           </div>
         )}
         {hasSig && (
-          <Button onClick={clear} variant="link" className="absolute bottom-2 right-3 text-xs text-[#C4923A]">
+          <Button onClick={clear} variant="link" className="absolute bottom-2 right-3 text-xs text-[#C89B47]">
             Clear
           </Button>
         )}
@@ -91,7 +91,7 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
     <div style={{ background: "#FFF", border: `1px solid ${isPending ? C.gold : C.bdr}`, borderRadius: 18, padding: "22px 26px", boxShadow: "0 3px 16px rgba(44,24,16,0.06)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap" as const, gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.burg, background: "rgba(107,26,42,0.08)", borderRadius: 8, padding: "4px 10px" }}>{r.id}</span>
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.burg, background: "rgba(110,15,45,0.08)", borderRadius: 8, padding: "4px 10px" }}>{r.id}</span>
           {r.batchId && (
             <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.gold, background: "rgba(196,146,58,0.12)", borderRadius: 8, padding: "4px 10px" }}>{r.batchId}</span>
           )}
@@ -136,10 +136,10 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
               variant="ghost"
               className={
                 "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
-                (sigMethod === "here" ? "border-[1.5px] border-[#6B1A2A]" : "border-[1.5px] border-[rgba(139,26,46,0.12)]")
+                (sigMethod === "here" ? "border-[1.5px] border-[#6E0F2D]" : "border-[1.5px] border-[rgba(110,15,45,0.10)]")
               }
             >
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Pencil size={15} color={sigMethod === "here" ? "#FFF" : C.burg} />
               </div>
               <div>
@@ -152,10 +152,10 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
               variant="ghost"
               className={
                 "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
-                (sigMethod === "remote" ? "border-[1.5px] border-[#6B1A2A]" : "border-[1.5px] border-[rgba(139,26,46,0.12)]")
+                (sigMethod === "remote" ? "border-[1.5px] border-[#6E0F2D]" : "border-[1.5px] border-[rgba(110,15,45,0.10)]")
               }
             >
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "remote" ? C.burg : "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "remote" ? C.burg : "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Send size={15} color={sigMethod === "remote" ? "#FFF" : C.burg} />
               </div>
               <div>
@@ -166,13 +166,13 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
           </div>
           {sigMethod === "here" && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ border: `1.5px solid rgba(107,26,42,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+              <div style={{ border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
                 <SignatureCanvas onSigned={setHasSig} />
               </div>
             </div>
           )}
           {sigMethod === "remote" && !requestSent && (
-            <Button onClick={() => setRequestSent(true)} fullWidth className="h-11 border-[1.5px] border-[#C4923A] bg-transparent rounded-full font-semibold text-[13px] text-[#C4923A] mb-3">
+            <Button onClick={() => setRequestSent(true)} fullWidth className="h-11 border-[1.5px] border-[#C89B47] bg-transparent rounded-full font-semibold text-[13px] text-[#C89B47] mb-3">
               Send Signature Request to My Phone
             </Button>
           )}

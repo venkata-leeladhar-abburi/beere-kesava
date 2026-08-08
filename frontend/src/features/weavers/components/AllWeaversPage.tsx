@@ -5,7 +5,7 @@ import {
   Users, Activity, Clock, CheckCircle2,
   Layers, Layers3, Star, MapPin, Phone, Eye, Edit3, AlertTriangle,
 } from "lucide-react";
-import { Rows } from "@phosphor-icons/react";
+import { Rows3 as Rows } from "lucide-react";
 import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
@@ -386,7 +386,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                     <div style={{ marginBottom: 12 }}>
                       <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                          <Rows size={14} color={T.royalBurgundy} />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>

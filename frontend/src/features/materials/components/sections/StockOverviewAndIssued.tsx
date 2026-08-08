@@ -25,15 +25,19 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
   const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
 
+  const warpUnit = stockItems.find(i => i.materialType === "WARP")?.unit ?? "kg";
+  const reshamUnit = stockItems.find(i => i.materialType === "RESHAM")?.unit ?? "kg";
+  const jariUnit = stockItems.find(i => i.materialType === "JARI")?.unit ?? "Reels";
+
   const cards = MAT_CARDS_TEMPLATE.map(card => {
     if (card.name.toLowerCase().includes("warp")) {
-      return { ...card, stock: `${warpStock} kg` };
+      return { ...card, stock: `${warpStock} ${warpUnit}` };
     }
     if (card.name.toLowerCase().includes("resham")) {
-      return { ...card, stock: `${reshamStock} kg` };
+      return { ...card, stock: `${reshamStock} ${reshamUnit}` };
     }
     if (card.name.toLowerCase().includes("jari")) {
-      return { ...card, stock: `${jariStock} kg` };
+      return { ...card, stock: `${jariStock} ${jariUnit}` };
     }
     return card;
   });
@@ -93,14 +97,24 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
-  let warpKg = 0, reshamKg = 0, jariBuns = 0;
+  let warpKg = 0, reshamKg = 0, jariReels = 0, jariBuns = 0;
   thisMonthRecords.forEach(r => r.materials.forEach(m => {
-    if (m.materialType === "Warp") warpKg += m.quantity;
-    else if (m.materialType === "Resham") reshamKg += m.quantity;
-    else if (m.materialType === "Jari") jariBuns += m.unit === "Buns" ? m.quantity : m.quantity / 4;
+    const qty = Number(m.quantity || 0);
+    const unit = (m.unit || "").toLowerCase();
+    if (m.materialType === "Warp") {
+      warpKg += unit.includes("g") && !unit.includes("kg") ? qty / 1000 : qty;
+    } else if (m.materialType === "Resham") {
+      reshamKg += unit.includes("g") && !unit.includes("kg") ? qty / 1000 : qty;
+    } else if (m.materialType === "Jari") {
+      if (unit.startsWith("bun")) {
+        jariBuns += qty;
+        jariReels += qty * 4;
+      } else {
+        jariReels += qty;
+        jariBuns += qty / 4;
+      }
+    }
   }));
-
-  const jariReels = jariBuns * 4;
 
   return (
     <section id="mat-issued" style={{ padding: `24px ${px}px 0` }}>
@@ -148,7 +162,7 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
           {[
             { label: "Warp Disbursed", val: `${warpKg.toFixed(warpKg % 1 === 0 ? 0 : 1)} kg`, sub: "For vertical threads", color: T.royalBurgundy, bg: "rgba(110,15,45,0.04)", border: "rgba(110,15,45,0.12)", icon: <Layers size={16} color={T.royalBurgundy} /> },
             { label: "Resham Disbursed", val: `${reshamKg.toFixed(reshamKg % 1 === 0 ? 0 : 1)} kg`, sub: "For body & borders", color: T.antiqueGold, bg: "rgba(200,155,71,0.06)", border: "rgba(200,155,71,0.18)", icon: <Tag size={16} color="#7A5E1C" /> },
-            { label: "Jari Disbursed", val: `${jariBuns.toFixed(jariBuns % 1 === 0 ? 0 : 1)} Buns`, sub: `${jariReels.toFixed(0)} Reels`, color: T.luxuryBrown, bg: "rgba(59,35,20,0.04)", border: "rgba(59,35,20,0.12)", icon: <Sparkles size={16} color={T.luxuryBrown} /> },
+            { label: "Jari Disbursed", val: `${Math.round(jariReels)} Reels`, sub: `${Math.round(jariBuns)} Buns`, color: T.luxuryBrown, bg: "rgba(59,35,20,0.04)", border: "rgba(59,35,20,0.12)", icon: <Sparkles size={16} color={T.luxuryBrown} /> },
           ].map(s => (
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

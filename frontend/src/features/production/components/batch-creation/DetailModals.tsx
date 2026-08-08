@@ -1,5 +1,5 @@
 import React from "react";
-import { Factory } from "@phosphor-icons/react";
+import { Factory } from "lucide-react";
 import { useBatches, SareeRow } from "../../contexts/BatchContext";
 import { T, F, Pip } from "./constants";
 import { PickerShell, pipColor } from "./PickerModals";
@@ -76,7 +76,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Factory size={24} color={T.royalBurgundy} weight="duotone" />
+              <Factory size={24} color={T.royalBurgundy} />
             </div>
             <div>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{loom.loomNumber}</div>

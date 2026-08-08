@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, LayoutGrid, LayoutList, Receipt, Search, TrendingUp, X } from "lucide-react";
+import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -13,6 +13,7 @@ import { suppliersApi } from "../../../../shared/api/suppliers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
+import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -168,9 +169,10 @@ export function PaymentHistorySection() {
             </p>
           </div>
           <DownloadGate>
-            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-              <Download size={15} color={T.antiqueGold} />Download All Transactions
-            </button>
+            <Button variant="secondary" size="md" iconLeft={Download}
+              className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
+              Download All Transactions
+            </Button>
           </DownloadGate>
         </div>
 
@@ -203,37 +205,34 @@ export function PaymentHistorySection() {
             {/* View toggle */}
             <div style={{ display: "flex", alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
               {viewOptions.map(({ key, Icon: Ico, label }) => (
-                <button key={key} onClick={() => setView(key)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 7, border: "none", background: view === key ? T.royalBurgundy : "transparent", color: view === key ? "#FFFDF9" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s" }}>
-                  <Ico size={14} />{label}
-                </button>
+                <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Ico}
+                  onClick={() => setView(key)}
+                  className={view === key ? "rounded-[7px] bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-[7px] bg-transparent text-[var(--text-tertiary)]"}>
+                  {label}
+                </Button>
               ))}
             </div>
 
             {/* Type dropdown */}
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-              style={{ height: 38, padding: "0 12px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", cursor: "pointer" }}>
-              {["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(o => <option key={o}>{o}</option>)}
-            </select>
+            <Select value={typeFilter} onValueChange={setTypeFilter} size="sm">
+              {["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </Select>
 
             {/* Status dropdown */}
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-              style={{ height: 38, padding: "0 12px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", cursor: "pointer" }}>
-              {["All Statuses","Paid","Partial","Pending"].map(o => <option key={o}>{o}</option>)}
-            </select>
+            <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+              {["All Statuses","Paid","Partial","Pending"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </Select>
 
             {/* Search */}
-            <div style={{ flex: 1, minWidth: 200, position: "relative" as const }}>
-              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..."
-                style={{ width: "100%", height: 38, padding: "0 12px 0 36px", border: `1px solid ${T.borderDef}`, borderRadius: 8, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
             </div>
 
             {/* Clear */}
-            <button onClick={clearFilters}
-              style={{ display: "flex", alignItems: "center", gap: 6, height: 38, padding: "0 15px", border: `1px solid ${T.borderDef}`, borderRadius: 8, background: T.silkCream, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer", whiteSpace: "nowrap" as const }}>
-              <X size={13} />Clear
-            </button>
+            <Button variant="secondary" size="sm" iconLeft={X} onClick={clearFilters}
+              className="whitespace-nowrap rounded-[8px] bg-[var(--surface-canvas)] text-[var(--text-tertiary)]">
+              Clear
+            </Button>
           </div>
 
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
@@ -339,9 +338,7 @@ export function PaymentHistorySection() {
                   </div>
 
                   {/* View button */}
-                  <button style={{ padding: "6px 14px", border: `1px solid ${T.borderDef}`, borderRadius: 8, background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", flexShrink: 0 }}>
-                    <Eye size={13} />
-                  </button>
+                  <IconButton icon={Eye} label="View" variant="secondary" size="sm" className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
                 </motion.div>
               );
             })}
@@ -420,19 +417,10 @@ export function PaymentHistorySection() {
                         </td>
                         <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span></td>
                         <td style={{ ...TD, textAlign: "center" as const }}>
-                          <button
-                            style={{
-                              display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px",
-                              border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                              background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                              color: T.royalBurgundy, cursor: "pointer",
-                              transition: "all 0.15s ease",
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                          >
-                            <Eye size={12} /> View
-                          </button>
+                          <Button variant="secondary" size="sm" iconLeft={Eye}
+                            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+                            View
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -464,16 +452,18 @@ export function PaymentHistorySection() {
                 Showing {Math.min(PER_PAGE, filtered.length)} of {filtered.length} results
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 13px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
-                  <ChevronLeft size={14} />Prev
-                </button>
+                <Button variant="secondary" size="sm" iconLeft={ChevronLeft} className="rounded-[7px] text-[var(--text-tertiary)]">
+                  Prev
+                </Button>
                 {[1,2,3].map(p => (
-                  <button key={p} onClick={() => setPage(p)}
-                    style={{ width: 34, height: 34, borderRadius: 7, border: `1px solid ${page===p ? T.royalBurgundy : T.borderDef}`, background: page===p ? T.royalBurgundy : "#fff", color: page===p ? "#FFFDF9" : T.luxuryBrown, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{p}</button>
+                  <Button key={p} variant={page === p ? "primary" : "secondary"} size="sm" onClick={() => setPage(p)}
+                    className={page === p ? "size-[34px] rounded-[7px] bg-[#6E0F2D] p-0 text-[#FFFDF9]" : "size-[34px] rounded-[7px] p-0 text-[#3B2314]"}>
+                    {p}
+                  </Button>
                 ))}
-                <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 13px", border: `1px solid ${T.borderDef}`, borderRadius: 7, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>
-                  Next<ChevronRight size={14} />
-                </button>
+                <Button variant="secondary" size="sm" iconRight={ChevronRight} className="rounded-[7px] text-[var(--text-tertiary)]">
+                  Next
+                </Button>
               </div>
             </div>
           </div>

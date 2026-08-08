@@ -1,10 +1,11 @@
 // ── Non-overview tabs for the weaver profile drawer (batches / dispatches / payments / materials) ─
 import React from "react";
 import { Calendar, Check, Clock } from "lucide-react";
-import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../../theme";
 import { SectionPill } from "../../common/primitives";
 import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
+import { Button } from "../../../../../shared/ui/primitives";
 
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: any) {
   return (
@@ -109,10 +110,11 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                                   </td>
                                   <td style={{ padding: "9px 10px" }}>
                                     {idx === 0 && batchDispatches.length > 0 ? (
-                                      <button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
-                                        <PaperPlaneTilt size={11} weight="bold" /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
-                                      </button>
+                                      <Button onClick={() => setViewDispatches({ weaverName: weaver.name, records: batchDispatches })}
+                                        variant="ghost" size="sm"
+                                        className="h-auto rounded-md bg-[rgba(110,15,45,0.08)] text-[#6E0F2D] px-[9px] py-[3px] text-[12px] font-bold">
+                                        <PaperPlaneTilt size={11} /> {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
+                                      </Button>
                                     ) : (
                                       <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>
                                     )}

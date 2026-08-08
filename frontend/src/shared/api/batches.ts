@@ -43,7 +43,7 @@ export interface AssignBatchRowPayload {
   recipientType: BackendRecipientType;
   weaverId?: string;
   factoryLoomId?: string;
-  designCode: string;
+  designCode?: string;
   sareeTypeCode: string;
   loomNumber?: number;
   // NOTE: bulkOrderRef intentionally not sent — no backend Bulk Orders module
@@ -61,4 +61,6 @@ export const batchesApi = {
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}`, payload),
 
   finalize: (batchId: string) => apiClient.post<BackendBatch>(`/batches/${batchId}/finalize`, {}),
+
+  remove: (batchId: string) => apiClient.delete<void>(`/batches/${batchId}`),
 };

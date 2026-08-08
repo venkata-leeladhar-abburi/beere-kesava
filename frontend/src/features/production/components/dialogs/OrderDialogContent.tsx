@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText, Receipt, CalendarClock, ShoppingBag, X, Eye } from "lucide-react";
+import { FileText, Receipt, CalendarClock, ShoppingBag, Eye } from "lucide-react";
 import { INVOICES } from "../../../payments/data/invoices";
 import { T, F } from "../theme";
 import type { BulkOrder } from "../types";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 interface PreviewInvoice {
   id: string;
@@ -72,30 +73,20 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         </div>
 
         <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}` }}>
-          <button
+          <Button
             onClick={() => setActiveTab("invoices")}
-            style={{
-              flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer",
-              background: activeTab === "invoices" ? "#FFFFFF" : "transparent",
-              color: activeTab === "invoices" ? T.royalBurgundy : T.taupe,
-              boxShadow: activeTab === "invoices" ? "0 4px 12px rgba(110,15,45,0.08)" : "none",
-              transition: "all 0.2s",
-            }}
+            variant="ghost"
+            className={`flex-1 h-auto py-2.5 rounded-lg text-[13px] font-bold ${activeTab === "invoices" ? "bg-white text-[#6E0F2D] shadow-[0_4px_12px_rgba(110,15,45,0.08)]" : "bg-transparent text-[var(--text-tertiary)]"}`}
           >
             Invoices ({invoices.length})
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab("payments")}
-            style={{
-              flex: 1, padding: "10px 0", border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer",
-              background: activeTab === "payments" ? "#FFFFFF" : "transparent",
-              color: activeTab === "payments" ? T.royalBurgundy : T.taupe,
-              boxShadow: activeTab === "payments" ? "0 4px 12px rgba(110,15,45,0.08)" : "none",
-              transition: "all 0.2s",
-            }}
+            variant="ghost"
+            className={`flex-1 h-auto py-2.5 rounded-lg text-[13px] font-bold ${activeTab === "payments" ? "bg-white text-[#6E0F2D] shadow-[0_4px_12px_rgba(110,15,45,0.08)]" : "bg-transparent text-[var(--text-tertiary)]"}`}
           >
             Payment History ({payments.length})
-          </button>
+          </Button>
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
@@ -121,9 +112,10 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.amount.toLocaleString("en-IN")}</div>
                           <span style={{ display: "inline-block", fontSize: 12, fontFamily: F.mono, fontWeight: 700, background: inv.status === "paid" ? "rgba(30,102,64,0.11)" : "rgba(200,155,71,0.11)", color: inv.status === "paid" ? T.green : T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", marginTop: 4 }}>{inv.status}</span>
                         </div>
-                        <button onClick={() => setPreviewInvoice(inv)} style={{ background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.1)`, borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, transition: "background 0.2s" }} onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.1)"} onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.05)"}>
-                          <Eye size={12} /> View
-                        </button>
+                        <Button onClick={() => setPreviewInvoice(inv)} variant="ghost" size="sm" iconLeft={Eye}
+                          className="h-auto py-[5px] px-2.5 rounded-md bg-[rgba(110,15,45,0.05)] border border-[rgba(110,15,45,0.1)] text-xs font-semibold text-[#6E0F2D] hover:bg-[rgba(110,15,45,0.1)]">
+                          View
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -172,7 +164,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                     <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Beere Kesava & Brothers Silks</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
                   </div>
-                  <button onClick={() => setPreviewInvoice(null)} style={{ background: "transparent", border: "none", color: "#FFF", cursor: "pointer", display: "flex", padding: 4 }}><X size={20} /></button>
+                  <IconButton icon="close" label="Close invoice preview" onClick={() => setPreviewInvoice(null)} variant="ghost" size="sm" className="text-white hover:bg-white/10" />
                 </div>
                 <div style={{ padding: "18px 24px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>

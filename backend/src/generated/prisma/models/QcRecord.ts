@@ -534,14 +534,6 @@ export type QcRecordNullableScalarRelationFilter = {
   isNot?: Prisma.QcRecordWhereInput | null
 }
 
-export type StringNullableListFilter<$PrismaModel = never> = {
-  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
-  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
-  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  isEmpty?: boolean
-}
-
 export type QcRecordCountOrderByAggregateInput = {
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrder

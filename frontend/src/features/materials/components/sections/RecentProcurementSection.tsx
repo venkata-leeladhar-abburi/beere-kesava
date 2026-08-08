@@ -24,7 +24,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
       po: grn.invoiceNo ?? grn.id,
       grnId: grn.id,
       type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-      quantity: `${item.quantity} ${item.unitPrice ? "kg" : "Buns"}`,
+      quantity: `${item.quantity} ${item.materialType === "JARI" ? (item.unit || "Reels") : (item.unit || "kg")}`,
       description: `${item.name}${item.grade ? ` (${item.grade})` : ""}`,
       vendor: grn.supplierName,
       vendorCity: "Vendor Store",

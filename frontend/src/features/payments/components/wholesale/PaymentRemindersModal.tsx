@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { EASE, F, T } from "../../theme";
 import { Invoice } from "../../types";
+import { Button, Checkbox, IconButton, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 // ── Payment Reminders Modal ───────────────────────────────────────────────────
 export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
@@ -53,23 +54,21 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
           <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
             Configure and schedule alerts for {overdueInvoices.length} overdue invoices
           </div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
         </div>
 
         <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
           {/* Overdue Invoices List Selection */}
           <div>
             <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</label>
-            <select value={selectedInvoiceId} onChange={e => setSelectedInvoiceId(e.target.value)}
-              style={{ width: "100%", height: 40, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
+            <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId} className="w-full">
               {overdueInvoices.map(i => (
-                <option key={i.id} value={i.id}>
+                <SelectItem key={i.id} value={i.id}>
                   {i.customer} ({i.id}) — ₹{(i.total - i.paid).toLocaleString("en-IN")} ({i.daysOverdue}d late)
-                </option>
+                </SelectItem>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Reminder Preview Box */}
@@ -91,11 +90,9 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
               ].map(ch => (
                 <label key={ch.key} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "12px 14px", background: "#FFFFFF", border: `1.5px solid ${channels[ch.key as keyof typeof channels] ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, cursor: "pointer", position: "relative" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={channels[ch.key as keyof typeof channels]}
-                      onChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
-                      style={{ accentColor: T.royalBurgundy }}
+                      onCheckedChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
                     />
                     <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
                   </div>
@@ -114,30 +111,25 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
                 { key: "daily", label: "Daily (Until Paid)", desc: "Gentle nudge daily" },
                 { key: "weekly", label: "Weekly (Every Mon)", desc: "Structured reminder" }
               ].map(s => (
-                <button
+                <Button
                   key={s.key}
+                  variant="secondary"
                   onClick={() => setScheduleType(s.key)}
-                  style={{
-                    flex: 1, padding: "12px 10px", borderRadius: 10,
-                    background: scheduleType === s.key ? "rgba(110,15,45,0.05)" : "#FFFFFF",
-                    border: `1.5px solid ${scheduleType === s.key ? T.royalBurgundy : T.borderDef}`,
-                    fontFamily: F.ui, textAlign: "center" as const, cursor: "pointer",
-                    transition: "all 0.15s ease"
-                  }}
+                  className={`h-auto flex-1 flex-col rounded-[10px] py-3 text-center ${scheduleType === s.key ? "border-[1.5px] border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[1.5px] bg-white"}`}
                 >
                   <div style={{ fontSize: 13, fontWeight: 700, color: scheduleType === s.key ? T.royalBurgundy : T.luxuryBrown }}>{s.label}</div>
                   <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
         </div>
 
         <div style={{ padding: "18px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleSend} disabled={sending} style={{ height: 42, padding: "0 28px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-            {sending ? "Sending..." : "Confirm & Send"}
-          </button>
+          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSend} loading={sending} className="rounded-full bg-[#6E0F2D]">
+            Confirm & Send
+          </Button>
         </div>
       </motion.div>
     </div>

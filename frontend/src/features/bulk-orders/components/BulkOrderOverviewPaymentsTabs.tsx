@@ -149,7 +149,7 @@ export function BulkOrderPaymentsTab({
             <thead>
               <tr style={{ background: T.silkCream }}>
                 {["Amount", "Date", "Method", "UTR / Reference", "Firm"].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                  <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left" as const, letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
                 ))}
               </tr>
             </thead>

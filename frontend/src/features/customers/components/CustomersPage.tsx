@@ -88,14 +88,17 @@ export function CustomersPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const retailList = React.useMemo(() => {
-    const backendRetail = customers.filter(c => c.type === "RETAIL");
-    const mapped = backendRetail.map(c => ({
-      name: c.name,
-      initials: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+    const backendRetail = (customers || []).filter(c => c.type === "RETAIL");
+    const mapped = backendRetail.map((c, idx) => ({
+      id: c.id || `backend-retail-${idx}`,
+      name: c.name || "Unnamed Customer",
+      initials: (c.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
       phone: c.phone || "—",
       city: c.city || "—",
       purchases: 0,
       spend: "0",
+      totalSpend: 0,
+      totalPurchases: 0,
       lastVisit: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
       regular: true,
       inactive: false,

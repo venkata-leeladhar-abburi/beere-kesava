@@ -6,6 +6,7 @@ import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "../../../c
 import { Card, Empty, ExportBtn, Pill, ScrollTable, SectionTitle, exportCsv, inr, td, tdMono, th } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── External purchases outstanding — purchase-wise, per supplier ─────────────
 export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
@@ -81,8 +82,8 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                 : { color: T.orange, bg: "rgba(230,126,34,0.12)" };
               return (
                 <div key={p.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                  <button onClick={() => setOpen(isOpen ? null : p.id)}
-                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: isOpen ? "rgba(110,15,45,0.04)" : "#FFF", border: "none", cursor: "pointer", textAlign: "left" }}>
+                  <Button variant="ghost" onClick={() => setOpen(isOpen ? null : p.id)}
+                    className={`h-auto w-full justify-start gap-[14px] rounded-none px-[18px] py-[14px] text-left ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                     {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -107,7 +108,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                         </div>
                       ))}
                     </div>
-                  </button>
+                  </Button>
 
                   <AnimatePresence initial={false}>
                     {isOpen && (

@@ -12,14 +12,20 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { resolveWeaverScope } from "../auth/weaver-scope";
 import { signatureUploadOptions } from "../common/storage/upload.config";
 import { UserRole } from "../generated/prisma/client";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
 import { MaterialIssuesService } from "./material-issues.service";
 
-// Production/operational module — WORKER access only.
+// Production/operational module — WORKER access by default. A WEAVER may
+// additionally read their own issued-material records (self-scoped below)
+// so the weaver portal can show what they've received; issuing, signing
+// and cancelling stay WORKER-only.
 @Controller("material-issues")
 @RequireRoles(UserRole.WORKER)
 export class MaterialIssuesController {
@@ -31,8 +37,13 @@ export class MaterialIssuesController {
   }
 
   @Get()
-  findAll(@Query() query: ListMaterialIssuesQueryDto) {
-    return this.materialIssuesService.findAll(query);
+  @RequireRoles(UserRole.WORKER, UserRole.WEAVER)
+  findAll(@CurrentUser() user: AuthenticatedUser, @Query() query: ListMaterialIssuesQueryDto) {
+    // A WEAVER token must never see another weaver's issues — ignore any
+    // client-supplied weaverId and force it to the caller's own weaver id.
+    const scopedQuery =
+      user.role === UserRole.WEAVER ? { ...query, weaverId: resolveWeaverScope(user) } : query;
+    return this.materialIssuesService.findAll(scopedQuery);
   }
 
   @Get(":id")

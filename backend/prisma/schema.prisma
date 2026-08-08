@@ -427,6 +427,19 @@ model DesignLibrary {
   sarees         Saree[]
 }
 
+model DesignDispatch {
+  id                 String        @id
+  recipientType      RecipientType
+  recipientId        String        // weaver id or loom number string
+  recipientName      String
+  instructions       String
+  colorSlipImageUrl  String?
+  designGraphImageUrl String?
+  batches            String[]      // array of batch IDs
+  sentAt             DateTime      @default(now())
+}
+
+
 model SareeTypeRate {
   code           String   @id
   type           String

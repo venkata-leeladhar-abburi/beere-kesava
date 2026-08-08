@@ -18,6 +18,41 @@ export function useMaterialsGivenForBatch(batchId: string) {
   return Object.entries(totals).map(([type, v]) => `${type}: ${v.qty}${v.unit}`).join(", ");
 }
 
+// ─── Dispatch instructions sent to the current weaver without a specific batch ──
+export function GeneralDispatchInstructionsBlock() {
+  const { getDispatchesForWeaver } = useDesignLibrary();
+  const { weaverId } = useCurrentWeaver();
+  const generalDispatches = weaverId ? getDispatchesForWeaver(weaverId).filter(d => d.batches.length === 0) : [];
+  
+  if (generalDispatches.length === 0) return null;
+  return (
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <div style={{ width: 5, height: 28, background: C.gold, borderRadius: 3 }} />
+        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>General Instructions</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
+        {generalDispatches.map(d => (
+          <div key={d.id} style={{ background: "rgba(196,146,58,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "16px 20px" }}>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.5, fontWeight: 500 }}>{d.instructions}</div>
+            {(d.colorSlipImage) && (
+              <div style={{ display: "flex", gap: 12, marginTop: 14 }}>
+                {d.colorSlipImage && (
+                  <div>
+                    <img src={d.colorSlipImage} alt="Color Slip" style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 6, textAlign: "center" as const }}>Color Slip</div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 12 }}>Sent on {d.sentAt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Dispatch instructions sent to the current weaver, linked to a specific batch ──
 export function DispatchInstructionsBlock({ batchId }: { batchId: string }) {
   const { getDispatchesForWeaver } = useDesignLibrary();
@@ -29,20 +64,14 @@ export function DispatchInstructionsBlock({ batchId }: { batchId: string }) {
       <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>DISPATCH INSTRUCTIONS</div>
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
         {myDispatches.map(d => (
-          <div key={d.id} style={{ background: "rgba(107,26,42,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
+          <div key={d.id} style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.5 }}>{d.instructions}</div>
-            {(d.colorSlipImage || d.designGraphImage) && (
+            {(d.colorSlipImage) && (
               <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                 {d.colorSlipImage && (
                   <div>
                     <img src={d.colorSlipImage} alt="Color Slip" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Color Slip</div>
-                  </div>
-                )}
-                {d.designGraphImage && (
-                  <div>
-                    <img src={d.designGraphImage} alt="Design Graph" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: `1px solid ${C.bdr}`, display: "block" }} />
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, textAlign: "center" as const }}>Design Graph</div>
                   </div>
                 )}
               </div>

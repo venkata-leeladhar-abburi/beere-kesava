@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
-import { Medal, CheckCircle, WarningCircle, Clock } from "@phosphor-icons/react";
+import { Medal, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Clock } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../../theme";
 import { FadeUp, Avatar, ActionDialog, qcColor } from "../../common/primitives";
@@ -71,7 +71,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
           <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Medal size={26} color="#FFFDF9" weight="fill" />
+                <Medal size={26} color="#FFFDF9" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Weaver Performance This Month</div>
@@ -92,7 +92,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
             <div style={{ padding: "28px 32px", borderRight: `1px solid ${T.borderDef}` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Medal size={20} color={T.antiqueGold} weight="fill" />
+                  <Medal size={20} color={T.antiqueGold} />
                 </div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Top Weavers This Month</div>
               </div>
@@ -147,7 +147,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <CheckCircle size={20} color={T.green} weight="fill" />
+                      <CheckCircle size={20} color={T.green} />
                     </div>
                     <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Quality Check Results</div>
                   </div>
@@ -200,7 +200,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 {/* Rejection note */}
                 <div style={{ background: "rgba(192,57,43,0.05)", border: "1px solid rgba(192,57,43,0.14)", borderRadius: 14, padding: "18px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <WarningCircle size={18} color={T.crimson} weight="fill" />
+                    <WarningCircle size={18} color={T.crimson} />
                     <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>Most common rejection reasons</span>
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6 }}>
@@ -223,7 +223,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                 ].map(s => (
                   <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 16, padding: "20px 22px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-                      <s.PhIcon size={18} color={s.color} weight="fill" />
+                      <s.PhIcon size={18} color={s.color} />
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: s.color, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 600 }}>{s.label}</div>
                     </div>
                     <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
@@ -238,7 +238,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
 
       <ActionDialog open={reportOpen} title="Download weaver performance report" onClose={() => setReportOpen(false)}>
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.6 }}><FileText size={34} color={T.royalBurgundy} /><div><b>Performance report is ready.</b><br />Includes leaderboard, QC pass/reject summary, pending dues, and batch-wise production.</div></div>
-        <button onClick={() => setReportOpen(false)} style={{ marginTop: 22, width: "100%", background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 12, padding: 14, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}><Download size={16} /> Download PDF</button>
+        <Button onClick={() => setReportOpen(false)} variant="primary" fullWidth className="mt-[22px] rounded-xl bg-[#6E0F2D]"><Download size={16} /> Download PDF</Button>
       </ActionDialog>
     </>
   );

@@ -10,7 +10,7 @@ import {
   Activity, MapPin, Phone, Eye, Edit3, Layers3, ShoppingCart, Layers, X
   , Flower2 as Lotus
 } from 'lucide-react';
-import { Rows, Clock as PhClock } from "@phosphor-icons/react";
+import { Rows3 as Rows, Clock as PhClock } from "lucide-react";
 import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
 import { useNavigate } from 'react-router';
 import { useInView } from 'motion/react';

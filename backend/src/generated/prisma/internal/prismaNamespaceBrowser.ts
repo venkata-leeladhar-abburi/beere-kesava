@@ -60,6 +60,7 @@ export const ModelName = {
   Weaver: 'Weaver',
   FactoryLoom: 'FactoryLoom',
   DesignLibrary: 'DesignLibrary',
+  DesignDispatch: 'DesignDispatch',
   SareeTypeRate: 'SareeTypeRate',
   Batch: 'Batch',
   BatchSareeRow: 'BatchSareeRow',
@@ -245,6 +246,21 @@ export const DesignLibraryScalarFieldEnum = {
 } as const
 
 export type DesignLibraryScalarFieldEnum = (typeof DesignLibraryScalarFieldEnum)[keyof typeof DesignLibraryScalarFieldEnum]
+
+
+export const DesignDispatchScalarFieldEnum = {
+  id: 'id',
+  recipientType: 'recipientType',
+  recipientId: 'recipientId',
+  recipientName: 'recipientName',
+  instructions: 'instructions',
+  colorSlipImageUrl: 'colorSlipImageUrl',
+  designGraphImageUrl: 'designGraphImageUrl',
+  batches: 'batches',
+  sentAt: 'sentAt'
+} as const
+
+export type DesignDispatchScalarFieldEnum = (typeof DesignDispatchScalarFieldEnum)[keyof typeof DesignDispatchScalarFieldEnum]
 
 
 export const SareeTypeRateScalarFieldEnum = {

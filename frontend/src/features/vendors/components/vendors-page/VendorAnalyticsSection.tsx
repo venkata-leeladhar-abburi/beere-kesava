@@ -1,4 +1,5 @@
 import React from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   Building2, AlertTriangle, CheckCircle2,
@@ -243,7 +244,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                 <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
-                <Line yAxisId="r" name="Orders" dataKey="orders" stroke={T.antiqueGold} strokeWidth={2.5}
+                <Line yAxisId="r" name="Orders" dataKey="orders" stroke={semantic.chart.series[1]} strokeWidth={2.5}
                   dot={{ r: 4, fill: T.antiqueGold, strokeWidth: 0 }} activeDot={{ r: 6 }} />
               </ComposedChart>
             </ResponsiveContainer>
@@ -297,7 +298,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
                 <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                   {topVendors.map((v, i) => (
-                    <Cell key={v.id} fill={i === 0 ? T.royalBurgundy : i === 1 ? "#8A2440" : i === 2 ? T.antiqueGold : i === 3 ? "#D9B978" : "#E3D2AC"} />
+                    <Cell key={v.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
                   ))}
                 </Bar>
               </BarChart>

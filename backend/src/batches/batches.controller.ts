@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,6 +14,7 @@ import {
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
@@ -35,13 +37,13 @@ export class BatchesController {
 
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser, @Query() query: ListBatchesQueryDto) {
-    const weaverId = user.role === UserRole.WEAVER ? user.id : undefined;
+    const weaverId = resolveWeaverScope(user);
     return this.batchesService.findAll(query, weaverId);
   }
 
   @Get(":id")
   findOne(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
-    const weaverId = user.role === UserRole.WEAVER ? user.id : undefined;
+    const weaverId = resolveWeaverScope(user);
     return this.batchesService.findOne(id, weaverId);
   }
 
@@ -60,5 +62,12 @@ export class BatchesController {
   @RequireRoles(UserRole.WORKER)
   finalize(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
     return this.batchesService.finalize(id, dto);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireRoles(UserRole.WORKER)
+  remove(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
+    return this.batchesService.remove(id, dto);
   }
 }

@@ -1,8 +1,9 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Plus, Building2, CheckCircle2, IndianRupee, AlertTriangle, TrendingUp } from "lucide-react";
+import { Building2, CheckCircle2, IndianRupee, AlertTriangle, TrendingUp } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; onAddClick: () => void }) {
   const totalSpendVal = React.useMemo(() => {
@@ -28,10 +29,16 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
             </div>
             <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.60)", margin: "6px 0 0", maxWidth: 540, lineHeight: 1.65 }}>Manage all raw material vendors. Track purchase history, payment terms, and outstanding amounts for every supplier.</p>
           </div>
-          <motion.button onClick={onAddClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            style={{ alignSelf: "flex-start", padding: "13px 24px", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.darkBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(200,155,71,0.35)", flexShrink: 0 }}>
-            <Plus size={15} /> Add New Vendor
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0 }}>
+            <Button
+              onClick={onAddClick}
+              variant="primary"
+              iconLeft="add"
+              className="rounded-xl bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] shadow-[0_4px_20px_rgba(200,155,71,0.35)] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+            >
+              Add New Vendor
+            </Button>
+          </motion.div>
         </div>
       </div>
 

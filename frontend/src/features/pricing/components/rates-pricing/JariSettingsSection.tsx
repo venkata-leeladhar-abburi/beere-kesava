@@ -1,6 +1,7 @@
 import { Check, X, AlertTriangle } from "lucide-react";
-import { T, F, cardStyle, inputStyle, labelStyle } from "./theme";
+import { T, F, cardStyle, labelStyle } from "./theme";
 import { SectionTitle } from "./sharedUI";
+import { Button, Input, NumberInput } from "../../../../shared/ui/primitives";
 
 export function JariSettingsSection() {
   return (
@@ -25,19 +26,18 @@ export function JariSettingsSection() {
         <div style={{ display: "flex", gap: 24, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>1 Bun equals:</label>
-            <input
-              type="number"
-              defaultValue="4"
-              style={{ ...inputStyle, width: 90, fontFamily: F.mono, fontSize: 20, fontWeight: 700, textAlign: "center" }}
+            <NumberInput
+              defaultValue={4}
+              className="w-[90px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)] text-center text-[20px] font-bold font-[var(--font-mono)]"
             />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (singular):</label>
-            <input defaultValue="Reel" style={{ ...inputStyle, width: 110 }} />
+            <Input defaultValue="Reel" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (plural):</label>
-            <input defaultValue="Reels" style={{ ...inputStyle, width: 110 }} />
+            <Input defaultValue="Reels" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
           </div>
         </div>
 
@@ -53,20 +53,12 @@ export function JariSettingsSection() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <button style={{
-            background: T.green, color: "#fff", border: "none", borderRadius: 999,
-            padding: "10px 28px", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 7,
-          }}>
-            <Check size={15} /> Save Conversion Settings
-          </button>
-          <button style={{
-            background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-            borderRadius: 999, padding: "10px 20px", fontFamily: F.ui, fontSize: 14, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 6,
-          }}>
-            <X size={14} /> Cancel
-          </button>
+          <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2.5 px-7 text-[14px] font-semibold">
+            Save Conversion Settings
+          </Button>
+          <Button variant="secondary" iconLeft={X} className="rounded-full h-auto py-2.5 px-5 text-[14px]">
+            Cancel
+          </Button>
         </div>
       </div>
     </div>

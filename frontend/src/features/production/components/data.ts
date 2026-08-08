@@ -1,5 +1,5 @@
 import type React from "react";
-import { CheckCircle, WarningCircle, XCircle, SquaresFour, ListDashes, List as PhList } from "@phosphor-icons/react";
+import { CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, XCircle, LayoutGrid as SquaresFour, AlignJustify as ListDashes, List as PhList } from "lucide-react";
 import { T } from "./theme";
 import type { BulkOrder, OrderStatus, BatchStage, Batch, HistoryBatch } from "./types";
 

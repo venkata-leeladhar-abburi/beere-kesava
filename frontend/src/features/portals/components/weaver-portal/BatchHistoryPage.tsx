@@ -25,7 +25,7 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, CURRENT_MONTH_LABEL, GROSS_CHARGES, TOTAL_DEDUCTIONS, NET_AMOUNT, PAST_MONTHS, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, FadeUpBatch, BG_IMAGE, FABRIC_BG, MyBatchEntry
+  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, FadeUpBatch, BG_IMAGE, FABRIC_BG, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
 
@@ -36,7 +36,10 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
   const { batches } = useBatches();
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
+  // A batch only becomes visible to its assigned weaver once it's finalized
+  // (status leaves "draft") — matches the same rule in MyBatchesPage.tsx.
   const myWeaverBatches: (MyBatchEntry & { derivedStatus: "active" | "completed" })[] = batches
+    .filter(b => b.status !== "draft")
     .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
     .filter(b => b.myRows.length > 0)
     .map(b => ({ ...b, derivedStatus: b.myRows.every(r => r.qcPassed === true) ? "completed" as const : "active" as const }));

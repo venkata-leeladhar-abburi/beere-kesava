@@ -1,4 +1,5 @@
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
@@ -28,7 +29,7 @@ import {
 export type { MyBatchEntry, BatchQuickFilter } from "./WeaverMobileBatchCard";
 import {
   WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp,
-  BATCH_LIST, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
+  BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
 } from "./WeaverBatchNotifData";
 import type { WeaverBatch } from "./WeaverBatchNotifData";
 export type { WNPriority, WNCategory, WNFilter, WeaverNotif, WeaverBatch } from "./WeaverBatchNotifData";
@@ -37,22 +38,22 @@ export { SignatureCanvas };
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 
 const C = {
-  burg: "#6B1A2A",
-  dark: "#3D0E1A",
-  gold: "#C4923A",
-  green: "#1E6640",
-  crim: "#C0392B",
-  text: "#1A0A0F",
-  muted: "#69635E",
+  burg: brand.burgundy[900],
+  dark: brand.burgundy[950],
+  gold: brand.gold[500],
+  green: semantic.text.success,
+  crim: semantic.text.danger,
+  text: semantic.text.primary,
+  muted: semantic.text.tertiary,
   bdr: "rgba(139,26,46,0.12)",
-  cream: "#F0E8D0",
+  cream: semantic.surface.canvas,
   inp: "#FFF8E7",
   white: "#FFFFFF",
 };
 const F = {
-  d: "'Plus Jakarta Sans', sans-serif",
-  u: "'Inter', sans-serif",
-  m: "'JetBrains Mono', monospace",
+  d: fonts.display,
+  u: fonts.ui,
+  m: fonts.code,
 };
 
 export type PageId = "batches" | "confirm" | "designs" | "warp" | "payments" | "notifications";
@@ -151,7 +152,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
               <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
                 <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
-                <Button onClick={() => setShowGraphModal(false)} variant="primary" size="sm" className="text-white bg-[#6B1A2A] hover:bg-[#6B1A2A]">Close Reference</Button>
+                <Button onClick={() => setShowGraphModal(false)} variant="primary" size="sm" className="text-white bg-[#6E0F2D] hover:bg-[#6E0F2D]">Close Reference</Button>
               </div>
             </motion.div>
           </motion.div>
@@ -238,7 +239,7 @@ function SectionTitle({ title, link, onLink }: { title: string; link?: string; o
       <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
       <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>{title}</span>
       {link && (
-        <Button variant="link" onClick={onLink} className="p-0 text-[13px] text-[#C4923A]">
+        <Button variant="link" onClick={onLink} className="p-0 text-[13px] text-[#C89B47]">
           {link}
         </Button>
       )}
@@ -261,7 +262,7 @@ function Card({ children, style, leftBorder }: { children: React.ReactNode; styl
 
 function ProgressBar({ pct, height = 10 }: { pct: number; height?: number }) {
   return (
-    <div style={{ width: "100%", height, background: "rgba(139,26,46,0.10)", borderRadius: 999, overflow: "hidden" }}>
+    <div style={{ width: "100%", height, background: "rgba(110,15,45,0.10)", borderRadius: 999, overflow: "hidden" }}>
       <div style={{ width: `${Math.min(100, pct)}%`, height: "100%", background: C.gold, borderRadius: 999, transition: "width 0.6s ease" }} />
     </div>
   );
@@ -307,7 +308,7 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
       {codes.map(code => {
         const d = getDesign(code);
         return (
-          <Button key={code} variant="tertiary" onClick={() => onOpen(code)} className="flex-shrink-0 w-[120px] h-auto flex-col items-stretch overflow-hidden rounded-xl border border-[rgba(139,26,46,0.12)] bg-white p-0 text-left">
+          <Button key={code} variant="tertiary" onClick={() => onOpen(code)} className="flex-shrink-0 w-[120px] h-auto flex-col items-stretch overflow-hidden rounded-xl border border-[rgba(110,15,45,0.10)] bg-white p-0 text-left">
             {d?.colorSlipPhoto ? (
               <div style={{ height: 80, width: "100%", backgroundImage: `url(${d.colorSlipPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             ) : (
@@ -333,17 +334,10 @@ function DesignCodeTileGrid({ codes, onOpen }: { codes: string[]; onOpen: (code:
 const CURRENT_WEAVER_ID = "b5f9178c-b1b9-4871-a7c3-0d68a462d57a";
 
 // Static month data — charges/deductions are set per-production-cycle
-const CURRENT_MONTH_LABEL = "May 2026";
-const GROSS_CHARGES = 8100;
-const TOTAL_DEDUCTIONS = 450;
-const NET_AMOUNT = GROSS_CHARGES - TOTAL_DEDUCTIONS;
 
-// Past months static meta (saree counts); payment details come from context
-const PAST_MONTHS: { month: string; sarees: string; utrFallback: string; amtFallback: string }[] = [
-  { month: "Apr 2026", sarees: "15 sarees", utrFallback: "UTR202604301122", amtFallback: "₹6,300" },
-  { month: "Mar 2026", sarees: "12 sarees", utrFallback: "UTR202603281456", amtFallback: "₹5,040" },
-  { month: "Feb 2026", sarees: "18 sarees", utrFallback: "UTR202602271234", amtFallback: "₹7,560" },
-];
+// Removed: CURRENT_MONTH_LABEL / GROSS_CHARGES / TOTAL_DEDUCTIONS /
+// NET_AMOUNT / PAST_MONTHS were hardcoded demo figures. Payment history
+// and earnings now come from WeaverPaymentsContext + QcContext.
 // WN_* and BatchCard/FadeUpBatch/BG_IMAGE/FABRIC_BG are imported from WeaverBatchNotifData.tsx
 
 
@@ -380,11 +374,6 @@ export {
   BATCH_QUICK_FILTERS,
   BatchQuickFilterPills,
   CURRENT_WEAVER_ID,
-  CURRENT_MONTH_LABEL,
-  GROSS_CHARGES,
-  TOTAL_DEDUCTIONS,
-  NET_AMOUNT,
-  PAST_MONTHS,
   WN_T,
   WN_G,
   WN_EASE,
@@ -394,7 +383,6 @@ export {
   WN_CATEGORY,
   WN_FILTERS,
   WNFadeUp,
-  BATCH_LIST,
   BATCH_STATUS_CFG,
   BatchCard,
   FadeUpBatch,

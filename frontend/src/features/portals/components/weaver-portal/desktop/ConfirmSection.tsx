@@ -63,8 +63,8 @@ export function ConfirmSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Materials Confirmed!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
-            <div style={{ display: "inline-block", background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "10px 24px", fontFamily: F.m, fontSize: 18, marginBottom: 36 }}>{confirmedRecord.id}</div>
-            <Button onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }} fullWidth className="block h-[60px] bg-[#6B1A2A] border-none rounded-full font-bold text-lg text-white">
+            <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "10px 24px", fontFamily: F.m, fontSize: 18, marginBottom: 36 }}>{confirmedRecord.id}</div>
+            <Button onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }} fullWidth className="block h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white">
               ← Back to My Batches
             </Button>
           </div>
@@ -75,7 +75,7 @@ export function ConfirmSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 16 }}>No pending material receipt</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>All material receipts are confirmed. Nothing pending.</div>
-            <Button onClick={() => setActive("batches")} fullWidth className="block h-14 bg-[#6B1A2A] border-none rounded-full font-bold text-base text-white">
+            <Button onClick={() => setActive("batches")} fullWidth className="block h-14 bg-[#6E0F2D] border-none rounded-full font-bold text-base text-white">
               ← Go to My Batches
             </Button>
           </div>
@@ -102,7 +102,7 @@ export function ConfirmSection({
                 <CheckCircle2 size={14} color={C.green} />
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>{pendingMaterialRecord.materials.length} material{pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to confirm</span>
               </div>
-              <div style={{ background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ background: "rgba(110,15,45,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
                 <Clock size={14} color={C.muted} />
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Signature required</span>
               </div>

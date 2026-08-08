@@ -11,6 +11,7 @@ import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
 import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H } from '../../../../../shared/ui/SectionNavigator';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
+import { Button, IconButton } from '../../../../../shared/ui/primitives';
 
 export function TopNav({
   active,
@@ -109,43 +110,44 @@ export function TopNav({
                 onMouseEnter={() => hasDropdown && openGroupNow(g.key)}
                 onMouseLeave={closeGroupSoon}
               >
-                <motion.button
-                  onClick={() => { set(g.pages[0].key); setOpenGroup(null); }}
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 + i * 0.05, ease: EASE }}
                   whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
-                  style={{
-                    height: "100%", padding: compact ? "0 8px" : "0 12px", flexShrink: 0,
-                    border: "none", backgroundColor: "rgba(0,0,0,0)", cursor: "pointer",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-                  }}
+                  style={{ height: "100%" }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
-                    <span style={{
-                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
-                      color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
-                      whiteSpace: "nowrap", letterSpacing: "0.1px",
-                      transition: "color 0.2s",
-                    }}>{g.label}</span>
-                    {hasDropdown && (
-                      <ChevronDown
-                        size={12}
-                        color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
-                        style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                  <Button
+                    onClick={() => { set(g.pages[0].key); setOpenGroup(null); }}
+                    variant="tertiary"
+                    className={`!h-full ${compact ? "!px-2" : "!px-3"} !shrink-0 !border-none !bg-transparent !flex-col !gap-1.5 !rounded-none hover:!bg-transparent`}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
+                      <span style={{
+                        fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
+                        color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
+                        whiteSpace: "nowrap", letterSpacing: "0.1px",
+                        transition: "color 0.2s",
+                      }}>{g.label}</span>
+                      {hasDropdown && (
+                        <ChevronDown
+                          size={12}
+                          color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
+                          style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                        />
+                      )}
+                    </div>
+                    {isActive && (
+                      <motion.div
+                        layoutId="group-nav-underline"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                        style={{ height: 2, width: "100%", background: T.royalBurgundy }}
                       />
                     )}
-                  </div>
-                  {isActive && (
-                    <motion.div
-                      layoutId="group-nav-underline"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      style={{ height: 2, width: "100%", background: T.royalBurgundy }}
-                    />
-                  )}
-                  {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
-                </motion.button>
+                    {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
+                  </Button>
+                </motion.div>
               </div>
             );
           })}
@@ -185,23 +187,20 @@ export function TopNav({
                 {g.pages.map(p => {
                   const pActive = active === p.key;
                   return (
-                    <button
+                    <Button
                       key={p.key}
                       onClick={() => { set(p.key); setOpenGroup(null); }}
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-                        padding: "13px 14px", marginBottom: 2, border: "none", borderRadius: 10,
-                        background: pActive ? "rgba(110,15,45,0.07)" : "transparent",
-                        cursor: "pointer", textAlign: "left" as const,
-                        fontFamily: F.ui, fontSize: 14, fontWeight: pActive ? 600 : 400,
-                        color: pActive ? T.royalBurgundy : T.luxuryBrown,
-                      }}
-                      onMouseEnter={e => { if (!pActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.04)"; }}
-                      onMouseLeave={e => { if (!pActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                      variant="tertiary"
+                      fullWidth
+                      className={`!justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
+                        pActive
+                          ? "!bg-[rgba(110,15,45,0.07)] !text-[#6E0F2D] !font-semibold hover:!bg-[rgba(110,15,45,0.07)] hover:!text-[#6E0F2D]"
+                          : "!bg-transparent !text-[#3B2314] !font-normal hover:!bg-[rgba(110,15,45,0.04)] hover:!text-[#3B2314]"
+                      }`}
                     >
                       {p.label}
                       {pActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.royalBurgundy }} />}
-                    </button>
+                    </Button>
                   );
                 })}
               </motion.div>
@@ -212,28 +211,30 @@ export function TopNav({
         {/* Right actions */}
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
           {!compact && (
-            <motion.button
-              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
-              whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
-              whileTap={{ scale: 0.94 }}
-              style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid rgba(245,232,208,0.14)`, backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <Search size={15} color="rgba(245,232,208,0.75)" />
-            </motion.button>
+            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12 }}>
+              <IconButton
+                icon={Search}
+                label="Search"
+                variant="ghost"
+                className="!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12"
+              />
+            </motion.div>
           )}
           <div style={{ position: "relative" }}>
-            <motion.button
-              onClick={() => setShowNotif(p => !p)}
-              initial={{ backgroundColor: "rgba(245,232,208,0.06)" }}
-              whileHover={{ scale: 1.08, backgroundColor: "rgba(245,232,208,0.12)" }}
-              whileTap={{ scale: 0.94 }}
-              style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid rgba(245,232,208,0.14)`, backgroundColor: "rgba(245,232,208,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}
-            >
-              <Bell size={15} color={active === "Notifications" ? T.antiqueGold : "rgba(245,232,208,0.75)"} />
+            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12, position: "relative" }}>
+              <IconButton
+                icon={Bell}
+                label="Notifications"
+                onClick={() => setShowNotif(p => !p)}
+                variant="ghost"
+                className={`!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12 ${
+                  active === "Notifications" ? "!text-[#C89B47] hover:!text-[#C89B47]" : "!text-[rgba(245,232,208,0.75)] hover:!text-[rgba(245,232,208,0.75)]"
+                }`}
+              />
               {unreadCount > 0 && (
-                <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}` }} />
+                <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}`, pointerEvents: "none" }} />
               )}
-            </motion.button>
+            </motion.div>
             {showNotif && (
               <div style={{ position: "absolute", top: 48, right: 0, width: 360, background: "#FFFDF9", borderRadius: 16, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
                 <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -295,44 +296,39 @@ export function TopNav({
                   </div>
                 </div>
                 <div style={{ padding: "6px 0" }}>
-                  <button onClick={() => { setShowProfile(false); onProfile?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <UserRound size={15} color={T.taupe} /> View Profile
-                  </button>
+                  </Button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
                   <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-                  <button onClick={() => {
+                  <Button onClick={() => {
                     setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("shop");
                     navigate("/shop");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                  }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
-                  </button>
-                  <button onClick={() => {
+                  </Button>
+                  <Button onClick={() => {
                     setShowProfile(false);
                     localStorage.setItem("bk_original_admin_role", "admin");
                     selectRole("worker");
                     navigate("/worker");
-                  }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                  }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <Package size={14} color={T.taupe} /> Worker Staff Portal
-                  </button>
+                  </Button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-                  <button onClick={() => { setShowProfile(false); onBack?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)") as any}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <ChevronLeft size={15} color={T.taupe} /> Switch Portal
-                  </button>
-                  <button onClick={() => { setShowProfile(false); onLogout?.(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 18px", border: "none", background: "none", cursor: "pointer", fontFamily: F.ui, fontSize: 14, color: "#C0392B", textAlign: "left" as const }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.05)") as any}
-                    onMouseLeave={e => (e.currentTarget.style.background = "none") as any}>
+                  </Button>
+                  <Button onClick={() => { setShowProfile(false); onLogout?.(); }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#C0392B] hover:!bg-[rgba(192,57,43,0.05)] hover:!text-[#C0392B]">
                     <LogOut size={15} color="#C0392B" /> Logout
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -355,21 +351,15 @@ export function TopNav({
             {activeGroup.pages.map(p => {
               const isActive = active === p.key;
               return (
-                <button
+                <Button
                   key={p.key}
                   onClick={() => set(p.key)}
-                  style={{
-                    position: "relative",
-                    fontFamily: F.ui, fontWeight: isActive ? 600 : 500, fontSize: 13,
-                    color: isActive ? "#FFFFFF" : T.luxuryBrown,
-                    background: "transparent",
-                    border: "none", borderRadius: 10,
-                    padding: "9px 22px", cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "color 0.15s",
-                  }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(110,15,45,0.06)"; }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                  variant="tertiary"
+                  className={`!relative !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
+                    isActive
+                      ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
+                      : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
+                  }`}
                 >
                   {isActive && (
                     <motion.div
@@ -379,7 +369,7 @@ export function TopNav({
                     />
                   )}
                   <span style={{ position: "relative", zIndex: 1 }}>{p.label}</span>
-                </button>
+                </Button>
               );
             })}
           </div>

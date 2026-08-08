@@ -109,14 +109,12 @@ export function AddEntryForm({ type, onSave, onCancel }: {
         </div>
       )}
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={handleSave} disabled={!canSave()}
-          style={{ height: 34, padding: "0 18px", borderRadius: 8, border: "none", background: canSave() ? T.royalBurgundy : "rgba(139,112,96,0.20)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: canSave() ? "#FFF" : T.taupe, cursor: canSave() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 6 }}>
-          <Check size={13} /> Save Entry
-        </button>
-        <button onClick={onCancel}
-          style={{ height: 34, padding: "0 14px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>
+        <Button onClick={handleSave} disabled={!canSave()} variant="primary" size="sm" iconLeft={Check}>
+          Save Entry
+        </Button>
+        <Button onClick={onCancel} variant="tertiary" size="sm">
           Cancel
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -152,11 +150,10 @@ export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<Finan
   }
   return (
     <>
-      <input type="file" accept=".xlsx,.xls,.csv" ref={ref} onChange={handleFile} style={{ display: "none" }} />
-      <button onClick={() => ref.current?.click()}
-        style={{ height: 34, padding: "0 14px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: T.warmIvory, fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-        <FileSpreadsheet size={13} color={T.green} /> Import Excel
-      </button>
+      <Input type="file" accept=".xlsx,.xls,.csv" ref={ref} onChange={handleFile} containerClassName="hidden" />
+      <Button onClick={() => ref.current?.click()} variant="tertiary" size="sm" iconLeft={FileSpreadsheet}>
+        Import Excel
+      </Button>
     </>
   );
 }
@@ -211,10 +208,12 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease: EASE }} style={{ overflow: "hidden" }}>
             <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 8, alignItems: "center", background: "#FFF" }}>
-              <button onClick={() => setAdding(a => !a)}
-                style={{ height: 34, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${color}`, background: `${color}12`, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <PlusCircle size={13} /> Add Entry
-              </button>
+              <div style={{ ["--fin-color" as string]: color } as React.CSSProperties}>
+                <Button onClick={() => setAdding(a => !a)} variant="secondary" size="sm" iconLeft={PlusCircle}
+                  className="border-[1.5px] border-[var(--fin-color)] bg-[var(--fin-color)]/[0.07] text-[var(--fin-color)] hover:bg-[var(--fin-color)]/[0.14]">
+                  Add Entry
+                </Button>
+              </div>
               {onBulkImport && <ExcelUploadBtn onImport={handleImport} type={type} />}
               {importMsg && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}><Check size={12} /> {importMsg}</span>}
             </div>
@@ -268,10 +267,10 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease: EASE }} style={{ overflow: "hidden" }}>
             <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 8, background: "#FFF" }}>
-              <button onClick={() => setAdding(a => !a)}
-                style={{ height: 34, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${T.antiqueGold}`, background: "rgba(200,155,71,0.10)", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <PlusCircle size={13} /> Add Misc Entry
-              </button>
+              <Button onClick={() => setAdding(a => !a)} variant="secondary" size="sm" iconLeft={PlusCircle}
+                className="border-[1.5px] border-[#C89B47] bg-[#C89B47]/10 text-[#C89B47] hover:bg-[#C89B47]/20">
+                Add Misc Entry
+              </Button>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center" }}>Manual entry only — specify income or expense per row</span>
             </div>
             <AnimatePresence>

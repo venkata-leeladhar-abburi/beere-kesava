@@ -10,6 +10,11 @@ export interface WeaverRecord {
   uploadedNoOfSarees?: number;
   uploadedBatchNo?: string;
   uploadedLoomNumber?: string;
+  // Server-computed earnings: QC-passed saree count x real SareeTypeRate
+  // making charge (GET /payments/weavers/earnings) — the real "amount owed"
+  // figure, used whenever no manual payment has been uploaded yet.
+  earnedAmount?: number;
+  completedSarees?: number;
 }
 
 // ── Types for Excel upload matching ───────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { X } from "lucide-react";
+import { IconButton } from "../../../../shared/ui/primitives";
 import { T, F } from "./theme";
 import { jariFromReels, jariGrams, trimNum } from "./jariUtils";
 import type { SareeTypeRecord } from "./sareeTypeData";
@@ -40,9 +41,11 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
               {sareeType.type}
             </span>
           </div>
-          <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.10)", border: "none", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.7)" }}>
-            <X size={16} />
-          </button>
+          <IconButton
+            icon={X} label="Close" size="sm" variant="ghost"
+            onClick={onClose}
+            className="absolute top-5 right-5 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+          />
         </div>
 
         {/* Body */}

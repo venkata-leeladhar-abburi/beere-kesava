@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BackendWeaverPayment, weaverPaymentsApi } from "../../../shared/api/payments";
+import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
 import { weaversApi } from "../../../shared/api/weavers";
 import { firmsApi } from "../../../shared/api/firms";
 
@@ -26,6 +26,10 @@ interface WeaverPaymentsContextValue {
   payments: WeaverPaymentRecord[];
   addPayments: (records: WeaverPaymentRecord[]) => void;
   getPaymentsForWeaver: (weaverId: string) => WeaverPaymentRecord[];
+  // Amount owed per weaver, computed server-side from QC-passed sarees x the
+  // real saree-type making charge — not a client-side estimate.
+  earnings: WeaverEarnings[];
+  getEarningsForWeaver: (weaverId: string) => WeaverEarnings | undefined;
   isError: boolean;
   error: unknown;
 }
@@ -33,6 +37,7 @@ interface WeaverPaymentsContextValue {
 const WeaverPaymentsContext = createContext<WeaverPaymentsContextValue | null>(null);
 
 const QUERY_KEY = ["weaverPayments"] as const;
+const EARNINGS_QUERY_KEY = ["weaverEarnings"] as const;
 
 function backendPaymentToFrontend(
   p: BackendWeaverPayment,
@@ -115,8 +120,18 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
     return (weaverId: string) => byWeaver.get(weaverId) ?? [];
   }, [payments]);
 
+  const { data: earnings = [] } = useQuery({
+    queryKey: EARNINGS_QUERY_KEY,
+    queryFn: () => weaverPaymentsApi.earnings(),
+  });
+
+  const getEarningsForWeaver = useMemo(() => {
+    const byWeaver = new Map(earnings.map(e => [e.weaverId, e]));
+    return (weaverId: string) => byWeaver.get(weaverId);
+  }, [earnings]);
+
   return (
-    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, isError, error }}>
+    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, earnings, getEarningsForWeaver, isError, error }}>
       {children}
     </WeaverPaymentsContext.Provider>
   );

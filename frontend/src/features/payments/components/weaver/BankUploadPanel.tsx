@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { ApiError } from "../../../../shared/api/client";
 import { ImportResult, weaverPaymentsApi } from "../../../../shared/api/payments";
 import { EASE, F, T } from "../../theme";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Input } from "../../../../shared/ui/primitives";
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -95,13 +95,12 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
               Clear
             </Button>
           )}
-          {/* Native file input — no design-system primitive covers file uploads; kept raw and visually hidden, triggered via the Button below. */}
-          <input
+          <Input
             ref={fileInputRef}
             type="file"
             accept=".xlsx,.xls"
             onChange={handleFileChange}
-            style={{ display: "none" }}
+            containerClassName="hidden"
           />
           <Button
             variant="primary"

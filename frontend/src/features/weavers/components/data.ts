@@ -12,7 +12,7 @@
 // ledger endpoint, both out of scope. Leave the remaining exports mock until
 // batches/QC/payments are wired to real weaver ids.
 import type React from "react";
-import { Package, CheckCircle, WarningCircle, Medal, ChartBar, SquaresFour, List as PhList, Table as PhTable } from "@phosphor-icons/react";
+import { Package, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Medal, BarChart3 as ChartBar, LayoutGrid as SquaresFour, List as PhList, Table2 as PhTable } from "lucide-react";
 import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 import { T } from "./theme";
 import type { Status } from "./types";

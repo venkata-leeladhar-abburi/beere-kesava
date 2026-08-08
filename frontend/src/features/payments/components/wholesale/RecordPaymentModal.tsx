@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 
 import { EASE, F, T, BulkOrder, useFirms } from "../../theme";
 import { Invoice } from "../../types";
+import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
 export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
@@ -16,9 +17,6 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
   const [firmId, setFirmId] = useState(firms[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
 
   const handleSave = () => {
     if (!amount || !utr || !firmId) return;
@@ -38,9 +36,8 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
         </div>
 
         <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -103,41 +100,35 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
             )}
           </div>
 
-          <div>
-            <label style={labelStyle} htmlFor="amount-received">Amount Received (₹) *</label>
-            <input id="amount-received" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="payment-date">Payment Date *</label>
-            <input id="payment-date" type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="utr-number">UTR Number *</label>
-            <input id="utr-number" value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026042812345" style={inputStyle} />
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="payment-method">Payment Method</label>
-            <select id="payment-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {["Bank Transfer", "Cheque", "Cash"].map(m => <option key={m}>{m}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="firm-receiving-payment">Firm Receiving Payment *</label>
-            <select id="firm-receiving-payment" value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="notes-optional">Notes (optional)</label>
-            <textarea id="notes-optional" value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
-          </div>
+          <Field label="Amount Received (₹)" required id="amount-received">
+            <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
+          </Field>
+          <Field label="Payment Date" required id="payment-date">
+            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </Field>
+          <Field label="UTR Number" required id="utr-number">
+            <Input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026042812345" />
+          </Field>
+          <Field label="Payment Method" id="payment-method">
+            <Select value={method} onValueChange={setMethod}>
+              {["Bank Transfer", "Cheque", "Cash"].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </Select>
+          </Field>
+          <Field label="Firm Receiving Payment" required id="firm-receiving-payment">
+            <Select value={firmId} onValueChange={setFirmId}>
+              {firms.map(f => <SelectItem key={f.id} value={f.id}>{f.firmName}</SelectItem>)}
+            </Select>
+          </Field>
+          <Field label="Notes (optional)" id="notes-optional">
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+          </Field>
         </div>
 
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ height: 42, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>
-            {saving ? "Saving..." : "Save Payment"}
-          </button>
+          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
+            Save Payment
+          </Button>
         </div>
       </motion.div>
     </div>

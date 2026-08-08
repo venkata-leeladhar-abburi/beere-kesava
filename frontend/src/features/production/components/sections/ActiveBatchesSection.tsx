@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { MagnifyingGlass, CaretDown as PhCaretDown, Plus as PhPlus } from "@phosphor-icons/react";
+import { AnimatePresence } from "motion/react";
+import { ChevronDown as PhCaretDown, Plus as PhPlus } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
 import type { Batch, BatchStage, CodeCallbacks, WeaverRef } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
+import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { ContextBatchDetailsDialog, rowComplete } from "./batches/ContextBatchCard";
 
@@ -124,43 +125,49 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
             <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
             <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>All Active Production Batches</h2>
           </div>
-          <motion.button onClick={() => onNavigate?.("Batches")} initial={{ backgroundColor: T.green }} animate={{ backgroundColor: T.green }} whileHover={{ scale: 1.03, backgroundColor: "#145230" }} whileTap={{ scale: 0.97 }}
-            style={{ display: "flex", alignItems: "center", gap: 8, color: "#FFFDF9", border: "none", borderRadius: 12, padding: "12px 20px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(30,102,64,0.2)" }}>
-            <PhPlus size={16} weight="bold" /> Create New Batch
-          </motion.button>
+          <Button onClick={() => onNavigate?.("Batches")} variant="primary" size="md" iconLeft={PhPlus}
+            className="bg-[#1E6640] hover:bg-[#145230] shadow-[0_4px_12px_rgba(30,102,64,0.2)]">
+            Create New Batch
+          </Button>
         </div>
         <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 20px" }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
           {FILTER_PILLS.map(f => (
-            <motion.button key={f.label} onClick={() => setFilter(f.stage)} whileHover={{ scale: 1.02 }}
-              style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 99, cursor: "pointer", background: filter === f.stage ? T.royalBurgundy : "transparent", color: filter === f.stage ? "#FFFDF9" : T.taupe, border: filter === f.stage ? "none" : `1px solid rgba(110,15,45,0.18)`, transition: "all 0.18s" }}>
+            <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
+              className={`rounded-full ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>
               {f.label}
-            </motion.button>
+            </Button>
           ))}
         </div>
 
         <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: 280 }}>
-            <MagnifyingGlass size={18} weight="bold" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: T.taupe, pointerEvents: "none" }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..."
-              style={{ width: "100%", height: 46, paddingLeft: 44, paddingRight: 16, fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, outline: "none", boxSizing: "border-box" }} />
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[46px] w-full" />
           </div>
           <div style={{ display: "flex", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", background: "#FFFFFF" }}>
             {VIEW_OPTIONS.map(({ key, label, Icon }) => (
-              <motion.button key={key} onClick={() => setView(key)} animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }} transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
-                <Icon size={16} weight={view === key ? "bold" : "regular"} /> {label}
-              </motion.button>
+              <Button key={key} onClick={() => setView(key)} variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-2.5 px-4 text-[13px] font-bold ${view === key ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]" : "bg-white text-[var(--text-tertiary)]"}`}>
+                <Icon size={16} /> {label}
+              </Button>
             ))}
           </div>
-          <div style={{ position: "relative" }}><motion.button onClick={() => setSortOpen(!sortOpen)} whileHover={{ scale: 1.02 }} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, cursor: "pointer" }}>
-            Sort By: {sortBy} <PhCaretDown size={14} weight="bold" />
-          </motion.button>{sortOpen && <div style={{ position: "absolute", top: 44, right: 0, zIndex: 20, background: "#fff", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 30px rgba(0,0,0,0.12)", overflow: "hidden", minWidth: 190 }}>{["Most Recent First", "Most Complete", "Least Complete"].map(v => <button key={v} onClick={() => { setSortBy(v); setSortOpen(false); }} style={{ display: "block", width: "100%", padding: "11px 14px", background: v === sortBy ? T.warmCream : "#fff", border: "none", textAlign: "left", fontFamily: F.ui, color: T.luxuryBrown, cursor: "pointer" }}>{v}</button>)}</div>}</div>
+          <div style={{ position: "relative" }}>
+            <Button onClick={() => setSortOpen(!sortOpen)} variant="secondary" size="md" iconRight={PhCaretDown} className="text-[var(--text-tertiary)]">
+              Sort By: {sortBy}
+            </Button>
+            {sortOpen && <div style={{ position: "absolute", top: 44, right: 0, zIndex: 20, background: "#fff", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 30px rgba(0,0,0,0.12)", overflow: "hidden", minWidth: 190 }}>{["Most Recent First", "Most Complete", "Least Complete"].map(v => (
+              <Button key={v} onClick={() => { setSortBy(v); setSortOpen(false); }} variant="ghost" fullWidth
+                className={`h-auto rounded-none justify-start py-[11px] px-3.5 text-sm font-normal text-[#3B2314] ${v === sortBy ? "bg-[#F5E8D0]" : "bg-white"}`}>
+                {v}
+              </Button>
+            ))}</div>}
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
             <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>
-              <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} style={{ cursor: "pointer" }} />
+              <Checkbox checked={activeOnly} onCheckedChange={c => setActiveOnly(c === true)} />
               Active Only
             </label>
           </div>

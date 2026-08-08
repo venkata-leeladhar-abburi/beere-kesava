@@ -7,7 +7,7 @@ import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F, EASE } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../shared/ui/primitives";
-import { WHOLESALE_CUSTOMERS } from "../data";
+import { useAllWholesaleCustomers } from "../../../bulk-orders/components/WholesaleCustomerSelectSection";
 import { InvoiceData } from "../types";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
@@ -36,8 +36,9 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const [browsing, setBrowsing] = useState(false);
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `QT-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
-  const filteredCustomers = WHOLESALE_CUSTOMERS.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
-  const selectedCustomer  = WHOLESALE_CUSTOMERS.find(c => c.id === customerId) ?? null;
+  const wholesaleCustomersList = useAllWholesaleCustomers();
+  const filteredCustomers = wholesaleCustomersList.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));
+  const selectedCustomer  = wholesaleCustomersList.find(c => c.id === customerId) ?? null;
 
   const canNext1 = !!customerId;
   const noSarees = picked.length === 0;

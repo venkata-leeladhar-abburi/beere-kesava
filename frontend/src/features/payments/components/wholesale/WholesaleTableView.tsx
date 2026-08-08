@@ -3,6 +3,7 @@ import { Eye, MapPin } from "lucide-react";
 import { F, T } from "../../theme";
 import { Invoice } from "../../types";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface WholesaleTableViewProps {
   view: "list" | "table";
@@ -57,19 +58,10 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
               <div style={{ flex: "0 0 150px" }}>
                 <InvBadge status={inv.status} />
               </div>
-              <button
-                onClick={() => setViewInvoice(inv)}
-                style={{
-                  padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                  background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                  color: T.royalBurgundy, cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setViewInvoice(inv)}
+                className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
                 View
-              </button>
+              </Button>
             </div>
           );
         })}
@@ -124,32 +116,15 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
                   <td style={{ ...TD, textAlign: "center" as const }}><InvBadge status={inv.status} /></td>
                   <td style={{ ...TD, textAlign: "center" as const }}>
                     <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                      <button
-                        onClick={() => setViewInvoice(inv)}
-                        style={{
-                          padding: "6px 12px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                          background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                          color: T.royalBurgundy, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-                          transition: "all 0.15s ease",
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                      >
-                        <Eye size={12} /> View
-                      </button>
+                      <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewInvoice(inv)}
+                        className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+                        View
+                      </Button>
                       {inv.status !== "Paid" && (
-                        <button
-                          onClick={() => setRecordPayment(inv)}
-                          style={{
-                            padding: "6px 14px", background: T.royalBurgundy, color: "#FFFDF9",
-                            border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                            cursor: "pointer", transition: "all 0.2s ease"
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
-                        >
+                        <Button variant="primary" size="sm" onClick={() => setRecordPayment(inv)}
+                          className="rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D]">
                           Pay
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>

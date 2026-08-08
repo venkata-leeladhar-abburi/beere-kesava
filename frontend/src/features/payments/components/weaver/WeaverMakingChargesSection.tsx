@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, Search, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -8,10 +8,10 @@ import { useBatches } from "../../../production/contexts/BatchContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
-import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
+import { weaverPaymentsApi, BackendWeaverPayment, WeaverEarnings } from "../../../../shared/api/payments";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { RATES, calcCharges, calcNet } from "../../utils/charges";
+import { RATES, calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
@@ -30,7 +30,12 @@ const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "
  * noOfSarees field (shown via the uploadedNoOfSarees override, same as the
  * Excel-upload flow already did).
  */
-function toWeaverRecord(w: BackendWeaver, index: number, latestPayment: BackendWeaverPayment | undefined): WeaverRecord {
+function toWeaverRecord(
+  w: BackendWeaver,
+  index: number,
+  latestPayment: BackendWeaverPayment | undefined,
+  earnings: WeaverEarnings | undefined,
+): WeaverRecord {
   return {
     id: w.id,
     name: w.name,
@@ -45,6 +50,8 @@ function toWeaverRecord(w: BackendWeaver, index: number, latestPayment: BackendW
     uploadedNoOfSarees: latestPayment?.noOfSarees ?? undefined,
     uploadedBatchNo: latestPayment?.batchNo ?? undefined,
     uploadedLoomNumber: latestPayment?.loomNumber ?? undefined,
+    earnedAmount: earnings?.totalEarned,
+    completedSarees: earnings?.totalCompletedSarees,
   };
 }
 
@@ -57,9 +64,14 @@ export function WeaverMakingChargesSection() {
     queryKey: ["payments-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
   });
+  const { data: earningsRes, isLoading: earningsLoading, isError: earningsError } = useQuery({
+    queryKey: ["payments-weaver-earnings"],
+    queryFn: () => weaverPaymentsApi.earnings(),
+  });
 
   const roster = weaversRes?.items ?? [];
   const payments = paymentsRes?.items ?? [];
+  const earningsList = earningsRes ?? [];
 
   const weaversList: WeaverRecord[] = useMemo(() => {
     const latestByWeaver = new Map<string, BackendWeaverPayment>();
@@ -69,11 +81,12 @@ export function WeaverMakingChargesSection() {
         latestByWeaver.set(p.weaverId, p);
       }
     }
-    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id)));
-  }, [roster, payments]);
+    const earningsByWeaver = new Map(earningsList.map(e => [e.weaverId, e]));
+    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), earningsByWeaver.get(w.id)));
+  }, [roster, payments, earningsList]);
 
-  const isLoading = weaversLoading || paymentsLoading;
-  const isError = weaversError || paymentsError;
+  const isLoading = weaversLoading || paymentsLoading || earningsLoading;
+  const isError = weaversError || paymentsError || earningsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
@@ -128,7 +141,7 @@ export function WeaverMakingChargesSection() {
       const activeRow = activeBatches[0]?.rows.find(r => r.weaverId === w.id);
       
       const loomNumber = activeRow?.weaverLoom?.toString() || "1";
-      const noOfSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st || 1);
+      const noOfSarees = calcCompletedSarees(w) || 1;
       const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
       const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
       const netAmount = grossAmount - deduction;
@@ -303,10 +316,9 @@ export function WeaverMakingChargesSection() {
             ))}
           </div>
           <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={filtered.length > 0 && filtered.every(w => selectedIds.has(w.id))}
-              onChange={() => {
+              onCheckedChange={() => {
                 const allSelected = filtered.every(w => selectedIds.has(w.id));
                 setSelectedIds(prev => {
                   const next = new Set(prev);
@@ -317,7 +329,6 @@ export function WeaverMakingChargesSection() {
                   return next;
                 });
               }}
-              style={{ accentColor: T.royalBurgundy }}
             />
             Select All Filtered
           </label>
@@ -325,10 +336,8 @@ export function WeaverMakingChargesSection() {
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <DropBtn value="All Making Charge Rate" options={["All Making Charge Rate", "Self Brocade (₹450)", "Heavy Zari (₹680)", "Plain Silk (₹280)"]} />
-          <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..."
-              style={{ width: "100%", padding: "7px 12px 7px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
           </div>
         </div>
 
@@ -372,7 +381,7 @@ export function WeaverMakingChargesSection() {
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
             {filtered.map((w, i) => {
               const charges = calcCharges(w); const net = calcNet(w);
-              const completedSarees = w.uploadedNoOfSarees !== undefined ? w.uploadedNoOfSarees : (w.sb + w.hz + w.ps + w.bs + w.st);
+              const completedSarees = calcCompletedSarees(w);
               const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
               return (
                 <div
@@ -386,17 +395,10 @@ export function WeaverMakingChargesSection() {
                   }}
                 >
                   {/* Checkbox */}
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedIds.has(w.id)}
-                    onChange={() => toggleSelection(w.id)}
-                    style={{
-                      width: 17,
-                      height: 17,
-                      cursor: "pointer",
-                      accentColor: T.royalBurgundy,
-                      marginRight: 4,
-                    }}
+                    onCheckedChange={() => toggleSelection(w.id)}
+                    className="mr-1"
                   />
                   <Pip initials={w.initials} bg={w.bg} size={38} />
                   <div style={{ flex: "0 0 180px" }}>
@@ -429,19 +431,9 @@ export function WeaverMakingChargesSection() {
                   <div style={{ flex: "0 0 110px" }}>
                     <StatusBadge status={w.status} />
                   </div>
-                  <button
-                    onClick={() => setSelWeaver(w)}
-                    style={{
-                      padding: "7px 14px", border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 8,
-                      background: "#fff", fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-                      color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-                  >
-                    <Eye size={12} /> Details
-                  </button>
+                  <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
+                    Details
+                  </Button>
                 </div>
               );
             })}

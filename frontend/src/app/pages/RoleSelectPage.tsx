@@ -146,7 +146,7 @@ function PortalCard({
       {/* Text */}
       <div style={{ flex: isMobile ? 1 : undefined, minWidth: 0 }}>
         <div style={{
-          fontFamily: F.mono, fontSize: 10, fontWeight: 600,
+          fontFamily: F.mono, fontSize: 12, fontWeight: 600,
           letterSpacing: "1.5px", color: colors.accent,
           textTransform: "uppercase" as const, marginBottom: 6,
         }}>
@@ -258,7 +258,7 @@ export function RoleSelectPage() {
           </div>
 
           {!isMobile && (
-            <div style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, letterSpacing: "2.5px", color: "rgba(245,237,208,0.40)", textTransform: "uppercase", marginBottom: 14 }}>
+            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2.5px", color: "rgba(245,237,208,0.40)", textTransform: "uppercase", marginBottom: 14 }}>
               Select Your
             </div>
           )}
@@ -285,7 +285,7 @@ export function RoleSelectPage() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 7px" }}>
                 {PORTALS.map(p => (
                   <span key={p.role} style={{
-                    fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: T.antiqueGold,
+                    fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.antiqueGold,
                     background: "rgba(196,146,58,0.12)", border: "1px solid rgba(196,146,58,0.22)",
                     borderRadius: 999, padding: "4px 12px",
                   }}>
@@ -338,7 +338,7 @@ export function RoleSelectPage() {
 
         {!isMobile && (
           <div style={{ marginBottom: isTablet ? 24 : 40 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, fontWeight: 600, letterSpacing: "2.5px", color: T.taupe, textTransform: "uppercase", marginBottom: 12 }}>
+            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2.5px", color: T.taupe, textTransform: "uppercase", marginBottom: 12 }}>
               Beere Kesava & Brothers Silks ERP
             </div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: isTablet ? 30 : 42, color: T.luxuryBrown, lineHeight: 1.05, marginBottom: 8 }}>
@@ -375,7 +375,7 @@ export function RoleSelectPage() {
             <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, marginBottom: 2 }}>
               © 2026 Beere Kesava & Brothers Silks. All rights reserved.
             </div>
-            <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 10, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase" }}>
+            <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase" }}>
               Since 1999 · Tradition. Trust. Timeless Quality.
             </div>
           </div>

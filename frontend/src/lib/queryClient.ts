@@ -1,17 +1,20 @@
 import { QueryClient } from "@tanstack/react-query";
 
 /**
- * Single QueryClient for the app. Defaults are tuned for the current
- * reality — every queryFn resolves from an in-memory seed array, not a
- * real API — so aggressive refetching would just re-run the same
- * synchronous data for no benefit. When a real backend lands, these
- * defaults (not the call sites) are what should change first.
+ * Single QueryClient for the app. Queries now hit a real backend, so the
+ * old `staleTime: Infinity` default is wrong: it cached every list for the
+ * lifetime of the tab, meaning a batch created (or materials issued) in
+ * one place never appeared in another until a hard reload.
+ *
+ * 30s keeps navigation cheap while letting cross-page writes surface on
+ * their own; refetching on window focus picks up changes made in another
+ * tab or by another user.
  */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+      refetchOnWindowFocus: true,
       retry: false,
     },
   },

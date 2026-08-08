@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Plus, Check, X, AlertTriangle, BarChart2, Eye } from "lucide-react";
-import { T, F, cardStyle, inputStyle, labelStyle, thStyle, tdStyle } from "./theme";
+import { T, F, cardStyle, labelStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink, JariWeightField, SareeTypeCombobox } from "./sharedUI";
+import { Button, IconButton, NumberInput, Input, Textarea } from "../../../../shared/ui/primitives";
 import type { SareeTypeRecord } from "./sareeTypeData";
 
 export function MakingChargesSection({
@@ -107,28 +108,18 @@ export function MakingChargesSection({
                   <td style={{ ...tdStyle, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.changed}</td>
                   <td style={{ ...tdStyle }}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button
+                      <IconButton
+                        icon={Eye} label="View" variant="secondary" size="sm"
+                        className="rounded-[10px] text-[var(--text-tertiary)]"
                         onClick={() => onView(row)}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 4,
-                          background: "transparent", border: `1px solid ${T.borderDef}`,
-                          color: T.taupe, borderRadius: 10, padding: "5px 10px",
-                          fontFamily: F.ui, fontSize: 12, cursor: "pointer",
-                        }}
-                      >
-                        <Eye size={12} />
-                      </button>
-                      <button
+                      />
+                      <Button
+                        variant="secondary" size="sm" iconLeft={Edit2}
+                        className="rounded-[10px] border-[#6E0F2D] text-[#6E0F2D] h-auto py-[5px] px-3 text-[12px] font-medium"
                         onClick={() => openEdit(i)}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 5,
-                          background: "transparent", border: `1px solid ${T.royalBurgundy}`,
-                          color: T.royalBurgundy, borderRadius: 10, padding: "5px 12px",
-                          fontFamily: F.ui, fontSize: 12, fontWeight: 500, cursor: "pointer",
-                        }}
                       >
-                        <Edit2 size={12} /> Edit
-                      </button>
+                        Edit
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -150,9 +141,11 @@ export function MakingChargesSection({
                               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
                                 Editing: {row.type} — <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{row.code}</span>
                               </span>
-                              <button onClick={() => setEditRow(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>
-                                <X size={16} />
-                              </button>
+                              <IconButton
+                                icon={X} label="Close" variant="ghost" size="sm"
+                                className="text-[var(--text-tertiary)]"
+                                onClick={() => setEditRow(null)}
+                              />
                             </div>
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 18 }}>
@@ -168,45 +161,45 @@ export function MakingChargesSection({
                                 </div>
                                 <div>
                                   <label style={labelStyle} htmlFor="short-code">Short Code</label>
-                                  <input id="short-code" value={row.code} readOnly style={{ ...inputStyle, background: "#EDE5D8", color: T.taupe, cursor: "not-allowed" }} />
+                                  <Input id="short-code" value={row.code} readOnly className="bg-[#EDE5D8] text-[var(--text-tertiary)] cursor-not-allowed" />
                                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4, display: "block" }}>Code cannot be changed</span>
                                 </div>
                                 <div>
                                   <label style={labelStyle} htmlFor="description">Description</label>
-                                  <textarea id="description" rows={2} value={editVals.description ?? row.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
+                                  <Textarea id="description" rows={2} value={editVals.description ?? row.description} onChange={e => setEditVals(p => ({ ...p, description: e.target.value }))} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Short description…" />
                                 </div>
                               </div>
                               {/* Col 2 — Pricing */}
                               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                                 <div>
                                   <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
-                                  <input id="making-charge" type="number" value={editVals.charge ?? row.charge} onChange={e => setEditVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} />
+                                  <NumberInput id="making-charge" addonLeft="₹" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                                 </div>
                                 <div>
                                   <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
-                                  <input id="retail-price" type="number" value={editVals.retail ?? row.retail} onChange={e => setEditVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} />
+                                  <NumberInput id="retail-price" addonLeft="₹" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                                 </div>
                                 <div>
                                   <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
-                                  <input id="wholesale-price" type="number" value={editVals.wholesale ?? row.wholesale} onChange={e => setEditVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} />
+                                  <NumberInput id="wholesale-price" addonLeft="₹" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                                 </div>
                               </div>
                               {/* Col 3 — Weights */}
                               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                                 <div>
                                   <label style={labelStyle} htmlFor="standard-weight-g">Standard Weight (g) *</label>
-                                  <input id="standard-weight-g" type="number" value={editVals.stdWeight ?? row.stdWeight} onChange={e => setEditVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
+                                  <NumberInput id="standard-weight-g" value={Number(editVals.stdWeight ?? row.stdWeight)} onValueChange={v => setEditVals(p => ({ ...p, stdWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
                                 </div>
                                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
                                   <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                     <div>
                                       <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>
-                                      <input type="number" value={editVals.warpWeight ?? row.warpWeight} onChange={e => setEditVals(p => ({ ...p, warpWeight: e.target.value }))} style={inputStyle} />
+                                      <NumberInput value={Number(editVals.warpWeight ?? row.warpWeight)} onValueChange={v => setEditVals(p => ({ ...p, warpWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                                     </div>
                                     <div>
                                       <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
-                                      <input type="number" value={editVals.reshamWeight ?? row.reshamWeight} onChange={e => setEditVals(p => ({ ...p, reshamWeight: e.target.value }))} style={inputStyle} />
+                                      <NumberInput value={Number(editVals.reshamWeight ?? row.reshamWeight)} onValueChange={v => setEditVals(p => ({ ...p, reshamWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                                     </div>
                                     <JariWeightField
                                       reels={editVals.jariWeight ?? row.jariWeight}
@@ -228,20 +221,12 @@ export function MakingChargesSection({
                             </div>
 
                             <div style={{ display: "flex", gap: 10 }}>
-                              <button onClick={() => saveEdit(i)} style={{
-                                background: T.green, color: "#fff", border: "none", borderRadius: 999,
-                                padding: "9px 22px", fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                                display: "flex", alignItems: "center", gap: 6,
-                              }}>
-                                <Check size={14} /> Save Changes
-                              </button>
-                              <button onClick={() => setEditRow(null)} style={{
-                                background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                                borderRadius: 999, padding: "9px 18px", fontFamily: F.ui, fontSize: 13, cursor: "pointer",
-                                display: "flex", alignItems: "center", gap: 6,
-                              }}>
-                                <X size={13} /> Cancel
-                              </button>
+                              <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[9px] px-[22px] text-[13px] font-semibold" onClick={() => saveEdit(i)}>
+                                Save Changes
+                              </Button>
+                              <Button variant="secondary" iconLeft={X} className="rounded-full h-auto py-[9px] px-[18px] text-[13px]" onClick={() => setEditRow(null)}>
+                                Cancel
+                              </Button>
                             </div>
                           </div>
                         </motion.div>
@@ -256,17 +241,13 @@ export function MakingChargesSection({
       </div>
 
       {/* Add New Saree Type */}
-      <button
+      <Button
+        variant="primary" iconLeft={Plus}
+        className="mt-4 w-full rounded-full h-12 bg-[#6E0F2D] hover:bg-[#6E0F2D]/90 text-[14px] font-semibold"
         onClick={() => { setShowNewForm(!showNewForm); setNewVals({}); }}
-        style={{
-          width: "100%", marginTop: 16, background: T.royalBurgundy, color: "#fff",
-          border: "none", borderRadius: 999, height: 48, fontFamily: F.ui, fontSize: 14,
-          fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center",
-          justifyContent: "center", gap: 8,
-        }}
       >
-        <Plus size={16} /> Add New Saree Type
-      </button>
+        Add New Saree Type
+      </Button>
 
       <AnimatePresence>
         {showNewForm && (
@@ -294,44 +275,44 @@ export function MakingChargesSection({
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="short-code-2">Short Code *</label>
-                    <input id="short-code-2" value={newVals.code ?? ""} onChange={e => setNewVals(p => ({ ...p, code: e.target.value }))} style={{ ...inputStyle, fontFamily: F.mono }} placeholder="e.g. KS-006" />
+                    <Input id="short-code-2" value={newVals.code ?? ""} onChange={e => setNewVals(p => ({ ...p, code: e.target.value }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)] font-[var(--font-mono)]" placeholder="e.g. KS-006" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="description-2">Description</label>
-                    <textarea id="description-2" rows={2} value={newVals.description ?? ""} onChange={e => setNewVals(p => ({ ...p, description: e.target.value }))} style={{ ...inputStyle, resize: "none" }} placeholder="Short description…" />
+                    <Textarea id="description-2" rows={2} value={newVals.description ?? ""} onChange={e => setNewVals(p => ({ ...p, description: e.target.value }))} className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Short description…" />
                   </div>
                 </div>
                 {/* Col 2 — Pricing */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
                     <label style={labelStyle} htmlFor="making-charge-2">Making Charge (₹) *</label>
-                    <input id="making-charge-2" type="number" value={newVals.charge ?? ""} onChange={e => setNewVals(p => ({ ...p, charge: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <NumberInput id="making-charge-2" addonLeft="₹" value={newVals.charge ? Number(newVals.charge) : ""} onValueChange={v => setNewVals(p => ({ ...p, charge: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="retail-price-2">Retail Price (₹)</label>
-                    <input id="retail-price-2" type="number" value={newVals.retail ?? ""} onChange={e => setNewVals(p => ({ ...p, retail: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <NumberInput id="retail-price-2" addonLeft="₹" value={newVals.retail ? Number(newVals.retail) : ""} onValueChange={v => setNewVals(p => ({ ...p, retail: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (₹)</label>
-                    <input id="wholesale-price-2" type="number" value={newVals.wholesale ?? ""} onChange={e => setNewVals(p => ({ ...p, wholesale: e.target.value }))} style={inputStyle} placeholder="0" />
+                    <NumberInput id="wholesale-price-2" addonLeft="₹" value={newVals.wholesale ? Number(newVals.wholesale) : ""} onValueChange={v => setNewVals(p => ({ ...p, wholesale: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                 </div>
                 {/* Col 3 — Weights */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
                     <label style={labelStyle} htmlFor="standard-weight-g-2">Standard Weight (g) *</label>
-                    <input id="standard-weight-g-2" type="number" value={newVals.stdWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, stdWeight: e.target.value }))} style={inputStyle} placeholder="Enter manually" />
+                    <NumberInput id="standard-weight-g-2" value={newVals.stdWeight ? Number(newVals.stdWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, stdWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
                   </div>
                   <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
                     <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <div>
                         <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>
-                        <input type="number" value={newVals.warpWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, warpWeight: e.target.value }))} style={inputStyle} placeholder="0" />
+                        <NumberInput value={newVals.warpWeight ? Number(newVals.warpWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, warpWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                       </div>
                       <div>
                         <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
-                        <input type="number" value={newVals.reshamWeight ?? ""} onChange={e => setNewVals(p => ({ ...p, reshamWeight: e.target.value }))} style={inputStyle} placeholder="0" />
+                        <NumberInput value={newVals.reshamWeight ? Number(newVals.reshamWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, reshamWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                       </div>
                       <JariWeightField
                         reels={newVals.jariWeight ?? ""}
@@ -342,26 +323,21 @@ export function MakingChargesSection({
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
-                <button
+                <Button
+                  variant="primary" iconLeft={Check}
+                  className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[9px] px-[22px] text-[13px] font-semibold"
                   onClick={saveNew}
                   disabled={!newVals.type?.trim() || !newVals.code?.trim()}
-                  style={{
-                    background: (!newVals.type?.trim() || !newVals.code?.trim()) ? T.taupe : T.green,
-                    color: "#fff", border: "none", borderRadius: 999,
-                    padding: "9px 22px", fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                    cursor: (!newVals.type?.trim() || !newVals.code?.trim()) ? "not-allowed" : "pointer",
-                    display: "flex", alignItems: "center", gap: 6, opacity: (!newVals.type?.trim() || !newVals.code?.trim()) ? 0.55 : 1,
-                  }}
                 >
-                  <Check size={14} /> Save New Type
-                </button>
-                <button onClick={() => { setShowNewForm(false); setNewVals({}); }} style={{
-                  background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                  borderRadius: 999, padding: "9px 18px", fontFamily: F.ui, fontSize: 13, cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 6,
-                }}>
-                  <X size={13} /> Cancel
-                </button>
+                  Save New Type
+                </Button>
+                <Button
+                  variant="secondary" iconLeft={X}
+                  className="rounded-full h-auto py-[9px] px-[18px] text-[13px]"
+                  onClick={() => { setShowNewForm(false); setNewVals({}); }}
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </motion.div>

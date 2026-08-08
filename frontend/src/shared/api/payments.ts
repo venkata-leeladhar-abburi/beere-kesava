@@ -83,6 +83,26 @@ export interface BackendWeaverPayment {
   deduction: string | null;
 }
 
+// Per-saree-type earnings breakdown: count of QC-passed sarees x that saree
+// type's real making charge (SareeTypeRate). This is what a weaver has
+// *earned* — distinct from BackendWeaverPayment, which records what's
+// actually been paid out so far.
+export interface WeaverEarningsBreakdown {
+  sareeTypeCode: string;
+  sareeTypeName: string;
+  completedCount: number;
+  ratePerSaree: number;
+  amount: number;
+}
+
+export interface WeaverEarnings {
+  weaverId: string;
+  weaverName: string;
+  totalCompletedSarees: number;
+  totalEarned: number;
+  breakdown: WeaverEarningsBreakdown[];
+}
+
 export const weaverPaymentsApi = {
   importExcel: (file: File) => {
     const formData = new FormData();
@@ -98,6 +118,8 @@ export const weaverPaymentsApi = {
     apiClient.get<PaginatedResponse<BackendWeaverPayment>>(
       `/payments/weavers?pageSize=100${weaverId ? `&weaverId=${weaverId}` : ""}`,
     ),
+  earnings: (weaverId?: string) =>
+    apiClient.get<WeaverEarnings[]>(`/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`),
 };
 
 export interface CreateVendorPaymentPayload {

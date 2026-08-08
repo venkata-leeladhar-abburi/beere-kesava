@@ -34,19 +34,38 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
 
   const { batches } = useBatches();
   const { getRecordsForWeaver, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
-  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const weaverMaterialRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingMaterialRecord = weaverMaterialRecords.find(r => r.status === "pending-signature") ?? null;
   const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
   const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
+
+  const isMyRow = (r: { weaverId?: string | null }) => {
+    if (!r.weaverId) return false;
+    if (weaverId && r.weaverId.toLowerCase() === weaverId.toLowerCase()) return true;
+    if (!weaver) return false;
+    const wId = weaver.id.toLowerCase();
+    const wCode = weaver.code.toLowerCase();
+    const rId = r.weaverId.toLowerCase();
+    return rId === wId || rId === wCode;
+  };
+
+  // A batch is visible to its assigned weaver even in draft status
+  // so they can see upcoming work, and so the "Draft" quick filter works.
   const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
+    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
     .filter(b => b.myRows.length > 0);
 
-  // Completed: every saree row assigned to this weaver in the batch has passed QC
-  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(b => b.myRows.every(r => r.qcPassed === true));
-  // Active: anything not yet fully QC-passed, with a "X of Y passed" progress indicator
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !b.myRows.every(r => r.qcPassed === true));
+  const isBatchDone = (b: MyBatchEntry) => {
+    if (b.status === "completed") return true;
+    if (b.myRows.length === 0) return false;
+    return b.myRows.every(r => r.qcPassed === true);
+  };
+
+  // Completed: batch status is completed OR every saree assigned to this weaver has passed QC
+  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
+  // Active: anything not yet completed
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
 
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
@@ -104,8 +123,8 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
         <div style={{ margin: "40px 24px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: "#8A7F76" }}>Loading your weaver profile…</div>
       )}
       {!showNotifs && !weaverLoading && (weaverError || !weaverId) && (
-        <div style={{ margin: "40px 24px", background: "#FFF", borderRadius: 14, padding: "28px 20px", textAlign: "center" as const, border: "1px solid rgba(107,26,42,0.12)" }}>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: "#1A0A0F", fontWeight: 600 }}>Couldn't find your weaver profile</div>
+        <div style={{ margin: "40px 24px", background: "#FFF", borderRadius: 14, padding: "28px 20px", textAlign: "center" as const, border: "1px solid rgba(110,15,45,0.12)" }}>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: "#3B2314", fontWeight: 600 }}>Couldn't find your weaver profile</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: "#8A7F76", marginTop: 4 }}>Your login isn't linked to a weaver record yet. Contact your supervisor.</div>
         </div>
       )}
@@ -140,14 +159,7 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
 
           {/* ════════ WARP REQUEST ════════ */}
           {!showNotifs && active === "warp" && (
-            <WarpSection
-              bp={bp} isTablet={isTablet}
-              warpBatch={warpBatch} setWarpBatch={setWarpBatch}
-              materials={materials} setMaterials={setMaterials}
-              amounts={amounts} setAmounts={setAmounts}
-              reason={reason} setReason={setReason}
-              warpSubmitted={warpSubmitted} setWarpSubmitted={setWarpSubmitted}
-            />
+            <WarpSection bp={bp} isTablet={isTablet} />
           )}
 
           {/* ════════ PAYMENTS ════════ */}

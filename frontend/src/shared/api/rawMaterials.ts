@@ -53,6 +53,7 @@ export interface GrnReceiptItem {
     grade?: string | null;
     color?: string | null;
     quantity: number;
+    unit?: string | null;
     unitPrice: number;
     totalPrice: number;
     rejectedQuantity: number;

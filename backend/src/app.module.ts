@@ -1,9 +1,7 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { ApprovalsModule } from "./approvals/approvals.module";
 import { AppController } from "./app.controller";
 import { AuditLogModule } from "./audit-log/audit-log.module";
@@ -44,6 +42,7 @@ import { WarpRequestsModule } from "./warp-requests/warp-requests.module";
 import { RateRequestsModule } from "./rate-requests/rate-requests.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
 import { VendorBillsModule } from "./vendor-bills/vendor-bills.module";
+import { DesignDispatchesModule } from "./design-dispatches/design-dispatches.module";
 
 import { AuthModule } from "./auth/auth.module";
 
@@ -55,13 +54,6 @@ import { AuthModule } from "./auth/auth.module";
       validate: validateEnv,
     }),
     ScheduleModule.forRoot(),
-    ThrottlerModule.forRoot([
-      {
-        name: "default",
-        ttl: 60_000,
-        limit: 20,
-      },
-    ]),
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -106,13 +98,9 @@ import { AuthModule } from "./auth/auth.module";
     LabelsModule,
     ScanModule,
     AuditLogModule,
+    DesignDispatchesModule,
   ],
   controllers: [AppController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}

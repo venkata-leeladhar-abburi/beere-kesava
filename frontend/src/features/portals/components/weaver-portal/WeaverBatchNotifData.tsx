@@ -6,9 +6,9 @@ import { AlertTriangle, AlertCircle, Info, CheckCircle2, Package, Wallet, ArrowU
 
 // ─── Shared tokens (local copy for this file) ────────────────────────────────
 const C = {
-  burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
-  bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0",
+  burg: "#6E0F2D", dark: "#3D0E1A", gold: "#C89B47", green: "#1E6640",
+  crim: "#C0392B", text: "#3B2314", muted: "#69635E",
+  bdr: "rgba(110,15,45,0.10)", cream: "#F7F2EA",
 };
 const F = {
   d: "'Plus Jakarta Sans', sans-serif",
@@ -84,20 +84,8 @@ export interface WeaverBatch {
   amount: string | null; month: string; gradient: string; accentColor: string;
 }
 
-export const BATCH_LIST: WeaverBatch[] = [
-  { id: "BATCH-086", design: "BKB-045", name: "Cream Zari Border Saree",  status: "active",    done: 3, total: 5,  pct: 60,  passRate: 97,  amount: null,     month: "Jun 2026", gradient: "linear-gradient(135deg, #E8D5B0 0%, #C9A86C 100%)", accentColor: C.burg },
-  { id: "BATCH-089", design: "BKB-031", name: "Red Silk Kanjivaram",       status: "active",    done: 4, total: 8,  pct: 50,  passRate: 97,  amount: null,     month: "Jun 2026", gradient: "linear-gradient(135deg, #8B2020 0%, #C0392B 100%)", accentColor: C.gold },
-  { id: "BATCH-072", design: "BKB-038", name: "Purple Silk Traditional",   status: "completed", done: 6, total: 6,  pct: 100, passRate: 100, amount: "₹2,700", month: "Apr 2026", gradient: "linear-gradient(135deg, #5A3E6B 0%, #7B5F9B 100%)", accentColor: "#5A3E6B" },
-  { id: "BATCH-061", design: "BKB-022", name: "Green Peacock Motif",       status: "completed", done: 4, total: 5,  pct: 80,  passRate: 88,  amount: "₹1,960", month: "Apr 2026", gradient: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", accentColor: "#2D6B6B" },
-  { id: "BATCH-054", design: "BKB-045", name: "Cream Zari Border Saree",  status: "completed", done: 7, total: 7,  pct: 100, passRate: 100, amount: "₹3,150", month: "Mar 2026", gradient: "linear-gradient(135deg, #E8D5B0 0%, #C9A86C 100%)", accentColor: C.burg },
-  { id: "BATCH-046", design: "BKB-012", name: "Blue Silk Plain",           status: "completed", done: 5, total: 5,  pct: 100, passRate: 95,  amount: "₹2,250", month: "Feb 2026", gradient: "linear-gradient(135deg, #1565C0 0%, #1E88E5 100%)", accentColor: "#1565C0" },
-  { id: "BATCH-039", design: "BKB-022", name: "Green Peacock Motif",       status: "completed", done: 6, total: 6,  pct: 100, passRate: 100, amount: "₹2,700", month: "Jan 2026", gradient: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", accentColor: "#2D6B6B" },
-  { id: "BATCH-031", design: "BKB-031", name: "Red Silk Kanjivaram",       status: "completed", done: 7, total: 8,  pct: 87,  passRate: 96,  amount: "₹3,360", month: "Jan 2026", gradient: "linear-gradient(135deg, #8B2020 0%, #C0392B 100%)", accentColor: C.gold },
-  { id: "BATCH-024", design: "BKB-045", name: "Cream Zari Border Saree",  status: "completed", done: 8, total: 8,  pct: 100, passRate: 99,  amount: "₹3,600", month: "Dec 2025", gradient: "linear-gradient(135deg, #E8D5B0 0%, #C9A86C 100%)", accentColor: C.burg },
-  { id: "BATCH-016", design: "BKB-038", name: "Purple Silk Traditional",   status: "completed", done: 5, total: 6,  pct: 83,  passRate: 92,  amount: "₹2,100", month: "Nov 2025", gradient: "linear-gradient(135deg, #5A3E6B 0%, #7B5F9B 100%)", accentColor: "#5A3E6B" },
-  { id: "BATCH-009", design: "BKB-022", name: "Green Peacock Motif",       status: "completed", done: 6, total: 6,  pct: 100, passRate: 98,  amount: "₹2,700", month: "Oct 2025", gradient: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", accentColor: "#2D6B6B" },
-  { id: "BATCH-003", design: "BKB-031", name: "Red Silk Kanjivaram",       status: "completed", done: 8, total: 8,  pct: 100, passRate: 100, amount: "₹3,840", month: "Sep 2025", gradient: "linear-gradient(135deg, #8B2020 0%, #C0392B 100%)", accentColor: C.gold },
-];
+// Removed: BATCH_LIST held hardcoded demo batches (BATCH-086, ...).
+// Weaver batches come from BatchContext (GET /batches) only.
 
 export const BATCH_STATUS_CFG = {
   active:    { label: "Weaving in Progress", dot: C.green,   textColor: C.green },

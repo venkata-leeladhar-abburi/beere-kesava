@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal, Moon } from 'lucide-react';
 import { T, F, G, EASE } from '../theme';
+import { Button, IconButton } from '../../../../../shared/ui/primitives';
 // @ts-ignore
 import imgHero from '../../../../../assets/hero.webp';
 
@@ -84,27 +85,25 @@ export function Hero() {
           transition={{ duration: 0.65, delay: 1.15, ease: EASE }}
           style={{ display: "flex", gap: 12, alignItems: "center" }}
         >
-          <motion.button
-            initial={{ boxShadow: "0px 8px 32px rgba(110,15,45,0.40)" }}
-            whileHover={{ scale: 1.04, boxShadow: "0px 16px 48px rgba(110,15,45,0.55)" }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "14px 28px", borderRadius: 16, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.warmCream, letterSpacing: "0.2px", boxShadow: `0 8px 32px rgba(110,15,45,0.40)` }}
-          >
-            Explore Production
-            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ChevronRight size={13} color={T.warmCream} />
-            </div>
-          </motion.button>
-          <motion.button
-            initial={{ backgroundColor: "rgba(245,232,208,0.10)" }}
-            whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.16)" }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 22px", borderRadius: 16, cursor: "pointer", backgroundColor: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.30)", fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: "rgba(245,232,208,0.92)", letterSpacing: "0.1px" }}
-          >
-            View Reports
-          </motion.button>
+          <motion.div initial={{ boxShadow: "0px 8px 32px rgba(110,15,45,0.40)" }} whileHover={{ scale: 1.04, boxShadow: "0px 16px 48px rgba(110,15,45,0.55)" }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.2 }} style={{ borderRadius: 16 }}>
+            <Button
+              variant="primary"
+              className="!gap-3 !py-3.5 !px-7 !rounded-2xl !border-none !bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] !text-[#F5E8D0] !text-[13px] !font-semibold !tracking-[0.2px]"
+            >
+              Explore Production
+              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <ChevronRight size={13} color={T.warmCream} />
+              </div>
+            </Button>
+          </motion.div>
+          <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.10)" }} whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.16)" }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.2 }} style={{ borderRadius: 16 }}>
+            <Button
+              variant="tertiary"
+              className="!gap-2.5 !py-[13px] !px-[22px] !rounded-2xl !bg-white/10 !border !border-white/30 !text-[rgba(245,232,208,0.92)] !text-[13px] !font-medium !tracking-[0.1px] hover:!bg-white/16 hover:!text-[rgba(245,232,208,0.92)]"
+            >
+              View Reports
+            </Button>
+          </motion.div>
         </motion.div>
 
         {/* Scroll indicator */}
@@ -127,16 +126,21 @@ export function Hero() {
       </div>
 
       <div style={{ position: "absolute", right: 24, top: "40%", transform: "translateY(-50%)", zIndex: 6, display: "flex", flexDirection: "column", gap: 10 }}>
-        {[SlidersHorizontal, Moon].map((Icon, i) => (
-          <motion.button
+        {[{ Icon: SlidersHorizontal, label: "Filters" }, { Icon: Moon, label: "Toggle theme" }].map(({ Icon, label }, i) => (
+          <motion.div
             key={i}
             initial={{ backgroundColor: "rgba(245,232,208,0.07)" }}
             whileHover={{ scale: 1.1, backgroundColor: "rgba(245,232,208,0.12)" }}
             whileTap={{ scale: 0.93 }}
-            style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(245,232,208,0.07)", backdropFilter: "blur(12px)", border: "1px solid rgba(245,232,208,0.10)", boxShadow: "0 4px 16px rgba(0,0,0,0.22)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+            style={{ borderRadius: 12, backdropFilter: "blur(12px)", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}
           >
-            <Icon size={15} color="rgba(245,232,208,0.55)" />
-          </motion.button>
+            <IconButton
+              icon={Icon}
+              label={label}
+              variant="ghost"
+              className="!size-[38px] !rounded-xl !bg-white/7 !border !border-white/10 !text-[rgba(245,232,208,0.55)] hover:!bg-white/12 hover:!text-[rgba(245,232,208,0.55)]"
+            />
+          </motion.div>
         ))}
       </div>
     </section>

@@ -2,12 +2,13 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, MapPin, Phone, Edit3, Layers3, Activity, AlertTriangle } from "lucide-react";
-import { Clock, Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
+import { Clock, Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 
 export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
@@ -182,7 +183,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Rows size={14} color={T.royalBurgundy} weight="fill" />
+                        <Rows size={14} color={T.royalBurgundy} />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
@@ -193,30 +194,30 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
 
                   {/* Action buttons */}
                   <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-                    <motion.button
+                    <Button
                       onClick={() => onSelect(w)}
-                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]"
                     >
                       <Eye size={14} /> Details
-                    </motion.button>
-                    <motion.button
+                    </Button>
+                    <Button
                       onClick={() => onEdit(w)}
-                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.05)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", color: T.royalBurgundy, border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1 rounded-xl bg-transparent text-[#6E0F2D] border border-[#6E0F2D]"
                     >
                       <Edit3 size={13} /> Edit
-                    </motion.button>
-                    <motion.button
+                    </Button>
+                    <Button
                       onClick={() => onBatches(w)}
-                      whileHover={{ scale: 1.02, background: "rgba(110,15,45,0.08)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(110,15,45,0.04)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: "10px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]"
                     >
                       <Layers3 size={14} /> Batches
-                    </motion.button>
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -226,10 +227,14 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
       </div>
       {!showAll && (
         <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
-          <motion.button onClick={() => setShowAll(true)} whileHover={{ scale: 1.02, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" }} whileTap={{ scale: 0.98 }}
-            style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.royalBurgundy, background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.20)`, borderRadius: 14, padding: "15px 44px", cursor: "pointer", boxShadow: "0 4px 12px rgba(74,6,27,0.07)" }}>
+          <Button
+            onClick={() => setShowAll(true)}
+            variant="secondary"
+            size="lg"
+            className="rounded-[14px] bg-white text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.20)] shadow-[0_4px_12px_rgba(74,6,27,0.07)]"
+          >
             Load More Weavers
-          </motion.button>
+          </Button>
         </div>
       )}
     </div>
@@ -296,7 +301,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
             </div>
             {/* Village */}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <PhMapPin size={15} color={T.taupe} weight="fill" />
+              <PhMapPin size={15} color={T.taupe} />
               <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{w.village}</span>
             </div>
             {/* Status */}
@@ -311,26 +316,26 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>
             {/* Looms */}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <Rows size={16} color={T.taupe} weight="regular" />
+              <Rows size={16} color={T.taupe} />
               <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{w.looms}</span>
             </div>
             {/* Action */}
             <div>
-              <motion.button
+              <Button
                 onClick={() => onSelect(w)}
-                whileHover={{ scale: 1.04, background: "rgba(110,15,45,0.10)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "10px 16px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                variant="secondary"
+                size="sm"
+                className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
               >
-                <PhEye size={18} weight="regular" /> View
-              </motion.button>
+                <PhEye size={18} /> View
+              </Button>
             </div>
           </motion.div>
         );
       })}
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <motion.button onClick={() => setShowAll(true)} whileHover={{ scale: 1.02 }} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.royalBurgundy, background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.35)" }}>Load More Weavers</motion.button>
+          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
         </div>
       )}
     </div>
