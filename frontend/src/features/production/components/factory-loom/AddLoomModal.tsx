@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { FactoryLoom } from "../../data/factoryLooms";
-import { T, F, EASE } from "./theme";
+import { T, F } from "./theme";
 import { Button, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 // ── Form helpers ─────────────────────────────────────────────────────────────
 function FI({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
@@ -28,22 +30,23 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
 }) {
   const blank = { loomNumber: "", location: "", operatorName: "", operatorPhone: "", status: "active", installedYear: "", notes: "" };
   const [form, setForm] = useState<any>(blank);
-  React.useEffect(() => { if (editLoom) { const { id, ...r } = editLoom; setForm(r); } else setForm(blank); }, [editLoom, open]);
+  useEffect(() => { if (editLoom) { const { id, ...r } = editLoom; setForm(r); } else setForm(blank); }, [editLoom, open]);
   const patch = (p: any) => setForm((prev: any) => ({ ...prev, ...p }));
   const valid = form.loomNumber.trim() && form.operatorName.trim() && form.location.trim();
-  if (!open) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--surface-scrim)", backdropFilter: "blur(4px)" }}>
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.28, ease: EASE }}
-        style={{ background: "#FFF", borderRadius: 22, width: "min(560px, 96vw)", maxHeight: "90vh", overflowY: "auto" as const, boxShadow: "0 32px 80px rgba(61,14,26,0.30)" }}>
-        <div style={{ background: `linear-gradient(110deg, ${T.darkBurgundy} 0%, #5A1A30 100%)`, padding: "22px 26px", borderTopLeftRadius: 22, borderTopRightRadius: 22, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <Modal open={open} onOpenChange={o => !o && onClose()} size="sm">
+        <div style={{ background: `linear-gradient(110deg, ${T.darkBurgundy} 0%, #5A1A30 100%)`, padding: "22px 26px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
+            </Dialog.Title>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Enter details for this loom</div>
           </div>
-          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm" className="bg-white/12 text-white hover:bg-white/20" />
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm" className="bg-white/12 text-white hover:bg-white/20" />
+          </Dialog.Close>
         </div>
-        <div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
             <FI label="Loom Number / Name" value={form.loomNumber} onChange={v => patch({ loomNumber: v })} placeholder="e.g. Loom F-06" required />
           </div>
@@ -67,7 +70,6 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             </Button>
           </div>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }
