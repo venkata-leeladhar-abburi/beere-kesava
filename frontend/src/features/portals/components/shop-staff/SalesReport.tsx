@@ -8,8 +8,9 @@ import { semantic } from "../../../../design-system/tokens";
 
 
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
+import * as Dialog from '@radix-ui/react-dialog';
+import { Modal } from "../../../../shared/ui/overlay";
+import {
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
   Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
   Phone, Eye, Download, Printer, Filter, Calendar, Activity,
@@ -283,34 +284,26 @@ function SalesReport() {
       ))}
 
       {/* ══════ MODAL: EXPORT REPORT ══════ */}
-      <AnimatePresence>
-        {showExport && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-            onClick={() => { setShowExport(false); setExportDone(false); }}>
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 32 }}
-              onClick={e => e.stopPropagation()}
-              style={{ background: "#FFF", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "88vh", boxShadow: "0 -8px 40px rgba(44,24,16,0.22)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
-              <div style={{ display: "flex", justifyContent: "center", paddingTop: 10, flexShrink: 0, background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)` }}>
-                <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.30)" }} />
-              </div>
+      <Modal open={showExport} onOpenChange={o => { if (!o) { setShowExport(false); setExportDone(false); } }} size="sm">
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0, display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(196,146,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <FileText size={24} color={C.gold} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
+                  <Dialog.Title asChild>
+                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
+                  </Dialog.Title>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div>
                 </div>
-                <IconButton
-                  icon={X}
-                  label="Close"
-                  onClick={() => { setShowExport(false); setExportDone(false); }}
-                  variant="ghost"
-                  shape="circle"
-                  className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
-                />
+                <Dialog.Close asChild>
+                  <IconButton
+                    icon={X}
+                    label="Close"
+                    variant="ghost"
+                    shape="circle"
+                    className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
+                  />
+                </Dialog.Close>
               </div>
               <div style={{ padding: "22px 20px 28px", overflowY: "auto" as const }}>
                 {exportDone ? (
@@ -368,10 +361,7 @@ function SalesReport() {
                   </>
                 )}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }

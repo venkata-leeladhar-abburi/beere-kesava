@@ -1,8 +1,9 @@
 
 
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
+import * as Dialog from '@radix-ui/react-dialog';
+import { Modal } from "../../../../shared/ui/overlay";
+import {
   Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
   Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
   Phone, Eye, Download, Printer, Filter, Calendar, Activity,
@@ -142,19 +143,9 @@ function CustomerProfiles() {
       </div>
 
       {/* ══════ MODAL: CUSTOMER PROFILE ══════ */}
-      <AnimatePresence>
+      <Modal open={!!activeCustomer} onOpenChange={o => !o && setSelected(null)} size="sm">
         {activeCustomer && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-            onClick={() => setSelected(null)}>
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 32 }}
-              onClick={e => e.stopPropagation()}
-              style={{ background: "#FFF", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "88vh", boxShadow: "0 -8px 40px rgba(44,24,16,0.22)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
-              {/* Handle */}
-              <div style={{ display: "flex", justifyContent: "center", paddingTop: 10, flexShrink: 0, background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)` }}>
-                <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.30)" }} />
-              </div>
+          <>
               {/* Header */}
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -163,19 +154,22 @@ function CustomerProfiles() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" as const }}>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{activeCustomer.name}</div>
+                      <Dialog.Title asChild>
+                        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{activeCustomer.name}</div>
+                      </Dialog.Title>
                       {activeCustomer.regular && <Star size={16} fill={C.gold} color={C.gold} />}
                     </div>
                     <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div>
                   </div>
-                  <IconButton
-                    icon={X}
-                    label="Close"
-                    onClick={() => setSelected(null)}
-                    variant="ghost"
-                    shape="circle"
-                    className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
-                  />
+                  <Dialog.Close asChild>
+                    <IconButton
+                      icon={X}
+                      label="Close"
+                      variant="ghost"
+                      shape="circle"
+                      className="bg-white/10 text-white/70 w-9 h-9 shrink-0"
+                    />
+                  </Dialog.Close>
                 </div>
               </div>
               {/* Body */}
@@ -234,10 +228,9 @@ function CustomerProfiles() {
                   <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+          </>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }

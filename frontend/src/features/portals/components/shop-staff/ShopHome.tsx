@@ -1,7 +1,8 @@
 import { useCanSeePrices, HeroHeader, StatsStrip, TabId } from "./theme";
 import { ShoppingBag, Check, Send, AlertTriangle, Package, RotateCcw, ArrowUpRight, X } from "lucide-react";
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { Modal } from "../../../../shared/ui/overlay";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { inventoryApi } from "../../../../shared/api/inventory";
@@ -175,34 +176,28 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       </div>
 
       {/* Low Stock Dialog — bottom sheet */}
-      <AnimatePresence>
-        {showLowStockDialog && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", flexDirection: "column" as const, justifyContent: "flex-end" }}
-            onClick={() => setShowLowStockDialog(false)}>
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 34 }}
-              onClick={e => e.stopPropagation()}
-              style={{ background: "#FFF", borderRadius: "22px 22px 0 0", padding: "28px 20px 36px", boxShadow: "0 -8px 40px rgba(44,24,16,0.18)" }}>
-              {/* Handle */}
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(139,112,96,0.25)", margin: "0 auto 22px" }} />
+      <Modal open={showLowStockDialog} onOpenChange={o => !o && setShowLowStockDialog(false)} size="sm">
+            <div style={{ padding: "28px 20px 36px", overflowY: "auto" }}>
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <AlertTriangle size={24} color={C.crim} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Report Low Stock</div>
+                  <Dialog.Title asChild>
+                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Report Low Stock</div>
+                  </Dialog.Title>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Notify Admin & Superadmin</div>
                 </div>
-                <IconButton
-                  icon={X}
-                  label="Close"
-                  onClick={() => setShowLowStockDialog(false)}
-                  variant="ghost"
-                  shape="circle"
-                  className="ml-auto bg-[rgba(139,112,96,0.10)] text-[#69635E] w-9 h-9"
-                />
+                <Dialog.Close asChild>
+                  <IconButton
+                    icon={X}
+                    label="Close"
+                    variant="ghost"
+                    shape="circle"
+                    className="ml-auto bg-[rgba(139,112,96,0.10)] text-[#69635E] w-9 h-9"
+                  />
+                </Dialog.Close>
               </div>
               {/* Stock info */}
               <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "14px 16px", marginBottom: 20 }}>
@@ -251,10 +246,8 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               }} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-full font-bold text-base text-white gap-2">
                 {lowStockSending ? "Sending…" : <><Send size={18} /> Send Report to Admin</>}
               </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+      </Modal>
     </div>
   );
 }
