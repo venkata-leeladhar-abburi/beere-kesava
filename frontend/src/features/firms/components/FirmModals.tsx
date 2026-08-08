@@ -54,7 +54,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
   }
   return (
     <motion.div key="firm-modal-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(44,9,22,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}
+      style={{ position: "fixed", inset: 0, zIndex: 400, background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ opacity: 0, y: 32, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.28, ease: EASE }}
         style={{ background: "#FFF", borderRadius: 22, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,9,22,0.28)", border: `1px solid ${T.borderDef}` }}>
@@ -120,7 +120,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
   }
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(44,9,22,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}
+      style={{ position: "fixed", inset: 0, zIndex: 400, background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ opacity: 0, y: 32, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.28, ease: EASE }}
         style={{ background: "#FFF", borderRadius: 22, width: "100%", maxWidth: 860, maxHeight: "92vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(44,9,22,0.28)", border: `1px solid ${T.borderDef}` }}>

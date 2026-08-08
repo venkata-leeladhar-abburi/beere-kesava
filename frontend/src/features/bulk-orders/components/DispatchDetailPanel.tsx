@@ -43,7 +43,7 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
   ];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", justifyContent: "flex-end" }} onClick={onClose}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(30,10,20,0.50)", backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)", backdropFilter: "blur(3px)" }} />
       <motion.div initial={{ x: 420 }} animate={{ x: 0 }} exit={{ x: 420 }} transition={{ duration: 0.24 }}
         onClick={e => e.stopPropagation()}
         style={{ position: "relative", width: 420, maxWidth: "92vw", height: "100%", background: "#FFF", boxShadow: "-16px 0 60px rgba(0,0,0,0.20)", display: "flex", flexDirection: "column" }}>

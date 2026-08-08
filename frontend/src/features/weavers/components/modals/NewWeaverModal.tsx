@@ -88,7 +88,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   };
 
   return (
-    <div style={expanded ? { position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "rgba(26,10,15,0.42)", backdropFilter: "blur(4px)", padding: "32px 48px", overflowY: "auto" } : { padding: "40px 48px", paddingBottom: 80 }}>
+    <div style={expanded ? { position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", backdropFilter: "blur(4px)", padding: "32px 48px", overflowY: "auto" } : { padding: "40px 48px", paddingBottom: 80 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "32px", boxShadow: expanded ? "0 30px 90px rgba(0,0,0,0.25)" : "0 8px 32px rgba(74,6,27,0.06)", maxWidth: 900, margin: expanded ? "24px auto" : "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>

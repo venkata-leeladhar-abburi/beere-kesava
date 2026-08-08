@@ -33,7 +33,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(61,14,26,0.50)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25, ease: EASE }}
         style={{ position: "relative", width: step === 1 && browsing ? 1180 : 620, maxWidth: "96vw", maxHeight: "88vh", display: "flex", flexDirection: "column", background: "#FFFDF9", borderRadius: 20, boxShadow: "0 24px 80px rgba(61,14,26,0.22)", overflow: "hidden", transition: "width 0.3s ease" }}>
 

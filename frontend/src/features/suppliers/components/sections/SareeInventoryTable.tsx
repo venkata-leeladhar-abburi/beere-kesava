@@ -95,7 +95,7 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
       <AnimatePresence>
         {preview && (
           <div onClick={() => setPreview(null)}
-            style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "rgba(20,8,14,0.75)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+            style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
             <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               src={preview} alt="Saree" style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
           </div>

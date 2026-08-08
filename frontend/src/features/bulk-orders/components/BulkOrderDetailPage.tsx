@@ -341,7 +341,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
       <AnimatePresence>
         {tallyPrompt && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 950, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(30,10,20,0.55)", backdropFilter: "blur(4px)" }} onClick={() => setTallyPrompt(false)}>
+          <div style={{ position: "fixed", inset: 0, zIndex: 950, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--surface-scrim)", backdropFilter: "blur(4px)" }} onClick={() => setTallyPrompt(false)}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
               onClick={e => e.stopPropagation()}
               style={{ width: 420, maxWidth: "92vw", background: "#FFF", borderRadius: 18, padding: 26, boxShadow: "0 30px 80px rgba(0,0,0,0.25)" }}>

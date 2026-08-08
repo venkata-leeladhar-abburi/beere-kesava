@@ -19,7 +19,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
   const pricePerSaree = dispatch?.pricePerSaree || Math.round(inv.total / numSarees);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
       <motion.div initial={{ y: 20, scale: 0.95, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 20, scale: 0.95, opacity: 0 }} onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 550, background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderGold}` }}>
         {/* Header */}
         <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

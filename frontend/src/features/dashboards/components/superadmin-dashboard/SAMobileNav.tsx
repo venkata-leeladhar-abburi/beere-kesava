@@ -25,7 +25,7 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
             onClick={onClose}
-            style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(58,18,28,0.55)", backdropFilter: "blur(3px)" }}
+            style={{ position: "fixed", inset: 0, zIndex: 199, background: "var(--surface-scrim)", backdropFilter: "blur(3px)" }}
           />
           <motion.div
             key="sa-drawer"

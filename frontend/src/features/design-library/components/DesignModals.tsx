@@ -46,7 +46,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
   }
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div onClick={e => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
         transition={{ duration: 0.22 }}
@@ -118,7 +118,7 @@ export function SlipModal({ design, onClose, onSave }: { design: DesignEntry; on
   const [slip, setSlip] = useState<string | null>(design.colorSlipPhoto);
   const [graph, setGraph] = useState<string | null>(design.designGraph);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div onClick={e => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
         transition={{ duration: 0.22 }}

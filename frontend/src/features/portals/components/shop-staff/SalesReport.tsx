@@ -286,7 +286,7 @@ function SalesReport() {
       <AnimatePresence>
         {showExport && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "rgba(20,8,12,0.60)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
             onClick={() => { setShowExport(false); setExportDone(false); }}>
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 340, damping: 32 }}

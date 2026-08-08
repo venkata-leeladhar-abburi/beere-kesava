@@ -17,7 +17,7 @@ export interface VerifData {
 
 function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onCancel: () => void }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "rgba(27,12,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onCancel}>
+    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onCancel}>
       <div onClick={e => e.stopPropagation()} style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <AlertTriangle size={18} color={C.crim} />

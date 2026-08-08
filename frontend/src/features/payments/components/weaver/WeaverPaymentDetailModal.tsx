@@ -65,7 +65,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
         transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}

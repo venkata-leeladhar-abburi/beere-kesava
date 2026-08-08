@@ -29,7 +29,7 @@ export function AddSupplierModal({ onSave, onCancel, nextId }: {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(30,10,20,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
       onClick={onCancel}>
       <motion.div initial={{ opacity: 0, y: 32, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
         transition={{ duration: 0.28, ease: EASE }} onClick={e => e.stopPropagation()}

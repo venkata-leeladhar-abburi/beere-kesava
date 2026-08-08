@@ -21,7 +21,7 @@ const F = {
 
 function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 800, background: "rgba(30,10,20,0.5)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 800, background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <motion.div onClick={e => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.94, y: 18 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}

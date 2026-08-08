@@ -178,7 +178,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       <AnimatePresence>
         {showLowStockDialog && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "rgba(20,8,12,0.60)", display: "flex", flexDirection: "column" as const, justifyContent: "flex-end" }}
+            style={{ position: "fixed" as const, inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", flexDirection: "column" as const, justifyContent: "flex-end" }}
             onClick={() => setShowLowStockDialog(false)}>
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 340, damping: 34 }}
