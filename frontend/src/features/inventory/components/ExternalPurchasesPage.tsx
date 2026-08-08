@@ -16,6 +16,7 @@ import { PurchasesTable } from "./externalPurchases/sections/PurchasesTable";
 import { DetailDrawer } from "./externalPurchases/sections/DetailDrawer";
 import { PurchaseFormModal } from "./externalPurchases/modals/purchaseForm/PurchaseFormModal";
 import { SareeListModal } from "./externalPurchases/modals/SareeListModal";
+import { useConfirm } from "../../../shared/ui/overlay";
 
 // Re-exported so existing imports of `PurchaseFormModal` / `FormState` / `EMPTY_FORM`
 // from this file (e.g. SuppliersPage) keep working unchanged.
@@ -36,6 +37,7 @@ export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
   const { purchases, addPurchase, updatePurchase, deletePurchase } = useSuppliers();
+  const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -161,8 +163,14 @@ export function ExternalPurchasesPage() {
     setDetailRow((d) => (d && d.id === id ? null : d));
   };
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm(`Delete purchase ${id}? This cannot be undone.`)) return;
+  const handleDelete = async (id: string) => {
+    const confirmed = await confirm({
+      title: `Delete purchase ${id}?`,
+      description: "This permanently removes the purchase and cannot be undone. Type the purchase ID to confirm.",
+      typeToConfirm: id,
+      confirmLabel: "Delete",
+    });
+    if (!confirmed) return;
     deletePurchase(id);
     setDetailRow((d) => (d && d.id === id ? null : d));
   };

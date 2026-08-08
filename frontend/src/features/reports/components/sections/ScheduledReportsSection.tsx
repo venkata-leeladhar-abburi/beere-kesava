@@ -12,6 +12,7 @@ import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "..
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { reportsApi } from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { useConfirm } from "../../../../shared/ui/overlay";
 
 export function ScheduledReportsSection() {
   const [showForm, setShowForm] = useState(false);
@@ -20,6 +21,7 @@ export function ScheduledReportsSection() {
   const [recipientEmail, setRecipientEmail] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const confirm = useConfirm();
 
   const { data: schedRes, isLoading, isError } = useQuery({
     queryKey: ["reports-schedules-list"],
@@ -141,10 +143,13 @@ export function ScheduledReportsSection() {
                       icon={Trash2}
                       label="Delete"
                       disabled={deleteMutation.isPending}
-                      onClick={() => {
-                        if (window.confirm(`Delete scheduled report "${s.reportName}"?`)) {
-                          deleteMutation.mutate(s.id);
-                        }
+                      onClick={async () => {
+                        const confirmed = await confirm({
+                          title: `Delete scheduled report "${s.reportName}"?`,
+                          description: "This stops future deliveries of this report. You can set up a new schedule again later.",
+                          confirmLabel: "Delete",
+                        });
+                        if (confirmed) deleteMutation.mutate(s.id);
                       }}
                     />
                   </div>
