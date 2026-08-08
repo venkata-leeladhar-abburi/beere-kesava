@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => void; onCancel: () => void; nextId: string }) {
   const [form, setForm] = useState({
@@ -51,30 +52,14 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 999,
-      background: "rgba(30,10,20,0.55)", backdropFilter: "blur(4px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "24px",
-    }} onClick={onCancel}>
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 16, scale: 0.97 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: "#FFF", borderRadius: 16, padding: 32,
-          border: `1px solid rgba(110,15,45,0.10)`,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.22)",
-          width: "100%", maxWidth: 940, maxHeight: "90vh",
-          overflowY: "auto",
-        }}
-      >
+    <Modal open onOpenChange={o => !o && onCancel()} size="xl">
+      <div style={{ padding: 32, overflowY: "auto" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
           <div>
-            <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
+            <Dialog.Title asChild>
+              <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
+            </Dialog.Title>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
           </div>
           <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
@@ -185,13 +170,11 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
         {/* Actions */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid rgba(110,15,45,0.08)` }}>
           <Button onClick={onCancel} variant="tertiary" className="text-[#9C8672]">Cancel</Button>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-            <Button onClick={handleSave} variant="primary" iconLeft="success" className="rounded-lg bg-[#6E0F2D] px-8">
-              Save Vendor
-            </Button>
-          </motion.div>
+          <Button onClick={handleSave} variant="primary" iconLeft="success" className="rounded-lg bg-[#6E0F2D] px-8">
+            Save Vendor
+          </Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }
