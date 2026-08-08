@@ -137,4 +137,17 @@ export class RawMaterialsService {
 
     return grn;
   }
+
+  async updateReorderLevels(thresholds: { id: string; reorderLevel: number }[]) {
+    await this.prisma.$transaction(
+      thresholds.map((t) =>
+        this.prisma.rawMaterialStock.update({
+          where: { id: t.id },
+          data: { reorderLevel: t.reorderLevel },
+        }),
+      ),
+    );
+    return { success: true };
+  }
 }
+

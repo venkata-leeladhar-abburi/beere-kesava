@@ -31,7 +31,7 @@ export class DesignDispatchesService {
   }
 
   async findAll(page: number, pageSize: number): Promise<PaginatedResult<any>> {
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.designDispatch.findMany({
         skip: (page - 1) * pageSize,
         take: pageSize,

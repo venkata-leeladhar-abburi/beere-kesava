@@ -64,4 +64,7 @@ export const rawMaterialsApi = {
   listStock: () => apiClient.get<{ items: RawMaterialStockItem[] }>("/materials/stock"),
   listGrns: () => apiClient.get<{ items: GrnReceiptItem[] }>("/materials/grn"),
   createGrn: (payload: CreateGrnPayload) => apiClient.post<GrnReceiptItem>("/materials/grn", payload),
+  updateReorderLevels: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
+    apiClient.patch<{ success: boolean }>("/materials/reorder-levels", payload),
 };
+

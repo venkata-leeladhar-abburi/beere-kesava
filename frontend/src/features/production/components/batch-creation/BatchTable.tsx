@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending,
-  Send as PaperPlaneTilt,
 } from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
@@ -215,13 +214,7 @@ export function BatchTable({
                     ) : <EmptyCell />}
                   </td>
                   <td style={{ ...td, minWidth: 130 }}>
-                    {/* Dispatches rendering omitted or kept based on what's available; but since rowDispatches is not defined here in HEAD, we need to make sure we don't break it if rowDispatches is missing. I will keep the incoming branch's rowDispatches logic but wait, I didn't see `rowDispatches` defined in the map function in HEAD. */}
-                    {typeof rowDispatches !== "undefined" && rowDispatches.length > 0 ? (
-                      <Button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
-                        variant="link" className="font-sans text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
-                        <PaperPlaneTilt size={12} /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
-                      </Button>
-                    ) : <EmptyCell />}
+                    <EmptyCell />
                   </td>
                   <td style={{ ...td, minWidth: 90 }}>
                     {row.recipientType === "factoryLoom" ? (

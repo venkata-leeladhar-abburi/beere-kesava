@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Package, BarChart2, FileText, AlertTriangle, Download, Check, X } from "lucide-react";
 import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
@@ -8,6 +8,8 @@ import { PO_STATUS_CFG } from "../materialConfig";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
+import { rawMaterialsApi, RawMaterialStockItem } from "../../../../shared/api/rawMaterials";
+import { toast } from "sonner";
 
 // ─── FULL REPORTS MODAL ───────────────────────────────────────────────────────
 export function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -164,60 +166,99 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
 }
 
 // ─── SET ALERT THRESHOLDS MODAL ───────────────────────────────────────────────
-export function ThresholdsModal({ open, onClose, thresholds, onSave }: {
+export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
   open: boolean; onClose: () => void;
-  thresholds: { warp: number; resham: number; jari: { qty: number; unit: "Buns" | "Reels" } };
-  onSave: (t: { warp: number; resham: number; jari: { qty: number; unit: "Buns" | "Reels" } }) => void;
+  stockItems: RawMaterialStockItem[];
+  onSave: () => void;
 }) {
-  const [warp, setWarp] = useState(thresholds.warp);
-  const [resham, setResham] = useState(thresholds.resham);
-  const [jari, setJari] = useState(thresholds.jari);
+  const queryClient = useQueryClient();
+  const [levels, setLevels] = useState<Record<string, number>>({});
 
   React.useEffect(() => {
-    if (open) { setWarp(thresholds.warp); setResham(thresholds.resham); setJari(thresholds.jari); }
-  }, [open, thresholds]);
+    if (open) {
+      const initial: Record<string, number> = {};
+      stockItems.forEach(item => {
+        initial[item.id] = Number(item.reorderLevel);
+      });
+      setLevels(initial);
+    }
+  }, [open, stockItems]);
+
+  const saveMutation = useMutation({
+    mutationFn: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
+      rawMaterialsApi.updateReorderLevels(payload),
+    onSuccess: () => {
+      toast.success("Alert thresholds updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["raw-material-stock-list"] });
+      onSave();
+      onClose();
+    },
+    onError: () => {
+      toast.error("Failed to update thresholds");
+    }
+  });
+
+  const handleSave = () => {
+    const payload = {
+      thresholds: Object.entries(levels).map(([id, val]) => ({ id, reorderLevel: val }))
+    };
+    saveMutation.mutate(payload);
+  };
 
   const rowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, background: T.silkCream, borderRadius: 12, padding: "14px 16px" };
-  const chipStyle = (col: string, bg: string): React.CSSProperties => ({ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: col, background: bg, borderRadius: 6, padding: "4px 10px", flexShrink: 0 });
+  const chipStyle = (col: string, bg: string): React.CSSProperties => ({ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: col, background: bg, borderRadius: 6, padding: "4px 10px", flexShrink: 0, textTransform: "uppercase" });
+
+  const getChipColors = (type: string) => {
+    switch (type) {
+      case "WARP":
+        return { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)" };
+      case "RESHAM":
+        return { col: "#7A5E1C", bg: "rgba(200,155,71,0.13)" };
+      case "JARI":
+        return { col: T.luxuryBrown, bg: "rgba(59,35,20,0.09)" };
+      default:
+        return { col: T.taupe, bg: "rgba(0,0,0,0.05)" };
+    }
+  };
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
       <ModalHeader title="Set Alert Thresholds" subtitle="Define minimum stock levels that trigger a low-stock alert" onClose={onClose} />
       <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={rowStyle}>
-          <span style={chipStyle(T.royalBurgundy, "rgba(110,15,45,0.09)")}>Warp</span>
-          <div style={{ flex: 1 }} />
-          <Input type="number" value={warp} onChange={e => setWarp(parseFloat(e.target.value) || 0)} className="w-[90px]" />
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 4 kg</span>
-        </div>
-        <div style={rowStyle}>
-          <span style={chipStyle("#7A5E1C", "rgba(200,155,71,0.13)")}>Resham</span>
-          <div style={{ flex: 1 }} />
-          <Input type="number" value={resham} onChange={e => setResham(parseFloat(e.target.value) || 0)} className="w-[90px]" />
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>kg</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 2 kg</span>
-        </div>
-        <div style={rowStyle}>
-          <span style={chipStyle(T.luxuryBrown, "rgba(59,35,20,0.09)")}>Jari</span>
-          <div style={{ flex: 1 }} />
-          <Input type="number" value={jari.qty} onChange={e => setJari(prev => ({ ...prev, qty: parseFloat(e.target.value) || 0 }))} className="w-[90px]" />
-          <div style={{ display: "flex", border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 8, overflow: "hidden" }}>
-            {(["Buns", "Reels"] as const).map(u => (
-              <Button key={u} onClick={() => setJari(prev => ({ ...prev, unit: u }))}
-                variant={jari.unit === u ? "primary" : "tertiary"} size="sm" className="rounded-none">
-                {u}
-              </Button>
-            ))}
-          </div>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 8 }}>Current: 6 Buns / 24 Reels</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, maxHeight: 350, overflowY: "auto", paddingRight: 4 }}>
+          {stockItems.map(item => {
+            const { col, bg } = getChipColors(item.materialType);
+            const displayName = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
+            return (
+              <div key={item.id} style={rowStyle}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={chipStyle(col, bg)}>{item.materialType}</span>
+                    <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</span>
+                  </div>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                    Current Stock: {Number(item.currentStock)} {item.unit}
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <Input type="number" value={levels[item.id] ?? ""} onChange={e => setLevels(prev => ({ ...prev, [item.id]: parseFloat(e.target.value) || 0 }))} className="w-[90px]" />
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{item.unit}</span>
+                </div>
+              </div>
+            );
+          })}
+          {stockItems.length === 0 && (
+            <div style={{ textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, padding: "20px 0" }}>
+              No material stock records found.
+            </div>
+          )}
         </div>
         <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
-          <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
+          <Button onClick={onClose} variant="secondary" size="md" className="flex-1" disabled={saveMutation.isPending}>
             Cancel
           </Button>
-          <Button onClick={() => { onSave({ warp, resham, jari }); onClose(); }} variant="primary" size="md" className="flex-[2]">
-            Save Thresholds
+          <Button onClick={handleSave} variant="primary" size="md" className="flex-[2]" disabled={saveMutation.isPending}>
+            {saveMutation.isPending ? "Saving..." : "Save Thresholds"}
           </Button>
         </div>
       </div>

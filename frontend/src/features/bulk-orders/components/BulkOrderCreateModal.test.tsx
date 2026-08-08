@@ -2,7 +2,20 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BulkOrderCreateModal } from "./BulkOrderCreateModal";
-import { WHOLESALE_CUSTOMERS } from "./WholesaleCustomerSelectSection";
+
+const MOCK_WHOLESALE_CUSTOMERS = [
+  { id: "WHL-001", name: "Lakshmi Silks", city: "Hyderabad", terms: "Net 30", phone: "+91 98450 11223", address: "G-12, Silk Plaza, Madhapur, Hyderabad - 500081", gstCode: "36AAAAA1111A1Z1" },
+  { id: "WHL-002", name: "Narayana Silk Emporium", city: "Vijayawada", terms: "Net 45", phone: "+91 99123 44556", address: "40-1-5, MG Road, Vijayawada - 520010", gstCode: "37BBBBB2222B2Z2" }
+];
+
+vi.mock("./WholesaleCustomerSelectSection", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./WholesaleCustomerSelectSection")>();
+  return {
+    ...actual,
+    useAllWholesaleCustomers: () => MOCK_WHOLESALE_CUSTOMERS,
+  };
+});
+
 
 function setup() {
   const onSubmit = vi.fn();
@@ -42,7 +55,7 @@ describe("BulkOrderCreateModal validation", () => {
     const customerSelect = screen.getByLabelText("Select Wholesale Customer");
     fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
 
-    const optionText = new RegExp(WHOLESALE_CUSTOMERS[0].name);
+    const optionText = new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name);
     const option = await screen.findByText(optionText);
     fireEvent.click(option);
 
@@ -50,7 +63,7 @@ describe("BulkOrderCreateModal validation", () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     const submitted = onSubmit.mock.calls[0][0];
-    expect(submitted.customerId).toBe(WHOLESALE_CUSTOMERS[0].id);
+    expect(submitted.customerId).toBe(MOCK_WHOLESALE_CUSTOMERS[0].id);
     expect(submitted.total).toBe(40);
     expect(submitted.ref).toBe("ORD-2026-050");
   });
@@ -65,7 +78,7 @@ describe("BulkOrderCreateModal validation", () => {
     const customerSelect = screen.getByLabelText("Select Wholesale Customer");
     fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
 
-    const optionText = new RegExp(WHOLESALE_CUSTOMERS[0].name);
+    const optionText = new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name);
     const option = await screen.findByText(optionText);
     fireEvent.click(option);
 

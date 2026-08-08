@@ -125,7 +125,7 @@ export class WeaversService {
         : {}),
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.weaver.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

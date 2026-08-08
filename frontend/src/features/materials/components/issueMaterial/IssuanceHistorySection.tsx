@@ -6,6 +6,7 @@ import { F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { renderIssuedMaterials } from "./materialFormatters";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   signed: { label: "Signed", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -27,6 +28,78 @@ export function IssuanceHistorySection({
   totalPages: number;
   setViewRecord: (r: MaterialIssueRecord) => void;
 }) {
+  const columns: ColumnDef<MaterialIssueRecord>[] = [
+    {
+      id: "id", header: "MIR ID", accessor: r => r.id,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span>,
+    },
+    {
+      id: "date", header: "Date", accessor: r => r.issuedAt,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>,
+    },
+    {
+      id: "weaver", header: "Weaver Name", accessor: r => r.weaverName,
+      cell: (_v, r) => (
+        <div style={{ whiteSpace: "nowrap" }}>
+          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName}</div>
+          {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
+        </div>
+      ),
+    },
+    {
+      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</span>,
+    },
+    {
+      id: "materials", header: "Materials Summary", accessor: r => r.materials,
+      cell: (_v, r) => renderIssuedMaterials(r.materials),
+    },
+    {
+      id: "grnIds", header: "GRN Batch IDs", accessor: r => r.materials,
+      cell: (_v, r) => {
+        const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId)));
+        return (
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {grnIds.map(g => <span key={g} style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 5, padding: "2px 7px" }}>{g}</span>)}
+          </div>
+        );
+      },
+    },
+    {
+      id: "issuedBy", header: "Issued By", accessor: r => r.issuedBy,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.issuedBy}</span>,
+    },
+    {
+      id: "signature", header: "Signature", accessor: r => r.signatureCaptured,
+      cell: (_v, r) => r.signatureCaptured ? (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><CheckCircle2 size={13} /> Signed — {r.signatureMethod === "here" ? "On screen" : "Remote"}</span>
+      ) : (
+        <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><Clock size={13} /> Pending</span>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: r => r.status, type: "status",
+      cell: (_v, r) => {
+        const badge = STATUS_BADGE[r.status];
+        return <span style={{ background: badge.bg, color: badge.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>{badge.label}</span>;
+      },
+    },
+    {
+      id: "actions", header: "", accessor: () => null, type: "actions",
+      cell: (_v, r) => (
+        <Button
+          variant="secondary"
+          size="sm"
+          iconLeft="view"
+          onClick={() => setViewRecord(r)}
+          className="whitespace-nowrap border-[rgba(200,155,71,0.22)] text-[#6E0F2D]"
+        >
+          View Details
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div>
       <SectionPill label="Material Issuance History" />
@@ -43,63 +116,13 @@ export function IssuanceHistorySection({
 
       <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
 
-      <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", overflowX: "auto" as const }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" as const, minWidth: 900 }}>
-          <thead style={{ background: T.warmCream }}>
-            <tr>
-              {["MIR ID", "Date", "Weaver Name", "Weaver ID", "Materials Summary", "GRN Batch IDs", "Issued By", "Signature", "Status", ""].map(h => (
-                <th key={h} style={{ padding: "12px 14px", textAlign: "left" as const, fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", whiteSpace: "nowrap" as const }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {pagedHistory.length === 0 ? (
-              <tr><td colSpan={10} style={{ padding: 32, textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No issuance records match your filters.</td></tr>
-            ) : pagedHistory.map(r => {
-              const badge = STATUS_BADGE[r.status];
-              const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId)));
-              return (
-                <tr key={r.id} style={{ borderTop: `1px solid ${T.borderDef}` }}>
-                  <td style={{ padding: "12px 14px" }}><span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span></td>
-                  <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                  <td style={{ padding: "12px 14px", whiteSpace: "nowrap" as const }}>
-                    <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName}</div>
-                    {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
-                  </td>
-                  <td style={{ padding: "12px 14px", fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</td>
-                  <td style={{ padding: "12px 14px" }}>{renderIssuedMaterials(r.materials)}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const }}>
-                      {grnIds.map(g => <span key={g} style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 5, padding: "2px 7px" }}>{g}</span>)}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 14px", fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{r.issuedBy}</td>
-                  <td style={{ padding: "12px 14px", whiteSpace: "nowrap" as const }}>
-                    {r.signatureCaptured ? (
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5 }}><CheckCircle2 size={13} /> Signed — {r.signatureMethod === "here" ? "On screen" : "Remote"}</span>
-                    ) : (
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", display: "flex", alignItems: "center", gap: 5 }}><Clock size={13} /> Pending</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <span style={{ background: badge.bg, color: badge.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" as const }}>{badge.label}</span>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      iconLeft="view"
-                      onClick={() => setViewRecord(r)}
-                      className="whitespace-nowrap border-[rgba(200,155,71,0.22)] text-[#6E0F2D]"
-                    >
-                      View Details
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+        <DataTable
+          columns={columns}
+          data={pagedHistory}
+          getRowId={r => r.id}
+          emptyTitle="No issuance records match your filters"
+        />
       </div>
 
       {totalPages > 0 && (

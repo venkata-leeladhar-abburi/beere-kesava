@@ -42,7 +42,7 @@ export function WeaverMetricsBar() {
               {ICONS[i]}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, letterSpacing: "1.6px", textTransform: "uppercase" as const, marginBottom: 6, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 6, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 36, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 6, ...NUM }}>

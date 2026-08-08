@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { RawMaterialsService, CreateGrnDto } from "./raw-materials.service";
 
-// Raw material stock/GRN — used by both production (WORKER, receiving
-// material) and finance (ACCOUNTANT, reconciling purchases).
+// Raw material stock/GRN — used by production (WORKER), finance (ACCOUNTANT),
+// and management (ADMIN, SUPERADMIN) for updating thresholds and stock.
 @Controller("materials")
-@RequireRoles(UserRole.WORKER, UserRole.ACCOUNTANT)
+@RequireRoles(UserRole.WORKER, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class RawMaterialsController {
   constructor(private readonly rawMaterialsService: RawMaterialsService) {}
 
@@ -24,4 +24,12 @@ export class RawMaterialsController {
   createGrn(@Body() dto: CreateGrnDto) {
     return this.rawMaterialsService.createGrn(dto);
   }
+
+  @Patch("reorder-levels")
+  updateReorderLevels(
+    @Body() body: { thresholds: { id: string; reorderLevel: number }[] }
+  ) {
+    return this.rawMaterialsService.updateReorderLevels(body.thresholds);
+  }
 }
+

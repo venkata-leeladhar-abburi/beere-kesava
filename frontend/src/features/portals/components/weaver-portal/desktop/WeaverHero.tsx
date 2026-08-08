@@ -78,8 +78,7 @@ export function WeaverHero({ weaverName, onExploreBatches, onGoToPayments }: {
         >
           <motion.button
             onClick={onExploreBatches}
-            whileHover={{ scale: 1.04, boxShadow: "0px 16px 48px rgba(110,15,45,0.55)" }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ boxShadow: "0px 16px 48px rgba(110,15,45,0.55)" }}
             style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "13px 26px", borderRadius: 16, border: "none", cursor: "pointer", background: G.button, fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.warmCream, boxShadow: "0 8px 32px rgba(110,15,45,0.40)" }}
           >
             View My Batches
@@ -89,8 +88,7 @@ export function WeaverHero({ weaverName, onExploreBatches, onGoToPayments }: {
           </motion.button>
           <motion.button
             onClick={onGoToPayments}
-            whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.16)" }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ backgroundColor: "rgba(245,232,208,0.16)" }}
             style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 20px", borderRadius: 16, cursor: "pointer", backgroundColor: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.30)", fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: "rgba(245,232,208,0.92)" }}
           >
             My Payments
