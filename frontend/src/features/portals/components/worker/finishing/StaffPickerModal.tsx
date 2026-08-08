@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { X, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishingStaff } from "../../../../finishing/contexts/FinishingStaffContext";
-import { EASE } from "./shared";
-import { Button, IconButton } from "../../../../../shared/ui/primitives";
+import { Button } from "../../../../../shared/ui/primitives";
+import { Modal } from "../../../../../shared/ui/overlay";
 
 // ── Staff picker modal ────────────────────────────────────────────────────────
 
@@ -18,19 +17,10 @@ export function StaffPickerModal({ onSelect, onClose }: {
   const pick = activeMembers.find(m => m.id === selected);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)" }} onClick={onClose} />
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ duration: 0.28, ease: EASE }}
-        style={{ position: "relative", width: "100%", maxWidth: 420, margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)", maxHeight: "70vh", display: "flex", flexDirection: "column" }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Select Finishing Staff</span>
-          <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} />
-        </div>
-
-        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="xs">
+      <Modal.Header title="Select Finishing Staff" />
+      <Modal.Body>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 16 }}>
           {activeMembers.length === 0 && (
             <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
               No active finishing staff members found.
@@ -56,19 +46,18 @@ export function StaffPickerModal({ onSelect, onClose }: {
             );
           })}
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <Button
-            variant="primary"
-            fullWidth
-            disabled={!pick}
-            onClick={() => { if (pick) onSelect({ id: pick.id, name: `${pick.firstName} ${pick.lastName}` }); }}
-            className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
-          >
-            Assign to {pick ? `${pick.firstName} ${pick.lastName}` : "Selected Staff"}
-          </Button>
-        </div>
-      </motion.div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer className="justify-stretch">
+        <Button
+          variant="primary"
+          fullWidth
+          disabled={!pick}
+          onClick={() => { if (pick) onSelect({ id: pick.id, name: `${pick.firstName} ${pick.lastName}` }); }}
+          className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
+        >
+          Assign to {pick ? `${pick.firstName} ${pick.lastName}` : "Selected Staff"}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
