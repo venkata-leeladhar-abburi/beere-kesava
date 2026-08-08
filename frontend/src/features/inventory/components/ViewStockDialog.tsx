@@ -1,9 +1,10 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2 as CheckCircle } from "lucide-react";
 import { X } from "lucide-react";
 import { StockSaree, STATUS_CFG } from "./StockCard";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -22,28 +23,22 @@ const F = {
 export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose: () => void }) {
   const cfg = STATUS_CFG[saree.status];
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "rgba(26,10,15,0.50)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
-    >
-      <motion.div
-        initial={{ y: 20, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.96 }}
-        onClick={e => e.stopPropagation()}
-        style={{ width: 520, maxWidth: "100%", background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.28)", overflow: "hidden" }}
-      >
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="sm">
+      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{saree.id}</div>
+            <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{saree.id}</Dialog.Title>
           </div>
-          <IconButton
-            icon={X}
-            label="Close"
-            onClick={onClose}
-            size="sm"
-            className="border border-white/22 bg-white/12 text-white hover:bg-white/20"
-          />
+          <Dialog.Close asChild>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="border border-white/22 bg-white/12 text-white hover:bg-white/20"
+            />
+          </Dialog.Close>
         </div>
         <div style={{ padding: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 11, padding: "12px 16px", marginBottom: 20 }}>
@@ -99,7 +94,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
             Close
           </Button>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </Modal>
   );
 }
