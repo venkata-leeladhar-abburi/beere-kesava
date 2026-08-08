@@ -1,34 +1,42 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
 import { CreateQcRecordDto } from "./dto/create-qc-record.dto";
 import { ListQcQueryDto } from "./dto/list-qc-query.dto";
 import { QcService } from "./qc.service";
 
-// Production/operational module — WORKER access only (financial/admin roles
-// go through ADMIN's bypass).
+// Production/operational module — WORKER has full read/write; WEAVER can
+// only read their own records (self-scoped in the service, same pattern as
+// BatchesController) so their portal can show real QC pass rate/earnings.
 @Controller("qc")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.WEAVER)
 export class QcController {
   constructor(private readonly qcService: QcService) {}
 
   @Post()
+  @RequireRoles(UserRole.WORKER)
   create(@Body() dto: CreateQcRecordDto) {
     return this.qcService.create(dto);
   }
 
   @Get()
-  findAll(@Query() query: ListQcQueryDto) {
-    return this.qcService.findAll(query);
+  findAll(@CurrentUser() user: AuthenticatedUser, @Query() query: ListQcQueryDto) {
+    const weaverId = resolveWeaverScope(user);
+    return this.qcService.findAll(query, weaverId);
   }
 
   @Get("ready-for-finishing")
+  @RequireRoles(UserRole.WORKER)
   findReadyForFinishing() {
     return this.qcService.findReadyForFinishing();
   }
 
   @Get(":sareeId")
-  findOne(@Param("sareeId") sareeId: string) {
-    return this.qcService.findOne(sareeId);
+  findOne(@CurrentUser() user: AuthenticatedUser, @Param("sareeId") sareeId: string) {
+    const weaverId = resolveWeaverScope(user);
+    return this.qcService.findOne(sareeId, weaverId);
   }
 }

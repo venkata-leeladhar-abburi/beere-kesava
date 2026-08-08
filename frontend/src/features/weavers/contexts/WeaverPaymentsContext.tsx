@@ -2,7 +2,8 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
 import { weaversApi } from "../../../shared/api/weavers";
-import { firmsApi } from "../../../shared/api/firms";
+import { firmsApi, BackendFirm } from "../../../shared/api/firms";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export interface WeaverPaymentRecord {
   id: string;
@@ -62,6 +63,12 @@ function backendPaymentToFrontend(
 
 export function WeaverPaymentsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  // firmsApi is ACCOUNTANT-only — a WEAVER caller always 403s there. Firm
+  // name is a cosmetic label on the payment row, not core data, so skip the
+  // call entirely for non-accountant roles rather than firing a guaranteed
+  // 403 just to fall back to an empty lookup.
+  const { role } = useAuth();
+  const canReadFirms = role === "accountant" || role === "admin" || role === "superadmin";
 
   const { data: payments = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
@@ -69,7 +76,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
       const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
         weaverPaymentsApi.list(),
         weaversApi.list(),
-        firmsApi.list(),
+        canReadFirms ? firmsApi.list().catch(() => ({ items: [] as BackendFirm[] })) : Promise.resolve({ items: [] as BackendFirm[] }),
       ]);
       const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
       const firmLookup = new Map(firmsRes.items.map(f => [f.id, f.firmName]));

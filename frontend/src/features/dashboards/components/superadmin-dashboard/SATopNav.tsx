@@ -256,28 +256,6 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                     <UserRound size={15} color={T.taupe} /> View Profile
                   </Button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-
-                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-                  <Button onClick={() => {
-                    setShowProfile(false);
-                    localStorage.setItem("bk_original_admin_role", "superadmin");
-                    selectRole("shop");
-                    navigate("/shop");
-                  }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
-                  </Button>
-                  <Button onClick={() => {
-                    setShowProfile(false);
-                    localStorage.setItem("bk_original_admin_role", "superadmin");
-                    selectRole("worker");
-                    navigate("/worker");
-                  }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <Package size={14} color={T.taupe} /> Worker Staff Portal
-                  </Button>
-
-                  <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
                   <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
                     className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <ChevronLeft size={15} color={T.taupe} /> Switch Portal

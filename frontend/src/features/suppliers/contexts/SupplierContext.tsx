@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces, formatINR } from "./supplier-types";
@@ -108,10 +109,17 @@ function toPurchaseRequest(r: BackendPurchaseRequest, supplierName: string): Pur
 
 export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
+  // This provider is mounted globally (App.tsx) for every role, but the
+  // backend restricts /suppliers, /payments/suppliers and /purchase-requests
+  // to ACCOUNTANT — skip the fetch entirely for every other role rather
+  // than firing a request that's guaranteed to 403.
+  const { role } = useAuth();
+  const enabled = role === "accountant";
 
   const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
+    enabled,
   });
   const { data: purchases = SEED_PURCHASES } = useQuery({
     queryKey: PURCHASES_KEY, queryFn: () => Promise.resolve(SEED_PURCHASES), initialData: SEED_PURCHASES,
@@ -129,10 +137,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         reference: p.utr ?? "",
       }));
     },
+    enabled,
   });
   const { data: rawRequests = [], isError: isRequestsError, error: requestsError } = useQuery({
     queryKey: REQUESTS_KEY,
     queryFn: async () => (await purchaseRequestsApi.list()).items,
+    enabled,
   });
 
   const isError = isSuppliersError || isPaymentsError || isRequestsError;

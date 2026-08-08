@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma, QcResult } from "../generated/prisma/client";
@@ -99,10 +99,16 @@ export class QcService {
     return record;
   }
 
-  async findAll(query: ListQcQueryDto): Promise<PaginatedResult<Prisma.QcRecordGetPayload<object>>> {
+  // `weaverScope`, when present (a WEAVER caller), always wins over
+  // `query.weaverId` — a weaver must never be able to page through another
+  // weaver's records just by passing a different id in the query string.
+  async findAll(
+    query: ListQcQueryDto,
+    weaverScope?: string,
+  ): Promise<PaginatedResult<Prisma.QcRecordGetPayload<object>>> {
     const where: Prisma.QcRecordWhereInput = {
       result: query.result,
-      weaverId: query.weaverId,
+      weaverId: weaverScope ?? query.weaverId,
     };
 
     const [items, total] = await this.prisma.$transaction([
@@ -118,10 +124,13 @@ export class QcService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  async findOne(sareeId: string) {
+  async findOne(sareeId: string, weaverScope?: string) {
     const record = await this.prisma.qcRecord.findUnique({ where: { sareeId } });
     if (!record) {
       throw new NotFoundException(`QC record for ${sareeId} not found`);
+    }
+    if (weaverScope && record.weaverId !== weaverScope) {
+      throw new ForbiddenException(`QC record for ${sareeId} does not belong to you`);
     }
     return record;
   }

@@ -5,6 +5,7 @@ import {
   BackendFinishingStaff,
   finishingStaffApi,
 } from "../../../shared/api/finishing";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export interface FinishingStaffMember {
   id: string;
@@ -54,9 +55,14 @@ function backendToMember(s: BackendFinishingStaff): FinishingStaffMember {
 
 export function FinishingStaffProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  // Mounted globally (App.tsx) for every role, but /finishing/staff is
+  // WORKER-only on the backend (ADMIN/SUPERADMIN bypass every role check).
+  const { role } = useAuth();
+  const enabled = role === "worker" || role === "admin" || role === "superadmin";
 
   const { data: members = [] } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     queryFn: async () => {
       const res = await finishingStaffApi.list();
       return res.items.map(backendToMember);

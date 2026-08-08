@@ -5,6 +5,7 @@ import { DesktopHero } from "./DesktopHero";
 import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
 import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
 
@@ -36,8 +37,11 @@ export function WarpSection({
   warpSubmitted?: boolean; setWarpSubmitted?: (v: boolean) => void;
 }) {
   const { batches } = useBatches();
-  const { weaver, weaverId } = useCurrentWeaver();
+  const { weaver, weaverId, weaverCode } = useCurrentWeaver();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
 
   const isMyRow = (r: { weaverId?: string | null }) => {
     if (!r.weaverId) return false;
@@ -130,6 +134,7 @@ export function WarpSection({
         titleSub="& Additional Materials"
         description="Request additional raw materials for your active batches. Warp requests are unlocked after submitting 50% of your batch."
         pills={pills}
+        alertBadge={identityBadge}
         stats={heroStats}
         bgUrl={BG_IMAGE}
       />

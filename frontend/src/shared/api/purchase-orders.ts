@@ -12,6 +12,15 @@ export interface BackendPurchaseOrder {
   grnId: string | null;
   rejectionReason: string | null;
   createdAt: string;
+  items?: {
+    id: string;
+    materialType: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    unitPrice: string | null;
+    totalPrice: string | null;
+  }[];
 }
 
 export interface CreatePurchaseOrderPayload {

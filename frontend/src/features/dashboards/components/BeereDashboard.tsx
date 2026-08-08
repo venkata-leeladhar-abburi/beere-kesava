@@ -307,32 +307,15 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Recent GRNs</div>
-                  {[
-                    { grn: "GRN-2026-141", vendor: "Sri Venkateswara Textiles", item: "Warp 48 kg",      date: "12 Jun" },
-                    { grn: "GRN-2026-138", vendor: "Lakshmi Silk Traders",      item: "Resham Red 24 kg", date: "10 Jun" },
-                    { grn: "GRN-2026-135", vendor: "AK Traders",                item: "Jari 60 Reels",    date: "08 Jun" },
-                  ].map((g, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
-                      <div>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{g.grn}</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{g.vendor} · {g.item}</div>
-                      </div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{g.date}</div>
-                    </div>
-                  ))}
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                    No recent GRNs.
+                  </div>
                 </div>
                 <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 16, padding: "18px 22px" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Current Stock</div>
-                  {[
-                    { label: "Warp",              qty: "142 kg" },
-                    { label: "Resham Red",         qty: "18 kg"  },
-                    { label: "Jari (Poly 2G Gold)",qty: "24 Reels" },
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, paddingBottom: 8, borderBottom: i < 2 ? `1px solid rgba(200,155,71,0.15)` : "none" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{s.label}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{s.qty}</span>
-                    </div>
-                  ))}
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                    Stock levels unavailable.
+                  </div>
                 </div>
               </div>
             </div>

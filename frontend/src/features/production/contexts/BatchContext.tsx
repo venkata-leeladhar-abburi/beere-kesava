@@ -5,6 +5,7 @@ import { BackendBatch, batchesApi } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -110,6 +111,12 @@ function backendBatchToRecord(
 export function BatchProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [pendingOpenBatchId, setPendingOpenBatchId] = useState<string | null>(null);
+  // /factory-looms is WORKER-only on the backend (ADMIN/SUPERADMIN bypass
+  // every role check) — a WEAVER caller (this provider is also mounted in
+  // WeaverLayout) would always 403 here, so skip the call rather than let
+  // it fail every time.
+  const { role } = useAuth();
+  const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
 
   const { data: batches = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
@@ -129,7 +136,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       // failure there degrades labels rather than hiding real batches.
       const [weaversRes, loomsRes, ratesRes] = await Promise.all([
         weaversApi.list().catch(() => ({ items: [] })),
-        factoryLoomsApi.list().catch(() => ({ items: [] })),
+        canReadFactoryLooms ? factoryLoomsApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
         ratesApi.list().catch(() => ({ items: [] })),
       ]);
       const weaverLookup = new Map(

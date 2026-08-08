@@ -101,7 +101,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
-      <DataTable columns={columns} data={rows} getRowId={r => r.id} />
+      <DataTable columns={columns} data={rows} getRowId={r => r.rowKey} />
     </div>
   );
 }
@@ -116,7 +116,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
         const remPct = r.received > 0 ? Math.round((r.remaining / r.received) * 100) : 0;
         const matIcon = r.type === "Warp" ? <Layers size={22} color={mt.col} /> : r.type === "Resham" ? <Tag size={22} color={mt.col} /> : <Boxes size={22} color={mt.col} />;
         return (
-          <FadeUp key={r.id} delay={i * 0.05} style={{ display: "flex", flexDirection: "column" }}>
+          <FadeUp key={r.rowKey} delay={i * 0.05} style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden", display: "flex", flexDirection: "column", flex: 1 }}>
               <div style={{ background: mt.bg, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -215,6 +215,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
       const statusType: StatusType = remaining > 10 ? "good" : remaining > 0 ? "warning" : "empty";
       return {
         id: grn.id,
+        rowKey: `${grn.id}-${item.id}`,
         type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
         details: `${item.name}${item.grade ? ` (${item.grade})` : ""}`,
         vendor: grn.supplierName,

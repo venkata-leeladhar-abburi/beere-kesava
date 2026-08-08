@@ -36,7 +36,7 @@ export function TopNav({
   const [showProfile, setShowProfile] = React.useState(false);
   const [openGroup, setOpenGroup] = React.useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const unreadCount = 3;
+  const unreadCount = 0;
 
   const activeGroup = findNavGroup(active);
   const showSubNav = activeGroup.pages.length > 1;
@@ -244,28 +244,8 @@ export function TopNav({
                   </div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
                 </div>
-                {[
-                  { Icon: AlertTriangle, iconColor: "#B91C1C", iconBg: "rgba(185,28,28,0.10)", title: "Low Stock Alert", body: "Only 12 sarees remaining in shop", time: "Just now", urgent: true },
-                  { Icon: CheckCircle2, iconColor: "#1E6640", iconBg: "rgba(30,102,64,0.10)", title: "Batch 089 Completed", body: "Ravi Kumar completed 3 sarees", time: "2h ago", urgent: false },
-                  { Icon: AlertCircle, iconColor: "#B45309", iconBg: "rgba(180,83,9,0.10)", title: "Jari Stock Low", body: "Below minimum threshold — 8 kg remaining", time: "4h ago", urgent: true },
-                ].map((n, i) => (
-                  <div key={i} onClick={() => { setShowNotif(false); set("Notifications"); }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => { setShowNotif(false); set("Notifications"); })?.(); } }} style={{ padding: "12px 20px", background: n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)", borderBottom: `1px solid rgba(110,15,45,0.06)`, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(110,15,45,0.04)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = n.urgent ? "rgba(192,57,43,0.03)" : "rgba(0,0,0,0)")}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: n.iconBg, border: `1px solid ${n.iconColor}28`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                      <n.Icon size={15} color={n.iconColor} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: n.urgent ? "#C0392B" : T.luxuryBrown, marginBottom: 2 }}>{n.title}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{n.body}</div>
-                    </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0, marginTop: 2 }}>{n.time}</span>
-                  </div>
-                ))}
-                <div style={{ padding: "12px 20px", textAlign: "center" as const }}>
-                  <span onClick={() => { setShowNotif(false); set("Notifications"); }} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer" }}>
-                    View all {unreadCount} notifications →
-                  </span>
+                <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  No new notifications.
                 </div>
               </div>
             )}
@@ -299,26 +279,6 @@ export function TopNav({
                   <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
                     className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
                     <UserRound size={15} color={T.taupe} /> View Profile
-                  </Button>
-                  <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-                  <div style={{ padding: "6px 18px 4px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-                  <Button onClick={() => {
-                    setShowProfile(false);
-                    localStorage.setItem("bk_original_admin_role", "admin");
-                    selectRole("shop");
-                    navigate("/shop");
-                  }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <ShoppingCart size={14} color={T.taupe} /> Shop Staff Portal
-                  </Button>
-                  <Button onClick={() => {
-                    setShowProfile(false);
-                    localStorage.setItem("bk_original_admin_role", "admin");
-                    selectRole("worker");
-                    navigate("/worker");
-                  }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[9px] !px-[18px] !text-[13px] !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <Package size={14} color={T.taupe} /> Worker Staff Portal
                   </Button>
                   <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
                   <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth

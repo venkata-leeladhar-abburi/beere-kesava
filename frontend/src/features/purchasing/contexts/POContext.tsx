@@ -17,6 +17,7 @@ export interface POItem {
 
 export interface PurchaseOrder {
   id: string;
+  vendorId: string;
   vendor: string;
   vendorCity: string;
   vendorContact?: string;
@@ -36,18 +37,27 @@ export interface PurchaseOrder {
   raisedBy: string;
 }
 
-// materials[] line items have no backend model yet (PurchaseOrder only
-// stores aggregate totalValue) — kept local-only per PO after creation,
-// same call as Suppliers' per-saree purchase lines.
+// materials[] line items are populated from backend `items` relation if present.
 function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): PurchaseOrder {
+  const mappedMaterials: POItem[] = (po.items && po.items.length > 0) ? po.items.map(item => ({
+    materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
+    subtype: item.name,
+    description: item.name,
+    quantity: Number(item.quantity),
+    unit: item.unit,
+    pricePerUnit: Number(item.unitPrice || 0),
+    subtotal: Number(item.totalPrice || 0),
+  })) : materials;
+
   return {
     id: po.id,
     poNumber: po.poNumber,
+    vendorId: po.vendorId,
     vendor: po.vendor.name,
     vendorCity: po.vendor.city ?? "",
     vendorContact: po.vendor.contactName ?? undefined,
     deliveryDate: po.deliveryDate ?? "",
-    materials,
+    materials: mappedMaterials,
     totalValue: Number(po.totalValue),
     urgency: (po.urgency as PurchaseOrder["urgency"]) ?? "Normal",
     status: po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received",

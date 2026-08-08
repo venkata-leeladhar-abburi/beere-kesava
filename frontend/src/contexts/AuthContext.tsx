@@ -39,6 +39,15 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const STORAGE_KEY = "bk_auth_state";
 /** Written by the admin/superadmin dashboards just before entering a staff portal. */
 export const ADMIN_VIEW_KEY = "bk_original_admin_role";
+/**
+ * Written by useCurrentWeaver's admin-viewing-as-weaver fallback to remember
+ * which weaver "you" are for the rest of the tab's session. Never cleared by
+ * that hook itself — if left behind, a later WEAVER login on the same tab
+ * whose token momentarily lacks weaverId (or any other run of that fallback)
+ * picks up the *previous* session's weaver instead of resolving fresh. Must
+ * be cleared on every login and logout, not just admin-view transitions.
+ */
+const IMPERSONATE_WEAVER_KEY = "admin_impersonate_weaver_id";
 
 function readAdminView(): Role | null {
   try {
@@ -89,8 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback((phone: string, token?: string, user?: AuthState["user"]) => {
-    // A fresh login is never a continuation of somebody's admin session.
-    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    // A fresh login is never a continuation of somebody's admin session,
+    // nor of whichever weaver a previous session on this tab resolved to.
+    try {
+      localStorage.removeItem(ADMIN_VIEW_KEY);
+      sessionStorage.removeItem(IMPERSONATE_WEAVER_KEY);
+    } catch { /* ignore */ }
     setAdminViewingAs(null);
     const normalizedRole = user?.role ? (user.role.toLowerCase() as Role) : null;
     setState({ isAuthenticated: true, role: normalizedRole, phone, token: token || null, user: user || null });
@@ -106,7 +119,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setState({ isAuthenticated: false, role: null, phone: null });
     localStorage.removeItem(STORAGE_KEY);
-    try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem(ADMIN_VIEW_KEY);
+      sessionStorage.removeItem(IMPERSONATE_WEAVER_KEY);
+    } catch { /* ignore */ }
     setAdminViewingAs(null);
   }, []);
 

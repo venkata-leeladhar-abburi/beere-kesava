@@ -174,28 +174,6 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
                 <UserRound size={14} color={T.taupe} /> View Profile
               </Button>
               <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-
-              <div style={{ padding: "4px 16px 2px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Staff Portals</div>
-              <Button onClick={() => {
-                setShowProfile(false);
-                localStorage.setItem("bk_original_admin_role", "superadmin");
-                selectRole("shop");
-                navigate("/shop");
-              }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2 !px-4 !text-xs !font-normal !text-[#3B2314]">
-                <ShoppingCart size={13} color={T.taupe} /> Shop Staff Portal
-              </Button>
-              <Button onClick={() => {
-                setShowProfile(false);
-                localStorage.setItem("bk_original_admin_role", "superadmin");
-                selectRole("worker");
-                navigate("/worker");
-              }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2 !px-4 !text-xs !font-normal !text-[#3B2314]">
-                <Package size={13} color={T.taupe} /> Worker Staff Portal
-              </Button>
-
-              <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
               <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
                 className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
                 <ChevronLeft size={14} color={T.taupe} /> Switch Portal

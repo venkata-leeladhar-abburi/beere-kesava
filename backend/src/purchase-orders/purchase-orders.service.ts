@@ -65,7 +65,7 @@ export class PurchaseOrdersService {
 
   async findAll(
     query: ListPurchaseOrdersQueryDto,
-  ): Promise<PaginatedResult<Prisma.PurchaseOrderGetPayload<{ include: { vendor: true } }>>> {
+  ): Promise<PaginatedResult<Prisma.PurchaseOrderGetPayload<{ include: { vendor: true, items: true } }>>> {
     const where: Prisma.PurchaseOrderWhereInput = {
       status: query.status,
       vendorId: query.vendorId,
@@ -74,7 +74,7 @@ export class PurchaseOrdersService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.purchaseOrder.findMany({
         where,
-        include: { vendor: true },
+        include: { vendor: true, items: true },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdAt: "desc" },

@@ -5,6 +5,7 @@ import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
+import { useCurrentWeaver } from "../useCurrentWeaver";
 
 function DSectionHeader({ label }: { label: string }) {
   return (
@@ -37,8 +38,10 @@ export function ConfirmSection({
   setRequestSent: (v: boolean) => void;
 }) {
   const { user } = useAuth();
+  const { weaverCode } = useCurrentWeaver();
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
 
   return (
     <>
@@ -49,9 +52,10 @@ export function ConfirmSection({
         titleSub="& Open Your Batch"
         description="Review all materials issued to you, check the color slip, and sign to officially open your batch and start weaving."
         pills={pendingMaterialRecord ? [
+          { text: identityBadge },
           { text: `${pendingMaterialRecord.id} · Awaiting Signature`, color: C.gold },
           { text: `${pendingMaterialRecord.materials.length} Material${pendingMaterialRecord.materials.length !== 1 ? "s" : ""} to Review` },
-        ] : [{ text: "No pending materials" }]}
+        ] : [{ text: identityBadge }, { text: "No pending materials" }]}
         alertBadge={pendingMaterialRecord ? "New Materials Issued" : undefined}
         bgUrl={FABRIC_BG}
       />

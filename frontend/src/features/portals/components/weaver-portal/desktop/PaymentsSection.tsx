@@ -4,6 +4,7 @@ import { C, F, FABRIC_BG } from "../theme";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQc } from "../../../../qc/contexts/QcContext";
 import { useWeaverPayments } from "../../../../weavers/contexts/WeaverPaymentsContext";
 
@@ -22,9 +23,12 @@ function DSectionHeader({ label, link, onLink }: { label: string; link?: string;
 }
 
 export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; isTablet: boolean }) {
-  const { weaverId } = useCurrentWeaver();
+  const { weaverId, weaverCode } = useCurrentWeaver();
+  const { user } = useAuth();
   const { getQcForWeaver } = useQc();
   const { getPaymentsForWeaver } = useWeaverPayments();
+
+  const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
 
   const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
   const now = new Date();
@@ -53,6 +57,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
         titleSub="& Earnings Ledger"
         description="Track your monthly earnings, deductions, and payment history. Payments are processed at the end of each month."
         pills={[
+          { text: identityBadge },
           { text: `${monthName} · Current Month` },
           { text: `₹${netAmount.toLocaleString("en-IN")} Net — ${myPayments.length > 0 ? "Processed" : "Pending Payment"}`, color: C.gold },
           { text: "Payment by Month End" },

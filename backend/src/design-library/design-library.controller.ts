@@ -7,13 +7,16 @@ import { ListDesignsQueryDto } from "./dto/list-designs-query.dto";
 import { UpdateDesignDto } from "./dto/update-design.dto";
 import { DesignLibraryService } from "./design-library.service";
 
-// Production/operational module — WORKER access only.
+// Production/operational module — WORKER has full read/write; WEAVER can
+// read the shared design catalog (needed to show their assigned design's
+// reference photo/notes in the portal) but never write to it.
 @Controller("design-library")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.WEAVER)
 export class DesignLibraryController {
   constructor(private readonly designLibraryService: DesignLibraryService) {}
 
   @Post()
+  @RequireRoles(UserRole.WORKER)
   create(@Body() dto: CreateDesignDto) {
     return this.designLibraryService.create(dto);
   }
@@ -29,11 +32,13 @@ export class DesignLibraryController {
   }
 
   @Patch(":code")
+  @RequireRoles(UserRole.WORKER)
   update(@Param("code") code: string, @Body() dto: UpdateDesignDto) {
     return this.designLibraryService.update(code, dto);
   }
 
   @Post(":code/dispatch")
+  @RequireRoles(UserRole.WORKER)
   dispatch(@Param("code") code: string, @Body() dto: DispatchDesignDto) {
     return this.designLibraryService.dispatch(code, dto);
   }

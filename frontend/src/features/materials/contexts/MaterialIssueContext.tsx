@@ -11,6 +11,7 @@ import {
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
@@ -233,14 +234,23 @@ const RECEIVED_SAREES_KEY = ["materialIssue", "receivedSarees"] as const;
 
 export function MaterialIssueProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  // /factory-looms is WORKER-only on the backend (ADMIN/SUPERADMIN bypass
+  // every role check). This provider is mounted in WeaverLayout too, and
+  // this call previously had no .catch() — a WEAVER caller's 403 here
+  // rejected the whole Promise.all and wiped out their own material-issue
+  // records (breaking the Confirm Materials tab).
+  const { role } = useAuth();
+  const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
 
   const { data: issueRecords = [], isError, error } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
     queryFn: async () => {
       const [issuesRes, weaversRes, loomsRes] = await Promise.all([
         materialIssuesApi.list(),
-        weaversApi.list(),
-        factoryLoomsApi.list(),
+        weaversApi.list().catch(() => ({ items: [] as BackendWeaver[] })),
+        canReadFactoryLooms
+          ? factoryLoomsApi.list().catch(() => ({ items: [] as BackendFactoryLoom[] }))
+          : Promise.resolve({ items: [] as BackendFactoryLoom[] }),
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
       const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.loomNumber]));

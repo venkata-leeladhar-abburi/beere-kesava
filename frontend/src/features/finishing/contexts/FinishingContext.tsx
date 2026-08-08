@@ -15,6 +15,7 @@ import { BackendQuotation, quotationsApi } from "../../../shared/api/quotations"
 import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
 
@@ -151,9 +152,16 @@ function backendQuotationToFrontend(
 
 export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
+  // Mounted globally (App.tsx) for every role. The backend restricts these
+  // to WORKER (ADMIN/SUPERADMIN bypass every role check) — dispatch also
+  // allows SHOP. Skip the fetch for roles that would just get a 403.
+  const { role } = useAuth();
+  const workerScoped = role === "worker" || role === "admin" || role === "superadmin";
+  const dispatchEnabled = workerScoped || role === "shop";
 
   const { data: readySarees = [], isError: isReadyError, error: readyError } = useQuery({
     queryKey: READY_KEY,
+    enabled: workerScoped,
     queryFn: async () => {
       const records = await qcApi.readyForFinishing();
       return records.map((r): ReadySaree => ({
@@ -171,14 +179,17 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   });
   const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError } = useQuery({
     queryKey: ASSIGNMENTS_KEY,
+    enabled: workerScoped,
     queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
   const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError } = useQuery({
     queryKey: DISPATCHES_KEY,
+    enabled: dispatchEnabled,
     queryFn: async () => (await dispatchApi.list()).items.map(backendDispatchToFrontend),
   });
   const { data: quotations = [], isError: isQuotationsError, error: quotationsError } = useQuery({
     queryKey: QUOTATIONS_KEY,
+    enabled: workerScoped,
     queryFn: async () => {
       const [quotationsRes, batchesRes, weaversRes] = await Promise.all([
         quotationsApi.list(),

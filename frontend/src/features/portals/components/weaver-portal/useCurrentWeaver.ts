@@ -51,14 +51,26 @@ export function useCurrentWeaver() {
   // fall back to whichever weaver has batch assignments, then to the first
   // weaver in the directory. A genuine WEAVER login never reaches this,
   // since tokenWeaverId already resolved effectiveWeaverId above.
-  if (!tokenWeaverId && !resolvedWeaver && allBatches.length > 0) {
-    const activeRow = allBatches.flatMap(b => b.rows).find(r => r.weaverId);
-    if (activeRow?.weaverId) {
-      resolvedWeaver = allWeavers.find(w => w.id === activeRow.weaverId || w.code === activeRow.weaverId) ?? null;
-    }
-  }
   if (!tokenWeaverId && !resolvedWeaver) {
-    resolvedWeaver = allWeavers[0] ?? null;
+    const savedAdminWeaverId = sessionStorage.getItem("admin_impersonate_weaver_id");
+    if (savedAdminWeaverId) {
+      resolvedWeaver = allWeavers.find(w => w.id === savedAdminWeaverId) ?? null;
+    }
+
+    if (!resolvedWeaver && allBatches.length > 0) {
+      const activeRow = allBatches.flatMap(b => b.rows).find(r => r.weaverId);
+      if (activeRow?.weaverId) {
+        resolvedWeaver = allWeavers.find(w => w.id === activeRow.weaverId || w.code === activeRow.weaverId) ?? null;
+      }
+    }
+    
+    if (!resolvedWeaver) {
+      resolvedWeaver = allWeavers[0] ?? null;
+    }
+
+    if (resolvedWeaver) {
+      sessionStorage.setItem("admin_impersonate_weaver_id", resolvedWeaver.id);
+    }
   }
 
   const effectiveWeaverId = tokenWeaverId ?? resolvedWeaver?.id ?? null;

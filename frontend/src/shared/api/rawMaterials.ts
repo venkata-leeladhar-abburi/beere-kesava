@@ -23,6 +23,7 @@ export interface GrnItemInput {
   quantity: number;
   unit?: string;
   unitPrice: number;
+  rejectedQuantity?: number;
 }
 
 export interface CreateGrnPayload {

@@ -3,7 +3,10 @@ import type React from "react";
 export type StatusType = "good" | "warning" | "critical" | "empty";
 
 export type BatchRow = {
-  id: string; type: string; details: string; vendor: string; date: string;
+  // `id` is the GRN number shown/searched-on — not unique per row, since one
+  // GRN can carry several material line items. `rowKey` is the per-item
+  // identity to key off of when rendering a list.
+  id: string; rowKey: string; type: string; details: string; vendor: string; date: string;
   received: number; given: number; remaining: number; statusType: StatusType;
 };
 

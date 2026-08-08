@@ -8,8 +8,9 @@ import { useBatches } from "../../production/contexts/BatchContext";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
+import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 
-import { F, GrnBatch, INITIAL_GRN_BATCHES, MaterialRowState, T, WeaverLite, emptyRow } from "./issueMaterial/theme";
+import { F, GrnBatch, MaterialRowState, T, WeaverLite, emptyRow } from "./issueMaterial/theme";
 import { SectionPill } from "./issueMaterial/primitives";
 import { RecipientSelector } from "./issueMaterial/RecipientSelector";
 import { MaterialRowEditor } from "./issueMaterial/MaterialRowEditor";
@@ -33,7 +34,7 @@ function avatarColorFor(id: string): string {
 export function IssueMaterialPage() {
   const { issueRecords, addIssueRecord } = useMaterialIssue();
   const { batches } = useBatches();
-  const [grnBatches, setGrnBatches] = useState<GrnBatch[]>(INITIAL_GRN_BATCHES);
+  const [grnBatches, setGrnBatches] = useState<GrnBatch[]>([]);
 
   // Real weaver/factory-loom directories — replaces the old static
   // WEAVERS/FACTORY_LOOMS_LIST mocks so issued-to ids are always real
@@ -45,7 +46,11 @@ export function IssueMaterialPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
+      const [weaversRes, loomsRes, grnsRes] = await Promise.all([
+        weaversApi.list(), 
+        factoryLoomsApi.list(),
+        rawMaterialsApi.listGrns()
+      ]);
       if (cancelled) return;
       setWeavers(weaversRes.items.map(w => ({
         id: w.id, name: w.name, village: w.village ?? "", initials: w.initials,
@@ -58,6 +63,21 @@ export function IssueMaterialPage() {
         status: l.status === "ACTIVE" ? "active" : l.status === "MAINTENANCE" ? "maintenance" : "idle",
         installedYear: l.installedYear ? String(l.installedYear) : "", notes: l.notes ?? "",
       })));
+
+      const batches: GrnBatch[] = [];
+      grnsRes.items.forEach(grn => {
+        grn.items.forEach(item => {
+          batches.push({
+            grnBatchId: grn.id,
+            vendor: grn.supplierName,
+            dateReceived: new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+            materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+            availableQty: item.quantity,
+            unit: item.unit || "kg"
+          });
+        });
+      });
+      setGrnBatches(batches);
     })();
     return () => { cancelled = true; };
   }, []);

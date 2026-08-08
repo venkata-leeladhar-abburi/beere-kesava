@@ -2,10 +2,11 @@ import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSareeTypeByCode, INITIAL_RATES } from "../../pricing/components/RatesPricingPage";
 import { BackendQcRecord, BackendQcResult, qcApi } from "../../../shared/api/qc";
-import { weaversApi } from "../../../shared/api/weavers";
-import { factoryLoomsApi } from "../../../shared/api/factory-looms";
-import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
+import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
+import { factoryLoomsApi, BackendFactoryLoom } from "../../../shared/api/factory-looms";
+import { batchesApi, BackendBatch, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 /**
@@ -167,15 +168,25 @@ function backendRecordToFrontend(
 
 export function QcProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  // /factory-looms is WORKER-only on the backend (ADMIN/SUPERADMIN bypass
+  // every role check). This provider is mounted globally (App.tsx) for
+  // every role, so a WEAVER caller would always 403 here — and since this
+  // call wasn't caught, that 403 rejected the whole Promise.all and wiped
+  // out the weaver's own QC records too. Skip the call for roles that can
+  // never read it, and fall back gracefully either way.
+  const { role } = useAuth();
+  const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
 
   const { data: qcRecords = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [qcRes, weaversRes, loomsRes, batchesRes] = await Promise.all([
         qcApi.list(),
-        weaversApi.list(),
-        factoryLoomsApi.list(),
-        batchesApi.list(),
+        weaversApi.list().catch(() => ({ items: [] as BackendWeaver[] })),
+        canReadFactoryLooms
+          ? factoryLoomsApi.list().catch(() => ({ items: [] as BackendFactoryLoom[] }))
+          : Promise.resolve({ items: [] as BackendFactoryLoom[] }),
+        batchesApi.list().catch(() => ({ items: [] as BackendBatch[] })),
       ]);
       const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
       const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.loomNumber]));
