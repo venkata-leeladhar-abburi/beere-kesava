@@ -18,7 +18,7 @@ import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../..
 import { batchesApi } from "../../../shared/api/batches";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
-import { Button, SearchInput } from "../../../shared/ui/primitives";
+import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
@@ -201,7 +201,7 @@ export function FactoryLoomPage() {
   }
 
   return (
-    <div style={{ background: "#FFFDF9", minHeight: "100vh", paddingBottom: 60 }}>
+    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", paddingBottom: 60 }}>
       {/* Top Banner */}
       <div style={{ background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "28px 56px", borderBottom: `1px solid ${T.borderDef}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
@@ -227,9 +227,9 @@ export function FactoryLoomPage() {
             { label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", color: T.crimson },
           ].map((st, i) => (
             <div key={i} style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "14px 18px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(255,253,249,0.60)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.60)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</div>
               <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: st.color || "#FFFDF9", marginTop: 2 }}>{st.val}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,253,249,0.50)", marginTop: 2 }}>{st.sub}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)", marginTop: 2 }}>{st.sub}</div>
             </div>
           ))}
         </div>
@@ -250,29 +250,25 @@ export function FactoryLoomPage() {
               <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
             </div>
             {(["all", "active", "idle", "maintenance"] as const).map(st => (
-              <button
+              <Button
                 key={st}
                 onClick={() => setSf(st)}
-                style={{
-                  padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                  fontFamily: F.ui, fontSize: 12, fontWeight: 600, textTransform: "capitalize",
-                  background: sf === st ? T.royalBurgundy : "#FFFFFF",
-                  color: sf === st ? "#FFFDF9" : T.taupe,
-                  boxShadow: sf === st ? "0 2px 8px rgba(110,15,45,0.20)" : "none",
-                }}
+                variant={sf === st ? "primary" : "secondary"}
+                size="sm"
+                className="capitalize"
               >
                 {st} ({st === "all" ? looms.length : looms.filter(l => l.status === st).length})
-              </button>
+              </Button>
             ))}
           </div>
 
           <div style={{ display: "flex", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: 3 }}>
-            <button onClick={() => setView("card")} style={{ border: "none", background: view === "card" ? "rgba(110,15,45,0.08)" : "transparent", color: view === "card" ? T.royalBurgundy : T.taupe, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>
-              <LayoutGrid size={15} /> Card View
-            </button>
-            <button onClick={() => setView("table")} style={{ border: "none", background: view === "table" ? "rgba(110,15,45,0.08)" : "transparent", color: view === "table" ? T.royalBurgundy : T.taupe, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>
-              <LayoutList size={15} /> Table View
-            </button>
+            <Button onClick={() => setView("card")} variant={view === "card" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutGrid}>
+              Card View
+            </Button>
+            <Button onClick={() => setView("table")} variant={view === "table" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutList}>
+              Table View
+            </Button>
           </div>
         </div>
 
@@ -321,8 +317,8 @@ export function FactoryLoomPage() {
                       </span>
                     </td>
                     <td style={{ padding: "14px 20px", textAlign: "right" }}>
-                      <button onClick={() => setSelected(l)} style={{ border: "none", background: "none", color: T.royalBurgundy, cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13, marginRight: 12 }}>View Details</button>
-                      <button onClick={() => { setEditLoom(l); setShowModal(true); }} style={{ border: "none", background: "none", color: T.taupe, cursor: "pointer", fontFamily: F.ui, fontWeight: 600, fontSize: 13 }}><Edit2 size={14} /></button>
+                      <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
+                      <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
                     </td>
                   </tr>
                 ))}

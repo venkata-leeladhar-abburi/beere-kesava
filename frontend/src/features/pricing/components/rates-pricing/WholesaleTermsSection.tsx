@@ -2,8 +2,9 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Check, X, Clock } from "lucide-react";
-import { T, F, cardStyle, inputStyle, labelStyle, thStyle, tdStyle } from "./theme";
+import { T, F, cardStyle, labelStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
+import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 
 interface CustomerTermsState {
@@ -82,24 +83,13 @@ export function WholesaleTermsSection() {
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Alert starts from Day:</span>
-              <input
-                type="number"
-                value={tempAlertDay}
-                onChange={e => setTempAlertDay(Number(e.target.value))}
-                style={{ ...inputStyle, width: 70 }}
-              />
-              <button
-                onClick={() => { setGlobalAlertDay(tempAlertDay); setEditAlertDay(false); }}
-                style={{ background: T.green, color: "#fff", border: "none", borderRadius: 999, padding: "6px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-              >
+              <NumberInput value={tempAlertDay} onValueChange={v => setTempAlertDay(Number(v))} className="w-[70px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+              <Button onClick={() => { setGlobalAlertDay(tempAlertDay); setEditAlertDay(false); }} className="rounded-full bg-[#1E6640] text-white hover:bg-[#1E6640]/90 px-3.5 py-1.5 text-[12px] font-semibold h-auto" variant="primary">
                 Save
-              </button>
-              <button
-                onClick={() => setEditAlertDay(false)}
-                style={{ background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe, borderRadius: 999, padding: "6px 12px", fontFamily: F.ui, fontSize: 12, cursor: "pointer" }}
-              >
+              </Button>
+              <Button variant="secondary" className="rounded-full h-auto px-3 py-1.5 text-[12px]" onClick={() => setEditAlertDay(false)}>
                 Cancel
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -149,17 +139,13 @@ export function WholesaleTermsSection() {
                         {new Date(cust.createdAt).toLocaleDateString("en-IN")}
                       </td>
                       <td style={tdStyle}>
-                        <button
+                        <Button
+                          variant="secondary" size="sm" iconLeft={Edit2}
+                          className="rounded-[10px] border-[#6E0F2D] text-[#6E0F2D] h-auto py-[5px] px-3 text-[12px] font-medium"
                           onClick={() => handleEditClick(cust)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 5,
-                            background: "transparent", border: `1px solid ${T.royalBurgundy}`,
-                            color: T.royalBurgundy, borderRadius: 10, padding: "5px 12px",
-                            fontFamily: F.ui, fontSize: 12, fontWeight: 500, cursor: "pointer",
-                          }}
                         >
-                          <Edit2 size={12} /> Edit
-                        </button>
+                          Edit
+                        </Button>
                       </td>
                     </tr>
                     <tr>
@@ -180,47 +166,42 @@ export function WholesaleTermsSection() {
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
                                   <div>
                                     <label style={labelStyle} htmlFor="payment-terms-days">Payment Terms (Days) *</label>
-                                    <input
+                                    <NumberInput
                                       id="payment-terms-days"
-                                      type="number"
                                       value={editForm.days}
-                                      onChange={e => setEditForm(f => ({ ...f, days: Number(e.target.value) }))}
-                                      style={inputStyle}
+                                      onValueChange={v => setEditForm(f => ({ ...f, days: Number(v) }))}
+                                      className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
                                     />
                                   </div>
                                   <div>
                                     <label style={labelStyle} htmlFor="notes">Notes</label>
-                                    <textarea
+                                    <Textarea
                                       id="notes"
                                       rows={2}
                                       value={editForm.notes}
                                       onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-                                      style={{ ...inputStyle, resize: "none" }}
+                                      className="resize-none bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]"
                                       placeholder="Optional notes about this customer's terms…"
                                     />
                                   </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 10 }}>
-                                  <button
+                                  <Button
+                                    variant="primary"
+                                    iconLeft={Check}
+                                    className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto px-5 py-2 text-[12px] font-semibold"
                                     onClick={() => handleSaveTerms(cust.id)}
-                                    style={{
-                                      background: T.green, color: "#fff", border: "none", borderRadius: 999,
-                                      padding: "8px 20px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                      display: "flex", alignItems: "center", gap: 6,
-                                    }}
                                   >
-                                    <Check size={13} /> Save Terms
-                                  </button>
-                                  <button
+                                    Save Terms
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    iconLeft={X}
+                                    className="rounded-full h-auto px-4 py-2 text-[12px]"
                                     onClick={() => setEditTermsRowId(null)}
-                                    style={{
-                                      background: "transparent", border: `1px solid ${T.borderDef}`, color: T.taupe,
-                                      borderRadius: 999, padding: "8px 16px", fontFamily: F.ui, fontSize: 12, cursor: "pointer",
-                                      display: "flex", alignItems: "center", gap: 5,
-                                    }}
                                   >
-                                    <X size={13} /> Cancel
-                                  </button>
+                                    Cancel
+                                  </Button>
                                 </div>
                               </div>
                             </motion.div>

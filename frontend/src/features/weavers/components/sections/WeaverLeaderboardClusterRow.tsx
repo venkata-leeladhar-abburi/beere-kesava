@@ -1,6 +1,6 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Medal, MapPin as PhMapPin } from "@phosphor-icons/react";
+import { Medal, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { Avatar, qcColor } from "../common/primitives";
 
@@ -31,7 +31,7 @@ export function WeaverLeaderboardClusterRow({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Medal size={20} color={T.antiqueGold} weight="fill" />
+              <Medal size={20} color={T.antiqueGold} />
             </div>
             <div>
               <div style={cardTitle}>Top 10 Weavers by Output</div>
@@ -76,7 +76,7 @@ export function WeaverLeaderboardClusterRow({
 
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <PhMapPin size={18} color={T.royalBurgundy} weight="fill" />
+          <PhMapPin size={18} color={T.royalBurgundy} />
           <div style={cardTitle}>Output by Cluster</div>
         </div>
         <div style={cardSub}>Which weaving villages carry production</div>

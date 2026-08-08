@@ -7,6 +7,7 @@ import { VENDOR_CONTACTS } from "../../data/vendors";
 import { EASE, F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import { vendorsApi } from "../../../../shared/api/vendors";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
@@ -79,9 +80,8 @@ Thank you.`;
               <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div>
             </div>
           </div>
-          <button onClick={onClose} style={{ position: "absolute", top: 18, right: 18, width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.14)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-[18px] top-[18px] rounded-[9px] bg-[rgba(255,255,255,0.14)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.22)]" />
         </div>
 
         <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
@@ -169,24 +169,17 @@ Thank you.`;
           </div>
 
           {/* Send button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
+          <Button
+            variant="primary"
+            fullWidth
             onClick={handleSend}
             disabled={sending || sent}
-            style={{
-              width: "100%", height: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-              border: "none", borderRadius: 12,
-              background: sent ? T.green : `linear-gradient(135deg, ${T.royalBurgundy}, ${T.deepWine})`,
-              fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: "#FFFDF9",
-              cursor: sending || sent ? "default" : "pointer",
-              transition: "background 0.3s ease",
-              opacity: sending ? 0.8 : 1,
-            }}
+            loading={sending}
+            iconLeft={sent ? CheckCircle2 : Mail}
+            className={`h-12 rounded-[12px] ${sent ? "bg-[#1E6640]" : "bg-gradient-to-br from-[#6E0F2D] to-[#4A0A1D]"}`}
           >
-            {sent ? (<><CheckCircle2 size={18} /> Reminder Sent Successfully!</>) :
-             sending ? "Sending…" :
-             (<><Mail size={17} /> Send Reminder via {CHANNELS.find(c => c.key === msgType)?.label}</>)}
-          </motion.button>
+            {sent ? "Reminder Sent Successfully!" : `Send Reminder via ${CHANNELS.find(c => c.key === msgType)?.label}`}
+          </Button>
         </div>
       </motion.div>
     </div>

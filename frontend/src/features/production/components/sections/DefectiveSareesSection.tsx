@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Eye } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Shield, DownloadSimple, SealWarning, WarningCircle,
-} from "@phosphor-icons/react";
+  Shield, Download as DownloadSimple, ShieldAlert as SealWarning, AlertCircle as WarningCircle,
+} from "lucide-react";
 import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
@@ -83,7 +83,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
             onClick={() => setShowDownloadDialog(true)}
             variant="secondary"
           >
-            <DownloadSimple size={16} color={T.antiqueGold} weight="bold" /> Download Defective Report
+            <DownloadSimple size={16} color={T.antiqueGold} /> Download Defective Report
           </Button>
         </div>
 
@@ -250,7 +250,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     size="lg"
                     className="flex-[2]"
                   >
-                    <DownloadSimple size={18} weight="bold" /> Download PDF Report
+                    <DownloadSimple size={18} /> Download PDF Report
                   </Button>
                   <Button onClick={() => setShowDownloadDialog(false)} variant="secondary" size="lg" className="flex-1">
                     Cancel
@@ -268,7 +268,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {viewDefect.defects.map(d => (
                     <span key={d} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.09)", border: "1px solid rgba(192,57,43,0.22)", padding: "6px 14px", borderRadius: 99 }}>
-                      <SealWarning size={14} color={T.crimson} weight="fill" /> {d}
+                      <SealWarning size={14} color={T.crimson} /> {d}
                     </span>
                   ))}
                 </div>
@@ -291,10 +291,10 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Deduction Applied to Weaver</div>
                     <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson }}>{viewDefect.deduction}</div>
                   </div>
-                  <SealWarning size={36} color={T.crimson} weight="duotone" />
+                  <SealWarning size={36} color={T.crimson} />
                 </div>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "12px 14px" }}>
-                  <WarningCircle size={16} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <WarningCircle size={16} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: "#8B6018", lineHeight: 1.5 }}>
                     This saree is stored separately in the defective stock area. Deduction has been automatically applied to the weaver's payment record.
                   </div>

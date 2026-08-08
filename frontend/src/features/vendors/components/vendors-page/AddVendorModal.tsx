@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { CheckCircle2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { PAYMENT_TERMS, STATES } from "./data";
+import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 
 export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => void; onCancel: () => void; nextId: string }) {
   const [form, setForm] = useState({
@@ -83,60 +84,53 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
           {/* Left Column */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <label style={lbl} htmlFor="business-name">Business Name *</label>
-              <input id="business-name" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" style={{ ...inp, border: errors.name ? "1.5px solid #C0392B" : inp.border }} />
-              {errors.name && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.name}</div>}
-            </div>
-            <div>
-              <label style={lbl} htmlFor="owner-contact-name">Owner / Contact Name *</label>
-              <input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" style={{ ...inp, border: errors.contactName ? "1.5px solid #C0392B" : inp.border }} />
-              {errors.contactName && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.contactName}</div>}
+            <Field label="Business Name" required error={errors.name} id="business-name">
+              <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" />
+            </Field>
+            <Field label="Owner / Contact Name" required error={errors.contactName} id="owner-contact-name">
+              <Input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Field label="Phone Number" required error={errors.phone} id="phone-number">
+                <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
+              </Field>
+              <Field label="WhatsApp Number" id="whatsapp-number">
+                <Input value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />
+              </Field>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <label style={lbl} htmlFor="phone-number">Phone Number *</label>
-                <input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" style={{ ...inp, border: errors.phone ? "1.5px solid #C0392B" : inp.border }} />
-                {errors.phone && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.phone}</div>}
-              </div>
-              <div>
-                <label style={lbl} htmlFor="whatsapp-number">WhatsApp Number</label>
-                <input id="whatsapp-number" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" style={inp} />
-              </div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <label style={lbl} htmlFor="city">City *</label>
-                <input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" style={{ ...inp, border: errors.city ? "1.5px solid #C0392B" : inp.border }} />
-                {errors.city && <div style={{ color: "#C0392B", fontSize: 12, marginTop: 3 }}>{errors.city}</div>}
-              </div>
-              <div>
-                <label style={lbl} htmlFor="state">State *</label>
-                <select id="state" value={form.state} onChange={e => set("state", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF" }}>
-                  {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
+              <Field label="City" required error={errors.city} id="city">
+                <Input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
+              </Field>
+              <Field label="State" required id="state">
+                <Select value={form.state} onValueChange={v => set("state", v)}>
+                  {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </Select>
+              </Field>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <label style={lbl}>Material Types</label>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: "10px 0" }}>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "10px 0" }}>
                   {["Warp", "Resham", "Jari"].map(t => (
-                    <label key={t} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                      <input type="checkbox" checked={form.types.includes(t)} onChange={e => {
-                        const newTypes = e.target.checked ? [...form.types, t] : form.types.filter(x => x !== t);
+                    <CheckboxField
+                      key={t}
+                      label={t}
+                      checked={form.types.includes(t)}
+                      onCheckedChange={checked => {
+                        const newTypes = checked ? [...form.types, t] : form.types.filter(x => x !== t);
                         setForm(p => ({ ...p, types: newTypes }));
-                      }} style={{ accentColor: T.royalBurgundy, width: 15, height: 15 }} />
-                      {t}
-                    </label>
+                      }}
+                    />
                   ))}
                 </div>
               </div>
               <div>
-                <label style={lbl} htmlFor="payment-terms">Payment Terms *</label>
-                <select id="payment-terms" value={form.terms} onChange={e => set("terms", e.target.value)} style={{ ...inp, cursor: "pointer", backgroundColor: "#FFF", marginBottom: 16 }}>
-                  {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <Field label="Payment Terms" required id="payment-terms" className="mb-4">
+                  <Select value={form.terms} onValueChange={v => set("terms", v)}>
+                    {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </Select>
+                </Field>
                 <label style={lbl}>Vendor Rating</label>
                 <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
                   {[1, 2, 3, 4, 5].map(i => (
@@ -151,57 +145,51 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
 
           {/* Right Column */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <label style={lbl} htmlFor="business-address">Business Address</label>
-              <textarea id="business-address" value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3}
-                style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
+            <Field label="Business Address" id="business-address">
+              <Textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} className="resize-none" />
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Field label="Bank Name" id="bank-name">
+                <Input value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
+              </Field>
+              <Field label="Account Number" id="account-number">
+                <Input value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
+              </Field>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <label style={lbl} htmlFor="bank-name">Bank Name</label>
-                <input id="bank-name" value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" style={inp} />
-              </div>
-              <div>
-                <label style={lbl} htmlFor="account-number">Account Number</label>
-                <input id="account-number" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." style={inp} />
-              </div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <label style={lbl} htmlFor="gst-number">GST Number</label>
-                <input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" style={inp} />
-              </div>
-              <div>
-                <label style={lbl} htmlFor="visiting-card-photo">Visiting Card Photo</label>
-                <input id="visiting-card-photo" type="file" accept="image/*" onChange={e => {
+              <Field label="GST Number" id="gst-number">
+                <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
+              </Field>
+              <Field label="Visiting Card Photo" id="visiting-card-photo">
+                <Input type="file" accept="image/*" onChange={e => {
                   const file = e.target.files?.[0];
                   if (file) {
                     const reader = new FileReader();
                     reader.onload = ev => setCardPreview(ev.target?.result as string);
                     reader.readAsDataURL(file);
                   }
-                }} style={{ ...inp, padding: "8px 12px", backgroundColor: "#FFF", cursor: "pointer" }} />
-              </div>
+                }} />
+              </Field>
             </div>
             {cardPreview && (
               <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>
                 <img src={cardPreview} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
               </div>
             )}
-            <div>
-              <label style={lbl} htmlFor="notes">Notes</label>
-              <input id="notes" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." style={inp} />
-            </div>
+            <Field label="Notes" id="notes">
+              <Input value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." />
+            </Field>
           </div>
         </div>
 
         {/* Actions */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginTop: 32, paddingTop: 24, borderTop: `1px solid rgba(110,15,45,0.08)` }}>
-          <button onClick={onCancel} style={{ padding: "10px 24px", background: "transparent", color: T.taupe, borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-          <motion.button onClick={handleSave} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            style={{ padding: "10px 32px", background: T.royalBurgundy, color: "#FFF", borderRadius: 8, border: "none", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-            <CheckCircle2 size={15} /> Save Vendor
-          </motion.button>
+          <Button onClick={onCancel} variant="tertiary" className="text-[#9C8672]">Cancel</Button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+            <Button onClick={handleSave} variant="primary" iconLeft="success" className="rounded-lg bg-[#6E0F2D] px-8">
+              Save Vendor
+            </Button>
+          </motion.div>
         </div>
       </motion.div>
     </div>

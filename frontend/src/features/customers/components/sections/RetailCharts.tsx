@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   Star, Calendar, AlertTriangle, Users,
@@ -68,7 +69,7 @@ export function RetailChartsRow1() {
   // Category split (Revenue by saree type)
   const retailCategorySplit = useMemo(() => {
     const split: Record<string, number> = {};
-    const colors = [T.royalBurgundy, T.antiqueGold, T.greenMid, T.taupe, "#5A3E6B"];
+    const colors = semantic.chart.series;
 
     for (const sale of retailSales) {
       const type = sareeInfoMap.get(sale.sareeId) ?? "Silk Saree";
@@ -231,7 +232,7 @@ export function RetailChartsRow1() {
                 <RechartsTooltip key="tooltip-rt-2" cursor={{fill: 'rgba(110,15,45,0.04)'}} contentStyle={{fontFamily: F.ui, fontSize: 13, borderRadius: 8, border: `1px solid ${T.borderDef}`}} />
                 <Legend key="legend-rt" iconType="circle" wrapperStyle={{ fontFamily: F.ui, fontSize: 12 }} />
                 <Bar key="bar-rt-new" id="bar-rt-new" dataKey="new" name="New" fill={T.royalBurgundy} radius={[4, 4, 0, 0]} barSize={10} />
-                <Bar key="bar-rt-returning" id="bar-rt-returning" dataKey="returning" name="Returning" fill={T.antiqueGold} radius={[4, 4, 0, 0]} barSize={10} />
+                <Bar key="bar-rt-returning" id="bar-rt-returning" dataKey="returning" name="Returning" fill={semantic.chart.series[1]} radius={[4, 4, 0, 0]} barSize={10} />
               </BarChart>
             </ResponsiveContainer>
           </div>

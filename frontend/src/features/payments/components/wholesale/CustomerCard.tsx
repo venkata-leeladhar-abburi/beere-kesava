@@ -6,6 +6,7 @@ import { F, T, BulkOrder, useFirms } from "../../theme";
 import { Invoice } from "../../types";
 import { AnimBar } from "../common/motion";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
+import { Button } from "../../../../shared/ui/primitives";
 
 export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkOrderData }: { inv: Invoice, onViewInvoice?: () => void, onRecordPayment?: () => void, bulkOrderRef?: string, bulkOrderData?: BulkOrder }) {
   const remaining = inv.total - inv.paid;
@@ -109,37 +110,30 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
 
       {/* Action buttons */}
       <div style={{ padding: "16px 20px 20px", display: "flex", gap: 10, flexShrink: 0 }}>
-        <button
+        <Button
+          variant="secondary"
+          size="md"
+          iconLeft={Eye}
           onClick={onViewInvoice}
-          style={{
-            flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 10, background: "#fff",
-            fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
+          className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]"
         >
-          <Eye size={13} /> View Invoice
-        </button>
+          View Invoice
+        </Button>
         {isPaid ? (
-          <button style={{ flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, cursor: "default" }}>
-            <CheckCircle2 size={13} /> Fully Paid
-          </button>
+          <Button variant="secondary" size="md" iconLeft={CheckCircle2} disabled
+            className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100">
+            Fully Paid
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={IndianRupee}
             onClick={onRecordPayment}
-            style={{
-              flex: 1, height: 38, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              border: "none", borderRadius: 10, background: T.royalBurgundy,
-              fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
-            onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
+            className="flex-1 rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D]"
           >
-            <IndianRupee size={13} /> Record Pay
-          </button>
+            Record Pay
+          </Button>
         )}
       </div>
     </motion.div>

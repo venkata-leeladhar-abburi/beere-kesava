@@ -2,6 +2,7 @@
 // settlement-health radial gauge — three small cards side by side.
 
 import React from "react";
+import { semantic } from "../../../../../design-system/tokens";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar,
@@ -42,7 +43,7 @@ export function RatingCard({
           <YAxis dataKey="rating" type="category" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={50} />
           <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
             formatter={(v: any, _n: any, p: any) => [`${v} suppliers`, p.payload.rating]} />
-          <Bar dataKey="count" fill={T.antiqueGold} radius={[0, 5, 5, 0]} barSize={16} />
+          <Bar dataKey="count" fill={semantic.chart.series[1]} radius={[0, 5, 5, 0]} barSize={16} />
         </BarChart>
       </ResponsiveContainer>
       <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>

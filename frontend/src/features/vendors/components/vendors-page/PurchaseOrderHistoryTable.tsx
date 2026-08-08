@@ -5,7 +5,7 @@ import { MAT_TAG_PO } from "./data";
 export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
   return (
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead><tr style={{ background: T.silkCream }}>{["PO Reference","Materials","Total Value","Receipt Details","Status"].map(h => <th key={h} style={{ padding: "12px 16px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>)}</tr></thead>
+      <thead><tr style={{ background: T.silkCream }}>{["PO Reference","Materials","Total Value","Receipt Details","Status"].map(h => <th key={h} style={{ padding: "12px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>)}</tr></thead>
       <tbody>{orders.map((o, i) => <tr key={o.id} style={{ borderTop: `1px solid ${T.borderDef}`, background: i % 2 === 0 ? "#FFF" : "rgba(247,242,234,0.4)" }}>
         <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{o.id}</div>

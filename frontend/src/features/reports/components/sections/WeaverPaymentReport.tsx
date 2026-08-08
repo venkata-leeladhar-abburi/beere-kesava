@@ -137,7 +137,7 @@ export function WeaverPaymentReport() {
                 </PieChart>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
                   <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{totalDeductions.toLocaleString("en-IN")}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>TOTAL DEDUCTIONS</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
                 </div>
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>

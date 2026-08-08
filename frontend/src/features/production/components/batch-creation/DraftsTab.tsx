@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Stack, ArrowRight, Trash } from "@phosphor-icons/react";
+import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
 import { BatchRecord, useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
-import { T, F, G, rowComplete } from "./constants";
+import { T, F, rowComplete } from "./constants";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
@@ -48,12 +48,12 @@ export function DraftsTab({
     <div style={{ padding: "28px 56px 64px" }}>
       {batches.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>
-          <Stack size={40} color={T.taupe} weight="duotone" style={{ marginBottom: 12 }} />
+          <Stack size={40} color={T.taupe} style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No batches yet.</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 6 }}>Create a batch to get started.</div>
-          <motion.button onClick={() => setTab("new")} whileHover={{ scale: 1.02 }} style={{ marginTop: 20, height: 44, padding: "0 24px", background: G.button, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <Button onClick={() => setTab("new")} variant="primary" size="lg" className="mt-5 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
             Create New Batch
-          </motion.button>
+          </Button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -100,16 +100,11 @@ export function DraftsTab({
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                   {!isCompleted && (
-                    <motion.button onClick={() => openDraft(b)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 20px", background: G.button, color: "#fff", border: "none", borderRadius: 11, fontFamily: F.ui, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                      {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} weight="bold" />
-                    </motion.button>
+                    <Button onClick={() => openDraft(b)} variant="primary" size="md" className="shrink-0 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
+                      {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} />
+                    </Button>
                   )}
-                  <motion.button onClick={() => setDeletingBatch(b)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    title="Delete batch"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "rgba(192,57,43,0.08)", color: T.red, border: "1px solid rgba(192,57,43,0.22)", borderRadius: 11, cursor: "pointer" }}>
-                    <Trash size={16} weight="bold" />
-                  </motion.button>
+                  <IconButton onClick={() => setDeletingBatch(b)} icon={Trash2} label="Delete batch" variant="ghost" className="w-[42px] h-[42px] shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20" />
                 </div>
               </div>
             );

@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
 import { EASE, F, T, useFirms } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
+import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
@@ -21,12 +22,9 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const inputStyle: React.CSSProperties = { width: "100%", height: 42, padding: "0 12px", border: `1.5px solid ${T.borderDef}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, marginBottom: 6, display: "block" };
-
   const handleSave = async () => {
     const numericAmount = parseFloat(amount);
-    if (!amount || isNaN(numericAmount) || numericAmount <= 0) return;
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0 || !utr || !firmId) return;
     setSaving(true);
     setSaveError(null);
     const targetVendorId = vp.vendorId || vp.id;
@@ -59,9 +57,8 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
       >
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Pay Vendor — {vp.vendor}</div>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-            <X size={16} />
-          </button>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
         </div>
 
         <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
@@ -103,7 +100,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>Click to upload invoice</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
-                <input type="file" ref={fileInputRef} style={{ display: "none" }} accept=".pdf,image/*" />
+                <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" />
               </div>
             </div>
           </div>
@@ -115,34 +112,28 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
               <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
             </div>
 
-            <div>
-              <label style={labelStyle} htmlFor="amount-to-pay">Amount to Pay (₹) *</label>
-              <input id="amount-to-pay" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle} htmlFor="payment-date">Payment Date *</label>
-              <input id="payment-date" type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle} htmlFor="utr-number">UTR Number *</label>
-              <input id="utr-number" value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle} htmlFor="payment-method">Payment Method</label>
-              <select id="payment-method" value={method} onChange={e => setMethod(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-                {["Bank Transfer", "Cheque", "RTGS", "NEFT"].map(m => <option key={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle} htmlFor="paying-from-firm">Paying from Firm *</label>
-              <select id="paying-from-firm" value={firmId} onChange={e => setFirmId(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-                {firms.map(f => <option key={f.id} value={f.id}>{f.firmName}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle} htmlFor="notes-optional">Notes (optional)</label>
-              <textarea id="notes-optional" value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, height: "auto", padding: "10px 12px", resize: "vertical" as const }} />
-            </div>
+            <Field label="Amount to Pay (₹)" required id="amount-to-pay">
+              <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
+            </Field>
+            <Field label="Payment Date" required id="payment-date">
+              <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            </Field>
+            <Field label="UTR Number" required id="utr-number">
+              <Input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" />
+            </Field>
+            <Field label="Payment Method" id="payment-method">
+              <Select value={method} onValueChange={setMethod}>
+                {["Bank Transfer", "Cheque", "RTGS", "NEFT"].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </Select>
+            </Field>
+            <Field label="Paying from Firm" required id="paying-from-firm">
+              <Select value={firmId} onValueChange={setFirmId}>
+                {firms.map(f => <SelectItem key={f.id} value={f.id}>{f.firmName}</SelectItem>)}
+              </Select>
+            </Field>
+            <Field label="Notes (optional)" id="notes-optional">
+              <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+            </Field>
           </div>
         </div>
 
@@ -152,10 +143,10 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}` }}>
-          <button onClick={onClose} style={{ height: 42, padding: "0 20px", background: "transparent", border: `1px solid ${T.borderDef}`, borderRadius: 999, fontFamily: F.ui, fontSize: 13, color: T.taupe, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ height: 42, padding: "0 24px", background: T.royalBurgundy, border: "none", borderRadius: 999, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer" }}>
-            {saving ? "Processing..." : "Confirm Payment"}
-          </button>
+          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
+            Confirm Payment
+          </Button>
         </div>
       </motion.div>
     </div>

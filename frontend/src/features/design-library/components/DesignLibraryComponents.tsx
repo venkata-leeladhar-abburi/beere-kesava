@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import {
-  Hash, ImageSquare, Swatches, Graph, CheckCircle,
-  Eye as PhEye, UploadSimple,
-  Package, X as PhX, PaperPlaneTilt,
-} from "@phosphor-icons/react";
+  Hash, Image as ImageSquare, Palette as Swatches, Workflow as Graph, CheckCircle2 as CheckCircle,
+  Eye as PhEye, Upload as UploadSimple,
+  Package, X as PhX, Send as PaperPlaneTilt,
+} from "lucide-react";
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F, G } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
@@ -100,14 +100,14 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
           <>
             <img src={preview} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
             <div style={{ position: "relative", zIndex: 1, background: "rgba(61,14,26,0.65)", borderRadius: 8, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
-              <UploadSimple size={13} color={T.goldLight} weight="duotone" />
+              <UploadSimple size={13} color={T.goldLight} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>Replace</span>
             </div>
           </>
         ) : (
           <>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon size={20} color={T.taupe} weight="duotone" />
+              <Icon size={20} color={T.taupe} />
             </div>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{hint}</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>Click to upload</span>
@@ -198,7 +198,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: design.hasGraph ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${design.hasGraph ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 10, padding: "11px 13px" }}>
-              <Graph size={17} color={design.hasGraph ? T.green : "#8B6018"} weight="duotone" />
+              <Graph size={17} color={design.hasGraph ? T.green : "#8B6018"} />
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Design Graph</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: design.hasGraph ? T.green : "#8B6018" }}>
@@ -207,7 +207,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: design.hasColorSlip ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${design.hasColorSlip ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 10, padding: "11px 13px" }}>
-              <ImageSquare size={17} color={design.hasColorSlip ? T.green : "#8B6018"} weight="duotone" />
+              <ImageSquare size={17} color={design.hasColorSlip ? T.green : "#8B6018"} />
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 2 }}>Color Slip</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: design.hasColorSlip ? T.green : "#8B6018" }}>
@@ -240,21 +240,21 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
           <img src={d.colorSlipPhoto} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(61,14,26,0.45) 100%)" }} />
           <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(61,14,26,0.72)", backdropFilter: "blur(6px)", borderRadius: 8, padding: "5px 10px" }}>
-            <Hash size={13} color={T.goldLight} weight="bold" />
+            <Hash size={13} color={T.goldLight} />
             <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.4px" }}>{d.code}</span>
           </div>
           <div style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: 8, background: "rgba(255,253,249,0.18)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ImageSquare size={16} color="#FFFDF9" weight="duotone" />
+            <ImageSquare size={16} color="#FFFDF9" />
           </div>
         </div>
       ) : (
         <div style={{ height: 148, background: `linear-gradient(135deg, ${T.warmCream} 0%, #F0E4CE 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, flexShrink: 0, position: "relative" }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ImageSquare size={28} color={T.taupe} weight="duotone" />
+            <ImageSquare size={28} color={T.taupe} />
           </div>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>Color Slip Not Uploaded</span>
           <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(139,112,96,0.14)", borderRadius: 8, padding: "5px 10px" }}>
-            <Hash size={13} color={T.taupe} weight="bold" />
+            <Hash size={13} color={T.taupe} />
             <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.taupe }}>{d.code}</span>
           </div>
         </div>
@@ -265,7 +265,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
 
         {d.typeCode && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "5px 10px", marginBottom: 10, alignSelf: "flex-start" }}>
-            <Swatches size={13} color={T.royalBurgundy} weight="duotone" />
+            <Swatches size={13} color={T.royalBurgundy} />
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.typeCode}</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· {d.typeName}</span>
           </div>
@@ -286,7 +286,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
 
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", borderRadius: 10, padding: "10px 12px" }}>
-            <Package size={18} color={T.royalBurgundy} weight="duotone" />
+            <Package size={18} color={T.royalBurgundy} />
             <div>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{d.total.toLocaleString()}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>total produced</div>
@@ -295,26 +295,26 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: d.hasGraph ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${d.hasGraph ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 9, padding: "9px 13px", marginBottom: 14 }}>
-          <Graph size={17} color={d.hasGraph ? T.green : "#8B6018"} weight="duotone" />
+          <Graph size={17} color={d.hasGraph ? T.green : "#8B6018"} />
           <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: d.hasGraph ? T.green : "#8B6018", flex: 1 }}>
             Design Graph: {d.hasGraph ? "Uploaded" : "Not uploaded yet"}
           </span>
-          {d.hasGraph && <CheckCircle size={15} color={T.green} weight="bold" />}
+          {d.hasGraph && <CheckCircle size={15} color={T.green} />}
         </div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 18px 18px" }}>
         <div style={{ display: "flex", gap: 8 }}>
           <Button onClick={() => onView(d)} variant="secondary" size="md" fullWidth>
-            <PhEye size={15} weight="duotone" /> View Design
+            <PhEye size={15} /> View Design
           </Button>
           <Button onClick={() => onSlip(d)} variant="secondary" size="md" fullWidth>
-            <UploadSimple size={15} weight="duotone" />
+            <UploadSimple size={15} />
             {d.hasColorSlip ? "Update Slip" : "Upload Slip"}
           </Button>
         </div>
         <Button onClick={() => onDispatch(d.code)} variant="primary" size="md" fullWidth>
-          <PaperPlaneTilt size={15} color="#FFFDF9" weight="fill" /> Dispatch Design
+          <PaperPlaneTilt size={15} color="#FFFDF9" /> Dispatch Design
         </Button>
       </div>
     </div>

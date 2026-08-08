@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
-  CalendarBlank, WarningCircle, CheckCircle,
-  Eye as PhEye, CaretRight as PhCaretRight, PencilSimple,
-} from "@phosphor-icons/react";
+  Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
+  Eye as PhEye, ChevronRight as PhCaretRight, Pencil as PencilSimple,
+} from "lucide-react";
 import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
@@ -15,14 +15,14 @@ export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: 
   if (tallied) {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(30,102,64,0.1)", color: T.green, border: `1.5px solid rgba(30,102,64,0.2)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
-        <CheckCircle size={16} weight="fill" /> Tallied
+        <CheckCircle size={16} /> Tallied
       </div>
     );
   }
 
   return (
     <Button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} variant="secondary" fullWidth>
-      <CheckCircle size={16} weight="bold" /> Tally
+      <CheckCircle size={16} /> Tally
     </Button>
   );
 }
@@ -101,12 +101,12 @@ export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string
               }}
               style={{ width: 52, height: 42, position: "absolute", left: 0, top: 0, background: T.royalBurgundy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", color: "#fff", zIndex: 2 }}
             >
-              <PhCaretRight size={18} weight="bold" />
+              <PhCaretRight size={18} />
             </motion.div>
           </div>
         ) : (
           <Button onClick={() => setConfirming(true)} variant="primary" fullWidth>
-            <CheckCircle size={16} weight="bold" /> Confirm Final Weights
+            <CheckCircle size={16} /> Confirm Final Weights
           </Button>
         )
       )}
@@ -160,7 +160,7 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
 
           <div style={{ background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <CalendarBlank size={17} color={T.royalBurgundy} weight="fill" style={{ flexShrink: 0 }} />
+              <CalendarBlank size={17} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                 {b.submitted ? (
                   <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Submitted <strong style={{ fontFamily: F.mono }}>{b.submitted}</strong></span>
@@ -204,7 +204,7 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
                 )}
                 {b.late && (
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
-                    <WarningCircle size={13} weight="fill" /> Running {b.late}d late
+                    <WarningCircle size={13} /> Running {b.late}d late
                   </div>
                 )}
               </div>
@@ -264,12 +264,12 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
               </div>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} weight="fill" /> {b.late}d late</div>}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>{b.submitted ?? b.expected}{b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} /> {b.late}d late</div>}</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{est.toLocaleString("en-IN")}</div>
             <div>
               <div style={{ display: "flex", gap: 6 }}>
                 <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-                  <PhEye size={14} weight="bold" /> View
+                  <PhEye size={14} /> View
                 </Button>
                 {b.isLive && onEdit && (
                   <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
@@ -293,7 +293,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1400 }}>
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-              {headers.map(h => <th key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
+              {headers.map(h => <th key={h} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", textAlign: "left", padding: "12px 16px", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -321,7 +321,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
                   <td style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-                        <PhEye size={14} weight="bold" /> View
+                        <PhEye size={14} /> View
                       </Button>
                       {b.isLive && onEdit && (
                         <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">

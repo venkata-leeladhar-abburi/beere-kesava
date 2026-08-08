@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 
 import { F, T } from "../../theme";
 import { Invoice, PayHistRecord, PayHistStatus, PayHistType } from "../../types";
+import { Button } from "../../../../shared/ui/primitives";
 
 export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; border: string }> = {
   "Vendor Payment":   { bg: "rgba(200,155,71,0.12)",  color: "#8B6018",       border: "#C89B47" },
@@ -107,35 +108,20 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
 
       {/* Actions */}
       <div style={{ padding: "14px 20px 20px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <button
-          style={{
-            flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 10, background: "#fff",
-            fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer",
-            transition: "all 0.15s ease"
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.04)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(110,15,45,0.12)"; }}
-        >
-          <Eye size={13} /> View Details
-        </button>
+        <Button variant="secondary" size="sm" iconLeft={Eye}
+          className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+          View Details
+        </Button>
         {isPaid ? (
-          <button style={{ flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, border: `1.5px solid rgba(30,102,64,0.18)`, borderRadius: 10, background: "rgba(30,102,64,0.07)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green, cursor: "default" }}>
-            <BadgeCheck size={14} /> Completed
-          </button>
+          <Button variant="secondary" size="sm" iconLeft={BadgeCheck} disabled
+            className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100">
+            Completed
+          </Button>
         ) : (
-          <button
-            style={{
-              flex: 1, height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              border: "none", borderRadius: 10, background: T.royalBurgundy,
-              fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFDF9", cursor: "pointer",
-              transition: "all 0.2s ease"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.deepWine; }}
-            onMouseLeave={e => { e.currentTarget.style.background = T.royalBurgundy; }}
-          >
-            <UploadCloud size={13} /> Update Status
-          </button>
+          <Button variant="primary" size="sm" iconLeft={UploadCloud}
+            className="flex-1 rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D]">
+            Update Status
+          </Button>
         )}
       </div>
     </motion.div>

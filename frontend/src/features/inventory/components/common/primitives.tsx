@@ -54,9 +54,9 @@ export function NumInput({ value, onChange, placeholder }: { value: string; onCh
 }
 
 export function SelectInput({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
-  // Radix SelectItem forbids value="" (reserved for "no selection"), but this
-  // codebase's native <select> markup commonly uses <option value=""> as a
-  // placeholder row — route that one to the Select's placeholder instead.
+  // Radix SelectItem forbids value="" (reserved for "no selection"), but the
+  // native select markup this replaces commonly used an empty-value option
+  // as a placeholder row — route that one to the Select's placeholder instead.
   let placeholder: React.ReactNode;
   const items = React.Children.toArray(children).filter((child) => {
     if (!React.isValidElement<{ value: string; children?: React.ReactNode }>(child)) return false;

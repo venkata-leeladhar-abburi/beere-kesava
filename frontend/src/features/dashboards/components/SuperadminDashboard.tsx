@@ -151,7 +151,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const sections = PAGE_SECTIONS[nav];
 
   return (
-    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div id="main-content" style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <style>{`
         :root {
           --foreground: #1F1209;

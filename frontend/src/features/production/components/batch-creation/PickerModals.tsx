@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Factory, ShoppingBag, WarningCircle, MagnifyingGlass, Package,
-} from "@phosphor-icons/react";
+  Factory, ShoppingBag, AlertCircle as WarningCircle, Package,
+} from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
 import { T, F, fld, lbl } from "./constants";
 import { Pip } from "./constants";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
+import { Button, IconButton, Input, SearchInput, Textarea } from "../../../../shared/ui/primitives";
 
 // Deterministic pip colour from a stable palette, keyed by id, so real
 // weavers (fetched from the backend) still get a consistent avatar colour
 // without needing a "bg" field the backend doesn't have.
-const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#8B7060", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
+const PIP_PALETTE = ["#6E0F2D", "#C4923A", "#69635E", "#4A061B", "#A05080", "#1E6640", "#3D0E1A", "#2C4A8B"];
 export function pipColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -29,7 +30,7 @@ export function PickerShell({ title, onClose, children, width = 480 }: { title: 
         style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.taupe, fontSize: 20, lineHeight: 1 }}>×</button>
+          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm" />
         </div>
         <div style={{ paddingTop: 16 }}>{children}</div>
       </motion.div>
@@ -44,23 +45,22 @@ export function WeaverPickerModal({ weavers, onClose, onSelect }: { weavers: Wea
     <PickerShell title="Assign Weaver" onClose={onClose}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px" }}>
         {weavers.map(w => (
-          <button key={w.id} onClick={() => setSel(w.id)}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", border: `2px solid ${sel === w.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === w.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+          <Button key={w.id} onClick={() => setSel(w.id)} variant="ghost" fullWidth
+            className={`h-auto justify-start gap-2.5 p-[12px_14px] rounded-xl border-2 ${sel === w.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <Pip initials={w.initials} bg={pipColor(w.id)} size={34} />
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{w.looms} loom{w.looms !== 1 ? "s" : ""}</div>
             </div>
-          </button>
+          </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const w = weavers.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
-          whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+        <Button onClick={() => { const w = weavers.find(x => x.id === sel); if (w) onSelect(w); }} disabled={!sel}
+          variant="primary" size="lg" className="flex-[2] h-[46px]">
           Assign Weaver
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
       </div>
     </PickerShell>
   );
@@ -74,40 +74,39 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
     <PickerShell title="Assign Bulk Order" onClose={onClose}>
       <div style={{ padding: "0 24px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 340, overflowY: "auto" }}>
         {/* General Stock */}
-        <button onClick={() => setSel("general")}
-          style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", border: `2px solid ${sel === "general" ? T.green : T.borderDef}`, borderRadius: 12, background: sel === "general" ? "rgba(30,102,64,0.06)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+        <Button onClick={() => setSel("general")} variant="ghost" fullWidth
+          className={`h-auto justify-start gap-3 p-[13px_16px] rounded-xl border-2 ${sel === "general" ? "border-[#1E6640] bg-[rgba(30,102,64,0.06)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(30,102,64,0.06)]`}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Package size={18} color="#fff" weight="duotone" />
+            <Package size={18} color="#fff" />
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>General Stock</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Not linked to any bulk order</div>
           </div>
-        </button>
+        </Button>
         <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", margin: "4px 0 2px" }}>Active Bulk Orders</div>
         {bulkOrders.map(o => (
-          <button key={o.ref} onClick={() => setSel(o.ref)}
-            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: `2px solid ${sel === o.ref ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === o.ref ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+          <Button key={o.ref} onClick={() => setSel(o.ref)} variant="ghost" fullWidth
+            className={`h-auto justify-start gap-3 p-[12px_16px] rounded-xl border-2 ${sel === o.ref ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ShoppingBag size={16} color={T.royalBurgundy} weight="duotone" />
+              <ShoppingBag size={16} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.customer} · {o.sareeType}</div>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
-          </button>
+          </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => {
+        <Button onClick={() => {
           if (sel === "general") { onSelect(null, "General Stock"); }
           else if (sel) { const o = bulkOrders.find(x => x.ref === sel); if (o) onSelect(o.ref, `${o.ref} · ${o.customer}`); }
-        }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+        }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
           Assign
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
       </div>
     </PickerShell>
   );
@@ -145,24 +144,21 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
       {/* Mode toggle */}
       <div style={{ padding: "0 24px 16px", display: "flex", gap: 8 }}>
         {(["search", "new"] as const).map(m => (
-          <button key={m} onClick={() => setMode(m)}
-            style={{ flex: 1, height: 38, border: `1.5px solid ${mode === m ? T.royalBurgundy : T.borderDef}`, borderRadius: 10, background: mode === m ? T.royalBurgundy : "transparent", color: mode === m ? "#fff" : T.taupe, fontFamily: F.ui, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          <Button key={m} onClick={() => setMode(m)} variant={mode === m ? "primary" : "secondary"} size="md" className="flex-1 h-[38px]">
             {m === "search" ? "Select Existing" : "+ Create New"}
-          </button>
+          </Button>
         ))}
       </div>
 
       {mode === "search" ? (
         <>
-          <div style={{ padding: "0 24px 12px", position: "relative" }}>
-            <MagnifyingGlass size={16} color={T.taupe} style={{ position: "absolute", left: 38, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…"
-              style={{ ...fld, paddingLeft: 40 }} autoFocus />
+          <div style={{ padding: "0 24px 12px" }}>
+            <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" autoFocus />
           </div>
           <div style={{ padding: "0 24px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
             {filtered.map(d => (
-              <button key={d.code} onClick={() => setSel(d.code)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", border: `2px solid ${sel === d.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 11, background: sel === d.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+              <Button key={d.code} onClick={() => setSel(d.code)} variant="ghost" fullWidth
+                className={`h-auto justify-start gap-3 p-[11px_14px] rounded-[11px] border-2 ${sel === d.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
                 <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 10px", flexShrink: 0 }}>{d.code}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {d.name && <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>}
@@ -174,52 +170,49 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
                     {d.hasGraph && <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(30,102,64,0.10)", color: T.green, borderRadius: 5, padding: "2px 7px", fontWeight: 600 }}>Graph</span>}
                   </div>
                 )}
-              </button>
+              </Button>
             ))}
             {filtered.length === 0 && (
               <div style={{ textAlign: "center", padding: "24px 0", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
                 No designs match "{q}".<br />
-                <button onClick={() => { setMode("new"); setNewCode(q); }} style={{ marginTop: 10, fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy, background: "none", border: "none", cursor: "pointer", fontWeight: 700, textDecoration: "underline" }}>
+                <Button onClick={() => { setMode("new"); setNewCode(q); }} variant="link" className="mt-2.5 text-[13px] font-bold text-[#6E0F2D]">
                   Create "{q}" as new design code →
-                </button>
+                </Button>
               </div>
             )}
           </div>
           <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-            <motion.button onClick={() => { if (sel) onSelect(sel); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-              style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+            <Button onClick={() => { if (sel) onSelect(sel); }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
               Assign Design Code
-            </motion.button>
-            <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+            </Button>
+            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
           </div>
         </>
       ) : (
         <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label style={lbl}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <input value={newCode} onChange={e => setNewCode(e.target.value)} style={fld} placeholder="e.g. BKB-099" autoFocus />
+            <Input value={newCode} onChange={e => setNewCode(e.target.value)} placeholder="e.g. BKB-099" autoFocus />
           </div>
           <div>
             <label style={lbl}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <input value={newWeaver} onChange={e => setNewWeaver(e.target.value)} style={fld} placeholder="Assign a weaver later if needed" />
+            <Input value={newWeaver} onChange={e => setNewWeaver(e.target.value)} placeholder="Assign a weaver later if needed" />
           </div>
           <div>
             <label style={lbl}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…"
-              style={{ width: "100%", padding: "12px 14px", fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, background: T.warmIvory, border: `1.5px solid ${T.borderDef}`, borderRadius: 10, outline: "none", resize: "none", lineHeight: 1.6, boxSizing: "border-box" }} />
+            <Textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…" />
           </div>
           <div style={{ background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <WarningCircle size={15} color={T.antiqueGold} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+            <WarningCircle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", lineHeight: 1.5 }}>
               This design code will be saved to the master Design Library immediately and will appear there with full detail.
             </span>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <motion.button onClick={handleSaveNew} disabled={!newCode.trim()} whileHover={newCode.trim() ? { scale: 1.02 } : undefined}
-              style={{ flex: 2, height: 46, background: newCode.trim() ? T.green : T.taupe, opacity: newCode.trim() ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: newCode.trim() ? "pointer" : "not-allowed" }}>
+            <Button onClick={handleSaveNew} disabled={!newCode.trim()} variant="primary" size="lg" className="flex-[2] h-[46px] bg-[#1E6640] hover:bg-[#1E6640]/90">
               Save to Library & Assign
-            </motion.button>
-            <button onClick={() => setMode("search")} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Back</button>
+            </Button>
+            <Button onClick={() => setMode("search")} variant="secondary" size="lg" className="flex-1 h-[46px]">Back</Button>
           </div>
         </div>
       )}
@@ -245,8 +238,8 @@ export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
           </div>
         )}
         {sareeTypes.map(t => (
-          <button key={t.code} onClick={() => setSel(t.code)}
-            style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", border: `2px solid ${sel === t.code ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === t.code ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+          <Button key={t.code} onClick={() => setSel(t.code)} variant="ghost" fullWidth
+            className={`h-auto justify-start gap-3.5 p-[13px_16px] rounded-xl border-2 ${sel === t.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
             </div>
@@ -255,15 +248,14 @@ export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{t.code}</div>
             </div>
             <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>₹{t.charge.toLocaleString("en-IN")}</div>
-          </button>
+          </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const t = sareeTypes.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+        <Button onClick={() => { const t = sareeTypes.find(x => x.code === sel); if (t) onSelect(t.code, t.name); }} disabled={!sel} variant="primary" size="lg" className="flex-[2] h-[46px]">
           Assign Saree Type
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
       </div>
     </PickerShell>
   );
@@ -282,27 +274,22 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
       </div>
       <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
         {LOOMS.map(loom => (
-          <button key={loom} onClick={() => setSel(loom)}
-            style={{
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "16px 12px",
-              border: `2px solid ${sel === loom ? T.royalBurgundy : T.borderDef}`, borderRadius: 12,
-              background: sel === loom ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer"
-            }}>
+          <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
+            className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
               L{loom}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
               Loom {loom}
             </div>
-          </button>
+          </Button>
         ))}
       </div>
       <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} whileHover={sel !== null ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel !== null ? T.royalBurgundy : T.taupe, opacity: sel !== null ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel !== null ? "pointer" : "not-allowed" }}>
+        <Button onClick={() => { if (sel !== null) onSelect(sel); }} disabled={sel === null} variant="primary" size="lg" className="flex-[2] h-[46px]">
           Assign Loom
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
       </div>
     </PickerShell>
   );
@@ -316,26 +303,25 @@ export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: Lo
     <PickerShell title="Assign Factory Loom" onClose={onClose}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 24px" }}>
         {looms.map(l => (
-          <button key={l.id} onClick={() => setSel(l.id)}
-            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `2px solid ${sel === l.id ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, background: sel === l.id ? "rgba(110,15,45,0.05)" : T.warmIvory, cursor: "pointer", textAlign: "left" }}>
+          <Button key={l.id} onClick={() => setSel(l.id)} variant="ghost" fullWidth
+            className={`h-auto justify-start gap-3 p-[12px_14px] rounded-xl border-2 ${sel === l.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Factory size={17} color={T.royalBurgundy} weight="duotone" />
+              <Factory size={17} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{l.location}</div>
             </div>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status.toLowerCase()}</span>
-          </button>
+          </Button>
         ))}
       </div>
       <div style={{ padding: "16px 24px 24px", display: "flex", gap: 10 }}>
-        <motion.button onClick={() => { const l = looms.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
-          whileHover={sel ? { scale: 1.02 } : undefined}
-          style={{ flex: 2, height: 46, background: sel ? T.royalBurgundy : T.taupe, opacity: sel ? 1 : 0.5, color: "#fff", border: "none", borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed" }}>
+        <Button onClick={() => { const l = looms.find(x => x.id === sel); if (l) onSelect(l); }} disabled={!sel}
+          variant="primary" size="lg" className="flex-[2] h-[46px]">
           Assign Factory Loom
-        </motion.button>
-        <button onClick={onClose} style={{ flex: 1, height: 46, background: "transparent", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe, cursor: "pointer" }}>Cancel</button>
+        </Button>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
       </div>
     </PickerShell>
   );

@@ -5,7 +5,7 @@ import {
   Tooltip as RechartsTooltip, ResponsiveContainer,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { ChartBar, Gauge, Yarn, CheckCircle } from "@phosphor-icons/react";
+import { BarChart3 as ChartBar, Gauge, CircleDot as Yarn, CheckCircle2 as CheckCircle } from "lucide-react";
 import { T, F } from "../theme";
 import { Status } from "../types";
 import { STATUS_MIX_META, CLUSTER_FILLS } from "../data";
@@ -228,7 +228,7 @@ export function WeaverAnalytics() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Gauge size={18} color={T.royalBurgundy} weight="fill" />
+                  <Gauge size={18} color={T.royalBurgundy} />
                   <div style={cardTitle}>Quality vs Output</div>
                 </div>
                 <div style={cardSub}>Longer bar = more sarees woven · colour = quality</div>
@@ -267,7 +267,7 @@ export function WeaverAnalytics() {
 
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Yarn size={18} color={T.royalBurgundy} weight="fill" />
+                  <Yarn size={18} color={T.royalBurgundy} />
                   <div style={cardTitle}>Loom Productivity</div>
                 </div>
                 <div style={cardSub}>Sarees per loom · avg {avgPerLoom.toFixed(1)}</div>
@@ -291,7 +291,7 @@ export function WeaverAnalytics() {
 
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <CheckCircle size={18} color={T.green} weight="fill" />
+                  <CheckCircle size={18} color={T.green} />
                   <div style={cardTitle}>Weaving Health</div>
                 </div>
                 <div style={cardSub}>Quality and payout summary</div>

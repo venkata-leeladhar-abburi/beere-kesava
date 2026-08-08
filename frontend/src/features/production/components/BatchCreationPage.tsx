@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { FloppyDisk, CheckCircle } from "@phosphor-icons/react";
+import { Save as FloppyDisk, CheckCircle2 as CheckCircle } from "lucide-react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
@@ -238,7 +238,7 @@ export function BatchCreationPage() {
       {directoryError && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Could not load weavers/factory looms: {directoryError}</span>
-          <button onClick={() => void loadDirectories()} style={{ background: "transparent", border: `1px solid ${T.red}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.red, cursor: "pointer" }}>Retry</button>
+          <Button onClick={() => void loadDirectories()} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
         </div>
       )}
 
@@ -321,10 +321,10 @@ export function BatchCreationPage() {
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
               <Button onClick={() => void handleSaveDraft()} variant="secondary" size="lg">
-                <FloppyDisk size={17} weight="bold" /> Save as Draft
+                <FloppyDisk size={17} /> Save as Draft
               </Button>
               <Button onClick={() => void handleFinalize()} disabled={!canFinalize} variant="primary" size="lg">
-                <CheckCircle size={17} weight="bold" /> Finalize Batch
+                <CheckCircle size={17} /> Finalize Batch
               </Button>
               {savedMsg && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}

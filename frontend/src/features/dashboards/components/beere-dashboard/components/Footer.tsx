@@ -4,6 +4,7 @@ import { ArrowRight, Facebook, Instagram, Youtube, Linkedin, Flower2 as Lotus } 
 import { imgBKLogo, imgSareeFooter } from '../../../../../shared/constants/weaverImages';
 import { T, F, G } from '../theme';
 import { FadeUp } from '../ui';
+import { Button } from '../../../../../shared/ui/primitives';
 
 export function Footer() {
   return (
@@ -27,14 +28,14 @@ export function Footer() {
             <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.88)", lineHeight: 1.85, margin: "0 0 18px", letterSpacing: "0.05px" }}>
               Four generations of passion,<br />woven into every creation.
             </p>
-            <motion.button
-              initial={{ backgroundColor: "rgba(200,155,71,0.09)" }}
-              whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.16)" }}
-              whileTap={{ scale: 0.97 }}
-              style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 16, border: "1px solid rgba(200,155,71,0.32)", backgroundColor: "rgba(200,155,71,0.09)", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.goldLight, letterSpacing: "0.1px" }}
-            >
-              Know Our Story <ArrowRight size={12} color={T.goldLight} />
-            </motion.button>
+            <motion.div initial={{ backgroundColor: "rgba(200,155,71,0.09)" }} whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.16)" }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", borderRadius: 16 }}>
+              <Button
+                variant="tertiary"
+                className="!gap-2 !py-[9px] !px-[18px] !rounded-2xl !border !border-[rgba(200,155,71,0.32)] !bg-[rgba(200,155,71,0.09)] !text-xs !font-medium !text-[#E7C983] hover:!bg-[rgba(200,155,71,0.16)] hover:!text-[#E7C983]"
+              >
+                Know Our Story <ArrowRight size={12} color={T.goldLight} />
+              </Button>
+            </motion.div>
           </div>
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "60%", background: `linear-gradient(to right, #2C0913 0%, rgba(44,9,19,0.7) 35%, rgba(44,9,19,0) 100%)`, zIndex: 1 }} />

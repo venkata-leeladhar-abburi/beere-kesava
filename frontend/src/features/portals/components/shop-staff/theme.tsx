@@ -1,5 +1,6 @@
 
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { Button } from "../../../../shared/ui/primitives";
@@ -17,11 +18,11 @@ export function useCanSeePrices() { return React.useContext(ShopPriceContext); }
 
 // ─── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
-  burg: "#6B1A2A", dark: "#3D0E1A", gold: "#C4923A", green: "#1E6640",
-  crim: "#C0392B", text: "#1A0A0F", muted: "#69635E",
-  bdr: "rgba(139,26,46,0.12)", cream: "#F0E8D0", inp: "#FFF8E7", white: "#FFFFFF",
+  burg: brand.burgundy[900], dark: brand.burgundy[950], gold: brand.gold[500], green: semantic.text.success,
+  crim: semantic.text.danger, text: semantic.text.primary, muted: semantic.text.tertiary,
+  bdr: "rgba(139,26,46,0.12)", cream: semantic.surface.canvas, inp: "#FFF8E7", white: "#FFFFFF",
 };
-const F = { d: "'Plus Jakarta Sans', sans-serif", u: "'Inter', sans-serif", m: "'JetBrains Mono', monospace" };
+const F = { d: fonts.display, u: fonts.ui, m: fonts.code };
 
 // Shop Staff secondary accent — distinguishes this portal's active states from Admin's burgundy.
 const TEAL = "#0F766E";

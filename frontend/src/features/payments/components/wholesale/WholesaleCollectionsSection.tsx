@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, Search, TrendingUp } from "lucide-react";
+import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, TrendingUp } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { PaymentRemindersModal } from "./PaymentRemindersModal";
 import { RecordPaymentModal } from "./RecordPaymentModal";
 import { ViewInvoiceModal } from "./ViewInvoiceModal";
 import { WholesaleTableView } from "./WholesaleTableView";
+import { Button, SearchInput } from "../../../../shared/ui/primitives";
 
 const INVOICES_QUERY_KEY = ["invoices"] as const;
 
@@ -173,10 +174,10 @@ export function WholesaleCollectionsSection() {
             </p>
           </div>
           <DownloadGate>
-            <motion.button whileHover={{ scale: 1.03 }} onClick={() => setDownloadModal(true)}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, cursor: "pointer", flexShrink: 0 }}>
-              <Download size={15} />Download Collections Report
-            </motion.button>
+            <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}
+              className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
+              Download Collections Report
+            </Button>
           </DownloadGate>
         </div>
 
@@ -257,30 +258,27 @@ export function WholesaleCollectionsSection() {
                 <span style={{ fontFamily: F.mono }}>₹{overdueTotal.toLocaleString("en-IN")}</span>
               </span>
             </div>
-            <button onClick={() => setRemindersModal(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: T.crimson, border: "none", borderRadius: 8, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9", cursor: "pointer", flexShrink: 0 }}>
+            <Button variant="danger" size="md" onClick={() => setRemindersModal(true)} className="flex-shrink-0 rounded-[8px]">
               Send Reminders
-            </button>
+            </Button>
           </div>
         )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
-              <motion.button key={key} onClick={() => setView(key as any)}
-                animate={{ backgroundColor: view === key ? T.royalBurgundy : "#FFFFFF" }}
-                transition={{ duration: 0.18 }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: view === key ? "#FFFDF9" : T.taupe, border: "none", cursor: "pointer" }}>
-                <Icon size={13} />{label}
-              </motion.button>
+              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
+                onClick={() => setView(key as any)}
+                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
+                {label}
+              </Button>
             ))}
           </div>
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
           <DropBtn value={filterType} options={["All Invoice Types", "Wholesale", "Retail", "Export"]} onChange={setFilterType} />
-          <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..."
-              style={{ width: "100%", padding: "8px 12px 8px 32px", border: `1px solid ${T.borderDef}`, borderRadius: 7, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#fff", outline: "none", boxSizing: "border-box" as const }} />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
           </div>
         </div>
 

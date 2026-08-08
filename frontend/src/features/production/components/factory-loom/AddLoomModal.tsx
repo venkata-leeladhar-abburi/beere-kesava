@@ -1,32 +1,24 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { X } from "lucide-react";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F, EASE } from "./theme";
+import { Button, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 
 // ── Form helpers ─────────────────────────────────────────────────────────────
 function FI({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
   return (
-    <div>
-      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
-        {label}{required && <span style={{ color: T.crimson }}> *</span>}
-      </label>
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }} />
-    </div>
+    <Field label={label} required={required}>
+      <Input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+    </Field>
   );
 }
 function FS({ label, value, onChange, options, required }: { label: string; value: string; onChange: (v: string) => void; options: string[]; required?: boolean }) {
   return (
-    <div>
-      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
-        {label}{required && <span style={{ color: T.crimson }}> *</span>}
-      </label>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const, appearance: "none" as const }}>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </div>
+    <Field label={label} required={required}>
+      <Select value={value} onValueChange={onChange}>
+        {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+      </Select>
+    </Field>
   );
 }
 
@@ -49,9 +41,7 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Enter details for this loom</div>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, width: 34, height: 34, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={16} color="#FFF" />
-          </button>
+          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm" className="bg-white/12 text-white hover:bg-white/20" />
         </div>
         <div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
@@ -66,18 +56,15 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             <FS label="Status" value={form.status} onChange={v => patch({ status: v })} options={["active", "idle", "maintenance"]} />
             <FI label="Installed Year" value={form.installedYear} onChange={v => patch({ installedYear: v })} placeholder="2020" />
           </div>
-          <div>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Notes</label>
-            <textarea value={form.notes} onChange={e => patch({ notes: e.target.value })} rows={3} placeholder="Any notes..."
-              style={{ width: "100%", borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "10px 14px", fontFamily: F.ui, fontSize: 13, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
-          </div>
+          <Field label="Notes">
+            <Textarea value={form.notes} onChange={e => patch({ notes: e.target.value })} rows={3} placeholder="Any notes..." />
+          </Field>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, height: 46, borderRadius: 12, border: `1.5px solid ${T.borderDef}`, background: "transparent", fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, cursor: "pointer" }}>Cancel</button>
-            <motion.button disabled={!valid} onClick={() => { onAdd({ id: editLoom?.id || `FL-${Date.now()}`, ...form } as FactoryLoom); onClose(); }}
-              whileHover={{ scale: valid ? 1.02 : 1 }} whileTap={{ scale: 0.98 }}
-              style={{ flex: 2, height: 46, borderRadius: 12, border: "none", background: valid ? T.royalBurgundy : "#C0C0C0", color: "#FFF", fontFamily: F.ui, fontWeight: 700, fontSize: 14, cursor: valid ? "pointer" : "not-allowed" }}>
+            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
+            <Button disabled={!valid} onClick={() => { onAdd({ id: editLoom?.id || `FL-${Date.now()}`, ...form } as FactoryLoom); onClose(); }}
+              variant="primary" size="lg" className="flex-[2] h-[46px]">
               {editLoom ? "Save Changes" : "Add Loom"}
-            </motion.button>
+            </Button>
           </div>
         </div>
       </motion.div>

@@ -4,6 +4,7 @@ import { FileText, Factory } from "lucide-react";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
 import { STATUS_CFG, LoomBatch, LoomSaree } from "./types";
+import { Button } from "../../../../shared/ui/primitives";
 
 // ── Loom Card ─────────────────────────────────────────────────────────────────
 export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom; batches: LoomBatch[]; sarees: LoomSaree[]; onView: () => void }) {
@@ -45,10 +46,10 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
         </div>
       </div>
       <div style={{ padding: "0 22px 20px" }}>
-        <motion.button onClick={onView} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          style={{ width: "100%", height: 42, borderRadius: 12, border: `1.5px solid ${T.royalBurgundy}`, background: "transparent", color: T.royalBurgundy, fontFamily: F.ui, fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-          <FileText size={15} /> View Details
-        </motion.button>
+        <Button onClick={onView} variant="secondary" size="md" iconLeft={FileText} fullWidth
+          className="border-[1.5px] border-[#6E0F2D] text-[#6E0F2D] bg-transparent hover:bg-[rgba(110,15,45,0.05)]">
+          View Details
+        </Button>
       </div>
     </motion.div>
   );

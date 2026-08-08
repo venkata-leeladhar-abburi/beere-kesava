@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { Button } from "../../../../shared/ui/primitives";
 import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
@@ -37,6 +38,7 @@ export function RateHistorySection() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [histPage, setHistPage] = useState(1);
 
   function loadHistory() {
     setIsLoading(true);
@@ -82,15 +84,9 @@ export function RateHistorySection() {
           justifyContent: "space-between", gap: 16, borderLeft: `4px solid ${T.crimson}`,
         }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load rate change history.</span>
-          <button
-            onClick={loadHistory}
-            style={{
-              background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 999,
-              padding: "7px 16px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, cursor: "pointer",
-            }}
-          >
+          <Button onClick={loadHistory} variant="primary" size="sm">
             Retry
-          </button>
+          </Button>
         </div>
       ) : (
       <div style={cardStyle}>
@@ -135,9 +131,34 @@ export function RateHistorySection() {
             </span>
           </div>
 
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-            {history.length} {history.length === 1 ? "entry" : "entries"}
-          </span>
+          {/* Pagination */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Button
+              variant="secondary" size="sm" iconLeft={ChevronLeft}
+              className="rounded-[8px] text-[var(--text-tertiary)]"
+              onClick={() => setHistPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </Button>
+            {[1, 2, 3].map(p => (
+              <Button
+                key={p}
+                variant={histPage === p ? "primary" : "tertiary"}
+                size="sm"
+                className="h-[30px] w-[30px] rounded-[8px] p-0"
+                onClick={() => setHistPage(p)}
+              >
+                {p}
+              </Button>
+            ))}
+            <Button
+              variant="secondary" size="sm" iconRight={ChevronRight}
+              className="rounded-[8px] text-[var(--text-tertiary)]"
+              onClick={() => setHistPage(p => Math.min(3, p + 1))}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
       )}

@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence } from 'motion/react';
 import { T, F, NUM, G, EASE , DARK_MAROON } from './theme';
 import type { IconComponent } from "../../../../lib/icon";
 import { useIsMobile } from "../../../../hooks/useResponsive";
+import { Button } from "../../../../shared/ui/primitives";
 
 function FadeUp({
   children, delay = 0, style,
@@ -317,23 +318,20 @@ function SectionHeader({ title, actionText = "View All →", small, onAction }: 
           {title}
         </span>
       </div>
-      <motion.button
-        onClick={onAction}
+      <motion.div
         whileHover={{ scale: 1.04, backgroundColor: "rgba(110,15,45,0.06)", x: onAction ? 0 : 3 }}
         whileTap={onAction ? { scale: 0.97 } : undefined}
         transition={{ duration: 0.18 }}
-        style={{
-          display: "flex", alignItems: "center", gap: 5,
-          fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.royalBurgundy,
-          cursor: onAction ? "pointer" : "default",
-          padding: "7px 16px", borderRadius: 10,
-          border: `1px solid ${onAction ? "rgba(110,15,45,0.16)" : "transparent"}`,
-          background: onAction ? "rgba(110,15,45,0.04)" : "rgba(0,0,0,0)",
-          letterSpacing: "0.1px",
-        }}
+        style={{ borderRadius: 10, border: `1px solid ${onAction ? "rgba(110,15,45,0.16)" : "transparent"}` }}
       >
-        {actionText}
-      </motion.button>
+        <Button
+          onClick={onAction}
+          variant="tertiary"
+          className="!gap-[5px] !py-[7px] !px-4 !rounded-[10px] !border-none !bg-transparent !text-[#6E0F2D] !text-xs !font-medium !tracking-[0.1px] hover:!bg-transparent"
+        >
+          {actionText}
+        </Button>
+      </motion.div>
     </motion.div>
   );
 }

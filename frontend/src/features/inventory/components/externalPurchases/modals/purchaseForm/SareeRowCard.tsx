@@ -197,7 +197,7 @@ export function SareeRowCard({
             >
               <UploadCloud size={16} />
               <span style={{ fontFamily: F.ui, fontSize: 12 }}>Upload photo</span>
-              <input
+              <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
@@ -207,7 +207,7 @@ export function SareeRowCard({
                   reader.onload = (ev) => updateSareeRow(s._uid, { imageUrl: ev.target?.result as string });
                   reader.readAsDataURL(file);
                 }}
-                style={{ display: "none" }}
+                containerClassName="hidden"
               />
             </label>
           )}

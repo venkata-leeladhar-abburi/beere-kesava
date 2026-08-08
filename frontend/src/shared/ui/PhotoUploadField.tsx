@@ -58,7 +58,7 @@ export function PhotoUploadField({
   return (
     <div>
       <label style={{ fontFamily: "inherit", fontSize: 14, fontWeight: 600, display: "block", marginBottom: 8 }}>{labelText}</label>
-      <div style={{ fontSize: 13, color: "#8B7060", marginBottom: 14, marginTop: -4 }}>{helpText}</div>
+      <div style={{ fontSize: 13, color: "#69635E", marginBottom: 14, marginTop: -4 }}>{helpText}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
         <button
           type="button"
@@ -83,7 +83,7 @@ export function PhotoUploadField({
             </>
           )}
         </button>
-        <div style={{ fontSize: 13, color: "#8B7060", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 13, color: "#69635E", lineHeight: 1.6 }}>
           JPG or PNG · Max 5MB
           {error && <div style={{ color: "#C0392B", marginTop: 4 }}>{error}</div>}
         </div>

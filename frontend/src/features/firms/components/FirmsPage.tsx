@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
   Plus, Edit, Eye, X, Building2, CreditCard, User, Phone,
-  MapPin, Hash, IndianRupee, Search, Check,
+  MapPin, Hash, IndianRupee, Check,
   TrendingUp, TrendingDown, Minus, Upload, ChevronDown, ChevronUp,
   PlusCircle, FileSpreadsheet, ArrowRight, AlertTriangle,
 } from "lucide-react";
@@ -15,6 +15,7 @@ import {
 
 import { T, F, EASE } from "./theme";
 import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
+import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 
 
 
@@ -110,10 +111,14 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "flex-end" as const }}>
-                    <button onClick={() => onGoToFirm?.(r.firm.id)}
-                      style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <ArrowRight size={13} color={T.taupe} />
-                    </button>
+                    <IconButton
+                      icon={ArrowRight}
+                      label={`Go to ${r.firm.firmName}`}
+                      variant="tertiary"
+                      size="sm"
+                      onClick={() => onGoToFirm?.(r.firm.id)}
+                      className="size-7"
+                    />
                   </div>
                 </motion.div>
               );
@@ -230,12 +235,12 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
 
       {/* Actions */}
       <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 8 }}>
-        <button onClick={onView} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${T.borderDef}`, background: T.warmIvory, fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Eye size={14} /> View Details
-        </button>
-        <button onClick={onEdit} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${T.royalBurgundy}`, background: "rgba(110,15,45,0.04)", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Edit size={14} /> Edit
-        </button>
+        <Button onClick={onView} variant="tertiary" size="sm" iconLeft={Eye} fullWidth>
+          View Details
+        </Button>
+        <Button onClick={onEdit} variant="secondary" size="sm" iconLeft={Edit} fullWidth>
+          Edit
+        </Button>
       </div>
     </motion.div>
   );
@@ -342,16 +347,14 @@ export function FirmsPage() {
       {/* Toolbar */}
       <div style={{ padding: "88px 56px 0", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1, position: "relative", maxWidth: 380 }}>
-          <Search size={15} color={T.taupe} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..."
-            style={{ width: "100%", boxSizing: "border-box", height: 40, paddingLeft: 38, paddingRight: 12, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, background: "#FFF", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, outline: "none" }} />
+          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
         </div>
         <div style={{ marginLeft: "auto" }}>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            onClick={() => setModal({ type: "create" })}
-            style={{ height: 40, padding: "0 20px", borderRadius: 10, border: "none", background: T.royalBurgundy, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-            <Plus size={16} /> Add New Firm
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+            <Button variant="primary" iconLeft={Plus} onClick={() => setModal({ type: "create" })}>
+              Add New Firm
+            </Button>
+          </motion.div>
         </div>
       </div>
 

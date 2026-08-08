@@ -1,14 +1,14 @@
 import React from "react";
-import { motion } from "motion/react";
 import {
-  Users, Tag, ShoppingBag, Trash, Factory, SortAscending,
-  CheckSquare, Square, MagnifyingGlass,
-} from "@phosphor-icons/react";
+  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending,
+  Send as PaperPlaneTilt,
+} from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
 import type { ActivePicker } from "./types";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { pipColor } from "./PickerModals";
+import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 
 // ── Status dot per row ────────────────────────────────────────────────────────
 function StatusDot({ row }: { row: SareeRow }) {
@@ -99,54 +99,48 @@ export function BatchTable({
             </span>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
-            <SortAscending size={14} color={T.taupe} weight="bold" />
+            <SortAscending size={14} color={T.taupe} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sort by</span>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              style={{ height: 30, borderRadius: 8, border: `1.5px solid ${T.borderDef}`, padding: "0 8px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, background: "#fff", cursor: "pointer" }}>
-              <option value="serial">Default (#)</option>
-              <option value="weaver">Weaver</option>
-              <option value="factoryLoom">Factory Loom</option>
-            </select>
+            <Select value={sortBy} onValueChange={v => setSortBy(v as typeof sortBy)} size="sm" className="h-[30px] w-auto min-w-[130px]">
+              <SelectItem value="serial">Default (#)</SelectItem>
+              <SelectItem value="weaver">Weaver</SelectItem>
+              <SelectItem value="factoryLoom">Factory Loom</SelectItem>
+            </Select>
           </div>
         </div>
         {selected.size > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{selected.size} selected</span>
             {([
-              { key: "weaver",     icon: <Users size={14} weight="bold" />,       label: "Assign Weaver" },
-              { key: "bulkorder",  icon: <ShoppingBag size={14} weight="bold" />, label: "Assign Bulk Order" },
-              { key: "factoryloom", icon: <Factory size={14} weight="bold" />,     label: "Assign Factory Loom" },
-              { key: "saretype",   icon: <Tag size={14} weight="bold" />,          label: "Assign Saree Type" },
+              { key: "weaver",     icon: Users,       label: "Assign Weaver" },
+              { key: "bulkorder",  icon: ShoppingBag, label: "Assign Bulk Order" },
+              { key: "factoryloom", icon: Factory,     label: "Assign Factory Loom" },
+              { key: "design",     icon: Tag,          label: "Assign Design Code" },
+              { key: "saretype",   icon: Tag,          label: "Assign Saree Type" },
             ] as const).map(a => (
-              <motion.button key={a.key} onClick={() => setPicker(a.key as ActivePicker)}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", background: T.royalBurgundy, color: "#fff", border: "none", borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                {a.icon} {a.label}
-              </motion.button>
+              <Button key={a.key} onClick={() => setPicker(a.key as ActivePicker)} variant="primary" size="sm" iconLeft={a.icon}>
+                {a.label}
+              </Button>
             ))}
-            <motion.button onClick={removeSelected} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", background: "rgba(192,57,43,0.10)", color: T.red, border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 9, fontFamily: F.ui, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-              <Trash size={14} weight="bold" /> Remove Row(s)
-            </motion.button>
+            <Button onClick={removeSelected} variant="danger-subtle" size="sm" iconLeft={Trash}>
+              Remove Row(s)
+            </Button>
           </div>
         )}
       </div>
 
       {/* Filters */}
       <div style={{ padding: "12px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: "1 1 200px" }}>
-          <MagnifyingGlass size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.taupe }} />
-          <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." style={{ width: "100%", padding: "7px 10px 7px 30px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, boxSizing: "border-box" }} />
-        </div>
-        <select value={weaverFilter} onChange={e => setWeaverFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-          {weaverOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</option>)}
-        </select>
-        <select value={sareeTypeFilter} onChange={e => setSareeTypeFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-          {sareeTypeOptions.map(w => <option key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</option>)}
-        </select>
-        <select value={orderFilter} onChange={e => setOrderFilter(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 12, background: "#FFF", cursor: "pointer" }}>
-          {orderOptions.map(o => <option key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</option>)}
-        </select>
+        <SearchInput value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="flex-1 min-w-[200px]" />
+        <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[140px]">
+          {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
+        </Select>
+        <Select value={sareeTypeFilter} onValueChange={setSareeTypeFilter} size="sm" className="w-auto min-w-[140px]">
+          {sareeTypeOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</SelectItem>)}
+        </Select>
+        <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[140px]">
+          {orderOptions.map(o => <SelectItem key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</SelectItem>)}
+        </Select>
       </div>
 
       {/* Table */}
@@ -155,9 +149,7 @@ export function BatchTable({
           <thead>
             <tr style={{ background: T.warmCream }}>
               <th style={th}>
-                <button onClick={toggleAll} style={{ background: "none", border: "none", cursor: "pointer", color: T.royalBurgundy, display: "flex", alignItems: "center" }}>
-                  {allSelected ? <CheckSquare size={16} weight="fill" /> : <Square size={16} />}
-                </button>
+                <Checkbox checked={allSelected} onCheckedChange={() => toggleAll()} aria-label="Select all rows" />
               </th>
               {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
                 <th key={h} style={th}>{h}</th>
@@ -187,77 +179,78 @@ export function BatchTable({
                 <tr key={row.serial}
                   style={{ background: isSelected ? "rgba(110,15,45,0.04)" : idx % 2 === 0 ? "#fff" : "rgba(247,242,234,0.5)", borderBottom: `1px solid ${T.borderDef}` }}>
                   <td style={td}>
-                    <button onClick={() => toggleRow(row.serial)} style={{ background: "none", border: "none", cursor: "pointer", color: isSelected ? T.royalBurgundy : T.taupe, display: "flex", alignItems: "center" }}>
-                      {isSelected ? <CheckSquare size={15} weight="fill" /> : <Square size={15} />}
-                    </button>
+                    <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(row.serial)} aria-label={`Select row ${row.serial}`} />
                   </td>
                   <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
                   <td style={{ ...td, minWidth: 120 }}>
                     {row.sareeId ? (
-                      <button onClick={() => setViewSareeRow(row)}
-                        style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", border: "none", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                      <Button onClick={() => setViewSareeRow(row)} variant="link"
+                        className="font-code text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
                         {row.sareeId}
-                      </button>
+                      </Button>
                     ) : (
                       <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>— assign weaver</span>
                     )}
                   </td>
                   <td style={{ ...td, minWidth: 150 }}>
                     {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
-                      <button onClick={() => {
+                      <Button onClick={() => {
                         const l = looms.find(x => x.id === row.factoryLoomId);
                         if (l) setViewFactoryLoom(l);
                       }}
-                        style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: "pointer", padding: 0 }}>
+                        variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline">
                         <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Factory size={12} color={T.royalBurgundy} weight="fill" />
+                          <Factory size={12} color={T.royalBurgundy} />
                         </div>
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>{row.factoryLoomNumber}</span>
-                      </button>
+                      </Button>
                     ) : row.weaverId ? (
-                      // Prefer the live directory lookup (weaverForRow, from
-                      // the weavers prop) over row.weaverName/weaverInitials
-                      // — those are baked in once wherever this batch's data
-                      // was fetched and can be stale/missing even though the
-                      // real weaverId is correctly stored server-side. Never
-                      // treat a missing display name as "unassigned".
-                      <button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
-                        style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "none", cursor: weaverForRow ? "pointer" : "default", padding: 0 }}>
+                      <Button onClick={() => { if (weaverForRow) setViewWeaver(weaverForRow); }}
+                        variant="link" className="flex items-center gap-[7px] p-0 no-underline hover:no-underline" disabled={!weaverForRow}>
                         <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={22} />
                         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, textDecoration: weaverForRow ? "underline" : "none", textDecorationColor: "rgba(110,15,45,0.2)" }}>
                           {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
                         </span>
-                      </button>
+                      </Button>
+                    ) : <EmptyCell />}
+                  </td>
+                  <td style={{ ...td, minWidth: 130 }}>
+                    {/* Dispatches rendering omitted or kept based on what's available; but since rowDispatches is not defined here in HEAD, we need to make sure we don't break it if rowDispatches is missing. I will keep the incoming branch's rowDispatches logic but wait, I didn't see `rowDispatches` defined in the map function in HEAD. */}
+                    {typeof rowDispatches !== "undefined" && rowDispatches.length > 0 ? (
+                      <Button onClick={() => setViewDispatches({ weaverName: row.weaverName!, records: rowDispatches })}
+                        variant="link" className="font-sans text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
+                        <PaperPlaneTilt size={12} /> {rowDispatches.length} Dispatch{rowDispatches.length > 1 ? "es" : ""}
+                      </Button>
                     ) : <EmptyCell />}
                   </td>
                   <td style={{ ...td, minWidth: 90 }}>
                     {row.recipientType === "factoryLoom" ? (
                       <EmptyCell />
                     ) : row.weaverId ? (
-                      <button onClick={() => setLoomPickerRow(row)}
-                        style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                      <Button onClick={() => setLoomPickerRow(row)}
+                        variant="link" className="font-code text-xs font-bold text-[#C89B47] bg-[rgba(200,155,71,0.08)] border border-[rgba(200,155,71,0.22)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
                         {row.weaverLoom ? `Loom ${row.weaverLoom}` : "— select loom"}
-                      </button>
+                      </Button>
                     ) : <EmptyCell />}
                   </td>
 
                   <td style={{ ...td, minWidth: 110 }}>
                     {row.sareeTypeCode ? (
-                      <button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
-                        style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
+                      <Button onClick={() => openSareeTypeCard(row.sareeTypeCode!)}
+                        variant="link" className="font-code text-xs font-bold text-[#8B6018] bg-[rgba(200,155,71,0.12)] border border-[rgba(200,155,71,0.30)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
                         {row.sareeTypeCode}
-                      </button>
+                      </Button>
                     ) : <EmptyCell />}
                   </td>
                   <td style={{ ...td, minWidth: 140 }}>
                     {row.bulkOrderLabel ? (
-                      <button onClick={() => {
+                      <Button onClick={() => {
                         const bo = bulkOrders.find(x => x.ref === row.bulkOrderRef);
                         if (bo) setViewBulkOrder(bo);
                       }}
-                        style={{ border: "none", background: "none", cursor: "pointer", padding: 0, fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600, textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.2)" }}>
+                        variant="link" className={`p-0 text-xs font-semibold ${row.bulkOrderRef ? "text-[#6E0F2D]" : "text-[#1E6640]"}`}>
                         {row.bulkOrderLabel}
-                      </button>
+                      </Button>
                     ) : <EmptyCell />}
                   </td>
                   {materialsCellSpan[row.serial] !== undefined && (

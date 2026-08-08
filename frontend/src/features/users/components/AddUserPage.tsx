@@ -21,6 +21,7 @@ import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
 import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
 import { ApiError } from "../../../shared/api/client";
+import { Button } from "../../../shared/ui/primitives";
 import {
   BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
   backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
@@ -466,7 +467,7 @@ export function AddUserPage() {
         {loadError && (
           <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span>Could not load users from the server: {loadError}</span>
-            <button onClick={() => void loadUsers()} style={{ background: "transparent", border: `1px solid ${T.crimson}`, borderRadius: 8, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, cursor: "pointer" }}>Retry</button>
+            <Button variant="danger-subtle" size="sm" onClick={() => void loadUsers()}>Retry</Button>
           </div>
         )}
         {loading && !loadError && (

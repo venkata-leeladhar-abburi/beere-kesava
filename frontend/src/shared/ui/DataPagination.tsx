@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { brand, semantic, fonts } from "../../design-system/tokens";
 
 // ─── Shared pagination ────────────────────────────────────────────────────────
 // One control + one hook, reused by every tabular / inventory view in the app so
@@ -7,13 +8,13 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 // rows at once.
 
 const T = {
-  royalBurgundy: "#6E0F2D",
+  royalBurgundy: brand.burgundy[900],
   luxuryBrown: "#3B2314",
-  taupe: "#69635E",
-  silkCream: "#F7F2EA",
+  taupe: semantic.text.tertiary,
+  silkCream: semantic.surface.canvas,
   borderDef: "rgba(110,15,45,0.10)",
 };
-const F = { ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
+const F = { ui: fonts.ui, mono: fonts.code };
 
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 

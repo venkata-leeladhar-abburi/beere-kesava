@@ -149,7 +149,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const navigateMobile = navigate;
 
   const dashboardContent = isMobile ? (
-    <div style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
       <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} />
       {PAGE_SECTIONS[mobileTab] && (
@@ -223,7 +223,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       </Suspense>
     </div>
   ) : (
-    <div style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (

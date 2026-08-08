@@ -151,11 +151,11 @@ export function SupplierSection({
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {form.invoiceFileName || "Choose file from supplier..."}
             </span>
-            <input
+            <Input
               type="file"
               accept="application/pdf,image/*"
               onChange={(e) => handleInvoiceFile(e.target.files?.[0] ?? null)}
-              style={{ display: "none" }}
+              containerClassName="hidden"
             />
           </label>
           {form.invoiceFileName && (

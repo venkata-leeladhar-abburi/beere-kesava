@@ -1,4 +1,5 @@
 
+import { brand, fonts, semantic } from '@/design-system/tokens';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
@@ -37,22 +38,22 @@ export { SignatureCanvas };
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 
 const C = {
-  burg: "#6E0F2D",
-  dark: "#3D0E1A",
-  gold: "#C89B47",
-  green: "#1E6640",
-  crim: "#C0392B",
-  text: "#3B2314",
-  muted: "#69635E",
-  bdr: "rgba(110,15,45,0.10)",
-  cream: "#F7F2EA",
-  inp: "#FFFDF9",
+  burg: brand.burgundy[900],
+  dark: brand.burgundy[950],
+  gold: brand.gold[500],
+  green: semantic.text.success,
+  crim: semantic.text.danger,
+  text: semantic.text.primary,
+  muted: semantic.text.tertiary,
+  bdr: "rgba(139,26,46,0.12)",
+  cream: semantic.surface.canvas,
+  inp: "#FFF8E7",
   white: "#FFFFFF",
 };
 const F = {
-  d: "'Plus Jakarta Sans', sans-serif",
-  u: "'Inter', sans-serif",
-  m: "'JetBrains Mono', monospace",
+  d: fonts.display,
+  u: fonts.ui,
+  m: fonts.code,
 };
 
 export type PageId = "batches" | "confirm" | "designs" | "warp" | "payments" | "notifications";

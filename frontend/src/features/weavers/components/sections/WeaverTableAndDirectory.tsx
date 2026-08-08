@@ -2,13 +2,14 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { Rows, Eye as PhEye, MapPin as PhMapPin } from "@phosphor-icons/react";
+import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG, Status } from "../types";
 import { WEAVERS, TABLE_COLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndListViews";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { Button } from "../../../../shared/ui/primitives";
 
 // Real roster + live per-weaver stats (GET /weavers, GET /weavers/:id/stats).
 // The stats endpoint has no monthly breakdown, total-paid, or last-active
@@ -82,7 +83,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
           <thead>
             <tr style={{ background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
               {TABLE_COLS.map(c => (
-                <th key={c} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
+                <th key={c} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", textAlign: "left", padding: "15px 18px", fontWeight: 500, whiteSpace: "nowrap" }}>{c}</th>
               ))}
             </tr>
           </thead>
@@ -100,14 +101,14 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span></td>
                   <td style={TD}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <PhMapPin size={14} color={T.taupe} weight="fill" />
+                      <PhMapPin size={14} color={T.taupe} />
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.village}</span>
                     </div>
                   </td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span></td>
                   <td style={{ ...TD, textAlign: "center" }}>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      <Rows size={15} color={T.taupe} weight="regular" />
+                      <Rows size={15} color={T.taupe} />
                       <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{r.looms}</span>
                     </div>
                   </td>
@@ -122,14 +123,14 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
                   <td style={TD}><span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span></td>
                   <td style={TD}><span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span></td>
                   <td style={TD}>
-                    <motion.button
+                    <Button
                       onClick={() => onSelect(r.id)}
-                      whileHover={{ scale: 1.04, background: "rgba(110,15,45,0.10)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", color: T.royalBurgundy, border: `1.5px solid rgba(110,15,45,0.18)`, borderRadius: 10, padding: "9px 15px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
                     >
-                      <PhEye size={18} weight="regular" /> View
-                    </motion.button>
+                      <PhEye size={18} /> View
+                    </Button>
                   </td>
                 </motion.tr>
               );
@@ -139,7 +140,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <motion.button onClick={() => setShowAll(true)} whileHover={{ scale: 1.02 }} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.royalBurgundy, background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(110,15,45,0.35)" }}>Load More Weavers</motion.button>
+          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
         </div>
       )}
     </div>

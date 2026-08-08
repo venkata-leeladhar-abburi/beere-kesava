@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, XOctagon } from "lucide-react";
-import { Package, CheckCircle, XCircle, Clock, WarningCircle, ChartBar } from "@phosphor-icons/react";
+import { Package, CheckCircle2 as CheckCircle, XCircle, Clock, AlertCircle as WarningCircle, BarChart3 as ChartBar } from "lucide-react";
 import { T, F } from "../theme";
 import { WARP_REQUESTS } from "../data";
 import { FadeUp, ActionDialog } from "../common/primitives";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
+import { Button, Textarea } from "../../../../shared/ui/primitives";
 
 export function WarpRequestsSection() {
   const queryClient = useQueryClient();
@@ -46,7 +47,7 @@ export function WarpRequestsSection() {
           <div style={{ background: `linear-gradient(100deg, #3D0E1A 0%, #6E0F2D 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <WarningCircle size={26} color="#FFFDF9" weight="fill" />
+                <WarningCircle size={26} color="#FFFDF9" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Warp Requests Waiting for Approval</div>
@@ -54,7 +55,7 @@ export function WarpRequestsSection() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
-              <Clock size={18} color="#F4A6A6" weight="fill" />
+              <Clock size={18} color="#F4A6A6" />
               <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>3 requests pending</span>
             </div>
           </div>
@@ -95,7 +96,7 @@ export function WarpRequestsSection() {
                   {/* Raised */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Clock size={20} color={T.royalBurgundy} weight="regular" />
+                      <Clock size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
@@ -106,7 +107,7 @@ export function WarpRequestsSection() {
                   {/* Material */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Package size={20} color={T.royalBurgundy} weight="regular" />
+                      <Package size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
@@ -118,7 +119,7 @@ export function WarpRequestsSection() {
                   {/* Progress */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <ChartBar size={20} color={T.royalBurgundy} weight="regular" />
+                      <ChartBar size={20} color={T.royalBurgundy} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 6 }}>Batch progress</div>
@@ -146,24 +147,22 @@ export function WarpRequestsSection() {
 
                 {/* Action buttons */}
                 <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>
-                  <motion.button
+                  <Button
                     onClick={() => setDecision({ type: "approve", req: r })}
-                    whileHover={{ scale: 1.02, backgroundColor: "#145230" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: T.green, color: "#FFFFFF", border: "none", borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                    variant="primary"
+                    className="flex-1 rounded-xl bg-[#1F774E] hover:bg-[#15603D] shadow-none"
                   >
-                    <CheckCircle size={22} weight="fill" />
+                    <CheckCircle size={22} />
                     Approve
-                  </motion.button>
-                  <motion.button
+                  </Button>
+                  <Button
                     onClick={() => setDecision({ type: "reject", req: r })}
-                    whileHover={{ scale: 1.02, backgroundColor: "rgba(192,57,43,0.08)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: T.crimson, background: "rgba(192,57,43,0.05)", border: `1.5px solid rgba(192,57,43,0.30)`, borderRadius: 12, padding: "14px 12px", fontFamily: F.ui, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                    variant="danger-subtle"
+                    className="flex-1 rounded-xl"
                   >
-                    <XCircle size={22} weight="fill" />
+                    <XCircle size={22} />
                     Reject
-                  </motion.button>
+                  </Button>
                 </div>
               </motion.div>
             ))}
@@ -178,11 +177,12 @@ export function WarpRequestsSection() {
               {decision.type === "approve" ? <Check size={32} color={T.green} /> : <XOctagon size={32} color={T.crimson} />}
               Confirm {decision.type} for <b>{decision.req.weaver?.name || decision.req.weaverId}</b> ({decision.req.id}) requesting <b>{decision.req.warpType} ({decision.req.lengthMeters}m)</b> {decision.req.loomNumber ? `for Loom ${decision.req.loomNumber}` : ""}.
             </div>
-            {decision.type === "reject" && <textarea placeholder="Reason for rejection" style={{ marginTop: 18, width: "100%", minHeight: 94, border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: 14, fontFamily: F.ui }} />}
+            {decision.type === "reject" && <Textarea placeholder="Reason for rejection" className="mt-[18px] min-h-[94px]" />}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 22 }}>
-              <button onClick={() => setDecision(null)} style={{ padding: "12px 18px", borderRadius: 12, border: `1px solid ${T.borderDef}`, background: "#fff", color: T.taupe, fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
-              <button
+              <Button onClick={() => setDecision(null)} variant="secondary" className="rounded-xl">Cancel</Button>
+              <Button
                 disabled={approveMutation.isPending || rejectMutation.isPending}
+                loading={approveMutation.isPending || rejectMutation.isPending}
                 onClick={() => {
                   if (decision.type === "approve") {
                     approveMutation.mutate(decision.req.id);
@@ -190,10 +190,11 @@ export function WarpRequestsSection() {
                     rejectMutation.mutate(decision.req.id);
                   }
                 }}
-                style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: decision.type === "approve" ? T.green : T.crimson, color: "#fff", fontFamily: F.ui, fontWeight: 700, cursor: "pointer" }}
+                variant={decision.type === "approve" ? "primary" : "danger"}
+                className={decision.type === "approve" ? "rounded-xl bg-[#1F774E] hover:bg-[#15603D]" : "rounded-xl"}
               >
                 {decision.type === "approve" ? "Approve & issue material" : "Reject request"}
-              </button>
+              </Button>
             </div>
           </ActionDialog>
         )}

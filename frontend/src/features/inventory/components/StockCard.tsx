@@ -2,8 +2,8 @@ import React from "react";
 import { motion } from "motion/react";
 import { Printer as LucidePrinter } from "lucide-react";
 import {
-  CheckCircle, Scales, CalendarBlank, Palette, Tag, ShoppingBag, Stack,
-} from "@phosphor-icons/react";
+  CheckCircle2 as CheckCircle, Scale as Scales, Calendar as CalendarBlank, Palette, Tag, ShoppingBag, Layers as Stack,
+} from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 
 const T = {
@@ -80,10 +80,10 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 99, padding: "5px 12px", flexShrink: 0 }}>
           {s.status === "available"
-            ? <CheckCircle size={13} color={cfg.color} weight="fill" />
+            ? <CheckCircle size={13} color={cfg.color} />
             : s.status === "sold"
-            ? <ShoppingBag size={13} color={cfg.color} weight="fill" />
-            : <Stack size={13} color={cfg.color} weight="fill" />
+            ? <ShoppingBag size={13} color={cfg.color} />
+            : <Stack size={13} color={cfg.color} />
           }
           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
         </div>

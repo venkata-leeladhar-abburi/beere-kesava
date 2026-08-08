@@ -21,7 +21,7 @@ export function SareeInventoryTable({ rows }: { rows: (SareeTag & { purchaseId: 
           <thead>
             <tr style={{ background: T.silkCream }}>
               {["Photo", "Saree ID", "Serial No.", "Purchase Order", "Quantity", "Type", "Colour", "Weight", "Purchase Date", "Buying Price", "Sell %", "Selling Price", "Profit"].map(h => (
-                <th key={h} style={{ padding: "11px 14px", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
+                <th key={h} style={{ padding: "11px 14px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textAlign: "left", letterSpacing: "0.8px" }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>

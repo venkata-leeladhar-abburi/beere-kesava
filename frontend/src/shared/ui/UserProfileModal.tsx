@@ -51,7 +51,8 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
             label="Close"
             onClick={onClose}
             variant="ghost"
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/12 text-white hover:bg-white/20"
+            shape="circle"
+            className="absolute top-4 right-4 border-none bg-white/12 text-white hover:bg-white/20 hover:text-white"
           />
 
           <div style={{ width: 85, height: 85, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
@@ -89,7 +90,11 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div style={{ marginTop: 24, textAlign: "center" as const }}>
-            <Button onClick={onClose} className="bg-[#6B1A2A] text-white rounded-full px-6 shadow-[0_4px_14px_rgba(107,26,42,0.2)]">
+            <Button
+              onClick={onClose}
+              variant="primary"
+              className="!rounded-full !bg-[#6B1A2A] !px-6 !shadow-[0_4px_14px_rgba(107,26,42,0.2)] hover:!bg-[#5A1523]"
+            >
               Close Profile
             </Button>
           </div>

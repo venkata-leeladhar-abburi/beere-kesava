@@ -1,8 +1,9 @@
 import React from "react";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { F, GrnBatch, MaterialRowState, T } from "./theme";
 import { PillTab } from "./primitives";
 import { GrnBatchSelector } from "./GrnBatchSelector";
+import { Button, IconButton, Input, NumberInput } from "../../../../shared/ui/primitives";
 
 // ── One material row editor ──────────────────────────────────────────────────
 export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRemove }: {
@@ -17,9 +18,14 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
   return (
     <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: 20, marginBottom: 16, position: "relative" as const }}>
       {showRemove && (
-        <button onClick={onRemove} title="Remove" style={{ position: "absolute" as const, top: 14, right: 14, background: "rgba(192,57,43,0.08)", border: "none", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-          <Trash2 size={14} color={T.crimson} />
-        </button>
+        <IconButton
+          icon="delete"
+          label="Remove"
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          className="absolute top-[14px] right-[14px] bg-[rgba(192,57,43,0.08)] text-[var(--text-danger)] hover:bg-[rgba(192,57,43,0.14)] hover:text-[var(--text-danger)]"
+        />
       )}
 
       {/* Material Type */}
@@ -34,7 +40,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
           <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Description
           </label>
-          <input
+          <Input
             value={row.description}
             onChange={e => patch({ description: e.target.value })}
             placeholder={
@@ -42,7 +48,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
               row.materialType === "Resham" ? "e.g. Red Resham" :
                                              "e.g. Polyester Gold Jari"
             }
-            style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 14px", fontFamily: F.ui, fontSize: 13, outline: "none", boxSizing: "border-box" as const }}
+            className="w-full"
           />
         </div>
         <div>
@@ -53,21 +59,21 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
             <>
               <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                 {["Reels", "Buns"].map(u => (
-                  <button key={u} onClick={() => patch({ jariUnit: u as any })} style={{
-                    flex: 1, padding: "8px 4px", borderRadius: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600,
-                    border: `1.5px solid ${row.jariUnit === u ? T.royalBurgundy : T.borderDef}`,
-                    background: row.jariUnit === u ? T.royalBurgundy : "#FFF",
-                    color: row.jariUnit === u ? "#FFF" : T.luxuryBrown,
-                  }}>{u}</button>
+                  <Button
+                    key={u}
+                    variant={row.jariUnit === u ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => patch({ jariUnit: u as any })}
+                    className="flex-1"
+                  >{u}</Button>
                 ))}
               </div>
               <div style={{ position: "relative" as const }}>
-                <input
-                  type="number"
-                  value={row.quantity}
-                  onChange={e => patch({ quantity: e.target.value })}
+                <NumberInput
+                  value={row.quantity === "" ? "" : Number(row.quantity)}
+                  onValueChange={v => patch({ quantity: v === "" ? "" : String(v) })}
                   placeholder="0"
-                  style={{ width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 52px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
+                  className="w-full pr-[52px]"
                 />
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
               </div>
@@ -81,21 +87,21 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
               <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                 {["kg", "g"].map(u => (
-                  <button key={u} onClick={() => patch({ warpReshamUnit: u as any })} style={{
-                    flex: 1, padding: "8px 4px", borderRadius: 8, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 600,
-                    border: `1.5px solid ${(row.warpReshamUnit || "kg") === u ? T.royalBurgundy : T.borderDef}`,
-                    background: (row.warpReshamUnit || "kg") === u ? T.royalBurgundy : "#FFF",
-                    color: (row.warpReshamUnit || "kg") === u ? "#FFF" : T.luxuryBrown,
-                  }}>{u}</button>
+                  <Button
+                    key={u}
+                    variant={(row.warpReshamUnit || "kg") === u ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => patch({ warpReshamUnit: u as any })}
+                    className="flex-1"
+                  >{u}</Button>
                 ))}
               </div>
               <div style={{ position: "relative" as const }}>
-                <input
-                  type="number"
-                  value={row.quantity}
-                  onChange={e => patch({ quantity: e.target.value })}
+                <NumberInput
+                  value={row.quantity === "" ? "" : Number(row.quantity)}
+                  onValueChange={v => patch({ quantity: v === "" ? "" : String(v) })}
                   placeholder="0"
-                  style={{ width: "100%", height: 42, borderRadius: 10, border: `1.5px solid ${T.borderDef}`, padding: "0 38px 0 14px", fontFamily: F.mono, fontSize: 14, outline: "none", boxSizing: "border-box" as const }}
+                  className="w-full pr-[38px]"
                 />
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>
               </div>

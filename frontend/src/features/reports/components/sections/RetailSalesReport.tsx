@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tag, Banknote, Percent, RefreshCcw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../theme";
+import { semantic } from "../../../../design-system/tokens";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
@@ -122,7 +123,7 @@ export function RetailSalesReport() {
   // Dynamic revenue by saree type
   const retailRevenueDonut = useMemo(() => {
     const typeMap: Record<string, number> = {};
-    const colors = [T.royalBurgundy, T.antiqueGold, T.green, T.taupe];
+    const colors = semantic.chart.series;
 
     for (const sale of retailSales) {
       const info = sareeInfoMap.get(sale.sareeId);

@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ChartBar, FunnelSimple, Trophy, ShoppingBag, DownloadSimple,
-} from "@phosphor-icons/react";
+  BarChart3 as ChartBar, Filter as FunnelSimple, Trophy, ShoppingBag, Download as DownloadSimple,
+} from "lucide-react";
 import { T, F } from "../theme";
 // STAGE_FUNNEL and ORDER_PROGRESS are derived from real batch/bulk-order
 // data; the monthly production chart is wired to
@@ -142,7 +142,7 @@ export function ProductionAnalyticsSection() {
               </Button>
             ))}
             <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm">
-              <DownloadSimple size={16} color={T.antiqueGold} weight="bold" /> Export Report
+              <DownloadSimple size={16} color={T.antiqueGold} /> Export Report
             </Button>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function ProductionAnalyticsSection() {
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
-              icon={<ChartBar size={22} color={T.royalBurgundy} weight="duotone" />}
+              icon={<ChartBar size={22} color={T.royalBurgundy} />}
               title="Sarees Produced Each Month"
               sub="Produced vs QC-passed — last 6 months"
             />
@@ -212,7 +212,7 @@ export function ProductionAnalyticsSection() {
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
-              icon={<FunnelSimple size={22} color={T.royalBurgundy} weight="duotone" />}
+              icon={<FunnelSimple size={22} color={T.royalBurgundy} />}
               title="Where Are All Batches Right Now"
               sub={`All ${totalActiveBatches} active batch${totalActiveBatches === 1 ? "" : "es"} by production stage`}
             />
@@ -245,7 +245,7 @@ export function ProductionAnalyticsSection() {
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
-              icon={<Trophy size={22} color={T.royalBurgundy} weight="duotone" />}
+              icon={<Trophy size={22} color={T.royalBurgundy} />}
               title="Top 5 Weavers This Month"
               sub="Ranked by number of sarees produced — last 6 months"
             />
@@ -297,7 +297,7 @@ export function ProductionAnalyticsSection() {
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
-              icon={<ShoppingBag size={22} color={T.royalBurgundy} weight="duotone" />}
+              icon={<ShoppingBag size={22} color={T.royalBurgundy} />}
               title="Bulk Order Production Progress"
               sub="Sarees produced so far for each wholesale order"
             />
@@ -336,7 +336,7 @@ export function ProductionAnalyticsSection() {
             <ProductionDialog open title="Export Production Report" onClose={() => setShowExportDialog(false)}>
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                 <div style={{ background: T.warmCream, borderRadius: 11, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <ChartBar size={18} color={T.royalBurgundy} weight="duotone" />
+                  <ChartBar size={18} color={T.royalBurgundy} />
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Reporting Period</div>
                     <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{period}</div>
@@ -367,7 +367,7 @@ export function ProductionAnalyticsSection() {
                     size="lg"
                     className="flex-[2]"
                   >
-                    <DownloadSimple size={18} weight="bold" /> Generate &amp; Download
+                    <DownloadSimple size={18} /> Generate &amp; Download
                   </Button>
                   <Button onClick={() => setShowExportDialog(false)} variant="secondary" size="lg" className="flex-1">
                     Cancel

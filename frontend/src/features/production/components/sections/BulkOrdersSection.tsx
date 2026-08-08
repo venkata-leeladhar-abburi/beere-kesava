@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowRight, CurrencyInr, ShoppingBag, Plus as PhPlus,
-  CheckCircle, WarningCircle, Clock,
+  ArrowRight, IndianRupee as CurrencyInr, ShoppingBag, Plus as PhPlus,
+  CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Clock,
   Eye as PhEye,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { X as XIcon } from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { BulkOrderCreateModal } from "../../../bulk-orders/components/BulkOrderCreateModal";
@@ -35,7 +35,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
       <div style={{ padding: "22px 22px 16px", display: "flex", alignItems: "flex-start", gap: 14 }}>
         <div style={{ width: 44, height: 44, borderRadius: 12, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <PhStatusIcon size={24} color={cfg.iconColor} weight="fill" />
+          <PhStatusIcon size={24} color={cfg.iconColor} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 4 }}>{o.customer}</div>
@@ -45,7 +45,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
       <div style={{ margin: "0 22px 16px" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: cfg.badgeBg, borderRadius: 10, padding: "9px 14px", width: "100%", boxSizing: "border-box" }}>
-          <PhStatusIcon size={16} color={cfg.badgeColor} weight="fill" />
+          <PhStatusIcon size={16} color={cfg.badgeColor} />
           <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.badgeColor }}>{STATUS_LABELS[o.status](o)}</span>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <CheckCircle size={20} color={T.royalBurgundy} weight="regular" />
+            <CheckCircle size={20} color={T.royalBurgundy} />
           </div>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.4px", marginBottom: 3 }}>Delivery Deadline</div>
@@ -90,20 +90,20 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
         {o.shortage && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px" }}>
-            <WarningCircle size={17} color={T.crimson} weight="fill" />
+            <WarningCircle size={17} color={T.crimson} />
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson }}>Shortage: {o.shortage} sarees</span>
           </div>
         )}
         {o.overdueBy && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 10, padding: "10px 13px" }}>
-            <Clock size={17} color={T.crimson} weight="fill" />
+            <Clock size={17} color={T.crimson} />
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson }}>Overdue by {o.overdueBy} day{o.overdueBy === 1 ? "" : "s"}</span>
           </div>
         )}
 
         {(o.amountDue ?? 0) > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(200,155,71,0.07)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
-            <CurrencyInr size={16} color={T.antiqueGold} weight="bold" />
+            <CurrencyInr size={16} color={T.antiqueGold} />
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
             <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}>₹{(o.amountDue ?? 0).toLocaleString("en-IN")}</span>
           </div>
@@ -111,7 +111,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
         {superadmin && tallied && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(30,102,64,0.07)", border: "1px solid rgba(30,102,64,0.20)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
-            <CheckCircle size={16} color={T.green} weight="fill" />
+            <CheckCircle size={16} color={T.green} />
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green }}>Tallied by {talliedBy}</span>
           </div>
         )}
@@ -126,14 +126,14 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           variant="secondary"
           fullWidth
         >
-          <PhEye size={18} weight="regular" /> View Order
+          <PhEye size={18} /> View Order
         </Button>
         <Button
           onClick={(e) => { e.stopPropagation(); onSlip?.(o); }}
           variant="secondary"
           fullWidth
         >
-          <CurrencyInr size={18} weight="regular" /> Payment
+          <CurrencyInr size={18} /> Payment
         </Button>
       </div>
     </motion.div>
@@ -153,7 +153,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
           <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <ShoppingBag size={26} color="#FFFDF9" weight="fill" />
+                <ShoppingBag size={26} color="#FFFDF9" />
               </div>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Bulk Orders — Production Progress</div>
@@ -162,10 +162,10 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Button onClick={() => setShowCreate(true)} variant="primary">
-                <PhPlus size={15} weight="bold" /> Add Bulk Order
+                <PhPlus size={15} /> Add Bulk Order
               </Button>
               <Button onClick={() => onNavigate?.("AllOrders")} variant="secondary">
-                View All Orders <ArrowRight size={15} weight="bold" />
+                View All Orders <ArrowRight size={15} />
               </Button>
             </div>
           </div>
@@ -174,7 +174,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
             {successRef && (
               <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                 style={{ margin: "16px 28px 0", display: "flex", alignItems: "center", gap: 12, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.25)", borderLeft: `4px solid ${T.green}`, borderRadius: 12, padding: "13px 18px" }}>
-                <CheckCircle size={18} color={T.green} weight="fill" />
+                <CheckCircle size={18} color={T.green} />
                 <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.green, flex: 1 }}>
                   Bulk Order {successRef} created. Production teams have been notified.
                 </span>
@@ -186,7 +186,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
           {atRiskCount > 0 && (
             <div style={{ margin: "20px 28px 0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderLeft: `4px solid ${T.antiqueGold}`, borderRadius: 12, padding: "14px 18px" }}>
-                <WarningCircle size={20} color={T.antiqueGold} weight="fill" />
+                <WarningCircle size={20} color={T.antiqueGold} />
                 <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: "#8B6018" }}>{atRiskCount} bulk order{atRiskCount > 1 ? "s are" : " is"} at risk of missing their deadline. Check the orders below and take action.</span>
               </div>
             </div>

@@ -253,7 +253,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
               <thead>
                 <tr style={{ background: T.silkCream }}>
                   {["Vendor Name", "Material Supplied", "Total Purchased", "Total Paid", "Orders", "Last Purchase"].map(h => (
-                    <th key={h} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", padding: "14px 18px", textAlign: "left", borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" }}>{h}</th>
+                    <th key={h} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", padding: "14px 18px", textAlign: "left", borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>

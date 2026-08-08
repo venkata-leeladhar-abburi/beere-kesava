@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { CheckCircle2, PenLine } from "lucide-react";
 import { F, T } from "./theme";
+import { Button } from "../../../../shared/ui/primitives";
 
 export interface SignatureCanvasHandle {
   /** Exports the current strokes as a PNG blob, or null if nothing was drawn. */
@@ -152,22 +153,14 @@ export const SignatureCanvas = forwardRef<
           </div>
         )}
         {hasDrawn && (
-          <button
+          <Button
+            variant="tertiary"
+            size="sm"
             onClick={handleClear}
-            style={{
-              position: "absolute" as const,
-              bottom: 10,
-              right: 14,
-              background: "none",
-              border: "none",
-              fontFamily: F.ui,
-              fontSize: 12,
-              color: T.antiqueGold,
-              cursor: "pointer",
-            }}
+            className="absolute bottom-[10px] right-[14px] text-[var(--text-accent)] hover:text-[var(--text-accent)]"
           >
             Clear
-          </button>
+          </Button>
         )}
       </div>
     );

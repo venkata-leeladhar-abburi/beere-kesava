@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { T, F, G, NUM } from '../theme';
 import { AnimatedNumber, Card, SectionHeader, Donut, BarChart } from '../ui';
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
+import { Button } from '../../../../../shared/ui/primitives';
 import { analyticsApi } from '../../../../../shared/api/analytics';
 
 function formatMonthLabel(month: string): string {
@@ -74,15 +75,19 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
         </span>
         <div style={{ display: "flex", gap: 4 }}>
           {["Week", "Month", "Quarter"].map(p => (
-            <motion.button
-              key={p}
-              onClick={() => setPeriod(p)}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              style={{ padding: "5px 11px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: F.ui, fontWeight: 500, fontSize: 12, letterSpacing: "0.1px", background: period === p ? G.button : "rgba(110,15,45,0.06)", color: period === p ? T.warmCream : T.taupe, transition: "all 0.18s" }}
-            >
-              {p}
-            </motion.button>
+            <motion.div key={p} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} style={{ borderRadius: 999 }}>
+              <Button
+                onClick={() => setPeriod(p)}
+                variant="tertiary"
+                className={`!py-[5px] !px-[11px] !rounded-full !border-none !text-xs !font-medium !tracking-[0.1px] ${
+                  period === p
+                    ? "!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] !text-[#F5E8D0] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!text-[#F5E8D0]"
+                    : "!bg-[rgba(110,15,45,0.06)] !text-[#69635E] hover:!bg-[rgba(110,15,45,0.10)] hover:!text-[#69635E]"
+                }`}
+              >
+                {p}
+              </Button>
+            </motion.div>
           ))}
         </div>
       </div>
