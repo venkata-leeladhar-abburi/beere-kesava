@@ -155,6 +155,24 @@ export class FinishingAssignmentsService {
       include,
     });
 
+    // This saree may have been received from the generic "Receive Back"
+    // queue rather than the quotation-specific one — either path must keep
+    // the quotation's own tracking in sync, or its status/received-count
+    // goes stale even though the saree is genuinely back.
+    if (assignment.quotationRef) {
+      await this.prisma.quotationSaree.updateMany({
+        where: { quotationId: assignment.quotationRef, sareeId: assignment.sareeId },
+        data: { finishingStatus: "RECEIVED" },
+      });
+      const remaining = await this.prisma.quotationSaree.count({
+        where: { quotationId: assignment.quotationRef, finishingStatus: { not: "RECEIVED" } },
+      });
+      await this.prisma.quotation.update({
+        where: { id: assignment.quotationRef },
+        data: { status: remaining === 0 ? "RECEIVED" : "PARTIALLY_RECEIVED" },
+      });
+    }
+
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "FINISHING",

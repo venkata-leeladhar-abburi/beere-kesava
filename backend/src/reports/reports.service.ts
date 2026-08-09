@@ -86,7 +86,7 @@ export class ReportsService {
 
   async getProductionSummary() {
     const [totalSarees, qcCounts, finishingCounts] = await Promise.all([
-      this.prisma.batchSareeRow.count({ where: { sareeId: { not: null } } }),
+      this.prisma.batchSareeRow.count({ where: { receivedAt: { not: null } } }),
       this.prisma.qcRecord.groupBy({ by: ["result"], _count: { _all: true } }),
       this.prisma.finishingAssignment.groupBy({ by: ["status"], _count: { _all: true } }),
     ]);
@@ -141,7 +141,7 @@ export class ReportsService {
       dispatchedCount,
     ] = await Promise.all([
       this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
-      this.prisma.batchSareeRow.count({ where: { sareeId: { not: null } } }),
+      this.prisma.batchSareeRow.count({ where: { receivedAt: { not: null } } }),
       this.prisma.invoice.aggregate({
         where: { status: { in: [InvoiceStatus.PENDING, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE] } },
         _sum: { total: true, paid: true },

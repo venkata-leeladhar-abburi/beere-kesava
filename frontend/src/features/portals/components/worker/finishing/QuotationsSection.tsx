@@ -6,6 +6,8 @@ import { useFinishing, Quotation } from "../../../../finishing/contexts/Finishin
 import { WORKER_NAME, SectionHeader, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { Button } from "../../../../../shared/ui/primitives";
+import { useAuth } from "../../../../../contexts/AuthContext";
+import { STOPGAP_ACTING_USER_ID } from "../../../../../shared/api/purchase-requests";
 
 // ── Quotations — assign for finishing & receive back against a quotation ───────
 
@@ -25,6 +27,8 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
 
 export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
   const { quotations, assignQuotationFinishing, receiveQuotationSarees } = useFinishing();
+  const { user } = useAuth();
+  const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [toast, setToast] = useState("");
 
@@ -39,7 +43,7 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
       if (q) {
         const pendingIds = q.sarees.filter(s => s.finishingStatus === "pending").map(s => s.sareeId);
         if (pendingIds.length > 0) {
-          assignQuotationFinishing(q.id, pendingIds, staff, WORKER_NAME);
+          assignQuotationFinishing(q.id, pendingIds, staff, actingUserId);
           setToast(`${pendingIds.length} saree${pendingIds.length > 1 ? "s" : ""} assigned to ${staff.name} for finishing`);
         }
       }

@@ -35,6 +35,11 @@ export function useInventoryPageState() {
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
   const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
 
+  const dispatchedSareeIds = useMemo(
+    () => new Set(dispatches.flatMap(d => d.sareeIds)),
+    [dispatches]
+  );
+
   // ── Unified Records ────────────────────────────────────────────────────────
   const allRecords = useMemo(() => {
     const list: InventoryRecord[] = [];
@@ -69,13 +74,16 @@ export function useInventoryPageState() {
          r.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
       )?.ref;
       const bId = batches.find(b => b.rows.some(row => row.sareeId === r.sareeId))?.batchId;
+      const status = dispatchedSareeIds.has(r.sareeId)
+        ? "Dispatched"
+        : r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus);
       list.push({
         id: r.sareeId,
         designCode: r.designCode,
         sareeType: r.sareeType,
         weaverName: r.weaverName,
         date: r.receivedDate,
-        status: r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus) as any,
+        status: status as any,
         rawType: "return",
         originalId: r.id,
         bulkOrderRef: boRef,
@@ -85,7 +93,7 @@ export function useInventoryPageState() {
     });
 
     return list;
-  }, [readySarees, returns, bulkOrders, batches]);
+  }, [readySarees, returns, bulkOrders, batches, dispatchedSareeIds]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;

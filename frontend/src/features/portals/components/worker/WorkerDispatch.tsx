@@ -9,13 +9,18 @@ import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DispatchHistorySection, ResumeDispatchModal } from "../../../inventory/components/InventoryPage";
 
 export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
-  const { dispatches, updateDispatch } = useFinishing();
+  const { dispatches, updateDispatch, returns } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);
   const [toast, setToast] = useState("");
 
   const pending = dispatches.filter(d => d.pendingTransport || d.pendingReceipt);
   const complete = dispatches.length - pending.length;
+
+  const dispatchedSarees = React.useMemo(() => new Set(dispatches.flatMap(d => d.sareeIds)), [dispatches]);
+  const awaitingDispatch = React.useMemo(() => {
+    return returns.filter(r => r.inventoryStatus === "Ready for Dispatch" && !dispatchedSarees.has(r.sareeId));
+  }, [returns, dispatchedSarees]);
 
   const pad = isDesktop ? "24px 32px 48px" : "16px 14px 40px";
 
@@ -35,11 +40,12 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
       </div>
 
       {/* Counters */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "16px 0 18px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: 10, margin: "16px 0 18px" }}>
         {[
+          { label: "Awaiting Dispatch", value: awaitingDispatch.length, color: "#9F5A14", bg: "rgba(159,90,20,0.12)", Icon: Package },
           { label: "Awaiting Details", value: pending.length, color: "#8B6018", bg: "rgba(200,155,71,0.14)", Icon: Clock },
           { label: "Completed", value: complete, color: C.green, bg: "rgba(30,102,64,0.10)", Icon: CheckCircle2 },
-          { label: "Total Dispatches", value: dispatches.length, color: C.burg, bg: "rgba(107,26,42,0.07)", Icon: Package },
+          { label: "Total Dispatches", value: dispatches.length, color: C.burg, bg: "rgba(107,26,42,0.07)", Icon: Truck },
         ].map(s => (
           <div key={s.label} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 14, padding: isDesktop ? "16px 18px" : "12px 12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
@@ -58,6 +64,27 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
           <Clock size={16} color="#8B6018" style={{ flexShrink: 0, marginTop: 1 }} />
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, lineHeight: 1.55 }}>
             <strong>{pending.length} dispatch{pending.length > 1 ? "es" : ""}</strong> still need LR and transport details. Tap <strong>Complete Details</strong> on the row to fill them in.
+          </div>
+        </div>
+      )}
+
+      {/* Sarees Awaiting Dispatch */}
+      {awaitingDispatch.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 12 }}>
+            Sarees Awaiting Dispatch ({awaitingDispatch.length})
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+            {awaitingDispatch.map(s => (
+              <div key={s.id} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{s.designCode}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", padding: "2px 6px", borderRadius: 4 }}>Finished</div>
+                </div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Type: {s.sareeType}</div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Saree ID: {s.sareeId}</div>
+              </div>
+            ))}
           </div>
         </div>
       )}

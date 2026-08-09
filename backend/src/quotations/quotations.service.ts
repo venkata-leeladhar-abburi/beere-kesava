@@ -148,6 +148,17 @@ export class QuotationsService {
       throw new BadRequestException(`Saree(s) not on this quotation: ${missing.join(", ")}`);
     }
 
+    // A saree returned through the quotation-receive flow must become
+    // dispatch-ready the same way a plain (non-quotation) return does via
+    // FinishingAssignmentsService.receiveReturn — otherwise it never reaches
+    // the Inventory dispatch queue. No damage-reporting UI exists on this
+    // flow yet, so every quotation return is treated as PERFECT condition.
+    const rows = await this.prisma.batchSareeRow.findMany({
+      where: { sareeId: { in: dto.sareeIds } },
+      select: { sareeId: true, batchId: true },
+    });
+    const batchIdBySareeId = new Map(rows.map((r) => [r.sareeId, r.batchId]));
+
     await this.prisma.$transaction([
       this.prisma.quotationSaree.updateMany({
         where: { quotationId: id, sareeId: { in: dto.sareeIds } },
@@ -157,6 +168,19 @@ export class QuotationsService {
         where: { quotationRef: id, sareeId: { in: dto.sareeIds }, status: "AWAITING_RETURN" },
         data: { status: "RETURNED" },
       }),
+      ...dto.sareeIds.map((sareeId) =>
+        this.prisma.inventoryRecord.upsert({
+          where: { sareeId },
+          create: {
+            sareeId,
+            status: "FINISHING_COMPLETE",
+            rawType: "RETURN",
+            batchId: batchIdBySareeId.get(sareeId),
+            quotationRef: id,
+          },
+          update: { status: "FINISHING_COMPLETE" },
+        }),
+      ),
     ]);
 
     const remaining = await this.prisma.quotationSaree.count({

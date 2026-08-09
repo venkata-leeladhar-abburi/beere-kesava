@@ -44,16 +44,28 @@ export function MainSareesTable({
   const columns: ColumnDef<WeaverSareeRow>[] = [
     ...(selectable ? [{
       id: "select",
-      header: (
-        <Checkbox
-          checked={visible.length > 0 && visible.every(r => selectedIds?.has(r.sareeId))}
-          onCheckedChange={() => onToggleAll?.(visible.map(r => r.sareeId))}
-        />
-      ),
+      header: (() => {
+        const dispatchableVisible = visible.filter(r => r.finishingStatus === "completed").map(r => r.sareeId);
+        return (
+          <Checkbox
+            checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
+            onCheckedChange={() => onToggleAll?.(dispatchableVisible)}
+          />
+        );
+      })(),
       accessor: () => null,
-      cell: (_v: unknown, r: WeaverSareeRow) => (
-        <Checkbox checked={!!selectedIds?.has(r.sareeId)} onCheckedChange={() => onToggleRow?.(r.sareeId)} />
-      ),
+      cell: (_v: unknown, r: WeaverSareeRow) => {
+        // Only sarees that finished the finishing step have an InventoryRecord
+        // with status FINISHING_COMPLETE — dispatch 404s on anything else.
+        const dispatchable = r.finishingStatus === "completed";
+        return (
+          <Checkbox
+            checked={!!selectedIds?.has(r.sareeId)}
+            onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
+            disabled={!dispatchable}
+          />
+        );
+      },
     } as ColumnDef<WeaverSareeRow>] : []),
     {
       id: "sareeId", header: "Saree ID", accessor: r => r.sareeId,

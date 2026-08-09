@@ -290,7 +290,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // this UI's "skip finishing" shortcut and the backend's business rule,
   // not something to paper over here.
   const dispatchSareesMutation = useMutation({
-    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id"> }) => {
+    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id">; id: string }) => {
       const type: BackendDispatchType = args.record.type === "wholesale" ? "WHOLESALE" : "SHOP";
       return dispatchApi.create({
         type,
@@ -312,13 +312,27 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         paymentDueDate: args.record.paymentDueDate,
       });
     },
-    onSuccess: () => {
+    onMutate: async (args) => {
+      await qc.cancelQueries({ queryKey: DISPATCHES_KEY });
+      const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
+      const newDispatch: DispatchRecord = {
+        ...args.record,
+        id: args.id,
+        sareeIds: args.sareeIds,
+      };
+      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => [newDispatch, ...(old || [])]);
+      return { previous };
+    },
+    onError: (err, _args, context) => {
+      console.error("Failed to dispatch sarees:", err);
+      if (context?.previous) {
+        qc.setQueryData(DISPATCHES_KEY, context.previous);
+      }
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
-    },
-    onError: (err) => {
-      console.error("Failed to dispatch sarees:", err);
     },
   });
 
@@ -394,7 +408,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // after — the real dispatch record's own id isn't otherwise consumed.
   const dispatchSarees = (sareeIds: string[], record: Omit<DispatchRecord, "id">): string => {
     const id = `DISP-${Date.now()}`;
-    dispatchSareesMutation.mutate({ sareeIds, record });
+    dispatchSareesMutation.mutate({ sareeIds, record, id });
     return id;
   };
   const updateDispatch = (id: string, patch: Partial<DispatchRecord>) => updateDispatchMutation.mutate({ id, patch });
