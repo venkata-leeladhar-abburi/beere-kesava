@@ -174,7 +174,15 @@ export function TopNav({
                   // that clear once it isn't fighting the sub-nav for space.
                   sideOffset={6}
                   className="!w-max !min-w-[200px] !max-w-[calc(100vw-32px)] !p-2 !rounded-[16px]"
-                  style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)" }}
+                  // --z-dropdown (300) is well above the sub-nav row's
+                  // ambient stacking (--z-nav 200) on paper, but this menu
+                  // was repeatedly reported rendering underneath the sub-nav
+                  // bar in the band where they overlap (its first item
+                  // hidden, shorter menus like Finance/People/Operations
+                  // hidden almost entirely). Escalating to the ladder's
+                  // highest token removes all doubt without introducing a
+                  // new magic number.
+                  style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)", zIndex: "var(--z-tooltip)" }}
                 >
                   {g.pages.map(p => {
                     const pActive = active === p.key;

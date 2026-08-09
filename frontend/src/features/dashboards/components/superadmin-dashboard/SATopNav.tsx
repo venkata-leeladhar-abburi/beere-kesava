@@ -147,7 +147,9 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                   // not below it — per the admin dashboard's identical fix.
                   sideOffset={8}
                   className="!w-max !min-w-[250px] !max-w-[calc(100vw-32px)] !p-2.5 !rounded-2xl"
-                  style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)" }}
+                  // Same escalation as the admin dashboard's TopNav.tsx —
+                  // see its comment for why.
+                  style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)", zIndex: "var(--z-tooltip)" }}
                 >
                   <div style={{ padding: "10px 14px 8px", fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const }}>
                     {g.label}
