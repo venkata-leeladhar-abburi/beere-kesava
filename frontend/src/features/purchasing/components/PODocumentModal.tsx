@@ -1,9 +1,9 @@
-import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Printer, Share2, Download } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { toast } from "sonner";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -63,37 +63,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
   const showApproved = isApproved || po.status === "approved" || po.status === "received";
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22 }}
-          onClick={onClose}
-          style={{
-            position: "fixed", inset: 0, background: "var(--surface-scrim)", backdropFilter: "blur(4px)",
-            zIndex: "var(--z-modal)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 24 }}
-            transition={{ duration: 0.28 }}
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: "#FFFDF9",
-              borderRadius: 16,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
-              width: "100%",
-              maxWidth: 720,
-              maxHeight: "92vh",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-            }}
-          >
+    <Modal open={open} onOpenChange={o => !o && onClose()} size="md">
             {/* Header */}
             <div style={{
               background: T.darkBurgundy,
@@ -104,9 +74,11 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 6 }}>
-                  Purchase Order Document
-                </div>
+                <Dialog.Title asChild>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 6 }}>
+                    Purchase Order Document
+                  </div>
+                </Dialog.Title>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
                   <StatusBadge status={po.status} />
@@ -115,15 +87,16 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                   )}
                 </div>
               </div>
-              <IconButton
-                onClick={onClose}
-                label="Close"
-                icon={X}
-                variant="secondary"
-                size="md"
-                shape="circle"
-                className="bg-white/10 border-white/20 text-white"
-              />
+              <Dialog.Close asChild>
+                <IconButton
+                  label="Close"
+                  icon={X}
+                  variant="secondary"
+                  size="md"
+                  shape="circle"
+                  className="bg-white/10 border-white/20 text-white"
+                />
+              </Dialog.Close>
             </div>
 
             {/* Document body */}
@@ -310,9 +283,6 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                 × Close
               </Button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </Modal>
   );
 }
