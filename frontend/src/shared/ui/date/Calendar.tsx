@@ -144,9 +144,9 @@ export function Calendar({
         </div>
       ) : (
         <DayPicker
-          mode={mode as "single"}
-          selected={selected as Date}
-          onSelect={(value: Date | undefined) => onSelect?.(value)}
+          {...(mode === "range"
+            ? { mode: "range" as const, selected: selected as DateRange, onSelect: (v: DateRange | undefined) => onSelectRange?.(v) }
+            : { mode: "single" as const, selected: selected as Date, onSelect: (v: Date | undefined) => onSelect?.(v) })}
           month={displayMonth}
           onMonthChange={setMonth}
           numberOfMonths={numberOfMonths}
@@ -160,10 +160,14 @@ export function Calendar({
             Caption: ({ displayMonth: dm }) => (
               <Caption
                 displayMonth={dm}
-                onOpenSelect={() => {
-                  setPickerYear(dm.getFullYear());
-                  setView("select");
-                }}
+                onOpenSelect={
+                  numberOfMonths > 1
+                    ? () => {}
+                    : () => {
+                        setPickerYear(dm.getFullYear());
+                        setView("select");
+                      }
+                }
               />
             ),
             DayContent: ({ date }) => <DayContent date={date} hasDataDates={hasDataDates} />,
@@ -201,7 +205,7 @@ export function Calendar({
               const today = new Date();
               setMonth(today);
               onToday?.();
-              onSelect?.(today);
+              if (mode === "single") onSelect?.(today);
             }}
           >
             Today
