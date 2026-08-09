@@ -22,6 +22,7 @@ import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDr
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
@@ -51,6 +52,10 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
       void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
       setMode("view");
+      toast.success("Weaver profile updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update weaver profile");
     },
   });
 
