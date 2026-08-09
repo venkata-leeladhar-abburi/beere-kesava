@@ -1,70 +1,49 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { motion } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, ChevronRight, Menu, LogOut, UserRound, ShoppingCart, Package, X } from 'lucide-react';
 import { imgBKLogo } from '../../../../shared/constants/weaverImages';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
+import { Drawer } from '../../../../shared/ui/overlay';
 
 export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   open: boolean; onClose: () => void; activeTab: string; setTab: (v: string) => void;
 }) {
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.28 }}
-            onClick={onClose}
-            style={{ position: "fixed", inset: 0, zIndex: 199, background: "var(--surface-scrim)", backdropFilter: "blur(3px)" }}
-          />
-          {/* Drawer panel */}
-          <motion.div
-            key="drawer"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            style={{
-              position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 200,
-              width: "78vw", maxWidth: 320,
-              background: T.warmIvory,
-              boxShadow: "8px 0 48px rgba(74,6,27,0.22)",
-              display: "flex", flexDirection: "column",
-              overflowY: "auto",
-            }}
-          >
-            {/* Drawer header */}
-            <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: G.button, flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)" }}>
-                  <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
-                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
-                </div>
-              </div>
-              <IconButton
-                icon={X}
-                label="Close menu"
-                onClick={onClose}
-                variant="ghost"
-                className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)] hover:text-[rgba(245,232,208,0.85)]"
-              />
+    <Drawer open={open} onOpenChange={next => { if (!next) onClose(); }} side="left" size="sm">
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", overflowY: "auto" }}>
+        {/* Drawer header */}
+        <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: G.button, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)" }}>
+              <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
+            <div>
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
+              </Dialog.Title>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
+            </div>
+          </div>
+          <Dialog.Close asChild>
+            <IconButton
+              icon={X}
+              label="Close menu"
+              onClick={onClose}
+              variant="ghost"
+              className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)] hover:text-[rgba(245,232,208,0.85)]"
+            />
+          </Dialog.Close>
+        </div>
 
-            {/* Gold accent bar */}
-            <div className="gold-bar-shimmer" style={{ height: 2, flexShrink: 0 }} />
+        {/* Gold accent bar */}
+        <div className="gold-bar-shimmer" style={{ height: 2, flexShrink: 0 }} />
 
-            {/* Nav items — grouped */}
-            <div style={{ flex: 1, padding: "10px 12px" }}>
+        {/* Nav items — grouped */}
+        <div style={{ flex: 1, padding: "10px 12px" }}>
               {NAV_GROUPS.map((group, gi) => {
                 const GroupIcon = group.icon;
                 const isGroupActive = findNavGroup(activeTab).key === group.key;
@@ -130,10 +109,8 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                 </div>
               </div>
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+          </div>
+    </Drawer>
   );
 }
 
