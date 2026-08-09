@@ -10,6 +10,7 @@ import {
 } from './theme';
 import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
+import { MobileNav, type MobileNavItem } from '../../../../shared/ui/nav/MobileNav';
 
 import { MyBatchesPage } from './MyBatchesPage';
 import { ConfirmMaterialPage } from './ConfirmMaterialPage';
@@ -29,11 +30,11 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
   const { weaverId } = useCurrentWeaver();
   const pendingConfirmCount = weaverId ? getRecordsForWeaver(weaverId).filter(r => r.status === 'pending-signature').length : 0;
 
-  const TABS: { id: Tab5; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: 'batches',   label: 'My Batches', icon: <ClipboardList size={20} />, },
-    { id: 'confirm',   label: 'Confirm',    icon: <CheckSquare size={20} />, badge: pendingConfirmCount },
-    { id: 'warp',      label: 'Warp',       icon: <ArrowUpRight size={20} /> },
-    { id: 'payments',  label: 'Payments',   icon: <Wallet size={20} /> },
+  const TABS: { id: Tab5; label: string; icon: React.ElementType; badge?: number }[] = [
+    { id: 'batches',   label: 'My Batches', icon: ClipboardList, },
+    { id: 'confirm',   label: 'Confirm',    icon: CheckSquare, badge: pendingConfirmCount },
+    { id: 'warp',      label: 'Warp',       icon: ArrowUpRight },
+    { id: 'payments',  label: 'Payments',   icon: Wallet },
   ];
 
   const PAGE_TITLES: Record<Tab5, string> = {
@@ -109,7 +110,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 68 }}>
+      <div style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
         <AnimatePresence mode="wait">
           {showNotifs ? (
             <motion.div key="notifs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -128,28 +129,29 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
 
       {/* Bottom Tab Bar */}
       {!showNotifs && (
-        <div style={{ position: 'fixed' as const, bottom: 0, left: 0, width: '100%', height: 66, background: '#FFF', borderTop: `1px solid ${C.bdr}`, display: 'flex', zIndex: 100, boxShadow: '0 -4px 20px rgba(110,15,45,0.08)' }}>
-          {TABS.map(tab => {
-            const isActive = active === tab.id;
-            return (
-              <Button key={tab.id} onClick={() => { setActive(tab.id); setShowNotifs(false); }} variant="ghost" className="flex-1 flex items-center justify-center bg-transparent border-none p-0 h-auto relative rounded-none">
-                <div style={{ position: 'relative' as const, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  {isActive && (
-                    <motion.div layoutId="weaver-tab-indicator" transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                      style={{ position: 'absolute' as const, top: -9, left: '50%', marginLeft: -13, width: 26, height: 3, borderRadius: 4, background: C.burg }} />
-                  )}
-                  {!!tab.badge && (
-                    <span style={{ position: 'absolute' as const, top: -3, right: -7, minWidth: 16, height: 16, background: C.crim, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#FFF', fontFamily: F.u, padding: '0 3px' }}>
-                      {tab.badge}
-                    </span>
-                  )}
-                  {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? C.burg : C.muted })}
-                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.muted, transition: 'color 0.2s' }}>{tab.label}</span>
-                </div>
-              </Button>
-            );
-          })}
-        </div>
+        <MobileNav
+          items={TABS.map((tab): MobileNavItem => ({
+            key: tab.id,
+            label: tab.label,
+            icon: tab.icon,
+            onClick: () => { setActive(tab.id); setShowNotifs(false); },
+            badge: tab.badge,
+            style: { fontWeight: active === tab.id ? 600 : 500 },
+          }))}
+          activeKey={active}
+          activeColor={C.burg}
+          inactiveColor={C.muted}
+          indicatorColor={C.burg}
+          badgeColor={C.crim}
+          labelStyle={{ fontFamily: F.u, fontSize: 12 }}
+          baseHeight="66px"
+          style={{
+            background: '#FFF',
+            borderTop: `1px solid ${C.bdr}`,
+            boxShadow: '0 -4px 20px rgba(110,15,45,0.08)',
+            zIndex: 100,
+          }}
+        />
       )}
     </div>
   );

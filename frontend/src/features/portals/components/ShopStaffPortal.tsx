@@ -227,7 +227,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
       {/* Content — extra bottom padding on Home/Inventory so the floating "New Sale"
           button never covers the last row of a list */}
-      <div style={{ flex: 1, overflowY: "auto" as const, paddingBottom: showReturn ? 0 : (active === "home" || active === "inventory") ? 140 : 66 }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, paddingBottom: showReturn ? 0 : (active === "home" || active === "inventory") ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(66px + env(safe-area-inset-bottom, 0px))" }}>
         <AnimatePresence mode="wait">
           <motion.div key={showReturn ? "return" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
             {renderPage()}
@@ -236,7 +236,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       </div>
 
       {/* Floating quick-action — New Sale (Home + Inventory only) */}
-      <div style={{ position: "fixed" as const, bottom: 76, left: 0, width: "100%", zIndex: 110, pointerEvents: "none" as const }}>
+      <div style={{ position: "fixed" as const, bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", left: 0, width: "100%", zIndex: 110, pointerEvents: "none" as const }}>
         <AnimatePresence>
           {!showReturn && (active === "home" || active === "inventory") && (
             <motion.div
