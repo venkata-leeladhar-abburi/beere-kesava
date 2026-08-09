@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
-  Factory, ShoppingBag, AlertCircle as WarningCircle, Package,
+  Factory, ShoppingBag, AlertCircle as WarningCircle, Package, X,
 } from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
@@ -9,6 +9,7 @@ import { T, F, fld, lbl } from "./constants";
 import { Pip } from "./constants";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { Button, IconButton, Input, SearchInput, Textarea } from "../../../../shared/ui/primitives";
+import { Modal, type ModalSize } from "../../../../shared/ui/overlay";
 
 // Deterministic pip colour from a stable palette, keyed by id, so real
 // weavers (fetched from the backend) still get a consistent avatar colour
@@ -21,20 +22,28 @@ export function pipColor(id: string): string {
 }
 
 // ─── Generic picker shell ──────────────────────────────────────────────────────
+// Widths varied per consumer under the old hand-rolled overlay (400-540px);
+// Modal's size enum is fixed, so each width buckets to its nearest step.
+function sizeForWidth(width: number): ModalSize {
+  if (width <= 420) return "xs";
+  if (width <= 560) return "sm";
+  if (width <= 720) return "md";
+  return "lg";
+}
+
 export function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 800, background: "rgba(30,10,20,0.5)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <motion.div onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.94, y: 18 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.2 }}
-        style={{ background: T.warmIvory, borderRadius: 20, width, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
-        <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <Modal open onOpenChange={o => !o && onClose()} size={sizeForWidth(width)}>
+      <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
-          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm" />
-        </div>
-        <div style={{ paddingTop: 16 }}>{children}</div>
-      </motion.div>
-    </div>
+        </Dialog.Title>
+        <Dialog.Close asChild>
+          <IconButton icon={X} label="Close" variant="ghost" size="sm" />
+        </Dialog.Close>
+      </div>
+      <div style={{ paddingTop: 16, overflowY: "auto" }}>{children}</div>
+    </Modal>
   );
 }
 

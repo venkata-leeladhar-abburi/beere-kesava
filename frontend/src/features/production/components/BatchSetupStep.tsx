@@ -2,7 +2,8 @@ import React from "react";
 import { AlertCircle as WarningCircle } from "lucide-react";
 import { T, F, fld, lbl } from "./batch-creation/constants";
 import { SareeRow } from "../contexts/BatchContext";
-import { Button, NumberInput, Input } from "../../../shared/ui/primitives";
+import { Button, NumberInput } from "../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../shared/ui/date";
 
 interface BatchSetupStepProps {
   batchId: string;
@@ -51,7 +52,11 @@ export function BatchSetupStep({
           </div>
           <div>
             <label style={lbl} htmlFor="due-date">Due Date</label>
-            <Input id="due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+            <DatePicker
+              id="due-date"
+              value={dueDate ? new Date(dueDate) : null}
+              onChange={date => setDueDate(date ? formatDate(date, "iso") : "")}
+            />
           </div>
           <Button onClick={generateRows} disabled={!totalCount || parseInt(totalCount, 10) < 1} variant="primary" size="lg">
             Generate Table →

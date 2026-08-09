@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Edit, X, Building2, CreditCard, User, Phone,
   MapPin, Hash, IndianRupee, Check,
@@ -8,12 +8,13 @@ import {
 import {
   useFirms, Firm, FinancialEntry,
 } from "../contexts/FirmsContext";
-import { T, F, EASE } from "./theme";
+import { T, F } from "./theme";
 import { fmtAmt, initials, cardColor } from "./utils";
 import {
   FinSummaryStrip, FinSection, MiscSection
 } from "./FirmFinanceSections";
 import { Button, IconButton, Field as PField, Input, Textarea } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -53,19 +54,19 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
     onSave(form); setSaved(true); setTimeout(onClose, 600);
   }
   return (
-    <motion.div key="firm-modal-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(44,9,22,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <motion.div initial={{ opacity: 0, y: 32, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.28, ease: EASE }}
-        style={{ background: "#FFF", borderRadius: 22, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,9,22,0.28)", border: `1px solid ${T.borderDef}` }}>
-        <div style={{ background: T.darkBurgundy, borderRadius: "22px 22px 0 0", padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <Modal open onOpenChange={o => !o && onClose()} size="md">
+        <div style={{ background: T.darkBurgundy, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
+            </Dialog.Title>
           </div>
-          <IconButton icon={X} label="Close" variant="secondary" size="sm" onClick={onClose} />
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="secondary" size="sm" />
+          </Dialog.Close>
         </div>
-        <div style={{ padding: "28px 28px 32px" }}>
+        <div style={{ padding: "28px 28px 32px", overflowY: "auto" }}>
           <SLabel>Basic Information</SLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
             <div style={{ gridColumn: "1 / -1" }}>
@@ -99,8 +100,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             </Button>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+    </Modal>
   );
 }
 
@@ -119,23 +119,23 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
     );
   }
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(44,9,22,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <motion.div initial={{ opacity: 0, y: 32, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.28, ease: EASE }}
-        style={{ background: "#FFF", borderRadius: 22, width: "100%", maxWidth: 860, maxHeight: "92vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(44,9,22,0.28)", border: `1px solid ${T.borderDef}` }}>
-        <div style={{ background: color, borderRadius: "22px 22px 0 0", padding: "20px 24px", display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+    <Modal open onOpenChange={o => !o && onClose()} size="lg">
+        <div style={{ background: color, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "20px 24px", display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.18)", border: "1.5px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{initials(firm.firmName)}</span>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
+            </Dialog.Title>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
           </div>
           <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
             Edit
           </Button>
-          <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20" onClick={onClose} />
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20" />
+          </Dialog.Close>
         </div>
         <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0, background: "#FFF" }}>
           {[{ key: "finance", label: "Financial Tracking" }, { key: "info", label: "Firm Info" }].map(t => (
@@ -199,7 +199,6 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
             </div>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+    </Modal>
   );
 }

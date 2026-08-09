@@ -8,6 +8,7 @@ import { WARP_REQUESTS } from "../data";
 import { FadeUp, ActionDialog } from "../common/primitives";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
 import { Button, Textarea } from "../../../../shared/ui/primitives";
 
@@ -26,6 +27,10 @@ export function WarpRequestsSection() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
+      toast.success("Warp request approved");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to approve warp request");
     },
   });
 
@@ -34,6 +39,10 @@ export function WarpRequestsSection() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["warp-requests-pending"] });
       setDecision(null);
+      toast.success("Warp request rejected");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to reject warp request");
     },
   });
   return (

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
-import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { useFirms } from "../../firms/contexts/FirmsContext";
@@ -12,6 +12,7 @@ import { POVendorDetailsSection } from "./POVendorDetailsSection";
 import { Button, IconButton, Input, Textarea, Select, SelectItem, RadioGroup, RadioField } from "../../../shared/ui/primitives";
 import { vendorsApi } from "../../../shared/api/vendors";
 import { purchaseOrdersApi } from "../../../shared/api/purchase-orders";
+import { Modal } from "../../../shared/ui/overlay";
 
 const poFormSchema = z
   .object({
@@ -164,40 +165,8 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
     display: "flex", alignItems: "center", gap: 8,
   };
 
-  if (!open) return null;
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22 }}
-          onClick={onClose}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.60)", backdropFilter: "blur(4px)",
-            zIndex: 9100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 24 }}
-            transition={{ duration: 0.28 }}
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: "#FFFDF9",
-              borderRadius: 16,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
-              width: "100%",
-              maxWidth: 920,
-              maxHeight: "92vh",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-            }}
-          >
+    <Modal open={open} onOpenChange={o => !o && onClose()} size="lg">
             {/* Header */}
             <div style={{
               background: T.darkBurgundy,
@@ -208,22 +177,25 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 4 }}>
-                  Create Purchase Order
-                </div>
+                <Dialog.Title asChild>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 4 }}>
+                    Create Purchase Order
+                  </div>
+                </Dialog.Title>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "0.5px" }}>
                   New material request to vendor — requires Superadmin approval
                 </div>
               </div>
-              <IconButton
-                onClick={onClose}
-                label="Close"
-                icon={X}
-                variant="secondary"
-                size="md"
-                shape="circle"
-                className="bg-white/10 border-white/20 text-white"
-              />
+              <Dialog.Close asChild>
+                <IconButton
+                  label="Close"
+                  icon={X}
+                  variant="secondary"
+                  size="md"
+                  shape="circle"
+                  className="bg-white/10 border-white/20 text-white"
+                />
+              </Dialog.Close>
             </div>
 
             {/* Body: two panels */}
@@ -399,9 +371,6 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                 </div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </Modal>
   );
 }

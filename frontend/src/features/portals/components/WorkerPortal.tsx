@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
 import { C, F } from "./worker/tokens";
+import { Drawer } from "../../../shared/ui/overlay";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -123,49 +125,55 @@ function MobileProfile() {
   );
 }
 
-function HamburgerMenu({ onClose, onProfile, onBack }: { onClose: () => void; onProfile: () => void; onBack?: () => void }) {
+function HamburgerMenu({ open, onOpenChange, onProfile, onBack }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void }) {
   const { selectRole } = useAuth();
   const navigate = useNavigate();
+  const onClose = () => onOpenChange(false);
   return (
-    <motion.div initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-      style={{ position: "fixed", top: 0, left: 0, width: 260, height: "100dvh", background: C.dark, zIndex: 200, display: "flex", flexDirection: "column", boxShadow: "4px 0 24px rgba(0,0,0,0.30)" }}>
-      <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.gold }}>Worker Portal</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
+    <Drawer open={open} onOpenChange={onOpenChange} side="left" size="sm">
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: C.dark }}>
+        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.gold }}>Worker Portal</div>
+            </Dialog.Title>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
+          </div>
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" className="text-white/60" />
+          </Dialog.Close>
         </div>
-        <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} className="text-white/60" />
-      </div>
-      <div style={{ padding: "16px 12px 12px" }}>
-        <Button variant="tertiary" fullWidth iconLeft={UserRound} onClick={() => { onProfile(); onClose(); }}
-          className="justify-start gap-3 rounded-[10px] border-none bg-transparent px-3.5 py-3 text-left hover:bg-white/[0.07]">
-          <span style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.80)" }}>My Profile</span>
-        </Button>
-      </div>
-      <div style={{ flex: 1 }} />
-      {onBack && (
-        <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          {localStorage.getItem("bk_original_admin_role") ? (
-            <Button variant="tertiary" fullWidth onClick={() => {
-              onClose();
-              const origAdminRole = localStorage.getItem("bk_original_admin_role");
-              if (origAdminRole) {
-                localStorage.removeItem("bk_original_admin_role");
-                selectRole(origAdminRole as any);
-                navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-              }
-            }} className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
-              My Portal
-            </Button>
-          ) : (
-            <Button variant="tertiary" fullWidth onClick={() => { onBack(); onClose(); }}
-              className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
-              Switch Portal
-            </Button>
-          )}
+        <div style={{ padding: "16px 12px 12px" }}>
+          <Button variant="tertiary" fullWidth iconLeft={UserRound} onClick={() => { onProfile(); onClose(); }}
+            className="justify-start gap-3 rounded-[10px] border-none bg-transparent px-3.5 py-3 text-left hover:bg-white/[0.07]">
+            <span style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.80)" }}>My Profile</span>
+          </Button>
         </div>
-      )}
-    </motion.div>
+        <div style={{ flex: 1 }} />
+        {onBack && (
+          <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            {localStorage.getItem("bk_original_admin_role") ? (
+              <Button variant="tertiary" fullWidth onClick={() => {
+                onClose();
+                const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                if (origAdminRole) {
+                  localStorage.removeItem("bk_original_admin_role");
+                  selectRole(origAdminRole as any);
+                  navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                }
+              }} className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
+                My Portal
+              </Button>
+            ) : (
+              <Button variant="tertiary" fullWidth onClick={() => { onBack(); onClose(); }}
+                className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
+                Switch Portal
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </Drawer>
   );
 }
 
@@ -183,16 +191,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   return (
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FFFFFF", display: "flex", flexDirection: "column", fontFamily: F.u, position: "relative" }}>
       {/* Hamburger overlay */}
-      <AnimatePresence>
-        {showMenu && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
-              onClick={() => setShowMenu(false)}
-              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 190 }} />
-            <HamburgerMenu onClose={() => setShowMenu(false)} onProfile={() => setShowProfile(true)} onBack={onBack} />
-          </>
-        )}
-      </AnimatePresence>
+      <HamburgerMenu open={showMenu} onOpenChange={setShowMenu} onProfile={() => setShowProfile(true)} onBack={onBack} />
 
       {/* Profile slide */}
       <AnimatePresence>

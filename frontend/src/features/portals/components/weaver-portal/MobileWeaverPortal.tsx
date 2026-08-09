@@ -18,7 +18,7 @@ import { PaymentLedgerPage } from './PaymentLedgerPage';
 import { NotificationsPage } from './NotificationsPage';
 
 export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
-  const { selectRole, user } = useAuth();
+  const { selectRole, user, logout } = useAuth();
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const navigate = useNavigate();
@@ -94,11 +94,11 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
                       <ChevronLeft size={14} color={C.muted} /> My Portal
                     </Button>
                   ) : (
-                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#3B2314]">
+                    <Button onClick={() => { setShowProfile(false); selectRole(null); navigate('/select-role'); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#3B2314]">
                       <ChevronLeft size={14} color={C.muted} /> Switch Portal
                     </Button>
                   )}
-                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#C0392B]">
+                  <Button onClick={() => { setShowProfile(false); logout(); navigate('/login'); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#C0392B]">
                     <LogOut size={14} color="#C0392B" /> Logout
                   </Button>
                 </div>

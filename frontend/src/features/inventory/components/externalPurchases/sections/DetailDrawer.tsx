@@ -1,10 +1,11 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Tag } from "lucide-react";
 import { Purchase, totalPieces } from "../../../../suppliers/contexts/SupplierContext";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
+import { Drawer } from "../../../../../shared/ui/overlay";
 
 /** Slide-in "Purchase Details" panel opened from a table row. */
 export function DetailDrawer({
@@ -19,30 +20,11 @@ export function DetailDrawer({
   onViewSarees: (row: Purchase) => void;
 }) {
   return (
-    <AnimatePresence>
+    <Drawer open={!!detailRow} onOpenChange={next => { if (!next) onClose(); }} side="right" size="md">
       {detailRow && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 400 }}
-          />
-          <motion.div
-            initial={{ x: 480 }}
-            animate={{ x: 0 }}
-            exit={{ x: 480 }}
-            transition={{ type: "spring", damping: 28, stiffness: 260 }}
+          <div
             style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: 480,
-              background: "white",
-              boxShadow: "-8px 0 40px rgba(44,24,16,0.18)",
-              zIndex: 500,
+              height: "100%",
               display: "flex",
               flexDirection: "column",
             }}
@@ -57,17 +39,21 @@ export function DetailDrawer({
                 flexShrink: 0,
               }}
             >
-              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>
-                Purchase Details
-              </span>
-              <IconButton
-                icon={X}
-                label="Close"
-                onClick={onClose}
-                variant="secondary"
-                shape="circle"
-                size="sm"
-              />
+              <Dialog.Title asChild>
+                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>
+                  Purchase Details
+                </span>
+              </Dialog.Title>
+              <Dialog.Close asChild>
+                <IconButton
+                  icon={X}
+                  label="Close"
+                  onClick={onClose}
+                  variant="secondary"
+                  shape="circle"
+                  size="sm"
+                />
+              </Dialog.Close>
             </div>
 
             <div
@@ -183,9 +169,8 @@ export function DetailDrawer({
                 Close
               </Button>
             </div>
-          </motion.div>
-        </>
+          </div>
       )}
-    </AnimatePresence>
+    </Drawer>
   );
 }

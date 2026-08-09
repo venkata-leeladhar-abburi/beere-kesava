@@ -1,20 +1,26 @@
-
-// ── Shared date filter (All Time / Date Range / Monthly / Yearly) ──────────
-// Used across Weavers, Batches, Weaver Dispatcher, Goods Receipt, Material
-// Issuance, External Purchases, and Payments (Making Charges, Wholesale
-// Collections, Vendor Payments, Analytics, Payment History) so every history
-// table in the app filters dates the same way.
-
-const DFB_T = {
-  royalBurgundy: "#6E0F2D",
-  luxuryBrown: "#3B2314",
-  warmCream: "#F5E8D0",
-  taupe: "#69635E",
-  borderDef: "rgba(110,15,45,0.10)",
-};
-const DFB_F = {
-  ui: "'Inter', sans-serif",
-};
+/**
+ * DateFilterBar — design-system/05-OVERLAYS.md Part K.6.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Used across Weavers, Batches, Weaver Dispatcher, Goods Receipt, Material
+ * Issuance, External Purchases, and Payments (Making Charges, Wholesale
+ * Collections, Vendor Payments, Analytics, Payment History) so every history
+ * table in the app filters dates the same way.
+ *
+ * The architecture (DateFilterState, matchesDateFilter, the five modes, and
+ * every call site's props) is unchanged from the original — only the surface
+ * was rebuilt: native `type="date"`/`type="month"`/`<select>` are replaced by
+ * DatePicker/DateRangePicker/MonthPicker/YearPicker, and local hardcoded
+ * colors/sizes are replaced by Phase 1 tokens.
+ */
+import * as React from "react";
+import * as Popover from "@radix-ui/react-popover";
+import { ChevronDown } from "lucide-react";
+import { cn } from "./utils";
+import { DatePicker } from "./date/DatePicker";
+import { DateRangePicker } from "./date/DateRangePicker";
+import { MonthPicker } from "./date/MonthPicker";
+import { YearPicker } from "./date/YearPicker";
+import { formatDate } from "./date/format";
 
 export type DateFilterMode = "all" | "day" | "range" | "month" | "year";
 export interface DateFilterState { mode: DateFilterMode; day: string; from: string; to: string; month: string; year: string; }
@@ -46,11 +52,89 @@ export function matchesDateFilter(dateStr: string | undefined | null, filter: Da
   return true;
 }
 
+function MonthField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [y = String(new Date().getFullYear()), m] = value.split("-");
+  const [pickerYear, setPickerYear] = React.useState(parseInt(y, 10));
+  const label = value ? formatDate(new Date(parseInt(y, 10), m ? parseInt(m, 10) - 1 : 0, 1), "month") : "Select month";
+
+  return (
+    <Popover.Root open={open} onOpenChange={o => { setOpen(o); if (o) setPickerYear(parseInt(y, 10)); }}>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px]"
+          style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
+        >
+          {label}
+          <ChevronDown size={14} style={{ color: "var(--text-tertiary)" }} />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={8}
+          className="rounded-[var(--radius-lg)] border shadow-[var(--shadow-lg)] p-2"
+          style={{ zIndex: "var(--z-popover)", background: "var(--surface-overlay)", borderColor: "var(--border-default)" }}
+        >
+          <div className="flex items-center justify-center gap-3 pb-1">
+            <button type="button" onClick={() => setPickerYear(y2 => y2 - 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>‹</button>
+            <span className="text-[13px] font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>{pickerYear}</span>
+            <button type="button" onClick={() => setPickerYear(y2 => y2 + 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>›</button>
+          </div>
+          <MonthPicker
+            year={pickerYear}
+            selectedMonth={m ? parseInt(m, 10) - 1 : undefined}
+            selectedYear={parseInt(y, 10)}
+            onSelect={monthIdx => {
+              onChange(`${pickerYear}-${String(monthIdx + 1).padStart(2, "0")}`);
+              setOpen(false);
+            }}
+          />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+function YearField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const currentYear = new Date().getFullYear();
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px] tabular-nums"
+          style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
+        >
+          {value || "Select year"}
+          <ChevronDown size={14} style={{ color: "var(--text-tertiary)" }} />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={8}
+          className="rounded-[var(--radius-lg)] border shadow-[var(--shadow-lg)] p-2"
+          style={{ zIndex: "var(--z-popover)", background: "var(--surface-overlay)", borderColor: "var(--border-default)" }}
+        >
+          <YearPicker
+            selectedYear={value ? parseInt(value, 10) : currentYear}
+            maxDate={new Date(currentYear, 11, 31)}
+            span={5}
+            onSelect={year => { onChange(String(year)); setOpen(false); }}
+          />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
 export function DateFilterBar({ filter, onChange }: { filter: DateFilterState; onChange: (f: DateFilterState) => void }) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const inputStyle = { height: 38, borderRadius: 10, border: `1.5px solid ${DFB_T.borderDef}`, padding: "0 10px", fontFamily: DFB_F.ui, fontSize: 12.5, color: DFB_T.luxuryBrown, background: "#FFF" };
 
   const modes: { key: DateFilterMode; label: string }[] = [
     { key: "all", label: "All Time" },
@@ -68,17 +152,16 @@ export function DateFilterBar({ filter, onChange }: { filter: DateFilterState; o
   };
 
   return (
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, alignItems: "center", marginBottom: 16 }}>
-      <div style={{ display: "flex", gap: 4, background: DFB_T.warmCream, borderRadius: 10, padding: 4 }}>
+    <div className="flex flex-wrap items-center gap-2.5 mb-4">
+      <div className="flex gap-1 rounded-[var(--radius-md)] p-1" style={{ background: "var(--surface-sunken)" }}>
         {modes.map(m => (
           <button
             key={m.key}
             onClick={() => selectMode(m.key)}
-            style={{
-              border: "none", borderRadius: 8, padding: "7px 14px", fontFamily: DFB_F.ui, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
-              background: filter.mode === m.key ? DFB_T.royalBurgundy : "transparent",
-              color: filter.mode === m.key ? "#FFFDF9" : DFB_T.taupe,
-            }}
+            className={cn(
+              "rounded-[calc(var(--radius-md)-2px)] px-3.5 py-1.5 text-[13px] font-semibold transition-colors",
+              filter.mode === m.key ? "bg-[var(--surface-brand)] text-[var(--text-on-brand)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+            )}
           >
             {m.label}
           </button>
@@ -86,32 +169,36 @@ export function DateFilterBar({ filter, onChange }: { filter: DateFilterState; o
       </div>
 
       {filter.mode === "day" && (
-        <input type="date" value={filter.day} onChange={e => onChange({ ...filter, day: e.target.value })} style={inputStyle} />
+        <DatePicker
+          value={filter.day ? new Date(filter.day) : null}
+          onChange={date => onChange({ ...filter, day: date ? formatDate(date, "iso") : "" })}
+        />
       )}
 
       {filter.mode === "range" && (
-        <>
-          <span style={{ fontFamily: DFB_F.ui, fontSize: 12.5, color: DFB_T.taupe }}>From</span>
-          <input type="date" value={filter.from} onChange={e => onChange({ ...filter, from: e.target.value })} style={inputStyle} />
-          <span style={{ fontFamily: DFB_F.ui, fontSize: 12.5, color: DFB_T.taupe }}>To</span>
-          <input type="date" value={filter.to} onChange={e => onChange({ ...filter, to: e.target.value })} style={inputStyle} />
-        </>
+        <DateRangePicker
+          value={{ from: filter.from ? new Date(filter.from) : null, to: filter.to ? new Date(filter.to) : null }}
+          onChange={range => onChange({
+            ...filter,
+            from: range.from ? formatDate(range.from, "iso") : "",
+            to: range.to ? formatDate(range.to, "iso") : "",
+          })}
+        />
       )}
 
       {filter.mode === "month" && (
-        <input type="month" value={filter.month} onChange={e => onChange({ ...filter, month: e.target.value })} style={inputStyle} />
+        <MonthField value={filter.month} onChange={month => onChange({ ...filter, month })} />
       )}
 
       {filter.mode === "year" && (
-        <select value={filter.year} onChange={e => onChange({ ...filter, year: e.target.value })} style={{ ...inputStyle, cursor: "pointer" as const }}>
-          {Array.from({ length: 6 }, (_, i) => currentYear - i).map(y => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <YearField value={filter.year} onChange={year => onChange({ ...filter, year })} />
       )}
 
       {filter.mode !== "all" && (
         <button
           onClick={() => onChange(DEFAULT_DATE_FILTER)}
-          style={{ border: "none", background: "none", padding: "0 4px", fontFamily: DFB_F.ui, fontSize: 12.5, fontWeight: 600, color: DFB_T.royalBurgundy, cursor: "pointer", textDecoration: "underline" }}
+          className="px-1 text-[13px] font-semibold underline"
+          style={{ color: "var(--text-brand)" }}
         >
           Clear
         </button>

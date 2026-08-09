@@ -1,8 +1,9 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Truck, X, AlertTriangle } from "lucide-react";
 import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
 import { IconButton } from "../../../shared/ui/primitives";
+import { Drawer } from "../../../shared/ui/overlay";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -42,18 +43,19 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
     ["Payment Due Date", dispatch.paymentDueDate || "—"],
   ];
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", justifyContent: "flex-end" }} onClick={onClose}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(30,10,20,0.50)", backdropFilter: "blur(3px)" }} />
-      <motion.div initial={{ x: 420 }} animate={{ x: 0 }} exit={{ x: 420 }} transition={{ duration: 0.24 }}
-        onClick={e => e.stopPropagation()}
-        style={{ position: "relative", width: 420, maxWidth: "92vw", height: "100%", background: "#FFF", boxShadow: "-16px 0 60px rgba(0,0,0,0.20)", display: "flex", flexDirection: "column" }}>
+    <Drawer open onOpenChange={next => { if (!next) onClose(); }} side="right" size="md">
+      <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         <div style={{ background: `linear-gradient(135deg,${T.deepWine},${T.royalBurgundy})`, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Truck size={18} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
+            <Dialog.Title asChild>
+              <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
+            </Dialog.Title>
           </div>
           <span style={{ display: "inline-block", background: "rgba(255,255,255,0.14)", color: "#FFF", borderRadius: 8 }}>
-            <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" label="Close" />
+            <Dialog.Close asChild>
+              <IconButton onClick={onClose} icon={X} variant="ghost" size="sm" label="Close" />
+            </Dialog.Close>
           </span>
         </div>
         {(dispatch.pendingTransport || dispatch.pendingReceipt) && (
@@ -77,7 +79,7 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
             </div>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Drawer>
   );
 }

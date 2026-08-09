@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   BackendActiveStatus,
   BackendFinishingStaff,
@@ -81,6 +82,10 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Finishing staff member added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add staff member");
     },
   });
 
@@ -97,6 +102,10 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Staff member updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update staff member");
     },
   });
 
@@ -108,6 +117,10 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Staff status updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update staff status");
     },
   });
 
@@ -115,6 +128,10 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
     mutationFn: (id: string) => finishingStaffApi.remove(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Staff member removed");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to remove staff member");
     },
   });
 

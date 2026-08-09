@@ -9,6 +9,7 @@ import {
 import { T, F, EASE, INCOME_CATS, EXPENSE_CATS } from "./theme";
 import { fmtFull, today } from "./utils";
 import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../shared/ui/date";
 
 function Inp({ value, onChange, placeholder, type = "text", mono }: {
   value: string; onChange: (v: string) => void;
@@ -89,7 +90,7 @@ export function AddEntryForm({ type, onSave, onCancel }: {
         <div><FLabel req>Description</FLabel><Inp value={desc} onChange={setDesc} placeholder="Enter description…" /></div>
         <div><FLabel req>Amount (₹)</FLabel><Inp value={amount} onChange={setAmount} placeholder="0" type="number" mono /></div>
         <div><FLabel req>Date</FLabel>
-          <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="font-mono" />
+          <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
         </div>
         <div><FLabel req>{type === "misc" ? "Type" : "Category"}</FLabel>
           <Sel value={cat} onChange={v => { setCat(v); setOtherLabel(""); }}>

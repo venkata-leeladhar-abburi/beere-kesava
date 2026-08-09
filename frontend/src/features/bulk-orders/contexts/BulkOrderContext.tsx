@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   BackendBulkOrder,
   BackendBulkOrderStatus,
@@ -166,9 +167,11 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Bulk order created");
     },
     onError: (err) => {
       console.error("Failed to create bulk order:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to create bulk order");
     },
   });
 
@@ -185,9 +188,11 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Bulk order updated");
     },
     onError: (err) => {
       console.error("Failed to update bulk order:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to update bulk order");
     },
   });
 
@@ -196,7 +201,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   // stays an optimistic client-only patch until that DTO field is added.
   const markDispatchedMutation = useMutation({
     mutationFn: (args: { ref: string; invoiceId?: string }) => Promise.resolve(args),
-    onSuccess: ({ ref, invoiceId }) =>
+    onSuccess: ({ ref, invoiceId }) => {
       setBulkOrders(prev =>
         prev.map(o =>
           o.ref === ref
@@ -208,7 +213,9 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
               }
             : o
         )
-      ),
+      );
+      toast.success("Order marked dispatched");
+    },
   });
 
   const recordPaymentMutation = useMutation({
@@ -224,9 +231,11 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Payment recorded");
     },
     onError: (err) => {
       console.error("Failed to record payment:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to record payment");
     },
   });
 
@@ -234,9 +243,11 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (args: { ref: string; by: string }) => bulkOrdersApi.update(args.ref, { tallied: true, talliedBy: args.by }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Order tallied");
     },
     onError: (err) => {
       console.error("Failed to tally order:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to tally order");
     },
   });
 

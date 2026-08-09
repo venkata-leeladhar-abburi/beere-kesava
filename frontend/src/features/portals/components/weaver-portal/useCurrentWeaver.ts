@@ -77,8 +77,8 @@ export function useCurrentWeaver() {
   }
 
   const effectiveWeaverId = tokenWeaverId ?? resolvedWeaver?.id ?? null;
-  const isLoading = !tokenWeaverId && listLoading;
-  const isError = !effectiveWeaverId && !isLoading;
+  const isLoading = listLoading && !resolvedWeaver;
+  const isError = !effectiveWeaverId && !listLoading;
 
   return {
     weaver: resolvedWeaver,

@@ -11,6 +11,7 @@ import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsConte
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
@@ -103,6 +104,7 @@ export function WarpRequestPage() {
     onError: (err) => {
       // eslint-disable-next-line no-console -- surface submit failures instead of failing silently
       console.error("Failed to submit warp request:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to submit warp request. Please try again.");
     },
   });
 

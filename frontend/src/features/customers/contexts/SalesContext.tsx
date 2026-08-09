@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export * from "./sales-types";
 export * from "./sales-seed";
@@ -98,22 +99,26 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
 
   const recordSaleMutation = useMutation({
     mutationFn: (args: { sareeId: string; sale: SaleInfo }) => Promise.resolve(args),
-    onSuccess: ({ sareeId, sale }) =>
+    onSuccess: ({ sareeId, sale }) => {
       queryClient.setQueryData<UnifiedSaree[]>(QUERY_KEY, prev =>
         (prev ?? []).map(s => s.sareeId === sareeId
           ? { ...s, status: sale.channel, sale, ageDays: 0 }
           : s)
-      ),
+      );
+      toast.success("Sale recorded");
+    },
   });
 
   const recordReturnMutation = useMutation({
     mutationFn: (args: { sareeId: string; ret: ReturnInfo }) => Promise.resolve(args),
-    onSuccess: ({ sareeId, ret }) =>
+    onSuccess: ({ sareeId, ret }) => {
       queryClient.setQueryData<UnifiedSaree[]>(QUERY_KEY, prev =>
         (prev ?? []).map(s => s.sareeId === sareeId
           ? { ...s, status: "returned", ret }
           : s)
-      ),
+      );
+      toast.success("Return recorded");
+    },
   });
 
   const recordSale = (sareeId: string, sale: SaleInfo) => recordSaleMutation.mutate({ sareeId, sale });

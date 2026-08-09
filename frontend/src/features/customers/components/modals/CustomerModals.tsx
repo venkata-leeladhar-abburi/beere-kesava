@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Download, Check } from "lucide-react";
 import { T, F } from "../theme";
 import { WholesaleCustomer, RetailCustomer } from "../types";
 import { downloadCustomerCSV } from "../utils";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export interface CustomerModalsProps {
   modalWholesale: WholesaleCustomer | null;
@@ -23,72 +24,73 @@ export function CustomerModals({
   return (
     <>
       {saveSuccess && (
-        <div style={{ position: "fixed", bottom: 40, right: 40, background: T.greenMid, color: "#FFF", padding: "16px 28px", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 10, zIndex: 9999 }}>
+        <div style={{ position: "fixed", bottom: 40, right: 40, background: T.greenMid, color: "#FFF", padding: "16px 28px", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 10, zIndex: "var(--z-toast)" }}>
           <Check size={18} />
           <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>Profile updated successfully!</span>
         </div>
       )}
 
-      <AnimatePresence>
+      <Modal open={!!modalWholesale} onOpenChange={o => !o && setModalWholesale(null)} size="xl">
         {modalWholesale && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModalWholesale(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: "100%", maxWidth: 780, background: "#FFF", borderRadius: 24, overflow: "hidden", position: "relative", zIndex: 10, boxShadow: "0 20px 60px rgba(44,24,16,0.20)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
-              <div style={{ background: T.darkBurgundy, padding: "24px 32px", display: "flex", alignItems: "center", gap: 20 }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.antiqueGold, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700, flexShrink: 0, boxShadow: "0 0 0 3px rgba(200,155,71,0.30)" }}>{modalWholesale.code}</div>
-                <div>
+          <>
+            <div style={{ background: T.darkBurgundy, padding: "24px 32px", display: "flex", alignItems: "center", gap: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.antiqueGold, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700, flexShrink: 0, boxShadow: "0 0 0 3px rgba(200,155,71,0.30)" }}>{modalWholesale.code}</div>
+              <div>
+                <Dialog.Title asChild>
                   <h2 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFF", margin: "0 0 6px 0" }}>{modalWholesale.name}</h2>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
-                  </div>
-                </div>
-                <IconButton icon={X} label="Close" onClick={() => setModalWholesale(null)} variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white" />
-              </div>
-              <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
-                {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
-                  <div key={i} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
-                ))}
-              </div>
-              <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>
-                <div style={{ flex: "55%" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
-                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
-                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>₹{modalWholesale.spend}</div></div>
-                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>₹{modalWholesale.out}</div></div>
-                    <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: F.mono, fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
-                  </div>
-                  {modalWholesale.activeOrder && (
-                    <div style={{ background: T.luxuryBrown, padding: 20, borderRadius: 12, color: "#FFF" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Active Order in Production</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, marginBottom: 12 }}>{modalWholesale.activeOrder} · 80 sarees</div>
-                      <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }}><div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 2 }}/></div>
-                    </div>
-                  )}
-                </div>
-                <div style={{ flex: "45%", borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 32 }}>
-                  <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Contact Details</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner</div><div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Ramesh Rao</div></div>
-                    <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>+91 98480 12345</div></div>
-                    <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City & State</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.city}</div></div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Bank Details</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>HDFC Bank · 4872 1938 8901</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Special Terms / Credit Notes</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Extended 45-day terms approved · FY2026</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
-                    </div>
-                  </div>
+                </Dialog.Title>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
                 </div>
               </div>
-            </motion.div>
-          </div>
+              <Dialog.Close asChild>
+                <IconButton icon={X} label="Close" variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white" />
+              </Dialog.Close>
+            </div>
+            <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
+              {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
+                <div key={i} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
+              ))}
+            </div>
+            <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>
+              <div style={{ flex: "55%" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>₹{modalWholesale.spend}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>₹{modalWholesale.out}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: F.mono, fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
+                </div>
+                {modalWholesale.activeOrder && (
+                  <div style={{ background: T.luxuryBrown, padding: 20, borderRadius: 12, color: "#FFF" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Active Order in Production</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, marginBottom: 12 }}>{modalWholesale.activeOrder} · 80 sarees</div>
+                    <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }}><div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 2 }}/></div>
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: "45%", borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 32 }}>
+                <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Contact Details</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner</div><div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Ramesh Rao</div></div>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>+91 98480 12345</div></div>
+                  <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City & State</div><div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{modalWholesale.city}</div></div>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Bank Details</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>HDFC Bank · 4872 1938 8901</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Special Terms / Credit Notes</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Extended 45-day terms approved · FY2026</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </Modal>
 
       {/* EXTERNAL PURCHASE DRAWER REMOVED */}
       {/* Success toast — preserved from the original: this reuses `saveSuccess`
@@ -102,63 +104,58 @@ export function CustomerModals({
       )}
 
       {/* Retail customer — Download confirmation modal */}
-      <AnimatePresence>
+      <Modal open={!!downloadConfirmRetail} onOpenChange={o => !o && setDownloadConfirmRetail(null)} size="xs">
         {downloadConfirmRetail && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 2100, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDownloadConfirmRetail(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.6)", backdropFilter: "blur(4px)" }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 420, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 28 }}>
+          <>
+            <Modal.Header title="Download Customer Data?" />
+            <Modal.Body>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <Download size={22} color={T.antiqueGold} />
               </div>
-              <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 8px 0" }}>Download Customer Data?</h3>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px 0", lineHeight: 1.5 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 8px 0", lineHeight: 1.5 }}>
                 This will download a CSV file with {downloadConfirmRetail.name}'s profile and purchase summary.
               </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <Button onClick={() => setDownloadConfirmRetail(null)} variant="secondary" fullWidth>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    downloadCustomerCSV(downloadConfirmRetail.name, [
-                      ["Customer Name", downloadConfirmRetail.name],
-                      ["Phone", downloadConfirmRetail.phone],
-                      ["City", downloadConfirmRetail.city],
-                      ["Total Purchases", String(downloadConfirmRetail.purchases)],
-                      ["Total Spend", downloadConfirmRetail.spend],
-                      ["Last Visit", downloadConfirmRetail.lastVisit],
-                      ["Regular Buyer", downloadConfirmRetail.regular ? "Yes" : "No"],
-                      ["Inactive", downloadConfirmRetail.inactive ? "Yes" : "No"],
-                    ]);
-                    setDownloadConfirmRetail(null);
-                  }}
-                  variant="primary"
-                  iconLeft={Download}
-                  fullWidth
-                >
-                  Download
-                </Button>
-              </div>
-            </motion.div>
-          </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button onClick={() => setDownloadConfirmRetail(null)} variant="secondary" fullWidth>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  downloadCustomerCSV(downloadConfirmRetail.name, [
+                    ["Customer Name", downloadConfirmRetail.name],
+                    ["Phone", downloadConfirmRetail.phone],
+                    ["City", downloadConfirmRetail.city],
+                    ["Total Purchases", String(downloadConfirmRetail.purchases)],
+                    ["Total Spend", downloadConfirmRetail.spend],
+                    ["Last Visit", downloadConfirmRetail.lastVisit],
+                    ["Regular Buyer", downloadConfirmRetail.regular ? "Yes" : "No"],
+                    ["Inactive", downloadConfirmRetail.inactive ? "Yes" : "No"],
+                  ]);
+                  setDownloadConfirmRetail(null);
+                }}
+                variant="primary"
+                iconLeft={Download}
+                fullWidth
+              >
+                Download
+              </Button>
+            </Modal.Footer>
+          </>
         )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Visiting Card Viewer Modal */}
-      <AnimatePresence>
+      <Modal open={!!viewingCard} onOpenChange={o => !o && setViewingCard(null)} size="sm">
         {viewingCard && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewingCard(null)} style={{ position: "absolute", inset: 0, background: "rgba(44,24,16,0.75)", backdropFilter: "blur(4px)" }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} onClick={e => e.stopPropagation()} style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 480, background: "#FFF", borderRadius: 18, boxShadow: "0 20px 60px rgba(44,24,16,0.25)", padding: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Visiting Card</span>
-                <IconButton icon={X} label="Close" onClick={() => setViewingCard(null)} variant="ghost" />
-              </div>
+          <>
+            <Modal.Header title="Visiting Card" />
+            <Modal.Body>
               <img src={viewingCard} alt="Visiting card" style={{ width: "100%", borderRadius: 12, border: `1px solid ${T.borderDef}`, display: "block" }} />
-            </motion.div>
-          </div>
+            </Modal.Body>
+          </>
         )}
-      </AnimatePresence>
+      </Modal>
     </>
   );
 }

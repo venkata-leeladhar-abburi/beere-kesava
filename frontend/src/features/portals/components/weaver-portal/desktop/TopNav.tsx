@@ -31,7 +31,7 @@ export function TopNav({
   selectRole: (role: any) => void;
   navigate: (path: string) => void;
 }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { weaver } = useCurrentWeaver();
   const name = weaver?.name || user?.name || "—";
   const code = weaver?.code || user?.empId || "Handloom";
@@ -138,11 +138,11 @@ export function TopNav({
                       <ChevronLeft size={15} color={C.muted} /> My Portal
                     </Button>
                   ) : (
-                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
+                    <Button onClick={() => { setShowProfile(false); selectRole(null); navigate("/select-role"); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
                       <ChevronLeft size={15} color={C.muted} /> Switch Portal
                     </Button>
                   )}
-                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
+                  <Button onClick={() => { setShowProfile(false); logout(); navigate("/login"); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
                     <LogOut size={15} color="#C0392B" /> Logout
                   </Button>
                 </div>

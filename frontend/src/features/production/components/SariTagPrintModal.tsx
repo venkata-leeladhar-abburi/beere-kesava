@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { SariTagPhysicalLabel, SareeProps } from "./SariTagPhysicalLabel";
 import { SariTagPrintSettings } from "./SariTagPrintSettings";
 import { IconButton } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 const T = {
   darkBurgundy: "#3D0E1A",
@@ -35,57 +36,29 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
   };
 
   return (
-    <AnimatePresence>
-      <div
-        style={{
-          position: "fixed", inset: 0, zIndex: 2000,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        {/* Overlay */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{
-            position: "absolute", inset: 0,
-            background: "rgba(27,12,8,0.70)",
-            backdropFilter: "blur(6px)",
-          }}
-        />
-
-        {/* Modal panel */}
-        <motion.div
-          initial={{ scale: 0.94, opacity: 0, y: 24 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.94, opacity: 0 }}
-          transition={{ type: "spring", damping: 26, stiffness: 280 }}
-          style={{
-            position: "relative", zIndex: 1,
-            width: "min(90vw, 900px)", maxHeight: "90vh",
-            background: "#FFFFFF", borderRadius: 20, overflow: "hidden",
-            boxShadow: "0 32px 80px rgba(27,12,8,0.28)",
-            display: "flex", flexDirection: "column",
-          }}
-        >
+    <Modal open onOpenChange={o => !o && onClose()} size="xl">
           {/* Modal header */}
           <div
             style={{
               background: T.darkBurgundy,
               padding: "18px 28px",
               display: "flex", alignItems: "center", justifyContent: "space-between",
+              flexShrink: 0,
             }}
           >
             <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
-                Saree Tag Preview
-              </div>
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
+                  Saree Tag Preview
+                </div>
+              </Dialog.Title>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", marginTop: 2 }}>
                 {saree.id}
               </div>
             </div>
-            <IconButton icon="close" label="Close" variant="ghost" size="sm" shape="circle" onClick={onClose} className="bg-white/12 text-white hover:bg-white/20" />
+            <Dialog.Close asChild>
+              <IconButton icon="close" label="Close" variant="ghost" size="sm" shape="circle" className="bg-white/12 text-white hover:bg-white/20" />
+            </Dialog.Close>
           </div>
 
           {/* Body */}
@@ -118,8 +91,6 @@ export function SariTagPrintModal({ saree, onClose }: Props) {
               onClose={onClose}
             />
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+    </Modal>
   );
 }

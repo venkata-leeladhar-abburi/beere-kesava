@@ -12,7 +12,7 @@
  * incrementally (Part S, Step 3 — "migrate one feature end-to-end"). No
  * existing page has been changed to use it yet.
  */
-import { useMemo, useState, type AriaAttributes } from "react";
+import { Fragment, useMemo, useState, type AriaAttributes, type ReactNode } from "react";
 import { cn } from "../utils";
 import { Icon } from "../primitives/Icon";
 import { Checkbox } from "../primitives/Checkbox";
@@ -56,6 +56,14 @@ export interface DataTableProps<T> {
    *  existing consumer already renders, so nothing else is affected. */
   responsive?: boolean;
 
+  /** Row expansion (drill-down detail / inline-edit-row patterns). Opt-in —
+   *  omitting `renderExpandedRow` renders no extra markup at all. The
+   *  expand trigger itself (a button in one of the columns) is the
+   *  consumer's responsibility; DataTable only owns inserting the
+   *  full-width row when the row's id is in `expandedIds`. */
+  expandedIds?: Set<string>;
+  renderExpandedRow?: (row: T) => ReactNode;
+
   className?: string;
 }
 
@@ -79,6 +87,7 @@ export function DataTable<T>({
   onRowClick, rowClassName,
   selectedIds, onSelectionChange,
   responsive,
+  expandedIds, renderExpandedRow,
   className,
 }: DataTableProps<T>) {
   const [internalSort, setInternalSort] = useState<{ columnId: string; direction: SortDirection } | undefined>(sort);
@@ -101,6 +110,26 @@ export function DataTable<T>({
     if (onSortChange) onSortChange(next);
     else setInternalSort(next);
   }
+
+  const mergeRuns = useMemo(() => {
+    const runs = new Map<string, { span: number; skip: boolean }[]>();
+    columns.forEach(col => {
+      if (!col.mergeKey) return;
+      const info: { span: number; skip: boolean }[] = [];
+      let i = 0;
+      while (i < sortedData.length) {
+        const key = col.mergeKey!(sortedData[i]);
+        let span = 1;
+        if (key != null) {
+          while (i + span < sortedData.length && col.mergeKey!(sortedData[i + span]) === key) span++;
+        }
+        for (let j = 0; j < span; j++) info.push(j === 0 ? { span, skip: false } : { span: 0, skip: true });
+        i += span;
+      }
+      runs.set(col.id, info);
+    });
+    return runs;
+  }, [columns, sortedData]);
 
   const pageIds = useMemo(() => sortedData.map(getRowId), [sortedData, getRowId]);
   const selectedOnPage = selectable ? pageIds.filter(id => selectedIds?.has(id)).length : 0;
@@ -210,11 +239,12 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {stateBody ?? sortedData.map(row => {
+          {stateBody ?? sortedData.map((row, rowIndex) => {
               const id = getRowId(row);
+              const isExpanded = !!(renderExpandedRow && expandedIds?.has(id));
               return (
+                <Fragment key={id}>
                 <tr
-                  key={id}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={cn(
                     "transition-colors duration-[var(--duration-fast)]",
@@ -235,11 +265,14 @@ export function DataTable<T>({
                     </td>
                   )}
                   {columns.map(col => {
+                    const merge = col.mergeKey ? mergeRuns.get(col.id)?.[rowIndex] : undefined;
+                    if (merge?.skip) return null;
                     const value = col.accessor(row);
                     const align = columnAlign(col);
                     return (
                       <td
                         key={col.id}
+                        rowSpan={merge && merge.span > 1 ? merge.span : undefined}
                         style={{
                           padding: "var(--pad-cell-y, 12px) var(--pad-cell-x, 16px)",
                           textAlign: align,
@@ -253,6 +286,14 @@ export function DataTable<T>({
                     );
                   })}
                 </tr>
+                {isExpanded && (
+                  <tr>
+                    <td colSpan={colSpan} style={{ padding: 0, borderBottom: "1px solid var(--border-subtle)" }}>
+                      {renderExpandedRow!(row)}
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
         </tbody>

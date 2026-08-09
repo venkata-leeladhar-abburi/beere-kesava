@@ -1,9 +1,11 @@
 // ── Shared primitives ──────────────────────────────────────────────────────
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { T, F, EASE } from "../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export function qcColor(r: number) { return r > 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson; }
 
@@ -34,17 +36,18 @@ export function SectionPill({ label }: { label: string }) {
 }
 
 export function ActionDialog({ open, title, children, tone = "gold", onClose }: { open: boolean; title: string; children: React.ReactNode; tone?: "gold" | "green" | "red"; onClose: () => void }) {
-  if (!open) return null;
   const color = tone === "green" ? T.green : tone === "red" ? T.crimson : T.royalBurgundy;
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(26,10,15,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={onClose}>
-      <motion.div initial={{ scale: 0.96, y: 18 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, y: 18 }} onClick={e => e.stopPropagation()} style={{ width: 520, maxWidth: "100%", background: "#FFFFFF", borderRadius: 22, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.25)", overflow: "hidden" }}>
-        <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${color}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{title}</div>
-          <IconButton icon={X} label="Close" onClick={onClose} variant="ghost" className="rounded-[10px] bg-white/15 border border-white/20 text-[#FFFDF9]" />
+    <Modal open={open} onOpenChange={o => { if (!o) onClose(); }} size="sm">
+      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "#FFFFFF", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+        <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${color}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{title}</Dialog.Title>
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" onClick={onClose} variant="ghost" className="rounded-[10px] bg-white/15 border border-white/20 text-[#FFFDF9]" />
+          </Dialog.Close>
         </div>
-        <div style={{ padding: 26 }}>{children}</div>
-      </motion.div>
-    </motion.div>
+        <div style={{ padding: 26, overflowY: "auto" }}>{children}</div>
+      </div>
+    </Modal>
   );
 }

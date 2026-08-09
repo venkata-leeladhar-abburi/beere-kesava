@@ -8,7 +8,8 @@ import { T, F, inp } from "../../theme";
 import { WholesaleCustomer } from "../../../../bulk-orders/components/WholesaleCustomerSelectSection";
 import { TransportData, InvoiceData } from "../../types";
 import { Field, TextInput, SelectInput } from "../../common/primitives";
-import { Button, Input, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
+import { Button, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -79,7 +80,7 @@ export function InvoiceGenerator({
             <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder={isQuotation ? "QT-2026-001" : "INV-2026-001"} mono />
           </Field>
           <Field label={`${docLabel} Date`} req>
-            <Input type="date" value={data.invoiceDate} onChange={e => set("invoiceDate")(e.target.value)} className="font-code" />
+            <DatePicker value={data.invoiceDate ? new Date(data.invoiceDate) : null} onChange={d => set("invoiceDate")(d ? formatDate(d, "iso") : "")} />
           </Field>
 
           <div style={{ gridColumn: "1 / -1", marginTop: 8 }}>
@@ -151,7 +152,7 @@ export function InvoiceGenerator({
 
           {!isQuotation && (
           <Field label="Payment Due Date">
-            <Input type="date" value={data.paymentDueDate} onChange={e => set("paymentDueDate")(e.target.value)} className="font-code" />
+            <DatePicker value={data.paymentDueDate ? new Date(data.paymentDueDate) : null} onChange={d => set("paymentDueDate")(d ? formatDate(d, "iso") : "")} />
           </Field>
           )}
 

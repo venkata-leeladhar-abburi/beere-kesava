@@ -173,7 +173,7 @@ function PortalCard({
 
 // ── RoleSelectPage ─────────────────────────────────────────────────────────────
 export function RoleSelectPage() {
-  const { isAuthenticated, role: currentRole, logout, clearAdminView } = useAuth();
+  const { isAuthenticated, role: currentRole, logout, clearAdminView, selectRole } = useAuth();
   const navigate = useNavigate();
   const { isMobile, isTablet } = useResponsive();
   const [hovered, setHovered] = useState<Role | null>(null);
@@ -193,10 +193,10 @@ export function RoleSelectPage() {
   // selectRole(role) directly, letting anyone freely become Admin/SuperAdmin
   // with zero verification. Now every card just forces a fresh phone+OTP
   // login instead, so the real backend-resolved role is what decides access.
-  function handleRoleSelect(_role: Role) {
+  function handleRoleSelect(role: Role) {
     clearAdminView();
-    logout();
-    navigate("/login");
+    selectRole(role);
+    navigate(ROLE_ROUTES[role]);
   }
 
   return (

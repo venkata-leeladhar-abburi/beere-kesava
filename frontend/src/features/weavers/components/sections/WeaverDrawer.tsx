@@ -22,6 +22,7 @@ import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDr
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
@@ -51,6 +52,10 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
       void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
       setMode("view");
+      toast.success("Weaver profile updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update weaver profile");
     },
   });
 
@@ -365,7 +370,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
         {zoomImage && (
           <motion.div key="zoom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setZoomImage(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(20,4,10,0.85)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, cursor: "zoom-out" }}>
+            style={{ position: "fixed", inset: 0, background: "var(--surface-scrim)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, cursor: "zoom-out" }}>
             <img src={zoomImage.url} alt={zoomImage.label} style={{ maxWidth: "80vw", maxHeight: "75vh", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }} />
             <span style={{ fontFamily: F.ui, fontSize: 13, color: "#fff", fontWeight: 600 }}>{zoomImage.label}</span>
           </motion.div>

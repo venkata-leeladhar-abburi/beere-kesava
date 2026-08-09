@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useAuth } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
@@ -174,7 +175,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo,
         rating: s.rating,
       }),
-    onSuccess: (created) => setSuppliers(prev => [toSupplier(created), ...prev]),
+    onSuccess: (created) => {
+      setSuppliers(prev => [toSupplier(created), ...prev]);
+      toast.success("Supplier added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add supplier");
+    },
   });
 
   const updateSupplierMutation = useMutation({
@@ -187,7 +194,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         rating: args.patch.rating,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
-    onSuccess: (updated) => setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s)),
+    onSuccess: (updated) => {
+      setSuppliers(prev => prev.map(s => s.id === updated.id ? toSupplier(updated) : s));
+      toast.success("Supplier updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update supplier");
+    },
   });
 
   const getSupplier = useCallback(
@@ -200,17 +213,24 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (p) => {
       const id = `EXT-2026-${String(Date.now()).slice(-4)}`;
       setPurchases(prev => [{ ...p, id }, ...prev]);
+      toast.success("Purchase recorded");
     },
   });
 
   const updatePurchaseMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<Purchase> }) => Promise.resolve(args),
-    onSuccess: ({ id, patch }) => setPurchases(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p)),
+    onSuccess: ({ id, patch }) => {
+      setPurchases(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+      toast.success("Purchase updated");
+    },
   });
 
   const deletePurchaseMutation = useMutation({
     mutationFn: (id: string) => Promise.resolve(id),
-    onSuccess: (id) => setPurchases(prev => prev.filter(p => p.id !== id)),
+    onSuccess: (id) => {
+      setPurchases(prev => prev.filter(p => p.id !== id));
+      toast.success("Purchase deleted");
+    },
   });
 
   const addPaymentMutation = useMutation({
@@ -218,11 +238,17 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       supplierPaymentsApi.create({
         supplierId: p.supplierId, amount: p.amount, date: p.date, utr: p.reference, method: p.mode,
       }),
-    onSuccess: (created) => setPayments(prev => [{
-      id: created.id, supplierId: created.supplierId, date: created.date,
-      amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
-      reference: created.utr ?? "",
-    }, ...prev]),
+    onSuccess: (created) => {
+      setPayments(prev => [{
+        id: created.id, supplierId: created.supplierId, date: created.date,
+        amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
+        reference: created.utr ?? "",
+      }, ...prev]);
+      toast.success("Payment recorded");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to record payment");
+    },
   });
 
   const raiseRequestMutation = useMutation({
@@ -235,7 +261,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         urgency: r.urgency,
         reason: r.reason,
       }),
-    onSuccess: (created) => setRawRequests(prev => [created, ...prev]),
+    onSuccess: (created) => {
+      setRawRequests(prev => [created, ...prev]);
+      toast.success("Purchase request raised");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to raise purchase request");
+    },
   });
 
   const decideRequestMutation = useMutation({
@@ -244,6 +276,9 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         decision: args.status === "approved" ? "APPROVED" : "REJECTED",
         decisionNote: args.note,
       }),
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to decide purchase request");
+    },
     onSuccess: (updated) => {
       // Approving a request with a full rich saree payload attached (raised via
       // an older local-only flow) turns it into a real external purchase — the
@@ -270,6 +305,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         setPurchases(prevP => [purchase, ...prevP]);
       }
       setRawRequests(prev => prev.map(r => (r.id === updated.id ? updated : r)));
+      toast.success(updated.status === "APPROVED" ? "Purchase request approved" : "Purchase request rejected");
     },
   });
 

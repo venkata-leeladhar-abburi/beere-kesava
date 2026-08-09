@@ -1,11 +1,11 @@
-import React from "react";
 import { ShoppingBag, X } from "lucide-react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { F, T, BulkOrder, useFirms } from "../../theme";
+import { F, T, BulkOrder } from "../../theme";
 import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
@@ -19,18 +19,21 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
   const pricePerSaree = dispatch?.pricePerSaree || Math.round(inv.total / numSarees);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <motion.div initial={{ y: 20, scale: 0.95, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 20, scale: 0.95, opacity: 0 }} onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 550, background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderGold}` }}>
+    <Modal open onOpenChange={o => !o && onClose()} size="md">
         {/* Header */}
-        <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexShrink: 0 }}>
           <div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{firmName}</div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{firmName}</div>
+            </Dialog.Title>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>Hyderabad, Telangana</div>
           </div>
-          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-[rgba(255,255,255,0.12)]" />
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm" className="text-white hover:bg-[rgba(255,255,255,0.12)]" />
+          </Dialog.Close>
         </div>
         {/* Invoice Body */}
-        <div style={{ padding: "18px 24px" }}>
+        <div style={{ padding: "18px 24px", overflowY: "auto" }}>
           {dispatchesError && (
             <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
               Failed to load dispatch details — some fields below may be showing fallback values.
@@ -146,7 +149,6 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
             </div>
           </div>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

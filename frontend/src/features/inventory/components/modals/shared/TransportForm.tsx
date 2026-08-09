@@ -1,6 +1,7 @@
 import React from "react";
 import { Field, TextInput } from "../../common/primitives";
-import { Input, Textarea } from "../../../../../shared/ui/primitives";
+import { Textarea } from "../../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 import { TransportData } from "../../types";
 
 // ── Transport form (shared between shop + wholesale) ──────────────────────────
@@ -13,11 +14,11 @@ export function TransportForm({ data, onChange, wholesale }: { data: TransportDa
       <Field label="Vehicle Number" req><TextInput value={data.vehicleNumber} onChange={set("vehicleNumber")} placeholder="e.g. AP09AB1234" mono /></Field>
       <Field label="Driver Name"><TextInput value={data.driverName} onChange={set("driverName")} placeholder="Optional" /></Field>
       <Field label="Dispatch Date" req>
-        <Input type="date" value={data.dispatchDate} onChange={e => set("dispatchDate")(e.target.value)} className="font-code" />
+        <DatePicker value={data.dispatchDate ? new Date(data.dispatchDate) : null} onChange={d => set("dispatchDate")(d ? formatDate(d, "iso") : "")} />
       </Field>
       {wholesale && (
         <Field label="Expected Delivery">
-          <Input type="date" value={data.expectedDelivery ?? ""} onChange={e => set("expectedDelivery")(e.target.value)} className="font-code" />
+          <DatePicker value={data.expectedDelivery ? new Date(data.expectedDelivery) : null} onChange={d => set("expectedDelivery")(d ? formatDate(d, "iso") : "")} />
         </Field>
       )}
       <div style={{ gridColumn: "1 / -1" }}>

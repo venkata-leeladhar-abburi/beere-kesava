@@ -1,9 +1,10 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Package, Layers, Tag, Sparkles, Printer, Calendar, IndianRupee, X, Check, FileText,
 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -27,7 +28,6 @@ const G = {
   card:   "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
   button: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
 };
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1, "lnum" 1' };
 
 export type MatType = "Warp" | "Resham" | "Jari";
@@ -62,41 +62,30 @@ export const STATUS_CFG = {
 
 function ModalOverlay({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{ position: "fixed", inset: 0, background: "rgba(61,14,26,0.60)", backdropFilter: "blur(4px)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 24 }}
-            transition={{ duration: 0.28, ease: EASE }}
-            onClick={e => e.stopPropagation()}
-            style={{ background: T.warmIvory, borderRadius: 22, boxShadow: "0 40px 120px rgba(61,14,26,0.40)", width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", border: `1px solid ${T.borderDef}` }}
-          >
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Modal open={open} onOpenChange={o => { if (!o) onClose(); }} size="md">
+      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+        {children}
+      </div>
+    </Modal>
   );
 }
 
 function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: string; onClose: () => void }) {
   return (
-    <div style={{ background: G.button, borderRadius: "22px 22px 0 0", padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+    <div style={{ background: G.button, padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
       <div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
+        <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</Dialog.Title>
         {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
-      <IconButton
-        icon={X}
-        label="Close"
-        onClick={onClose}
-        shape="circle"
-        className="bg-white/12 border border-white/22 text-[#FFFDF9] hover:bg-white/20 active:bg-white/25 shrink-0"
-      />
+      <Dialog.Close asChild>
+        <IconButton
+          icon={X}
+          label="Close"
+          onClick={onClose}
+          shape="circle"
+          className="bg-white/12 border border-white/22 text-[#FFFDF9] hover:bg-white/20 active:bg-white/25 shrink-0"
+        />
+      </Dialog.Close>
     </div>
   );
 }
@@ -184,7 +173,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
     <ModalOverlay open={!!purchase} onClose={onClose}>
       <ModalHeader title="Print GRN Receipt" subtitle={`Goods Received Note — ${purchase.grn}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
+        <div className="print-area" style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.10)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Goods Received Note (GRN)</div>

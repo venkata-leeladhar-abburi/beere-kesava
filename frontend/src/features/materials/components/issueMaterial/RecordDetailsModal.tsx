@@ -1,13 +1,14 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle2 } from "lucide-react";
 import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
 import { resolveSignatureUrl } from "../../../../shared/api/material-issues";
-import { EASE, F, T } from "./theme";
+import { F, T } from "./theme";
 import { SectionPill } from "./primitives";
 import { materialIcon } from "./materialFormatters";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Modal } from "../../../../shared/ui/overlay";
 
 type MaterialLine = MaterialIssueRecord["materials"][number];
 
@@ -37,24 +38,25 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
   ];
 
   return (
-    <div onClick={onClose} style={{ position: "fixed" as const, inset: 0, zIndex: 1000, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <motion.div onClick={e => e.stopPropagation()} initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2, ease: EASE }}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 620, maxWidth: "calc(100vw - 48px)", maxHeight: "88vh", overflowY: "auto" as const, boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}>
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size="lg">
+      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ background: T.darkBurgundy, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700, marginBottom: 4 }}>{record.id}</div>
+            <Dialog.Title style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700, marginBottom: 4 }}>{record.id}</Dialog.Title>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
           </div>
-          <IconButton
-            icon="close"
-            label="Close"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="bg-white/10 text-white hover:bg-white/20 hover:text-white"
-          />
+          <Dialog.Close asChild>
+            <IconButton
+              icon="close"
+              label="Close"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="bg-white/10 text-white hover:bg-white/20 hover:text-white"
+            />
+          </Dialog.Close>
         </div>
-        <div style={{ padding: "22px 26px", display: "flex", flexDirection: "column" as const, gap: 18 }}>
+        <div style={{ padding: "22px 26px", display: "flex", flexDirection: "column" as const, gap: 18, overflowY: "auto" as const }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {[
               { label: "Issued By", val: record.issuedBy },
@@ -117,7 +119,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
 
           <Button variant="primary" size="lg" onClick={onClose} className="w-full">Close</Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }

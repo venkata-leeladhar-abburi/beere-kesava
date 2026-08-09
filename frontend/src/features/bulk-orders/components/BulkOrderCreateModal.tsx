@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { z } from "zod";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./WholesaleCustomerSelectSection";
 import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../shared/ui/date";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
 // under the hood, so numeric/date fields are validated as strings and coerced on submit).
@@ -132,38 +134,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
     paddingBottom: 8, borderBottom: `1px solid ${T.borderDef}`,
   };
 
-  if (!open) return null;
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{
-            position: "fixed", inset: 0, zIndex: 1500,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 24, overflowY: "auto",
-          }}
-        >
-          <motion.div
-            initial={{ y: 20, scale: 0.96 }}
-            animate={{ y: 0, scale: 1 }}
-            exit={{ y: 20, scale: 0.96 }}
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: "100%", maxWidth: 680,
-              background: "#FFFFFF",
-              borderRadius: 20,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
-              overflow: "hidden",
-              maxHeight: "90vh",
-              display: "flex", flexDirection: "column",
-            }}
-          >
+    <Modal open={open} onOpenChange={o => !o && onClose()} size="lg">
             {/* Header */}
             <div style={{
               background: `linear-gradient(100deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`,
@@ -172,22 +144,25 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
               flexShrink: 0,
             }}>
               <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>
-                  Create Bulk Order
-                </div>
+                <Dialog.Title asChild>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>
+                    Create Bulk Order
+                  </div>
+                </Dialog.Title>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   New wholesale customer order · {nextRef}
                 </div>
               </div>
-              <span style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 8 }}>
-                <IconButton
-                  onClick={onClose}
-                  icon={LucideX}
-                  variant="ghost"
-                  size="md"
-                  label="Close"
-                />
-              </span>
+              <Dialog.Close asChild>
+                <span style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 8 }}>
+                  <IconButton
+                    icon={LucideX}
+                    variant="ghost"
+                    size="md"
+                    label="Close"
+                  />
+                </span>
+              </Dialog.Close>
             </div>
 
             {/* Scrollable body */}
@@ -258,12 +233,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <Field label="Delivery Deadline" error={errors.deliveryDate} id="delivery-deadline">
-                    <Input id="delivery-deadline"
-                      type="date"
-                      min={minDate}
-                      value={deliveryDate}
-                      onChange={e => setDeliveryDate(e.target.value)}
-                      invalid={!!errors.deliveryDate}
+                    <DatePicker
+                      id="delivery-deadline"
+                      min={today}
+                      value={deliveryDate ? new Date(deliveryDate) : null}
+                      onChange={date => setDeliveryDate(date ? formatDate(date, "iso") : "")}
                     />
                   </Field>
 
@@ -332,9 +306,6 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 × Cancel
               </Button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </Modal>
   );
 }

@@ -8,6 +8,7 @@ import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
 import type { Batch, BatchStage, CodeCallbacks, WeaverRef } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { ContextBatchDetailsDialog, rowComplete } from "./batches/ContextBatchCard";
 
@@ -153,17 +154,20 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
               </Button>
             ))}
           </div>
-          <div style={{ position: "relative" }}>
-            <Button onClick={() => setSortOpen(!sortOpen)} variant="secondary" size="md" iconRight={PhCaretDown} className="text-[var(--text-tertiary)]">
-              Sort By: {sortBy}
-            </Button>
-            {sortOpen && <div style={{ position: "absolute", top: 44, right: 0, zIndex: 20, background: "#fff", border: `1px solid ${T.borderDef}`, borderRadius: 12, boxShadow: "0 12px 30px rgba(0,0,0,0.12)", overflow: "hidden", minWidth: 190 }}>{["Most Recent First", "Most Complete", "Least Complete"].map(v => (
-              <Button key={v} onClick={() => { setSortBy(v); setSortOpen(false); }} variant="ghost" fullWidth
-                className={`h-auto rounded-none justify-start py-[11px] px-3.5 text-sm font-normal text-[#3B2314] ${v === sortBy ? "bg-[#F5E8D0]" : "bg-white"}`}>
-                {v}
+          <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="md" iconRight={PhCaretDown} className="text-[var(--text-tertiary)]">
+                Sort By: {sortBy}
               </Button>
-            ))}</div>}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[190px] !p-0 !rounded-xl !overflow-hidden" style={{ background: "#fff", border: `1px solid ${T.borderDef}` }}>
+              {["Most Recent First", "Most Complete", "Least Complete"].map(v => (
+                <DropdownMenuItem key={v} onClick={() => setSortBy(v)} className={`!rounded-none !py-[11px] !px-3.5 !text-sm !font-normal !text-[#3B2314] ${v === sortBy ? "!bg-[#F5E8D0]" : ""}`}>
+                  {v}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
             <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>

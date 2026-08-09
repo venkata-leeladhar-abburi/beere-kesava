@@ -19,7 +19,32 @@ const SharedContexts = composeProviders([
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "../shared/ui/sonner";
 import { SkipLink } from "../shared/ui/SkipLink";
+import { ConfirmProvider, CommandPalette } from "../shared/ui/overlay";
 import { RouteLoadingFallback } from "./RouteLoadingFallback";
+
+// Global ⌘K / Ctrl+K command palette (design-system/05-OVERLAYS.md Part H).
+// Lives inside <BrowserRouter> so it can call useNavigate(); mounted once at
+// the app root so it's reachable from every portal/page.
+function GlobalCommandPalette() {
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      // Only ⌘K (Mac) / Ctrl+K (Windows/Linux) — a modifier combo, so it
+      // never collides with normal typing in an input/textarea (plain "k"
+      // keystrokes are left completely alone, wherever focus is).
+      const isCombo = (e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey);
+      if (!isCombo) return;
+
+      e.preventDefault();
+      setOpen((o) => !o);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  return <CommandPalette open={open} onOpenChange={setOpen} />;
+}
 
 // Layouts (for Context scope and Auth guards) — each is its own portal bundle so
 // a user only ever downloads the code for the role they're logged in as.
@@ -53,8 +78,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SharedContexts>
+      <ConfirmProvider>
       <BrowserRouter>
         <SkipLink />
+        <GlobalCommandPalette />
         <ErrorBoundary>
           <Suspense fallback={<RouteLoadingFallback />}>
           <Routes>
@@ -110,8 +137,9 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
+      </ConfirmProvider>
       </SharedContexts>
-      <Toaster position="top-right" richColors />
+      <Toaster position="bottom-right" richColors closeButton expand={false} visibleToasts={3} gap={8} duration={4000} />
     </AuthProvider>
     </QueryClientProvider>
   );

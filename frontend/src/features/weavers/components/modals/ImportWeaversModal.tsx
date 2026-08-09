@@ -1,12 +1,12 @@
 // ── Import weavers from an Excel/CSV file ────────────────────────────────────
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
-import { X } from "lucide-react";
-import { Upload as UploadSimple } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Upload as UploadSimple, X } from "lucide-react";
 import { T, F } from "../theme";
 import { Status, ParsedWeaverRow } from "../types";
 import type { ImportedWeaver } from "../data";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
   open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
@@ -106,18 +106,16 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
     onClose();
   };
 
-  if (!open) return null;
-
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(26,10,15,0.42)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => { reset(); onClose(); }}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        onClick={e => e.stopPropagation()}
-        style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: 32, width: "100%", maxWidth: 640, maxHeight: "88vh", overflowY: "auto", boxShadow: "0 30px 90px rgba(0,0,0,0.25)" }}
-      >
+    <Modal open={open} onOpenChange={o => { if (!o) { reset(); onClose(); } }} size="md">
+      <div style={{ padding: 32, overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
-          <IconButton onClick={() => { reset(); onClose(); }} variant="ghost" icon={X} label="Close" className="text-[var(--text-tertiary)]" />
+          <Dialog.Title asChild>
+            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
+          </Dialog.Title>
+          <Dialog.Close asChild>
+            <IconButton onClick={() => reset()} variant="ghost" icon={X} label="Close" className="text-[var(--text-tertiary)]" />
+          </Dialog.Close>
         </div>
         <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
           Upload a .xlsx or .csv file with columns <b>Name</b>, <b>Village</b>, <b>Mobile</b>, and optionally <b>Looms</b> and <b>Status</b>.
@@ -186,7 +184,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
             Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
           </Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }

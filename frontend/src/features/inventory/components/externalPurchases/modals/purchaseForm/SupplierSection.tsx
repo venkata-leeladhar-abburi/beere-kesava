@@ -5,6 +5,7 @@ import { T, F } from "../../theme";
 import { FormState } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
 import { Field, Input, Select, SelectItem, Button, Textarea } from "../../../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../../../shared/ui/date";
 
 /**
  * Supplier picker + basic purchase fields (top half of the Add/Edit Purchase
@@ -93,10 +94,9 @@ export function SupplierSection({
           />
         </Field>
         <Field label="Purchase Date">
-          <Input
-            type="date"
-            value={form.date}
-            onChange={(e) => set("date", e.target.value)}
+          <DatePicker
+            value={form.date ? new Date(form.date) : null}
+            onChange={(date) => set("date", date ? formatDate(date, "iso") : "")}
           />
         </Field>
         <div>

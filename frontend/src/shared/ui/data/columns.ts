@@ -46,6 +46,13 @@ export interface ColumnDef<T> {
    *  pairs, 3 = hidden behind "Details". Only used when DataTable's
    *  `responsive` prop is set. Columns without a priority default to 2. */
   priority?: 1 | 2 | 3;
+
+  /** When set, consecutive rows (in current display order) sharing the same
+   *  mergeKey value get this column's cell merged into one, spanning via
+   *  `rowSpan` on the first row of the run and omitted on the rest — the
+   *  DataTable equivalent of a hand-rolled rowSpan groupby. Returning
+   *  null/undefined opts a row out of merging (renders its own cell). */
+  mergeKey?: (row: T) => string | number | null | undefined;
 }
 
 export function columnAlign<T>(col: ColumnDef<T>): ColumnAlign {

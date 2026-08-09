@@ -414,5 +414,31 @@ export default tseslint.config(
     },
   },
 
+  /**
+   * PHASE-5 ENFORCEMENT LAYER (design-system/05-OVERLAYS.md, Part P Step 8)
+   * ═══════════════════════════════════════════════════════════════════════════
+   * `warn`, not `error` — the 63-modal migration and the native-date-input
+   * replacement are Phase 8/5 follow-up work, not done in this pass. This is
+   * a ratchet: it stops new 4+-digit z-index literals and new native date
+   * inputs from being added while the real migration is still in progress.
+   */
+  {
+    files: ["src/features/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "Property[key.name='zIndex'] Literal[value=/^[0-9]{4,}$/]",
+          message: "Use the --z-* ladder from styles/tokens.css, not a raw literal — design-system/05-OVERLAYS.md Part C.1.",
+        },
+        {
+          selector: "JSXAttribute[name.name='type'] Literal[value='date']",
+          message: "Use <DatePicker> from shared/ui/date, not a native type=\"date\" input — design-system/05-OVERLAYS.md Part K.4.",
+        },
+      ],
+    },
+  },
+
   prettierConfig
 );

@@ -6,6 +6,7 @@ import { STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -76,7 +77,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <Field label="Date Received" required>
-                <Input type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} />
+                <DatePicker value={form.receivedDate ? new Date(form.receivedDate) : null} onChange={d => set("receivedDate", d ? formatDate(d, "iso") : "")} />
               </Field>
               <div>
                 <label style={labelStyle}>
@@ -246,7 +247,7 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
     <ModalOverlay open={!!batch} onClose={onClose}>
       <ModalHeader title="Print Barcode" subtitle={`Barcode label for batch ${batch.id}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
+        <div className="print-area" style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{batch.type} — {batch.details}</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>

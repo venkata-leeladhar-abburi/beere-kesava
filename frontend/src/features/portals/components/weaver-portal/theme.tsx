@@ -3,8 +3,10 @@ import { brand, fonts, semantic } from '@/design-system/tokens';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { createPortal } from "react-dom";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
@@ -145,19 +147,20 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
       </div>
 
       {/* Graph Modal overlay if clicked */}
-      <AnimatePresence>
-        {showGraphModal && d?.designGraph && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowGraphModal(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }} onClick={e => e.stopPropagation()}>
-              <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(255,255,255,0.15)" }} />
+      <Modal open={showGraphModal && !!d?.designGraph} onOpenChange={o => { if (!o) setShowGraphModal(false); }} size="lg">
+        <Dialog.Title className="sr-only">{d?.code} · {d?.name} — Design Graph Drawing</Dialog.Title>
+        <div style={{ padding: 20 }}>
+          {d?.designGraph && (
+            <>
+              <img src={d.designGraph} alt="Design Graph Drawing" style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain", borderRadius: 12, border: "2px solid rgba(0,0,0,0.08)" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-                <span style={{ fontFamily: F.u, color: "#FFF", fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
+                <span style={{ fontFamily: F.u, color: C.text, fontSize: 14, fontWeight: 600 }}>{d.code} · {d.name} — Design Graph Drawing</span>
                 <Button onClick={() => setShowGraphModal(false)} variant="primary" size="sm" className="text-white bg-[#6E0F2D] hover:bg-[#6E0F2D]">Close Reference</Button>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </div>
+      </Modal>
     </motion.div>
   );
 }

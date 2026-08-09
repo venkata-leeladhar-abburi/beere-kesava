@@ -1,9 +1,11 @@
-import React, { useRef, useEffect } from "react";
-import { motion, useInView, AnimatePresence } from "motion/react";
+import React, { useRef } from "react";
+import { motion, useInView } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useAnimatedNumber } from "../../../../hooks/useAnimatedNumber";
 import { T, F, EASE, G_GOLD } from "../theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 export function AnimatedBar({ pct, color, height = 5, trackBg = "rgba(110,15,45,0.09)" }: {
   pct: number; color: string; height?: number; trackBg?: string;
@@ -92,60 +94,31 @@ export function SectionHeader({
 }
 
 export function ModalOverlay({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-  useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22 }}
-          onClick={onClose}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(61,14,26,0.60)", backdropFilter: "blur(4px)",
-            zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 24 }}
-            transition={{ duration: 0.28, ease: EASE }}
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: "#FFFDF9", borderRadius: 22, boxShadow: "0 40px 120px rgba(61,14,26,0.40)",
-              width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto",
-              border: `1px solid ${T.borderDef}`,
-            }}
-          >
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Modal open={open} onOpenChange={o => { if (!o) onClose(); }} size="md">
+      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: "#FFFDF9", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+        {children}
+      </div>
+    </Modal>
   );
 }
 
 export function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: string; onClose: () => void }) {
   return (
-    <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, borderRadius: "22px 22px 0 0", padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+    <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "26px 28px 24px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
       <div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</div>
+        <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: subtitle ? 4 : 0 }}>{title}</Dialog.Title>
         {subtitle && <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)" }}>{subtitle}</div>}
       </div>
-      <IconButton
-        icon={X}
-        label="Close"
-        onClick={onClose}
-        shape="circle"
-        className="bg-white/12 text-white border border-white/22 hover:bg-white/18"
-      />
+      <Dialog.Close asChild>
+        <IconButton
+          icon={X}
+          label="Close"
+          onClick={onClose}
+          shape="circle"
+          className="bg-white/12 text-white border border-white/22 hover:bg-white/18"
+        />
+      </Dialog.Close>
     </div>
   );
 }

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CalendarClock, Receipt, X } from "lucide-react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 
-import { EASE, F, T, BulkOrder, useFirms } from "../../theme";
+import { F, T, useFirms } from "../../theme";
 import { Invoice } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
 export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
@@ -28,19 +30,18 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 480, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative" }}>
-          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
-          <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
-            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+    <Modal open onOpenChange={o => !o && onClose()} size="sm">
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+          <Dialog.Title asChild>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
+          </Dialog.Title>
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm"
+              className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+          </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
           <div style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Reference</span>
@@ -104,7 +105,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
             <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
           </Field>
           <Field label="Payment Date" required id="payment-date">
-            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
           </Field>
           <Field label="UTR Number" required id="utr-number">
             <Input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026042812345" />
@@ -124,13 +125,12 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
           </Field>
         </div>
 
-        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", flexShrink: 0 }}>
           <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
             Save Payment
           </Button>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

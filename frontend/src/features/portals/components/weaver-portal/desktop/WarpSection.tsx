@@ -7,6 +7,7 @@ import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
 
 function DSectionHeader({ label }: { label: string }) {
@@ -106,6 +107,9 @@ export function WarpSection({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["warpRequests"] });
       setWarpSubmitted(true);
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to submit warp request. Please try again.");
     },
   });
 

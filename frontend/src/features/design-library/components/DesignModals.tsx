@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
+import { useState } from "react";
 import {
-  Image as ImageSquare, Workflow as Graph, Save as FloppyDisk, AlertCircle as WarningCircle, X as PhX,
+  Image as ImageSquare, Workflow as Graph, Save as FloppyDisk, AlertCircle as WarningCircle,
 } from "lucide-react";
 import { DesignEntry } from "../contexts/DesignLibraryContext";
-import { T, F, G } from "./theme";
-import { WeaverCombobox, UploadZone, fieldStyle, labelStyle } from "./DesignLibraryComponents";
-import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { T, F } from "./theme";
+import { WeaverCombobox, UploadZone, labelStyle } from "./DesignLibraryComponents";
+import { Button, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 const SAREE_TYPES = [
   { code: "HZ-003", name: "Heavy Zari" },
@@ -46,18 +46,10 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
   }
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <motion.div onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.22 }}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 560, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
-        <div style={{ padding: "22px 24px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Add New Design Code</div>
-          <IconButton onClick={onClose} label="Close" icon={PhX} variant="ghost" size="sm" />
-        </div>
-
-        <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+    <Modal open onOpenChange={o => !o && onClose()} size="md">
+      <Modal.Header title="Add New Design Code" />
+      <Modal.Body>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 4, paddingBottom: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
               <label style={labelStyle}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
@@ -99,18 +91,17 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
               Only Design Code is required — all other fields can be filled in later. The new code will be saved to the master Design Library immediately.
             </span>
           </div>
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <Button onClick={handleSave} disabled={!form.code?.trim()} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
-              Save Design Code
-            </Button>
-            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
-              Cancel
-            </Button>
-          </div>
         </div>
-      </motion.div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={!form.code?.trim()} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
+          Save Design Code
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
@@ -118,32 +109,25 @@ export function SlipModal({ design, onClose, onSave }: { design: DesignEntry; on
   const [slip, setSlip] = useState<string | null>(design.colorSlipPhoto);
   const [graph, setGraph] = useState<string | null>(design.designGraph);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, background: "rgba(30,10,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <motion.div onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.22 }}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 480, maxWidth: "calc(100vw - 48px)", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
-        <div style={{ padding: "22px 24px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginBottom: 2 }}>{design.code}</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{design.hasColorSlip ? "Update Color Slip" : "Upload Color Slip"}</div>
-          </div>
-          <IconButton onClick={onClose} label="Close" icon={PhX} variant="ghost" size="sm" />
-        </div>
-        <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+    <Modal open onOpenChange={o => !o && onClose()} size="sm">
+      <Modal.Header
+        title={design.hasColorSlip ? "Update Color Slip" : "Upload Color Slip"}
+        subtitle={design.code}
+      />
+      <Modal.Body>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 4, paddingBottom: 20 }}>
           <UploadZone label="Color Slip Photo" hint="Clear photo of the color slip" icon={ImageSquare} preview={slip} onFile={setSlip} />
           <UploadZone label="Design Graph (optional)" hint="Upload design graph image" icon={Graph} preview={graph} onFile={setGraph} />
-          <div style={{ display: "flex", gap: 10 }}>
-            <Button onClick={() => onSave(slip, graph)} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
-              {design.hasColorSlip ? "Update Slip" : "Upload Slip"}
-            </Button>
-            <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
-              Cancel
-            </Button>
-          </div>
         </div>
-      </motion.div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={onClose} variant="secondary" size="lg" className="flex-1">
+          Cancel
+        </Button>
+        <Button onClick={() => onSave(slip, graph)} variant="primary" size="lg" className="flex-[2]" iconLeft={FloppyDisk}>
+          {design.hasColorSlip ? "Update Slip" : "Upload Slip"}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

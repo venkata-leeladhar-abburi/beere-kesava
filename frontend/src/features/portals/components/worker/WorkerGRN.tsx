@@ -8,6 +8,7 @@ import { GRNItemVerificationCard } from "./GRNItemVerificationCard";
 import { GRNPODropdown } from "./GRNPODropdown";
 import { Button, Input, CheckboxField } from "../../../../shared/ui/primitives";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { rawMaterialsApi, CreateGrnPayload } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { useAuth } from "../../../../contexts/AuthContext";
@@ -112,7 +113,7 @@ export function WorkerGRN({
     },
     onError: (err) => {
       console.error("Failed to create GRN:", err);
-      // In a real app we might show an error toast here
+      toast.error(err instanceof Error ? err.message : "Failed to record goods receipt. Please try again.");
     }
   });
 

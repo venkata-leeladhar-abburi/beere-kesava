@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
 import { C, F } from "../tokens";
 import { FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
 import { EASE } from "./shared";
-import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Modal } from "../../../../../shared/ui/overlay";
 
 export interface VerifData {
   condition: "perfect" | "damaged" | null;
@@ -16,7 +17,7 @@ export interface VerifData {
 
 function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onCancel: () => void }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(27,12,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onCancel}>
+    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onCancel}>
       <div onClick={e => e.stopPropagation()} style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <AlertTriangle size={18} color={C.crim} />
@@ -80,22 +81,13 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} onClick={onClose} />
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ duration: 0.28, ease: EASE }}
-        style={{ position: "relative", width: "100%", maxWidth: isMobile ? 420 : "min(600px, 100vw)", margin: "0 auto", background: "#FFF", borderRadius: "20px 20px 0 0", padding: "20px 16px 32px", maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text }}>Verify Condition</span>
-          <IconButton icon={X} label="Close" variant="ghost" onClick={onClose} />
-        </div>
-        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 14 }}>
-          {assignments.length} saree{assignments.length > 1 ? "s" : ""} · Received by <strong style={{ color: C.text }}>Ravi Kumar</strong> · {today}
-        </div>
-
-        <div style={{ flex: 1, overflowY: "auto" }}>
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} size={isMobile ? "xs" : "md"}>
+      <Modal.Header
+        title="Verify Condition"
+        subtitle={`${assignments.length} saree${assignments.length > 1 ? "s" : ""} · Received by Ravi Kumar · ${today}`}
+      />
+      <Modal.Body>
+        <div style={{ paddingTop: 10 }}>
           {/* Bulk toggle */}
           {assignments.length > 1 && (
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -230,20 +222,19 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
             </div>
           )}
         </div>
-
-        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-          <Button
-            variant="primary"
-            fullWidth
-            iconLeft={CheckCircle2}
-            disabled={useBulk ? !isBulkReady : Object.values(perSaree).some(d => !d.condition || (d.condition === "damaged" && (!d.damageType.trim() || !d.damagePhotoUrl)))}
-            onClick={handleSave}
-            className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
-          >
-            Save &amp; Mark Received
-          </Button>
-        </div>
-      </motion.div>
+      </Modal.Body>
+      <Modal.Footer className="justify-stretch">
+        <Button
+          variant="primary"
+          fullWidth
+          iconLeft={CheckCircle2}
+          disabled={useBulk ? !isBulkReady : Object.values(perSaree).some(d => !d.condition || (d.condition === "damaged" && (!d.damageType.trim() || !d.damagePhotoUrl)))}
+          onClick={handleSave}
+          className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
+        >
+          Save &amp; Mark Received
+        </Button>
+      </Modal.Footer>
 
       {photoPromptFor && (
         <DamagePhotoPrompt
@@ -259,6 +250,6 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
           }}
         />
       )}
-    </div>
+    </Modal>
   );
 }
