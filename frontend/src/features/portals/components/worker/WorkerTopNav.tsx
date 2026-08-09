@@ -10,6 +10,7 @@ import { C, F } from "./tokens";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../../lib/icon";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
@@ -99,17 +100,18 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         {/* Bell */}
         <div style={{ position: "relative" }}>
-          <motion.div
-            whileHover={{ scale: 1.05, backgroundColor: "rgba(110,15,45,0.05)" }}
-            whileTap={{ scale: 0.95 }}
-            style={{ borderRadius: 10, display: "inline-block" }}
-          >
-            <IconButton icon={Bell} label="Notifications" variant="secondary" onClick={() => { setShowNotif(p => !p); setShowUser(false); }}
-              className="w-9 h-9 rounded-[10px] border-[rgba(110,15,45,0.10)] bg-transparent" />
-          </motion.div>
-          <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: C.crim, border: "1.5px solid #FFFDF9" }} />
-          {showNotif && (
-            <div style={{ position: "absolute", top: 44, right: 0, width: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 12px 40px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
+          <DropdownMenu open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowUser(false); }}>
+            <DropdownMenuTrigger asChild>
+              <motion.div
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(110,15,45,0.05)" }}
+                whileTap={{ scale: 0.95 }}
+                style={{ borderRadius: 10, display: "inline-block" }}
+              >
+                <IconButton icon={Bell} label="Notifications" variant="secondary"
+                  className="w-9 h-9 rounded-[10px] border-[rgba(110,15,45,0.10)] bg-transparent" />
+              </motion.div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!w-[300px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)` }}>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Mark all read</span>
@@ -130,55 +132,53 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                   <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
                 </div>
               ))}
-            </div>
-          )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: C.crim, border: "1.5px solid #FFFDF9", pointerEvents: "none" }} />
         </div>
 
         {/* Worker avatar + name */}
-        <div style={{ position: "relative" }}>
-          <motion.div
-            onClick={() => { setShowUser(p => !p); setShowNotif(false); }}
-            whileHover={{ scale: 1.02, backgroundColor: "rgba(110,15,45,0.04)" }}
-            whileTap={{ scale: 0.98 }}
-            style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "rgba(110,15,45,0.02)" }}
-          >
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
-            </div>
-            <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>Ravi Kumar</span>
-            <ChevronDown size={12} color={C.muted} />
-          </motion.div>
-          {showUser && (
-            <div style={{ position: "absolute", top: 44, right: 0, width: 210, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 12px 40px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
-              <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
-                <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>Ravi Kumar</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
+        <DropdownMenu open={showUser} onOpenChange={o => { setShowUser(o); if (o) setShowNotif(false); }}>
+          <DropdownMenuTrigger asChild>
+            <motion.div
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(110,15,45,0.04)" }}
+              whileTap={{ scale: 0.98 }}
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "rgba(110,15,45,0.02)" }}
+            >
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
               </div>
-              <Button variant="tertiary" fullWidth iconLeft={User} onClick={() => { onSelect("profile"); closeAll(); }}
-                className="justify-start gap-2 rounded-none border-0 px-4 py-2.5 text-[13px] text-[#1A0A0F]">
-                My Profile
-              </Button>
-              {localStorage.getItem("bk_original_admin_role") ? (
-                <Button variant="tertiary" fullWidth iconLeft={LogOut} onClick={() => {
-                  closeAll();
-                  const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                  if (origAdminRole) {
-                    localStorage.removeItem("bk_original_admin_role");
-                    selectRole(origAdminRole as any);
-                    navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                  }
-                }} className="justify-start gap-2 rounded-none border-0 border-t border-[rgba(110,15,45,0.08)] px-4 py-2.5 text-[13px] text-[#69635E]">
-                  My Portal
-                </Button>
-              ) : (
-                <Button variant="tertiary" fullWidth iconLeft={LogOut} onClick={() => { closeAll(); onBack?.(); }}
-                  className="justify-start gap-2 rounded-none border-0 border-t border-[rgba(110,15,45,0.08)] px-4 py-2.5 text-[13px] text-[#69635E]">
-                  Switch Portal
-                </Button>
-              )}
+              <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>Ravi Kumar</span>
+              <ChevronDown size={12} color={C.muted} />
+            </motion.div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="!w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)` }}>
+            <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>Ravi Kumar</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
             </div>
-          )}
-        </div>
+            <DropdownMenuItem onClick={() => { onSelect("profile"); closeAll(); }} className="!rounded-none !px-4 !py-2.5 !text-[13px] !text-[#1A0A0F]">
+              <User size={14} /> My Profile
+            </DropdownMenuItem>
+            {localStorage.getItem("bk_original_admin_role") ? (
+              <DropdownMenuItem onClick={() => {
+                closeAll();
+                const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                if (origAdminRole) {
+                  localStorage.removeItem("bk_original_admin_role");
+                  selectRole(origAdminRole as any);
+                  navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                }
+              }} className="!rounded-none !border-t !border-[rgba(110,15,45,0.08)] !px-4 !py-2.5 !text-[13px] !text-[#69635E]">
+                <LogOut size={14} /> My Portal
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => { closeAll(); onBack?.(); }} className="!rounded-none !border-t !border-[rgba(110,15,45,0.08)] !px-4 !py-2.5 !text-[13px] !text-[#69635E]">
+                <LogOut size={14} /> Switch Portal
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.nav>
   );

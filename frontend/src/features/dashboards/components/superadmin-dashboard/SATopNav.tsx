@@ -10,6 +10,7 @@ import {
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, EASE } from "./theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../shared/ui/overlay";
 import { NAV_GROUPS, findNavGroup } from "./data";
 
 export function SATopNav({ active, set, onBack, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void }) {
@@ -226,48 +227,45 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
             <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}`, pointerEvents: "none" }} />
           </div>
           {/* Gold SA avatar + profile dropdown */}
-          <div style={{ position: "relative" }}>
-            <motion.div onClick={() => { setShowProfile(p => !p); setOpenGroup(null); }}
-              initial={{ backgroundColor: "rgba(245,232,208,0.04)" }}
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.10)" }}
-              whileTap={{ scale: 0.98 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "6px 12px 6px 6px", borderRadius: 12, border: `1px solid ${showProfile ? T.antiqueGold : "rgba(245,232,208,0.14)"}`, backgroundColor: showProfile ? "rgba(245,232,208,0.10)" : "rgba(245,232,208,0.04)" }}
-            >
-              <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
-                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
-              </div>
-              {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
-              <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
-            </motion.div>
-            {showProfile && (
-              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 250, overflow: "hidden" }}>
-                <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
-                    <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
-                  </div>
+          <DropdownMenu open={showProfile} onOpenChange={o => { setShowProfile(o); if (o) setOpenGroup(null); }}>
+            <DropdownMenuTrigger asChild>
+              <motion.div
+                initial={{ backgroundColor: "rgba(245,232,208,0.04)" }}
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.10)" }}
+                whileTap={{ scale: 0.98 }}
+                style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "6px 12px 6px 6px", borderRadius: 12, border: `1px solid ${showProfile ? T.antiqueGold : "rgba(245,232,208,0.14)"}`, backgroundColor: showProfile ? "rgba(245,232,208,0.10)" : "rgba(245,232,208,0.04)" }}
+              >
+                <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
+                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
                 </div>
-                <div style={{ padding: "6px 0" }}>
-                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <UserRound size={15} color={T.taupe} /> View Profile
-                  </Button>
-                  <div style={{ height: 1, background: T.borderDef, margin: "4px 0" }} />
-                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#3B2314] hover:!bg-[rgba(110,15,45,0.04)]">
-                    <ChevronLeft size={15} color={T.taupe} /> Switch Portal
-                  </Button>
-                  <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="tertiary" fullWidth
-                    className="!justify-start !gap-2.5 !rounded-none !border-none !bg-transparent !py-[11px] !px-[18px] !text-sm !font-normal !text-[#C0392B] hover:!bg-[rgba(192,57,43,0.05)] hover:!text-[#C0392B]">
-                    <LogOut size={15} color="#C0392B" /> Logout
-                  </Button>
+                {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>Superadmin</span>}
+                <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+              </motion.div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[250px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}` }}>
+              <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
+                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
                 </div>
               </div>
-            )}
-          </div>
+              <div style={{ padding: "6px 0" }}>
+                <DropdownMenuItem onClick={() => onProfile?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <UserRound size={15} color={T.taupe} /> View Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <ChevronLeft size={15} color={T.taupe} /> Switch Portal
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onBack?.()} destructive className="!h-auto !py-[11px] !px-[18px]">
+                  <LogOut size={15} color="#C0392B" /> Logout
+                </DropdownMenuItem>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </nav>
 
