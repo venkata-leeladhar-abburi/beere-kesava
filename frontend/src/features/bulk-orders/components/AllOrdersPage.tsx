@@ -8,6 +8,7 @@ import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../.
 import { AllOrdersFilterBar } from "./AllOrdersFilterBar";
 import { AllOrdersAnalyticsSection } from "./AllOrdersAnalyticsSection";
 import { Button } from "../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -94,6 +95,16 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
             <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.68)", fontSize: 14 }}>Complete wholesale customer production order queue.</p>
           </div>
         </div>
+      </div>
+
+      <div style={{ padding: "16px 48px 0", background: T.silkCream }}>
+        <Breadcrumbs
+          items={[
+            { key: "production", label: "Production", onClick: onBack },
+            { key: "orders", label: "Orders", onClick: onBack },
+            { key: "all-orders", label: "All Bulk Orders" },
+          ]}
+        />
       </div>
 
       {/* Filters and Categories Panel */}

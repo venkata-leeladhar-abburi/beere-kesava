@@ -13,39 +13,52 @@
    document must look *exactly* like the on-screen preview, in full brand
    colour. Every tinted surface therefore carries print-color-adjust: exact
    so browsers don't strip the backgrounds.
+
+   COLOUR SOURCE: every --doc-* colour below resolves to a Phase 1 brand-ramp
+   token rather than a loose hex, so the document tracks the design system
+   automatically instead of drifting away from the app it came from.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Document palette — drawn straight from the Phase 1 brand ramps so the
-     document reads as the same product as the app chrome. */
-  --doc-wine:        #4A061B;   /* bk-burgundy-950 */
-  --doc-burgundy:    #6E0F2D;   /* bk-burgundy-900 — brand primary */
-  --doc-burgundy-mid:#872D44;   /* bk-burgundy-800 */
-  --doc-gold:        #C89B47;   /* bk-gold-500 — decorative only, never text */
-  --doc-gold-text:   #845E04;   /* bk-gold-700 — the readable gold */
-  --doc-gold-soft:   #EDDCC1;   /* bk-gold-200 */
-  --doc-cream:       #FFFDF9;
-  --doc-cream-2:     #FAF5EC;
-  --doc-warm:        #F5E8D0;
-  --doc-ink:         #2C1810;
-  --doc-ink-soft:    #3B2314;
-  --doc-muted:       #69635E;
-  --doc-rule:        rgba(110, 15, 45, 0.14);
-  --doc-rule-soft:   rgba(110, 15, 45, 0.07);
+  /* ── Document palette — Phase 1 ramps, not loose hexes ── */
+  --doc-wine:         var(--bk-burgundy-950);  /* #4A061B */
+  --doc-burgundy:     var(--bk-burgundy-900);  /* #6E0F2D — brand primary */
+  --doc-burgundy-mid: var(--bk-burgundy-800);  /* #872D44 */
+  --doc-gold:         var(--bk-gold-500);      /* #C89B47 — decorative only, never text */
+  --doc-gold-text:    var(--bk-gold-700);      /* #845E04 — the readable gold, 5.86:1 */
+  --doc-gold-bright:  var(--bk-gold-300);      /* #E0C59A — on the dark band only */
+  --doc-gold-soft:    var(--bk-gold-200);      /* #EDDCC1 */
+
+  --doc-paper:        #FFFFFF;                 /* true paper — the sheet itself */
+  --doc-cream:        var(--bk-neutral-0);     /* #FFFDFB */
+  --doc-cream-2:      var(--bk-neutral-25);    /* #FAF8F6 — zebra / card fill */
+  --doc-warm:         var(--bk-gold-100);      /* #F6EDDD */
+
+  --doc-ink:          var(--bk-neutral-900);   /* #1D1814 — 17.6:1 primary */
+  --doc-ink-soft:     var(--bk-neutral-800);   /* #322D28 — 13.6:1 table body */
+  --doc-muted:        var(--bk-neutral-700);   /* #4F4A45 —  8.8:1 labels/secondary */
+  --doc-faint:        var(--bk-neutral-600);   /* #69635E —  5.9:1 true tertiary only */
+
+  --doc-rule:         rgba(110, 15, 45, 0.16);
+  --doc-rule-soft:    rgba(110, 15, 45, 0.08);
 }
 
-/* ── Part E — print type scale (pt, not px — paper is ~300dpi at ~35cm) ── */
+/* ── Part E — print type scale ──
+   pt, not px: paper is read at ~35cm, and pt is the only unit browsers map
+   to physical size identically on screen preview and on paper. Sizes are a
+   step up from the first draft — 7.5pt body copy tested as too tight to
+   scan on a dense invoice. 8pt is the hard floor (Part E). */
 :root {
-  --doc-brand-size:    19pt;
+  --doc-brand-size:    17pt;
   --doc-title:         15pt;
-  --doc-heading:       10pt;
+  --doc-heading:       10.5pt;
   --doc-body:          9pt;
   --doc-table:         8.5pt;
-  --doc-table-head:    8pt;
-  --doc-small:         7.5pt;
+  --doc-table-head:    7.5pt;
+  --doc-small:         8pt;
   --doc-code:          8.5pt;
-  --doc-total:         12pt;
-  --doc-amount-words:  8.5pt;
+  --doc-total:         14pt;
+  --doc-amount-words:  9.5pt;
 }
 
 /* The print portal target is never part of the on-screen layout — without
@@ -61,16 +74,32 @@
   width: 210mm;
   min-height: 297mm;
   padding: 0;
-  background: var(--doc-cream);
+  background: var(--doc-paper);
   color: var(--doc-ink);
   box-sizing: border-box;
   font-family: var(--font-ui);
+  font-size: var(--doc-body);
+  line-height: 1.45;
   display: flex;
   flex-direction: column;
   position: relative;
 }
+/* Part H.5 — Payment Receipt is the one document type that isn't full A4.
+   `page: bk-a5` binds this element to the named @page rule below (Chrome
+   supports CSS Paged Media's named pages), so a receipt prints on its own
+   148mm-tall page box instead of a full A4 sheet with the bottom half blank. */
+.bk-doc--a5 {
+  width: 210mm;
+  min-height: 148mm;
+  page: bk-a5;
+}
+@page bk-a5 {
+  size: A5 landscape;
+  margin: 10mm;
+}
+
 .bk-doc__body {
-  padding: 0 15mm 16mm;
+  padding: 0 15mm 10mm;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -78,8 +107,10 @@
 
 /* ── ① Letterhead band — full-bleed brand gradient ── */
 .bk-doc__band {
-  background: linear-gradient(135deg, var(--doc-wine) 0%, var(--doc-burgundy) 58%, #7E1233 100%);
-  padding: 11mm 15mm 9mm;
+  background:
+    radial-gradient(115% 160% at 88% -10%, rgba(200, 155, 71, 0.20) 0%, rgba(200, 155, 71, 0) 55%),
+    linear-gradient(135deg, var(--doc-wine) 0%, var(--doc-burgundy) 58%, #7E1233 100%);
+  padding: 7.5mm 15mm 6.5mm;
   color: var(--doc-cream);
   position: relative;
 }
@@ -87,17 +118,17 @@
   content: "";
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 1.2mm;
+  height: 1.4mm;
   background: linear-gradient(90deg, var(--doc-gold) 0%, #E7C983 45%, var(--doc-gold) 100%);
 }
 .bk-doc__logo {
-  width: 16mm; height: 16mm;
+  width: 17mm; height: 17mm;
   border-radius: 2.5mm;
-  background: var(--doc-cream);
+  background: #FFFFFF;
   padding: 1.6mm;
   object-fit: contain;
   flex-shrink: 0;
-  box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.22);
 }
 
 /* ── ③ Party / meta cards ── */
@@ -105,41 +136,53 @@
   background: var(--doc-cream-2);
   border: 0.3mm solid var(--doc-rule);
   border-radius: 2mm;
-  padding: 4mm 4.5mm;
+  padding: 3mm 3.5mm;
 }
-.bk-doc__card--accent { border-left: 1.2mm solid var(--doc-gold); }
+.bk-doc__card--accent { border-left: 1.4mm solid var(--doc-gold); }
 
 .bk-doc__eyebrow {
   font-size: var(--doc-table-head);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.11em;
   color: var(--doc-gold-text);
 }
 
 /* ── ④ Line-item table (Part J) — page-break-aware, not Phase 4's DataTable ── */
-.bk-doc__table { width: 100%; border-collapse: collapse; font-size: var(--doc-table); }
+.bk-doc__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--doc-table);
+  /* An invoice is a financial record: figures must align on the decimal and
+     never be re-proportioned by the font's default figure widths. */
+  font-variant-numeric: tabular-nums;
+}
 .bk-doc__table thead th {
   font-size: var(--doc-table-head); font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em;
+  text-transform: uppercase; letter-spacing: 0.09em;
   color: var(--doc-warm);
   background: var(--doc-burgundy);
-  padding: 2.6mm 2.5mm;
+  padding: 2.2mm 2.5mm;
   text-align: start;
+  white-space: nowrap;
 }
 .bk-doc__table thead th:first-child { border-top-left-radius: 1.5mm; }
 .bk-doc__table thead th:last-child  { border-top-right-radius: 1.5mm; }
 .bk-doc__table td {
-  padding: 2.4mm 2.5mm;
+  padding: 1.9mm 2.5mm;
   border-bottom: 0.25mm solid var(--doc-rule-soft);
   vertical-align: top;
   color: var(--doc-ink-soft);
 }
 .bk-doc__table tbody tr:nth-child(even) td { background: var(--doc-cream-2); }
+.bk-doc__table tbody tr:last-child td { border-bottom: 0.4mm solid var(--doc-rule); }
 .bk-doc__table [data-num] {
   text-align: end;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
+
+/* Repeat the column header on every printed page (Part J). */
 .bk-doc__table thead { display: table-header-group; }
 
 /* Tax summary shares the table skin but sits quieter than the line items */
@@ -149,12 +192,15 @@
 }
 .bk-doc__tax-summary tfoot td {
   border-top: 0.4mm solid var(--doc-rule);
+  border-bottom: none;
   font-weight: 700;
+  color: var(--doc-ink);
+  background: var(--doc-cream-2);
 }
 
 /* ── ⑤ Totals ── */
 .bk-doc__totals-card {
-  width: 82mm;
+  width: 100%;
   border: 0.3mm solid var(--doc-rule);
   border-radius: 2mm;
   overflow: hidden;
@@ -162,13 +208,13 @@
 }
 .bk-doc__totals-grand {
   background: linear-gradient(120deg, var(--doc-burgundy) 0%, var(--doc-wine) 100%);
-  color: var(--doc-cream);
+  color: #FFFFFF;
 }
 
 /* ── ⑦ Amount in words ── */
 .bk-doc__words {
-  background: linear-gradient(90deg, rgba(200,155,71,0.16) 0%, rgba(200,155,71,0.05) 100%);
-  border-left: 1.2mm solid var(--doc-gold);
+  background: linear-gradient(90deg, rgba(200,155,71,0.18) 0%, rgba(200,155,71,0.04) 100%);
+  border-left: 1.4mm solid var(--doc-gold);
   border-radius: 1.5mm;
   padding: 3mm 4mm;
 }
@@ -186,46 +232,86 @@
   border-radius: 2mm;
   overflow: hidden;
 }
+/* The sheet is a fixed 210mm (~794px). On a narrow screen it would overflow,
+   so shrink it — with `zoom`, not `transform: scale()`. A transform only
+   scales the painted result and leaves the original box in the layout, so the
+   preview kept a tall band of dead grey below the sheet and the scrollbar
+   ran far past the content. `zoom` scales the layout box too. */
 @media (max-width: 900px) {
   .bk-doc-viewport .bk-doc {
-    transform: scale(var(--doc-zoom, 0.55));
-    transform-origin: top center;
+    zoom: var(--doc-zoom, 0.55);
   }
 }
+/* Firefox only shipped `zoom` in 126 — there, fall back to letting the
+   viewport scroll horizontally rather than clipping the sheet. */
+@supports not (zoom: 0.5) {
+  .bk-doc-viewport { overflow: auto; }
+}
 
-/* ── Part C.2 — print isolation: hide everything except the document ── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Part C.2 — PRINT ISOLATION
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media print {
+  /* ── Page margins ──
+     Side margins stay 0 because .bk-doc__body owns the 15mm side inset and
+     the letterhead band is deliberately full-bleed to the paper edge.
+
+     Top margin is the subtle one. On page 1 the band itself supplies the top
+     inset, so the page box must start at 0 — but a single `margin: 0` applies
+     to EVERY page, and continuation pages have no band, so their content ran
+     hard against the paper edge with no breathing room at all. `:first`
+     scopes the zero-margin to page 1 and gives pages 2..n a real top margin.
+
+     NOTE: globals.css also declares `@page { margin: 12mm }` for the legacy
+     `.print-area` flow. @page rules cascade like any other, so these win only
+     because print.css is imported last in styles/index.css — keep it last. */
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 16mm 0 13mm;
+  }
+  @page :first {
+    margin: 0 0 13mm;
   }
 
-  /* Isolation is scoped to `body[data-printing-document]`, an attribute
+  /* ── Hide the application, keep the document ──
+     Isolation is scoped to `body[data-printing-document]`, an attribute
      useDocument() sets for the duration of the print. That matters:
      globals.css carries an older, still-live print mechanism for five
      legacy modals that opt in with `.print-area`, and an unconditional
      `body > * { display: none }` here would remove #root from the page and
      silently break every one of them. Scoped this way the two mechanisms
      coexist — legacy prints are untouched, document prints get the full
-     Phase 7 treatment. */
-  body[data-printing-document] > * { display: none !important; }
+     Phase 7 treatment.
 
-  body[data-printing-document] > #document-print-root,
-  #document-print-root * { display: revert !important; }
+     ⚠ DO NOT reintroduce a `#document-print-root * { display: revert }`
+     companion rule here. `revert` rolls a property back to the USER-AGENT
+     origin, discarding every author declaration — and as an !important
+     author rule it also outranks inline styles. Applied to the whole
+     subtree it stripped `display: flex` / `display: grid` off every layout
+     container in the document (letterhead band, party grid, totals row,
+     terms grid, signature row), collapsing them all to plain blocks and
+     killing every `gap`. That is exactly why print/"Save as PDF" output
+     used to look nothing like the on-screen preview. It is also entirely
+     unnecessary: the rule below only ever hides *direct children of body*,
+     so nothing inside the document was hidden in the first place. */
+  body[data-printing-document] > *:not(#document-print-root) {
+    display: none !important;
+  }
 
   body[data-printing-document] > #document-print-root {
     display: block !important;
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
+    width: auto !important;
     box-shadow: none !important;
     background: #FFFFFF !important;
   }
 
   /* globals.css sets `body * { visibility: hidden }` for the legacy
      `.print-area` flow. Visibility inherits, so without this the document
-     tree prints as a blank page even though its layout is correct. */
+     tree prints as a blank page even though its layout is correct.
+     (Unlike `display`, forcing `visibility` has no layout side effects.) */
   #document-print-root,
   #document-print-root * { visibility: visible !important; }
 
@@ -239,13 +325,31 @@
     background: #FFFFFF !important;
     overflow: visible !important;
     height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
+  /* The @page box is already exactly A4. Pinning the sheet to 210mm × 297mm
+     on top of that makes an exact-fit box inside an exact-fit page, and
+     sub-pixel rounding then reliably spills a trailing blank sheet out of
+     Chrome. Let the page box supply the geometry and the document simply
+     flow inside it. */
   .bk-doc {
+    width: auto !important;
+    min-height: 0 !important;
     box-shadow: none !important;
     margin: 0 !important;
     border-radius: 0 !important;
+    /* The screen preview clips the band's square corners against the sheet's
+       rounded ones; on paper there are no rounded corners to clip, and
+       leaving overflow hidden can crop a page-breaking table. */
+    overflow: visible !important;
   }
+
+  /* On screen the body's bottom padding is what keeps content off the sheet
+     edge. In print the @page bottom margin does that job on every page, so
+     keeping both stacks ~23mm of dead space under the signature block. */
+  .bk-doc__body { padding-bottom: 0 !important; }
 
   /* The whole document is brand-coloured by design (see header note), so
      colour adjustment is forced on every tinted surface, not just bands. */
@@ -260,7 +364,8 @@
   .bk-doc__tax-summary,
   .bk-doc__signature,
   .bk-doc__words,
-  .bk-doc__terms { break-inside: avoid; }
+  .bk-doc__terms,
+  .bk-doc__card { break-inside: avoid; }
 
   .bk-doc__signature { break-before: avoid; }
   .bk-doc__table tbody tr { break-inside: avoid; }

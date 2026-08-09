@@ -25,7 +25,15 @@ export function TermsBlock({ bank, terms, termsLabel = "Terms & Conditions" }: T
   return (
     <div
       className="bk-doc__terms"
-      style={{ display: "grid", gridTemplateColumns: hasBank && hasTerms ? "1fr 1fr" : "1fr", gap: "4mm", marginTop: "5mm" }}
+      style={{
+        display: "grid",
+        // auto-fit rather than a hard "1fr 1fr": this block is also rendered
+        // inside narrower columns, where two ~40mm cells would shred the bank
+        // name over five lines. Below ~110mm it collapses to a single column.
+        gridTemplateColumns: hasBank && hasTerms ? "repeat(auto-fit, minmax(52mm, 1fr))" : "1fr",
+        gap: "4mm",
+        marginTop: "4mm",
+      }}
     >
       {hasBank && (
         <div className="bk-doc__card">

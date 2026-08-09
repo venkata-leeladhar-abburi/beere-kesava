@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 import { F, T } from "../theme";
-import { formatINR } from "../utils/format";
+import { formatINR } from "@/lib/formatters";
 import { AnimBar, FadeUp } from "./common/motion";
 import { ActionModal } from "./common/primitives";
 import { Button } from "../../../shared/ui/primitives";

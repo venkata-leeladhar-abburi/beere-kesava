@@ -10,6 +10,7 @@ import { TransportData, InvoiceData } from "../../types";
 import { Field, TextInput, SelectInput } from "../../common/primitives";
 import { Button, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../../shared/ui/date";
+import { toPaise, fromPaise, formatPaise } from "../../../../../lib/gst";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -37,10 +38,18 @@ export function InvoiceGenerator({
   const set = (k: keyof InvoiceData) => (v: string | boolean | Record<string, string>) => onChange({ ...data, [k]: v });
   const setPrice = (sId: string, p: string) => onChange({ ...data, prices: { ...data.prices, [sId]: p } });
 
-  const qty          = sarees.length;
-  const subtotal     = sarees.reduce((sum, s) => sum + (parseFloat(data.prices[s.sareeId || s.id]) || 0), 0);
-  const gstAmount    = data.applyGst ? subtotal * (parseFloat(data.gstPct) || 0) / 100 : 0;
-  const grandTotal   = subtotal + gstAmount;
+  const qty = sarees.length;
+  // Part A.4/I.5 — every line converts to integer paise BEFORE summing, so
+  // the total is exact by construction rather than drifting from summing
+  // floats. gstPct is a percentage entered as a string, not a currency
+  // value, so it stays a plain Number() parse; only money paths route
+  // through toPaise.
+  const subtotalPaise = sarees.reduce((sum, s) => sum + toPaise(Number(data.prices[s.sareeId || s.id]) || 0), 0);
+  const gstPaise       = data.applyGst ? Math.round(subtotalPaise * (Number(data.gstPct) || 0) / 100) : 0;
+  const grandTotalPaise = subtotalPaise + gstPaise;
+  const subtotal        = fromPaise(subtotalPaise);
+  const gstAmount        = fromPaise(gstPaise);
+  const grandTotal        = fromPaise(grandTotalPaise);
   const selectedFirm = firms.find(f => f.id === data.firmId);
 
   const todayStr = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });

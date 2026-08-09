@@ -3,6 +3,7 @@ import { ArrowLeft, ClipboardCheck } from "lucide-react";
 import { ProductionDialog } from "../../production/components/ProductionPage";
 import { PageShell } from "../../../shared/ui/PageShell";
 import { Button } from "../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
 const T = { silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D", deepWine: "#4A061B", luxuryBrown: "#3B2314", taupe: "#69635E", green: "#1E6640", crimson: "#C0392B", borderDef: "rgba(110,15,45,0.10)" };
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
@@ -27,6 +28,13 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
   return (
     <PageShell>
       <div className="px-[var(--gutter-page-x)] py-[var(--gutter-page-y)]">
+        <Breadcrumbs
+          items={[
+            { key: "production", label: "Production", onClick: onBack },
+            { key: "quality-control", label: "Quality Control", onClick: onBack },
+            { key: "qc-history", label: "Full QC History" },
+          ]}
+        />
         <PageShell.Header
           title={
             <span style={{ display: "flex", alignItems: "center", gap: 12, fontFamily: F.display }}>

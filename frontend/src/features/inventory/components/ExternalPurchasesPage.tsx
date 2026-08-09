@@ -268,7 +268,6 @@ export function ExternalPurchasesPage() {
             setPrintSaree(saree);
             setSareeListPurchase(null);
           }}
-          onPrintAll={() => window.print()}
         />
       )}
 

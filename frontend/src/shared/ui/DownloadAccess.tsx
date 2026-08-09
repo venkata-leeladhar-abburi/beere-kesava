@@ -43,3 +43,15 @@ export function useDownloadsAllowed(): boolean {
 export function DownloadGate({ children }: { children: React.ReactNode }) {
   return useDownloadsAllowed() ? <>{children}</> : null;
 }
+
+/**
+ * design-system/07-DOCUMENTS.md Part L.3 — the export-permission gate for
+ * document actions. Distinct from `DownloadGate` in name only: printing
+ * itself is universal (see useDocument's `print`), so `PrintGate` exists to
+ * wrap a *document's whole action toolbar* for a caller that wants to hide
+ * Download/Email together when the user has no export rights at all, using
+ * the same underlying check `useDocument().download()` already enforces.
+ */
+export function PrintGate({ children }: { children: React.ReactNode }) {
+  return useDownloadsAllowed() ? <>{children}</> : null;
+}

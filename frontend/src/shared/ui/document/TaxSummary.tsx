@@ -24,7 +24,7 @@ export interface TaxSummaryProps {
 
 export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
   return (
-    <table className="bk-doc__table bk-doc__tax-summary" style={{ marginTop: "6mm" }}>
+    <table className="bk-doc__table bk-doc__tax-summary" style={{ marginTop: "5mm" }}>
       <thead>
         <tr>
           <th style={{ textAlign: "start" }}>HSN</th>

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Button } from "../primitives/Button";
 import { DocumentViewport } from "./DocumentPage";
 import { useDocument } from "./useDocument";
+import { PrintGate } from "../DownloadAccess";
 
 export interface DocumentViewerProps {
   /** The DocumentPage tree — rendered identically on screen and in print/download. */
@@ -43,9 +44,15 @@ export function DocumentViewer({ children, actions, className }: DocumentViewerP
         <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => print(children)}>
           Print
         </Button>
-        <Button variant="primary" size="sm" iconLeft={Download} onClick={handleDownload}>
-          Download PDF
-        </Button>
+        {/* Part L.3 — hidden rather than disabled: a role with no export
+            rights shouldn't see a Download affordance dangling in front of
+            them at all. useDocument().download() enforces the same check
+            independently, so this is a UX nicety, not the real gate. */}
+        <PrintGate>
+          <Button variant="primary" size="sm" iconLeft={Download} onClick={handleDownload}>
+            Download PDF
+          </Button>
+        </PrintGate>
       </div>
       <DocumentViewport style={{ flex: 1, minHeight: 0 }}>{children}</DocumentViewport>
     </div>

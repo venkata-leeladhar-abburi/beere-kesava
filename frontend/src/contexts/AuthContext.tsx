@@ -34,7 +34,11 @@ interface AuthContextValue extends AuthState {
   clearAdminView: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+// Exported (in addition to useAuth) so dev-only harnesses that render a
+// single component tree outside the real app — e.g. doc-preview.tsx — can
+// supply a fake value directly, without needing the real provider's
+// localStorage/network wiring.
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "bk_auth_state";
 /** Written by the admin/superadmin dashboards just before entering a staff portal. */

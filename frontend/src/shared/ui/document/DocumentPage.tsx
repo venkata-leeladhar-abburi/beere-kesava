@@ -17,11 +17,19 @@ export interface DocumentPageProps extends React.ComponentProps<"div"> {
   band?: React.ReactNode;
   /** Page number of m, shown bottom-right — omit on a single-page document. */
   pageInfo?: { page: number; of: number };
+  /**
+   * "a4" (default, 210×297mm portrait) or "a5-landscape" (210×148mm) — Part
+   * H.5's Payment Receipt is the one document type that doesn't need a full
+   * A4 sheet. Applies a modifier class that print.css binds to a named
+   * `@page` rule, so this document prints at the smaller size on its own
+   * page box rather than a full A4 sheet with the bottom half blank.
+   */
+  size?: "a4" | "a5-landscape";
 }
 
-export function DocumentPage({ children, className, band, pageInfo, ...props }: DocumentPageProps) {
+export function DocumentPage({ children, className, band, pageInfo, size = "a4", ...props }: DocumentPageProps) {
   return (
-    <div className={cn("bk-doc", className)} {...props}>
+    <div className={cn("bk-doc", size === "a5-landscape" && "bk-doc--a5", className)} {...props}>
       {band}
       <div className="bk-doc__body">
         {children}

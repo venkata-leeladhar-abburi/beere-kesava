@@ -15,6 +15,7 @@ import { RATES, calcCharges, calcCompletedSarees, calcNet } from "../../utils/ch
 import { FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
+import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
@@ -162,41 +163,63 @@ export function WeaverMakingChargesSection() {
       const materialSummaryString = Object.entries(materialSummary).map(([k, v]) => `${k}: ${v}`).join(", ") || "No materials issued";
 
       return {
-        "Weaver ID": w.id,
-        "Name": w.name,
-        "Village": w.village,
-        "Loom Number": loomNumber,
-        "Active Batch ID": activeBatchesString,
-        "All Batches History": allBatchesString,
-        "Self Brocade (Qty)": w.sb,
-        "Self Brocade Rate": RATES.sb,
-        "Self Brocade Total": w.sb * RATES.sb,
-        "Heavy Zari (Qty)": w.hz,
-        "Heavy Zari Rate": RATES.hz,
-        "Heavy Zari Total": w.hz * RATES.hz,
-        "Plain Silk (Qty)": w.ps,
-        "Plain Silk Rate": RATES.ps,
-        "Plain Silk Total": w.ps * RATES.ps,
-        "Bridal Special (Qty)": w.bs,
-        "Bridal Special Rate": RATES.bs,
-        "Bridal Special Total": w.bs * RATES.bs,
-        "Stripe Brocade (Qty)": w.st,
-        "Stripe Brocade Rate": RATES.st,
-        "Stripe Brocade Total": w.st * RATES.st,
-        "Total Sarees": noOfSarees,
-        "Gross Making Charges": grossAmount,
-        "Materials Issued History": materialSummaryString,
-        "Deduction (Advance)": deduction,
-        "Net Payable": netAmount,
-        "Payment Status": w.status,
+        weaverId: w.id,
+        name: w.name,
+        village: w.village,
+        loomNumber,
+        activeBatches: activeBatchesString,
+        allBatches: allBatchesString,
+        sbQty: w.sb, sbRate: RATES.sb, sbTotal: w.sb * RATES.sb,
+        hzQty: w.hz, hzRate: RATES.hz, hzTotal: w.hz * RATES.hz,
+        psQty: w.ps, psRate: RATES.ps, psTotal: w.ps * RATES.ps,
+        bsQty: w.bs, bsRate: RATES.bs, bsTotal: w.bs * RATES.bs,
+        stQty: w.st, stRate: RATES.st, stTotal: w.st * RATES.st,
+        totalSarees: noOfSarees,
+        grossAmount,
+        materialsSummary: materialSummaryString,
+        deduction,
+        netAmount,
+        status: w.status,
       };
     });
 
-    const XLSX = await import("xlsx");
-    const worksheet = XLSX.utils.json_to_sheet(dataRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "PaymentLedger");
-    XLSX.writeFile(workbook, "Weaver_Payment_Ledger.xlsx");
+    // design-system/07-DOCUMENTS.md Part M — exportTable(), driven by
+    // ColumnDef like every DataTable export, replacing the ad hoc
+    // XLSX.utils.json_to_sheet call this used to make directly. Money
+    // columns (`type: "currency"`) export as raw numbers so the sheet's own
+    // SUM()/AVERAGE() work — never a "₹1.2L"-style formatted string —  and
+    // "Weaver ID" is `type: "code"` so Excel can't reinterpret it as a number.
+    const ledgerColumns: ColumnDef<(typeof dataRows)[number]>[] = [
+      { id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, type: "code" },
+      { id: "name", header: "Name", accessor: r => r.name },
+      { id: "village", header: "Village", accessor: r => r.village },
+      { id: "loomNumber", header: "Loom Number", accessor: r => r.loomNumber },
+      { id: "activeBatches", header: "Active Batch ID", accessor: r => r.activeBatches },
+      { id: "allBatches", header: "All Batches History", accessor: r => r.allBatches },
+      { id: "sbQty", header: "Self Brocade (Qty)", accessor: r => r.sbQty, type: "number" },
+      { id: "sbRate", header: "Self Brocade Rate", accessor: r => r.sbRate, type: "currency" },
+      { id: "sbTotal", header: "Self Brocade Total", accessor: r => r.sbTotal, type: "currency" },
+      { id: "hzQty", header: "Heavy Zari (Qty)", accessor: r => r.hzQty, type: "number" },
+      { id: "hzRate", header: "Heavy Zari Rate", accessor: r => r.hzRate, type: "currency" },
+      { id: "hzTotal", header: "Heavy Zari Total", accessor: r => r.hzTotal, type: "currency" },
+      { id: "psQty", header: "Plain Silk (Qty)", accessor: r => r.psQty, type: "number" },
+      { id: "psRate", header: "Plain Silk Rate", accessor: r => r.psRate, type: "currency" },
+      { id: "psTotal", header: "Plain Silk Total", accessor: r => r.psTotal, type: "currency" },
+      { id: "bsQty", header: "Bridal Special (Qty)", accessor: r => r.bsQty, type: "number" },
+      { id: "bsRate", header: "Bridal Special Rate", accessor: r => r.bsRate, type: "currency" },
+      { id: "bsTotal", header: "Bridal Special Total", accessor: r => r.bsTotal, type: "currency" },
+      { id: "stQty", header: "Stripe Brocade (Qty)", accessor: r => r.stQty, type: "number" },
+      { id: "stRate", header: "Stripe Brocade Rate", accessor: r => r.stRate, type: "currency" },
+      { id: "stTotal", header: "Stripe Brocade Total", accessor: r => r.stTotal, type: "currency" },
+      { id: "totalSarees", header: "Total Sarees", accessor: r => r.totalSarees, type: "number" },
+      { id: "grossAmount", header: "Gross Making Charges", accessor: r => r.grossAmount, type: "currency" },
+      { id: "materialsSummary", header: "Materials Issued History", accessor: r => r.materialsSummary },
+      { id: "deduction", header: "Deduction (Advance)", accessor: r => r.deduction, type: "currency" },
+      { id: "netAmount", header: "Net Payable", accessor: r => r.netAmount, type: "currency" },
+      { id: "status", header: "Payment Status", accessor: r => r.status },
+    ];
+
+    await exportTable({ columns: ledgerColumns, rows: dataRows, filename: "Weaver_Payment_Ledger" });
     toast.success(`Successfully exported ledger for ${weaversToExport.length} weavers!`);
   };
 

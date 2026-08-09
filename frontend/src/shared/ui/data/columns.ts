@@ -53,6 +53,13 @@ export interface ColumnDef<T> {
    *  DataTable equivalent of a hand-rolled rowSpan groupby. Returning
    *  null/undefined opts a row out of merging (renders its own cell). */
   mergeKey?: (row: T) => string | number | null | undefined;
+
+  /** design-system/07-DOCUMENTS.md Part M — false excludes this column from
+   *  `exportTable()` (e.g. an `actions` column of buttons has nothing
+   *  meaningful to put in a spreadsheet cell). Defaults to true; `actions`-
+   *  type columns default to excluded even when unset, since a button
+   *  column being exportable is very rarely intentional. */
+  exportable?: boolean;
 }
 
 export function columnAlign<T>(col: ColumnDef<T>): ColumnAlign {

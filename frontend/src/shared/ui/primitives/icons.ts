@@ -21,6 +21,8 @@ import {
   CheckCircle2, AlertTriangle, AlertCircle, Info, Clock, Check, Minus,
   Users, Factory, Shirt, Layers, FileText, IndianRupee,
   Bell, Calendar, Filter, LogOut, UserRound, Loader2,
+  Palette, UserCircle2, Building2, Wrench, IdCard,
+  FileSignature, ClipboardList, PackageCheck, Truck, ShoppingCart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -64,13 +66,25 @@ export const Icons = {
   profile: UserRound,
   columns: SlidersHorizontal,
 
-  // domain
+  // domain — entities
   weaver: Users,
   loom: Factory,
   saree: Shirt,
   batch: Layers,
+  design: Palette,
+  customer: UserCircle2,
+  supplier: Building2,
+  vendor: Wrench,
+  employee: IdCard,
+
+  // domain — documents (design-system/06-DOMAIN.md Part C.1)
   invoice: FileText,
   payment: IndianRupee,
+  quotation: FileSignature,
+  purchaseOrder: ClipboardList,
+  goodsReceipt: PackageCheck,
+  challan: Truck,
+  order: ShoppingCart,
 } as const;
 
 export type IconName = keyof typeof Icons;

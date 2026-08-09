@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { useDocument } from "../../../shared/ui/document";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -164,16 +165,16 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
 }
 
 export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase | null; onClose: () => void }) {
+  const { print } = useDocument();
   if (!purchase) return null;
   const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
   const mc = MAT_CFG[purchase.type];
   const MatIcon = mc.Icon;
 
-  return (
-    <ModalOverlay open={!!purchase} onClose={onClose}>
-      <ModalHeader title="Print GRN Receipt" subtitle={`Goods Received Note — ${purchase.grn}`} onClose={onClose} />
-      <div style={{ padding: "26px 28px 28px" }}>
-        <div className="print-area" style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
+  // Same JSX rendered on screen and portaled to #document-print-root via
+  // useDocument() — see the Phase 7 print-isolation note on IssueSlipModal.
+  const receipt = (
+    <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px" }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.10)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Goods Received Note (GRN)</div>
@@ -231,7 +232,14 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
               </div>
             ))}
           </div>
-        </div>
+    </div>
+  );
+
+  return (
+    <ModalOverlay open={!!purchase} onClose={onClose}>
+      <ModalHeader title="Print GRN Receipt" subtitle={`Goods Received Note — ${purchase.grn}`} onClose={onClose} />
+      <div style={{ padding: "26px 28px 28px" }}>
+        <div style={{ marginBottom: 22 }}>{receipt}</div>
 
         <div style={{ display: "flex", gap: 12 }}>
           <Button
@@ -242,7 +250,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
           >
             Close
           </Button>
-          <Button variant="primary" size="lg" iconLeft={Printer} onClick={() => window.print()} className="flex-[2] rounded-[11px]">
+          <Button variant="primary" size="lg" iconLeft={Printer} onClick={() => print(<div style={{ padding: "16mm" }}>{receipt}</div>)} className="flex-[2] rounded-[11px]">
             Print GRN Receipt
           </Button>
         </div>

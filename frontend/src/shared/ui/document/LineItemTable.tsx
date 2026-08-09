@@ -23,7 +23,7 @@ export interface LineItemTableProps<T> {
 
 export function LineItemTable<T>({ columns, rows }: LineItemTableProps<T>) {
   return (
-    <table className="bk-doc__table" style={{ marginTop: "6mm" }}>
+    <table className="bk-doc__table" style={{ marginTop: "5mm" }}>
       <colgroup>
         {columns.map((c, i) => (
           <col key={i} style={c.width ? { width: c.width } : undefined} />

@@ -17,7 +17,7 @@ export function SignatureBlock({ firmName, roleLabel = "Authorised Signatory" }:
       className="bk-doc__signature"
       style={{
         display: "flex", justifyContent: "space-between", alignItems: "flex-end",
-        marginTop: "9mm", paddingTop: "4mm", borderTop: "0.3mm solid var(--doc-rule)",
+        marginTop: "6mm", paddingTop: "3.5mm", borderTop: "0.3mm solid var(--doc-rule)",
       }}
     >
       <div style={{ maxWidth: "80mm" }}>
@@ -29,7 +29,7 @@ export function SignatureBlock({ firmName, roleLabel = "Authorised Signatory" }:
         </div>
       </div>
       <div style={{ textAlign: "center", minWidth: "52mm" }}>
-        <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "11mm" }}>
+        <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--doc-burgundy)", marginBottom: "8mm" }}>
           For {firmName}
         </div>
         <div style={{ borderTop: "0.4mm solid var(--doc-rule)", paddingTop: "1.5mm" }}>
